@@ -3,35 +3,35 @@
     "supportsSubScores": false,
     "ratings": [
         {
-            "ratingStrings": ["AG"],
+            "ratingStrings": ["AG", "AP"],
             "ratingScore": {
                 "score": 0,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["AP-12"],
+            "ratingStrings": ["12", "AP-12"],
             "ratingScore": {
                 "score": 12,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["N-15"],
+            "ratingStrings": ["15", "N-15"],
             "ratingScore": {
                 "score": 15,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["IM-18"],
+            "ratingStrings": ["18", "IM-18"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
             }
         },
         {
-            "ratingStrings": ["IM-18-XXX"],
+            "ratingStrings": ["18+", "IM-18-XXX"],
             "ratingScore": {
                 "score": 1000,
                 "subScore": null

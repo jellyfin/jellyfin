@@ -160,12 +160,13 @@ namespace Emby.Server.Implementations.IO
             {
                 // Cross device move requires a copy
                 Directory.CreateDirectory(destination);
-                foreach (string file in Directory.GetFiles(source))
+                var sourceDir = new DirectoryInfo(source);
+                foreach (var file in sourceDir.EnumerateFiles())
                 {
-                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
+                    file.CopyTo(Path.Combine(destination, file.Name), true);
                 }
 
-                Directory.Delete(source, true);
+                sourceDir.Delete(true);
             }
         }
 

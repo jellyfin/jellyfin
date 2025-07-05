@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "迁移进度条预览图的存储位置",
     "TaskExtractMediaSegments": "媒体分段扫描",
     "TaskExtractMediaSegmentsDescription": "从支持 MediaSegment 的插件中提取或获取媒体分段。",
-    "TaskMoveTrickplayImagesDescription": "根据媒体库设置移动现有的进度条预览图文件。"
+    "TaskMoveTrickplayImagesDescription": "根据媒体库设置移动现有的进度条预览图文件。",
+    "CleanupUserDataTask": "用户数据清理任务",
+    "CleanupUserDataTaskDescription": "清理已被删除超过90天的媒体中的所有用户数据（观看状态、收藏夹状态等）。"
 }

@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImagesDescription": "Mevcut trickplay dosyalarını kütüphane ayarlarına göre taşır.",
     "TaskDownloadMissingLyrics": "Eksik şarkı sözlerini indir",
     "TaskDownloadMissingLyricsDescription": "Şarkı sözlerini indirir",
-    "TaskExtractMediaSegmentsDescription": "MediaSegment özelliği etkin olan eklentilerden medya segmentlerini çıkarır veya alır."
+    "TaskExtractMediaSegmentsDescription": "MediaSegment özelliği etkin olan eklentilerden medya segmentlerini çıkarır veya alır.",
+    "CleanupUserDataTask": "Kullanıcı verisi temizleme görevi",
+    "CleanupUserDataTaskDescription": "En az 90 gün boyunca artık mevcut olmayan medyadaki tüm kullanıcı verilerini (İzleme durumu, favori durumu vb.) temizler."
 }

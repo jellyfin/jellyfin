@@ -135,5 +135,18 @@ namespace Jellyfin.Extensions
         {
             return values.Select(i => (i ?? string.Empty).Trim());
         }
+
+        /// <summary>
+        /// Truncates a string at the first null character ('\0').
+        /// </summary>
+        /// <param name="text">The input string.</param>
+        /// <returns>
+        /// The substring up to (but not including) the first null character,
+        /// or the original string if no null character is present.
+        /// </returns>
+        public static string TruncateAtNull(this string text)
+        {
+            return string.IsNullOrEmpty(text) ? text : text.AsSpan().LeftPart('\0').ToString();
+        }
     }
 }

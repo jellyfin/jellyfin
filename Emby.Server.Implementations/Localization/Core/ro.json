@@ -98,7 +98,7 @@
     "TaskCleanTranscodeDescription": "Șterge fișierele de transcodare mai vechi de o zi.",
     "TaskCleanTranscode": "Curățați directorul de transcodare",
     "TaskUpdatePluginsDescription": "Descarcă și instalează actualizări pentru extensiile care sunt configurate să se actualizeze automat.",
-    "TaskUpdatePlugins": "Actualizați Extensile",
+    "TaskUpdatePlugins": "Actualizați Extensiile",
     "TaskRefreshPeopleDescription": "Actualizează metadatele pentru actori și regizori din biblioteca media.",
     "TaskRefreshPeople": "Actualizează Persoanele",
     "TaskCleanLogsDescription": "Șterge fișierele jurnal care au mai mult de {0} zile.",
@@ -135,5 +135,7 @@
     "TaskExtractMediaSegmentsDescription": "Extrage sau obține segmentele media de la pluginurile MediaSegment activate.",
     "TaskMoveTrickplayImages": "Migrează locația imaginii Trickplay",
     "TaskDownloadMissingLyrics": "Descarcă versurile lipsă",
-    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii"
+    "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii",
+    "CleanupUserDataTask": "Sarcina de curatare a datelor utilizatorului",
+    "CleanupUserDataTaskDescription": "Sterge toate datele utilizatorului (starea vizionarii, starea favoritelor etc.) de pe suporturile media care nu mai sunt prezente timp de cel puțin 90 de zile."
 }

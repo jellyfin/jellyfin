@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.Plugins;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Plugins;
@@ -85,7 +86,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var dllPath = Path.GetDirectoryName(Path.Combine(_pluginPath, dllFile))!;
 
             Directory.CreateDirectory(dllPath);
-            File.Create(Path.Combine(dllPath, filename));
+            FileHelper.CreateEmpty(Path.Combine(dllPath, filename));
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
             File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
@@ -141,7 +142,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             foreach (var file in files)
             {
-                File.Create(Path.Combine(_pluginPath, file));
+                FileHelper.CreateEmpty(Path.Combine(_pluginPath, file));
             }
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
@@ -184,7 +185,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = new Version(1, 0).ToString(),
                 ImagePath = string.Empty
@@ -220,7 +221,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = packageInfo.Versions[0].Version,
                 ImagePath = string.Empty

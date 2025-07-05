@@ -1,0 +1,48 @@
+{
+    "countryCode": "th",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["P", "G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18+"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["20"],
+            "ratingScore": {
+                "score": 20,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Banned"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

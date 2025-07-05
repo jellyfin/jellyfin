@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -7,6 +8,7 @@ using Jellyfin.Database.Implementations;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -38,9 +40,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
     {
-        options.UseSqlite(
-            $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
-            sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly));
+        options
+            .UseSqlite(
+                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
+                sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
+            // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
     }
 
     /// <inheritdoc/>
@@ -71,8 +77,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
+        if (DbContextFactory is null)
+        {
+            return;
+        }
+
         // Run before disposing the application
-        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
             await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
@@ -93,12 +104,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
-        if (!Directory.Exists(backupFile))
-        {
-            Directory.CreateDirectory(backupFile);
-        }
+        Directory.CreateDirectory(backupFile);
 
-        backupFile = Path.Combine(_applicationPaths.DataPath, $"{key}_jellyfin.db");
+        backupFile = Path.Combine(backupFile, $"{key}_jellyfin.db");
         File.Copy(path, backupFile);
         return Task.FromResult(key);
     }
@@ -106,16 +114,54 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
+        // ensure there are absolutly no dangling Sqlite connections.
+        SqliteConnection.ClearAllPools();
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
 
         if (!File.Exists(backupFile))
         {
-            _logger.LogCritical("Tried to restore a backup that does not exist.");
+            _logger.LogCritical("Tried to restore a backup that does not exist: {Key}", key);
             return Task.CompletedTask;
         }
 
         File.Copy(backupFile, path, true);
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task DeleteBackup(string key)
+    {
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
+
+        if (!File.Exists(backupFile))
+        {
+            _logger.LogCritical("Tried to delete a backup that does not exist: {Key}", key);
+            return Task.CompletedTask;
+        }
+
+        File.Delete(backupFile);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames)
+    {
+        ArgumentNullException.ThrowIfNull(tableNames);
+
+        var deleteQueries = new List<string>();
+        foreach (var tableName in tableNames)
+        {
+            deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+        }
+
+        var deleteAllQuery =
+        $"""
+        PRAGMA foreign_keys = OFF;
+        {string.Join('\n', deleteQueries)}
+        PRAGMA foreign_keys = ON;
+        """;
+
+        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
     }
 }

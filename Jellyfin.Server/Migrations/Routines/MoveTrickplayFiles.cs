@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -15,12 +16,15 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
-public class MoveTrickplayFiles : IDatabaseMigrationRoutine
+#pragma warning disable CS0618 // Type or member is obsolete
+[JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), RunMigrationOnSetup = true)]
+public class MoveTrickplayFiles : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveTrickplayFiles> _logger;
+    private readonly IStartupLogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveTrickplayFiles"/> class.
@@ -29,7 +33,11 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
-    public MoveTrickplayFiles(ITrickplayManager trickplayManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILogger<MoveTrickplayFiles> logger)
+    public MoveTrickplayFiles(
+        ITrickplayManager trickplayManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager,
+        IStartupLogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;
@@ -38,18 +46,9 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
     }
 
     /// <inheritdoc />
-    public Guid Id => new("9540D44A-D8DC-11EF-9CBB-B77274F77C52");
-
-    /// <inheritdoc />
-    public string Name => "MoveTrickplayFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => true;
-
-    /// <inheritdoc />
     public void Perform()
     {
-        const int Limit = 100;
+        const int Limit = 5000;
         int itemCount = 0, offset = 0, previousCount;
 
         var sw = Stopwatch.StartNew();
@@ -64,9 +63,6 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
         do
         {
             var trickplayInfos = _trickplayManager.GetTrickplayItemsAsync(Limit, offset).GetAwaiter().GetResult();
-            previousCount = trickplayInfos.Count;
-            offset += Limit;
-
             trickplayQuery.ItemIds = trickplayInfos.Select(i => i.ItemId).Distinct().ToArray();
             var items = _libraryManager.GetItemList(trickplayQuery);
             foreach (var trickplayInfo in trickplayInfos)
@@ -77,24 +73,32 @@ public class MoveTrickplayFiles : IDatabaseMigrationRoutine
                     continue;
                 }
 
-                if (++itemCount % 1_000 == 0)
-                {
-                    _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);
-                }
-
+                var moved = false;
                 var oldPath = GetOldTrickplayDirectory(item, trickplayInfo.Width);
                 var newPath = _trickplayManager.GetTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
                 if (_fileSystem.DirectoryExists(oldPath))
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
+                    moved = true;
                 }
 
                 oldPath = GetNewOldTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, trickplayInfo.Width, false);
                 if (_fileSystem.DirectoryExists(oldPath))
                 {
                     _fileSystem.MoveDirectory(oldPath, newPath);
+                    moved = true;
+                }
+
+                if (moved)
+                {
+                    itemCount++;
                 }
             }
+
+            offset += Limit;
+            previousCount = trickplayInfos.Count;
+
+            _logger.LogInformation("Checked: {Checked} - Moved: {Count} - Time: {Time}", offset, itemCount, sw.Elapsed);
         } while (previousCount == Limit);
 
         _logger.LogInformation("Moved {Count} items in {Time}", itemCount, sw.Elapsed);

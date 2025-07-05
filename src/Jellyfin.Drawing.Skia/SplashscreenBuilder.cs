@@ -101,10 +101,12 @@ public class SplashscreenBuilder
                     {
                         var imageWidth = Math.Abs(posterHeight * currentImage.Width / currentImage.Height);
                         using var resizedBitmap = new SKBitmap(imageWidth, posterHeight);
-                        currentImage.ScalePixels(resizedBitmap, SKFilterQuality.High);
-
+                        var samplingOptions = currentImage.Width > imageWidth || currentImage.Height > posterHeight
+                            ? SkiaEncoder.DefaultSamplingOptions
+                            : SkiaEncoder.UpscaleSamplingOptions;
+                        currentImage.ScalePixels(resizedBitmap, samplingOptions);
                         // draw on canvas
-                        canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight);
+                        canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight, samplingOptions);
 
                         // resize to the same aspect as the original
                         currentWidthPos += imageWidth + Spacing;

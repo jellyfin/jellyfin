@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrWhiteSpace(result.strArtist))
             {
-                item.AlbumArtists = new string[] { result.strArtist };
+                item.AlbumArtists = [result.strArtist];
             }
 
             if (!string.IsNullOrEmpty(result.intYearReleased))
@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
-                item.Genres = new[] { result.strGenre };
+                item.Genres = [result.strGenre];
             }
 
             item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
@@ -170,6 +170,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+            {
+                return;
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 

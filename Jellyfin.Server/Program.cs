@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,15 +9,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
+using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.Implementations.DatabaseConfiguration;
+using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Implementations.StorageHelpers;
+using Jellyfin.Server.Implementations.SystemBackupService;
+using Jellyfin.Server.Migrations;
+using Jellyfin.Server.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,12 +54,14 @@ namespace Jellyfin.Server
         public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
-        private static SetupServer _setupServer = new();
+        private static SetupServer? _setupServer;
         private static CoreAppHost? _appHost;
         private static IHost? _jellyfinHost = null;
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
+        private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
+        private static string? _restoreFromBackup;
 
         /// <summary>
         /// The entry point of the application.
@@ -73,9 +83,10 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
+            _restoreFromBackup = options.RestoreArchive;
             _startTimestamp = Stopwatch.GetTimestamp();
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
-            await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+            appPaths.MakeSanityCheckOrThrow();
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
@@ -88,9 +99,11 @@ namespace Jellyfin.Server
 
             // Create an instance of the application configuration to use for application startup
             IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
-
             StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
+            _setupServer = new SetupServer(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost, _loggerFactory, startupConfig);
+            await _setupServer.RunAsync().ConfigureAwait(false);
             _logger = _loggerFactory.CreateLogger("Main");
+            StartupLogger.Logger = new StartupLogger(_logger);
 
             // Use the logging framework for uncaught exceptions instead of std error
             AppDomain.CurrentDomain.UnhandledException += (_, e)
@@ -120,8 +133,11 @@ namespace Jellyfin.Server
                 }
             }
 
+            StorageHelper.TestCommonPathsForStorageCapacity(appPaths, StartupLogger.Logger.With(_loggerFactory.CreateLogger<Startup>()).BeginGroup($"Storage Check"));
+
             StartupHelpers.PerformStaticInitialization();
-            await Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory).ConfigureAwait(false);
+
+            await ApplyStartupMigrationAsync(appPaths, startupConfig).ConfigureAwait(false);
 
             do
             {
@@ -130,10 +146,12 @@ namespace Jellyfin.Server
                 if (_restartOnShutdown)
                 {
                     _startTimestamp = Stopwatch.GetTimestamp();
-                    _setupServer = new SetupServer();
-                    await _setupServer.RunAsync(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost).ConfigureAwait(false);
+                    await _setupServer.StopAsync().ConfigureAwait(false);
+                    await _setupServer.RunAsync().ConfigureAwait(false);
                 }
             } while (_restartOnShutdown);
+
+            _setupServer.Dispose();
         }
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
@@ -144,6 +162,7 @@ namespace Jellyfin.Server
                             options,
                             startupConfig);
             _appHost = appHost;
+            var configurationCompleted = false;
             try
             {
                 _jellyfinHost = Host.CreateDefaultBuilder()
@@ -160,19 +179,35 @@ namespace Jellyfin.Server
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
+                    .ConfigureServices(e => e
+                        .RegisterStartupLogger()
+                        .AddSingleton<IServiceCollection>(e))
                     .Build();
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
+                PrepareDatabaseProvider(appHost.ServiceProvider);
+
+                if (!string.IsNullOrWhiteSpace(_restoreFromBackup))
+                {
+                    await appHost.ServiceProvider.GetService<IBackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
+                    _restoreFromBackup = null;
+                    _restartOnShutdown = true;
+                    return;
+                }
+
+                var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(appHost.ServiceProvider);
+                await jellyfinMigrationService.PrepareSystemForMigration(_logger).ConfigureAwait(false);
+                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
-                await Migrations.MigrationRunner.Run(appHost, _loggerFactory).ConfigureAwait(false);
 
+                await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
+                await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
                 try
                 {
-                    await _setupServer.StopAsync().ConfigureAwait(false);
-                    _setupServer.Dispose();
-                    _setupServer = null!;
+                    configurationCompleted = true;
+                    await _setupServer!.StopAsync().ConfigureAwait(false);
                     await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
@@ -194,11 +229,18 @@ namespace Jellyfin.Server
 
                 await _jellyfinHost.WaitForShutdownAsync().ConfigureAwait(false);
                 _restartOnShutdown = appHost.ShouldRestart;
+                _restoreFromBackup = appHost.RestoreBackupPath;
             }
             catch (Exception ex)
             {
                 _restartOnShutdown = false;
                 _logger.LogCritical(ex, "Error while starting server");
+                if (_setupServer!.IsAlive && !configurationCompleted)
+                {
+                    _setupServer!.SoftStop();
+                    await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+                    await _setupServer!.StopAsync().ConfigureAwait(false);
+                }
             }
             finally
             {
@@ -216,6 +258,52 @@ namespace Jellyfin.Server
                 _appHost = null;
                 _jellyfinHost?.Dispose();
             }
+        }
+
+        /// <summary>
+        /// [Internal]Runs the startup Migrations.
+        /// </summary>
+        /// <remarks>
+        /// Not intended to be used other then by jellyfin and its tests.
+        /// </remarks>
+        /// <param name="appPaths">Application Paths.</param>
+        /// <param name="startupConfig">Startup Config.</param>
+        /// <returns>A task.</returns>
+        public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
+        {
+            _migrationLogger = StartupLogger.Logger.BeginGroup<JellyfinMigrationService>($"Migration Service");
+            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
+            startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
+            var migrationStartupServiceProvider = new ServiceCollection()
+                .AddLogging(d => d.AddSerilog())
+                .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
+                .AddSingleton<IApplicationPaths>(appPaths)
+                .AddSingleton<ServerApplicationPaths>(appPaths)
+                .RegisterStartupLogger();
+
+            migrationStartupServiceProvider.AddSingleton(migrationStartupServiceProvider);
+            var startupService = migrationStartupServiceProvider.BuildServiceProvider();
+
+            PrepareDatabaseProvider(startupService);
+
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(startupService);
+            await jellyfinMigrationService.CheckFirstTimeRunOrMigration(appPaths).ConfigureAwait(false);
+            await jellyfinMigrationService.MigrateStepAsync(Migrations.Stages.JellyfinMigrationStageTypes.PreInitialisation, startupService).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// [Internal]Runs the Jellyfin migrator service with the Core stage.
+        /// </summary>
+        /// <remarks>
+        /// Not intended to be used other then by jellyfin and its tests.
+        /// </remarks>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="jellyfinMigrationStage">The stage to run.</param>
+        /// <returns>A task.</returns>
+        public static async Task ApplyCoreMigrationsAsync(IServiceProvider serviceProvider, Migrations.Stages.JellyfinMigrationStageTypes jellyfinMigrationStage)
+        {
+            var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(serviceProvider, _migrationLogger!);
+            await jellyfinMigrationService.MigrateStepAsync(jellyfinMigrationStage, serviceProvider).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -251,6 +339,13 @@ namespace Jellyfin.Server
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+        }
+
+        private static void PrepareDatabaseProvider(IServiceProvider services)
+        {
+            var factory = services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
+            var provider = services.GetRequiredService<IJellyfinDatabaseProvider>();
+            provider.DbContextFactory = factory;
         }
     }
 }

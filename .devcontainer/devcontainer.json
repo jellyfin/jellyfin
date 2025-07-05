@@ -13,7 +13,7 @@
             "dotnetRuntimeVersions": "9.0",
             "aspNetCoreRuntimeVersions": "9.0"
         },
-        "ghcr.io/devcontainers-contrib/features/apt-packages:1": {
+        "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "preserve_apt_list": false,
             "packages": [
                 "libfontconfig1"

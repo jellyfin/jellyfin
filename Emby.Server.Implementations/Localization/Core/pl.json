@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Skanowanie segmentów mediów",
     "TaskMoveTrickplayImages": "Migruj lokalizację obrazu Trickplay",
     "TaskExtractMediaSegmentsDescription": "Wyodrębnia lub pobiera segmenty mediów z wtyczek obsługujących MediaSegment.",
-    "TaskMoveTrickplayImagesDescription": "Przenosi istniejące pliki Trickplay zgodnie z ustawieniami biblioteki."
+    "TaskMoveTrickplayImagesDescription": "Przenosi istniejące pliki Trickplay zgodnie z ustawieniami biblioteki.",
+    "CleanupUserDataTaskDescription": "Usuwa wszystkie dane użytkownika (stan oglądanych, status ulubionych itp.) z mediów, które nie są dostępne od co najmniej 90 dni.",
+    "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika"
 }

@@ -272,6 +272,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackStart instead")]
     public async Task<ActionResult> OnPlaybackStart(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,
@@ -350,6 +351,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("PlayingItems/{itemId}/Progress")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackProgress instead")]
     public async Task<ActionResult> OnPlaybackProgress(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,
@@ -438,6 +440,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackStop instead")]
     public async Task<ActionResult> OnPlaybackStopped(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,

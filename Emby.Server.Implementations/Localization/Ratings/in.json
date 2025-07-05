@@ -1,0 +1,55 @@
+{
+    "countryCode": "in",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["U"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["U/A 7+"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["UA"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["U/A 13+"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["U/A 16+"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["A"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["S"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

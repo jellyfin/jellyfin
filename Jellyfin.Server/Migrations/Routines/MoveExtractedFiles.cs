@@ -1,20 +1,24 @@
 #pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -22,34 +26,37 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move extracted files to the new directories.
 /// </summary>
-public class MoveExtractedFiles : IDatabaseMigrationRoutine
+[JellyfinMigration("2025-04-20T21:00:00", nameof(MoveExtractedFiles))]
+public class MoveExtractedFiles : IAsyncMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;
-    private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveExtractedFiles> _logger;
-    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly ILogger _logger;
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IPathManager _pathManager;
+    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveExtractedFiles"/> class.
     /// </summary>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
+    /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
     public MoveExtractedFiles(
         IApplicationPaths appPaths,
-        ILibraryManager libraryManager,
         ILogger<MoveExtractedFiles> logger,
-        IMediaSourceManager mediaSourceManager,
-        IPathManager pathManager)
+        IStartupLogger<MoveExtractedFiles> startupLogger,
+        IPathManager pathManager,
+        IFileSystem fileSystem,
+        IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _appPaths = appPaths;
-        _libraryManager = libraryManager;
-        _logger = logger;
-        _mediaSourceManager = mediaSourceManager;
+        _logger = startupLogger.With(logger);
         _pathManager = pathManager;
+        _fileSystem = fileSystem;
+        _dbProvider = dbProvider;
     }
 
     private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -57,62 +64,43 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public Guid Id => new("9063b0Ef-CFF1-4EDC-9A13-74093681A89B");
-
-    /// <inheritdoc />
-    public string Name => "MoveExtractedFiles";
-
-    /// <inheritdoc />
-    public bool PerformOnNewInstall => false;
-
-    /// <inheritdoc />
-    public void Perform()
+    public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        const int Limit = 500;
-        int itemCount = 0, offset = 0;
+        const int Limit = 5000;
+        int itemCount = 0;
 
         var sw = Stopwatch.StartNew();
-        var itemsQuery = new InternalItemsQuery
-        {
-            MediaTypes = [MediaType.Video],
-            SourceTypes = [SourceType.Library],
-            IsVirtualItem = false,
-            IsFolder = false,
-            Limit = Limit,
-            StartIndex = offset,
-            EnableTotalRecordCount = true,
-        };
 
-        var records = _libraryManager.GetItemsResult(itemsQuery).TotalRecordCount;
+        using var context = _dbProvider.CreateDbContext();
+        var records = context.BaseItems.Count(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder);
         _logger.LogInformation("Checking {Count} items for movable extracted files.", records);
 
         // Make sure directories exist
         Directory.CreateDirectory(SubtitleCachePath);
         Directory.CreateDirectory(AttachmentCachePath);
 
-        itemsQuery.EnableTotalRecordCount = false;
-        do
+        await foreach (var result in context.BaseItems
+                          .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
+                          .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
+                          .Select(b => new
+                          {
+                              b.Id,
+                              b.Path,
+                              b.MediaStreams
+                          })
+                          .OrderBy(e => e.Id)
+                          .WithPartitionProgress((partition) => _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", partition * Limit, itemCount, sw.Elapsed))
+                          .PartitionEagerAsync(Limit, cancellationToken)
+                          .WithCancellation(cancellationToken)
+                          .ConfigureAwait(false))
         {
-            itemsQuery.StartIndex = offset;
-            var result = _libraryManager.GetItemsResult(itemsQuery);
-
-            var items = result.Items;
-            foreach (var item in items)
+            if (MoveSubtitleAndAttachmentFiles(result.Id, result.Path, result.MediaStreams, context))
             {
-                if (MoveSubtitleAndAttachmentFiles(item))
-                {
-                    itemCount++;
-                }
+                itemCount++;
             }
+        }
 
-            offset += Limit;
-            if (offset % 5_000 == 0)
-            {
-                _logger.LogInformation("Checked extracted files for {Count} items in {Time}.", offset, sw.Elapsed);
-            }
-        } while (offset < records);
-
-        _logger.LogInformation("Checked {Checked} items - Moved files for {Items} items in {Time}.", records, itemCount, sw.Elapsed);
+        _logger.LogInformation("Moved files for {Count} items in {Time}", itemCount, sw.Elapsed);
 
         // Get all subdirectories with 1 character names (those are the legacy directories)
         var subdirectories = Directory.GetDirectories(SubtitleCachePath, "*", SearchOption.AllDirectories).Where(s => s.Length == SubtitleCachePath.Length + 2).ToList();
@@ -134,52 +122,56 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         _logger.LogInformation("Cleaned up left over subtitles and attachments.");
     }
 
-    private bool MoveSubtitleAndAttachmentFiles(BaseItem item)
+    private bool MoveSubtitleAndAttachmentFiles(Guid id, string? path, ICollection<MediaStreamInfo>? mediaStreams, JellyfinDbContext context)
     {
-        var mediaStreams = item.GetMediaStreams().Where(s => s.Type == MediaStreamType.Subtitle && !s.IsExternal);
-        var itemIdString = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        var itemIdString = id.ToString("N", CultureInfo.InvariantCulture);
         var modified = false;
-        foreach (var mediaStream in mediaStreams)
+        if (mediaStreams is not null)
         {
-            if (mediaStream.Codec is null)
+            foreach (var mediaStream in mediaStreams)
             {
-                continue;
-            }
-
-            var mediaStreamIndex = mediaStream.Index;
-            var extension = GetSubtitleExtension(mediaStream.Codec);
-            var oldSubtitleCachePath = GetOldSubtitleCachePath(item.Path, mediaStream.Index, extension);
-            if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
-            {
-                continue;
-            }
-
-            var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
-            if (File.Exists(newSubtitleCachePath))
-            {
-                File.Delete(oldSubtitleCachePath);
-            }
-            else
-            {
-                var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
-                if (newDirectory is not null)
+                if (mediaStream.Codec is null)
                 {
-                    Directory.CreateDirectory(newDirectory);
-                    File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
-                    _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, item.Id, oldSubtitleCachePath, newSubtitleCachePath);
+                    continue;
+                }
 
-                    modified = true;
+                var mediaStreamIndex = mediaStream.StreamIndex;
+                var extension = GetSubtitleExtension(mediaStream.Codec);
+                var oldSubtitleCachePath = GetOldSubtitleCachePath(path, mediaStreamIndex, extension);
+                if (string.IsNullOrEmpty(oldSubtitleCachePath) || !File.Exists(oldSubtitleCachePath))
+                {
+                    continue;
+                }
+
+                var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
+                if (File.Exists(newSubtitleCachePath))
+                {
+                    File.Delete(oldSubtitleCachePath);
+                }
+                else
+                {
+                    var newDirectory = Path.GetDirectoryName(newSubtitleCachePath);
+                    if (newDirectory is not null)
+                    {
+                        Directory.CreateDirectory(newDirectory);
+                        File.Move(oldSubtitleCachePath, newSubtitleCachePath, false);
+                        _logger.LogDebug("Moved subtitle {Index} for {Item} from {Source} to {Destination}", mediaStreamIndex, id, oldSubtitleCachePath, newSubtitleCachePath);
+
+                        modified = true;
+                    }
                 }
             }
         }
 
-        var attachments = _mediaSourceManager.GetMediaAttachments(item.Id).Where(a => !string.Equals(a.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
-        var shouldExtractOneByOne = attachments.Any(a => !string.IsNullOrEmpty(a.FileName)
-                                                                              && (a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase)));
+#pragma warning disable CA1309 // Use ordinal string comparison
+        var attachments = context.AttachmentStreamInfos.Where(a => a.ItemId.Equals(id) && !string.Equals(a.Codec, "mjpeg")).ToList();
+#pragma warning restore CA1309 // Use ordinal string comparison
+        var shouldExtractOneByOne = attachments.Any(a => !string.IsNullOrEmpty(a.Filename)
+                                                                              && (a.Filename.Contains('/', StringComparison.OrdinalIgnoreCase) || a.Filename.Contains('\\', StringComparison.OrdinalIgnoreCase)));
         foreach (var attachment in attachments)
         {
             var attachmentIndex = attachment.Index;
-            var oldAttachmentPath = GetOldAttachmentDataPath(item.Path, attachmentIndex);
+            var oldAttachmentPath = GetOldAttachmentDataPath(path, attachmentIndex);
             if (string.IsNullOrEmpty(oldAttachmentPath) || !File.Exists(oldAttachmentPath))
             {
                 oldAttachmentPath = GetOldAttachmentCachePath(itemIdString, attachment, shouldExtractOneByOne);
@@ -189,7 +181,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
                 }
             }
 
-            var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.FileName ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
+            var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.Filename ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
             if (File.Exists(newAttachmentPath))
             {
                 File.Delete(oldAttachmentPath);
@@ -201,7 +193,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
                 {
                     Directory.CreateDirectory(newDirectory);
                     File.Move(oldAttachmentPath, newAttachmentPath, false);
-                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, item.Id, oldAttachmentPath, newAttachmentPath);
+                    _logger.LogDebug("Moved attachment {Index} for {Item} from {Source} to {Destination}", attachmentIndex, id, oldAttachmentPath, newAttachmentPath);
 
                     modified = true;
                 }
@@ -219,8 +211,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         }
 
         string filename;
-        var protocol = _mediaSourceManager.GetPathProtocol(mediaPath);
-        if (protocol == MediaProtocol.File)
+        if (_fileSystem.IsPathFile(mediaPath))
         {
             DateTime? date;
             try
@@ -244,7 +235,7 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
         return Path.Join(_appPaths.DataPath, "attachments", filename[..1], filename);
     }
 
-    private string? GetOldAttachmentCachePath(string mediaSourceId, MediaAttachment attachment, bool shouldExtractOneByOne)
+    private string? GetOldAttachmentCachePath(string mediaSourceId, AttachmentStreamInfo attachment, bool shouldExtractOneByOne)
     {
         var attachmentFolderPath = Path.Join(_appPaths.CachePath, "attachments", mediaSourceId);
         if (shouldExtractOneByOne)
@@ -252,16 +243,21 @@ public class MoveExtractedFiles : IDatabaseMigrationRoutine
             return Path.Join(attachmentFolderPath, attachment.Index.ToString(CultureInfo.InvariantCulture));
         }
 
-        if (string.IsNullOrEmpty(attachment.FileName))
+        if (string.IsNullOrEmpty(attachment.Filename))
         {
             return null;
         }
 
-        return Path.Join(attachmentFolderPath, attachment.FileName);
+        return Path.Join(attachmentFolderPath, attachment.Filename);
     }
 
-    private string? GetOldSubtitleCachePath(string path, int streamIndex, string outputSubtitleExtension)
+    private string? GetOldSubtitleCachePath(string? path, int streamIndex, string outputSubtitleExtension)
     {
+        if (path is null)
+        {
+            return null;
+        }
+
         DateTime? date;
         try
         {

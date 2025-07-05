@@ -27,7 +27,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private readonly IPlaylistManager _playlistManager;
     private readonly ILogger<CleanupCollectionAndPlaylistPathsTask> _logger;
     private readonly IProviderManager _providerManager;
-    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanupCollectionAndPlaylistPathsTask"/> class.
@@ -37,21 +36,18 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
         ILocalizationManager localization,
         ICollectionManager collectionManager,
         IPlaylistManager playlistManager,
         ILogger<CleanupCollectionAndPlaylistPathsTask> logger,
-        IProviderManager providerManager,
-        IFileSystem fileSystem)
+        IProviderManager providerManager)
     {
         _localization = localization;
         _collectionManager = collectionManager;
         _playlistManager = playlistManager;
         _logger = logger;
         _providerManager = providerManager;
-        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc />
@@ -135,6 +131,9 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return [new TaskTriggerInfo() { Type = TaskTriggerInfoType.StartupTrigger }];
+        yield return new TaskTriggerInfo
+        {
+            Type = TaskTriggerInfoType.StartupTrigger,
+        };
     }
 }

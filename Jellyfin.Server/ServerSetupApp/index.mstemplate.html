@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>
+        {{#IF isInReportingMode}}
+        ❌
+        {{/IF}}
+        Jellyfin Startup
+    </title>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-content: normal;
+        }
+
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-content: normal;
+        }
+
+        header {
+            height: 5rem;
+            width: 100%;
+        }
+
+        header svg {
+            height: 3rem;
+            width: 9rem;
+            margin-right: 1rem;
+        }
+
+        /* ol.action-list {
+            list-style-type: none;
+            position: relative;
+        } */
+
+        ol.action-list * {
+            font-family: monospace;
+            font-weight: 300;
+            font-size: clamp(18px, 100vw / var(--width), 20px);
+            font-feature-settings: 'onum', 'pnum';
+            line-height: 1.8;
+            -webkit-text-size-adjust: none;
+        }
+
+        /*
+        ol.action-list li {
+            padding-top: .5rem;
+        }
+
+        ol.action-list li::before {
+            position: absolute;
+            left: -0.8em;
+            font-size: 1.1em;
+        } */
+
+        /* Attribution as heavily inspired by: https://iamkate.com/code/tree-views/ */
+        .action-list {
+            --spacing: 1.4rem;
+            --radius: 14px;
+        }
+
+        .action-list li {
+            display: block;
+            position: relative;
+            padding-left: calc(2 * var(--spacing) - var(--radius) - 1px);
+        }
+
+        .action-list ul {
+            margin-left: calc(var(--radius) - var(--spacing));
+            padding-left: 0;
+        }
+
+        .action-list ul li {
+            border-left: 2px solid #ddd;
+        }
+
+        .action-list ul li:last-child {
+            border-color: transparent;
+        }
+
+        .action-list ul li::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: calc(var(--spacing) / -2);
+            left: -2px;
+            width: calc(var(--spacing) + 2px);
+            height: calc(var(--spacing) + 1px);
+            border: solid #ddd;
+            border-width: 0 0 2px 2px;
+        }
+
+        .action-list summary {
+            display: block;
+            cursor: pointer;
+        }
+
+        .action-list summary::marker,
+        .action-list summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .action-list summary:focus {
+            outline: none;
+        }
+
+        .action-list summary:focus-visible {
+            outline: 1px dotted #000;
+        }
+
+        .action-list li::after,
+        .action-list summary::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: calc(var(--spacing) / 2 - var(--radius) + 4px);
+            left: calc(var(--spacing) - var(--radius) - -5px);
+        }
+
+        .action-list summary::before {
+            z-index: 1;
+            /* background: #696 url('expand-collapse.svg') 0 0; */
+        }
+
+        .action-list details[open]>summary::before {
+            background-position: calc(-2 * var(--radius)) 0;
+        }
+
+        .action-list li.danger-item::after,
+        .action-list li.danger-strong-item::after {
+            content: '❌';
+        }
+
+        ol.action-list li span.danger-strong-item {
+            text-decoration-style: solid;
+            text-decoration-color: red;
+            text-decoration-line: underline;
+        }
+
+        ol.action-list li.warn-item::after {
+            content: '⚠️';
+        }
+
+        ol.action-list li.success-item::after {
+            content: '✅';
+        }
+
+        ol.action-list li.info-item::after {
+            content: '🔹';
+        }
+
+        /* End Attribution */
+    </style>
+</head>
+
+<body>
+    <div>
+        <header class="flex-row">
+
+            {{^IF isInReportingMode}}
+            <p>Jellyfin Server still starting. Please wait.</p>
+            {{#ELSE}}
+            <p>Jellyfin Server has encountered an error and was not able to start.</p>
+            {{/ELSE}}
+            {{/IF}}
+
+            {{#IF localNetworkRequest}}
+            <p style="margin-left: 1rem;">You can download the current log file <a href='/startup/logger'
+                    target="_blank">here</a>.</p>
+            {{/IF}}
+        </header>
+
+        {{#DECLARE LogEntry |--}}
+        {{#LET children = Children}}
+        <li class="{{FormatLogLevel(children).ToString()}}-item">
+            {{--| #IF children.Count > 0}}
+            <details open>
+                <summary>{{DateOfCreation}} - {{Content}}</summary>
+                <ul class="action-list">
+                    {{--| #EACH children.Reverse() |-}}
+                    {{#IMPORT 'LogEntry'}}
+                    {{--| /EACH |-}}
+                </ul>
+            </details>
+            {{--| #ELSE |-}}
+            <span class="{{FormatLogLevel(children).ToString()}}-item">{{DateOfCreation}} - {{Content}}</span>
+            {{--| /ELSE |--}}
+            {{--| /IF |-}}
+        </li>
+        {{--| /DECLARE}}
+
+        {{#IF localNetworkRequest}}
+        <div class="flex-col">
+            <ol class="action-list">
+                {{#FOREACH log IN logs.Reverse()}}
+                {{#IMPORT 'LogEntry' #WITH log}}
+                {{/FOREACH}}
+            </ol>
+        </div>
+        {{#ELSE}}
+        <p>Please visit this page from your local network to view detailed startup logs.</p>
+        {{/ELSE}}
+        {{/IF}}
+    </div>
+</body>
+
+{{^IF isInReportingMode}}
+<script>
+    setTimeout(() => {
+        window.location.reload();
+    }, {{ retryValue.TotalMilliseconds }});
+</script>
+{{/IF}}
+
+</html>

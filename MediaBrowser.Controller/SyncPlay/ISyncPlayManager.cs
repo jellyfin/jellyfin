@@ -20,7 +20,8 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session that's creating the group.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
+        /// <returns>The newly created group.</returns>
+        GroupInfoDto NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to a group.
@@ -45,6 +46,14 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="request">The request.</param>
         /// <returns>The list of available groups.</returns>
         List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request);
+
+        /// <summary>
+        /// Gets available groups for a session by id.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <param name="groupId">The group id.</param>
+        /// <returns>The groups or null.</returns>
+        GroupInfoDto GetGroup(SessionInfo session, Guid groupId);
 
         /// <summary>
         /// Handle a request by a session in a group.

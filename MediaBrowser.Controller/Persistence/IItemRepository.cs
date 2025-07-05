@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -102,4 +103,11 @@ public interface IItemRepository
     IReadOnlyList<string> GetGenreNames();
 
     IReadOnlyList<string> GetAllArtistNames();
+
+    /// <summary>
+    /// Checks if an item has been persisted to the database.
+    /// </summary>
+    /// <param name="id">The id to check.</param>
+    /// <returns>True if the item exists, otherwise false.</returns>
+    Task<bool> ItemExistsAsync(Guid id);
 }

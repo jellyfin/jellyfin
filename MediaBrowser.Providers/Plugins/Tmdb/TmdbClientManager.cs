@@ -374,7 +374,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The TMDb tv show information.</returns>
         public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, int year = 0, CancellationToken cancellationToken = default)
         {
-            var key = $"searchseries-{name}-{language}";
+            var key = $"searchseries-{name}-{year.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out SearchContainer<SearchTv>? series) && series is not null)
             {
                 return series.Results;

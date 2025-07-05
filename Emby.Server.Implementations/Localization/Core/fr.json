@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Analyse des segments de média",
     "TaskMoveTrickplayImages": "Changer l'emplacement des images Trickplay",
     "TaskExtractMediaSegmentsDescription": "Extrait ou obtient des segments de média à partir des plugins compatibles avec MediaSegment.",
-    "TaskMoveTrickplayImagesDescription": "Déplace les fichiers trickplay existants en fonction des paramètres de la bibliothèque."
+    "TaskMoveTrickplayImagesDescription": "Déplace les fichiers trickplay existants en fonction des paramètres de la bibliothèque.",
+    "CleanupUserDataTaskDescription": "Nettoie toutes les données utilisateur (état de la montre, statut favori, etc.) des supports qui ne sont plus présents depuis au moins 90 jours.",
+    "CleanupUserDataTask": "Tâche de nettoyage des données utilisateur"
 }

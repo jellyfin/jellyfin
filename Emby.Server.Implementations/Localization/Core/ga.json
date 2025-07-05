@@ -135,5 +135,7 @@
     "TaskUpdatePlugins": "Nuashonraigh Breiseáin",
     "TaskCleanTranscodeDescription": "Scriostar comhaid traschódaithe níos mó ná lá amháin d'aois.",
     "TaskCleanTranscode": "Eolaire Transcode Glan",
-    "TaskDownloadMissingSubtitles": "Íosluchtaigh fotheidil ar iarraidh"
+    "TaskDownloadMissingSubtitles": "Íosluchtaigh fotheidil ar iarraidh",
+    "CleanupUserDataTask": "Tasc glantacháin sonraí úsáideora",
+    "CleanupUserDataTaskDescription": "Glanann sé gach sonraí úsáideora (stádas faire, stádas is fearr leat srl.) ó mheáin nach bhfuil i láthair a thuilleadh ar feadh 90 lá ar a laghad."
 }

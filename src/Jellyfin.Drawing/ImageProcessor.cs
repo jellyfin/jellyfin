@@ -34,7 +34,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private const char Version = '3';
 
     private static readonly HashSet<string> _transparentImageTypes
-        = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
+        = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
 
     private readonly ILogger<ImageProcessor> _logger;
     private readonly IFileSystem _fileSystem;
@@ -524,11 +524,11 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// <inheritdoc />
     public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
     {
-        _logger.LogInformation("Creating image collage and saving to {Path}", options.OutputPath);
+        _logger.LogDebug("Creating image collage and saving to {Path}", options.OutputPath);
 
         _imageEncoder.CreateImageCollage(options, libraryName);
 
-        _logger.LogInformation("Completed creation of image collage and saved to {Path}", options.OutputPath);
+        _logger.LogDebug("Completed creation of image collage and saved to {Path}", options.OutputPath);
     }
 
     /// <inheritdoc />

@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Skanning av mediesegment",
     "TaskExtractMediaSegmentsDescription": "Extraherar eller hämtar ut mediesegmen från tillägg som stöder MediaSegment.",
     "TaskMoveTrickplayImages": "Migrera platsen för Trickplay-bilder",
-    "TaskMoveTrickplayImagesDescription": "Flyttar befintliga trickplay-filer enligt bibliotekets inställningar."
+    "TaskMoveTrickplayImagesDescription": "Flyttar befintliga trickplay-filer enligt bibliotekets inställningar.",
+    "CleanupUserDataTaskDescription": "Tar bort all användardata (såsom vad du sett, favoriter med mera) för media som inte funnits på enheten på minst 90 dagar.",
+    "CleanupUserDataTask": "Uppgift för rensning av användardata"
 }

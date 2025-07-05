@@ -221,7 +221,7 @@ namespace Jellyfin.LiveTv
                     try
                     {
                         dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
-                        dto.ParentPrimaryImageItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentPrimaryImageItemId = program.Id;
                     }
                     catch (Exception ex)
                     {
@@ -327,7 +327,7 @@ namespace Jellyfin.LiveTv
                     try
                     {
                         dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
-                        dto.ParentPrimaryImageItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentPrimaryImageItemId = program.Id;
                     }
                     catch (Exception ex)
                     {

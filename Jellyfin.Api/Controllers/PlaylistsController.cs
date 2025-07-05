@@ -450,22 +450,41 @@ public class PlaylistsController : BaseJellyfinApiController
     {
         var callingUserId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylistForUser(Guid.Parse(playlistId), callingUserId);
-        if (playlist is null)
+        if (!callingUserId.IsEmpty())
         {
-            return NotFound("Playlist not found");
+            var playlist = _playlistManager.GetPlaylistForUser(Guid.Parse(playlistId), callingUserId);
+            if (playlist is null)
+            {
+                return NotFound("Playlist not found");
+            }
+
+            var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+                              || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+            if (!isPermitted)
+            {
+                return Forbid();
+            }
+        }
+        else
+        {
+            var isApiKey = User.GetIsApiKey();
+
+            if (!isApiKey)
+            {
+                return Forbid();
+            }
         }
 
-        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
-
-        if (!isPermitted)
+        try
         {
-            return Forbid();
+            await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
+            return NoContent();
         }
-
-        await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
-        return NoContent();
+        catch (ArgumentException)
+        {
+            return NotFound();
+        }
     }
 
     /// <summary>

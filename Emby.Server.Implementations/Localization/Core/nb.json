@@ -1,6 +1,6 @@
 {
     "Albums": "Album",
-    "AppDeviceValues": "App:{0}, Enhet: {1}",
+    "AppDeviceValues": "App: {0}, Enhet: {1}",
     "Application": "Program",
     "Artists": "Artister",
     "AuthenticationSucceededWithUserName": "{0} har logget inn",
@@ -30,7 +30,7 @@
     "ItemAddedWithName": "{0} ble lagt til i biblioteket",
     "ItemRemovedWithName": "{0} ble fjernet fra biblioteket",
     "LabelIpAddressValue": "IP-adresse: {0}",
-    "LabelRunningTimeValue": "Spilletid {0}",
+    "LabelRunningTimeValue": "Spilletid: {0}",
     "Latest": "Siste",
     "MessageApplicationUpdated": "Jellyfin-serveren har blitt oppdatert",
     "MessageApplicationUpdatedTo": "Jellyfin-serveren ble oppdatert til {0}",

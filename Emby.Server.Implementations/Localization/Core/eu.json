@@ -135,5 +135,7 @@
     "TaskExtractMediaSegmentsDescription": "Media segmentuak atera edo lortzen ditu MediaSegment gaituta duten pluginetik.",
     "TaskMoveTrickplayImages": "Aldatu Trickplay irudien kokalekua",
     "TaskMoveTrickplayImagesDescription": "Lehendik dauden trickplay fitxategiak liburutegiaren ezarpenen arabera mugitzen dira.",
-    "TaskAudioNormalizationDescription": "Audio normalizazio datuak lortzeko fitxategiak eskaneatzen ditu."
+    "TaskAudioNormalizationDescription": "Audio normalizazio datuak lortzeko fitxategiak eskaneatzen ditu.",
+    "CleanupUserDataTaskDescription": "Gutxienez 90 egunez dagoeneko existitzen ez den multimediatik erabiltzaile-datu guztiak (ikusteko egoera, gogokoen egoera, etab.) garbitzen ditu.",
+    "CleanupUserDataTask": "Erabiltzaileen datuak garbitzeko zeregina"
 }

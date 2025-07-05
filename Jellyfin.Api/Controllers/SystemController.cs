@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SystemInfoDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -70,6 +70,19 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
         => _systemManager.GetSystemInfo(Request);
+
+    /// <summary>
+    /// Gets information about the server.
+    /// </summary>
+    /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
+    [HttpGet("Info/Storage")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<SystemStorageDto> GetSystemStorage()
+        => Ok(SystemStorageDto.FromSystemStorageInfo(_systemManager.GetSystemStorageInfo()));
 
     /// <summary>
     /// Gets public information about the server.

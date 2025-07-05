@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "Presunúť umiestnenie obrázkov Trickplay",
     "TaskMoveTrickplayImagesDescription": "Presunie existujúce súbory Trickplay podľa nastavení knižnice.",
     "TaskDownloadMissingLyrics": "Stiahnuť chýbajúce texty piesní",
-    "TaskDownloadMissingLyricsDescription": "Stiahne texty pre piesne"
+    "TaskDownloadMissingLyricsDescription": "Stiahne texty pre piesne",
+    "CleanupUserDataTask": "Prečistiť používateľské dáta",
+    "CleanupUserDataTaskDescription": "Vyčistí všetky dáta používateľa (stav sledovania, stav obľúbených atď.) z médií, ktoré už neexistujú aspoň 90 dní."
 }

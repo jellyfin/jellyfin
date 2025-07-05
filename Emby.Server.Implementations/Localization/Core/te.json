@@ -51,5 +51,13 @@
     "Latest": "తాజా",
     "NameInstallFailed": "{0} ఇన్‌స్టాలేషన్ విఫలమైంది",
     "NameSeasonUnknown": "భాగం తెలియదు",
-    "NotificationOptionApplicationUpdateAvailable": "అప్లికేషన్ అప్‌డేట్ అందుబాటులో ఉంది"
+    "NotificationOptionApplicationUpdateAvailable": "అప్లికేషన్ అప్‌డేట్ అందుబాటులో ఉంది",
+    "NameSeasonNumber": "సీజన్ {0}",
+    "NotificationOptionAudioPlaybackStopped": "ఆడియో ఆడటం ఆగిపోయింది",
+    "NotificationOptionNewLibraryContent": "కొత్త కంటెంట్ జోడించబడింది",
+    "MixedContent": "వివిధ రకాల కంటెంట్",
+    "NotificationOptionAudioPlayback": "ఆడియో ప్లే కావడం మొదలైంది",
+    "NotificationOptionCameraImageUploaded": "కెమెరా చిత్రాన్ని అప్లోడ్ చేశారు",
+    "NotificationOptionInstallationFailed": "ఇన్స్టాలేషన్ విఫలమైంది",
+    "NotificationOptionServerRestartRequired": "సర్వర్ రీస్టార్ట్ అవసరం"
 }

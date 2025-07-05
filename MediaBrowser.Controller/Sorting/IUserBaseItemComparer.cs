@@ -26,6 +26,6 @@ namespace MediaBrowser.Controller.Sorting
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        IUserDataManager UserDataRepository { get; set; }
+        IUserDataManager UserDataManager { get; set; }
     }
 }

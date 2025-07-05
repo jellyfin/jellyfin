@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Skenování segmentů médií",
     "TaskExtractMediaSegmentsDescription": "Extrahuje či získá segmenty médií pomocí zásuvných modulů MediaSegment.",
     "TaskMoveTrickplayImages": "Přesunout úložiště obrázků Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny."
+    "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny.",
+    "CleanupUserDataTaskDescription": "Odstraní všechna uživatelská data (stav zhlédnutí, oblíbené atd.) z médií, které již neexistují více než 90 dní.",
+    "CleanupUserDataTask": "Pročistit uživatelská data"
 }

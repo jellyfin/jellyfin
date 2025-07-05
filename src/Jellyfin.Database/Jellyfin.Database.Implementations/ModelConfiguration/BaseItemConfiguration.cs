@@ -1,3 +1,4 @@
+using System;
 using Jellyfin.Database.Implementations.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -24,7 +25,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.MediaStreams);
         builder.HasMany(e => e.Chapters);
         builder.HasMany(e => e.Provider);
-        builder.HasMany(e => e.ParentAncestors);
+        builder.HasMany(e => e.Parents);
         builder.HasMany(e => e.Children);
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
@@ -53,5 +54,12 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => new { e.IsFolder, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
+
+        builder.HasData(new BaseItemEntity()
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            Type = "PLACEHOLDER",
+            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+        });
     }
 }

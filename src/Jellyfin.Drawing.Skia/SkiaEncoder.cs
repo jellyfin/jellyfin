@@ -27,6 +27,16 @@ public class SkiaEncoder : IImageEncoder
     private static readonly SKImageFilter _imageFilter;
     private static readonly SKTypeface[] _typefaces;
 
+    /// <summary>
+    /// The default sampling options, equivalent to old high quality filter settings when upscaling.
+    /// </summary>
+    public static readonly SKSamplingOptions UpscaleSamplingOptions;
+
+    /// <summary>
+    /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
+    /// </summary>
+    public static readonly SKSamplingOptions DefaultSamplingOptions;
+
 #pragma warning disable CA1810
     static SkiaEncoder()
 #pragma warning restore CA1810
@@ -63,6 +73,11 @@ public class SkiaEncoder : IImageEncoder
             SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ي'), // Arabic
             SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) // Default font
         ];
+
+        // use cubic for upscaling
+        UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
+        // use bilinear for everything else
+        DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
     }
 
     /// <summary>
@@ -441,7 +456,7 @@ public class SkiaEncoder : IImageEncoder
                     break;
             }
 
-            surface.DrawBitmap(bitmap, 0, 0);
+            surface.DrawBitmap(bitmap, 0, 0, DefaultSamplingOptions);
             return rotated;
         }
         catch (Exception e)
@@ -467,18 +482,23 @@ public class SkiaEncoder : IImageEncoder
     {
         using var surface = SKSurface.Create(targetInfo);
         using var canvas = surface.Canvas;
-        using var paint = new SKPaint
-        {
-            FilterQuality = SKFilterQuality.High,
-            IsAntialias = isAntialias,
-            IsDither = isDither
-        };
+        using var paint = new SKPaint();
+        paint.IsAntialias = isAntialias;
+        paint.IsDither = isDither;
+
+        // Historically, kHigh implied cubic filtering, but only when upsampling.
+        // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
+        // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
+        var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
+            ? DefaultSamplingOptions
+            : UpscaleSamplingOptions;
 
         paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),
             SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+            samplingOptions,
             paint);
 
         return surface.Snapshot();
@@ -560,11 +580,10 @@ public class SkiaEncoder : IImageEncoder
         using var paint = new SKPaint();
         // Add blur if option is present
         using var filter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null;
-        paint.FilterQuality = SKFilterQuality.High;
         paint.ImageFilter = filter;
 
         // create image from resized bitmap to apply blur
-        canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
+        canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), DefaultSamplingOptions, paint);
 
         // If foreground layer present then draw
         if (hasForegroundColor)
@@ -690,7 +709,7 @@ public class SkiaEncoder : IImageEncoder
                     throw new InvalidOperationException("Image height does not match first image height.");
                 }
 
-                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value);
+                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value, DefaultSamplingOptions);
             }
         }
 

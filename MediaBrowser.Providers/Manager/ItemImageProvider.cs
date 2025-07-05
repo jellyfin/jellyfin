@@ -377,6 +377,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         // Nothing to do, already gone
                     }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // Nothing to do, already gone
+                    }
                     catch (UnauthorizedAccessException ex)
                     {
                         _logger.LogWarning(ex, "Unable to delete {Image}", image.Path);

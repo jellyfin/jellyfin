@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
@@ -30,7 +33,6 @@ namespace Emby.Server.Implementations.AppBase
             ConfigurationDirectoryPath = configurationDirectoryPath;
             CachePath = cacheDirectoryPath;
             WebPath = webDirectoryPath;
-
             DataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
         }
 
@@ -75,5 +77,47 @@ namespace Emby.Server.Implementations.AppBase
 
         /// <inheritdoc />
         public string TrickplayPath => Path.Combine(DataPath, "trickplay");
+
+        /// <inheritdoc />
+        public string BackupPath => Path.Combine(DataPath, "backups");
+
+        /// <inheritdoc />
+        public virtual void MakeSanityCheckOrThrow()
+        {
+            CreateAndCheckMarker(ConfigurationDirectoryPath, "config");
+            CreateAndCheckMarker(LogDirectoryPath, "log");
+            CreateAndCheckMarker(PluginsPath, "plugin");
+            CreateAndCheckMarker(ProgramDataPath, "data");
+            CreateAndCheckMarker(CachePath, "cache");
+            CreateAndCheckMarker(DataPath, "data");
+        }
+
+        /// <inheritdoc />
+        public void CreateAndCheckMarker(string path, string markerName, bool recursive = false)
+        {
+            Directory.CreateDirectory(path);
+
+            CheckOrCreateMarker(path, $".jellyfin-{markerName}", recursive);
+        }
+
+        private IEnumerable<string> GetMarkers(string path, bool recursive = false)
+        {
+            return Directory.EnumerateFiles(path, ".jellyfin-*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
+
+        private void CheckOrCreateMarker(string path, string markerName, bool recursive = false)
+        {
+            var otherMarkers = GetMarkers(path, recursive).FirstOrDefault(e => Path.GetFileName(e) != markerName);
+            if (otherMarkers != null)
+            {
+                throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");
+            }
+
+            var markerPath = Path.Combine(path, markerName);
+            if (!File.Exists(markerPath))
+            {
+                FileHelper.CreateEmpty(markerPath);
+            }
+        }
     }
 }

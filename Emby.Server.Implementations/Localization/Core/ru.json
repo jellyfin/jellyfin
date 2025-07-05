@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "Перенесение местоположения изображений Trickplay",
     "TaskExtractMediaSegments": "Сканирование медиасегментов",
     "TaskExtractMediaSegmentsDescription": "Извлекает или получает медиасегменты из плагинов MediaSegment.",
-    "TaskMoveTrickplayImagesDescription": "Перемещает существующие файлы trickplay в соответствии с настройками медиатеки."
+    "TaskMoveTrickplayImagesDescription": "Перемещает существующие файлы trickplay в соответствии с настройками медиатеки.",
+    "CleanupUserDataTask": "Задача очистки пользовательских данных",
+    "CleanupUserDataTaskDescription": "Очищает все пользовательские данные (состояние просмотра, статус избранного и т.д.) с медиа, отсутствующих по меньшей мере в течение 90 дней."
 }

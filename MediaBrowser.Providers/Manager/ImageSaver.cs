@@ -483,6 +483,22 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            if (type == ImageType.Logo && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                        ? "-specials"
+                                        : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-logo" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
             string filename;
             var folderName = item is MusicAlbum ||
                 item is MusicArtist ||

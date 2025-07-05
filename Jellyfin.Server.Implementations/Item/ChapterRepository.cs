@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dto;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,19 +29,7 @@ public class ChapterRepository : IChapterRepository
         _imageProcessor = imageProcessor;
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
-    public ChapterInfo? GetChapter(BaseItemDto baseItem, int index)
-    {
-        return GetChapter(baseItem.Id, index);
-    }
-
-    /// <inheritdoc cref="IChapterRepository"/>
-    public IReadOnlyList<ChapterInfo> GetChapters(BaseItemDto baseItem)
-    {
-        return GetChapters(baseItem.Id);
-    }
-
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -62,7 +48,7 @@ public class ChapterRepository : IChapterRepository
         return null;
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public IReadOnlyList<ChapterInfo> GetChapters(Guid baseItemId)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -77,7 +63,7 @@ public class ChapterRepository : IChapterRepository
             .ToArray();
     }
 
-    /// <inheritdoc cref="IChapterRepository"/>
+    /// <inheritdoc />
     public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -93,6 +79,14 @@ public class ChapterRepository : IChapterRepository
             context.SaveChanges();
             transaction.Commit();
         }
+    }
+
+    /// <inheritdoc />
+    public void DeleteChapters(Guid itemId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        context.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDelete();
+        context.SaveChanges();
     }
 
     private Chapter Map(ChapterInfo chapterInfo, int index, Guid itemId)
@@ -118,7 +112,12 @@ public class ChapterRepository : IChapterRepository
             ImagePath = chapterInfo.ImagePath,
             Name = chapterInfo.Name,
         };
-        chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
+
+        if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
+        {
+            chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
+        }
+
         return chapterEntity;
     }
 }

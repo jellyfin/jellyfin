@@ -14,8 +14,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public partial class EncoderValidator
     {
-        private static readonly string[] _requiredDecoders = new[]
-        {
+        private static readonly string[] _requiredDecoders =
+        [
             "h264",
             "hevc",
             "vp8",
@@ -57,10 +57,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vp8_rkmpp",
             "vp9_rkmpp",
             "av1_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredEncoders = new[]
-        {
+        private static readonly string[] _requiredEncoders =
+        [
             "libx264",
             "libx265",
             "libsvtav1",
@@ -97,10 +97,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_rkmpp",
             "hevc_rkmpp",
             "mjpeg_rkmpp"
-        };
+        ];
 
-        private static readonly string[] _requiredFilters = new[]
-        {
+        private static readonly string[] _requiredFilters =
+        [
             // sw
             "alphasrc",
             "zscale",
@@ -123,6 +123,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "tonemap_opencl",
             "overlay_opencl",
             "transpose_opencl",
+            "yadif_opencl",
+            "bwdif_opencl",
             // vaapi
             "scale_vaapi",
             "deinterlace_vaapi",
@@ -148,17 +150,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "scale_rkrga",
             "vpp_rkrga",
             "overlay_rkrga"
-        };
+        ];
 
-        private static readonly Dictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
+        private static readonly Dictionary<FilterOptionType, (string, string)> _filterOptionsDict = new Dictionary<FilterOptionType, (string, string)>
         {
-            { 0, new string[] { "scale_cuda", "format" } },
-            { 1, new string[] { "tonemap_cuda", "GPU accelerated HDR to SDR tonemapping" } },
-            { 2, new string[] { "tonemap_opencl", "bt2390" } },
-            { 3, new string[] { "overlay_opencl", "Action to take when encountering EOF from secondary input" } },
-            { 4, new string[] { "overlay_vaapi", "Action to take when encountering EOF from secondary input" } },
-            { 5, new string[] { "overlay_vulkan", "Action to take when encountering EOF from secondary input" } },
-            { 6, new string[] { "transpose_opencl", "rotate by half-turn" } }
+            { FilterOptionType.ScaleCudaFormat, ("scale_cuda", "format") },
+            { FilterOptionType.TonemapCudaName, ("tonemap_cuda", "GPU accelerated HDR to SDR tonemapping") },
+            { FilterOptionType.TonemapOpenclBt2390, ("tonemap_opencl", "bt2390") },
+            { FilterOptionType.OverlayOpenclFrameSync, ("overlay_opencl", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.OverlayVaapiFrameSync, ("overlay_vaapi", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.OverlayVulkanFrameSync, ("overlay_vulkan", "Action to take when encountering EOF from secondary input") },
+            { FilterOptionType.TransposeOpenclReversal, ("transpose_opencl", "rotate by half-turn") },
+            { FilterOptionType.OverlayOpenclAlphaFormat, ("overlay_opencl", "alpha_format") },
+            { FilterOptionType.OverlayCudaAlphaFormat, ("overlay_cuda", "alpha_format") }
         };
 
         private static readonly Dictionary<BitStreamFilterOptionType, (string, string)> _bsfOptionsDict = new Dictionary<BitStreamFilterOptionType, (string, string)>
@@ -294,7 +298,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public IEnumerable<string> GetFilters() => GetFFmpegFilters();
 
-        public IDictionary<int, bool> GetFiltersWithOption() => GetFFmpegFiltersWithOption();
+        public IDictionary<FilterOptionType, bool> GetFiltersWithOption() => _filterOptionsDict
+            .ToDictionary(item => item.Key, item => CheckFilterWithOption(item.Value.Item1, item.Value.Item2));
 
         public IDictionary<BitStreamFilterOptionType, bool> GetBitStreamFiltersWithOption() => _bsfOptionsDict
             .ToDictionary(item => item.Key, item => CheckBitStreamFilterWithOption(item.Value.Item1, item.Value.Item2));
@@ -471,10 +476,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
-            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
@@ -580,12 +585,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
@@ -610,12 +615,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available filters");
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var found = FilterRegex()
@@ -626,20 +631,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger.LogInformation("Available filters: {Filters}", found);
 
             return found;
-        }
-
-        private Dictionary<int, bool> GetFFmpegFiltersWithOption()
-        {
-            Dictionary<int, bool> dict = new Dictionary<int, bool>();
-            for (int i = 0; i < _filterOptionsDict.Count; i++)
-            {
-                if (_filterOptionsDict.TryGetValue(i, out var val) && val.Length == 2)
-                {
-                    dict.Add(i, CheckFilterWithOption(val[0], val[1]));
-                }
-            }
-
-            return dict;
         }
 
         private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)

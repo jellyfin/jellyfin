@@ -75,6 +75,8 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
             var videos = _libraryManager.GetItemList(query);
             foreach (var video in videos)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // Only local files supported
                 var path = video.Path;
                 if (File.Exists(path))

@@ -46,16 +46,6 @@ namespace MediaBrowser.Model.SyncPlay
         GroupDoesNotExist,
 
         /// <summary>
-        /// The create-group-denied error. Sent when a user tries to create a group without required permissions.
-        /// </summary>
-        CreateGroupDenied,
-
-        /// <summary>
-        /// The join-group-denied error. Sent when a user tries to join a group without required permissions.
-        /// </summary>
-        JoinGroupDenied,
-
-        /// <summary>
         /// The library-access-denied error. Sent when a user tries to join a group without required access to the library.
         /// </summary>
         LibraryAccessDenied

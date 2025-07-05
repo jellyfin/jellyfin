@@ -300,7 +300,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 if (!season.LockedFields.Contains(MetadataField.Tags))
                 {
-                    season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                    season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
 
                 season.OnMetadataChanged();
@@ -317,7 +317,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                     if (!ep.LockedFields.Contains(MetadataField.Tags))
                     {
-                        ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                        ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                     }
 
                     ep.OnMetadataChanged();
@@ -338,7 +338,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 if (!ep.LockedFields.Contains(MetadataField.Tags))
                 {
-                    ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                    ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
 
                 ep.OnMetadataChanged();
@@ -358,7 +358,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 if (!track.LockedFields.Contains(MetadataField.Tags))
                 {
-                    track.Tags = track.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                    track.Tags = track.Tags.Concat(addedTags).Except(removedTags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
 
                 track.OnMetadataChanged();

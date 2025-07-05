@@ -9,119 +9,114 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.Library.Validators
+namespace Emby.Server.Implementations.Library.Validators;
+
+/// <summary>
+/// Class PeopleValidator.
+/// </summary>
+public class PeopleValidator
 {
     /// <summary>
-    /// Class PeopleValidator.
+    /// The _library manager.
     /// </summary>
-    public class PeopleValidator
+    private readonly ILibraryManager _libraryManager;
+
+    /// <summary>
+    /// The _logger.
+    /// </summary>
+    private readonly ILogger _logger;
+
+    private readonly IFileSystem _fileSystem;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PeopleValidator" /> class.
+    /// </summary>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="fileSystem">The file system.</param>
+    public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
     {
-        /// <summary>
-        /// The _library manager.
-        /// </summary>
-        private readonly ILibraryManager _libraryManager;
+        _libraryManager = libraryManager;
+        _logger = logger;
+        _fileSystem = fileSystem;
+    }
 
-        /// <summary>
-        /// The _logger.
-        /// </summary>
-        private readonly ILogger _logger;
+    /// <summary>
+    /// Validates the people.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="progress">The progress.</param>
+    /// <returns>Task.</returns>
+    public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+    {
+        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
 
-        private readonly IFileSystem _fileSystem;
+        var numComplete = 0;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PeopleValidator" /> class.
-        /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The file system.</param>
-        public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
+        var numPeople = people.Count;
+
+        _logger.LogDebug("Will refresh {Amount} people", numPeople);
+
+        foreach (var person in people)
         {
-            _libraryManager = libraryManager;
-            _logger = logger;
-            _fileSystem = fileSystem;
-        }
+            cancellationToken.ThrowIfCancellationRequested();
 
-        /// <summary>
-        /// Validates the people.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
-
-            var numComplete = 0;
-
-            var numPeople = people.Count;
-
-            _logger.LogDebug("Will refresh {0} people", numPeople);
-
-            foreach (var person in people)
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
+                var item = _libraryManager.GetPerson(person);
+                if (item is null)
                 {
-                    var item = _libraryManager.GetPerson(person);
-                    if (item is null)
-                    {
-                        _logger.LogWarning("Failed to get person: {Name}", person);
-                        continue;
-                    }
-
-                    var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                    {
-                        ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
-                        MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
-                    };
-
-                    await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error validating IBN entry {Person}", person);
+                    _logger.LogWarning("Failed to get person: {Name}", person);
+                    continue;
                 }
 
-                // Update progress
-                numComplete++;
-                double percent = numComplete;
-                percent /= numPeople;
+                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
+                    MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
+                };
 
-                progress.Report(100 * percent);
+                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating IBN entry {Person}", person);
             }
 
-            var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = [BaseItemKind.Person],
-                IsDeadPerson = true,
-                IsLocked = false
-            });
+            // Update progress
+            numComplete++;
+            double percent = numComplete;
+            percent /= numPeople;
 
-            foreach (var item in deadEntities)
-            {
-                _logger.LogInformation(
-                    "Deleting dead {2} {0} {1}.",
-                    item.Id.ToString("N", CultureInfo.InvariantCulture),
-                    item.Name,
-                    item.GetType().Name);
-
-                _libraryManager.DeleteItem(
-                    item,
-                    new DeleteOptions
-                    {
-                        DeleteFileLocation = false
-                    },
-                    false);
-            }
-
-            progress.Report(100);
-
-            _logger.LogInformation("People validation complete");
+            progress.Report(100 * percent);
         }
+
+        var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Person],
+            IsDeadPerson = true,
+            IsLocked = false
+        });
+
+        foreach (var item in deadEntities)
+        {
+            _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
+
+            _libraryManager.DeleteItem(
+                item,
+                new DeleteOptions
+                {
+                    DeleteFileLocation = false
+                },
+                false);
+        }
+
+        progress.Report(100);
+
+        _logger.LogInformation("People validation complete");
     }
 }

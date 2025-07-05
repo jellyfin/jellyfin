@@ -2,5 +2,10 @@
     "Albums": "辑册",
     "Artists": "艺人",
     "AuthenticationSucceededWithUserName": "{0} 授之权矣",
-    "Books": "册"
+    "Books": "册",
+    "Genres": "类",
+    "HeaderAlbumArtists": "辑者",
+    "Favorites": "至爱",
+    "Folders": "箧",
+    "HeaderContinueWatching": "接目未竟"
 }

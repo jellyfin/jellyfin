@@ -1,0 +1,48 @@
+{
+    "countryCode": "sg",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["PG"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["PG13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["NC16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["R21"],
+            "ratingScore": {
+                "score": 21,
+                "subScore": null
+            }
+        }
+    ]
+}

@@ -26,4 +26,12 @@ public interface IKeyframeRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     Task SaveKeyframeDataAsync(Guid itemId, KeyframeData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes the keyframe data.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    Task DeleteKeyframeDataAsync(Guid itemId, CancellationToken cancellationToken);
 }
