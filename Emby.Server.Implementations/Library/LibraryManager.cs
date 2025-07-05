@@ -2036,7 +2036,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot compute blurhash for {ImagePath}", image.Path);
-                    anyChange = anyChange || !string.Empty.Equals(image.BlurHash, StringComparison.Ordinal);
+                    anyChange = anyChange || !string.IsNullOrEmpty(image.BlurHash);
                     image.BlurHash = string.Empty;
                 }
 
