@@ -1981,6 +1981,8 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
+            var anyChange = false;
+
             foreach (var img in outdated)
             {
                 var image = img;
@@ -2012,6 +2014,7 @@ namespace Emby.Server.Implementations.Library
                 try
                 {
                     size = _imageProcessor.GetImageDimensions(item, image);
+                    anyChange = image.Width != size.Width || image.Height != size.Height;
                     image.Width = size.Width;
                     image.Height = size.Height;
                 }
@@ -2019,23 +2022,29 @@ namespace Emby.Server.Implementations.Library
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
                     size = default;
+                    anyChange = image.Width != size.Width || image.Height != size.Height;
                     image.Width = 0;
                     image.Height = 0;
                 }
 
                 try
                 {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    anyChange = anyChange || !blurhash.Equals(image.BlurHash, StringComparison.Ordinal);
+                    image.BlurHash = blurhash;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot compute blurhash for {ImagePath}", image.Path);
+                    anyChange = anyChange || !string.IsNullOrEmpty(image.BlurHash);
                     image.BlurHash = string.Empty;
                 }
 
                 try
                 {
-                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    var modifiedDate = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    anyChange = anyChange || modifiedDate != image.DateModified;
+                    image.DateModified = modifiedDate;
                 }
                 catch (Exception ex)
                 {
@@ -2043,7 +2052,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.SaveImages(item);
+            if (anyChange)
+            {
+                _itemRepository.SaveImages(item);
+            }
+
             RegisterItem(item);
         }
 
