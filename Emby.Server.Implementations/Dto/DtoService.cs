@@ -1060,7 +1060,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
+                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToArray();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))

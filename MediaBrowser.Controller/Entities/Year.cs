@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -35,9 +36,9 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             list.Insert(0, "Year-" + Name);
             return list;
