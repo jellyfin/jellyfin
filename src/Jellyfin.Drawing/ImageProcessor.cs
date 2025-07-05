@@ -379,6 +379,19 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         => _imageEncoder.GetImageSize(path);
 
     /// <inheritdoc />
+    public bool CanComputeBlurHash(string path)
+    {
+        var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
+        if (extension.Equals("svg", StringComparison.OrdinalIgnoreCase))
+        {
+            // svg files can't compute a blurhash
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <inheritdoc />
     public string GetImageBlurHash(string path)
     {
         var size = GetImageDimensions(path);
