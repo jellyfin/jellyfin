@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -53,6 +54,11 @@ namespace Jellyfin.Server.Implementations.Item;
 public sealed class BaseItemRepository
     : IItemRepository
 {
+    /// <summary>
+    /// Gets the placeholder id for UserData detached items.
+    /// </summary>
+    public static readonly Guid PlaceholderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
     /// <summary>
     /// This holds all the types in the running assemblies
     /// so that we can de-serialize properly when we don't have strong types.
@@ -95,13 +101,21 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public void DeleteItem(Guid id)
     {
-        if (id.IsEmpty())
+        if (id.IsEmpty() || id.Equals(PlaceholderId))
         {
-            throw new ArgumentException("Guid can't be empty", nameof(id));
+            throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(id));
         }
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        var date = (DateTime?)DateTime.UtcNow;
+        // Detach all user watch data
+        context.UserData.Where(e => e.ItemId == id)
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.RetentionDate, date)
+                .SetProperty(f => f.ItemId, PlaceholderId));
+
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
@@ -144,7 +158,7 @@ public sealed class BaseItemRepository
         PrepareFilterQuery(filter);
 
         using var context = _dbProvider.CreateDbContext();
-        return ApplyQueryFilter(context.BaseItems.AsNoTracking(), context, filter).Select(e => e.Id).ToArray();
+        return ApplyQueryFilter(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, filter).Select(e => e.Id).ToArray();
     }
 
     /// <inheritdoc />
@@ -242,7 +256,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -261,7 +275,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyGroupingFilter(dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc/>
@@ -303,7 +317,7 @@ public sealed class BaseItemRepository
         mainquery = ApplyGroupingFilter(mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserialiseBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc />
@@ -319,7 +333,7 @@ public sealed class BaseItemRepository
             .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
             .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
             .Join(
-                context.UserData.AsNoTracking(),
+                context.UserData.AsNoTracking().Where(e => e.ItemId != EF.Constant(PlaceholderId)),
                 i => new { UserId = filter.User.Id, ItemId = i.Id },
                 u => new { UserId = u.UserId, ItemId = u.ItemId },
                 (entity, data) => new { Item = entity, UserData = data })
@@ -472,7 +486,7 @@ public sealed class BaseItemRepository
         cancellationToken.ThrowIfCancellationRequested();
 
         var tuples = new List<(BaseItemDto Item, List<Guid>? AncestorIds, BaseItemDto TopParent, IEnumerable<string> UserDataKey, List<string> InheritedTags)>();
-        foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()))
+        foreach (var item in items.GroupBy(e => e.Id).Select(e => e.Last()).Where(e => e.Id != PlaceholderId))
         {
             var ancestorIds = item.SupportsAncestors ?
                 item.GetAncestorIds().Distinct().ToList() :
@@ -491,6 +505,7 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -511,8 +526,21 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
 
+        foreach (var item in newItems)
+        {
+            // reattach old userData entries
+            var userKeys = item.UserDataKey.ToArray();
+            var retentionDate = (DateTime?)null;
+            context.UserData
+                .Where(e => e.ItemId == PlaceholderId)
+                .Where(e => userKeys.Contains(e.CustomDataKey))
+                .ExecuteUpdate(e => e
+                    .SetProperty(f => f.ItemId, item.Item.Id)
+                    .SetProperty(f => f.RetentionDate, retentionDate));
+        }
+
         var itemValueMaps = tuples
-            .Select(e => (Item: e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
+            .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
             .ToArray();
         var allListedItemValues = itemValueMaps
             .SelectMany(f => f.Values)
@@ -539,7 +567,7 @@ public sealed class BaseItemRepository
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
-            .Select(f => (Item: f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
@@ -627,7 +655,7 @@ public sealed class BaseItemRepository
             return null;
         }
 
-        return DeserialiseBaseItem(item);
+        return DeserializeBaseItem(item);
     }
 
     /// <summary>
@@ -673,12 +701,12 @@ public sealed class BaseItemRepository
         dto.TotalBitrate = entity.TotalBitrate;
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
-        dto.Genres = entity.Genres?.Split('|') ?? [];
-        dto.DateCreated = entity.DateCreated.GetValueOrDefault();
-        dto.DateModified = entity.DateModified.GetValueOrDefault();
+        dto.Genres = string.IsNullOrWhiteSpace(entity.Genres) ? [] : entity.Genres.Split('|');
+        dto.DateCreated = entity.DateCreated ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+        dto.DateModified = entity.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
-        dto.DateLastRefreshed = entity.DateLastRefreshed.GetValueOrDefault();
-        dto.DateLastSaved = entity.DateLastSaved.GetValueOrDefault();
+        dto.DateLastRefreshed = entity.DateLastRefreshed ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+        dto.DateLastSaved = entity.DateLastSaved ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
@@ -705,7 +733,7 @@ public sealed class BaseItemRepository
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
-        dto.Tags = entity.Tags?.Split('|') ?? [];
+        dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
         {
@@ -779,7 +807,7 @@ public sealed class BaseItemRepository
 
         if (dto is Folder folder)
         {
-            folder.DateLastMediaAdded = entity.DateLastMediaAdded;
+            folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         }
 
         return dto;
@@ -839,11 +867,11 @@ public sealed class BaseItemRepository
         entity.ExternalId = dto.ExternalId;
         entity.Size = dto.Size;
         entity.Genres = string.Join('|', dto.Genres);
-        entity.DateCreated = dto.DateCreated;
-        entity.DateModified = dto.DateModified;
+        entity.DateCreated = dto.DateCreated == DateTime.MinValue ? null : dto.DateCreated;
+        entity.DateModified = dto.DateModified == DateTime.MinValue ? null : dto.DateModified;
         entity.ChannelId = dto.ChannelId;
-        entity.DateLastRefreshed = dto.DateLastRefreshed;
-        entity.DateLastSaved = dto.DateLastSaved;
+        entity.DateLastRefreshed = dto.DateLastRefreshed == DateTime.MinValue ? null : dto.DateLastRefreshed;
+        entity.DateLastSaved = dto.DateLastSaved == DateTime.MinValue ? null : dto.DateLastSaved;
         entity.OwnerId = dto.OwnerId.ToString();
         entity.Width = dto.Width;
         entity.Height = dto.Height;
@@ -953,7 +981,7 @@ public sealed class BaseItemRepository
 
         if (dto is Folder folder)
         {
-            entity.DateLastMediaAdded = folder.DateLastMediaAdded;
+            entity.DateLastMediaAdded = folder.DateLastMediaAdded == DateTime.MinValue ? null : folder.DateLastMediaAdded;
             entity.IsFolder = folder.IsFolder;
         }
 
@@ -989,7 +1017,7 @@ public sealed class BaseItemRepository
         return type.GetCustomAttribute<RequiresSourceSerialisationAttribute>() == null;
     }
 
-    private BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
+    private BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
     {
         ArgumentNullException.ThrowIfNull(baseItemEntity, nameof(baseItemEntity));
         if (_serverConfigurationManager?.Configuration is null)
@@ -998,7 +1026,7 @@ public sealed class BaseItemRepository
         }
 
         var typeToSerialise = GetType(baseItemEntity.Type);
-        return BaseItemRepository.DeserialiseBaseItem(
+        return BaseItemRepository.DeserializeBaseItem(
             baseItemEntity,
             _logger,
             _appHost,
@@ -1006,7 +1034,7 @@ public sealed class BaseItemRepository
     }
 
     /// <summary>
-    /// Deserialises a BaseItemEntity and sets all properties.
+    /// Deserializes a BaseItemEntity and sets all properties.
     /// </summary>
     /// <param name="baseItemEntity">The DB entity.</param>
     /// <param name="logger">Logger.</param>
@@ -1014,9 +1042,9 @@ public sealed class BaseItemRepository
     /// <param name="skipDeserialization">If only mapping should be processed.</param>
     /// <returns>A mapped BaseItem.</returns>
     /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
-    public static BaseItemDto DeserialiseBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
+    public static BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
+        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -1032,7 +1060,7 @@ public sealed class BaseItemRepository
 
         if (dto is null)
         {
-            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialise unknown type.");
+            dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         }
 
         return Map(baseItemEntity, dto, appHost);
@@ -1049,7 +1077,7 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = TranslateQuery(context.BaseItems, context, new InternalItemsQuery(filter.User)
+        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
             IncludeItemTypes = filter.IncludeItemTypes,
@@ -1138,7 +1166,7 @@ public sealed class BaseItemRepository
                 IsPlayed = filter.IsPlayed
             };
 
-            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, typeSubQuery)
+            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
                 .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
 
             var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
@@ -1178,7 +1206,7 @@ public sealed class BaseItemRepository
                     .Where(e => e is not null)
                     .Select(e =>
                     {
-                        return (DeserialiseBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
+                        return (DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
                     })
             ];
         }
@@ -1193,7 +1221,7 @@ public sealed class BaseItemRepository
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
                     {
-                        return (DeserialiseBaseItem(e, filter.SkipDeserialization), null);
+                        return (DeserializeBaseItem(e, filter.SkipDeserialization), null);
                     })
             ];
         }
@@ -1274,7 +1302,7 @@ public sealed class BaseItemRepository
         {
             Path = appHost?.ExpandVirtualPath(e.Path) ?? e.Path,
             BlurHash = e.Blurhash is null ? null : Encoding.UTF8.GetString(e.Blurhash),
-            DateModified = e.DateModified,
+            DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
             Height = e.Height,
             Width = e.Width,
             Type = (ImageType)e.ImageType
@@ -1814,7 +1842,7 @@ public sealed class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                baseQuery = baseQuery.Where(e => context.BaseItems
+                baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId))
                     .Where(e => e.IsFolder == false && e.IsVirtualItem == false)
                     .Where(f => f.UserData!.FirstOrDefault(e => e.UserId == filter.User!.Id && e.Played)!.Played)
                     .Any(f => f.SeriesPresentationUniqueKey == e.PresentationUniqueKey) == filter.IsPlayed);
@@ -2064,7 +2092,7 @@ public sealed class BaseItemRepository
         if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
         {
             baseQuery = baseQuery
-                .Where(e => e.ParentId.HasValue && !context.BaseItems.Any(f => f.Id == e.ParentId.Value));
+                .Where(e => e.ParentId.HasValue && !context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)).Any(f => f.Id == e.ParentId.Value));
         }
 
         if (filter.IsDeadArtist.HasValue && filter.IsDeadArtist.Value)
@@ -2145,17 +2173,19 @@ public sealed class BaseItemRepository
         if (filter.ExcludeItemIds.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => !filter.ItemIds.Contains(e.Id));
+                .Where(e => !filter.ExcludeItemIds.Contains(e.Id));
         }
 
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
-            baseQuery = baseQuery.Where(e => !e.Provider!.All(f => !filter.ExcludeProviderIds.All(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
+            var exclude = filter.ExcludeProviderIds.Select(e => $"{e.Key}:{e.Value}").ToArray();
+            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.All(f => !exclude.Contains(f)));
         }
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => !filter.HasAnyProviderId.Any(w => f.ProviderId == w.Key && f.ProviderValue == w.Value)));
+            var include = filter.HasAnyProviderId.Select(e => $"{e.Key}:{e.Value}").ToArray();
+            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => include.Contains(f)));
         }
 
         if (filter.HasImdbId.HasValue)
@@ -2197,7 +2227,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
-                .Where(e => context.BaseItems.Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
+                .Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)).Where(f => f.PresentationUniqueKey == filter.AncestorWithPresentationUniqueKey).Any(f => f.Children!.Any(w => w.ItemId == e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SeriesPresentationUniqueKey))
@@ -2323,5 +2353,15 @@ public sealed class BaseItemRepository
         }
 
         return baseQuery;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> ItemExistsAsync(Guid id)
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            return await dbContext.BaseItems.AnyAsync(f => f.Id == id).ConfigureAwait(false);
+        }
     }
 }

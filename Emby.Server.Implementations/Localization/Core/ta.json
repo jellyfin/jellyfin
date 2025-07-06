@@ -21,7 +21,7 @@
     "Inherit": "மரபுரிமையாகப் பெறு",
     "HeaderRecordingGroups": "பதிவு குழுக்கள்",
     "Folders": "கோப்புறைகள்",
-    "FailedLoginAttemptWithUserName": "{0} இன் உள்நுழைவு முயற்சி தோல்வியடைந்தது",
+    "FailedLoginAttemptWithUserName": "{0} இலிருந்து உள்நுழைவு முயற்சி தோல்வியடைந்தது",
     "DeviceOnlineWithName": "{0} இணைக்கப்பட்டது",
     "DeviceOfflineWithName": "{0} துண்டிக்கப்பட்டது",
     "Collections": "தொகுப்புகள்",
@@ -133,5 +133,9 @@
     "TaskDownloadMissingLyrics": "விடுபட்ட பாடல் வரிகளைப் பதிவிறக்கவும்",
     "TaskDownloadMissingLyricsDescription": "பாடல்களுக்கான வரிகளைப் பதிவிறக்குகிறது",
     "TaskMoveTrickplayImages": "ட்ரிக்பிளே பட இருப்பிடத்தை நகர்த்து",
-    "TaskMoveTrickplayImagesDescription": "நூலக அமைப்புகளுக்கு ஏற்ப ஏற்கனவே உள்ள ட்ரிக்பிளே கோப்புகளை நகர்த்துகிறது."
+    "TaskMoveTrickplayImagesDescription": "நூலக அமைப்புகளுக்கு ஏற்ப ஏற்கனவே உள்ள ட்ரிக்பிளே கோப்புகளை நகர்த்துகிறது.",
+    "TaskExtractMediaSegments": "மீடியா பிரிவு ஸ்கேன்",
+    "TaskExtractMediaSegmentsDescription": "மீடியாசெக்மென்ட் இயக்கப்பட்ட செருகுநிரல்களிலிருந்து மீடியா பிரிவுகளைப் பிரித்தெடுக்கிறது அல்லது பெறுகிறது.",
+    "CleanupUserDataTaskDescription": "குறைந்தது 90 நாட்களுக்கு இல்லாத மீடியாவிலிருந்து அனைத்து பயனர் தரவையும் (கண்காணிப்பு நிலை, பிடித்த நிலை போன்றவை) சுத்தம் செய்கிறது.",
+    "CleanupUserDataTask": "பயனர் தரவை சுத்தம் செய்யும் பணி"
 }

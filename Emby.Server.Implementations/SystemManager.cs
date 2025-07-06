@@ -85,7 +85,10 @@ public class SystemManager : ISystemManager
     /// <inheritdoc/>
     public SystemStorageInfo GetSystemStorageInfo()
     {
-        var virtualFolderInfos = _libraryManager.GetVirtualFolders().Select(e => new LibraryStorageInfo()
+        var virtualFolderInfos = _libraryManager
+            .GetVirtualFolders()
+            .Where(e => !string.IsNullOrWhiteSpace(e.ItemId)) // this should not be null but for some users it is.
+            .Select(e => new LibraryStorageInfo()
         {
             Id = Guid.Parse(e.ItemId),
             Name = e.Name,

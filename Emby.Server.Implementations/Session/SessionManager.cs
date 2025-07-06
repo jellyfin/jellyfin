@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.Session
 
             var nowPlayingQueue = info.NowPlayingQueue;
 
-            if (nowPlayingQueue?.Length > 0)
+            if (nowPlayingQueue?.Length > 0 && !nowPlayingQueue.SequenceEqual(session.NowPlayingQueue))
             {
                 session.NowPlayingQueue = nowPlayingQueue;
 
@@ -474,6 +474,7 @@ namespace Emby.Server.Implementations.Session
         private void RemoveNowPlayingItem(SessionInfo session)
         {
             session.NowPlayingItem = null;
+            session.FullNowPlayingItem = null;
             session.PlayState = new PlayerStateInfo();
 
             if (!string.IsNullOrEmpty(session.DeviceId))
@@ -508,13 +509,11 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             var key = GetSessionKey(appName, deviceId);
-
-            CheckDisposed();
-
-            if (!_activeConnections.TryGetValue(key, out var sessionInfo))
+            SessionInfo newSession = CreateSessionInfo(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
+            SessionInfo sessionInfo = _activeConnections.GetOrAdd(key, newSession);
+            if (ReferenceEquals(newSession, sessionInfo))
             {
-                sessionInfo = CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
-                _activeConnections[key] = sessionInfo;
+                OnSessionStarted(newSession);
             }
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
@@ -538,7 +537,7 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private SessionInfo CreateSession(
+        private SessionInfo CreateSessionInfo(
             string key,
             string appName,
             string appVersion,
@@ -582,7 +581,6 @@ namespace Emby.Server.Implementations.Session
                 sessionInfo.HasCustomDeviceName = true;
             }
 
-            OnSessionStarted(sessionInfo);
             return sessionInfo;
         }
 

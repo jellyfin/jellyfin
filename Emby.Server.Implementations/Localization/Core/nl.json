@@ -136,5 +136,7 @@
     "TaskExtractMediaSegmentsDescription": "Verkrijgt mediasegmenten vanuit plug-ins met MediaSegment-ondersteuning.",
     "TaskMoveTrickplayImages": "Locatie trickplay-afbeeldingen migreren",
     "TaskMoveTrickplayImagesDescription": "Verplaatst bestaande trickplay-bestanden op basis van de bibliotheekinstellingen.",
-    "TaskExtractMediaSegments": "Scannen op mediasegmenten"
+    "TaskExtractMediaSegments": "Scannen op mediasegmenten",
+    "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig is.",
+    "CleanupUserDataTask": "Opruimtaak gebruikersdata"
 }

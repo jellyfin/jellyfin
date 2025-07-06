@@ -136,5 +136,7 @@
     "TaskDownloadMissingLyricsDescription": "Zenék szövegének letöltése",
     "TaskMoveTrickplayImages": "Trickplay képek helyének átköltöztetése",
     "TaskMoveTrickplayImagesDescription": "A médiatár-beállításoknak megfelelően áthelyezi a meglévő trickplay fájlokat.",
-    "TaskExtractMediaSegmentsDescription": "Kinyeri vagy megszerzi a médiaszegmenseket a MediaSegment támogatással rendelkező bővítményekből."
+    "TaskExtractMediaSegmentsDescription": "Kinyeri vagy megszerzi a médiaszegmenseket a MediaSegment támogatással rendelkező bővítményekből.",
+    "CleanupUserDataTaskDescription": "Legalább 90 napja nem elérhető médiákhoz kapcsolódó összes felhasználói adat (pl. megtekintési állapot, kedvencek) törlése.",
+    "CleanupUserDataTask": "Felhasználói adatok tisztítása feladat"
 }

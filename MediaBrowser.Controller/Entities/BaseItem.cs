@@ -1423,23 +1423,16 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            if (string.IsNullOrEmpty(Path) || DateModified == DateTime.MinValue)
             {
                 return false;
             }
 
             var info = FileSystem.GetFileSystemInfo(Path);
-            if (info.Exists)
-            {
-                if (info.IsDirectory)
-                {
-                    return info.LastWriteTimeUtc != DateModified;
-                }
 
-                return info.LastWriteTimeUtc != DateModified;
-            }
-
-            return false;
+            return info.Exists
+                ? info.LastWriteTimeUtc != DateModified
+                : false;
         }
 
         public virtual List<string> GetUserDataKeys()
@@ -2002,9 +1995,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove from file system
-            if (info.IsLocalFile)
+            var path = info.Path;
+            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path))
             {
-                FileSystem.DeleteFile(info.Path);
+                FileSystem.DeleteFile(path);
             }
 
             // Remove from item

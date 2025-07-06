@@ -135,5 +135,7 @@
     "TaskMoveTrickplayImagesDescription": "Переміщує наявні Trickplay-зображення відповідно до налаштувань медіатеки.",
     "TaskExtractMediaSegments": "Сканування медіа-сегментів",
     "TaskMoveTrickplayImages": "Змінити місце розташування Trickplay-зображень",
-    "TaskExtractMediaSegmentsDescription": "Витягує або отримує медіа-сегменти з плагінів з підтримкою MediaSegment."
+    "TaskExtractMediaSegmentsDescription": "Витягує або отримує медіа-сегменти з плагінів з підтримкою MediaSegment.",
+    "CleanupUserDataTask": "Завдання очищення даних користувача",
+    "CleanupUserDataTaskDescription": "Очищає всі дані користувача (стан перегляду, статус обраного тощо) з медіа, які перестали бути доступними щонайменше 90 днів тому."
 }

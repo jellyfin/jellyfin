@@ -25,9 +25,24 @@
                         <input is="emby-checkbox" type="checkbox" id="importSeasonName" />
                         <span>Import season name from metadata fetched for series.</span>
                     </label>
-                    <div class="inputContainer">
-                        <input is="emby-input" type="number" id="maxCastMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Cast Members" />
-                        <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
+                    <div class="verticalSection">
+                        <h2>Cast & Crew Settings</h2>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="number" id="maxCastMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Cast Members" />
+                            <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="number" id="maxCrewMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Crew Members" />
+                            <div class="fieldDescription">The maximum number of crew members to fetch for an item.</div>
+                        </div>
+                        <label class="checkboxContainer">
+                            <input is="emby-checkbox" type="checkbox" id="hideMissingCastMembers" />
+                            <span>Hide cast members without profile images.</span>
+                        </label>
+                        <label class="checkboxContainer">
+                            <input is="emby-checkbox" type="checkbox" id="hideMissingCrewMembers" />
+                            <span>Hide crew members without profile images.</span>
+                        </label>
                     </div>
                     <div class="verticalSection verticalSection-extrabottompadding">
                         <h2>Image Scaling</h2>
@@ -129,6 +144,8 @@
                         document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
                         document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
                         document.querySelector('#importSeasonName').checked = config.ImportSeasonName;
+                        document.querySelector('#hideMissingCastMembers').checked = config.HideMissingCastMembers;
+                        document.querySelector('#hideMissingCrewMembers').checked = config.HideMissingCrewMembers;
 
                         var maxCastMembers = document.querySelector('#maxCastMembers');
                         maxCastMembers.value = config.MaxCastMembers;
@@ -137,11 +154,17 @@
                             cancelable: false
                         }));
 
+                        var maxCrewMembers = document.querySelector('#maxCrewMembers');
+                        maxCrewMembers.value = config.MaxCrewMembers;
+                        maxCrewMembers.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
                         pluginConfig = config;
                         configureImageScaling();
                     });
                 });
-
 
             document.querySelector('.configForm')
                 .addEventListener('submit', function (e) {
@@ -153,6 +176,9 @@
                         config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
                         config.ImportSeasonName = document.querySelector('#importSeasonName').checked;
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
+                        config.MaxCrewMembers = document.querySelector('#maxCrewMembers').value;
+                        config.HideMissingCastMembers = document.querySelector('#hideMissingCastMembers').checked;
+                        config.HideMissingCrewMembers = document.querySelector('#hideMissingCrewMembers').checked;
                         config.PosterSize = document.querySelector('#selectPosterSize').value;
                         config.BackdropSize = document.querySelector('#selectBackdropSize').value;
                         config.LogoSize = document.querySelector('#selectLogoSize').value;

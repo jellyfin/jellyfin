@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Model.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,21 +13,22 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-04-20T22:00:00", nameof(MigrateRatingLevels))]
+[JellyfinMigrationBackup(JellyfinDb = true)]
 #pragma warning restore CS0618 // Type or member is obsolete
 internal class MigrateRatingLevels : IDatabaseMigrationRoutine
 {
-    private readonly ILogger<MigrateRatingLevels> _logger;
+    private readonly IStartupLogger _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _provider;
     private readonly ILocalizationManager _localizationManager;
 
     public MigrateRatingLevels(
         IDbContextFactory<JellyfinDbContext> provider,
-        ILoggerFactory loggerFactory,
+        IStartupLogger<MigrateRatingLevels> logger,
         ILocalizationManager localizationManager)
     {
         _provider = provider;
         _localizationManager = localizationManager;
-        _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
+        _logger = logger;
     }
 
     /// <inheritdoc/>

@@ -2376,6 +2376,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+
+                // If the client does not support DOVI and the video stream is DOVI without fallback, we should not copy it.
+                if (!requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVI)
+                {
+                    return false;
+                }
 
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
                      && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
@@ -2383,6 +2390,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
                             || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
+                    // If the video stream is in a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
+                    if (videoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG)
+                    {
+                        return false;
+                    }
+
                     // Check complicated cases where we need to remove dynamic metadata
                     // Conservatively refuse to copy if the encoder can't remove dynamic metadata,
                     // but a removal is required for compatability reasons.
@@ -4435,6 +4448,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var swapOutputWandH = doVppTranspose && swapWAndH;
                 var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
+                // d3d11va doesn't support dynamic pool size, use vpp filter ctx to relay
+                // to prevent encoder async and bframes from exhausting the decoder pool.
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isD3d11vaDecoder)
+                {
+                    hwScaleFilter += ":passthrough=0";
+                }
+
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={transposeDir}";
@@ -5940,7 +5960,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // Use NV15 instead of P010 to avoid the issue.
                         // SDR inputs are using BGRA formats already which is not affected.
                         var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
-                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_divisible_by=4:afbc=1";
+                        var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_original_aspect_ratio=increase:force_divisible_by=4:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -6018,9 +6038,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasSubs)
                 {
+                    var subMaxH = 1080;
                     if (hasGraphicalSubs)
                     {
-                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, reqMaxH);
+                        var subPreProcFilters = GetGraphicalSubPreProcessFilters(swpInW, swpInH, subW, subH, reqW, reqH, reqMaxW, subMaxH);
                         subFilters.Add(subPreProcFilters);
                         subFilters.Add("format=bgra");
                     }
@@ -6030,7 +6051,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         var subFramerate = hasAssSubs ? Math.Min(framerate ?? 25, 60) : 10;
 
                         // alphasrc=s=1280x720:r=10:start=0,format=bgra,subtitles,hwupload
-                        var alphaSrcFilter = GetAlphaSrcFilter(state, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH, subFramerate);
+                        var alphaSrcFilter = GetAlphaSrcFilter(state, swpInW, swpInH, reqW, reqH, reqMaxW, subMaxH, subFramerate);
                         var subTextSubtitlesFilter = GetTextSubtitlesFilter(state, true, true);
                         subFilters.Add(alphaSrcFilter);
                         subFilters.Add("format=bgra");
@@ -6038,6 +6059,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=rkmpp");
+
+                    // offload 1080p+ subtitles swscale upscaling from CPU to RGA
+                    var (overlayW, overlayH) = GetFixedOutputSize(swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                    if (overlayW.HasValue && overlayH.HasValue && overlayH.Value > subMaxH)
+                    {
+                        subFilters.Add($"vpp_rkrga=w={overlayW.Value}:h={overlayH.Value}:format=bgra:afbc=1");
+                    }
 
                     // try enabling AFBC to save DDR bandwidth
                     var hwOverlayFilter = "overlay_rkrga=eof_action=pass:repeatlast=0:format=nv12";
@@ -7123,7 +7151,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -async " + state.InputAudioSync;
             }
 
-            if (!string.IsNullOrEmpty(state.InputVideoSync))
+            // The -fps_mode option cannot be applied to input
+            if (!string.IsNullOrEmpty(state.InputVideoSync) && _mediaEncoder.EncoderVersion < new Version(5, 1))
             {
                 inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }

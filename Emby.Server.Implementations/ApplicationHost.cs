@@ -62,6 +62,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
@@ -552,6 +553,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
+            serviceCollection.AddSingleton<ILimitedConcurrencyLibraryScheduler, LimitedConcurrencyLibraryScheduler>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
@@ -650,6 +652,7 @@ namespace Emby.Server.Implementations
             CollectionFolder.ApplicationHost = this;
             Folder.UserViewManager = Resolve<IUserViewManager>();
             Folder.CollectionManager = Resolve<ICollectionManager>();
+            Folder.LimitedConcurrencyLibraryScheduler = Resolve<ILimitedConcurrencyLibraryScheduler>();
             Episode.MediaEncoder = Resolve<IMediaEncoder>();
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             Video.RecordingsManager = Resolve<IRecordingsManager>();

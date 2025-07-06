@@ -192,7 +192,20 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                string[]? albumArtists = null;
+                if (libraryOptions.PreferNonstandardArtistsTag)
+                {
+                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out var albumArtistsTagString);
+                    if (albumArtistsTagString is not null)
+                    {
+                        albumArtists = albumArtistsTagString.Split(InternalValueSeparator);
+                    }
+                }
+
+                if (albumArtists is null || albumArtists.Length == 0)
+                {
+                    albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                }
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
@@ -205,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist.Trim(),
+                            Name = albumArtist,
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -237,7 +250,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer.Trim(),
+                            Name = performer,
                             Type = PersonKind.Artist
                         });
                     }
@@ -251,7 +264,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = composer.Trim(),
+                                Name = composer,
                                 Type = PersonKind.Composer
                             });
                         }
@@ -340,9 +353,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
-                    ? genres
-                    : audio.Genres;
+                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                {
+                    audio.Genres = genres;
+                }
             }
 
             TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
