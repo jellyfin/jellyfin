@@ -1,5 +1,6 @@
 // File: src/Jellyfin.Database/Jellyfin.Database.Implementations/DesignTimeJellyfinDbContextFactory.cs
-using System; // For EventArgs or other basic types if stubs need them
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Locking;
@@ -12,12 +13,17 @@ namespace Jellyfin.Database.Implementations
     // Minimal stub for IJellyfinDatabaseProvider
     internal class DesignTimeDatabaseProvider : IJellyfinDatabaseProvider
     {
-        public string Name => "DesignTimeDefault";
-        public string Description => "DesignTimeDefault";
-        public bool IsSqlite => true; // Assuming SQLite for design time as per UseSqlite
+        public string Name => "DesignTimeDefaultSqlite";
+        public string Description => "DesignTimeDefault SQLite Provider";
+        public bool IsSqlite => true;
         public bool IsPostgres => false;
-        public bool IsCaseSensitive => false; // Typical for SQLite default
-        public string GroupConcatSeparator => ","; // Typical for SQLite
+        public bool IsCaseSensitive => false;
+        public string GroupConcatSeparator => ",";
+
+        // This factory is for design-time, not runtime DI.
+        public Func<IServiceProvider, DbContextOptions<JellyfinDbContext>, JellyfinDbContext> DbContextFactory =>
+            (sp, options) => new JellyfinDbContext(options, new NullLogger<JellyfinDbContext>(), this, new DesignTimeLockingBehavior());
+
 
         public string GetConnectionString(string path) => $"Data Source={path}";
         public string GetFindInSetExpression(string column, string value) => $"instr({column}, {value}) > 0";
@@ -34,7 +40,8 @@ namespace Jellyfin.Database.Implementations
         public string GetRegexpExpression(string column, string pattern) => $"{column} REGEXP {pattern}";
         public string GetLowerExpression(string value) => $"LOWER({value})";
         public string GetUpperExpression(string value) => $"UPPER({value})";
-        public string GetLastInsertedIdExpression(string tableName) => $"last_insert_rowid()"; // Specific to SQLite
+        public string GetLastInsertedIdExpression(string tableName) => "last_insert_rowid()";
+
         public DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder optionsBuilder, string connectionString, string? migrationsAssembly = null)
         {
             return optionsBuilder.UseSqlite(connectionString, sqliteOptions =>
@@ -45,6 +52,16 @@ namespace Jellyfin.Database.Implementations
                 }
             });
         }
+
+        public void Initialise(DbContextOptionsBuilder optionsBuilder) { /* No-op for design time */ }
+        public void OnModelCreating(ModelBuilder modelBuilder) { /* No-op for design time */ }
+        public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) { /* No-op for design time */ }
+        public Task RunScheduledOptimisation(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task RunShutdownTask(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<string> MigrationBackupFast(CancellationToken cancellationToken) => Task.FromResult("design_time_backup.db");
+        public Task RestoreBackupFast(string backupFilePath, CancellationToken cancellationToken) => Task.CompletedTask;
+        public void DeleteBackup(string backupFilePath) { /* No-op for design time */ }
+        public Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? excludedTables = null) => Task.CompletedTask;
     }
 
     // Minimal stub for IEntityFrameworkCoreLockingBehavior
@@ -53,17 +70,20 @@ namespace Jellyfin.Database.Implementations
         public bool IsTransactionOwned { get; set; }
         public bool AcquireWriteLock(TimeSpan timeout) => true;
         public Task<bool> AcquireWriteLockAsync(TimeSpan timeout, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public void ReleaseWriteLock() { }
-        public void EnterTransaction() { }
-        public void ExitTransaction() { }
+        public void ReleaseWriteLock() { /* No-op */ }
+        public void EnterTransaction() { /* No-op */ }
+        public void ExitTransaction() { /* No-op */ }
         public TResult ExecuteRead<TResult>(Func<TResult> action) => action();
         public Task<TResult> ExecuteReadAsync<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken = default) => action();
         public void ExecuteWrite(Action action, TimeSpan timeout) => action();
         public Task ExecuteWriteAsync(Func<Task> action, TimeSpan timeout, CancellationToken cancellationToken = default) => action();
         public TResult ExecuteWrite<TResult>(Func<TResult> action, TimeSpan timeout) => action();
         public Task<TResult> ExecuteWriteAsync<TResult>(Func<Task<TResult>> action, TimeSpan timeout, CancellationToken cancellationToken = default) => action();
-        public void Dispose() { }
+        public void Dispose() { /* No-op */ }
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public void Initialise(DbContextOptionsBuilder optionsBuilder) { /* No-op for design time */ }
+        public void OnSaveChanges(JellyfinDbContext dbContext, Action baseSaveChanges) => baseSaveChanges();
+        public Task OnSaveChangesAsync(JellyfinDbContext dbContext, Func<Task> baseSaveChangesAsync) => baseSaveChangesAsync();
     }
 
     public class DesignTimeJellyfinDbContextFactory : IDesignTimeDbContextFactory<JellyfinDbContext>
@@ -73,7 +93,7 @@ namespace Jellyfin.Database.Implementations
             var optionsBuilder = new DbContextOptionsBuilder<JellyfinDbContext>();
 
             optionsBuilder.UseSqlite(
-                "Data Source=design_time_temp.db",
+                "Data Source=design_time_temp.db", // Dummy connection string for design-time
                 sqliteOptionsAction => sqliteOptionsAction.MigrationsAssembly("Jellyfin.Database.Providers.Sqlite")
             );
 
@@ -81,6 +101,8 @@ namespace Jellyfin.Database.Implementations
             var dummyProvider = new DesignTimeDatabaseProvider();
             var dummyLockingBehavior = new DesignTimeLockingBehavior();
 
+            // Using the constructor directly.
+            // The DesignTimeDatabaseProvider's DbContextFactory property is not used by IDesignTimeDbContextFactory.
             return new JellyfinDbContext(optionsBuilder.Options, logger, dummyProvider, dummyLockingBehavior);
         }
     }
