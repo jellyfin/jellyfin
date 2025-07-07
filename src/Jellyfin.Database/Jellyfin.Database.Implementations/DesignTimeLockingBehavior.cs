@@ -10,7 +10,7 @@ namespace Jellyfin.Database.Implementations
     /// <summary>
     /// Minimal stub for IEntityFrameworkCoreLockingBehavior for design-time EF Core tools.
     /// </summary>
-    internal sealed class DesignTimeLockingBehavior : IEntityFrameworkCoreLockingBehavior // IEntityFrameworkCoreLockingBehavior implements IDisposable, IAsyncDisposable
+    internal sealed class DesignTimeLockingBehavior : IEntityFrameworkCoreLockingBehavior
     {
         public bool IsTransactionOwned { get; set; }
 
@@ -54,17 +54,16 @@ namespace Jellyfin.Database.Implementations
 
         public Task OnSaveChangesAsync(JellyfinDbContext dbContext, Func<Task> baseSaveChangesAsync) => baseSaveChangesAsync();
 
-        // Explicitly implement IDisposable and IAsyncDisposable
         public void Dispose()
         {
-            // No-op for design time
-            GC.SuppressFinalize(this); // Standard practice for Dispose
+            // No-op for design time.
+            // GC.SuppressFinalize(this) removed as per IDISP024 when type is sealed and has no finalizer.
         }
 
         public ValueTask DisposeAsync()
         {
-            // No-op for design time
-            GC.SuppressFinalize(this); // Standard practice for DisposeAsync
+            // No-op for design time.
+            // GC.SuppressFinalize(this) removed as per IDISP024 when type is sealed and has no finalizer.
             return ValueTask.CompletedTask;
         }
     }
