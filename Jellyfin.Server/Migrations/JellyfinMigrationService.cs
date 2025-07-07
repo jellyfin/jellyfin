@@ -89,7 +89,7 @@ internal class JellyfinMigrationService
 
     private HashSet<MigrationStage> Migrations { get; set; }
 
-    public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
+    public async Task CheckFirstTimeRunAndMigration(IApplicationPaths appPaths)
     {
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migration Startup");
         logger.LogInformation("Initialise Migration service.");
