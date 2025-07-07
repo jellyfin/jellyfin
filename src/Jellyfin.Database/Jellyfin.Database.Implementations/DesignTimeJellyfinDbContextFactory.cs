@@ -39,8 +39,19 @@ namespace Jellyfin.Database.Implementations
 
         // This factory is for design-time, not runtime DI.
         // It now returns an IDbContextFactory<JellyfinDbContext>
-        public IDbContextFactory<JellyfinDbContext> DbContextFactory =>
-            new DesignTimeDbContextFactoryInstance(new DesignTimeJellyfinDbContextFactory());
+        private IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+        public IDbContextFactory<JellyfinDbContext> DbContextFactory
+        {
+            get
+            {
+                _dbContextFactory ??= new DesignTimeDbContextFactoryInstance(new DesignTimeJellyfinDbContextFactory());
+                return _dbContextFactory;
+            }
+            set
+            {
+                _dbContextFactory = value;
+            }
+        }
 
 
         public string GetConnectionString(string path) => $"Data Source={path}";
