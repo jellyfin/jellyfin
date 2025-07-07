@@ -27,6 +27,13 @@ namespace MediaBrowser.Model.Dto
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the user's email address.
+        /// </summary>
+        /// <value>The email address.</value>
+        [EmailAddress]
+        public string Email { get; set; }
+
+        /// <summary>
         /// Gets or sets the server identifier.
         /// </summary>
         /// <value>The server identifier.</value>
