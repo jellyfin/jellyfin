@@ -10,6 +10,23 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Database.Implementations
 {
+    // Minimal stub for IDbContextFactory<JellyfinDbContext>
+    internal class DesignTimeDbContextFactoryInstance : IDbContextFactory<JellyfinDbContext>
+    {
+        private readonly IDesignTimeDbContextFactory<JellyfinDbContext> _factory;
+
+        public DesignTimeDbContextFactoryInstance(IDesignTimeDbContextFactory<JellyfinDbContext> factory)
+        {
+            _factory = factory;
+        }
+
+        public JellyfinDbContext CreateDbContext()
+        {
+            // Pass empty args, as the main factory's CreateDbContext(string[] args) will handle defaults
+            return _factory.CreateDbContext(Array.Empty<string>());
+        }
+    }
+
     // Minimal stub for IJellyfinDatabaseProvider
     internal class DesignTimeDatabaseProvider : IJellyfinDatabaseProvider
     {
@@ -21,8 +38,9 @@ namespace Jellyfin.Database.Implementations
         public string GroupConcatSeparator => ",";
 
         // This factory is for design-time, not runtime DI.
-        public Func<IServiceProvider, DbContextOptions<JellyfinDbContext>, JellyfinDbContext> DbContextFactory =>
-            (sp, options) => new JellyfinDbContext(options, new NullLogger<JellyfinDbContext>(), this, new DesignTimeLockingBehavior());
+        // It now returns an IDbContextFactory<JellyfinDbContext>
+        public IDbContextFactory<JellyfinDbContext> DbContextFactory =>
+            new DesignTimeDbContextFactoryInstance(new DesignTimeJellyfinDbContextFactory());
 
 
         public string GetConnectionString(string path) => $"Data Source={path}";
@@ -60,7 +78,7 @@ namespace Jellyfin.Database.Implementations
         public Task RunShutdownTask(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<string> MigrationBackupFast(CancellationToken cancellationToken) => Task.FromResult("design_time_backup.db");
         public Task RestoreBackupFast(string backupFilePath, CancellationToken cancellationToken) => Task.CompletedTask;
-        public void DeleteBackup(string backupFilePath) { /* No-op for design time */ }
+        public Task DeleteBackup(string backupFilePath) => Task.CompletedTask; // Changed to return Task
         public Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? excludedTables = null) => Task.CompletedTask;
     }
 
@@ -101,8 +119,6 @@ namespace Jellyfin.Database.Implementations
             var dummyProvider = new DesignTimeDatabaseProvider();
             var dummyLockingBehavior = new DesignTimeLockingBehavior();
 
-            // Using the constructor directly.
-            // The DesignTimeDatabaseProvider's DbContextFactory property is not used by IDesignTimeDbContextFactory.
             return new JellyfinDbContext(optionsBuilder.Options, logger, dummyProvider, dummyLockingBehavior);
         }
     }
