@@ -310,6 +310,7 @@ namespace Jellyfin.Server.Implementations.Users
             return new UserDto
             {
                 Name = user.Username,
+                Email = user.Email,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
                 HasPassword = hasPassword,

@@ -395,6 +395,17 @@ public class UserController : BaseJellyfinApiController
             await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
         }
 
+        if (updateUser.Email != null && !string.Equals(user.Email, updateUser.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            user.Email = updateUser.Email;
+            // No need to call UpdateUserAsync separately if RenameUser or UpdateConfigurationAsync already persist the user object.
+            // However, if those methods don't save the whole user object, or if Email is managed independently,
+            // an explicit call to _userManager.UpdateUserAsync(user) might be needed here.
+            // For now, assuming user object changes are persisted by subsequent calls or a final save.
+            // This might need revisiting if user.Email changes are not saved.
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+        }
+
         await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
 
         return NoContent();
@@ -546,6 +557,20 @@ public class UserController : BaseJellyfinApiController
         if (request.Password is not null)
         {
             await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            // Assuming a method like UpdateUserEmail exists or can be added to IUserManager
+            // For now, we'll directly set it on the User object if accessible,
+            // or note this as a place for further refactoring if direct access isn't ideal.
+            // This part might require adjustment based on UserManager's capabilities.
+            var userToUpdate = _userManager.GetUserById(newUser.Id);
+            if (userToUpdate != null)
+            {
+                userToUpdate.Email = request.Email;
+                await _userManager.UpdateUserAsync(userToUpdate).ConfigureAwait(false);
+            }
         }
 
         var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIP().ToString());

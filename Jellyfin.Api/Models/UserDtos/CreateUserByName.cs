@@ -17,4 +17,10 @@ public class CreateUserByName
     /// Gets or sets the password.
     /// </summary>
     public string? Password { get; set; }
+
+    /// <summary>
+    /// Gets or sets the email address.
+    /// </summary>
+    [EmailAddress]
+    public string? Email { get; set; }
 }

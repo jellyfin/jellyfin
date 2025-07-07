@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.ComponentModel.DataAnnotations;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
 

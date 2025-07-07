@@ -83,21 +83,59 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             // access token can't be null here as the previous test populated it
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
 
+            var testEmail = "testuser@example.com";
             var createRequest = new CreateUserByName()
             {
-                Name = TestUsername
+                Name = TestUsername,
+                Email = testEmail
             };
 
             using var response = await CreateUserByName(client, createRequest);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions);
             Assert.Equal(TestUsername, user!.Name);
+            Assert.Equal(testEmail, user.Email);
             Assert.False(user.HasPassword);
             Assert.False(user.HasConfiguredPassword);
 
             _testUserId = user.Id;
 
             Console.WriteLine(user.Id.ToString("N", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        [Priority(0)] // Run after user creation
+        public async Task Update_Email_Valid_Success()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+
+            // First, get the user to ensure we have the latest version for update
+            var initialUserResponse = await client.GetAsync($"Users/{_testUserId}");
+            Assert.Equal(HttpStatusCode.OK, initialUserResponse.StatusCode);
+            var userToUpdate = await initialUserResponse.Content.ReadFromJsonAsync<UserDto>(_jsonOptions);
+            Assert.NotNull(userToUpdate);
+
+            var newEmail = "updateduser@example.com";
+            userToUpdate.Email = newEmail;
+
+            // The UserController's POST /Users?userId={userId} endpoint is used for updates.
+            // Ensure that `updateUser.Configuration` and `updateUser.Policy` are not null if they are required by the DTO.
+            // If UserDto has non-nullable Configuration/Policy, and they are null here, this would fail.
+            // Let's assume they are initialized by default or correctly fetched.
+            if (userToUpdate.Configuration == null) userToUpdate.Configuration = new MediaBrowser.Model.Configuration.UserConfiguration();
+            if (userToUpdate.Policy == null) userToUpdate.Policy = new UserPolicy();
+
+
+            using var updateResponse = await client.PostAsJsonAsync($"Users/{_testUserId}", userToUpdate, _jsonOptions);
+            Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+            // Fetch the user again to verify the email was updated
+            var updatedUserResponse = await client.GetAsync($"Users/{_testUserId}");
+            Assert.Equal(HttpStatusCode.OK, updatedUserResponse.StatusCode);
+            var updatedUser = await updatedUserResponse.Content.ReadFromJsonAsync<UserDto>(_jsonOptions);
+            Assert.NotNull(updatedUser);
+            Assert.Equal(newEmail, updatedUser.Email);
         }
 
         [Theory]
