@@ -10,7 +10,7 @@ namespace Jellyfin.Database.Implementations
     /// <summary>
     /// Minimal stub for IEntityFrameworkCoreLockingBehavior for design-time EF Core tools.
     /// </summary>
-    internal sealed class DesignTimeLockingBehavior : IEntityFrameworkCoreLockingBehavior
+    internal sealed class DesignTimeLockingBehavior : IEntityFrameworkCoreLockingBehavior, IDisposable, IAsyncDisposable
     {
         public bool IsTransactionOwned { get; set; }
 
