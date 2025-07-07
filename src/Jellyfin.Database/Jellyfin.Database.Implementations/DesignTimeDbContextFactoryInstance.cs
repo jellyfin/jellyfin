@@ -21,7 +21,10 @@ namespace Jellyfin.Database.Implementations
             _factory = factory;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Creates a new instance of <see cref="JellyfinDbContext"/>.
+        /// </summary>
+        /// <returns>A new instance of <see cref="JellyfinDbContext"/>.</returns>
         public JellyfinDbContext CreateDbContext()
         {
             // Pass empty args, as the main factory's CreateDbContext(string[] args) will handle defaults
