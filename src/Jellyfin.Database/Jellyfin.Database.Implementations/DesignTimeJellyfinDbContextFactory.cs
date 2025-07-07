@@ -1,11 +1,9 @@
 // File: src/Jellyfin.Database/Jellyfin.Database.Implementations/DesignTimeJellyfinDbContextFactory.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Logging.Abstractions; // Required for ILogger<JellyfinDbContext>
-using Jellyfin.Database.Implementations.Providers; // Assuming IJellyfinDatabaseProvider and IEntityFrameworkCoreLockingBehavior might be here or accessible
-
-// If the namespace for IJellyfinDatabaseProvider or IEntityFrameworkCoreLockingBehavior is different,
-// you might need to adjust the using directive above or fully qualify the type names below.
+using Microsoft.Extensions.Logging.Abstractions;
+using Jellyfin.Database.Implementations.Locking; // For IEntityFrameworkCoreLockingBehavior
+// IJellyfinDatabaseProvider is in Jellyfin.Database.Implementations, which is this file's namespace
 
 namespace Jellyfin.Database.Implementations
 {
