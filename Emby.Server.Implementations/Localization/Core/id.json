@@ -129,5 +129,13 @@
     "TaskAudioNormalizationDescription": "Pindai file untuk data normalisasi audio.",
     "TaskAudioNormalization": "Normalisasi Audio",
     "TaskCleanCollectionsAndPlaylists": "Bersihkan koleksi dan daftar putar",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Menghapus item dari koleksi dan daftar putar yang sudah tidak ada."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Menghapus item dari koleksi dan daftar putar yang sudah tidak ada.",
+    "TaskDownloadMissingLyricsDescription": "Unduh lirik untuk lagu",
+    "TaskExtractMediaSegmentsDescription": "Mengekstrak atau memperoleh segmen media dari plugin yang mendukung MediaSegment.",
+    "TaskMoveTrickplayImagesDescription": "Memindahkan file trickplay yang sudah ada sesuai dengan pengaturan pustaka.",
+    "CleanupUserDataTaskDescription": "Membersihkan semua data pengguna (status tontonan, status favorit, dll.) dari media yang sudah tidak ada selama setidaknya 90 hari.",
+    "TaskExtractMediaSegments": "Scan Segmen media",
+    "TaskMoveTrickplayImages": "Migrasikan Lokasi Gambar Trickplay",
+    "TaskDownloadMissingLyrics": "Unduh Lirik yang Hilang",
+    "CleanupUserDataTask": "Tugas Pembersihan Data Pengguna"
 }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -23,7 +24,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveTrickplayFiles> _logger;
+    private readonly IStartupLogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveTrickplayFiles"/> class.
@@ -36,7 +37,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
         ITrickplayManager trickplayManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        ILogger<MoveTrickplayFiles> logger)
+        IStartupLogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;

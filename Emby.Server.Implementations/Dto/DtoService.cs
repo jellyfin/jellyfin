@@ -1065,7 +1065,12 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
-                    dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
+                    var trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
+                    dto.Trickplay = trickplay.ToDictionary(
+                        mediaStream => mediaStream.Key,
+                        mediaStream => mediaStream.Value.ToDictionary(
+                            width => width.Key,
+                            width => new TrickplayInfoDto(width.Value)));
                 }
 
                 dto.ExtraType = video.ExtraType;

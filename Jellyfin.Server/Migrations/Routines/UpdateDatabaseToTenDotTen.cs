@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Updates the library.db to version 10.10.z in preperation for the EFCore migration.
 /// Replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
 /// </summary>
-[JellyfinMigration("2025-04-19T00:00:00", nameof(UpdateDatabaseToTenDotTen))]
+[JellyfinMigration("2025-04-20T19:15:00", nameof(UpdateDatabaseToTenDotTen))]
 internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";

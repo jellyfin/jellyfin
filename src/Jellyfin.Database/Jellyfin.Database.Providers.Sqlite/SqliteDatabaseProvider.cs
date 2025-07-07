@@ -129,6 +129,21 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
+    public Task DeleteBackup(string key)
+    {
+        var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
+
+        if (!File.Exists(backupFile))
+        {
+            _logger.LogCritical("Tried to delete a backup that does not exist: {Key}", key);
+            return Task.CompletedTask;
+        }
+
+        File.Delete(backupFile);
+        return Task.CompletedTask;
+    }
+
     /// <inheritdoc/>
     public async Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames)
     {

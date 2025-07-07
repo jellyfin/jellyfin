@@ -65,6 +65,13 @@ public interface IJellyfinDatabaseProvider
     Task RestoreBackupFast(string key, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Deletes a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
+    /// </summary>
+    /// <param name="key">The key to the backup which should be cleaned up.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task DeleteBackup(string key);
+
+    /// <summary>
     /// Removes all contents from the database.
     /// </summary>
     /// <param name="dbContext">The Database context.</param>

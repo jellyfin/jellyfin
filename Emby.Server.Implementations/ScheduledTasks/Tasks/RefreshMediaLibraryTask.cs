@@ -54,12 +54,12 @@ public class RefreshMediaLibraryTask : IScheduledTask
     }
 
     /// <inheritdoc />
-    public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         progress.Report(0);
 
-        return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
+        await ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken).ConfigureAwait(false);
     }
 }

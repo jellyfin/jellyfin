@@ -69,6 +69,11 @@ public class UserData
     public bool? Likes { get; set; }
 
     /// <summary>
+    /// Gets or Sets the date the referenced <see cref="Item"/> has been deleted.
+    /// </summary>
+    public DateTime? RetentionDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the key.
     /// </summary>
     /// <value>The key.</value>

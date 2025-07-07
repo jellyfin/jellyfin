@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.Helpers;
@@ -257,11 +258,14 @@ public static class StartupHelpers
     {
         try
         {
+            var startupLogger = new LoggerProviderCollection();
+            startupLogger.AddProvider(new SetupServer.SetupLoggerFactory());
             // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
+                .WriteTo.Async(e => e.Providers(startupLogger))
                 .CreateLogger();
         }
         catch (Exception ex)

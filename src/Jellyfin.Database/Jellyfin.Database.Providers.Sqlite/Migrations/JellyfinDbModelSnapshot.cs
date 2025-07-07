@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -392,6 +392,21 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("BaseItems");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            IsFolder = false,
+                            IsInMixedFolder = false,
+                            IsLocked = false,
+                            IsMovie = false,
+                            IsRepeat = false,
+                            IsSeries = false,
+                            IsVirtualItem = false,
+                            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+                            Type = "PLACEHOLDER"
+                        });
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
@@ -403,7 +418,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<byte[]>("Blurhash")
                         .HasColumnType("BLOB");
 
-                    b.Property<DateTime>("DateModified")
+                    b.Property<DateTime?>("DateModified")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
@@ -1372,6 +1387,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<double?>("Rating")
                         .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("RetentionDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("SubtitleStreamIndex")
                         .HasColumnType("INTEGER");
