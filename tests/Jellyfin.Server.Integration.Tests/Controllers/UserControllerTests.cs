@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Users; // Added for UserPolicy
 using Xunit;
 using Xunit.Priority;
 
@@ -123,9 +124,15 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             // Ensure that `updateUser.Configuration` and `updateUser.Policy` are not null if they are required by the DTO.
             // If UserDto has non-nullable Configuration/Policy, and they are null here, this would fail.
             // Let's assume they are initialized by default or correctly fetched.
-            if (userToUpdate.Configuration == null) userToUpdate.Configuration = new MediaBrowser.Model.Configuration.UserConfiguration();
-            if (userToUpdate.Policy == null) userToUpdate.Policy = new UserPolicy();
+            if (userToUpdate.Configuration == null)
+            {
+                userToUpdate.Configuration = new MediaBrowser.Model.Configuration.UserConfiguration();
+            }
 
+            if (userToUpdate.Policy == null)
+            {
+                userToUpdate.Policy = new UserPolicy();
+            }
 
             using var updateResponse = await client.PostAsJsonAsync($"Users/{_testUserId}", userToUpdate, _jsonOptions);
             Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
