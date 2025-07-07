@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations.Data;
@@ -15,6 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
 /// </summary>
 [JellyfinMigration("2025-04-20T19:15:00", nameof(UpdateDatabaseToTenDotTen))]
+[JellyfinMigrationBackup(LegacyLibraryDb = true)]
 internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
@@ -143,26 +142,6 @@ internal class UpdateDatabaseToTenDotTen : IDatabaseMigrationRoutine
         var dataPath = _paths.DataPath;
 
         var dbPath = Path.Combine(dataPath, DbFilename);
-
-        // Back up the database before making any changes
-        for (var i = 1; ; i++)
-        {
-            var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", dbPath, i);
-            if (!File.Exists(bakPath))
-            {
-                try
-                {
-                    File.Copy(dbPath, bakPath);
-                    _logger.LogInformation("Library database backed up to {BackupPath}", bakPath);
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Cannot make a backup of {Library} at path {BackupPath}", DbFilename, bakPath);
-                    throw;
-                }
-            }
-        }
 
         _logger.LogInformation("Prepare database for EFCore migration: update to version 10.10.z");
 
