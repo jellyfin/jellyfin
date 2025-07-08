@@ -100,7 +100,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     {
         // if the user either set the setting to 1 or its unset and we we have less then 4 cores its better to run sequencially.
         var fanoutSetting = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
-        return fanoutSetting is 1 || (fanoutSetting is <= 0 && Environment.ProcessorCount <= 3);
+        return fanoutSetting is 1 || (fanoutSetting <= 0 && Environment.ProcessorCount <= 3);
     }
 
     private int CalculateScanConcurrencyLimit()
