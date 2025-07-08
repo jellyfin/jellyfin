@@ -54,6 +54,7 @@ namespace Jellyfin.Database.Implementations
 
         public Task OnSaveChangesAsync(JellyfinDbContext dbContext, Func<Task> baseSaveChangesAsync) => baseSaveChangesAsync();
 
+        // Explicitly implement IDisposable and IAsyncDisposable
         public void Dispose()
         {
             // No-op for design time.
