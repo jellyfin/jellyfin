@@ -96,14 +96,33 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
     }
 
+    private bool ShouldForceSequencialOperation()
+    {
+        // if the user either set the setting to 1 or its unset and we we have less then 4 cores its better to run sequencially.
+        var fanoutSetting = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        return fanoutSetting is 1 || (fanoutSetting is <= 0 && Environment.ProcessorCount <= 3);
+    }
+
+    private int CalculateScanConcurrencyLimit()
+    {
+        // when this is invoked, we already checked ShouldForceSequencialOperation for the sequencial check.
+        var fanoutConcurrency = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        if (fanoutConcurrency <= 0)
+        {
+            // in case the user did not set a limit manually, we can assume he has 3 or more cores as already checked by ShouldForceSequencialOperation.
+            return Environment.ProcessorCount - 3;
+        }
+
+        return fanoutConcurrency;
+    }
+
     private void Worker()
     {
         lock (_taskLock)
         {
-            var fanoutConcurrency = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
-            var parallelism = (fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount) - _taskRunners.Count;
-            _logger.LogDebug("Spawn {NumberRunners} new runners.", parallelism);
-            for (int i = 0; i < parallelism; i++)
+            var operationFanout = Math.Max(0, CalculateScanConcurrencyLimit() - _taskRunners.Count);
+            _logger.LogDebug("Spawn {NumberRunners} new runners.", operationFanout);
+            for (int i = 0; i < operationFanout; i++)
             {
                 var stopToken = new CancellationTokenSource();
                 var combinedSource = CancellationTokenSource.CreateLinkedTokenSource(stopToken.Token, _hostApplicationLifetime.ApplicationStopping);
@@ -223,7 +242,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             };
         }).ToArray();
 
-        if (_serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency == 1)
+        if (ShouldForceSequencialOperation())
         {
             _logger.LogDebug("Process sequentially.");
             try
