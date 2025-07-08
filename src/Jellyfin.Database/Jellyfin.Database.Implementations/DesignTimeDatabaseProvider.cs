@@ -1,3 +1,4 @@
+#pragma warning disable SA1516 // Elements should be separated by blank line
 // File: src/Jellyfin.Database/Jellyfin.Database.Implementations/DesignTimeDatabaseProvider.cs
 using System;
 using System.Collections.Generic;
@@ -27,9 +28,7 @@ namespace Jellyfin.Database.Implementations
 
         public string GroupConcatSeparator => ",";
 
-#pragma warning disable SA1516 // Elements should be separated by blank line
         public IDbContextFactory<JellyfinDbContext>? DbContextFactory
-#pragma warning restore SA1516 // Elements should be separated by blank line
         {
             get
             {
