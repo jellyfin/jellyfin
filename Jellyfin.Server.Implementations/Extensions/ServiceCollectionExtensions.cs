@@ -121,6 +121,7 @@ public static class ServiceCollectionExtensions
             }
         }
 
+        serviceCollection.AddSingleton(efCoreConfiguration);
         serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
 
         switch (efCoreConfiguration.LockingBehavior)
