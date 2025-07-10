@@ -52,25 +52,25 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var connectionString = $"Filename={databasePath};Pooling={pooling}";
 
         _logger.LogInformation("Opening database {DatabasePath} with pooling={Pooling}", databasePath, pooling);
-        
+
         // Log SQLite configuration once at startup
         var sqliteOptions = _databaseConfig.SqliteOptions;
         var journalMode = sqliteOptions?.JournalMode ?? "WAL";
         var journalSizeLimit = sqliteOptions?.JournalSizeLimit ?? (128 * 1024 * 1024);
-        
+
         _logger.LogInformation("Set SQLite PRAGMA journal_mode = {JournalMode}", journalMode);
         _logger.LogInformation("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", journalSizeLimit);
-        
+
         if (sqliteOptions?.CacheSize.HasValue == true)
         {
             _logger.LogInformation("Set SQLite PRAGMA cache_size = {CacheSize}", sqliteOptions.CacheSize.Value);
         }
-        
+
         if (sqliteOptions?.MmapSize.HasValue == true)
         {
             _logger.LogInformation("Set SQLite PRAGMA mmap_size = {MmapSize}", sqliteOptions.MmapSize.Value);
         }
-        
+
         _logger.LogInformation("Set SQLite PRAGMA temp_store = 2 (MEMORY)");
 
         options
