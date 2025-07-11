@@ -87,6 +87,8 @@ public partial class AudioNormalizationTask : IScheduledTask
             double nextPercent = numComplete + 1;
             nextPercent /= libraries.Length;
             nextPercent -= percent;
+            // Split the progress for this single library into two halves: album gain and track gain.
+            // The first half will be for album gain, the second half for track gain.
             nextPercent /= 2;
             var albumComplete = 0;
 
@@ -120,7 +122,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                     }
                 }
 
-                // Update progress
+                // Update sub-progress for album gain
                 albumComplete++;
                 double albumPercent = albumComplete;
                 albumPercent /= albums.Count;
@@ -128,6 +130,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                 progress.Report(100 * (percent + (albumPercent * nextPercent)));
             }
 
+            // Update progress to start at the track gain percent calculation
             percent += nextPercent;
 
             _itemRepository.SaveItems(albums, cancellationToken);
@@ -146,7 +149,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                         cancellationToken).ConfigureAwait(false);
                 }
 
-                // Update progress
+                // Update sub-progress for track gain
                 tracksComplete++;
                 double trackPercent = tracksComplete;
                 trackPercent /= tracks.Count;
