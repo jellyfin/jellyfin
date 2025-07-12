@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using EFCoreSecondLevelCacheInterceptor;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Cache;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
@@ -78,6 +80,17 @@ public static class ServiceCollectionExtensions
         IServerConfigurationManager configurationManager,
         IConfiguration configuration)
     {
+        serviceCollection.AddSingleton<IEFCacheServiceProvider>(c => new EFCacheProvider(
+            c.GetRequiredService<IEFDebugLogger>(),
+            configurationManager.Configuration.CacheSize));
+        serviceCollection.AddSingleton<JellyfinSecondLevelCacheInterceptor>();
+        serviceCollection.AddEFSecondLevelCache(options =>
+        {
+            options.UseCustomCacheProvider<EFCacheProvider>();
+            options.ConfigureLogging(true);
+            options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(5));
+        });
+
         var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
         JellyfinDbProviderFactory? providerFactory = null;
 
@@ -121,8 +134,10 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
+        serviceCollection.AddSingleton(providerFactory!);
 
+        serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, NoLockBehavior>();
+        /*
         switch (efCoreConfiguration.LockingBehavior)
         {
             case DatabaseLockingBehaviorTypes.NoLock:
@@ -135,11 +150,13 @@ public static class ServiceCollectionExtensions
                 serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
                 break;
         }
+        */
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
             provider.Initialise(opt);
+            opt.AddInterceptors(serviceProvider.GetRequiredService<JellyfinSecondLevelCacheInterceptor>());
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);
         });
