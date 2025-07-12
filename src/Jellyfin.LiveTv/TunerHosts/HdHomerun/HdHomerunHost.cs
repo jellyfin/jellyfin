@@ -40,7 +40,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
         private readonly JsonSerializerOptions _jsonOptions;
 
-        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+        private readonly Dictionary<string, DiscoverResponse> _modelCache = [];
 
         public HdHomerunHost(
             IServerConfigurationManager config,
@@ -382,7 +382,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             return list;
         }
 
-        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IReadOnlyList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var tunerCount = tunerHost.TunerCount;
 

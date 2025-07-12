@@ -1,7 +1,8 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
-using System;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Entities
@@ -16,7 +17,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public VirtualFolderInfo()
         {
-            Locations = Array.Empty<string>();
+            Locations = [];
         }
 
         /// <summary>

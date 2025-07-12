@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public SeriesTimerInfo()
         {
-            Days = new List<DayOfWeek>();
+            Days = [];
             SkipEpisodesInLibrary = true;
             KeepUntil = KeepUntil.UntilDeleted;
         }
@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the days.
         /// </summary>
         /// <value>The days.</value>
-        public List<DayOfWeek> Days { get; set; }
+        public IReadOnlyList<DayOfWeek> Days { get; set; }
 
         /// <summary>
         /// Gets or sets the priority.

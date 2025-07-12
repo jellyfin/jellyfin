@@ -1,7 +1,7 @@
 #nullable disable
-#pragma warning disable CS1591
 
-using System;
+#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CS1591
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.LiveTv
     {
         public LiveTvServiceInfo()
         {
-            Tuners = Array.Empty<string>();
+            Tuners = [];
         }
 
         /// <summary>
