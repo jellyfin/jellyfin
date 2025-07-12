@@ -1,4 +1,5 @@
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -17,10 +18,16 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
             var optionsBuilder = new DbContextOptionsBuilder<JellyfinDbContext>();
             optionsBuilder.UseSqlite("Data Source=jellyfin.db", f => f.MigrationsAssembly(GetType().Assembly));
 
+            var databaseConfig = new DatabaseConfigurationOptions
+            {
+                DatabaseType = "Jellyfin-SQLite",
+                LockingBehavior = DatabaseLockingBehaviorTypes.NoLock
+            };
+
             return new JellyfinDbContext(
                 optionsBuilder.Options,
                 NullLogger<JellyfinDbContext>.Instance,
-                new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
+                new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance, databaseConfig),
                 new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
         }
     }
