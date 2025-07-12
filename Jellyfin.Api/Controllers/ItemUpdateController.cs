@@ -158,7 +158,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
             ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
             Countries = _localizationManager.GetCountries().ToArray(),
-            Cultures = _localizationManager.GetCultures().ToArray()
+            Cultures = _localizationManager.GetCultures()
+                .GroupBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .OrderBy(c => c.DisplayName)
+                .ToArray()
         };
 
         if (!item.IsVirtualItem
