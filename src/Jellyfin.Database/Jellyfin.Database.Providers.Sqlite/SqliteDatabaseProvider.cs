@@ -82,10 +82,27 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         // Log per-connection SQLite PRAGMAs set through SqlitePragmaInterceptor once at startup
         _logger.LogInformation("Set SQLite PRAGMA journal_mode = {JournalMode}", _databaseConfig.SqliteOptions.JournalMode);
-        _logger.LogInformation("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", _databaseConfig.SqliteOptions.JournalSizeLimit);
-        _logger.LogInformation("Set SQLite PRAGMA synchronous = {Synchronous}", _databaseConfig.SqliteOptions.Synchronous);
-        _logger.LogInformation("Set SQLite PRAGMA cache_size = {CacheSize}", _databaseConfig.SqliteOptions.CacheSize);
-        _logger.LogInformation("Set SQLite PRAGMA mmap_size = {MmapSize}", _databaseConfig.SqliteOptions.MmapSize);
+
+        if (_databaseConfig.SqliteOptions.JournalSizeLimit != SqliteOptions.DefaultJournalSizeLimit)
+        {
+            _logger.LogInformation("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", _databaseConfig.SqliteOptions.JournalSizeLimit);
+        }
+
+        if (_databaseConfig.SqliteOptions.Synchronous != SqliteOptions.DefaultSynchronous)
+        {
+            _logger.LogInformation("Set SQLite PRAGMA synchronous = {Synchronous}", _databaseConfig.SqliteOptions.Synchronous);
+        }
+
+        if (_databaseConfig.SqliteOptions.CacheSize != SqliteOptions.DefaultCacheSize)
+        {
+            _logger.LogInformation("Set SQLite PRAGMA cache_size = {CacheSize}", _databaseConfig.SqliteOptions.CacheSize);
+        }
+
+        if (_databaseConfig.SqliteOptions.MmapSize != SqliteOptions.DefaultMmapSize)
+        {
+            _logger.LogInformation("Set SQLite PRAGMA mmap_size = {MmapSize}", _databaseConfig.SqliteOptions.MmapSize);
+        }
+
         _logger.LogInformation("Set SQLite PRAGMA temp_store = MEMORY");
 
         options
