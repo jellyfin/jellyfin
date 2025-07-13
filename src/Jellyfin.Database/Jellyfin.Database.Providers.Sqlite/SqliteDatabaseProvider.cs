@@ -62,8 +62,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         _logger.LogInformation("Opening database {DatabasePath} with pooling={Pooling}", databasePath, _databaseConfig.SqliteOptions.Pooling);
 
-        // Only set page_size for new databases
-        if (!File.Exists(databasePath))
+        // Only set page_size for new databases if different from SQLite default
+        if (!File.Exists(databasePath) && _databaseConfig.SqliteOptions.PageSize != SqliteOptions.DefaultPageSize)
         {
             _logger.LogInformation("Set SQLite PRAGMA page_size = {PageSize} (new database)", _databaseConfig.SqliteOptions.PageSize);
 
