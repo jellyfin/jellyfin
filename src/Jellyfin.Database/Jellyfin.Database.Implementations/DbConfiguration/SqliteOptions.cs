@@ -8,6 +8,31 @@ namespace Jellyfin.Database.Implementations.DbConfiguration;
  public class SqliteOptions
 {
     /// <summary>
+    /// SQLite default journal size limit (unlimited).
+    /// </summary>
+    public const long DefaultJournalSizeLimit = -1;
+
+    /// <summary>
+    /// SQLite default cache size.
+    /// </summary>
+    public const int DefaultCacheSize = -2000;
+
+    /// <summary>
+    /// SQLite default memory-mapped I/O size.
+    /// </summary>
+    public const long DefaultMmapSize = 0;
+
+    /// <summary>
+    /// SQLite default page size.
+    /// </summary>
+    public const int DefaultPageSize = 4096;
+
+    /// <summary>
+    /// SQLite default synchronous setting for WAL mode.
+    /// </summary>
+    public const string DefaultSynchronous = "NORMAL"; // default for journal_mode = WAL
+
+    /// <summary>
     /// Gets or Sets the database directory path. Defaults to DataPath.
     /// </summary>
     public string DatabaseDirectory { get; set; } = string.Empty;

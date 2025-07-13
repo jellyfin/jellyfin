@@ -259,21 +259,33 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             command.CommandText = $"PRAGMA journal_mode = {sqliteOptions.JournalMode}";
             command.ExecuteNonQuery();
 
-            // Set journal size limit
-            command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
-            command.ExecuteNonQuery();
+            // Set journal size limit only if different from SQLite default
+            if (sqliteOptions.JournalSizeLimit != SqliteOptions.DefaultJournalSizeLimit)
+            {
+                command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
+                command.ExecuteNonQuery();
+            }
 
-            // Set synchronous
-            command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
-            command.ExecuteNonQuery();
+            // Set synchronous only if different from SQLite default for WAL mode
+            if (sqliteOptions.Synchronous != SqliteOptions.DefaultSynchronous)
+            {
+                command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
+                command.ExecuteNonQuery();
+            }
 
-            // Set cache size
-            command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
-            command.ExecuteNonQuery();
+            // Set cache size only if different from SQLite default
+            if (sqliteOptions.CacheSize != SqliteOptions.DefaultCacheSize)
+            {
+                command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
+                command.ExecuteNonQuery();
+            }
 
-            // Set mmap size
-            command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
-            command.ExecuteNonQuery();
+            // Set mmap size only if different from SQLite default
+            if (sqliteOptions.MmapSize != SqliteOptions.DefaultMmapSize)
+            {
+                command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
+                command.ExecuteNonQuery();
+            }
 
             // Set temp_store to MEMORY
             command.CommandText = "PRAGMA temp_store = MEMORY";
@@ -295,21 +307,33 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             command.CommandText = $"PRAGMA journal_mode = {sqliteOptions.JournalMode}";
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-            // Set journal size limit
-            command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            // Set journal size limit only if different from SQLite default
+            if (sqliteOptions.JournalSizeLimit != SqliteOptions.DefaultJournalSizeLimit)
+            {
+                command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
 
-            // Set synchronous
-            command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            // Set synchronous only if different from SQLite default for WAL mode
+            if (sqliteOptions.Synchronous != SqliteOptions.DefaultSynchronous)
+            {
+                command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
 
-            // Set cache size
-            command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            // Set cache size only if different from SQLite default
+            if (sqliteOptions.CacheSize != SqliteOptions.DefaultCacheSize)
+            {
+                command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
 
-            // Set mmap size
-            command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            // Set mmap size only if different from SQLite default
+            if (sqliteOptions.MmapSize != SqliteOptions.DefaultMmapSize)
+            {
+                command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             // Set temp_store to MEMORY
             command.CommandText = "PRAGMA temp_store = MEMORY";
