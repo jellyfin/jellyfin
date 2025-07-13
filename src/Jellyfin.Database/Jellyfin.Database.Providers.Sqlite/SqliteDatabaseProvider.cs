@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
@@ -41,9 +42,14 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
+        var sqliteConnectionBuilder = new SqliteConnectionStringBuilder();
+        sqliteConnectionBuilder.DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+        sqliteConnectionBuilder.Cache = Enum.Parse<SqliteCacheMode>(databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("cache", StringComparison.OrdinalIgnoreCase))?.Value ?? nameof(SqliteCacheMode.Default));
+        sqliteConnectionBuilder.Pooling = (databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("pooling", StringComparison.OrdinalIgnoreCase))?.Value ?? bool.FalseString).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
+
         options
             .UseSqlite(
-                $"Filename={Path.Combine(_applicationPaths.DataPath, "jellyfin.db")};Pooling=false",
+                sqliteConnectionBuilder.ToString(),
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
