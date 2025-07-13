@@ -24,11 +24,6 @@ public class DatabaseConfigurationOptions
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }
 
     /// <summary>
-    /// Gets or Sets the database directory path. If not set, defaults to DataPath.
-    /// </summary>
-    public string? DatabaseDirectory { get; set; }
-
-    /// <summary>
     /// Gets or Sets the SQLite-specific options.
     /// </summary>
     public SqliteOptions? SqliteOptions { get; set; }

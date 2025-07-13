@@ -97,7 +97,11 @@ public static class ServiceCollectionExtensions
                 efCoreConfiguration = new DatabaseConfigurationOptions()
                 {
                     DatabaseType = "Jellyfin-SQLite",
-                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock
+                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock,
+                    SqliteOptions = new SqliteOptions
+                    {
+                        DatabaseDirectory = configurationManager.ApplicationPaths.DataPath
+                    }
                 };
                 configurationManager.SaveConfiguration("database", efCoreConfiguration);
             }

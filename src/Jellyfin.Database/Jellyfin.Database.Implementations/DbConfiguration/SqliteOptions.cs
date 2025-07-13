@@ -5,30 +5,45 @@ namespace Jellyfin.Database.Implementations.DbConfiguration;
 /// <summary>
 /// SQLite-specific database configuration options.
 /// </summary>
-public class SqliteOptions
+ public class SqliteOptions
 {
     /// <summary>
-    /// Gets or Sets the SQLite journal mode. If null, defaults to "WAL".
+    /// Gets or Sets the database directory path. Defaults to DataPath.
     /// </summary>
-    public string? JournalMode { get; set; }
+    public string DatabaseDirectory { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or Sets the SQLite journal size limit in bytes. If null, defaults to 134217728 (128MB).
+    /// Gets or Sets a value indicating whether to enable SQLite connection pooling. Defaults to false.
     /// </summary>
-    public long? JournalSizeLimit { get; set; }
+    public bool Pooling { get; set; } = false;
 
     /// <summary>
-    /// Gets or Sets the SQLite cache size. No default - not set if not specified.
+    /// Gets or Sets the SQLite journal mode (PRAGMA journal_mode). Defaults to "WAL".
     /// </summary>
-    public int? CacheSize { get; set; }
+    public string JournalMode { get; set; } = "WAL";
 
     /// <summary>
-    /// Gets or Sets the SQLite memory-mapped I/O size. No default - not set if not specified.
+    /// Gets or Sets the SQLite journal size limit (PRAGMA journal_size_limit) in bytes. Defaults to 134217728 (128MB).
     /// </summary>
-    public long? MmapSize { get; set; }
+    public long JournalSizeLimit { get; set; } = 128 * 1024 * 1024;
 
     /// <summary>
-    /// Gets or Sets whether to enable SQLite connection pooling. If null, defaults to false.
+    /// Gets or Sets the SQLite cache size (PRAGMA cache_size). Negative values are expressed in kibibytes (1024 bytes), and positive numbers are expressed in SQLite pages.  Defaults to -2000 (2MB).
     /// </summary>
-    public bool? Pooling { get; set; }
+    public int CacheSize { get; set; } = -2000;
+
+    /// <summary>
+    /// Gets or Sets the SQLite memory-mapped I/O size (PRAGMA mmap_size) in bytes. Defaults to 0.
+    /// </summary>
+    public long MmapSize { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or Sets the SQLite page size (PRAGMA page_size) in bytes for new databases only. Defaults to 4096.
+    /// </summary>
+    public int PageSize { get; set; } = 4096;
+
+    /// <summary>
+    /// Gets or Sets the SQLite synchronous write behaviour (PRAGMA synchronous). Values are OFF, NORMAL, FULL, EXTRA. Defaults to NORMAL.
+    /// </summary>
+    public string Synchronous { get; set; } = "NORMAL";
 }

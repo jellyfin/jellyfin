@@ -45,33 +45,48 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options)
     {
-        var databaseDirectory = _databaseConfig.DatabaseDirectory ?? _applicationPaths.DataPath;
-        var databasePath = Path.Combine(databaseDirectory, "jellyfin.db");
-
-        var pooling = _databaseConfig.SqliteOptions?.Pooling ?? false;
-        var connectionString = $"Filename={databasePath};Pooling={pooling}";
-
-        _logger.LogInformation("Opening database {DatabasePath} with pooling={Pooling}", databasePath, pooling);
-
-        // Log SQLite configuration once at startup
-        var sqliteOptions = _databaseConfig.SqliteOptions;
-        var journalMode = sqliteOptions?.JournalMode ?? "WAL";
-        var journalSizeLimit = sqliteOptions?.JournalSizeLimit ?? (128 * 1024 * 1024);
-
-        _logger.LogInformation("Set SQLite PRAGMA journal_mode = {JournalMode}", journalMode);
-        _logger.LogInformation("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", journalSizeLimit);
-
-        if (sqliteOptions?.CacheSize.HasValue == true)
+        // Ensure SqliteOptions is never null for SQLite database type
+        if (_databaseConfig.SqliteOptions == null)
         {
-            _logger.LogInformation("Set SQLite PRAGMA cache_size = {CacheSize}", sqliteOptions.CacheSize.Value);
+            _databaseConfig.SqliteOptions = new SqliteOptions();
         }
 
-        if (sqliteOptions?.MmapSize.HasValue == true)
+        // Set DatabaseDirectory default if not set
+        if (string.IsNullOrEmpty(_databaseConfig.SqliteOptions.DatabaseDirectory))
         {
-            _logger.LogInformation("Set SQLite PRAGMA mmap_size = {MmapSize}", sqliteOptions.MmapSize.Value);
+            _databaseConfig.SqliteOptions.DatabaseDirectory = _applicationPaths.DataPath;
         }
 
-        _logger.LogInformation("Set SQLite PRAGMA temp_store = 2 (MEMORY)");
+        var databasePath = Path.Combine(_databaseConfig.SqliteOptions.DatabaseDirectory, "jellyfin.db");
+        var connectionString = $"Filename={databasePath};Pooling={_databaseConfig.SqliteOptions.Pooling}";
+
+        _logger.LogInformation("Opening database {DatabasePath} with pooling={Pooling}", databasePath, _databaseConfig.SqliteOptions.Pooling);
+
+        // Only set page_size for new databases
+        if (!File.Exists(databasePath))
+        {
+            _logger.LogInformation("Set SQLite PRAGMA page_size = {PageSize} (new database)", _databaseConfig.SqliteOptions.PageSize);
+
+            using var rawConnection = new SqliteConnection(connectionString);
+            rawConnection.Open();
+            using var command = rawConnection.CreateCommand();
+
+#pragma warning disable CA2100 // Review if the query string passed to 'string SqliteCommand.CommandText' accepts any user input
+            // SQLite PRAGMA processor is not susceptible to SQL injection. It only processes one PRAGMA command and does not allow multiple commands separated by ;.
+            command.CommandText = $"PRAGMA page_size = {_databaseConfig.SqliteOptions.PageSize}";
+            command.ExecuteNonQuery();
+#pragma warning restore CA2100
+
+            rawConnection.Close();
+        }
+
+        // Log per-connection SQLite PRAGMAs set through SqlitePragmaInterceptor once at startup
+        _logger.LogInformation("Set SQLite PRAGMA journal_mode = {JournalMode}", _databaseConfig.SqliteOptions.JournalMode);
+        _logger.LogInformation("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", _databaseConfig.SqliteOptions.JournalSizeLimit);
+        _logger.LogInformation("Set SQLite PRAGMA synchronous = {Synchronous}", _databaseConfig.SqliteOptions.Synchronous);
+        _logger.LogInformation("Set SQLite PRAGMA cache_size = {CacheSize}", _databaseConfig.SqliteOptions.CacheSize);
+        _logger.LogInformation("Set SQLite PRAGMA mmap_size = {MmapSize}", _databaseConfig.SqliteOptions.MmapSize);
+        _logger.LogInformation("Set SQLite PRAGMA temp_store = MEMORY");
 
         options
             .UseSqlite(
@@ -136,8 +151,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
         var key = DateTime.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture);
-        var databaseDirectory = _databaseConfig.DatabaseDirectory ?? _applicationPaths.DataPath;
-        var path = Path.Combine(databaseDirectory, "jellyfin.db");
+        var path = Path.Combine(_databaseConfig.SqliteOptions!.DatabaseDirectory, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
         Directory.CreateDirectory(backupFile);
 
@@ -151,8 +165,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         // ensure there are absolutly no dangling Sqlite connections.
         SqliteConnection.ClearAllPools();
-        var databaseDirectory = _databaseConfig.DatabaseDirectory ?? _applicationPaths.DataPath;
-        var path = Path.Combine(databaseDirectory, "jellyfin.db");
+        var path = Path.Combine(_databaseConfig.SqliteOptions!.DatabaseDirectory, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");
 
         if (!File.Exists(backupFile))
@@ -234,87 +247,73 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         private void ApplyPragmaSettings(SqliteConnection connection)
         {
-            var sqliteOptions = _databaseConfig.SqliteOptions;
+            _logger.LogDebug("Setting SQLite PRAGMAs on new connection");
+            var sqliteOptions = _databaseConfig.SqliteOptions!;
 
             using var command = connection.CreateCommand();
 
 #pragma warning disable CA2100 // Review if the query string passed to 'string SqliteCommand.CommandText' accepts any user input
             // SQLite PRAGMA processor is not susceptible to SQL injection. It only processes one PRAGMA command and does not allow multiple commands separated by ;.
-            // Set journal mode (default WAL)
-            var journalMode = sqliteOptions?.JournalMode ?? "WAL";
-            command.CommandText = $"PRAGMA journal_mode = {journalMode}";
+
+            // Set journal mode
+            command.CommandText = $"PRAGMA journal_mode = {sqliteOptions.JournalMode}";
             command.ExecuteNonQuery();
-            _logger.LogDebug("Set SQLite PRAGMA journal_mode = {JournalMode}", journalMode);
 
-            // Set journal size limit (default 128MB)
-            var journalSizeLimit = sqliteOptions?.JournalSizeLimit ?? (128 * 1024 * 1024);
-            command.CommandText = $"PRAGMA journal_size_limit = {journalSizeLimit}";
+            // Set journal size limit
+            command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
             command.ExecuteNonQuery();
-            _logger.LogDebug("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", journalSizeLimit);
 
-            // Set cache size if specified (uses SQLite default if not specified)
-            if (sqliteOptions?.CacheSize.HasValue == true)
-            {
-                command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize.Value}";
-                command.ExecuteNonQuery();
-                _logger.LogDebug("Set SQLite PRAGMA cache_size = {CacheSize}", sqliteOptions.CacheSize.Value);
-            }
+            // Set synchronous
+            command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
+            command.ExecuteNonQuery();
 
-            // Set mmap size if specified (uses SQLite default if not specified)
-            if (sqliteOptions?.MmapSize.HasValue == true)
-            {
-                command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize.Value}";
-                command.ExecuteNonQuery();
-                _logger.LogDebug("Set SQLite PRAGMA mmap_size = {MmapSize}", sqliteOptions.MmapSize.Value);
-            }
+            // Set cache size
+            command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
+            command.ExecuteNonQuery();
+
+            // Set mmap size
+            command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
+            command.ExecuteNonQuery();
 
             // Set temp_store to MEMORY
-            command.CommandText = "PRAGMA temp_store = 2";
+            command.CommandText = "PRAGMA temp_store = MEMORY";
             command.ExecuteNonQuery();
-            _logger.LogDebug("Set SQLite PRAGMA temp_store = 2 (MEMORY)");
 #pragma warning restore CA2100
         }
 
         private async Task ApplyPragmaSettingsAsync(SqliteConnection connection, CancellationToken cancellationToken)
         {
-            var sqliteOptions = _databaseConfig.SqliteOptions;
+            _logger.LogDebug("Setting SQLite PRAGMAs on new connection");
+            var sqliteOptions = _databaseConfig.SqliteOptions!;
 
             using var command = connection.CreateCommand();
 
 #pragma warning disable CA2100 // Review if the query string passed to 'string SqliteCommand.CommandText' accepts any user input
             // SQLite PRAGMA processor is not susceptible to SQL injection. It only processes one PRAGMA command and does not allow multiple commands separated by ;.
-            // Set journal mode (default WAL)
-            var journalMode = sqliteOptions?.JournalMode ?? "WAL";
-            command.CommandText = $"PRAGMA journal_mode = {journalMode}";
+
+            // Set journal mode
+            command.CommandText = $"PRAGMA journal_mode = {sqliteOptions.JournalMode}";
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Set SQLite PRAGMA journal_mode = {JournalMode}", journalMode);
 
-            // Set journal size limit (default 128MB)
-            var journalSizeLimit = sqliteOptions?.JournalSizeLimit ?? (128 * 1024 * 1024);
-            command.CommandText = $"PRAGMA journal_size_limit = {journalSizeLimit}";
+            // Set journal size limit
+            command.CommandText = $"PRAGMA journal_size_limit = {sqliteOptions.JournalSizeLimit}";
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Set SQLite PRAGMA journal_size_limit = {JournalSizeLimit}", journalSizeLimit);
 
-            // Set cache size if specified (uses SQLite default if not specified)
-            if (sqliteOptions?.CacheSize.HasValue == true)
-            {
-                command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize.Value}";
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-                _logger.LogDebug("Set SQLite PRAGMA cache_size = {CacheSize}", sqliteOptions.CacheSize.Value);
-            }
+            // Set synchronous
+            command.CommandText = $"PRAGMA synchronous = {sqliteOptions.Synchronous}";
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-            // Set mmap size if specified (uses SQLite default if not specified)
-            if (sqliteOptions?.MmapSize.HasValue == true)
-            {
-                command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize.Value}";
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-                _logger.LogDebug("Set SQLite PRAGMA mmap_size = {MmapSize}", sqliteOptions.MmapSize.Value);
-            }
+            // Set cache size
+            command.CommandText = $"PRAGMA cache_size = {sqliteOptions.CacheSize}";
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+            // Set mmap size
+            command.CommandText = $"PRAGMA mmap_size = {sqliteOptions.MmapSize}";
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
             // Set temp_store to MEMORY
-            command.CommandText = "PRAGMA temp_store = 2";
+            command.CommandText = "PRAGMA temp_store = MEMORY";
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Set SQLite PRAGMA temp_store = 2 (MEMORY)");
 #pragma warning restore CA2100
         }
     }
