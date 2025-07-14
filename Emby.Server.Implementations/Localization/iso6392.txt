@@ -373,7 +373,7 @@ sam|||Samaritan Aramaic|samaritain
 san||sa|Sanskrit|sanskrit
 sas|||Sasak|sasak
 sat|||Santali|santal
-scc|srp|sr|Serbian|serbe
+srp||sr|Serbian|serbe
 scn|||Sicilian|sicilien
 sco|||Scots|écossais
 sel|||Selkup|selkoupe
