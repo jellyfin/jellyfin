@@ -24,6 +24,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BitFaster.Caching" />
+    <PackageReference Include="EFCoreSecondLevelCacheInterceptor" />
     <PackageReference Include="Polly" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
