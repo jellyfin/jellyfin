@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} leidžia {1} į {2}",
     "UserStoppedPlayingItemWithValues": "{0} baigė leisti {1} į {2}",
     "ValueHasBeenAddedToLibrary": "{0} pridėtas į mediateką",
-    "ValueSpecialEpisodeName": "Ypatinga - {0}",
+    "ValueSpecialEpisodeName": "Ypatingų - {0}",
     "VersionNumber": "Versija {0}",
     "TaskUpdatePluginsDescription": "Atsisiunčia ir įdiegia įskiepių, kurie sukonfigūruoti atnaujinti automatiškai, naujinius.",
     "TaskUpdatePlugins": "Atnaujinti įskieius",
