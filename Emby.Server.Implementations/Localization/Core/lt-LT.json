@@ -8,7 +8,7 @@
     "CameraImageUploadedFrom": "Nauja nuotrauka įkelta iš kameros {0}",
     "Channels": "Kanalai",
     "ChapterNameValue": "Scena{0}",
-    "Collections": "Kolekcijos",
+    "Collections": "Rinkiniai",
     "DeviceOfflineWithName": "{0} buvo atjungtas",
     "DeviceOnlineWithName": "{0} prisijungęs",
     "FailedLoginAttemptWithUserName": "Nesėkmingas {0} bandymas prisijungti",
@@ -136,5 +136,7 @@
     "TaskExtractMediaSegmentsDescription": "Ištraukia arba gauna medijos segmentus iš MediaSegment ijungtų papildinių.",
     "TaskMoveTrickplayImages": "Pakeisti Trickplay vaizdų vietą",
     "TaskMoveTrickplayImagesDescription": "Perkelia egzistuojančius trickplay failus pagal bibliotekos nustatymus.",
-    "TaskDownloadMissingLyricsDescription": "Parsisiųsti dainų žodžius"
+    "TaskDownloadMissingLyricsDescription": "Parsisiųsti dainų žodžius",
+    "CleanupUserDataTask": "Naudotojo duomenų valymo užduotis",
+    "CleanupUserDataTaskDescription": "Iš medijos, kurios nebėra bent 90 dienų, išvalo visus naudotojo duomenis (žiūrėjimo būseną, mėgstamiausią būseną ir t. t.)."
 }
