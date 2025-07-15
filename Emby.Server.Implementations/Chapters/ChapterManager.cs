@@ -179,7 +179,7 @@ public class ChapterManager : IChapterManager
                 var dummyChapters = CreateDummyChapters(video);
                 if (dummyChapters.Length > 1)
                 {
-                    _logger.LogInformation("Created {Count} dummy chapters for {Video}", chapters.Count, video.Name);
+                    _logger.LogInformation("Created {Count} dummy chapters for {Video}", dummyChapters.Length, video.Name);
                     chapters = dummyChapters;
                     changesMade = true;
                 }
