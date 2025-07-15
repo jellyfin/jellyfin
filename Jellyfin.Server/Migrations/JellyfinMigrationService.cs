@@ -17,6 +17,7 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations;
@@ -105,6 +106,13 @@ internal class JellyfinMigrationService
             var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator
+                    ?? throw new InvalidOperationException("Jellyfin does only support relational databases.");
+                if (!await databaseCreator.ExistsAsync().ConfigureAwait(false))
+                {
+                    await databaseCreator.CreateAsync().ConfigureAwait(false);
+                }
+
                 var historyRepository = dbContext.GetService<IHistoryRepository>();
 
                 await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
