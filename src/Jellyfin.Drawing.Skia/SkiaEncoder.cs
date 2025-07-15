@@ -202,18 +202,41 @@ public class SkiaEncoder : IImageEncoder
             }
         }
 
-        using var codec = SKCodec.Create(path, out SKCodecResult result);
+        var safePath = NormalizePath(path);
+        if (new FileInfo(safePath).Length == 0)
+        {
+            _logger.LogDebug("Skip zero‑byte image {FilePath}", path);
+            return default;
+        }
+
+        using var codec = SKCodec.Create(safePath, out var result);
+
         switch (result)
         {
             case SKCodecResult.Success:
+            case SKCodecResult.InternalError when codec is not null:
                 var info = codec.Info;
                 return new ImageDimensions(info.Width, info.Height);
+
             case SKCodecResult.Unimplemented:
                 _logger.LogDebug("Image format not supported: {FilePath}", path);
                 return default;
+
             default:
-                _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
+            {
+                var boundsInfo = SKBitmap.DecodeBounds(safePath);
+
+                if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                {
+                    return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                }
+
+                _logger.LogWarning(
+                    "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
+                    path,
+                    result);
                 return default;
+            }
         }
     }
 
