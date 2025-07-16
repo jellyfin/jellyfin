@@ -214,6 +214,12 @@ public class SkiaEncoder : IImageEncoder
         switch (result)
         {
             case SKCodecResult.Success:
+            // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
+            // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
+            // `SKCodec.Create` returns a *non‑null* codec together with
+            // SKCodecResult.InternalError.  The header still contains valid dimensions,
+            // which is all we need here – so we fall back to them instead of aborting.
+            // See e.g. Skia bugs #4139, #6092.
             case SKCodecResult.InternalError when codec is not null:
                 var info = codec.Info;
                 return new ImageDimensions(info.Width, info.Height);
