@@ -182,13 +182,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             for (var i = 0; i < pathInfos.Count; i++)
             {
-                mediaStreams[i] = new MediaStream
-                {
-                    Type = MediaStreamType.Lyric,
-                    Path = pathInfos[i].Path,
-                    Language = pathInfos[i].Language,
-                    Index = startIndex++
-                };
+                mediaStreams[i] = new MediaStream { Type = MediaStreamType.Lyric, Path = pathInfos[i].Path, Language = pathInfos[i].Language, Index = startIndex++ };
             }
 
             return mediaStreams;
@@ -232,15 +226,38 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var externalPathInfos = new List<ExternalPathParserResult>();
+            var useFallbackDetection = true;
             ReadOnlySpan<char> prefix = video.FileNameWithoutExtension;
+
+            var delimiter = " - ";
+            var parts = video.FileNameWithoutExtension.Split(delimiter, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            ReadOnlySpan<char> fallbackPrefix = parts[0];
+            ReadOnlySpan<char> fallbackSuffix = parts.Length > 1 ? parts[1] : ReadOnlySpan<char>.Empty;
+
             foreach (var file in files)
             {
+                var fileExtension = Path.GetExtension(file.AsSpan()).ToString();
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
+                var fileParts = fileNameWithoutExtension.ToString().Split(delimiter, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                ReadOnlySpan<char> filePrefix = parts[0];
+                ReadOnlySpan<char> fileSuffix = fileParts.Length > 1 ? fileParts[1] : ReadOnlySpan<char>.Empty;
+
                 if (fileNameWithoutExtension.Length >= prefix.Length
                     && prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
                     && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
+                    useFallbackDetection = false;
                     var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
+
+                    if (externalPathInfo is not null)
+                    {
+                        externalPathInfos.Add(externalPathInfo);
+                    }
+                }
+                else if (useFallbackDetection && fallbackPrefix.Equals(filePrefix, StringComparison.OrdinalIgnoreCase) && !fallbackSuffix.IsEmpty && fileSuffix.IsEmpty
+                                              && Array.Exists(_namingOptions.SubtitleFileExtensions, ext => ext.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[fallbackPrefix.Length..].ToString());
 
                     if (externalPathInfo is not null)
                     {
@@ -316,15 +333,7 @@ namespace MediaBrowser.Providers.MediaInfo
             cancellationToken.ThrowIfCancellationRequested();
 
             return _mediaEncoder.GetMediaInfo(
-                new MediaInfoRequest
-                {
-                    MediaType = type,
-                    MediaSource = new MediaSourceInfo
-                    {
-                        Path = path,
-                        Protocol = MediaProtocol.File
-                    }
-                },
+                new MediaInfoRequest { MediaType = type, MediaSource = new MediaSourceInfo { Path = path, Protocol = MediaProtocol.File } },
                 cancellationToken);
         }
 
