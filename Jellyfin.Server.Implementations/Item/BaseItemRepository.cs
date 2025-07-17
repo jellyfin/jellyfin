@@ -110,6 +110,20 @@ public sealed class BaseItemRepository
         using var transaction = context.Database.BeginTransaction();
 
         var date = (DateTime?)DateTime.UtcNow;
+
+        // Remove any UserData entries for the placeholder item that would conflict with the UserData
+        // being detached from the item being deleted. This is necessary because, during an update,
+        // UserData may be reattached to a new entry, but some entries can be left behind.
+        // Ensures there are no duplicate UserId/CustomDataKey combinations for the placeholder.
+        context.UserData
+            .Join(
+                context.UserData.Where(e => e.ItemId == id),
+                placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
+                userData => new { userData.UserId, userData.CustomDataKey },
+                (placeholder, userData) => placeholder)
+            .Where(e => e.ItemId == PlaceholderId)
+            .ExecuteDelete();
+
         // Detach all user watch data
         context.UserData.Where(e => e.ItemId == id)
             .ExecuteUpdate(e => e
