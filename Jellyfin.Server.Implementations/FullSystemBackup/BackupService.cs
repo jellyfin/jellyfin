@@ -165,6 +165,13 @@ public class BackupService : IBackupService
 
                     var historyRepository = dbContext.GetService<IHistoryRepository>();
                     await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                    }
+
                     foreach (var item in historyEntries)
                     {
                         var insertScript = historyRepository.GetInsertScript(item);
