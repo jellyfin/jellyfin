@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -65,6 +66,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         }
 
         Query.DelayBetweenRequests = configuration.RateLimit;
+        _musicBrainzQuery?.Dispose();
         _musicBrainzQuery = new Query();
     }
 
@@ -271,6 +273,48 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             if (!string.IsNullOrEmpty(releaseGroupId))
             {
                 result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
+            }
+        }
+
+        if (Plugin.Instance != null && Plugin.Instance.Configuration.GetMissingTrackInfo)
+        {
+            var children = result.Item.Children.ToArray();
+            if (children.Any(s => s is Audio && s.IndexNumber == null) && releaseId != null)
+            {
+                var rspobj = await _musicBrainzQuery.LookupReleaseAsync(Guid.Parse(releaseId), Include.Recordings, cancellationToken).ConfigureAwait(false);
+
+                var tracks = new List<ITrack>();
+
+                if (rspobj.Media != null)
+                {
+                    foreach (var t in rspobj.Media.Where(x => x.Tracks != null).SelectMany(x => x.Tracks!))
+                    {
+                        tracks.Add(t);
+                    }
+                }
+
+                foreach (var c in children.Where(x =>
+                    x is Audio &&
+                    children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
+                    x.MediaType == MediaType.Audio &&
+                    ((x.RunTimeTicks == null) || (x.IndexNumber == null))))
+                {
+                    long? ticks = c.RunTimeTicks;
+                    int? index = c.IndexNumber;
+                    var trk = tracks.FirstOrDefault(t => string.Equals(t.Title, c.Name, StringComparison.OrdinalIgnoreCase));
+                    c.RunTimeTicks ??= trk?.Length?.Ticks ?? 0L;
+
+                    c.IndexNumber ??= trk?.Position;
+
+                    if ((ticks != c.RunTimeTicks) || (index != c.IndexNumber))
+                    {
+                        if (children.Where(p => Guid.Equals(p.Id, c.ParentId)).FirstOrDefault() is MusicAlbum parent)
+                        {
+                            parent.AddChild(c);
+                            result.Item.AddChild(parent);
+                        }
+                    }
+                }
             }
         }
 
