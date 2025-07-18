@@ -18,6 +18,8 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv
@@ -32,6 +34,7 @@ namespace Jellyfin.LiveTv
         private readonly IRecordingsManager _recordingsManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerAddressesFeature _serverAddresses;
         private readonly ILiveTvService[] _services;
 
         public LiveTvMediaSourceProvider(
@@ -40,13 +43,15 @@ namespace Jellyfin.LiveTv
             IRecordingsManager recordingsManager,
             IMediaSourceManager mediaSourceManager,
             ILibraryManager libraryManager,
-            IEnumerable<ILiveTvService> services)
+            IEnumerable<ILiveTvService> services,
+            IServer server)
         {
             _logger = logger;
             _appHost = appHost;
             _recordingsManager = recordingsManager;
             _mediaSourceManager = mediaSourceManager;
             _libraryManager = libraryManager;
+            _serverAddresses = server.Features.Get<IServerAddressesFeature>();
             _services = services.ToArray();
         }
 
@@ -118,7 +123,7 @@ namespace Jellyfin.LiveTv
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
                 {
-                    source.Path = _appHost.GetApiUrlForLocalAccess();
+                    source.Path = _appHost.GetApiUrlForLocalAccess(_serverAddresses);
                 }
             }
 
