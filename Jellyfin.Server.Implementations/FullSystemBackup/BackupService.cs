@@ -39,7 +39,7 @@ public class BackupService : IBackupService
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
     };
 
-    private readonly Version _backupEngineVersion = Version.Parse("0.1.0");
+    private readonly Version _backupEngineVersion = Version.Parse("0.2.0");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupService"/> class.
@@ -196,7 +196,7 @@ public class BackupService : IBackupService
                     {
                         _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
 
-                        var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Join("Database", $"{entityType.Type.Name}.json")));
+                        var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
                             _logger.LogInformation("No backup of expected table {Table} is present in backup. Continue anyway.", entityType.Type.Name);
