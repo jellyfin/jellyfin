@@ -199,6 +199,7 @@
  - [allesmi](https://github.com/allesmi)
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
+ - [theshoeshiner](https://github.com/theshoeshiner)
 
 # Emby Contributors
 
