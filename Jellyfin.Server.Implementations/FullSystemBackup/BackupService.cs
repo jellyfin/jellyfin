@@ -120,10 +120,10 @@ public class BackupService : IBackupService
 
             void CopyDirectory(string source, string target)
             {
-                var fullSourcePath = Path.GetFullPath(source) + Path.DirectorySeparatorChar;
+                var fullSourcePath = NormalizePathSeparator(Path.GetFullPath(source) + Path.DirectorySeparatorChar);
                 foreach (var item in zipArchive.Entries)
                 {
-                    var sanitizedSourcePath = Path.GetFullPath(item.FullName);
+                    var sanitizedSourcePath = NormalizePathSeparator(Path.GetFullPath(item.FullName));
                     if (!sanitizedSourcePath.StartsWith(fullSourcePath, StringComparison.Ordinal))
                     {
                         continue;
@@ -148,7 +148,7 @@ public class BackupService : IBackupService
                 await using (dbContext.ConfigureAwait(false))
                 {
                     // restore migration history manually
-                    var historyEntry = zipArchive.GetEntry(Path.Combine("Database", $"{nameof(HistoryRow)}.json"));
+                    var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
                     if (historyEntry is null)
                     {
                         _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
@@ -193,7 +193,7 @@ public class BackupService : IBackupService
                     {
                         _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
 
-                        var zipEntry = zipArchive.GetEntry(Path.Join("Database", $"{entityType.Type.Name}.json"));
+                        var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Join("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
                             _logger.LogInformation("No backup of expected table {Table} is present in backup. Continue anyway.", entityType.Type.Name);
@@ -316,7 +316,7 @@ public class BackupService : IBackupService
                     foreach (var entityType in entityTypes)
                     {
                         _logger.LogInformation("Begin backup of entity {Table}", entityType.SourceName);
-                        var zipEntry = zipArchive.CreateEntry(Path.Combine("Database", $"{entityType.SourceName}.json"));
+                        var zipEntry = zipArchive.CreateEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.SourceName}.json")));
                         var entities = 0;
                         var zipEntryStream = zipEntry.Open();
                         await using (zipEntryStream.ConfigureAwait(false))
@@ -354,7 +354,7 @@ public class BackupService : IBackupService
             foreach (var item in Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.xml", SearchOption.TopDirectoryOnly)
               .Union(Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.json", SearchOption.TopDirectoryOnly)))
             {
-                zipArchive.CreateEntryFromFile(item, Path.Combine("Config", Path.GetFileName(item)));
+                zipArchive.CreateEntryFromFile(item, NormalizePathSeparator(Path.Combine("Config", Path.GetFileName(item))));
             }
 
             void CopyDirectory(string source, string target, string filter = "*")
@@ -368,7 +368,7 @@ public class BackupService : IBackupService
 
                 foreach (var item in Directory.EnumerateFiles(source, filter, SearchOption.AllDirectories))
                 {
-                    zipArchive.CreateEntryFromFile(item, Path.Combine(target, Path.GetRelativePath(source, item)));
+                    zipArchive.CreateEntryFromFile(item, NormalizePathSeparator(Path.Combine(target, Path.GetRelativePath(source, item))));
                 }
             }
 
@@ -516,4 +516,14 @@ public class BackupService : IBackupService
             Database = options.Database
         };
     }
+
+    /// <summary>
+    /// Windows is able to handle '/' as a path seperator in zip files
+    /// but linux isn't able to handle '\' as a path seperator in zip files,
+    /// So normalize to '/'.
+    /// </summary>
+    /// <param name="path">The path to normalize.</param>
+    /// <returns>The normalized path. </returns>
+    private static string NormalizePathSeparator(string path)
+        => path.Replace('\\', '/');
 }
