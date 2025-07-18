@@ -1071,9 +1071,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-                if (exitCode == -1)
+                if (!ranToCompletion || processWrapper.ExitCode != 0)
                 {
                     _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
                     // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
