@@ -199,6 +199,7 @@
  - [allesmi](https://github.com/allesmi)
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
+ - [Eytam Levine](https://github.com/Eyt-Lev)
 
 # Emby Contributors
 
