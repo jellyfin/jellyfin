@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "Sposta le immagini Trickplay",
     "TaskMoveTrickplayImagesDescription": "Sposta le immagini Trickplay esistenti secondo la configurazione della libreria.",
     "TaskExtractMediaSegmentsDescription": "Estrae o ottiene segmenti multimediali dai plugin abilitati MediaSegment.",
-    "TaskExtractMediaSegments": "Scansiona Segmento Media"
+    "TaskExtractMediaSegments": "Scansiona Segmento Media",
+    "CleanupUserDataTask": "Task di pulizia dei dati utente",
+    "CleanupUserDataTaskDescription": "Pulisce tutti i dati utente (stato di visione, status preferiti, ecc.) dai contenuti non più presenti da almeno 90 giorni."
 }

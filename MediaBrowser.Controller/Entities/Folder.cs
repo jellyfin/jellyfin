@@ -695,7 +695,7 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query, true);
+                return PostFilterAndSort(items, query);
             }
 
             if (this is not UserRootFolder
@@ -959,10 +959,10 @@ namespace MediaBrowser.Controller.Entities
                 items = GetChildren(user, true, childQuery).Where(filter);
             }
 
-            return PostFilterAndSort(items, query, true);
+            return PostFilterAndSort(items, query);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
+        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
         {
             var user = query.User;
 
@@ -995,7 +995,7 @@ namespace MediaBrowser.Controller.Entities
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
+            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
@@ -275,10 +276,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _mediaStreamRepository.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
 
-            if (mediaAttachments.Any())
-            {
-                _mediaAttachmentRepository.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
-            }
+            _mediaAttachmentRepository.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
                 || options.MetadataRefreshMode == MetadataRefreshMode.Default)
@@ -516,12 +514,15 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var person in data.People)
                 {
-                    PeopleHelper.AddPerson(people, new PersonInfo
+                    if (!string.IsNullOrWhiteSpace(person.Name))
                     {
-                        Name = person.Name.Trim(),
-                        Type = person.Type,
-                        Role = person.Role.Trim()
-                    });
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = person.Name,
+                            Type = person.Type,
+                            Role = person.Role.Trim()
+                        });
+                    }
                 }
 
                 _libraryManager.UpdatePeople(video, people);

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller;
@@ -78,6 +79,8 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
 
     WHERE NOT EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
 """);
+
+            var importedUserData = new Dictionary<Guid, List<UserData>>();
             foreach (var entity in queryResult)
             {
                 var userData = MigrateLibraryDb.GetUserData(users, entity, userIdBlacklist, _logger);
@@ -95,9 +98,22 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
                     continue;
                 }
 
+                var ogId = userData.ItemId;
                 userData.ItemId = BaseItemRepository.PlaceholderId;
                 userData.RetentionDate = retentionDate;
-                dbContext.UserData.Add(userData);
+                if (!importedUserData.TryGetValue(ogId, out var importUserData))
+                {
+                    importUserData = [];
+                    importedUserData[ogId] = importUserData;
+                }
+
+                importUserData.Add(userData);
+            }
+
+            foreach (var item in importedUserData)
+            {
+                await dbContext.UserData.Where(e => e.ItemId == item.Key).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                dbContext.UserData.AddRange(item.Value.DistinctBy(e => e.CustomDataKey)); // old userdata can have fucked up duplicates
             }
 
             _logger.LogInformation("Try saving {NewSaved} UserData entries.", dbContext.UserData.Local.Count);

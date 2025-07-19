@@ -200,20 +200,26 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
             foreach (var albumArtist in item.AlbumArtists)
             {
-                PeopleHelper.AddPerson(people, new PersonInfo
+                if (!string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    Name = albumArtist.Trim(),
-                    Type = PersonKind.AlbumArtist
-                });
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = albumArtist,
+                        Type = PersonKind.AlbumArtist
+                    });
+                }
             }
 
             foreach (var artist in item.Artists)
             {
-                PeopleHelper.AddPerson(people, new PersonInfo
+                if (!string.IsNullOrWhiteSpace(artist))
                 {
-                    Name = artist.Trim(),
-                    Type = PersonKind.Artist
-                });
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = artist,
+                        Type = PersonKind.Artist
+                    });
+                }
             }
 
             LibraryManager.UpdatePeople(item, people);
