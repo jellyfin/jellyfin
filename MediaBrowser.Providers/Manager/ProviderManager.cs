@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -24,6 +22,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -205,27 +204,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         contentType = MediaTypeNames.Image.Png;
                     }
-                    else
-                    {
-                        // Deduce content type from file extension
-                        contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
-                    }
-
-                    // Throw if we still can't determine the content type
-                    if (string.IsNullOrEmpty(contentType))
-                    {
-                        throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
-                    }
                 }
 
-                // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
-                if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
-                }
-
-                // some iptv/epg providers don't correctly report media type, extract from url if no extension found
-                if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+                // some providers don't correctly report media type, extract from url if no extension found
+                if (contentType is null || contentType.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
                 {
                     // Strip query parameters from url to get actual path.
                     contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
@@ -233,7 +215,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new HttpRequestException($"Request returned {contentType} instead of an image type", null, HttpStatusCode.NotFound);
+                    throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
                 var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
@@ -687,8 +669,13 @@ namespace MediaBrowser.Providers.Manager
         private async Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            var applicableSavers = savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, updateType, false)).ToList();
+            if (applicableSavers.Count == 0)
+            {
+                return;
+            }
 
-            foreach (var saver in savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, updateType, false)))
+            foreach (var saver in applicableSavers)
             {
                 _logger.LogDebug("Saving {Item} to {Saver}", item.Path ?? item.Name, saver.Name);
 
@@ -732,6 +719,8 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+
+            _libraryManager.CreateItem(item, null);
         }
 
         /// <summary>
@@ -916,35 +905,10 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
-#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
-            var legacyExternalIdUrls = GetExternalIds(item)
-                .Select(i =>
-                {
-                    var urlFormatString = i.UrlFormatString;
-                    if (string.IsNullOrEmpty(urlFormatString)
-                        || !item.TryGetProviderId(i.Key, out var providerId))
-                    {
-                        return null;
-                    }
-
-                    return new ExternalUrl
-                    {
-                        Name = i.ProviderName,
-                        Url = string.Format(
-                            CultureInfo.InvariantCulture,
-                            urlFormatString,
-                            providerId)
-                    };
-                })
-                .OfType<ExternalUrl>();
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var externalUrls = _externalUrlProviders
+            return _externalUrlProviders
                 .SelectMany(p => p
                     .GetExternalUrls(item)
                     .Select(externalUrl => new ExternalUrl { Name = p.Name, Url = externalUrl }));
-
-            return legacyExternalIdUrls.Concat(externalUrls).OrderBy(u => u.Name);
         }
 
         /// <inheritdoc/>
@@ -954,10 +918,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => new ExternalIdInfo(
                     name: i.ProviderName,
                     key: i.Key,
-                    type: i.Type,
-#pragma warning disable CS0618 // Type or member is obsolete - Remove 10.11
-                    urlFormatString: i.UrlFormatString));
-#pragma warning restore CS0618 // Type or member is obsolete
+                    type: i.Type));
         }
 
         /// <inheritdoc/>

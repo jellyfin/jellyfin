@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -436,22 +438,18 @@ namespace MediaBrowser.Controller.Entities
                 items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return SortAndPage(items, totalRecordLimit, query, libraryManager, true);
+            return SortAndPage(items, totalRecordLimit, query, libraryManager);
         }
 
         public static QueryResult<BaseItem> SortAndPage(
             IEnumerable<BaseItem> items,
             int? totalRecordLimit,
             InternalItemsQuery query,
-            ILibraryManager libraryManager,
-            bool enableSorting)
+            ILibraryManager libraryManager)
         {
-            if (enableSorting)
+            if (query.OrderBy.Count > 0)
             {
-                if (query.OrderBy.Count > 0)
-                {
-                    items = libraryManager.Sort(items, query.User, query.OrderBy);
-                }
+                items = libraryManager.Sort(items, query.User, query.OrderBy);
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();
@@ -920,6 +918,11 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+            }
+
+            if (query.ExcludeItemIds.Contains(item.Id))
+            {
+                return false;
             }
 
             return true;

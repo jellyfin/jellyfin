@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -88,7 +89,7 @@ public class MediaStreamRepository : IMediaStreamRepository
             query = query.Where(e => e.StreamType == typeValue);
         }
 
-        return query;
+        return query.OrderBy(e => e.StreamIndex);
     }
 
     private MediaStream Map(MediaStreamInfo entity)
@@ -99,7 +100,18 @@ public class MediaStreamRepository : IMediaStreamRepository
 
         dto.IsAVC = entity.IsAvc;
         dto.Codec = entity.Codec;
-        dto.Language = entity.Language;
+
+        var language = entity.Language;
+
+        // Check if the language has multiple three letter ISO codes
+        // if yes choose the first as that is the ISO 639-2/T code we're needing
+        if (language != null && _localization.TryGetISO6392TFromB(language, out string? isoT))
+        {
+            language = isoT;
+        }
+
+        dto.Language = language;
+
         dto.ChannelLayout = entity.ChannelLayout;
         dto.Profile = entity.Profile;
         dto.AspectRatio = entity.AspectRatio;
@@ -137,8 +149,9 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.ElPresentFlag = entity.ElPresentFlag;
         dto.BlPresentFlag = entity.BlPresentFlag;
         dto.DvBlSignalCompatibilityId = entity.DvBlSignalCompatibilityId;
-        dto.IsHearingImpaired = entity.IsHearingImpaired;
+        dto.IsHearingImpaired = entity.IsHearingImpaired.GetValueOrDefault();
         dto.Rotation = entity.Rotation;
+        dto.Hdr10PlusPresentFlag = entity.Hdr10PlusPresentFlag;
 
         if (dto.Type is MediaStreamType.Audio or MediaStreamType.Subtitle)
         {
@@ -206,7 +219,8 @@ public class MediaStreamRepository : IMediaStreamRepository
             BlPresentFlag = dto.BlPresentFlag,
             DvBlSignalCompatibilityId = dto.DvBlSignalCompatibilityId,
             IsHearingImpaired = dto.IsHearingImpaired,
-            Rotation = dto.Rotation
+            Rotation = dto.Rotation,
+            Hdr10PlusPresentFlag = dto.Hdr10PlusPresentFlag,
         };
         return entity;
     }

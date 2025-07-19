@@ -39,6 +39,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public int MaxCastMembers { get; set; } = 15;
 
         /// <summary>
+        /// Gets or sets a value indicating the maximum number of crew members to fetch for an item.
+        /// </summary>
+        public int MaxCrewMembers { get; set; } = 15;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to hide cast members without profile images.
+        /// </summary>
+        public bool HideMissingCastMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to hide crew members without profile images.
+        /// </summary>
+        public bool HideMissingCrewMembers { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating the poster image size to fetch.
         /// </summary>
         public string? PosterSize { get; set; }

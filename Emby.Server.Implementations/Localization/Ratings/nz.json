@@ -1,0 +1,76 @@
+{
+    "countryCode": "nz",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["Exempt", "G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["RP13", "PG"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["GY", "R13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["R15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["RP16", "M"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["R16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["RP18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["R18", "GA"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["MA"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["Objectionable", "R"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": 0
+            }
+        }
+    ]
+}

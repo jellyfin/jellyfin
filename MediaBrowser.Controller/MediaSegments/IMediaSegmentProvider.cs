@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model;
 using MediaBrowser.Model.MediaSegments;
 
-namespace MediaBrowser.Controller;
+namespace MediaBrowser.Controller.MediaSegments;
 
 /// <summary>
 /// Provides methods for Obtaining the Media Segments from an Item.

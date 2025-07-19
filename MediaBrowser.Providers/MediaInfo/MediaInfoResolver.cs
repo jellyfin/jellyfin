@@ -119,9 +119,9 @@ namespace MediaBrowser.Providers.MediaInfo
                                 || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
                             {
                                 mediaStream.Index = startIndex++;
-                                mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                                mediaStream.IsDefault = pathInfo.IsDefault;
                                 mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
-                                mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired.GetValueOrDefault();
+                                mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                             }

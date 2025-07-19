@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
 using LrcParser.Model;
 using LrcParser.Parser;
@@ -14,7 +16,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// <summary>
 /// LRC Lyric Parser.
 /// </summary>
-public class LrcLyricParser : ILyricParser
+public partial class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
@@ -65,11 +67,54 @@ public class LrcLyricParser : ILyricParser
         }
 
         List<LyricLine> lyricList = [];
-
-        for (int i = 0; i < sortedLyricData.Count; i++)
+        for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
         {
-            long ticks = TimeSpan.FromMilliseconds(sortedLyricData[i].StartTime).Ticks;
-            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks));
+            var lyric = sortedLyricData[lineIndex];
+
+            // Extract cues from time tags
+            var cues = new List<LyricLineCue>();
+            if (lyric.TimeTags.Count > 0)
+            {
+                var keys = lyric.TimeTags.Keys.ToList();
+                for (var tagIndex = 0; tagIndex < keys.Count - 1; tagIndex++)
+                {
+                    var currentKey = keys[tagIndex];
+                    var nextKey = keys[tagIndex + 1];
+
+                    var currentPos = currentKey.State == IndexState.End ? currentKey.Index + 1 : currentKey.Index;
+                    var nextPos = nextKey.State == IndexState.End ? nextKey.Index + 1 : nextKey.Index;
+                    var currentMs = lyric.TimeTags[currentKey] ?? 0;
+                    var nextMs = lyric.TimeTags[keys[tagIndex + 1]] ?? 0;
+                    var currentSlice = lyric.Text[currentPos..nextPos];
+                    var currentSliceTrimmed = currentSlice.Trim();
+                    if (currentSliceTrimmed.Length > 0)
+                    {
+                        cues.Add(new LyricLineCue(
+                            position: currentPos,
+                            endPosition: nextPos,
+                            start: TimeSpan.FromMilliseconds(currentMs).Ticks,
+                            end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                    }
+                }
+
+                var lastKey = keys[^1];
+                var lastPos = lastKey.State == IndexState.End ? lastKey.Index + 1 : lastKey.Index;
+                var lastMs = lyric.TimeTags[lastKey] ?? 0;
+                var lastSlice = lyric.Text[lastPos..];
+                var lastSliceTrimmed = lastSlice.Trim();
+
+                if (lastSliceTrimmed.Length > 0)
+                {
+                    cues.Add(new LyricLineCue(
+                        position: lastPos,
+                        endPosition: lyric.Text.Length,
+                        start: TimeSpan.FromMilliseconds(lastMs).Ticks,
+                        end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
+                }
+            }
+
+            long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
+            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues));
         }
 
         return new LyricDto { Lyrics = lyricList };

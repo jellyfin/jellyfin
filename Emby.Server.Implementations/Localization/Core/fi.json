@@ -135,5 +135,7 @@
     "TaskDownloadMissingLyricsDescription": "Ladataan sanoituksia",
     "TaskExtractMediaSegmentsDescription": "Poimii tai hankkii mediasegmenttejä MediaSegment-yhteensopivista laajennuksista.",
     "TaskMoveTrickplayImages": "Siirrä Trickplay-kuvien sijainti",
-    "TaskMoveTrickplayImagesDescription": "Siirtää olemassa olevia trickplay-tiedostoja kirjaston asetusten mukaan."
+    "TaskMoveTrickplayImagesDescription": "Siirtää olemassa olevia trickplay-tiedostoja kirjaston asetusten mukaan.",
+    "CleanupUserDataTask": "Käyttäjätietojen puhdistustehtävä",
+    "CleanupUserDataTaskDescription": "Puhdistaa kaikki käyttäjätiedot (katselutila, suosikit ym.) medioista, joita ei ole ollut saatavilla yli 90 päivään."
 }

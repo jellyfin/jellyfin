@@ -12,7 +12,7 @@ public class SplashscreenBuilder
 {
     private const int FinalWidth = 1920;
     private const int FinalHeight = 1080;
-    // generated collage resolution should be higher than the final resolution
+    // generated collage resolution should be greater than the final resolution
     private const int WallWidth = FinalWidth * 3;
     private const int WallHeight = FinalHeight * 2;
     private const int Rows = 6;
@@ -101,10 +101,12 @@ public class SplashscreenBuilder
                     {
                         var imageWidth = Math.Abs(posterHeight * currentImage.Width / currentImage.Height);
                         using var resizedBitmap = new SKBitmap(imageWidth, posterHeight);
-                        currentImage.ScalePixels(resizedBitmap, SKFilterQuality.High);
-
+                        var samplingOptions = currentImage.Width > imageWidth || currentImage.Height > posterHeight
+                            ? SkiaEncoder.DefaultSamplingOptions
+                            : SkiaEncoder.UpscaleSamplingOptions;
+                        currentImage.ScalePixels(resizedBitmap, samplingOptions);
                         // draw on canvas
-                        canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight);
+                        canvas.DrawBitmap(resizedBitmap, currentWidthPos, currentHeight, samplingOptions);
 
                         // resize to the same aspect as the original
                         currentWidthPos += imageWidth + Spacing;

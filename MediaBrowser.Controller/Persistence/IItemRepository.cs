@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -60,6 +62,22 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery filter);
 
     /// <summary>
+    /// Gets the item list. Used mainly by the Latest api endpoint.
+    /// </summary>
+    /// <param name="filter">The query.</param>
+    /// <param name="collectionType">Collection Type.</param>
+    /// <returns>List&lt;BaseItem&gt;.</returns>
+    IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
+
+    /// <summary>
+    /// Gets the list of series presentation keys for next up.
+    /// </summary>
+    /// <param name="filter">The query.</param>
+    /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
+    /// <returns>The list of keys.</returns>
+    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff);
+
+    /// <summary>
     /// Updates the inherited values.
     /// </summary>
     void UpdateInheritedValues();
@@ -85,4 +103,11 @@ public interface IItemRepository
     IReadOnlyList<string> GetGenreNames();
 
     IReadOnlyList<string> GetAllArtistNames();
+
+    /// <summary>
+    /// Checks if an item has been persisted to the database.
+    /// </summary>
+    /// <param name="id">The id to check.</param>
+    /// <returns>True if the item exists, otherwise false.</returns>
+    Task<bool> ItemExistsAsync(Guid id);
 }

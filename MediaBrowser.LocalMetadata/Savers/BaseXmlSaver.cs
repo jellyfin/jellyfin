@@ -96,7 +96,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException($"Provided path ({path}) is not valid.");
             Directory.CreateDirectory(directory);
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
             var fileStreamOptions = new FileStreamOptions()
@@ -235,11 +235,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 if (item is Person)
                 {
-                    await writer.WriteElementStringAsync(null, "DeathDate", null, item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "DeathDate", null, item.EndDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
                 }
                 else if (item is not Episode)
                 {
-                    await writer.WriteElementStringAsync(null, "EndDate", null, item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "EndDate", null, item.EndDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
                 }
             }
 

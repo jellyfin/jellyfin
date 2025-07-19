@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
@@ -43,14 +43,26 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
     /// <inheritdoc />
     public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var posters = GetItemsWithImageType(ImageType.Primary).Select(x => x.GetImages(ImageType.Primary).First().Path).ToList();
-        var backdrops = GetItemsWithImageType(ImageType.Thumb).Select(x => x.GetImages(ImageType.Thumb).First().Path).ToList();
+        var posters = GetItemsWithImageType(ImageType.Primary)
+            .Select(x => x.GetImages(ImageType.Primary).FirstOrDefault()?.Path)
+            .Where(path => !string.IsNullOrEmpty(path))
+            .Select(path => path!)
+            .ToList();
+        var backdrops = GetItemsWithImageType(ImageType.Thumb)
+            .Select(x => x.GetImages(ImageType.Thumb).FirstOrDefault()?.Path)
+            .Where(path => !string.IsNullOrEmpty(path))
+            .Select(path => path!)
+            .ToList();
         if (backdrops.Count == 0)
         {
             // Thumb images fit better because they include the title in the image but are not provided with TMDb.
             // Using backdrops as a fallback to generate an image at all
             _logger.LogDebug("No thumb images found. Using backdrops to generate splashscreen");
-            backdrops = GetItemsWithImageType(ImageType.Backdrop).Select(x => x.GetImages(ImageType.Backdrop).First().Path).ToList();
+            backdrops = GetItemsWithImageType(ImageType.Backdrop)
+                .Select(x => x.GetImages(ImageType.Backdrop).FirstOrDefault()?.Path)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Select(path => path!)
+                .ToList();
         }
 
         _imageEncoder.CreateSplashscreen(posters, backdrops);
@@ -65,15 +77,15 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
             CollapseBoxSetItems = false,
             Recursive = true,
             DtoOptions = new DtoOptions(false),
-            ImageTypes = new[] { imageType },
+            ImageTypes = [imageType],
             Limit = 30,
             // TODO max parental rating configurable
-            MaxParentalRating = 10,
-            OrderBy = new[]
-            {
+            MaxParentalRating = new(10, null),
+            OrderBy =
+            [
                 (ItemSortBy.Random, SortOrder.Ascending)
-            },
-            IncludeItemTypes = new[] { BaseItemKind.Movie, BaseItemKind.Series }
+            ],
+            IncludeItemTypes = [BaseItemKind.Movie, BaseItemKind.Series]
         });
     }
 }

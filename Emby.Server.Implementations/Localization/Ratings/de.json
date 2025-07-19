@@ -1,0 +1,41 @@
+{
+    "countryCode": "de",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["0", "FSK 0", "FSK-0", "Educational", "Infoprogramm"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["6", "FSK 6", "FSK-6"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12", "FSK 12", "FSK-12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16", "FSK 16", "FSK-16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "FSK 18", "FSK-18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

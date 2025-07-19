@@ -270,11 +270,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             var videoInfos = files
-                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName))
+                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName, parent.ContainingFolderPath))
                 .Where(f => f is not null)
                 .ToList();
 
-            var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName);
+            var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName, parent.ContainingFolderPath);
 
             var result = new MultiItemResolverResult
             {
@@ -456,12 +456,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             {
                 var videoPath = result.Items[0].Path;
                 var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(videoPath, i.Name));
+                var hasOtherSubfolders = multiDiscFolders.Count > 0;
 
-                if (!hasPhotos)
+                if (!hasPhotos && !hasOtherSubfolders)
                 {
                     var movie = (T)result.Items[0];
                     movie.IsInMixedFolder = false;
-                    movie.Name = Path.GetFileName(movie.ContainingFolderPath);
+                    if (collectionType == CollectionType.movies || collectionType is null)
+                    {
+                        movie.Name = Path.GetFileName(movie.ContainingFolderPath);
+                    }
+
                     return movie;
                 }
             }

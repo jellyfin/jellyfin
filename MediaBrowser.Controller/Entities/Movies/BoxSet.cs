@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 
@@ -145,14 +147,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             return GetItemLookupInfo<BoxSetInfo>();
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (IsLegacyBoxSet)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (base.IsVisible(user))
+            if (base.IsVisible(user, skipAllowedTagsCheck))
             {
                 if (LinkedChildren.Length == 0)
                 {
@@ -195,7 +197,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             var expandedFolders = new List<Guid>();
 
             return FlattenItems(this, expandedFolders)
-                .SelectMany(i => LibraryManager.GetCollectionFolders(i))
+                .SelectMany(LibraryManager.GetCollectionFolders)
                 .Select(i => i.Id)
                 .Distinct()
                 .ToArray();

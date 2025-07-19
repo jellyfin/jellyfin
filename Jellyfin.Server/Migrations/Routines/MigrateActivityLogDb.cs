@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the activity log database to EF Core.
     /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+    [JellyfinMigration("2025-04-20T07:00:00", nameof(MigrateActivityLogDb), "3793eb59-bc8c-456c-8b9f-bd5a62a42978")]
     public class MigrateActivityLogDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "activitylog.db";
 
@@ -34,15 +37,6 @@ namespace Jellyfin.Server.Migrations.Routines
             _provider = provider;
             _paths = paths;
         }
-
-        /// <inheritdoc/>
-        public Guid Id => Guid.Parse("3793eb59-bc8c-456c-8b9f-bd5a62a42978");
-
-        /// <inheritdoc/>
-        public string Name => "MigrateActivityLogDatabase";
-
-        /// <inheritdoc/>
-        public bool PerformOnNewInstall => false;
 
         /// <inheritdoc/>
         public void Perform()

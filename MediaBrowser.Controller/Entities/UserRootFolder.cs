@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
                 PresetViews = query.PresetViews
             });
 
-            return UserViewBuilder.SortAndPage(result, null, query, LibraryManager, true);
+            return UserViewBuilder.SortAndPage(result, null, query, LibraryManager);
         }
 
         public override int GetChildCount(User user)

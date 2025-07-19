@@ -9,8 +9,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -227,11 +229,11 @@ namespace MediaBrowser.Controller.Playlists
             return [item];
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (!IsSharedItem)
             {
-                return base.IsVisible(user);
+                return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
             if (OpenAccess)

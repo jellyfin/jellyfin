@@ -108,7 +108,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
                     var dateTaken = image.ImageTag.DateTime;
                     if (dateTaken.HasValue)
                     {
-                        item.DateCreated = dateTaken.Value;
+                        item.DateCreated = dateTaken.Value.ToUniversalTime();
                         item.PremiereDate = dateTaken.Value;
                         item.ProductionYear = dateTaken.Value.Year;
                     }

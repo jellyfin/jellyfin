@@ -125,5 +125,15 @@
     "External": "Jashtem",
     "HearingImpaired": "Dëgjimi i dëmtuar",
     "TaskRefreshTrickplayImages": "Krijo Imazhe Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Krijon pamje paraprake për video në bibliotekat e aktivizuara."
+    "TaskRefreshTrickplayImagesDescription": "Krijon pamje paraprake për video në bibliotekat e aktivizuara.",
+    "TaskExtractMediaSegments": "Skanim i segmenteve të medias",
+    "TaskExtractMediaSegmentsDescription": "Nxjerr ose merr segmente mediaje nga shtojcat që kanë të aktivizuar MediaSegment.",
+    "TaskMoveTrickplayImages": "Migron vendndodhjen e imazheve Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Zhvendos skedarët ekzistues të trickplay sipas cilësimeve të bibliotekës.",
+    "TaskDownloadMissingLyrics": "Shkarko tekstet e këngëve që mungojnë",
+    "TaskDownloadMissingLyricsDescription": "Shkarkon tekstet e këngëve",
+    "TaskCleanCollectionsAndPlaylists": "Pastron koleksionet dhe listat e këngëve",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Heq elementet nga koleksionet dhe listat e këngëve që nuk ekzistojnë më.",
+    "TaskAudioNormalization": "Normalizimi i audios",
+    "TaskAudioNormalizationDescription": "Skannon skedarët për të dhëna të normalizimit të audios."
 }

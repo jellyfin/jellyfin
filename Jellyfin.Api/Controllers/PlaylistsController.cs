@@ -76,7 +76,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
         [FromQuery, ParameterObsolete] string? name,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
         [FromQuery, ParameterObsolete] Guid? userId,
         [FromQuery, ParameterObsolete] MediaType? mediaType,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
@@ -370,7 +370,7 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> AddItemToPlaylist(
         [FromRoute, Required] Guid playlistId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -446,26 +446,45 @@ public class PlaylistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveItemFromPlaylist(
         [FromRoute, Required] string playlistId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] entryIds)
     {
         var callingUserId = User.GetUserId();
 
-        var playlist = _playlistManager.GetPlaylistForUser(Guid.Parse(playlistId), callingUserId);
-        if (playlist is null)
+        if (!callingUserId.IsEmpty())
         {
-            return NotFound("Playlist not found");
+            var playlist = _playlistManager.GetPlaylistForUser(Guid.Parse(playlistId), callingUserId);
+            if (playlist is null)
+            {
+                return NotFound("Playlist not found");
+            }
+
+            var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+                              || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+            if (!isPermitted)
+            {
+                return Forbid();
+            }
+        }
+        else
+        {
+            var isApiKey = User.GetIsApiKey();
+
+            if (!isApiKey)
+            {
+                return Forbid();
+            }
         }
 
-        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
-            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
-
-        if (!isPermitted)
+        try
         {
-            return Forbid();
+            await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
+            return NoContent();
         }
-
-        await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
-        return NoContent();
+        catch (ArgumentException)
+        {
+            return NotFound();
+        }
     }
 
     /// <summary>
@@ -493,11 +512,11 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableImages,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes)
     {
         var callingUserId = userId ?? User.GetUserId();
         var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);

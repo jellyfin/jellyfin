@@ -8,7 +8,7 @@ namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
     public class MetadataDto
     {
         /// <summary>
-        /// Gets or sets the linup.
+        /// Gets or sets the lineup.
         /// </summary>
         [JsonPropertyName("lineup")]
         public string? Lineup { get; set; }

@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
     <ProjectReference Include="..\..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj" />
+    <ProjectReference Include="..\..\src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj" />
   </ItemGroup>
 
 </Project>

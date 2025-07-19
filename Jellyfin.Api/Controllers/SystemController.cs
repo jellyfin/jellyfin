@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.SystemInfoDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -70,6 +70,19 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
         => _systemManager.GetSystemInfo(Request);
+
+    /// <summary>
+    /// Gets information about the server.
+    /// </summary>
+    /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
+    [HttpGet("Info/Storage")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<SystemStorageDto> GetSystemStorage()
+        => Ok(SystemStorageDto.FromSystemStorageInfo(_systemManager.GetSystemStorageInfo()));
 
     /// <summary>
     /// Gets public information about the server.
@@ -211,21 +224,5 @@ public class SystemController : BaseJellyfinApiController
         var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
         FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
         return File(stream, "text/plain; charset=utf-8");
-    }
-
-    /// <summary>
-    /// Gets wake on lan information.
-    /// </summary>
-    /// <response code="200">Information retrieved.</response>
-    /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
-    [HttpGet("WakeOnLanInfo")]
-    [Authorize]
-    [Obsolete("This endpoint is obsolete.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
-    {
-        var result = _networkManager.GetMacAddresses()
-            .Select(i => new WakeOnLanInfo(i));
-        return Ok(result);
     }
 }

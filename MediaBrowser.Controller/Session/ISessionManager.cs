@@ -6,7 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities.Security;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -73,7 +74,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>A task containing the session information.</returns>
-        Task<SessionInfo> LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+        Task<SessionInfo> LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
 
         /// <summary>
         /// Used to report that a session controller has connected.
@@ -160,7 +161,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The identifier of the session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <typeparam name="T">Type of group.</typeparam>
+        /// <typeparam name="T">The group update type.</typeparam>
         /// <returns>Task.</returns>
         Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
 
@@ -324,7 +325,7 @@ namespace MediaBrowser.Controller.Session
         Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
-        /// Logouts the specified access token.
+        /// Logs out the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <returns>A <see cref="Task"/> representing the log out process.</returns>
@@ -341,5 +342,13 @@ namespace MediaBrowser.Controller.Session
         Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
         Task CloseIfNeededAsync(SessionInfo session);
+
+        /// <summary>
+        /// Used to close the livestream if needed.
+        /// </summary>
+        /// <param name="liveStreamId">The livestream id.</param>
+        /// <param name="sessionIdOrPlaySessionId">The session id or playsession id.</param>
+        /// <returns>Task.</returns>
+        Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId);
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -116,17 +117,15 @@ namespace Jellyfin.Server.Implementations.Security
                 DeviceId = deviceId,
                 Version = version,
                 Token = token,
-                IsAuthenticated = false,
-                HasToken = false
+                IsAuthenticated = false
             };
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (!authInfo.HasToken)
             {
                 // Request doesn't contain a token.
                 return authInfo;
             }
 
-            authInfo.HasToken = true;
             var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {

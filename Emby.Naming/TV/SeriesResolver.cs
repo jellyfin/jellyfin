@@ -12,7 +12,7 @@ namespace Emby.Naming.TV
         /// <summary>
         /// Regex that matches strings of at least 2 characters separated by a dot or underscore.
         /// Used for removing separators between words, i.e turns "The_show" into "The show" while
-        /// preserving namings like "S.H.O.W".
+        /// preserving names like "S.H.O.W".
         /// </summary>
         [GeneratedRegex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))")]
         private static partial Regex SeriesNameRegex();

@@ -291,6 +291,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var fileStreamOptions = AsyncFile.WriteOptions;
                 fileStreamOptions.Mode = FileMode.Create;
+                fileStreamOptions.Options = FileOptions.WriteThrough;
                 if (source.CanSeek)
                 {
                     fileStreamOptions.PreallocationSize = source.Length;
@@ -477,6 +478,22 @@ namespace MediaBrowser.Providers.Manager
                                            : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-banner" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
+            if (type == ImageType.Logo && saveLocally)
+            {
+                if (season is not null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                        ? "-specials"
+                                        : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-logo" + extension;
 
                     return Path.Combine(seriesFolder, imageFilename);
                 }

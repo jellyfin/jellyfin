@@ -65,7 +65,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.True(res.VideoStream.IsDefault);
             Assert.False(res.VideoStream.IsExternal);
             Assert.False(res.VideoStream.IsForced);
-            Assert.False(res.VideoStream.IsHearingImpaired.GetValueOrDefault());
+            Assert.False(res.VideoStream.IsHearingImpaired);
             Assert.False(res.VideoStream.IsInterlaced);
             Assert.False(res.VideoStream.IsTextSubtitleStream);
             Assert.Equal(13d, res.VideoStream.Level);
@@ -152,19 +152,19 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[3].Type);
             Assert.Equal("DVDSUB", res.MediaStreams[3].Codec);
             Assert.Null(res.MediaStreams[3].Title);
-            Assert.False(res.MediaStreams[3].IsHearingImpaired.GetValueOrDefault());
+            Assert.False(res.MediaStreams[3].IsHearingImpaired);
 
             Assert.Equal("eng", res.MediaStreams[4].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[4].Type);
             Assert.Equal("mov_text", res.MediaStreams[4].Codec);
             Assert.Null(res.MediaStreams[4].Title);
-            Assert.True(res.MediaStreams[4].IsHearingImpaired.GetValueOrDefault());
+            Assert.True(res.MediaStreams[4].IsHearingImpaired);
 
             Assert.Equal("eng", res.MediaStreams[5].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[5].Type);
             Assert.Equal("mov_text", res.MediaStreams[5].Codec);
             Assert.Equal("Commentary", res.MediaStreams[5].Title);
-            Assert.False(res.MediaStreams[5].IsHearingImpaired.GetValueOrDefault());
+            Assert.False(res.MediaStreams[5].IsHearingImpaired);
         }
 
         [Fact]
@@ -286,6 +286,40 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(56945, res.VideoStream.BitRate);
             Assert.Equal(8, res.VideoStream.BitDepth);
             Assert.True(res.VideoStream.IsDefault);
+        }
+
+        [Fact]
+        public void GetMediaInfo_VideoWithSingleFrameMjpeg_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_single_frame_mjpeg.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_interlaced.mp4", MediaProtocol.File);
+
+            Assert.Equal(3, res.MediaStreams.Count);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(res.MediaStreams[0], res.VideoStream);
+            Assert.Equal(0, res.VideoStream.Index);
+            Assert.Equal("h264", res.VideoStream.Codec);
+            Assert.Equal("High", res.VideoStream.Profile);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(1080, res.VideoStream.Height);
+            Assert.Equal(1920, res.VideoStream.Width);
+            Assert.False(res.VideoStream.IsInterlaced);
+            Assert.Equal("16:9", res.VideoStream.AspectRatio);
+            Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
+            Assert.Equal(42d, res.VideoStream.Level);
+            Assert.Equal(1, res.VideoStream.RefFrames);
+            Assert.True(res.VideoStream.IsAVC);
+            Assert.Equal(50f, res.VideoStream.RealFrameRate);
+            Assert.Equal("1/1000", res.VideoStream.TimeBase);
+            Assert.Equal(8, res.VideoStream.BitDepth);
+            Assert.True(res.VideoStream.IsDefault);
+
+            var mjpeg = res.MediaStreams[2];
+            Assert.NotNull(mjpeg);
+            Assert.Equal("mjpeg", mjpeg.Codec);
         }
 
         [Fact]

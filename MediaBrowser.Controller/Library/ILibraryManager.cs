@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -219,13 +220,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="postScanTasks">The post scan tasks.</param>
         void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postscanTasks);
+            IEnumerable<ILibraryPostScanTask> postScanTasks);
 
         /// <summary>
         /// Sorts the specified items.
@@ -258,7 +259,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="items">Items to create.</param>
         /// <param name="parent">Parent of new items.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        void CreateOrUpdateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
+        void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.
@@ -426,8 +427,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="parentId">The parent id.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromPath(string path);
+        int? GetSeasonNumberFromPath(string path, Guid? parentId);
 
         /// <summary>
         /// Fills the missing episode numbers from path.
@@ -566,6 +568,24 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
+        /// Gets the TVShow/Album items for Latest api.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of items.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
+
+        /// <summary>
+        /// Gets the list of series presentation keys for next up.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
+        /// <returns>List of series presentation keys.</returns>
+        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
+
+        /// <summary>
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -573,11 +593,11 @@ namespace MediaBrowser.Controller.Library
         QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query);
 
         /// <summary>
-        /// Ignores the file.
+        /// Checks if the file is ignored.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="parent">The parent.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
         Guid GetStudioId(string name);

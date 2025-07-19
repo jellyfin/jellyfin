@@ -163,7 +163,7 @@ public class SessionInfoDto
     /// <summary>
     /// Gets or sets the playlist item id.
     /// </summary>
-    /// <value>The splaylist item id.</value>
+    /// <value>The playlist item id.</value>
     public string? PlaylistItemId { get; set; }
 
     /// <summary>

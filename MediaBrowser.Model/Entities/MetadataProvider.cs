@@ -84,6 +84,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The TvMaze provider.
         /// </summary>
-        TvMaze = 19
+        TvMaze = 19,
+
+        /// <summary>
+        /// The MusicBrainz recording provider.
+        /// </summary>
+        MusicBrainzRecording = 20,
     }
 }

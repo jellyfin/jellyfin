@@ -31,6 +31,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var config = new StartupConfigurationDto()
             {
+                ServerName = "NewServer",
                 UICulture = "NewCulture",
                 MetadataCountryCode = "be",
                 PreferredMetadataLanguage = "nl"
@@ -44,7 +45,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(MediaTypeNames.Application.Json, getResponse.Content.Headers.ContentType?.MediaType);
 
             var newConfig = await getResponse.Content.ReadFromJsonAsync<StartupConfigurationDto>(_jsonOptions);
-            Assert.Equal(config.UICulture, newConfig!.UICulture);
+            Assert.Equal(config.ServerName, newConfig!.ServerName);
+            Assert.Equal(config.UICulture, newConfig.UICulture);
             Assert.Equal(config.MetadataCountryCode, newConfig.MetadataCountryCode);
             Assert.Equal(config.PreferredMetadataLanguage, newConfig.PreferredMetadataLanguage);
         }
@@ -88,9 +90,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var newUser = await getResponse.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
             Assert.NotNull(newUser);
             Assert.Equal(user.Name, newUser.Name);
-            Assert.NotNull(newUser.Password);
-            Assert.NotEmpty(newUser.Password);
-            Assert.NotEqual(user.Password, newUser.Password);
+            Assert.Null(newUser.Password);
         }
 
         [Fact]

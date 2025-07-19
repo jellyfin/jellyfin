@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
@@ -6,6 +7,7 @@ namespace MediaBrowser.Model.Dlna;
 
 /// <summary>
 /// A class for transcoding profile information.
+/// Note for client developers: Conditions defined in <see cref="CodecProfile"/> has higher priority and can override values defined here.
 /// </summary>
 public class TranscodingProfile
 {
@@ -15,6 +17,33 @@ public class TranscodingProfile
     public TranscodingProfile()
     {
         Conditions = [];
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TranscodingProfile" /> class copying the values from another instance.
+    /// </summary>
+    /// <param name="other">Another instance of <see cref="TranscodingProfile" /> to be copied.</param>
+    public TranscodingProfile(TranscodingProfile other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+
+        Container = other.Container;
+        Type = other.Type;
+        VideoCodec = other.VideoCodec;
+        AudioCodec = other.AudioCodec;
+        Protocol = other.Protocol;
+        EstimateContentLength = other.EstimateContentLength;
+        EnableMpegtsM2TsMode = other.EnableMpegtsM2TsMode;
+        TranscodeSeekInfo = other.TranscodeSeekInfo;
+        CopyTimestamps = other.CopyTimestamps;
+        Context = other.Context;
+        EnableSubtitlesInManifest = other.EnableSubtitlesInManifest;
+        MaxAudioChannels = other.MaxAudioChannels;
+        MinSegments = other.MinSegments;
+        SegmentLength = other.SegmentLength;
+        BreakOnNonKeyFrames = other.BreakOnNonKeyFrames;
+        Conditions = other.Conditions;
+        EnableAudioVbrEncoding = other.EnableAudioVbrEncoding;
     }
 
     /// <summary>

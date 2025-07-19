@@ -84,5 +84,30 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <value>The magic string used for virtual path manipulation.</value>
         string VirtualDataPath { get; }
+
+        /// <summary>
+        /// Gets the path used for storing trickplay files.
+        /// </summary>
+        /// <value>The trickplay path.</value>
+        string TrickplayPath { get; }
+
+        /// <summary>
+        /// Gets the path used for storing backup archives.
+        /// </summary>
+        /// <value>The backup path.</value>
+        string BackupPath { get; }
+
+        /// <summary>
+        /// Checks and creates all known base paths.
+        /// </summary>
+        void MakeSanityCheckOrThrow();
+
+        /// <summary>
+        /// Checks and creates the given path and adds it with a marker file if non existant.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <param name="markerName">The common marker file name.</param>
+        /// <param name="recursive">Check for other settings paths recursivly.</param>
+        void CreateAndCheckMarker(string path, string markerName, bool recursive = false);
     }
 }
