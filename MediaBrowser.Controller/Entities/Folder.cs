@@ -1468,9 +1468,7 @@ namespace MediaBrowser.Controller.Entities
                 .OfType<Folder>()
                 .ToList();
 
-            var collectionFolderIds = allUserRootChildren
-                .Select(i => i.Id)
-                .ToList();
+            var collectionFolderIds = allUserRootChildren.ConvertAll(i => i.Id);
 
             foreach (var i in linkedChildren)
             {

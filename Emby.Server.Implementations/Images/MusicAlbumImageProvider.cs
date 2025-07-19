@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Images
         {
         }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(MusicAlbum item)
         {
             var items = base.GetItemsWithImages(item);
 

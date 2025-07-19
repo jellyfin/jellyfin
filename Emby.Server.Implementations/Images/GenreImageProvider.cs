@@ -35,16 +35,16 @@ namespace Emby.Server.Implementations.Images
         /// </summary>
         /// <param name="item">The genre used to create the image.</param>
         /// <returns>Any relevant children objects.</returns>
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(Genre item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
-                Genres = new[] { item.Name },
-                IncludeItemTypes = new[] { BaseItemKind.Series, BaseItemKind.Movie },
-                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
+                Genres = [item.Name],
+                IncludeItemTypes = [BaseItemKind.Series, BaseItemKind.Movie],
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
                 Limit = 4,
                 Recursive = true,
-                ImageTypes = new[] { ImageType.Primary },
+                ImageTypes = [ImageType.Primary],
                 DtoOptions = new DtoOptions(false)
             });
         }

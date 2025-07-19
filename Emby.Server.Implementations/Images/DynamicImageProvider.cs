@@ -31,16 +31,14 @@ namespace Emby.Server.Implementations.Images
             _userManager = userManager;
         }
 
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(UserView item)
         {
-            var view = (UserView)item;
+            var isUsingCollectionStrip = IsUsingCollectionStrip(item);
+            var recursive = isUsingCollectionStrip && item?.ViewType is not null && item.ViewType != CollectionType.boxsets && item.ViewType != CollectionType.playlists;
 
-            var isUsingCollectionStrip = IsUsingCollectionStrip(view);
-            var recursive = isUsingCollectionStrip && view?.ViewType is not null && view.ViewType != CollectionType.boxsets && view.ViewType != CollectionType.playlists;
-
-            var result = view.GetItemList(new InternalItemsQuery
+            var result = item.GetItemList(new InternalItemsQuery
             {
-                User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
+                User = item.UserId.HasValue ? _userManager.GetUserById(item.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { BaseItemKind.UserView, BaseItemKind.CollectionFolder, BaseItemKind.Person },

@@ -38,21 +38,21 @@ namespace Emby.Server.Implementations.Images
         /// </summary>
         /// <param name="item">The music genre used to create the image.</param>
         /// <returns>Any relevant children objects.</returns>
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
+        protected override IReadOnlyList<BaseItem> GetItemsWithImages(MusicGenre item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
-                Genres = new[] { item.Name },
-                IncludeItemTypes = new[]
-                {
+                Genres = [item.Name],
+                IncludeItemTypes =
+                [
                     BaseItemKind.MusicAlbum,
                     BaseItemKind.MusicVideo,
                     BaseItemKind.Audio
-                },
-                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
+                ],
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
                 Limit = 4,
                 Recursive = true,
-                ImageTypes = new[] { ImageType.Primary },
+                ImageTypes = [ImageType.Primary],
                 DtoOptions = new DtoOptions(false)
             });
         }
