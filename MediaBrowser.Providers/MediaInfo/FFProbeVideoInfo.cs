@@ -633,7 +633,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Reads chapter information from external XML file.
+        /// Reads chapter information from external XML file (Matroska Media Container Format).
         /// </summary>
         /// <param name="video">The video item.</param>
         /// <param name="chapters">The set of chapters.</param>
@@ -641,46 +641,92 @@ namespace MediaBrowser.Providers.MediaInfo
         private static Task<ChapterInfo[]> AddExternalChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
         {
             var xmlFilePath = MediaInfoResolver.GetExternalChapterFile(video);
-
-            // Save the chapter paths.
             video.ChapterFiles = new[] { xmlFilePath };
 
-            // Use embedded chapters if local chapter file doesn't exist
             if (!File.Exists(xmlFilePath))
             {
                 return Task.FromResult(chapters.ToArray());
             }
 
             var chapterInfos = new List<ChapterInfo>();
-
-            // Load and parse the XML file
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(xmlFilePath);
 
-            // Navigate to the "chapters" node
-            XmlNodeList chapterNodes = xmlDoc.GetElementsByTagName("chapter");
+            // Select only the first EditionEntry
+            var firstEdition = xmlDoc.SelectSingleNode("//EditionEntry");
 
-            foreach (XmlNode chapterNode in chapterNodes)
+            if (firstEdition != null)
             {
-                // Parse the "time" attribute as the chapter start time
-                var startTime = chapterNode.Attributes?["time"]?.InnerText;
-                // Parse the "name" attribute as the chapter name
-                var name = chapterNode.Attributes?["name"]?.InnerText;
+                var allChapterAtoms = firstEdition.SelectNodes("ChapterAtom");
 
-                // Create and populate a ChapterInfo object
-                var chapterInfo = new ChapterInfo();
-
-                if (startTime != null && TimeSpan.TryParse(startTime, out var timeSpan))
+                if (allChapterAtoms != null)
                 {
-                    chapterInfo.StartPositionTicks = timeSpan.Ticks;
+                    foreach (XmlNode atom in allChapterAtoms)
+                    {
+                        var hiddenNode = atom.SelectSingleNode("ChapterFlagHidden");
+                        if (hiddenNode != null && hiddenNode.InnerText.Trim() == "1")
+                        {
+                            continue;
+                        }
+
+                        var timeNode = atom.SelectSingleNode("ChapterTimeStart");
+                        if (timeNode == null || string.IsNullOrWhiteSpace(timeNode.InnerText))
+                        {
+                            continue;
+                        }
+
+                        if (!TryParseRFC9559Time(timeNode.InnerText, out var timeSpan))
+                        {
+                            continue;
+                        }
+
+                        var nameNode = atom.SelectSingleNode("ChapterDisplay/ChapterString") ??
+                                    atom.SelectSingleNode("ChapterDisplay/ChapString");
+
+                        var chapterInfo = new ChapterInfo
+                        {
+                            StartPositionTicks = timeSpan.Ticks,
+                            Name = nameNode?.InnerText
+                        };
+
+                        chapterInfos.Add(chapterInfo);
+                    }
                 }
-
-                chapterInfo.Name = name;
-
-                chapterInfos.Add(chapterInfo);
             }
 
             return Task.FromResult(chapterInfos.ToArray());
+        }
+
+        /// <summary>
+        /// Attempts to parse a timestamp in RFC 9559 (Matroska) format, trimming nanosecond precision
+        /// down to .NET-compatible tick precision (7 decimal places) if necessary.
+        /// </summary>
+        /// <param name="input">The timestamp string in HH:mm:ss.fffffff[...n] format.</param>
+        /// <param name="result">When this method returns, contains the parsed <see cref="TimeSpan"/>, if successful.</param>
+        /// <returns><c>true</c> if the input was successfully parsed into a <see cref="TimeSpan"/>; otherwise, <c>false</c>.</returns>
+        private static bool TryParseRFC9559Time(string input, out TimeSpan result)
+        {
+            result = TimeSpan.Zero;
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            #pragma warning disable CA1307 // IndexOf(char) does not support StringComparison, safe to ignore
+            int dotIndex = input.IndexOf('.');
+            #pragma warning restore CA1307
+
+            if (dotIndex >= 0)
+            {
+                int decimals = input.Length - (dotIndex + 1);
+                if (decimals > 7)
+                {
+                    input = input.Substring(0, dotIndex + 8);
+                }
+            }
+
+            return TimeSpan.TryParse(input, out result);
         }
 
         /// <summary>
