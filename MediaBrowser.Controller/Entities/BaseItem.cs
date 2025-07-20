@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -1265,7 +1266,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Overrides the base implementation to refresh metadata for local trailers.
+        /// The base implementation to refresh metadata.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1362,9 +1363,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
-            var path = ContainingFolderPath;
-
-            return directoryService.GetFileSystemEntries(path);
+            return directoryService.GetFileSystemEntries(ContainingFolderPath);
         }
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
@@ -1393,6 +1392,23 @@ namespace MediaBrowser.Controller.Entities
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
+            // Cleanup removed extras
+            var removedExtraIds = item.ExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
+            if (removedExtraIds.Length > 0)
+            {
+                var removedExtras = LibraryManager.GetItemList(new InternalItemsQuery()
+                {
+                    ItemIds = removedExtraIds
+                });
+                foreach (var removedExtra in removedExtras)
+                {
+                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                    {
+                        DeleteFileLocation = false
+                    });
+                }
+            }
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             item.ExtraIds = newExtraIds;
@@ -1407,7 +1423,16 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            return false;
+            if (string.IsNullOrEmpty(Path) || DateModified == DateTime.MinValue)
+            {
+                return false;
+            }
+
+            var info = FileSystem.GetFileSystemInfo(Path);
+
+            return info.Exists
+                ? info.LastWriteTimeUtc != DateModified
+                : false;
         }
 
         public virtual List<string> GetUserDataKeys()
@@ -1970,9 +1995,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove from file system
-            if (info.IsLocalFile)
+            var path = info.Path;
+            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path))
             {
-                FileSystem.DeleteFile(info.Path);
+                FileSystem.DeleteFile(path);
             }
 
             // Remove from item

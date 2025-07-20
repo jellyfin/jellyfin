@@ -112,7 +112,12 @@ public class ChapterRepository : IChapterRepository
             ImagePath = chapterInfo.ImagePath,
             Name = chapterInfo.Name,
         };
-        chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
+
+        if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
+        {
+            chapterEntity.ImageTag = _imageProcessor.GetImageCacheTag(baseItemPath, chapterEntity.ImageDateModified);
+        }
+
         return chapterEntity;
     }
 }

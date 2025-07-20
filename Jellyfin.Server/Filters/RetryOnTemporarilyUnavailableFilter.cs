@@ -6,13 +6,13 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters;
 
-internal class RetryOnTemporarlyUnavailableFilter : IOperationFilter
+internal class RetryOnTemporarilyUnavailableFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         operation.Responses.Add("503", new OpenApiResponse()
         {
-            Description = "The server is currently starting or is temporarly not available.",
+            Description = "The server is currently starting or is temporarily not available.",
             Headers = new Dictionary<string, OpenApiHeader>()
             {
                 {

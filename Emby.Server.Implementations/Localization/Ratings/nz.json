@@ -24,6 +24,13 @@
             }
         },
         {
+            "ratingStrings": ["R15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 0
+            }
+        },
+        {
             "ratingStrings": ["RP16", "M"],
             "ratingScore": {
                 "score": 16,

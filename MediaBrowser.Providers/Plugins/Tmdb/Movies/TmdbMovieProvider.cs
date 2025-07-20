@@ -144,6 +144,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
             var imdbId = info.GetProviderId(MetadataProvider.Imdb);
+            var config = Plugin.Instance.Configuration;
 
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId))
             {
@@ -249,12 +250,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Credits?.Cast is not null)
             {
-                foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
+                var castQuery = movieResult.Credits.Cast.AsEnumerable();
+
+                if (config.HideMissingCastMembers)
                 {
+                    castQuery = castQuery.Where(a => !string.IsNullOrEmpty(a.ProfilePath));
+                }
+
+                castQuery = castQuery.OrderBy(a => a.Order).Take(config.MaxCastMembers);
+
+                foreach (var actor in castQuery)
+                {
+                    if (string.IsNullOrWhiteSpace(actor.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
                         Name = actor.Name.Trim(),
-                        Role = actor.Character.Trim(),
+                        Role = actor.Character?.Trim() ?? string.Empty,
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     };
@@ -275,32 +290,47 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Credits?.Crew is not null)
             {
-                foreach (var person in movieResult.Credits.Crew)
-                {
-                    // Normalize this
-                    var type = TmdbUtils.MapCrewToPersonType(person);
+                var crewQuery = movieResult.Credits.Crew
+                    .Select(crewMember => new
+                    {
+                        CrewMember = crewMember,
+                        PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
+                    })
+                    .Where(entry =>
+                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
+                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
-                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                if (config.HideMissingCrewMembers)
+                {
+                    crewQuery = crewQuery.Where(entry => !string.IsNullOrEmpty(entry.CrewMember.ProfilePath));
+                }
+
+                crewQuery = crewQuery.Take(config.MaxCrewMembers);
+
+                foreach (var entry in crewQuery)
+                {
+                    var crewMember = entry.CrewMember;
+
+                    if (string.IsNullOrWhiteSpace(crewMember.Name))
                     {
                         continue;
                     }
 
                     var personInfo = new PersonInfo
                     {
-                        Name = person.Name.Trim(),
-                        Role = person.Job?.Trim(),
-                        Type = type
+                        Name = crewMember.Name.Trim(),
+                        Role = crewMember.Job?.Trim() ?? string.Empty,
+                        Type = entry.PersonType
                     };
 
-                    if (!string.IsNullOrWhiteSpace(person.ProfilePath))
+                    if (!string.IsNullOrWhiteSpace(crewMember.ProfilePath))
                     {
-                        personInfo.ImageUrl = _tmdbClientManager.GetProfileUrl(person.ProfilePath);
+                        personInfo.ImageUrl = _tmdbClientManager.GetProfileUrl(crewMember.ProfilePath);
                     }
 
-                    if (person.Id > 0)
+                    if (crewMember.Id > 0)
                     {
-                        personInfo.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, crewMember.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     metadataResult.AddPerson(personInfo);

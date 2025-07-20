@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Collections
 
             var libraryOptions = new LibraryOptions
             {
-                PathInfos = new[] { new MediaPathInfo(path) },
+                PathInfos = [new MediaPathInfo(path)],
                 EnableRealtimeMonitor = false,
                 SaveLocalMetadata = true
             };
@@ -150,15 +150,15 @@ namespace Emby.Server.Implementations.Collections
 
             try
             {
-                Directory.CreateDirectory(path);
-
+                var info = Directory.CreateDirectory(path);
                 var collection = new BoxSet
                 {
                     Name = name,
                     Path = path,
                     IsLocked = options.IsLocked,
                     ProviderIds = options.ProviderIds,
-                    DateCreated = DateTime.UtcNow
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc
                 };
 
                 parentFolder.AddChild(collection);

@@ -27,6 +27,7 @@
  - [cryptobank](https://github.com/cryptobank)
  - [cvium](https://github.com/cvium)
  - [dannymichel](https://github.com/dannymichel)
+ - [darioackermann](https://github.com/darioackermann)
  - [DaveChild](https://github.com/DaveChild)
  - [DavidFair](https://github.com/DavidFair)
  - [Delgan](https://github.com/Delgan)
@@ -196,6 +197,9 @@
  - [Kenneth Cochran](https://github.com/kennethcochran)
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
+ - [allesmi](https://github.com/allesmi)
+ - [ThunderClapLP](https://github.com/ThunderClapLP)
+ - [Shoham Peller](https://github.com/spellr)
 
 # Emby Contributors
 
@@ -271,3 +275,4 @@
  - [Nathan McCrina](https://github.com/nfmccrina)
  - [Martin Reuter](https://github.com/reuterma24)
  - [Michael McElroy](https://github.com/mcmcelro)
+ - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
