@@ -11,7 +11,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Resets journal mode to WAL for users that have created their database during 10.11-RC1 or 2
-            migrationBuilder.Sql("PRAGMA journal_mode = 'WAL';");
+            migrationBuilder.Sql("PRAGMA journal_mode = 'WAL';", true);
         }
 
         /// <inheritdoc />
