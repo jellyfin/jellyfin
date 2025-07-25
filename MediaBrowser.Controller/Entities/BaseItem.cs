@@ -1431,7 +1431,7 @@ namespace MediaBrowser.Controller.Entities
             var info = FileSystem.GetFileSystemInfo(Path);
 
             return info.Exists
-                ? info.LastWriteTimeUtc != DateModified
+                ? DateModified.Subtract(info.LastWriteTimeUtc).Duration().TotalSeconds > 1
                 : false;
         }
 
