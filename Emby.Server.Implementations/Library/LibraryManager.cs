@@ -3060,6 +3060,8 @@ namespace Emby.Server.Implementations.Library
                     }
 
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                    personEntity.DateLastSaved = DateTime.UtcNow;
+
                     CreateItems([personEntity], null, CancellationToken.None);
                 }
             }
