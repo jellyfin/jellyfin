@@ -1947,7 +1947,13 @@ namespace Emby.Server.Implementations.Library
         {
             if (image.Path is not null && image.IsLocalFile)
             {
-                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                if (image.Width == 0 || image.Height == 0)
+                {
+                    return true;
+                }
+
+                // this is only refreshable if a blurhash can be computed
+                if (string.IsNullOrEmpty(image.BlurHash) && _imageProcessor.CanComputeBlurHash(image.Path))
                 {
                     return true;
                 }
@@ -1986,6 +1992,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var img in outdated)
             {
                 var image = img;
+                _logger.LogInformation("Refresh {ImagePath}", img.Path);
                 if (!img.IsLocalFile)
                 {
                     try
@@ -2027,11 +2034,19 @@ namespace Emby.Server.Implementations.Library
                     image.Height = 0;
                 }
 
+                image.BlurHash = string.Empty;
                 try
                 {
-                    var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
-                    anyChange = anyChange || !blurhash.Equals(image.BlurHash, StringComparison.Ordinal);
-                    image.BlurHash = blurhash;
+                    if (_imageProcessor.CanComputeBlurHash(image.Path))
+                    {
+                        var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                        anyChange = anyChange || !blurhash.Equals(image.BlurHash, StringComparison.Ordinal);
+                        image.BlurHash = blurhash;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Cannot compute blurhash for {ImagePath}", image.Path);
+                    }
                 }
                 catch (Exception ex)
                 {
