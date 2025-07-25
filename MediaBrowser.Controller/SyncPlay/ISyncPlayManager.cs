@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
         /// <returns>The list of available groups.</returns>
-        List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request);
+        IReadOnlyList<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request);
 
         /// <summary>
         /// Gets available groups for a session by id.

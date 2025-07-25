@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -15,7 +17,7 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvChannelQuery()
         {
             EnableUserData = true;
-            SortBy = Array.Empty<ItemSortBy>();
+            SortBy = [];
         }
 
         /// <summary>

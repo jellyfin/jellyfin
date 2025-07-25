@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using System.Diagnostics;
 
 namespace MediaBrowser.Model.Configuration;
@@ -11,18 +12,18 @@ public class TrickplayOptions
     /// <summary>
     /// Gets or sets a value indicating whether or not to use HW acceleration.
     /// </summary>
-    public bool EnableHwAcceleration { get; set; } = false;
+    public bool EnableHwAcceleration { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether or not to use HW accelerated MJPEG encoding.
     /// </summary>
-    public bool EnableHwEncoding { get; set; } = false;
+    public bool EnableHwEncoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to only extract key frames.
     /// Significantly faster, but is not compatible with all decoders and/or video files.
     /// </summary>
-    public bool EnableKeyFrameOnlyExtraction { get; set; } = false;
+    public bool EnableKeyFrameOnlyExtraction { get; set; }
 
     /// <summary>
     /// Gets or sets the behavior used by trickplay provider on library scan/update.
@@ -42,7 +43,7 @@ public class TrickplayOptions
     /// <summary>
     /// Gets or sets the target width resolutions, in px, to generates preview images for.
     /// </summary>
-    public int[] WidthResolutions { get; set; } = new[] { 320 };
+    public int[] WidthResolutions { get; set; } = [320];
 
     /// <summary>
     /// Gets or sets number of tile images to allow in X dimension.

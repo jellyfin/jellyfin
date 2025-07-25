@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -22,10 +23,10 @@ namespace MediaBrowser.Model.Configuration
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
-            LatestItemsExcludes = Array.Empty<Guid>();
-            OrderedViews = Array.Empty<Guid>();
-            MyMediaExcludes = Array.Empty<Guid>();
-            GroupedFolders = Array.Empty<Guid>();
+            LatestItemsExcludes = [];
+            OrderedViews = [];
+            MyMediaExcludes = [];
+            GroupedFolders = [];
         }
 
         /// <summary>

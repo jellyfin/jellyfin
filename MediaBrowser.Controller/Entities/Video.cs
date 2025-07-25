@@ -1,5 +1,6 @@
 #nullable disable
 
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -259,9 +260,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override MediaType MediaType => MediaType.Video;
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             if (EnableDefaultVideoUserDataKeys)
             {
