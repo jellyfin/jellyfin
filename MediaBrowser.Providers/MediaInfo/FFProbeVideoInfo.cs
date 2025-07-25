@@ -652,12 +652,29 @@ namespace MediaBrowser.Providers.MediaInfo
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(xmlFilePath);
 
-            // Select only the first EditionEntry
-            var firstEdition = xmlDoc.SelectSingleNode("//EditionEntry");
+            // Select the correct EditionEntry based on EditionFlagDefault
+            XmlNode? selectedEdition = null;
+            var editionEntries = xmlDoc.SelectNodes("//EditionEntry");
 
-            if (firstEdition != null)
+            if (editionEntries != null && editionEntries.Count > 0)
             {
-                var allChapterAtoms = firstEdition.SelectNodes("ChapterAtom");
+                foreach (XmlNode edition in editionEntries)
+                {
+                    var defaultFlagNode = edition.SelectSingleNode("EditionFlagDefault");
+                    if (defaultFlagNode != null && defaultFlagNode.InnerText.Trim() == "1")
+                    {
+                        selectedEdition = edition;
+                        break;
+                    }
+                }
+
+                // Fallback to the first edition if none have EditionFlagDefault = 1
+                selectedEdition ??= editionEntries[0];
+            }
+
+            if (selectedEdition != null)
+            {
+                var allChapterAtoms = selectedEdition.SelectNodes("ChapterAtom");
 
                 if (allChapterAtoms != null)
                 {
