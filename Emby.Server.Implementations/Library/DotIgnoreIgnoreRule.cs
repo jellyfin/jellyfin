@@ -42,6 +42,19 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     /// <returns>True if the file should be ignored.</returns>
     public static bool IsIgnored(FileSystemMetadata fileInfo, BaseItem? parent)
     {
+        if (fileInfo.IsDirectory)
+        {
+            var dirIgnoreFile = FindIgnoreFile(new DirectoryInfo(fileInfo.FullName));
+            if (dirIgnoreFile is null)
+            {
+                return false;
+            }
+
+            // ignore the directory only if the .ignore file is empty
+            // evaluate individual files otherwise
+            return string.IsNullOrWhiteSpace(GetFileContent(dirIgnoreFile));
+        }
+
         var parentDirPath = Path.GetDirectoryName(fileInfo.FullName);
         if (string.IsNullOrEmpty(parentDirPath))
         {
@@ -55,13 +68,9 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             return false;
         }
 
-        string ignoreFileString;
-        using (var reader = ignoreFile.OpenText())
-        {
-            ignoreFileString = reader.ReadToEnd();
-        }
+        string ignoreFileString = GetFileContent(ignoreFile);
 
-        if (string.IsNullOrEmpty(ignoreFileString))
+        if (string.IsNullOrWhiteSpace(ignoreFileString))
         {
             // Ignore directory if we just have the file
             return true;
@@ -73,5 +82,13 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         ignore.Add(ignoreRules);
 
         return ignore.IsIgnored(fileInfo.FullName);
+    }
+
+    private static string GetFileContent(FileInfo dirIgnoreFile)
+    {
+        using (var reader = dirIgnoreFile.OpenText())
+        {
+            return reader.ReadToEnd();
+        }
     }
 }
