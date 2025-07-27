@@ -13,6 +13,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<BaseItemEntity> builder)
     {
+        builder.Property(b => b.ItemType).HasDefaultValue(-1);
         builder.HasKey(e => e.Id);
         // TODO: See rant in entity file.
         // builder.HasOne(e => e.Parent).WithMany(e => e.DirectChildren).HasForeignKey(e => e.ParentId);
@@ -31,26 +32,25 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);
 
+        builder
+        .HasOne<BaseItemKindEntity>()
+        .WithMany()
+        .HasForeignKey(b => b.ItemType)
+        .OnDelete(DeleteBehavior.NoAction);
+
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.PresentationUniqueKey);
-        builder.HasIndex(e => new { e.Id, e.Type, e.IsFolder, e.IsVirtualItem });
 
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });
         // series
-        builder.HasIndex(e => new { e.Type, e.SeriesPresentationUniqueKey, e.PresentationUniqueKey, e.SortName });
-        // series counts
-        // seriesdateplayed sort order
-        builder.HasIndex(e => new { e.Type, e.SeriesPresentationUniqueKey, e.IsFolder, e.IsVirtualItem });
-        // live tv programs
-        builder.HasIndex(e => new { e.Type, e.TopParentId, e.StartDate });
-        // covering index for getitemvalues
-        builder.HasIndex(e => new { e.Type, e.TopParentId, e.Id });
-        // used by movie suggestions
-        builder.HasIndex(e => new { e.Type, e.TopParentId, e.PresentationUniqueKey });
+        builder.HasIndex(e => new { e.ItemType, e.SeriesPresentationUniqueKey, e.PresentationUniqueKey, e.SortName });
+
+        builder.HasIndex(e => new { e.ItemType, e.SeriesPresentationUniqueKey, e.IsFolder, e.IsVirtualItem });
+
+        builder.HasIndex(e => new { e.ItemType, e.TopParentId });
         // latest items
-        builder.HasIndex(e => new { e.Type, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
         builder.HasIndex(e => new { e.IsFolder, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
@@ -58,8 +58,8 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasData(new BaseItemEntity()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-            Type = "PLACEHOLDER",
-            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+            ItemType = -1,
+            Name = "This is a placeholder item for UserData that has been detected from its original item",
         });
     }
 }

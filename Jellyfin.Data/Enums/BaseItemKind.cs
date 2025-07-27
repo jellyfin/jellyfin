@@ -5,6 +5,7 @@ namespace Jellyfin.Data.Enums
     /// </summary>
     /// <remarks>
     /// This enum is generated from all classes that inherit from <c>BaseItem</c>.
+    /// Don not sort it anymore. Instead, add new ones in the end.
     /// </remarks>
     public enum BaseItemKind
     {
@@ -134,11 +135,6 @@ namespace Jellyfin.Data.Enums
         PlaylistsFolder,
 
         /// <summary>
-        /// Item is program.
-        /// </summary>
-        Program,
-
-        /// <summary>
         /// Item is recording.
         /// </summary>
         /// <remarks>
@@ -165,22 +161,6 @@ namespace Jellyfin.Data.Enums
         /// Item is trailer.
         /// </summary>
         Trailer,
-
-        /// <summary>
-        /// Item is live tv channel.
-        /// </summary>
-        /// <remarks>
-        /// Type is overridden.
-        /// </remarks>
-        TvChannel,
-
-        /// <summary>
-        /// Item is live tv program.
-        /// </summary>
-        /// <remarks>
-        /// Type is overridden.
-        /// </remarks>
-        TvProgram,
 
         /// <summary>
         /// Item is user root folder.

@@ -207,6 +207,11 @@ namespace MediaBrowser.Controller.LiveTv
             return "Program";
         }
 
+        public override BaseItemKind GetBaseItemKind()
+        {
+            return BaseItemKind.LiveTvProgram;
+        }
+
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.LiveTvProgram;
