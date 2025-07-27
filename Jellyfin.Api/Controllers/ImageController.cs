@@ -1458,6 +1458,7 @@ public class ImageController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User id.</param>
     /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+    /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
     /// <response code="200">Image stream returned.</response>
     /// <response code="400">User id not provided.</response>
     /// <response code="404">Item not found.</response>
@@ -1473,7 +1474,8 @@ public class ImageController : BaseJellyfinApiController
     [ProducesImageFile]
     public async Task<ActionResult> GetUserImage(
         [FromQuery] Guid? userId,
-        [FromQuery] string? tag)
+        [FromQuery] string? tag,
+        [FromQuery] ImageFormat? format)
     {
         var requestUserId = userId ?? User.GetUserId();
         if (requestUserId.IsEmpty())
@@ -1499,7 +1501,7 @@ public class ImageController : BaseJellyfinApiController
                 ImageType.Profile,
                 null,
                 tag,
-                ImageFormat.Jpg,
+                format,
                 null,
                 null,
                 null,
@@ -1570,7 +1572,8 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] int? imageIndex)
         => GetUserImage(
             userId,
-            tag);
+            tag,
+            format);
 
     /// <summary>
     /// Get user profile image.
@@ -1625,19 +1628,22 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] string? foregroundLayer)
         => GetUserImage(
             userId,
-            tag);
+            tag,
+            format);
 
     /// <summary>
     /// Generates or gets the splashscreen.
     /// </summary>
     /// <param name="tag">Supply the cache tag from the item object to receive strong caching headers.</param>
+    /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
     /// <response code="200">Splashscreen returned successfully.</response>
     /// <returns>The splashscreen.</returns>
     [HttpGet("Branding/Splashscreen")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesImageFile]
     public async Task<ActionResult> GetSplashscreen(
-        [FromQuery] string? tag)
+        [FromQuery] string? tag,
+        [FromQuery] ImageFormat? format)
     {
         var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
         var isAdmin = User.IsInRole(Constants.UserRoles.Administrator);
@@ -1662,7 +1668,7 @@ public class ImageController : BaseJellyfinApiController
             }
         }
 
-        var outputFormats = GetOutputFormats(ImageFormat.Jpg);
+        var outputFormats = GetOutputFormats(format);
 
         TimeSpan? cacheDuration = null;
         if (!string.IsNullOrEmpty(tag))
