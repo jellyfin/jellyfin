@@ -21,11 +21,10 @@ namespace Jellyfin.Server.Implementations.Item;
 /// Manager for handling people.
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
-/// <param name="itemTypeLookup">Items lookup service.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
@@ -140,11 +139,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     {
         if (filter.User is not null && filter.IsFavorite.HasValue)
         {
-            var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
             var oldQuery = query;
 
             query = context.UserData
-                .Where(u => u.Item!.Type == personType && u.IsFavorite == filter.IsFavorite && u.UserId.Equals(filter.User.Id))
+                .Where(u => u.Item!.ItemType == (int)BaseItemKind.Person && u.IsFavorite == filter.IsFavorite && u.UserId.Equals(filter.User.Id))
                 .Join(oldQuery, e => e.Item!.Name, e => e.Name, (item, person) => person)
                 .Distinct()
                 .AsNoTracking();

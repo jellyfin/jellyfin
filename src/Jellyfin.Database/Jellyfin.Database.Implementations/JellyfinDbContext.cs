@@ -116,6 +116,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
+    public DbSet<BaseItemKindEntity> BaseItemKinds => Set<BaseItemKindEntity>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
+    /// </summary>
     public DbSet<Chapter> Chapters => Set<Chapter>();
 
     /// <summary>
