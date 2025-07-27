@@ -252,6 +252,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("IsVirtualItem")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("ItemType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(-1);
+
                     b.Property<float?>("LUFS")
                         .HasColumnType("REAL");
 
@@ -351,10 +356,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("TotalBitrate")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("UnratedType")
                         .HasColumnType("TEXT");
 
@@ -369,25 +370,17 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("PresentationUniqueKey");
 
+                    b.HasIndex("ItemType", "TopParentId");
+
                     b.HasIndex("TopParentId", "Id");
 
-                    b.HasIndex("Type", "TopParentId", "Id");
+                    b.HasIndex("ItemType", "SeriesPresentationUniqueKey", "IsFolder", "IsVirtualItem");
 
-                    b.HasIndex("Type", "TopParentId", "PresentationUniqueKey");
-
-                    b.HasIndex("Type", "TopParentId", "StartDate");
-
-                    b.HasIndex("Id", "Type", "IsFolder", "IsVirtualItem");
+                    b.HasIndex("ItemType", "SeriesPresentationUniqueKey", "PresentationUniqueKey", "SortName");
 
                     b.HasIndex("MediaType", "TopParentId", "IsVirtualItem", "PresentationUniqueKey");
 
-                    b.HasIndex("Type", "SeriesPresentationUniqueKey", "IsFolder", "IsVirtualItem");
-
-                    b.HasIndex("Type", "SeriesPresentationUniqueKey", "PresentationUniqueKey", "SortName");
-
                     b.HasIndex("IsFolder", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
-
-                    b.HasIndex("Type", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
 
                     b.ToTable("BaseItems");
 
@@ -404,8 +397,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                             IsRepeat = false,
                             IsSeries = false,
                             IsVirtualItem = false,
-                            Name = "This is a placeholder item for UserData that has been detacted from its original item",
-                            Type = "PLACEHOLDER"
+                            ItemType = -1,
+                            Name = "This is a placeholder item for UserData that has been detected from its original item"
                         });
                 });
 
@@ -444,6 +437,233 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("BaseItemImageInfos");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemKindEntity", b =>
+                {
+                    b.Property<int>("Kind")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Kind");
+
+                    b.ToTable("BaseItemKinds");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+
+                    b.HasData(
+                        new
+                        {
+                            Kind = -1,
+                            Description = "Default if no class found",
+                            TypeName = "PLACEHOLDER"
+                        },
+                        new
+                        {
+                            Kind = 0,
+                            Description = "Aggregate Folder",
+                            TypeName = "MediaBrowser.Controller.Entities.AggregateFolder"
+                        },
+                        new
+                        {
+                            Kind = 1,
+                            Description = "Audio File",
+                            TypeName = "MediaBrowser.Controller.Entities.Audio.Audio"
+                        },
+                        new
+                        {
+                            Kind = 2,
+                            Description = "Audio Book",
+                            TypeName = "MediaBrowser.Controller.Entities.AudioBook"
+                        },
+                        new
+                        {
+                            Kind = 3,
+                            Description = "Plugin Folder",
+                            TypeName = "MediaBrowser.Controller.Entities.BasePluginFolder"
+                        },
+                        new
+                        {
+                            Kind = 4,
+                            Description = "Book",
+                            TypeName = "MediaBrowser.Controller.Entities.Book"
+                        },
+                        new
+                        {
+                            Kind = 5,
+                            Description = "Box Set",
+                            TypeName = "MediaBrowser.Controller.Entities.Movies.BoxSet"
+                        },
+                        new
+                        {
+                            Kind = 6,
+                            Description = "Channel",
+                            TypeName = "MediaBrowser.Controller.Channels.Channel"
+                        },
+                        new
+                        {
+                            Kind = 7,
+                            Description = "Channel Folder Item (virtual class)",
+                            TypeName = "?.ChannelFolderItem"
+                        },
+                        new
+                        {
+                            Kind = 8,
+                            Description = "Collection Folder",
+                            TypeName = "MediaBrowser.Controller.Entities.CollectionFolder"
+                        },
+                        new
+                        {
+                            Kind = 9,
+                            Description = "TV Episode",
+                            TypeName = "MediaBrowser.Controller.Entities.TV.Episode"
+                        },
+                        new
+                        {
+                            Kind = 10,
+                            Description = "Folder",
+                            TypeName = "MediaBrowser.Controller.Entities.Folder"
+                        },
+                        new
+                        {
+                            Kind = 11,
+                            Description = "Genre",
+                            TypeName = "MediaBrowser.Controller.Entities.Genre"
+                        },
+                        new
+                        {
+                            Kind = 12,
+                            Description = "Live TV Channel",
+                            TypeName = "MediaBrowser.Controller.LiveTv.LiveTvChannel"
+                        },
+                        new
+                        {
+                            Kind = 13,
+                            Description = "Live TV Program",
+                            TypeName = "MediaBrowser.Controller.LiveTv.LiveTvProgram"
+                        },
+                        new
+                        {
+                            Kind = 14,
+                            Description = "Manual Playlists Folder",
+                            TypeName = "Emby.Server.Implementations.Playlists.PlaylistsFolder"
+                        },
+                        new
+                        {
+                            Kind = 15,
+                            Description = "Movie",
+                            TypeName = "MediaBrowser.Controller.Entities.Movies.Movie"
+                        },
+                        new
+                        {
+                            Kind = 16,
+                            Description = "Music Album",
+                            TypeName = "MediaBrowser.Controller.Entities.Audio.MusicAlbum"
+                        },
+                        new
+                        {
+                            Kind = 17,
+                            Description = "Music Artist",
+                            TypeName = "MediaBrowser.Controller.Entities.Audio.MusicArtist"
+                        },
+                        new
+                        {
+                            Kind = 18,
+                            Description = "Music Genre",
+                            TypeName = "MediaBrowser.Controller.Entities.Audio.MusicGenre"
+                        },
+                        new
+                        {
+                            Kind = 19,
+                            Description = "Music Video",
+                            TypeName = "MediaBrowser.Controller.Entities.MusicVideo"
+                        },
+                        new
+                        {
+                            Kind = 20,
+                            Description = "Person",
+                            TypeName = "MediaBrowser.Controller.Entities.Person"
+                        },
+                        new
+                        {
+                            Kind = 21,
+                            Description = "Photo",
+                            TypeName = "MediaBrowser.Controller.Entities.Photo"
+                        },
+                        new
+                        {
+                            Kind = 22,
+                            Description = "Photo Album",
+                            TypeName = "MediaBrowser.Controller.Entities.PhotoAlbum"
+                        },
+                        new
+                        {
+                            Kind = 23,
+                            Description = "Playlist",
+                            TypeName = "MediaBrowser.Controller.Playlists.Playlist"
+                        },
+                        new
+                        {
+                            Kind = 24,
+                            Description = "Recording (obsolete?)",
+                            TypeName = "?.Recording"
+                        },
+                        new
+                        {
+                            Kind = 25,
+                            Description = "TV Season",
+                            TypeName = "MediaBrowser.Controller.Entities.TV.Season"
+                        },
+                        new
+                        {
+                            Kind = 26,
+                            Description = "TV Series",
+                            TypeName = "MediaBrowser.Controller.Entities.TV.Series"
+                        },
+                        new
+                        {
+                            Kind = 27,
+                            Description = "Studio",
+                            TypeName = "MediaBrowser.Controller.Entities.Studio"
+                        },
+                        new
+                        {
+                            Kind = 28,
+                            Description = "Trailer",
+                            TypeName = "MediaBrowser.Controller.Entities.Trailer"
+                        },
+                        new
+                        {
+                            Kind = 29,
+                            Description = "User Root Folder",
+                            TypeName = "MediaBrowser.Controller.Entities.UserRootFolder"
+                        },
+                        new
+                        {
+                            Kind = 30,
+                            Description = "User View",
+                            TypeName = "MediaBrowser.Controller.Entities.UserView"
+                        },
+                        new
+                        {
+                            Kind = 31,
+                            Description = "Video",
+                            TypeName = "MediaBrowser.Controller.Entities.Video"
+                        },
+                        new
+                        {
+                            Kind = 32,
+                            Description = "Year",
+                            TypeName = "MediaBrowser.Controller.Entities.Year"
+                        });
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemMetadataField", b =>
@@ -1448,6 +1668,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemEntity", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemKindEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ItemType")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>

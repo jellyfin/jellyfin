@@ -64,9 +64,10 @@ public sealed class BaseItemRepository
     /// so that we can de-serialize properly when we don't have strong types.
     /// </summary>
     private static readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
+
+    private static readonly BaseItemKindCache _itemTypeLookup = new BaseItemKindCache();
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
-    private readonly IItemTypeLookup _itemTypeLookup;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
 
@@ -81,19 +82,16 @@ public sealed class BaseItemRepository
     /// </summary>
     /// <param name="dbProvider">The db factory.</param>
     /// <param name="appHost">The Application host.</param>
-    /// <param name="itemTypeLookup">The static type lookup.</param>
     /// <param name="serverConfigurationManager">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost appHost,
-        IItemTypeLookup itemTypeLookup,
         IServerConfigurationManager serverConfigurationManager,
         ILogger<BaseItemRepository> logger)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
-        _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
     }
@@ -178,37 +176,37 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAllArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getAllArtistsValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemValues(filter, _getAllArtistsValueTypes, BaseItemKind.MusicArtist);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemValues(filter, _getArtistValueTypes, BaseItemKind.MusicArtist);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetAlbumArtists(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getAlbumArtistValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]);
+        return GetItemValues(filter, _getAlbumArtistValueTypes, BaseItemKind.MusicArtist);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetStudios(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getStudiosValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]);
+        return GetItemValues(filter, _getStudiosValueTypes, BaseItemKind.Studio);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]);
+        return GetItemValues(filter, _getGenreValueTypes, BaseItemKind.Genre);
     }
 
     /// <inheritdoc />
     public QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetMusicGenres(InternalItemsQuery filter)
     {
-        return GetItemValues(filter, _getGenreValueTypes, _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]);
+        return GetItemValues(filter, _getGenreValueTypes, BaseItemKind.MusicGenre);
     }
 
     /// <inheritdoc />
@@ -345,7 +343,7 @@ public sealed class BaseItemRepository
         var query = context.BaseItems
             .AsNoTracking()
             .Where(i => filter.TopParentIds.Contains(i.TopParentId!.Value))
-            .Where(i => i.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode])
+            .Where(i => i.ItemType == (int)BaseItemKind.Episode)
             .Join(
                 context.UserData.AsNoTracking().Where(e => e.ItemId != EF.Constant(PlaceholderId)),
                 i => new { UserId = filter.User.Id, ItemId = i.Id },
@@ -461,16 +459,16 @@ public sealed class BaseItemRepository
     /// <summary>
     /// Gets the type.
     /// </summary>
-    /// <param name="typeName">Name of the type.</param>
+    /// <param name="kind">Find of the type.</param>
+    /// <param name="dbProvider">DB provider.</param>
     /// <returns>Type.</returns>
     /// <exception cref="ArgumentNullException"><c>typeName</c> is null.</exception>
-    private static Type? GetType(string typeName)
+    private static Type? GetType(BaseItemKind kind, IDbContextFactory<JellyfinDbContext> dbProvider)
     {
-        ArgumentException.ThrowIfNullOrEmpty(typeName);
-
         // TODO: this isn't great. Refactor later to be both globally handled by a dedicated service not just an static variable and be loaded eagerly.
         // currently this is done so that plugins may introduce their own type of baseitems as we dont know when we are first called, before or after plugins are loaded
-        return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
+        string itemType = _itemTypeLookup.GetTypeNameByKind(kind, dbProvider);
+        return _typeMap.GetOrAdd(itemType, k => AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(k))
             .FirstOrDefault(t => t is not null));
     }
@@ -841,16 +839,16 @@ public sealed class BaseItemRepository
     /// <returns>The dto to map.</returns>
     public BaseItemEntity Map(BaseItemDto dto)
     {
-        var dtoType = dto.GetType();
+        var dtoKind = (int)_itemTypeLookup.GetKindByTypeName(dto.GetType().FullName!, _dbProvider);
         var entity = new BaseItemEntity()
         {
-            Type = dtoType.ToString(),
+            ItemType = dtoKind,
             Id = dto.Id
         };
 
-        if (TypeRequiresDeserialization(dtoType))
+        if (TypeRequiresDeserialization(dto.GetType()))
         {
-            entity.Data = JsonSerializer.Serialize(dto, dtoType, JsonDefaults.Options);
+            entity.Data = JsonSerializer.Serialize(dto, dto.GetType(), JsonDefaults.Options);
         }
 
         entity.ParentId = !dto.ParentId.IsEmpty() ? dto.ParentId : null;
@@ -1009,7 +1007,7 @@ public sealed class BaseItemRepository
         return entity;
     }
 
-    private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
+    private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<BaseItemKind> withItemTypes, IReadOnlyList<BaseItemKind> excludeItemTypes)
     {
         using var context = _dbProvider.CreateDbContext();
 
@@ -1018,12 +1016,12 @@ public sealed class BaseItemRepository
             .Where(e => itemValueTypes.Any(w => (ItemValueType)w == e.ItemValue.Type));
         if (withItemTypes.Count > 0)
         {
-            query = query.Where(e => withItemTypes.Contains(e.Item.Type));
+            query = query.Where(e => withItemTypes.Contains((BaseItemKind)e.Item.ItemType));
         }
 
         if (excludeItemTypes.Count > 0)
         {
-            query = query.Where(e => !excludeItemTypes.Contains(e.Item.Type));
+            query = query.Where(e => !excludeItemTypes.Contains((BaseItemKind)e.Item.ItemType));
         }
 
         // query = query.DistinctBy(e => e.CleanValue);
@@ -1046,26 +1044,23 @@ public sealed class BaseItemRepository
             throw new InvalidOperationException("Server Configuration manager or configuration is null");
         }
 
-        var typeToSerialise = GetType(baseItemEntity.Type);
-        return BaseItemRepository.DeserializeBaseItem(
+        var typeToSerialise = GetType((BaseItemKind)baseItemEntity.ItemType, _dbProvider);
+        return DeserializeBaseItem(
             baseItemEntity,
             _logger,
             _appHost,
+            _dbProvider,
             skipDeserialization || (_serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes && (typeToSerialise == typeof(Channel) || typeToSerialise == typeof(UserRootFolder))));
     }
 
-    /// <summary>
-    /// Deserializes a BaseItemEntity and sets all properties.
-    /// </summary>
-    /// <param name="baseItemEntity">The DB entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="appHost">The application server Host.</param>
-    /// <param name="skipDeserialization">If only mapping should be processed.</param>
-    /// <returns>A mapped BaseItem.</returns>
-    /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
-    public static BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
+    private static BaseItemDto DeserializeBaseItem(
+        BaseItemEntity baseItemEntity,
+        ILogger logger,
+        IServerApplicationHost? appHost,
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
+        var type = GetType((BaseItemKind)baseItemEntity.ItemType, dbProvider) ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -1087,7 +1082,20 @@ public sealed class BaseItemRepository
         return Map(baseItemEntity, dto, appHost);
     }
 
-    private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, string returnType)
+    /// <summary>
+    /// Deserializes a BaseItemEntity and sets all properties.
+    /// </summary>
+    /// <param name="baseItemEntity">The DB entity.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="dbProvider">DB context.</param>
+    /// <returns>A mapped BaseItem.</returns>
+    /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialization is requested.</exception>
+    public static BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IDbContextFactory<JellyfinDbContext> dbProvider)
+    {
+        return DeserializeBaseItem(baseItemEntity, logger, null, dbProvider, false);
+    }
+
+    private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, BaseItemKind kind)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
@@ -1125,7 +1133,7 @@ public sealed class BaseItemRepository
                 (fw, g) => fw.f.CleanValue);
 
         var innerQuery = PrepareItemQuery(context, filter)
-            .Where(e => e.Type == returnType)
+            .Where(e => e.ItemType == (int)kind)
             .Where(e => itemValuesQuery.Contains(e.CleanName));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
@@ -1195,14 +1203,6 @@ public sealed class BaseItemRepository
             itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
                 .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
 
-            var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-            var movieTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie];
-            var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
-            var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
-            var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
-            var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
-            var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
-
             var resultQuery = query.Select(e => new
             {
                 item = e.AsQueryable()
@@ -1214,13 +1214,13 @@ public sealed class BaseItemRepository
                 // TODO: This is bad refactor!
                 itemCount = new ItemCounts()
                 {
-                    SeriesCount = itemCountQuery!.Count(f => f.Type == seriesTypeName),
-                    EpisodeCount = itemCountQuery!.Count(f => f.Type == episodeTypeName),
-                    MovieCount = itemCountQuery!.Count(f => f.Type == movieTypeName),
-                    AlbumCount = itemCountQuery!.Count(f => f.Type == musicAlbumTypeName),
-                    ArtistCount = itemCountQuery!.Count(f => f.Type == musicArtistTypeName),
-                    SongCount = itemCountQuery!.Count(f => f.Type == audioTypeName),
-                    TrailerCount = itemCountQuery!.Count(f => f.Type == trailerTypeName),
+                    SeriesCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.Series),
+                    EpisodeCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.Episode),
+                    MovieCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.Movie),
+                    AlbumCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.MusicAlbum),
+                    ArtistCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.MusicArtist),
+                    SongCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.Audio),
+                    TrailerCount = itemCountQuery!.Count(f => f.ItemType == (int)BaseItemKind.Trailer),
                 }
             });
 
@@ -1345,33 +1345,33 @@ public sealed class BaseItemRepository
         return _appHost.ReverseVirtualPath(path);
     }
 
-    private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
+    private List<BaseItemKind> GetItemByNameTypesInQuery(InternalItemsQuery query)
     {
-        var list = new List<string>();
+        var list = new List<BaseItemKind>();
 
         if (IsTypeInQuery(BaseItemKind.Person, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.Person]!);
+            list.Add(BaseItemKind.Person);
         }
 
         if (IsTypeInQuery(BaseItemKind.Genre, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.Genre]!);
+            list.Add(BaseItemKind.Genre);
         }
 
         if (IsTypeInQuery(BaseItemKind.MusicGenre, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicGenre]!);
+            list.Add(BaseItemKind.MusicGenre);
         }
 
         if (IsTypeInQuery(BaseItemKind.MusicArtist, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!);
+            list.Add(BaseItemKind.MusicArtist);
         }
 
         if (IsTypeInQuery(BaseItemKind.Studio, query))
         {
-            list.Add(_itemTypeLookup.BaseItemKindNames[BaseItemKind.Studio]!);
+            list.Add(BaseItemKind.Studio);
         }
 
         return list;
@@ -1620,31 +1620,11 @@ public sealed class BaseItemRepository
         if (filter.IncludeItemTypes.Length == 0)
         {
             var excludeTypes = filter.ExcludeItemTypes;
-            if (excludeTypes.Length == 1)
-            {
-                if (_itemTypeLookup.BaseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
-                {
-                    baseQuery = baseQuery.Where(e => e.Type != excludeTypeName);
-                }
-            }
-            else if (excludeTypes.Length > 1)
-            {
-                var excludeTypeName = new List<string>();
-                foreach (var excludeType in excludeTypes)
-                {
-                    if (_itemTypeLookup.BaseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
-                    {
-                        excludeTypeName.Add(baseItemKindName!);
-                    }
-                }
-
-                baseQuery = baseQuery.Where(e => !excludeTypeName.Contains(e.Type));
-            }
+            baseQuery = baseQuery.Where(e => !excludeTypes.Contains((BaseItemKind)e.ItemType));
         }
         else
         {
-            string[] types = includeTypes.Select(f => _itemTypeLookup.BaseItemKindNames.GetValueOrDefault(f)).Where(e => e != null).ToArray()!;
-            baseQuery = baseQuery.WhereOneOrMany(types, f => f.Type);
+            baseQuery = baseQuery.Where(f => includeTypes.Contains((BaseItemKind)f.ItemType));
         }
 
         if (filter.ChannelIds.Count > 0)
@@ -2237,7 +2217,7 @@ public sealed class BaseItemRepository
             var enableItemsByName = (filter.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
             if (enableItemsByName && includedItemByNameTypes.Count > 0)
             {
-                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains(e.Type) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
+                baseQuery = baseQuery.Where(e => includedItemByNameTypes.Contains((BaseItemKind)e.ItemType) || queryTopParentIds.Any(w => w == e.TopParentId!.Value));
             }
             else
             {

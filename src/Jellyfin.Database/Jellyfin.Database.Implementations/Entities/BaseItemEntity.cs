@@ -10,7 +10,7 @@ public class BaseItemEntity
 {
     public required Guid Id { get; set; }
 
-    public required string Type { get; set; }
+    public required int ItemType { get; set; }
 
     public string? Data { get; set; }
 

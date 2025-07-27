@@ -1723,7 +1723,7 @@ namespace MediaBrowser.Controller.Entities
             return GetType().Name;
         }
 
-        public BaseItemKind GetBaseItemKind()
+        public virtual BaseItemKind GetBaseItemKind()
         {
             return _baseItemKind ??= Enum.Parse<BaseItemKind>(GetClientTypeName());
         }
