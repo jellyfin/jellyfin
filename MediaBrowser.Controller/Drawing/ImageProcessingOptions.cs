@@ -54,6 +54,8 @@ namespace MediaBrowser.Controller.Drawing
 
         public bool RequiresAutoOrientation { get; set; }
 
+        public bool StrictCacheHandling { get; set; }
+
         private bool HasDefaultOptions(string originalImagePath)
         {
             return HasDefaultOptionsWithoutSize(originalImagePath) &&
