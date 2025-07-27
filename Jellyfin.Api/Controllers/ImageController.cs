@@ -1901,8 +1901,7 @@ public class ImageController : BaseJellyfinApiController
             Blur = blur,
             BackgroundColor = backgroundColor,
             ForegroundLayer = foregroundLayer,
-            SupportedOutputFormats = outputFormats,
-            StrictCacheHandling = true
+            SupportedOutputFormats = outputFormats
         };
 
         return await GetImageResult(
