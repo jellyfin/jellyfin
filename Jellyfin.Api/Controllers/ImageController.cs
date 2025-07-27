@@ -33,15 +33,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using ImageArgument = (
-         int? Width,
-         int? Height,
-         int? FillWidth,
-         int? FillHeight,
-         int? Blur,
-         string? BackgroundColor,
-         string? ForegroundLayer,
-         int Quality);
 
 namespace Jellyfin.Api.Controllers;
 
