@@ -332,7 +332,7 @@ namespace MediaBrowser.Providers.Manager
             if (!string.IsNullOrEmpty(itemPath))
             {
                 var info = FileSystem.GetFileSystemInfo(itemPath);
-                if (info.Exists && item.DateModified.Subtract(info.LastWriteTimeUtc).Duration().TotalSeconds > 1)
+                if (info.Exists && item.HasChanged(info.LastWriteTimeUtc))
                 {
                     Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
 

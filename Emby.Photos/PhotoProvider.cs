@@ -49,7 +49,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
         if (item.IsFileProtocol)
         {
             var file = directoryService.GetFile(item.Path);
-            return file is not null && item.DateModified.Subtract(file.LastWriteTimeUtc).Duration().TotalSeconds > 1;
+            return file is not null && item.HasChanged(file.LastWriteTimeUtc);
         }
 
         return false;
