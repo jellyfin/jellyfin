@@ -130,9 +130,12 @@
     "TaskCleanCollectionsAndPlaylists": "কালেকশন এবং প্লেলিস্ট পরিষ্কার করুন",
     "TaskCleanCollectionsAndPlaylistsDescription": "কালেকশন এবং প্লেলিস্ট থেকে আইটেমগুলি সরিয়ে দেয় যা আর বিদ্যমান নেই।",
     "TaskExtractMediaSegments": "মিডিয়া সেগমেন্ট স্ক্যান",
-    "TaskExtractMediaSegmentsDescription": "MediaSegment সক্ষম প্লাগইনগুলি থেকে মিডিয়া সেগমেন্টগুলি বের করে বা প্রাপ্ত করে।",
+    "TaskExtractMediaSegmentsDescription": "মিডিয়া সেগমেন্ট সক্রিয় প্লাগইনগুলি থেকে মিডিয়া সেগমেন্টগুলি বের করে বা প্রাপ্ত করে।",
     "TaskDownloadMissingLyrics": "অনুপস্থিত গান ডাউনলোড করুন",
     "TaskMoveTrickplayImagesDescription": "লাইব্রেরির সেটিং অনুযায়ী বিদ্যমান ট্রিকপ্লে ফাইলগুলো সরিয়ে নেবে।",
     "TaskAudioNormalizationDescription": "অডিও নর্মালাইজেশন তথ্যের জন্য ফাইল স্ক্যান করবে।",
-    "CleanupUserDataTaskDescription": "৯০ দিন বা তার বেশি সময় ধরে অনুপস্থিত মিডিয়া থেকে সকল ব্যবহারকারীর ডেটা (ওয়াচ স্টেট, ফেভারিট স্ট্যাটাস ইত্যাদি) মুছে ফেলবে।"
+    "CleanupUserDataTaskDescription": "৯০ দিন বা তার বেশি সময় ধরে অনুপস্থিত মিডিয়া থেকে সকল ব্যবহারকারীর ডেটা (ওয়াচ স্টেট, ফেভারিট স্ট্যাটাস ইত্যাদি) মুছে ফেলবে।",
+    "TaskMoveTrickplayImages": "ট্রিকপ্লে ইমেজের অবস্থান পরিবর্তন",
+    "TaskAudioNormalization": "অডিও নর্মলাইজেশন",
+    "CleanupUserDataTask": "ব্যবহারকারীর ডেটা পরিষ্কারের কাজ"
 }
