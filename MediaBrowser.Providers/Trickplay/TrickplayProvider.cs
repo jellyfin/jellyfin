@@ -56,7 +56,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
         if (item.IsFileProtocol)
         {
             var file = directoryService.GetFile(item.Path);
-            if (file is not null && item.DateModified != file.LastWriteTimeUtc)
+            if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
             {
                 return true;
             }

@@ -1954,7 +1954,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                    return image.DateModified.Subtract(_fileSystem.GetLastWriteTimeUtc(image.Path)).Duration().TotalSeconds > 1;
                 }
                 catch (Exception ex)
                 {
