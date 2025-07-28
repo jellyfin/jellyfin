@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Diacritics.Extensions;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
@@ -373,8 +374,15 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i != other)
                 .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
 
-            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
-            IncludeInheritedTags = user.GetPreference(PreferenceKind.AllowedTags);
+            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags)
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
+                .ToArray();
+
+            IncludeInheritedTags = user.GetPreference(PreferenceKind.AllowedTags)
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
+                .ToArray();
 
             User = user;
         }
