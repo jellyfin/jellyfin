@@ -474,6 +474,7 @@ namespace Emby.Server.Implementations.Session
         private void RemoveNowPlayingItem(SessionInfo session)
         {
             session.NowPlayingItem = null;
+            session.FullNowPlayingItem = null;
             session.PlayState = new PlayerStateInfo();
 
             if (!string.IsNullOrEmpty(session.DeviceId))

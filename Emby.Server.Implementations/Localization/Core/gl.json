@@ -135,5 +135,6 @@
     "TaskMoveTrickplayImages": "Migrar a localización da imaxe de Trickplay",
     "TaskMoveTrickplayImagesDescription": "Move os ficheiros de reprodución con trickplay existentes segundo a configuración da biblioteca.",
     "TaskRefreshTrickplayImages": "Xerar imaxes de Trickplay",
-    "TaskAudioNormalizationDescription": "Analiza ficheiros para obter datos de normalización de audio."
+    "TaskAudioNormalizationDescription": "Analiza ficheiros para obter datos de normalización de audio.",
+    "CleanupUserDataTask": "Tarefa de limpeza de datos do usuario"
 }

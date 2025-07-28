@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file is not null && file.LastWriteTimeUtc != item.DateModified && file.Length != item.Size)
+                    if (file is not null && item.HasChanged(file.LastWriteTimeUtc) && file.Length != item.Size)
                     {
                         _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
                         return true;

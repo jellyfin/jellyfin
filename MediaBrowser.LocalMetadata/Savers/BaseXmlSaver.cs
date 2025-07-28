@@ -235,11 +235,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 if (item is Person)
                 {
-                    await writer.WriteElementStringAsync(null, "DeathDate", null, item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "DeathDate", null, item.EndDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
                 }
                 else if (item is not Episode)
                 {
-                    await writer.WriteElementStringAsync(null, "EndDate", null, item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "EndDate", null, item.EndDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ConfigureAwait(false);
                 }
             }
 

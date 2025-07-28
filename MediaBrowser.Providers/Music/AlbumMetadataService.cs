@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -31,14 +32,16 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public AlbumMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<AlbumMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        IExternalDataManager externalDataManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
     }
 
@@ -197,20 +200,26 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
             foreach (var albumArtist in item.AlbumArtists)
             {
-                PeopleHelper.AddPerson(people, new PersonInfo
+                if (!string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    Name = albumArtist.Trim(),
-                    Type = PersonKind.AlbumArtist
-                });
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = albumArtist,
+                        Type = PersonKind.AlbumArtist
+                    });
+                }
             }
 
             foreach (var artist in item.Artists)
             {
-                PeopleHelper.AddPerson(people, new PersonInfo
+                if (!string.IsNullOrWhiteSpace(artist))
                 {
-                    Name = artist.Trim(),
-                    Type = PersonKind.Artist
-                });
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = artist,
+                        Type = PersonKind.Artist
+                    });
+                }
             }
 
             LibraryManager.UpdatePeople(item, people);
