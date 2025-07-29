@@ -755,6 +755,27 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
+            // Check video stream limits before allowing playback
+            if (libraryItem?.MediaType == MediaType.Video)
+            {
+                var sessionUsers = GetUsers(session);
+                foreach (var user in sessionUsers)
+                {
+                    if (user.MaxActiveVideoStreams > 0)
+                    {
+                        var activeVideoStreams = Sessions.Count(s =>
+                            s.UserId.Equals(user.Id) &&
+                            s.NowPlayingItem?.MediaType == MediaType.Video);
+
+                        _logger.LogInformation("Current/Max video streams for user {User}: {VideoStreams}/{MaxVideoStreams}", user.Username, activeVideoStreams, user.MaxActiveVideoStreams);
+                        if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                        {
+                            throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                        }
+                    }
+                }
+            }
+
             await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
