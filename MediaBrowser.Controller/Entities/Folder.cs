@@ -788,6 +788,18 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (query.SubtitleLanguage.Length > 0)
+            {
+                Logger.LogDebug("Query requires post-filtering due to SubtitleLanguage");
+                return true;
+            }
+
+            if (query.AudioLanguage.Length > 0)
+            {
+                Logger.LogDebug("Query requires post-filtering due to AudioLanguage");
+                return true;
+            }
+
             if (query.HasOfficialRating.HasValue)
             {
                 Logger.LogDebug("Query requires post-filtering due to HasOfficialRating");

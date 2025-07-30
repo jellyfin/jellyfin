@@ -389,6 +389,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Returns this video and all alternate versions (linked and local).
+        /// </summary>
+        /// <returns>A list of all Items which are linked to this Video.</returns>
+        public IEnumerable<BaseItem> GetAllLinkedItems()
+        {
+            return GetAllItemsForMediaSources().Select(item => item.Item);
+        }
+
+        /// <summary>
         /// Gets the additional parts.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>

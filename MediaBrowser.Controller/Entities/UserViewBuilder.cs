@@ -913,7 +913,100 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return true;
+            return FilterByLinkedItems(item, query);
+        }
+
+        private static bool FilterByLinkedItems(BaseItem item, InternalItemsQuery query)
+        {
+            var linkedItems = GetLinkedItems([item]).Where(item => item is Video);
+                    // filter by data in mediastreams
+                    if (query.AudioLanguage.Length > 0 || query.SubtitleLanguage.Length > 0)
+                    {
+                        var mediaStreams = GetMediaStreams([item]).ToList();
+
+                        // filter by subtitle language
+                        if (query.SubtitleLanguage.Length > 0)
+                        {
+                            var languageMatches = mediaStreams
+                                .Where(stream => stream.Type == MediaStreamType.Subtitle)
+                                .Any(stream => query.SubtitleLanguage.Contains(stream.Language));
+
+                            if (!languageMatches)
+                            {
+                                return false;
+                            }
+                        }
+
+                        // filter by audio language
+                        if (query.AudioLanguage.Length > 0)
+                        {
+                            var languageMatches = mediaStreams
+                                .Where(stream => stream.Type == MediaStreamType.Audio)
+                                .Any(stream => query.AudioLanguage.Contains(stream.Language));
+
+                            if (!languageMatches)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                });
+        }
+
+        /// <summary>
+        /// Gets all BaseItems that are lnked toi the given items.
+        /// For Folders, all children down to the to the leaf nodes are included.
+        /// Also includes all axisting alternative versions for Videos.
+        /// </summary>
+        /// <param name="itemList">The list of items for which the MediaStreams should be xtracted.</param>
+        /// <returns>A list of all MediaStreams which are linked to the provided items.</returns>
+        private static IEnumerable<BaseItem> GetLinkedItems(IEnumerable<BaseItem> itemList)
+        {
+            return itemList
+                .SelectMany(item =>
+                {
+                    if (item.IsFolder)
+                    {
+                        return GetLinkedItems(((Folder)item).Children);
+                    }
+                    else if (item is Video)
+                    {
+                        return ((Video)item).GetAllLinkedItems();
+                    }
+                    else
+                    {
+                        return [item];
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Extracts the MediaStreams for all BaseItems in the given list.
+        /// If an item is a Folder, MediaStreams are searched in the list of it's child items.
+        /// Includes all axisting alternative versions for Videos.
+        /// </summary>
+        /// <param name="itemList">The list of items for which the MediaStreams should be extracted.</param>
+        /// <returns>A list of all MediaStreams which are linked to the provided items.</returns>
+        private static IEnumerable<MediaStream> GetMediaStreams(IEnumerable<BaseItem> itemList)
+        {
+            return itemList
+                .SelectMany(item =>
+                {
+                    if (item.IsFolder)
+                    {
+                        return GetMediaStreams(((Folder)item).Children);
+                    }
+                    else if (item is Video)
+                    {
+                        return ((Video)item).GetAllLinkedMediaStreams();
+                    }
+                    else
+                    {
+                        return item.GetMediaStreams();
+                    }
+                });
         }
 
         private IEnumerable<BaseItem> GetMediaFolders(User user)
