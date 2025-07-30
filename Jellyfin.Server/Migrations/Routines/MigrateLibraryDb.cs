@@ -105,7 +105,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
             DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
             PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-            ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
+            ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType, IsFolder FROM TypedBaseItems
             """;
             using (new TrackedMigrationStep("Loading TypedBaseItems", _logger))
             {
@@ -1165,6 +1165,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         if (reader.TryGetString(index++, out var unratedType))
         {
             entity.UnratedType = unratedType;
+        }
+
+        if (reader.TryGetBoolean(index++, out var isFolder))
+        {
+            entity.IsFolder = isFolder;
         }
 
         var baseItem = BaseItemRepository.DeserializeBaseItem(entity, _logger, null, false);
