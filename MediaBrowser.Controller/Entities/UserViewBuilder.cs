@@ -24,6 +24,10 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserViewBuilder
     {
+        private const int HDWidth = 1200;
+        private const int UHDWidth = 3800;
+        private const int UHDHeight = 2100;
+
         private readonly IUserViewManager _userViewManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<BaseItem> _logger;
@@ -549,29 +553,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            // Filter by Video3DFormat
-            if (query.Is3D.HasValue)
-            {
-                var val = query.Is3D.Value;
-                var video = item as Video;
-
-                if (video is null || val != video.Video3DFormat.HasValue)
-                {
-                    return false;
-                }
-            }
-
-            /*
-             * fuck - fix this
-            if (query.IsHD.HasValue)
-            {
-                if (item.IsHD != query.IsHD.Value)
-                {
-                    return false;
-                }
-            }
-            */
-
             if (query.IsLocked.HasValue)
             {
                 var val = query.IsLocked.Value;
@@ -756,16 +737,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // Filter by VideoType
-            if (query.VideoTypes.Length > 0)
-            {
-                var video = item as Video;
-                if (video is null || !query.VideoTypes.Contains(video.VideoType))
-                {
-                    return false;
-                }
-            }
-
             if (query.ImageTypes.Length > 0 && !query.ImageTypes.Any(item.HasImage))
             {
                 return false;
@@ -913,13 +884,87 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return FilterByLinkedItems(item, query);
+            if (RequiresFilteringByLinkedItems(query))
+            {
+                return FilterByLinkedItems(item, query);
+            }
+
+            return true;
         }
 
         private static bool FilterByLinkedItems(BaseItem item, InternalItemsQuery query)
         {
+            // for now only filter values for Videos are handled here
             var linkedItems = GetLinkedItems([item]).Where(item => item is Video);
-                    // filter by data in mediastreams
+
+            var includeSD = false;
+            var includeHD = false;
+            var include4K = false;
+
+            if (query.IsHD.HasValue)
+            {
+                includeSD = !query.IsHD.Value;
+                includeHD = query.IsHD.Value;
+            }
+
+            if (query.Is4K.HasValue && query.Is4K.Value)
+            {
+                include4K = true;
+            }
+
+            return linkedItems.Any(
+                item =>
+                {
+                    // filter by Video3DFormat
+                    if (query.Is3D.HasValue)
+                    {
+                        var is3D = ((Video)item).Video3DFormat.HasValue;
+
+                        if (is3D != query.Is3D.HasValue)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by resolution type (SD or HD, 4k)
+                    if (query.IsHD.HasValue || query.Is4K.HasValue)
+                    {
+                        var sizeMatches = (includeSD && item.Width < HDWidth)
+                            || (includeHD && item.Width >= HDWidth && !(item.Width >= UHDWidth || item.Height >= UHDHeight))
+                            || (include4K && (item.Width >= UHDWidth || item.Height >= UHDHeight));
+
+                        if (!sizeMatches)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by resolution
+                    if (query.MinWidth.HasValue || query.MaxWidth.HasValue || query.MinHeight.HasValue || query.MaxHeight.HasValue)
+                    {
+                        var sizeMatches = (!query.MinWidth.HasValue || item.Width >= query.MinWidth.Value)
+                            && (!query.MaxWidth.HasValue || item.Width <= query.MaxWidth.Value)
+                            && (!query.MinHeight.HasValue || item.Height >= query.MinHeight.Value)
+                            && (!query.MaxHeight.HasValue || item.Height <= query.MaxHeight.Value);
+
+                        if (!sizeMatches)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by video type
+                    if (query.VideoTypes.Length > 0)
+                    {
+                        var typeExists = query.VideoTypes.Contains(((Video)item).VideoType);
+
+                        if (!typeExists)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by mediastreams metadata
                     if (query.AudioLanguage.Length > 0 || query.SubtitleLanguage.Length > 0)
                     {
                         var mediaStreams = GetMediaStreams([item]).ToList();
@@ -953,6 +998,23 @@ namespace MediaBrowser.Controller.Entities
 
                     return true;
                 });
+        }
+
+        /// <summary>
+        /// Determines if filterimg by linked items (alternative versions) is necessary.
+        /// </summary>
+        private static bool RequiresFilteringByLinkedItems(InternalItemsQuery query)
+        {
+            return query.IsHD.HasValue
+                || query.Is4K.HasValue
+                || query.Is3D.HasValue
+                || query.MinWidth.HasValue
+                || query.MaxWidth.HasValue
+                || query.MinHeight.HasValue
+                || query.MaxHeight.HasValue
+                || query.VideoTypes.Length > 0
+                || query.AudioLanguage.Length > 0
+                || query.SubtitleLanguage.Length > 0;
         }
 
         /// <summary>
