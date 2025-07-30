@@ -59,7 +59,7 @@ internal class ReseedFolderFlag : IAsyncMigrationRoutine
             using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
             var queryResult = connection.Query(
 """
-    SELECT key FROM TypedBaseItems
+    SELECT guid FROM TypedBaseItems
 
     WHERE IsFolder = true
 """);
