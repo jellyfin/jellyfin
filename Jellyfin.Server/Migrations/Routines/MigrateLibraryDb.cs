@@ -90,6 +90,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             operation.JellyfinDbContext.AncestorIds.ExecuteDelete();
         }
 
+        // notify the other migration to just silently abort because the fix has been applied here already.
+        ReseedFolderFlag.RerunGuardFlag = true;
+
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
 
