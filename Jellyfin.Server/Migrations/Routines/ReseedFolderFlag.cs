@@ -58,14 +58,15 @@ internal class ReseedFolderFlag : IAsyncMigrationRoutine
         {
             using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
             var queryResult = connection.Query(
-"""
-    SELECT guid FROM TypedBaseItems
-
-    WHERE IsFolder = true
-""");
-            foreach (var entity in queryResult)
+                """
+                    SELECT guid FROM TypedBaseItems
+                    WHERE IsFolder = true
+                """)
+                        .Select(entity => entity.GetGuid(0))
+                        .ToList();
+            _logger.LogInformation("Migrating the IsFolder flag for {Count} items.", queryResult.Count);
+            foreach (var id in queryResult)
             {
-                var id = entity.GetGuid(0);
                 await dbContext.BaseItems.Where(e => e.Id == id).ExecuteUpdateAsync(e => e.SetProperty(f => f.IsFolder, true), cancellationToken).ConfigureAwait(false);
             }
         }
