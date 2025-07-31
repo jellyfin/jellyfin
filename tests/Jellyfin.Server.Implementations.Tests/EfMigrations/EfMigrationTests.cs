@@ -14,4 +14,12 @@ public class EfMigrationTests
         var context = dbDesignContext.CreateDbContext([]);
         Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EFCore model for SQLite. Please create a Migration.");
     }
+
+    [Fact]
+    public void CheckForUnappliedMigrations_MsSql()
+    {
+        var dbDesignContext = new MsSqlDesignTimeJellyfinDbFactory();
+        var context = dbDesignContext.CreateDbContext([]);
+        Assert.False(context.Database.HasPendingModelChanges(), "There are unapplied changes to the EFCore model for MsSql. Please create a Migration.");
+    }
 }
