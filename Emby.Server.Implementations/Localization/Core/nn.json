@@ -120,5 +120,6 @@
     "Default": "Standard",
     "External": "Ekstern",
     "HearingImpaired": "Nedsett høyrsel",
-    "TaskRefreshTrickplayImages": "Generer Trickplay-bilete"
+    "TaskRefreshTrickplayImages": "Generer Trickplay-bilete",
+    "TaskAudioNormalization": "Normalisering av lyd"
 }
