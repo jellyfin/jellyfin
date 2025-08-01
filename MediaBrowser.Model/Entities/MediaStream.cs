@@ -273,11 +273,28 @@ namespace MediaBrowser.Model.Entities
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
                         if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Get full language string i.e. eng -> English.
-                            string fullLanguage = CultureInfo
-                                .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
-                                ?.DisplayName;
+                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
+                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
+                            CultureInfo match = null;
+                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
+                            {
+                                match = cultures.FirstOrDefault(r =>
+                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+
+                                if (match is null)
+                                {
+                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
+                                    match = cultures.FirstOrDefault(r =>
+                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                }
+                            }
+                            else
+                            {
+                                match = cultures.FirstOrDefault(r =>
+                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                            }
+
+                            string fullLanguage = match?.DisplayName;
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
@@ -376,11 +393,28 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Language))
                         {
-                            // Get full language string i.e. eng -> English.
-                            string fullLanguage = CultureInfo
-                                .GetCultures(CultureTypes.NeutralCultures)
-                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
-                                ?.DisplayName;
+                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
+                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
+                            CultureInfo match = null;
+                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
+                            {
+                                match = cultures.FirstOrDefault(r =>
+                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+
+                                if (match is null)
+                                {
+                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
+                                    match = cultures.FirstOrDefault(r =>
+                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                }
+                            }
+                            else
+                            {
+                                match = cultures.FirstOrDefault(r =>
+                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                            }
+
+                            string fullLanguage = match?.DisplayName;
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
                         else
