@@ -14,11 +14,6 @@ public class NetworkConfiguration
     /// </summary>
     public const int DefaultHttpPort = 8096;
 
-    /// <summary>
-    /// The default value for <see cref="PublicHttpsPort"/> and <see cref="InternalHttpsPort"/>.
-    /// </summary>
-    public const int DefaultHttpsPort = 8920;
-
     private string _baseUrl = string.Empty;
 
     /// <summary>
@@ -55,52 +50,16 @@ public class NetworkConfiguration
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to use HTTPS.
-    /// </summary>
-    /// <remarks>
-    /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
-    /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
-    /// </remarks>
-    public bool EnableHttps { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the server should force connections over HTTPS.
-    /// </summary>
-    public bool RequireHttps { get; set; }
-
-    /// <summary>
-    /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
-    /// </summary>
-    public string CertificatePath { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
-    /// </summary>
-    public string CertificatePassword { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the internal HTTP server port.
     /// </summary>
     /// <value>The HTTP server port.</value>
     public int InternalHttpPort { get; set; } = DefaultHttpPort;
 
     /// <summary>
-    /// Gets or sets the internal HTTPS server port.
-    /// </summary>
-    /// <value>The HTTPS server port.</value>
-    public int InternalHttpsPort { get; set; } = DefaultHttpsPort;
-
-    /// <summary>
     /// Gets or sets the public HTTP port.
     /// </summary>
     /// <value>The public HTTP port.</value>
     public int PublicHttpPort { get; set; } = DefaultHttpPort;
-
-    /// <summary>
-    /// Gets or sets the public HTTPS port.
-    /// </summary>
-    /// <value>The public HTTPS port.</value>
-    public int PublicHttpsPort { get; set; } = DefaultHttpsPort;
 
     /// <summary>
     /// Gets or sets a value indicating whether Autodiscovery is enabled.
