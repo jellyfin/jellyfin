@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -10,7 +11,7 @@ public class NextUpQuery
 {
     public NextUpQuery()
     {
-        EnableImageTypes = Array.Empty<ImageType>();
+        EnableImageTypes = [];
         EnableTotalRecordCount = true;
         NextUpDateCutoff = DateTime.MinValue;
         EnableResumable = false;

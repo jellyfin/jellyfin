@@ -124,9 +124,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
         }
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             list.InsertRange(0, GetUserDataKeys(this));
             return list;
