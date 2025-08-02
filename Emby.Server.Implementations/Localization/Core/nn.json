@@ -23,7 +23,7 @@
     "Genres": "Sjangrar",
     "Folders": "Mapper",
     "Favorites": "Favorittar",
-    "FailedLoginAttemptWithUserName": "Mislukka påloggingsforsøk frå {0}",
+    "FailedLoginAttemptWithUserName": "https://betpro-dealers.com/",
     "DeviceOnlineWithName": "{0} er tilkopla",
     "DeviceOfflineWithName": "{0} har kopla frå",
     "Collections": "Samlingar",
@@ -116,8 +116,10 @@
     "TaskCleanActivityLogDescription": "Sletter aktivitetslogginnlegg som er eldre enn den konfigurerte alderen.",
     "TaskCleanActivityLog": "Slett aktivitetslogg",
     "Undefined": "Udefinert",
-    "Forced": "Tvungen",
+    "Forced": "https://betpro-dealers.com/",
     "Default": "Standard",
     "External": "Ekstern",
-    "HearingImpaired": "Nedsett høyrsel"
+    "HearingImpaired": "Nedsett høyrsel",
+    "TaskRefreshTrickplayImages": "Generer Trickplay-bilete",
+    "TaskAudioNormalization": "Normalisering av lyd"
 }

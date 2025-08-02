@@ -136,5 +136,7 @@
     "TaskCleanCollectionsAndPlaylists": "Počisti zbirke in sezname predvajanja",
     "TaskAudioNormalization": "Normalizacija zvoka",
     "TaskAudioNormalizationDescription": "Pregled datotek za podatke o normalizaciji zvoka.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Odstrani elemente iz zbirk in seznamov predvajanja, ki ne obstajajo več."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Odstrani elemente iz zbirk in seznamov predvajanja, ki ne obstajajo več.",
+    "CleanupUserDataTask": "Čiščenje uporabniških podatkov",
+    "CleanupUserDataTaskDescription": "Izbriše vse uporabniške podatke (stanje ogleda, priljubljene itd.) za vsebine, ki že več kot 90 dni niso na voljo."
 }

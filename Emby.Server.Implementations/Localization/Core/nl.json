@@ -137,6 +137,6 @@
     "TaskMoveTrickplayImages": "Locatie trickplay-afbeeldingen migreren",
     "TaskMoveTrickplayImagesDescription": "Verplaatst bestaande trickplay-bestanden op basis van de bibliotheekinstellingen.",
     "TaskExtractMediaSegments": "Scannen op mediasegmenten",
-    "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig is.",
+    "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig zijn.",
     "CleanupUserDataTask": "Opruimtaak gebruikersdata"
 }

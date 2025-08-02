@@ -827,7 +827,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public Task<string> ExtractVideoImagesOnIntervalAccelerated(
+        public async Task<string> ExtractVideoImagesOnIntervalAccelerated(
             string inputFile,
             string container,
             MediaSourceInfo mediaSource,
@@ -918,18 +918,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
             }
 
-            if (enableKeyFrameOnlyExtraction)
-            {
-                inputArg = "-skip_frame nokey " + inputArg;
-            }
-
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
             }
 
-            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken);
+            try
+            {
+                return await ExtractVideoImagesOnIntervalInternal(
+                    (enableKeyFrameOnlyExtraction ? "-skip_frame nokey " : string.Empty) + inputArg,
+                    filterParam,
+                    vidEncoder,
+                    threads,
+                    qualityScale,
+                    priority,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (FfmpegException ex)
+            {
+                if (!enableKeyFrameOnlyExtraction)
+                {
+                    throw;
+                }
+
+                _logger.LogWarning(ex, "I-frame trickplay extraction failed, will attempt standard way. Input: {InputFile}", inputFile);
+            }
+
+            return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -1071,11 +1087,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-                if (exitCode == -1)
+                if (!ranToCompletion || processWrapper.ExitCode != 0)
                 {
-                    _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
                     // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
                     // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
                     try

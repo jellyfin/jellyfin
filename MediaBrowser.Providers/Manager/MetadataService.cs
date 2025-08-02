@@ -332,13 +332,11 @@ namespace MediaBrowser.Providers.Manager
             if (!string.IsNullOrEmpty(itemPath))
             {
                 var info = FileSystem.GetFileSystemInfo(itemPath);
-                var modificationDate = info.LastWriteTimeUtc;
-                var itemLastModifiedFileSystem = item.DateModified;
-                if (info.Exists && itemLastModifiedFileSystem != modificationDate)
+                if (info.Exists && item.HasChanged(info.LastWriteTimeUtc))
                 {
-                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", itemLastModifiedFileSystem, modificationDate, itemPath);
+                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
 
-                    item.DateModified = modificationDate;
+                    item.DateModified = info.LastWriteTimeUtc;
                     if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
                     {
                         item.DateCreated = info.CreationTimeUtc;

@@ -5,6 +5,8 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Controller.Session;
@@ -44,6 +46,7 @@ namespace Emby.Server.Implementations.Session
         private readonly Lock _webSocketsLock = new();
 
         private readonly ISessionManager _sessionManager;
+        private readonly IUserManager _userManager;
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
@@ -57,14 +60,17 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
+            IUserManager userManager,
             ILoggerFactory loggerFactory)
         {
             _logger = logger;
             _sessionManager = sessionManager;
+            _userManager = userManager;
             _loggerFactory = loggerFactory;
             _keepAlive = new System.Timers.Timer(TimeSpan.FromSeconds(WebSocketLostTimeout * IntervalFactor))
             {
@@ -107,33 +113,9 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
-            var session = await GetSession(httpContext, connection.RemoteEndPoint?.ToString()).ConfigureAwait(false);
-            if (session is not null)
-            {
-                EnsureController(session, connection);
-                await KeepAliveWebSocket(connection).ConfigureAwait(false);
-            }
-            else
-            {
-                _logger.LogWarning("Unable to determine session based on query string: {0}", httpContext.Request.QueryString);
-            }
-        }
-
-        private async Task<SessionInfo?> GetSession(HttpContext httpContext, string? remoteEndpoint)
-        {
-            if (!httpContext.User.Identity?.IsAuthenticated ?? false)
-            {
-                return null;
-            }
-
-            var deviceId = httpContext.User.GetDeviceId();
-            if (httpContext.Request.Query.TryGetValue("deviceId", out var queryDeviceId))
-            {
-                deviceId = queryDeviceId;
-            }
-
-            return await _sessionManager.GetSessionByAuthenticationToken(httpContext.User.GetToken(), deviceId, remoteEndpoint)
-                .ConfigureAwait(false);
+            var session = await RequestHelpers.GetSession(_sessionManager, _userManager, httpContext).ConfigureAwait(false);
+            EnsureController(session, connection);
+            await KeepAliveWebSocket(connection).ConfigureAwait(false);
         }
 
         private void EnsureController(SessionInfo session, IWebSocketConnection connection)

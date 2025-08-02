@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             PersonKind.Producer
         };
 
-        [GeneratedRegex(@"[\W_]+")]
+        [GeneratedRegex(@"[\W_-[·]]+")]
         private static partial Regex NonWordRegex();
 
         /// <summary>

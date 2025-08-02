@@ -110,6 +110,20 @@ public sealed class BaseItemRepository
         using var transaction = context.Database.BeginTransaction();
 
         var date = (DateTime?)DateTime.UtcNow;
+
+        // Remove any UserData entries for the placeholder item that would conflict with the UserData
+        // being detached from the item being deleted. This is necessary because, during an update,
+        // UserData may be reattached to a new entry, but some entries can be left behind.
+        // Ensures there are no duplicate UserId/CustomDataKey combinations for the placeholder.
+        context.UserData
+            .Join(
+                context.UserData.Where(e => e.ItemId == id),
+                placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
+                userData => new { userData.UserId, userData.CustomDataKey },
+                (placeholder, userData) => placeholder)
+            .Where(e => e.ItemId == PlaceholderId)
+            .ExecuteDelete();
+
         // Detach all user watch data
         context.UserData.Where(e => e.ItemId == id)
             .ExecuteUpdate(e => e
@@ -567,7 +581,7 @@ public sealed class BaseItemRepository
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
-            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
@@ -2241,8 +2255,8 @@ public sealed class BaseItemRepository
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             baseQuery = baseQuery
-                .Where(e => !e.ItemValues!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags)
-                    .Any(f => filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+                .Where(e => !e.ItemValues!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags)
+                .Any(f => filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue)));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
@@ -2252,10 +2266,10 @@ public sealed class BaseItemRepository
             if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags)
+                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
                         .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
                         ||
-                        (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value)!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags)
+                        (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value && (w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags))
                         .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
             }
 
@@ -2263,17 +2277,16 @@ public sealed class BaseItemRepository
             else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
             {
                 baseQuery = baseQuery
-                    .Where(e =>
-                    e.Parents!
-                        .Any(f =>
-                            f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))
-                            || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
+                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                        || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
                 // d        ^^ this is stupid it hate this.
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.Parents!.Any(f => f.ParentItem.ItemValues!.Any(w => w.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(w.ItemValue.CleanValue))));
+                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
+                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
             }
         }
 

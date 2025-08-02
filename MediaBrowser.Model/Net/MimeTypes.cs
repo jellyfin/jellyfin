@@ -56,6 +56,7 @@ namespace MediaBrowser.Model.Net
             ".rec",
             ".ts",
             ".rmvb",
+            ".vob",
             ".webm",
             ".wmv",
             ".wtv",

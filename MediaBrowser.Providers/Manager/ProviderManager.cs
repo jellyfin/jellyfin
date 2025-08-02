@@ -697,6 +697,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
                     {
@@ -712,6 +713,7 @@ namespace MediaBrowser.Providers.Manager
                     try
                     {
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
                     {

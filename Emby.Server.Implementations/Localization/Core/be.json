@@ -135,5 +135,7 @@
     "TaskDownloadMissingLyrics": "Спампаваць зніклыя тэксты песень",
     "TaskDownloadMissingLyricsDescription": "Спампоўвае тэксты для песень",
     "TaskExtractMediaSegments": "Сканіраванне медыя-сегмента",
-    "TaskMoveTrickplayImages": "Перанесці месцазнаходжанне выявы Trickplay"
+    "TaskMoveTrickplayImages": "Перанесці месцазнаходжанне выявы Trickplay",
+    "CleanupUserDataTask": "Задача па ачыстцы дадзеных карыстальніка",
+    "CleanupUserDataTaskDescription": "Ачысьціць усе дадзеныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён."
 }

@@ -215,7 +215,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
         if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
         {
             var file = directoryService.GetFile(path);
-            if (file is not null && file.LastWriteTimeUtc != item.DateModified)
+            if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
             {
                 _logger.LogDebug("Refreshing {Path} due to date modified timestamp change.", path);
                 return true;

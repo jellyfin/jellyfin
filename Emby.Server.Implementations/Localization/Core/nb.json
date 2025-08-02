@@ -135,6 +135,6 @@
     "TaskDownloadMissingLyricsDescription": "Last ned sangtekster",
     "TaskExtractMediaSegments": "Skann mediasegment",
     "TaskMoveTrickplayImages": "Migrer bildeplassering for Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Flytter eksisterende Trickplay-filer i henhold til bibliotekseinstillingene.",
+    "TaskMoveTrickplayImagesDescription": "Flytter eksisterende Trickplay-filer i henhold til biblioteksinstillingene.",
     "TaskExtractMediaSegmentsDescription": "Trekker ut eller henter mediasegmenter fra plugins som støtter MediaSegment."
 }

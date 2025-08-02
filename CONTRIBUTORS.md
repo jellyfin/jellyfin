@@ -61,6 +61,7 @@
  - [ikomhoog](https://github.com/ikomhoog)
  - [iwalton3](https://github.com/iwalton3)
  - [jftuga](https://github.com/jftuga)
+ - [jkhsjdhjs](https://github.com/jkhsjdhjs)
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
  - [joshuaboniface](https://github.com/joshuaboniface)
@@ -199,6 +200,7 @@
  - [allesmi](https://github.com/allesmi)
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
+ - [theshoeshiner](https://github.com/theshoeshiner)
  - [Lampan-git](https://github.com/Lampan-git)
 
 # Emby Contributors

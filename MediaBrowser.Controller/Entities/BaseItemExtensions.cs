@@ -114,5 +114,19 @@ namespace MediaBrowser.Controller.Entities
             source.DeepCopy(dest);
             return dest;
         }
+
+        /// <summary>
+        /// Determines if the item has changed.
+        /// </summary>
+        /// <param name="source">The source object.</param>
+        /// <param name="asOf">The timestamp to detect changes as of.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <returns>Whether the item has changed.</returns>
+        public static bool HasChanged<T>(this T source, DateTime asOf)
+            where T : BaseItem
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            return source.DateModified.Subtract(asOf).Duration().TotalSeconds > 1;
+        }
     }
 }
