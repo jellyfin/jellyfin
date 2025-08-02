@@ -201,6 +201,7 @@
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
  - [theshoeshiner](https://github.com/theshoeshiner)
+ - [Lampan-git](https://github.com/Lampan-git)
 
 # Emby Contributors
 
