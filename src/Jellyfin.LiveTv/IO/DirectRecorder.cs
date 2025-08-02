@@ -81,32 +81,59 @@ namespace Jellyfin.LiveTv.IO
 
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            int maxRetries = 5;
+            int retry = 0;
 
-            _logger.LogInformation("Opened recording stream from tuner provider");
+            // The media source is infinite so we need to handle stopping ourselves
+            using var durationToken = new CancellationTokenSource(duration);
+            using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
+            cancellationToken = linkedCancellationToken.Token;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
-
-            var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
-            await using (output.ConfigureAwait(false))
+            while (!cancellationToken.IsCancellationRequested && retry < maxRetries)
             {
-                onStarted();
+                try
+                {
+                    using var response = await httpClient.GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
 
-                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+                    // If response was successful, reset retry count
+                    retry = 0;
 
-                // The media source if infinite so we need to handle stopping ourselves
-                using var durationToken = new CancellationTokenSource(duration);
-                using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
-                cancellationToken = linkedCancellationToken.Token;
+                    _logger.LogInformation("Opened recording stream from tuner provider");
 
-                await _streamHelper.CopyUntilCancelled(
-                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-                    output,
-                    IODefaults.CopyToBufferSize,
-                    cancellationToken).ConfigureAwait(false);
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-                _logger.LogInformation("Recording completed to file {0}", targetFile);
+                    var output = new FileStream(targetFile, FileMode.Append, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+
+                    await using (output.ConfigureAwait(false))
+                    {
+                        onStarted();
+
+                        _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+
+                        await _streamHelper.CopyUntilCancelled(
+                            await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
+                            output,
+                            IODefaults.CopyToBufferSize,
+                            cancellationToken).ConfigureAwait(false);
+
+                        _logger.LogInformation("Recording completed to file {0}", targetFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    retry++;
+                    if (retry >= maxRetries)
+                    {
+                        _logger.LogError("Stream failed permanently after retries. {0}", ex.Message);
+                        return;
+                    }
+
+                    int backoff = (int)Math.Pow(2, retry);
+                    _logger.LogInformation("Stream error: {Message}. Retrying in {Backoff}s...", ex.Message, backoff);
+                    await Task.Delay(TimeSpan.FromSeconds(backoff), cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 

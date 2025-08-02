@@ -6,11 +6,23 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.IO
 {
     public class StreamHelper : IStreamHelper
     {
+        private readonly ILogger<StreamHelper> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamHelper"/> class.
+        /// </summary>
+        /// <param name="logger">logger.</param>
+        public StreamHelper(ILogger<StreamHelper> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action? onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -88,11 +100,24 @@ namespace Jellyfin.LiveTv.IO
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
-
-                    if (bytesRead == 0)
+                    try
                     {
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                        var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
+
+                        if (bytesRead == 0)
+                        {
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogWarning("CopyToAsyncInternal canceled by CancellationToken");
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "CopyToAsyncInternal failed with error");
+                        throw;
                     }
                 }
             }
@@ -106,8 +131,9 @@ namespace Jellyfin.LiveTv.IO
         {
             int bytesRead;
             int totalBytesRead = 0;
+            using var bufferedStream = new BufferedStream(source, IODefaults.BufferStreamBufferSize);
 
-            while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await bufferedStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
             {
                 await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 
