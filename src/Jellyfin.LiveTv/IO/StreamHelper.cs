@@ -12,12 +12,12 @@ namespace Jellyfin.LiveTv.IO
 {
     public class StreamHelper : IStreamHelper
     {
-
         private readonly ILogger<StreamHelper> _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamHelper"/> class.
         /// </summary>
-        /// <param name="logger"></param>
+        /// <param name="logger">logger.</param>
         public StreamHelper(ILogger<StreamHelper> logger)
         {
             _logger = logger;
