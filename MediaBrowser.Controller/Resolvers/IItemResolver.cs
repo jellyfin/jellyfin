@@ -5,6 +5,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -34,7 +35,8 @@ namespace MediaBrowser.Controller.Resolvers
             Folder parent,
             List<FileSystemMetadata> files,
             CollectionType? collectionType,
-            IDirectoryService directoryService);
+            IDirectoryService directoryService,
+            LibraryOptions libraryOptions);
     }
 
     public class MultiItemResolverResult
