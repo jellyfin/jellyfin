@@ -11,17 +11,16 @@ namespace Jellyfin.Server.Implementations.Migrations
         {
             migrationBuilder.AddColumn<int>(
                 name: "MaxActiveVideoStreams",
-                schema: "jellyfin",
                 table: "Users",
+                type: "INTEGER",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
                 name: "MaxActiveVideoStreams",
-                schema: "jellyfin",
                 table: "Users");
         }
     }
