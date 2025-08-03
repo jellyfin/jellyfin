@@ -202,6 +202,7 @@
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
  - [theshoeshiner](https://github.com/theshoeshiner)
+ - [TokerX](https://github.com/TokerX)
 
 # Emby Contributors
 

@@ -301,7 +301,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             var versionInfo = fixture.Create<VersionInfo>();
             versionInfo.Version = new Version(1, 0).ToString();
-            versionInfo.Timestamp = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            versionInfo.Timestamp = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
             var packageInfo = fixture.Create<PackageInfo>();
             packageInfo.Versions = new[] { versionInfo };
