@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 schema: "jellyfin",
                 table: "Users",
                 nullable: false,
-                defaultValue: 1);
+                defaultValue: 0);
         }
 
         /// <inheritdoc />

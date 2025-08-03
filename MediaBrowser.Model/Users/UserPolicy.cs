@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Users
             LoginAttemptsBeforeLockout = -1;
 
             MaxActiveSessions = 0;
-            MaxActiveVideoStreams = 1;
+            MaxActiveVideoStreams = 0;
             MaxParentalRating = null;
 
             EnableAllChannels = true;
