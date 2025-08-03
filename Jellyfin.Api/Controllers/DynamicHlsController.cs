@@ -552,6 +552,28 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        // Check video stream limits before starting transcoding
+        _logger.LogInformation("DEBUG: GetMasterHlsVideoPlaylist called");
+        var userId = HttpContext.User.GetUserId();
+        _logger.LogInformation("DEBUG: userId = {UserId}", userId);
+        if (!userId.IsEmpty())
+        {
+            var user = _userManager.GetUserById(userId);
+            _logger.LogInformation("DEBUG: user = {User}, MaxActiveVideoStreams = {MaxActiveVideoStreams}", user?.Username, user?.MaxActiveVideoStreams);
+            if (user is not null && user.MaxActiveVideoStreams > 0)
+            {
+                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                    s.UserId.Equals(user.Id) &&
+                    s.NowPlayingItem?.MediaType == MediaType.Video);
+
+                _logger.LogInformation("Current/Max video streams for user {User}: {VideoStreams}/{MaxVideoStreams}", user.Username, activeVideoStreams, user.MaxActiveVideoStreams);
+                if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                {
+                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                }
+            }
+        }
+
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
 
@@ -894,6 +916,28 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
+
+        // Check video stream limits before starting transcoding
+        _logger.LogInformation("DEBUG: GetVariantHlsVideoPlaylist called");
+        var userId = HttpContext.User.GetUserId();
+        _logger.LogInformation("DEBUG: userId = {UserId}", userId);
+        if (!userId.IsEmpty())
+        {
+            var user = _userManager.GetUserById(userId);
+            _logger.LogInformation("DEBUG: user = {User}, MaxActiveVideoStreams = {MaxActiveVideoStreams}", user?.Username, user?.MaxActiveVideoStreams);
+            if (user is not null && user.MaxActiveVideoStreams > 0)
+            {
+                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                    s.UserId.Equals(user.Id) &&
+                    s.NowPlayingItem?.MediaType == MediaType.Video);
+
+                _logger.LogInformation("Current/Max video streams for user {User}: {VideoStreams}/{MaxVideoStreams}", user.Username, activeVideoStreams, user.MaxActiveVideoStreams);
+                if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                {
+                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                }
+            }
+        }
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
             .ConfigureAwait(false);
