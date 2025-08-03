@@ -5,8 +5,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -110,7 +111,16 @@ public static class RequestHelpers
         return user.EnableUserPreferenceAccess;
     }
 
-    internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext, Guid? userId = null)
+    /// <summary>
+    /// Get the session based on http request.
+    /// </summary>
+    /// <param name="sessionManager">The session manager.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="httpContext">The http context.</param>
+    /// <param name="userId">The optional userid.</param>
+    /// <returns>The session.</returns>
+    /// <exception cref="ResourceNotFoundException">Session not found.</exception>
+    public static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext, Guid? userId = null)
     {
         userId ??= httpContext.User.GetUserId();
         User? user = null;

@@ -63,10 +63,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var seasonNumber = episode.ParentIndexNumber;
+            var seasonNumber = episode.ParentIndexNumber ?? 1;
             var episodeNumber = episode.IndexNumber;
 
-            if (!seasonNumber.HasValue || !episodeNumber.HasValue)
+            if (!episodeNumber.HasValue)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, series.DisplayOrder, null, null, cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, series.DisplayOrder, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             var stills = episodeResult?.Images?.Stills;

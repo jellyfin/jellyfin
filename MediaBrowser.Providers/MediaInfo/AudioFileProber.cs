@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -19,6 +20,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using static Jellyfin.Extensions.StringExtensions;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -30,7 +32,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private const char InternalValueSeparator = '\u001F';
 
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -44,7 +45,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
@@ -53,14 +53,12 @@ namespace MediaBrowser.Providers.MediaInfo
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepo,
             ILibraryManager libraryManager,
             LyricResolver lyricResolver,
             ILyricManager lyricManager,
             IMediaStreamRepository mediaStreamRepository)
         {
             _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
@@ -135,7 +133,6 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.TotalBitrate = mediaInfo.Bitrate;
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
-            audio.Size = mediaInfo.Size;
 
             // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
@@ -174,16 +171,41 @@ namespace MediaBrowser.Providers.MediaInfo
                 _logger.LogWarning("File {File} only has ID3v1 tags, some fields may be truncated", audio.Path);
             }
 
-            track.Title = string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title;
-            track.Album = string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album;
-            track.Year = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
-            track.TrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
-            track.DiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
+            // We should never use the property setter of the ATL.Track class.
+            // That setter is meant for its own tag parser and external editor usage and will have unwanted side effects
+            // For example, setting the Year property will also set the Date property, which is not what we want here.
+            // To properly handle fallback values, we make a clone of those fields when valid.
+            var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
+            var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
+            var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
+            var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
+            var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
+
+            // Some users may use a misbehaved tag editor that writes a null character in the tag when not allowed by the standard.
+            trackTitle = GetSanitizedStringTag(trackTitle, audio.Path);
+            trackAlbum = GetSanitizedStringTag(trackAlbum, audio.Path);
+            var trackAlbumArtist = GetSanitizedStringTag(track.AlbumArtist, audio.Path);
+            var trackArist = GetSanitizedStringTag(track.Artist, audio.Path);
+            var trackComposer = GetSanitizedStringTag(track.Composer, audio.Path);
+            var trackGenre = GetSanitizedStringTag(track.Genre, audio.Path);
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(track.AlbumArtist) ? [] : track.AlbumArtist.Split(InternalValueSeparator);
+                string[]? albumArtists = null;
+                if (libraryOptions.PreferNonstandardArtistsTag)
+                {
+                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out var albumArtistsTagString);
+                    if (albumArtistsTagString is not null)
+                    {
+                        albumArtists = albumArtistsTagString.Split(InternalValueSeparator);
+                    }
+                }
+
+                if (albumArtists is null || albumArtists.Length == 0)
+                {
+                    albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                }
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
@@ -192,7 +214,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var albumArtist in albumArtists)
                 {
-                    if (!string.IsNullOrEmpty(albumArtist))
+                    if (!string.IsNullOrWhiteSpace(albumArtist))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
@@ -205,7 +227,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 string[]? performers = null;
                 if (libraryOptions.PreferNonstandardArtistsTag)
                 {
-                    track.AdditionalFields.TryGetValue("ARTISTS", out var artistsTagString);
+                    TryGetSanitizedAdditionalFields(track, "ARTISTS", out var artistsTagString);
                     if (artistsTagString is not null)
                     {
                         performers = artistsTagString.Split(InternalValueSeparator);
@@ -214,7 +236,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (performers is null || performers.Length == 0)
                 {
-                    performers = string.IsNullOrEmpty(track.Artist) ? [] : track.Artist.Split(InternalValueSeparator);
+                    performers = string.IsNullOrEmpty(trackArist) ? [] : trackArist.Split(InternalValueSeparator);
                 }
 
                 if (libraryOptions.UseCustomTagDelimiters)
@@ -224,7 +246,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var performer in performers)
                 {
-                    if (!string.IsNullOrEmpty(performer))
+                    if (!string.IsNullOrWhiteSpace(performer))
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
@@ -234,15 +256,18 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                foreach (var composer in track.Composer.Split(InternalValueSeparator))
+                if (!string.IsNullOrWhiteSpace(trackComposer))
                 {
-                    if (!string.IsNullOrEmpty(composer))
+                    foreach (var composer in trackComposer.Split(InternalValueSeparator))
                     {
-                        PeopleHelper.AddPerson(people, new PersonInfo
+                        if (!string.IsNullOrWhiteSpace(composer))
                         {
-                            Name = composer,
-                            Type = PersonKind.Composer
-                        });
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = composer,
+                                Type = PersonKind.Composer
+                            });
+                        }
                     }
                 }
 
@@ -275,22 +300,22 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(track.Title))
+            if (!audio.LockedFields.Contains(MetadataField.Name) && !string.IsNullOrEmpty(trackTitle))
             {
-                audio.Name = track.Title;
+                audio.Name = trackTitle;
             }
 
             if (options.ReplaceAllMetadata)
             {
-                audio.Album = track.Album;
-                audio.IndexNumber = track.TrackNumber;
-                audio.ParentIndexNumber = track.DiscNumber;
+                audio.Album = trackAlbum;
+                audio.IndexNumber = trackTrackNumber;
+                audio.ParentIndexNumber = trackDiscNumber;
             }
             else
             {
-                audio.Album ??= track.Album;
-                audio.IndexNumber ??= track.TrackNumber;
-                audio.ParentIndexNumber ??= track.DiscNumber;
+                audio.Album ??= trackAlbum;
+                audio.IndexNumber ??= trackTrackNumber;
+                audio.ParentIndexNumber ??= trackDiscNumber;
             }
 
             if (track.Date.HasValue)
@@ -298,11 +323,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.PremiereDate = track.Date;
             }
 
-            if (track.Year.HasValue)
+            if (trackYear.HasValue)
             {
-                var year = track.Year.Value;
+                var year = trackYear.Value;
                 audio.ProductionYear = year;
 
+                // ATL library handles such fallback this with its own internal logic, but we also need to handle it here for the ffprobe fallbacks.
                 if (!audio.PremiereDate.HasValue)
                 {
                     try
@@ -311,26 +337,29 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                     catch (ArgumentOutOfRangeException ex)
                     {
-                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, track.Year);
+                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, trackYear);
                     }
                 }
             }
 
             if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
-                var genres = string.IsNullOrEmpty(track.Genre) ? [] : track.Genre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var genres = string.IsNullOrEmpty(trackGenre) ? [] : trackGenre.Split(InternalValueSeparator).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
                     genres = genres.SelectMany(g => SplitWithCustomDelimiter(g, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
-                    ? genres
-                    : audio.Genres;
+                genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                {
+                    audio.Genres = genres;
+                }
             }
 
-            track.AdditionalFields.TryGetValue("REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
+            TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
 
             if (trackGainTag is not null)
             {
@@ -339,7 +368,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     trackGainTag = trackGainTag[..^2].Trim();
                 }
 
-                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                if (float.TryParse(trackGainTag, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && float.IsFinite(value))
                 {
                     audio.NormalizationGain = value;
                 }
@@ -347,8 +376,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out _))
             {
-                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag)
-                     || track.AdditionalFields.TryGetValue("MusicBrainz Artist Id", out musicBrainzArtistTag))
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_ARTISTID", out var musicBrainzArtistTag)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Artist Id", out musicBrainzArtistTag))
                     && !string.IsNullOrEmpty(musicBrainzArtistTag))
                 {
                     var id = GetFirstMusicBrainzId(musicBrainzArtistTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
@@ -358,8 +387,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbumArtist, out _))
             {
-                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMARTISTID", out var musicBrainzReleaseArtistIdTag)
-                     || track.AdditionalFields.TryGetValue("MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag))
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_ALBUMARTISTID", out var musicBrainzReleaseArtistIdTag)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Album Artist Id", out musicBrainzReleaseArtistIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseArtistIdTag))
                 {
                     var id = GetFirstMusicBrainzId(musicBrainzReleaseArtistIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
@@ -369,8 +398,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzAlbum, out _))
             {
-                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_ALBUMID", out var musicBrainzReleaseIdTag)
-                     || track.AdditionalFields.TryGetValue("MusicBrainz Album Id", out musicBrainzReleaseIdTag))
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_ALBUMID", out var musicBrainzReleaseIdTag)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Album Id", out musicBrainzReleaseIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseIdTag))
                 {
                     var id = GetFirstMusicBrainzId(musicBrainzReleaseIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
@@ -380,8 +409,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out _))
             {
-                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASEGROUPID", out var musicBrainzReleaseGroupIdTag)
-                     || track.AdditionalFields.TryGetValue("MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag))
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_RELEASEGROUPID", out var musicBrainzReleaseGroupIdTag)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Release Group Id", out musicBrainzReleaseGroupIdTag))
                     && !string.IsNullOrEmpty(musicBrainzReleaseGroupIdTag))
                 {
                     var id = GetFirstMusicBrainzId(musicBrainzReleaseGroupIdTag, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
@@ -391,8 +420,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out _))
             {
-                if ((track.AdditionalFields.TryGetValue("MUSICBRAINZ_RELEASETRACKID", out var trackMbId)
-                     || track.AdditionalFields.TryGetValue("MusicBrainz Release Track Id", out trackMbId))
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_RELEASETRACKID", out var trackMbId)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Release Track Id", out trackMbId))
                     && !string.IsNullOrEmpty(trackMbId))
                 {
                     var id = GetFirstMusicBrainzId(trackMbId, libraryOptions.UseCustomTagDelimiters, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist);
@@ -400,9 +429,31 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (options.ReplaceAllMetadata || !audio.TryGetProviderId(MetadataProvider.MusicBrainzRecording, out _))
+            {
+                if ((TryGetSanitizedAdditionalFields(track, "MUSICBRAINZ_TRACKID", out var recordingMbId)
+                     || TryGetSanitizedAdditionalFields(track, "MusicBrainz Track Id", out recordingMbId))
+                    && !string.IsNullOrEmpty(recordingMbId))
+                {
+                    audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
+                }
+                else if (TryGetSanitizedAdditionalFields(track, "UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
+                {
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
+                    if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
+                    }
+                }
+            }
+
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
-            var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
+            // ATL supports both SRT and LRC formats as synchronized lyrics, but we only want to save LRC format.
+            var supportedLyrics = track.Lyrics.Where(l => l.Format != LyricsInfo.LyricsFormat.SRT).ToList();
+            var candidateSynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is not LyricsInfo.LyricsFormat.UNSYNCHRONIZED and not LyricsInfo.LyricsFormat.OTHER && l.SynchronizedLyrics is not null);
+            var candidateUnsynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is LyricsInfo.LyricsFormat.UNSYNCHRONIZED or LyricsInfo.LyricsFormat.OTHER && l.UnsynchronizedLyrics is not null);
+            var lyrics = candidateSynchronizedLyric is not null ? candidateSynchronizedLyric.FormatSynch() : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
             if (!string.IsNullOrWhiteSpace(lyrics)
                 && tryExtractEmbeddedLyrics)
             {
@@ -462,6 +513,29 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return val;
+        }
+
+        private string? GetSanitizedStringTag(string? tag, string filePath)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                return null;
+            }
+
+            var result = tag.TruncateAtNull();
+            if (result.Length != tag.Length)
+            {
+                _logger.LogWarning("Audio file {File} contains a null character in its tag, but this is not allowed by its tagging standard. All characters after the null char will be discarded. Please fix your file", filePath);
+            }
+
+            return result;
+        }
+
+        private bool TryGetSanitizedAdditionalFields(Track track, string field, out string? value)
+        {
+            var hasField = track.AdditionalFields.TryGetValue(field, out value);
+            value = GetSanitizedStringTag(value, track.Path);
+            return hasField;
         }
     }
 }

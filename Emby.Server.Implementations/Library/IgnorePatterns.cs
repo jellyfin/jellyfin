@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DotNet.Globbing;
 
 namespace Emby.Server.Implementations.Library

@@ -39,6 +39,8 @@ namespace Jellyfin.Model.Tests
         [InlineData("Chrome", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
         [InlineData("Chrome", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.ContainerNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
         [InlineData("Chrome", "mp4-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioCodecNotSupported, "Transcode", "HLS.mp4")]
+        [InlineData("Chrome", "numstreams-32", PlayMethod.DirectPlay)]
+        [InlineData("Chrome", "numstreams-33", PlayMethod.DirectPlay)]
         // Firefox
         [InlineData("Firefox", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)] // #6450
         [InlineData("Firefox", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.Transcode, TranscodeReason.AudioCodecNotSupported, "DirectStream", "HLS.mp4")] // #6450
@@ -180,6 +182,12 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen3-stereo", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen3-stereo", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen3-stereo", "mkv-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen3-stereo", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioChannelsNotSupported, "Transcode")]
+        [InlineData("Tizen3-stereo", "mp4-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen3-stereo", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.AudioChannelsNotSupported, "Transcode")]
+        [InlineData("Tizen3-stereo", "numstreams-32", PlayMethod.DirectPlay)]
+        [InlineData("Tizen3-stereo", "numstreams-33", PlayMethod.Transcode, TranscodeReason.StreamCountExceedsLimit, "Remux")]
         // Tizen 4 4K 5.1
         [InlineData("Tizen4-4K-5.1", "mp4-h264-aac-vtt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay)]
@@ -191,6 +199,12 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mkv-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mp4-dvh1.05-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Transcode")]
+        [InlineData("Tizen4-4K-5.1", "mp4-dvhe.08-eac3-15200k", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "mkv-dvhe.05-eac3-28000k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Transcode")]
+        [InlineData("Tizen4-4K-5.1", "numstreams-32", PlayMethod.DirectPlay)]
+        [InlineData("Tizen4-4K-5.1", "numstreams-33", PlayMethod.Transcode, TranscodeReason.StreamCountExceedsLimit, "Remux")]
         // WebOS 23
         [InlineData("WebOS-23", "mkv-dvhe.08-eac3-15200k", PlayMethod.Transcode, TranscodeReason.VideoRangeTypeNotSupported, "Remux")]
         [InlineData("WebOS-23", "mp4-dvh1.05-eac3-15200k", PlayMethod.DirectPlay)]
@@ -588,7 +602,7 @@ namespace Jellyfin.Model.Tests
 
         private static (string Path, NameValueCollection Query, string Filename, string Extension) ParseUri(StreamInfo val)
         {
-            var href = val.ToUrl("media:", "ACCESSTOKEN").Split("?", 2);
+            var href = val.ToUrl("media:", "ACCESSTOKEN", null).Split("?", 2);
             var path = href[0];
 
             var queryString = href.ElementAtOrDefault(1);

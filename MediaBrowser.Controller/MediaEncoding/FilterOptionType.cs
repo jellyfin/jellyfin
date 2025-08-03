@@ -38,6 +38,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// The transpose_opencl_reversal.
         /// </summary>
-        TransposeOpenclReversal = 6
+        TransposeOpenclReversal = 6,
+
+        /// <summary>
+        /// The overlay_opencl_alpha_format.
+        /// </summary>
+        OverlayOpenclAlphaFormat = 7,
+
+        /// <summary>
+        /// The overlay_cuda_alpha_format.
+        /// </summary>
+        OverlayCudaAlphaFormat = 8
     }
 }

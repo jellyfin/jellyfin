@@ -13,8 +13,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
@@ -425,6 +427,7 @@ namespace Emby.Server.Implementations.Library
                 if (source.MediaStreams.Any(i => i.Type == MediaStreamType.Audio && i.Index == index))
                 {
                     source.DefaultAudioStreamIndex = index;
+                    source.DefaultAudioIndexSource = AudioIndexSource.User;
                     return;
                 }
             }
@@ -432,6 +435,15 @@ namespace Emby.Server.Implementations.Library
             var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
+            if (user.PlayDefaultAudioTrack)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Default;
+            }
+
+            if (preferredAudio.Count > 0)
+            {
+                source.DefaultAudioIndexSource |= AudioIndexSource.Language;
+            }
         }
 
         public void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user)
@@ -669,17 +681,17 @@ namespace Emby.Server.Implementations.Library
 
                 mediaInfo = await _mediaEncoder.GetMediaInfo(
                     new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
-                    ExtractChapters = false
-                },
+                    {
+                        MediaSource = mediaSource,
+                        MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                        ExtractChapters = false
+                    },
                     cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    FileStream createStream = File.Create(cacheFilePath);
+                    FileStream createStream = AsyncFile.Create(cacheFilePath);
                     await using (createStream.ConfigureAwait(false))
                     {
                         await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
@@ -782,9 +794,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
-            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
-            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
+            var info = GetLiveStreamInfo(id);
+            if (info is null)
+            {
+                return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(null, null));
+            }
+
+            return Task.FromResult<Tuple<MediaSourceInfo, IDirectStreamProvider>>(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
         public ILiveStream GetLiveStreamInfo(string id)

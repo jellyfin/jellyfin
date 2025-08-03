@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Filters
     public class AdditionalModelFilter : IDocumentFilter
     {
         // Array of options that should not be visible in the api spec.
-        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions) };
+        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions) };
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -92,16 +92,50 @@ namespace Jellyfin.Server.Filters
                     continue;
                 }
 
-                // Additional discriminator needed for GroupUpdate models...
-                if (messageType == SessionMessageType.SyncPlayGroupUpdate && type != typeof(SyncPlayGroupUpdateCommandMessage))
-                {
-                    continue;
-                }
-
                 var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
                 outboundWebSocketSchemas.Add(schema);
                 outboundWebSocketDiscriminators.Add(messageType.ToString()!, schema.Reference.ReferenceV3);
             }
+
+            // Add custom "SyncPlayGroupUpdateMessage" schema because Swashbuckle cannot generate it for us
+            var syncPlayGroupUpdateMessageSchema = new OpenApiSchema
+            {
+                Type = "object",
+                Description = "Untyped sync play command.",
+                Properties = new Dictionary<string, OpenApiSchema>
+                {
+                    {
+                        "Data", new OpenApiSchema
+                        {
+                            AllOf =
+                            [
+                                new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = nameof(GroupUpdate<object>) } }
+                            ],
+                            Description = "Group update data",
+                            Nullable = false,
+                        }
+                    },
+                    { "MessageId", new OpenApiSchema { Type = "string", Format = "uuid", Description = "Gets or sets the message id." } },
+                    {
+                        "MessageType", new OpenApiSchema
+                        {
+                            Enum = Enum.GetValues<SessionMessageType>().Select(type => new OpenApiString(type.ToString())).ToList<IOpenApiAny>(),
+                            AllOf =
+                            [
+                                new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = nameof(SessionMessageType) } }
+                            ],
+                            Description = "The different kinds of messages that are used in the WebSocket api.",
+                            Default = new OpenApiString(nameof(SessionMessageType.SyncPlayGroupUpdate)),
+                            ReadOnly = true
+                        }
+                    },
+                },
+                AdditionalPropertiesAllowed = false,
+                Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = "SyncPlayGroupUpdateMessage" }
+            };
+            context.SchemaRepository.AddDefinition("SyncPlayGroupUpdateMessage", syncPlayGroupUpdateMessageSchema);
+            outboundWebSocketSchemas.Add(syncPlayGroupUpdateMessageSchema);
+            outboundWebSocketDiscriminators[nameof(SessionMessageType.SyncPlayGroupUpdate)] = syncPlayGroupUpdateMessageSchema.Reference.ReferenceV3;
 
             var outboundWebSocketMessageSchema = new OpenApiSchema
             {
@@ -140,40 +174,45 @@ namespace Jellyfin.Server.Filters
                 });
 
             // Manually generate sync play GroupUpdate messages.
-            if (!context.SchemaRepository.Schemas.TryGetValue(nameof(GroupUpdate), out var groupUpdateSchema))
+            var groupUpdateTypes = typeof(GroupUpdate<>).Assembly.GetTypes()
+                .Where(t => t.BaseType != null
+                            && t.BaseType.IsGenericType
+                            && t.BaseType.GetGenericTypeDefinition() == typeof(GroupUpdate<>))
+                .ToList();
+
+            var groupUpdateSchemas = new List<OpenApiSchema>();
+            var groupUpdateDiscriminators = new Dictionary<string, string>();
+            foreach (var type in groupUpdateTypes)
             {
-                groupUpdateSchema = context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate), context.SchemaRepository);
+                var groupUpdateType = (GroupUpdateType?)type.GetProperty(nameof(GroupUpdate<object>.Type))?.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+                if (groupUpdateType is null)
+                {
+                    continue;
+                }
+
+                var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
+                groupUpdateSchemas.Add(schema);
+                groupUpdateDiscriminators[groupUpdateType.ToString()!] = schema.Reference.ReferenceV3;
             }
 
-            var groupUpdateOfGroupInfoSchema = context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<GroupInfoDto>), context.SchemaRepository);
-            var groupUpdateOfGroupStateSchema = context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<GroupStateUpdate>), context.SchemaRepository);
-            var groupUpdateOfStringSchema = context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<string>), context.SchemaRepository);
-            var groupUpdateOfPlayQueueSchema = context.SchemaGenerator.GenerateSchema(typeof(GroupUpdate<PlayQueueUpdate>), context.SchemaRepository);
-
-            groupUpdateSchema.OneOf = new List<OpenApiSchema>
+            var groupUpdateSchema = new OpenApiSchema
             {
-                groupUpdateOfGroupInfoSchema,
-                groupUpdateOfGroupStateSchema,
-                groupUpdateOfStringSchema,
-                groupUpdateOfPlayQueueSchema
-            };
-
-            groupUpdateSchema.Discriminator = new OpenApiDiscriminator
-            {
-                PropertyName = nameof(GroupUpdate.Type),
-                Mapping = new Dictionary<string, string>
+                Type = "object",
+                Description = "Represents the list of possible group update types",
+                Reference = new OpenApiReference
                 {
-                    { GroupUpdateType.UserJoined.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.UserLeft.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.GroupJoined.ToString(), groupUpdateOfGroupInfoSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.GroupLeft.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.StateUpdate.ToString(), groupUpdateOfGroupStateSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.PlayQueue.ToString(), groupUpdateOfPlayQueueSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.NotInGroup.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.GroupDoesNotExist.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 },
-                    { GroupUpdateType.LibraryAccessDenied.ToString(), groupUpdateOfStringSchema.Reference.ReferenceV3 }
+                    Id = nameof(GroupUpdate<object>),
+                    Type = ReferenceType.Schema
+                },
+                OneOf = groupUpdateSchemas,
+                Discriminator = new OpenApiDiscriminator
+                {
+                    PropertyName = nameof(GroupUpdate<object>.Type),
+                    Mapping = groupUpdateDiscriminators
                 }
             };
+
+            context.SchemaRepository.Schemas[nameof(GroupUpdate<object>)] = groupUpdateSchema;
 
             context.SchemaGenerator.GenerateSchema(typeof(ServerDiscoveryInfo), context.SchemaRepository);
 

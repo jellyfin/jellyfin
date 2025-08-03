@@ -6,8 +6,9 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -222,6 +223,6 @@ public class YearsController : BaseJellyfinApiController
             .Select(i => i.ProductionYear ?? 0)
             .Where(i => i > 0)
             .Distinct()
-            .Select(year => _libraryManager.GetYear(year));
+            .Select(_libraryManager.GetYear);
     }
 }

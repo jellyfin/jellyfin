@@ -72,16 +72,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
-        private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
+        private IDictionary<FilterOptionType, bool> _filtersWithOption = new Dictionary<FilterOptionType, bool>();
+        private IDictionary<BitStreamFilterOptionType, bool> _bitStreamFiltersWithOption = new Dictionary<BitStreamFilterOptionType, bool>();
 
         private bool _isPkeyPauseSupported = false;
         private bool _isLowPriorityHwDecodeSupported = false;
+        private bool _proberSupportsFirstVideoFrame = false;
 
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+
+        private bool _isVideoToolboxAv1DecodeAvailable = false;
 
         private static string[] _vulkanImageDrmFmtModifierExts =
         {
@@ -159,6 +163,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
+        public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
+
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
 
@@ -218,6 +224,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableFilters(validator.GetFilters());
                 SetAvailableFiltersWithOption(validator.GetFiltersWithOption());
+                SetAvailableBitStreamFiltersWithOption(validator.GetBitStreamFiltersWithOption());
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
@@ -225,6 +232,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
+                _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -260,6 +268,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
                     }
+                }
+
+                // Check if VideoToolbox supports AV1 decode
+                if (OperatingSystem.IsMacOS() && SupportsHwaccel("videotoolbox"))
+                {
+                    _isVideoToolboxAv1DecodeAvailable = validator.CheckIsVideoToolboxAv1DecodeAvailable();
                 }
             }
 
@@ -327,9 +341,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _filters = list.ToList();
         }
 
-        public void SetAvailableFiltersWithOption(IDictionary<int, bool> dict)
+        public void SetAvailableFiltersWithOption(IDictionary<FilterOptionType, bool> dict)
         {
             _filtersWithOption = dict;
+        }
+
+        public void SetAvailableBitStreamFiltersWithOption(IDictionary<BitStreamFilterOptionType, bool> dict)
+        {
+            _bitStreamFiltersWithOption = dict;
         }
 
         public void SetMediaEncoderVersion(EncoderValidator validator)
@@ -364,12 +383,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool SupportsFilterWithOption(FilterOptionType option)
         {
-            if (_filtersWithOption.TryGetValue((int)option, out var val))
-            {
-                return val;
-            }
+            return _filtersWithOption.TryGetValue(option, out var val) && val;
+        }
 
-            return false;
+        public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
+        {
+            return _bitStreamFiltersWithOption.TryGetValue(option, out var val) && val;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -491,6 +510,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
+
+            if (_proberSupportsFirstVideoFrame)
+            {
+                args += " -show_frames -only_first_vframe";
+            }
+
             args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, _threads).Trim();
 
             var process = new Process
@@ -512,7 +537,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.LogInformation("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
+            _logger.LogDebug("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
 
             var memoryStream = new MemoryStream();
             await using (memoryStream.ConfigureAwait(false))
@@ -612,7 +637,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
+                    _logger.LogWarning(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
                 }
             }
 
@@ -690,13 +715,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             filters.Add(scaler);
 
-            // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            // mpegts need larger batch size otherwise the corrupted thumbnail will be created. Larger batch size will lower the processing speed.
+            // Use ffmpeg to sample N frames and pick the best thumbnail. Have a fall back just in case.
             var enableThumbnail = !useTradeoff && useIFrame && !string.Equals("wtv", container, StringComparison.OrdinalIgnoreCase);
             if (enableThumbnail)
             {
-                var useLargerBatchSize = string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
-                filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
+                filters.Add("thumbnail=n=24");
             }
 
             // Use SW tonemap on HDR video stream only when the zscale or tonemapx filter is available.
@@ -709,25 +732,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var peak = videoStream.VideoRangeType == VideoRangeType.DOVI ? "400" : "100";
                     enableHdrExtraction = true;
-                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p");
+                    filters.Add($"tonemapx=tonemap=bt2390:desat=0:peak={peak}:t=bt709:m=bt709:p=bt709:format=yuv420p:range=full");
                 }
                 else if (SupportsFilter("zscale") && videoStream.VideoRangeType != VideoRangeType.DOVI)
                 {
                     enableHdrExtraction = true;
-                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
+                    filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709:out_range=full,format=yuv420p");
                 }
             }
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, isAudio ? string.Empty : GetImageResolutionParameter());
+            var args = string.Format(
+                CultureInfo.InvariantCulture,
+                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
+                inputPath,
+                mapArg,
+                _threads,
+                vf,
+                isAudio ? string.Empty : GetImageResolutionParameter(),
+                EncodingHelper.GetVideoSyncOption("-1", EncoderVersion), // auto decide fps mode
+                tempExtractPath);
 
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
-            if (useIFrame && useTradeoff)
+            // The mpegts demuxer cannot seek to keyframes, so we have to let the
+            // decoder discard non-keyframes, which may contain corrupted images.
+            var seekMpegTs = offset.HasValue && string.Equals("mpegts", container, StringComparison.OrdinalIgnoreCase);
+            if (useIFrame && (useTradeoff || seekMpegTs))
             {
                 args = "-skip_frame nokey " + args;
             }
@@ -792,7 +827,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public Task<string> ExtractVideoImagesOnIntervalAccelerated(
+        public async Task<string> ExtractVideoImagesOnIntervalAccelerated(
             string inputFile,
             string container,
             MediaSourceInfo mediaSource,
@@ -883,18 +918,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputArg = "-hwaccel_flags +low_priority " + inputArg;
             }
 
-            if (enableKeyFrameOnlyExtraction)
-            {
-                inputArg = "-skip_frame nokey " + inputArg;
-            }
-
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
             }
 
-            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken);
+            try
+            {
+                return await ExtractVideoImagesOnIntervalInternal(
+                    (enableKeyFrameOnlyExtraction ? "-skip_frame nokey " : string.Empty) + inputArg,
+                    filterParam,
+                    vidEncoder,
+                    threads,
+                    qualityScale,
+                    priority,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (FfmpegException ex)
+            {
+                if (!enableKeyFrameOnlyExtraction)
+                {
+                    throw;
+                }
+
+                _logger.LogWarning(ex, "I-frame trickplay extraction failed, will attempt standard way. Input: {InputFile}", inputFile);
+            }
+
+            return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -1036,11 +1087,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-                if (exitCode == -1)
+                if (!ranToCompletion || processWrapper.ExitCode != 0)
                 {
-                    _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
                     // Cleanup temp folder here, because the targetDirectory is not returned and the cleanup for failed ffmpeg process is not possible for caller.
                     // Ideally the ffmpeg should not write any files if it fails, but it seems like it is not guaranteed.
                     try

@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -104,8 +105,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             SetSize(data, info);
 
             var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
+            var internalFrames = data.Frames ?? Array.Empty<MediaFrameInfo>();
 
-            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
+            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format, internalFrames))
                 .Where(i => i is not null)
                 // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
@@ -531,42 +533,44 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
             List<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            var distinctPairs = pairs.Select(p => p.Value)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Trimmed()
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
-                info.Studios = pairs.Select(p => p.Value)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
+                info.Studios = distinctPairs.ToArray();
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Writer
                     });
                 }
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Producer
                     });
                 }
             }
             else if (string.Equals(key, "directors", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Director
                     });
                 }
@@ -591,10 +595,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     switch (reader.Name)
                     {
                         case "key":
-                            name = reader.ReadElementContentAsString();
+                            name = reader.ReadNormalizedString();
                             break;
                         case "string":
-                            value = reader.ReadElementContentAsString();
+                            value = reader.ReadNormalizedString();
                             break;
                         default:
                             reader.Skip();
@@ -607,8 +611,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(name)
-                || string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(name)
+                || string.IsNullOrEmpty(value))
             {
                 return null;
             }
@@ -682,8 +686,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
+        /// <param name="frameInfoList">The frame info.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
+        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo, IReadOnlyList<MediaFrameInfo> frameInfoList)
         {
             // These are mp4 chapters
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
@@ -901,6 +906,15 @@ namespace MediaBrowser.MediaEncoding.Probing
                         }
                     }
                 }
+
+                var frameInfo = frameInfoList?.FirstOrDefault(i => i.StreamIndex == stream.Index);
+                if (frameInfo?.SideDataList != null)
+                {
+                    if (frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        stream.Hdr10PlusPresentFlag = true;
+                    }
+                }
             }
             else if (streamInfo.CodecType == CodecType.Data)
             {
@@ -951,7 +965,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
                     var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
                     var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && bytes is not null)
+                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
                     {
                         bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
                         if (bps > 0)
@@ -1453,7 +1467,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             var genres = new List<string>(info.Genres);
             foreach (var genre in Split(genreVal, true))
             {
-                if (string.IsNullOrWhiteSpace(genre))
+                if (string.IsNullOrEmpty(genre))
                 {
                     continue;
                 }

@@ -9,6 +9,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -117,6 +118,30 @@ public class ConfigurationController : BaseJellyfinApiController
     public ActionResult<MetadataOptions> GetDefaultMetadataOptions()
     {
         return new MetadataOptions();
+    }
+
+    /// <summary>
+    /// Updates branding configuration.
+    /// </summary>
+    /// <param name="configuration">Branding configuration.</param>
+    /// <response code="204">Branding configuration updated.</response>
+    /// <returns>Update status.</returns>
+    [HttpPost("Configuration/Branding")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandingOptionsDto configuration)
+    {
+        // Get the current branding configuration to preserve SplashscreenLocation
+        var currentBranding = (BrandingOptions)_configurationManager.GetConfiguration("branding");
+
+        // Update only the properties from BrandingOptionsDto
+        currentBranding.LoginDisclaimer = configuration.LoginDisclaimer;
+        currentBranding.CustomCss = configuration.CustomCss;
+        currentBranding.SplashscreenEnabled = configuration.SplashscreenEnabled;
+
+        _configurationManager.SaveConfiguration("branding", currentBranding);
+
+        return NoContent();
     }
 
     /// <summary>

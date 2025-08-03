@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +25,16 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
     {
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        // Users may replace a media with a version that includes attachments to one without them.
+        // So when saving attachments is triggered by a library scan, we always unconditionally
+        // clear the old ones, and then add the new ones if given.
         context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
+        if (attachments.Any())
+        {
+            context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
+        }
+
         context.SaveChanges();
         transaction.Commit();
     }

@@ -71,6 +71,11 @@ namespace MediaBrowser.Model.Providers
         /// <summary>
         /// A book.
         /// </summary>
-        Book = 13
+        Book = 13,
+
+        /// <summary>
+        /// A music recording.
+        /// </summary>
+        Recording = 14
     }
 }

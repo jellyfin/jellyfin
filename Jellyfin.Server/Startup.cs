@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -6,6 +7,7 @@ using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
+using Jellyfin.Database.Implementations;
 using Jellyfin.LiveTv.Extensions;
 using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
@@ -13,7 +15,6 @@ using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
-using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
 using MediaBrowser.Common.Net;
@@ -29,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 using Prometheus;
 
 namespace Jellyfin.Server
@@ -39,15 +41,18 @@ namespace Jellyfin.Server
     public class Startup
     {
         private readonly CoreAppHost _serverApplicationHost;
+        private readonly IConfiguration _configuration;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="appHost">The server application host.</param>
-        public Startup(CoreAppHost appHost)
+        /// <param name="configuration">The used Configuration.</param>
+        public Startup(CoreAppHost appHost, IConfiguration configuration)
         {
             _serverApplicationHost = appHost;
+            _configuration = configuration;
             _serverConfigurationManager = appHost.ConfigurationManager;
         }
 
@@ -67,7 +72,7 @@ namespace Jellyfin.Server
             // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-            services.AddJellyfinDbContext();
+            services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
@@ -192,7 +197,14 @@ namespace Jellyfin.Server
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web",
-                        ContentTypeProvider = extensionProvider
+                        ContentTypeProvider = extensionProvider,
+                        OnPrepareResponse = (context) =>
+                        {
+                            if (Path.GetFileName(context.File.Name).Equals("index.html", StringComparison.Ordinal))
+                            {
+                                context.Context.Response.Headers.CacheControl = new StringValues("no-cache");
+                            }
+                        }
                     });
 
                     mainApp.UseRobotsRedirection();
@@ -205,7 +217,6 @@ namespace Jellyfin.Server
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 
-                mainApp.UseLanFiltering();
                 mainApp.UseIPBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();

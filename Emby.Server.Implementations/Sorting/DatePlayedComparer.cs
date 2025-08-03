@@ -1,8 +1,8 @@
 #nullable disable
 
 using System;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -28,10 +28,10 @@ namespace Emby.Server.Implementations.Sorting
         public IUserManager UserManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the user data repository.
+        /// Gets or sets the user data manager.
         /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataManager UserDataRepository { get; set; }
+        /// <value>The user data manager.</value>
+        public IUserDataManager UserDataManager { get; set; }
 
         /// <summary>
         /// Gets the name.
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private DateTime GetDate(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User, x);
+            var userdata = UserDataManager.GetUserData(User, x);
 
             if (userdata is not null && userdata.LastPlayedDate.HasValue)
             {

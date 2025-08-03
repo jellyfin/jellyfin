@@ -11,10 +11,11 @@ using System.Security;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using J2N.Collections.Generic.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -23,6 +24,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -46,6 +48,8 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public static IUserViewManager UserViewManager { get; set; }
+
+        public static ILimitedConcurrencyLibraryScheduler LimitedConcurrencyLibraryScheduler { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is root.
@@ -596,51 +600,13 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         private async Task RunTasks<T>(Func<T, IProgress<double>, Task> task, IList<T> children, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var childrenCount = children.Count;
-            var childrenProgress = new double[childrenCount];
-
-            void UpdateProgress()
-            {
-                progress.Report(childrenProgress.Average());
-            }
-
-            var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
-            var parallelism = fanoutConcurrency > 0 ? fanoutConcurrency : Environment.ProcessorCount;
-
-            var actionBlock = new ActionBlock<int>(
-                async i =>
-                {
-                    var innerProgress = new Progress<double>(innerPercent =>
-                    {
-                        // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
-                        var innerPercentRounded = Math.Round(innerPercent);
-                        if (childrenProgress[i] != innerPercentRounded)
-                        {
-                            childrenProgress[i] = innerPercentRounded;
-                            UpdateProgress();
-                        }
-                    });
-
-                    await task(children[i], innerProgress).ConfigureAwait(false);
-
-                    childrenProgress[i] = 100;
-
-                    UpdateProgress();
-                },
-                new ExecutionDataflowBlockOptions
-                {
-                    MaxDegreeOfParallelism = parallelism,
-                    CancellationToken = cancellationToken,
-                });
-
-            for (var i = 0; i < childrenCount; i++)
-            {
-                await actionBlock.SendAsync(i, cancellationToken).ConfigureAwait(false);
-            }
-
-            actionBlock.Complete();
-
-            await actionBlock.Completion.ConfigureAwait(false);
+            await LimitedConcurrencyLibraryScheduler
+                .Enqueue(
+                    children.ToArray(),
+                    task,
+                    progress,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -729,7 +695,7 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query, true);
+                return PostFilterAndSort(items, query);
             }
 
             if (this is not UserRootFolder
@@ -993,10 +959,10 @@ namespace MediaBrowser.Controller.Entities
                 items = GetChildren(user, true, childQuery).Where(filter);
             }
 
-            return PostFilterAndSort(items, query, true);
+            return PostFilterAndSort(items, query);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
+        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
         {
             var user = query.User;
 
@@ -1006,7 +972,7 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
-            #pragma warning disable CA1309
+#pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
@@ -1021,7 +987,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
-            #pragma warning restore CA1309
+#pragma warning restore CA1309
 
             // This must be the last filter
             if (!query.AdjacentTo.IsNullOrEmpty())
@@ -1029,7 +995,7 @@ namespace MediaBrowser.Controller.Entities
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
+            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
@@ -1062,11 +1028,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (queryParent is Series)
-            {
-                return false;
-            }
-
             if (queryParent is Season)
             {
                 return false;
@@ -1086,12 +1047,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (!param.HasValue)
             {
-                if (user is not null && !configurationManager.Configuration.EnableGroupingIntoCollections)
+                if (user is not null && query.IncludeItemTypes.Any(type =>
+                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
+                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
                 {
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
+                if (query.IncludeItemTypes.Length == 0
+                    || query.IncludeItemTypes.Any(type => type == BaseItemKind.Movie || type == BaseItemKind.Series))
                 {
                     param = true;
                 }
@@ -1222,11 +1186,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsPlayed.HasValue)
-            {
-                return false;
-            }
-
             if (!string.IsNullOrWhiteSpace(request.Person))
             {
                 return false;
@@ -1267,17 +1226,15 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.MinCommunityRating.HasValue)
-            {
-                return false;
-            }
-
-            if (request.MinCriticRating.HasValue)
-            {
-                return false;
-            }
-
             if (request.MinIndexNumber.HasValue)
+            {
+                return false;
+            }
+
+            if (request.OrderBy.Any(o =>
+                o.OrderBy == ItemSortBy.CommunityRating ||
+                o.OrderBy == ItemSortBy.CriticRating ||
+                o.OrderBy == ItemSortBy.Runtime))
             {
                 return false;
             }

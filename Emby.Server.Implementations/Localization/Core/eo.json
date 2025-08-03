@@ -122,5 +122,9 @@
     "AuthenticationSucceededWithUserName": "{0} sukcese aŭtentikigis",
     "TaskKeyframeExtractorDescription": "Eltiras ĉefkadrojn el videodosieroj por krei pli precizajn HLS-ludlistojn. Ĉi tiu tasko povas funkcii dum longa tempo.",
     "TaskKeyframeExtractor": "Eltiri Ĉefkadrojn",
-    "External": "Ekstera"
+    "External": "Ekstera",
+    "TaskAudioNormalizationDescription": "Skanas dosierojn por sonnivelaj normaligaj datumoj.",
+    "TaskRefreshTrickplayImages": "Generi la bildojn por TrickPlay (Antaŭrigardo rapida antaŭen)",
+    "TaskAudioNormalization": "Normaligo Sonnivela",
+    "HearingImpaired": "Surda"
 }

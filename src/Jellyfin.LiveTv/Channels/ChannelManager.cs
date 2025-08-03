@@ -9,8 +9,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
@@ -362,7 +363,7 @@ namespace Jellyfin.LiveTv.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            FileStream createStream = File.Create(path);
+            FileStream createStream = AsyncFile.Create(path);
             await using (createStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
@@ -444,12 +445,13 @@ namespace Jellyfin.LiveTv.Channels
 
             if (item is null)
             {
+                var info = Directory.CreateDirectory(path);
                 item = new Channel
                 {
                     Name = channelInfo.Name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(path),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(path)
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc
                 };
 
                 isNew = true;
@@ -865,7 +867,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var createStream = File.Create(path);
+                var createStream = AsyncFile.Create(path);
                 await using (createStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
@@ -1164,7 +1166,7 @@ namespace Jellyfin.LiveTv.Channels
                 }
             }
 
-            if (isNew || forceUpdate || item.DateLastRefreshed == default)
+            if (isNew || forceUpdate || item.DateLastRefreshed == DateTime.MinValue)
             {
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
             }

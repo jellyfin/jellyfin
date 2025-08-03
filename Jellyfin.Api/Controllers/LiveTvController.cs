@@ -15,6 +15,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -698,6 +699,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Gets recommended live tv epgs.
     /// </summary>
     /// <param name="userId">Optional. filter by user id.</param>
+    /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="isAiring">Optional. Filter by programs that are currently airing, or not.</param>
     /// <param name="hasAired">Optional. Filter by programs that have completed airing, or not.</param>
@@ -720,6 +722,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
         [FromQuery] Guid? userId,
+        [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool? isAiring,
         [FromQuery] bool? hasAired,
@@ -744,6 +747,7 @@ public class LiveTvController : BaseJellyfinApiController
         var query = new InternalItemsQuery(user)
         {
             IsAiring = isAiring,
+            StartIndex = startIndex,
             Limit = limit,
             HasAired = hasAired,
             IsSeries = isSeries,
@@ -1186,7 +1190,9 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
-    public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
+    public ActionResult GetLiveStreamFile(
+        [FromRoute, Required] string streamId,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
     {
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)

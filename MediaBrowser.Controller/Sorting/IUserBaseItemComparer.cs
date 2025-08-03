@@ -1,5 +1,6 @@
 #nullable disable
 
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Sorting
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Sorting
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
-        Jellyfin.Data.Entities.User User { get; set; }
+        User User { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -25,6 +26,6 @@ namespace MediaBrowser.Controller.Sorting
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        IUserDataManager UserDataRepository { get; set; }
+        IUserDataManager UserDataManager { get; set; }
     }
 }

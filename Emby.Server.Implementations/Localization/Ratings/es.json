@@ -1,0 +1,90 @@
+{
+    "countryCode": "es",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["0+", "A", "Ai","A/i", "A/fig", "A/i/fig", "APTA", "ERI", "TP"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["6+"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7", "7i", "7/i", "7/fig", "7/i/fig"],
+            "ratingScore": {
+                "score": 11,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["9+"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["10"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12", "12/fig"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16", "16/fig"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "18/fig"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["X"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Banned"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

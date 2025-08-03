@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Collections
 
             var libraryOptions = new LibraryOptions
             {
-                PathInfos = new[] { new MediaPathInfo(path) },
+                PathInfos = [new MediaPathInfo(path)],
                 EnableRealtimeMonitor = false,
                 SaveLocalMetadata = true
             };
@@ -150,15 +150,15 @@ namespace Emby.Server.Implementations.Collections
 
             try
             {
-                Directory.CreateDirectory(path);
-
+                var info = Directory.CreateDirectory(path);
                 var collection = new BoxSet
                 {
                     Name = name,
                     Path = path,
                     IsLocked = options.IsLocked,
                     ProviderIds = options.ProviderIds,
-                    DateCreated = DateTime.UtcNow
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc
                 };
 
                 parentFolder.AddChild(collection);
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Collections
         {
             if (_libraryManager.GetItemById(collectionId) is not BoxSet collection)
             {
-                throw new ArgumentException("No collection exists with the supplied Id");
+                throw new ArgumentException("No collection exists with the supplied collectionId " + collectionId);
             }
 
             List<BaseItem>? itemList = null;
@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Collections
 
                 if (item is null)
                 {
-                    throw new ArgumentException("No item exists with the supplied Id");
+                    throw new ArgumentException("No item exists with the supplied Id " + id);
                 }
 
                 if (!currentLinkedChildrenIds.Contains(id))
