@@ -482,6 +482,13 @@ public sealed class BaseItemRepository
 
         var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
+
+        if (!context.BaseItems.Any(bi => bi.Id == item.Id))
+        {
+            _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
+            return;
+        }
+
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
         context.BaseItemImageInfos.AddRange(images);
         context.SaveChanges();
