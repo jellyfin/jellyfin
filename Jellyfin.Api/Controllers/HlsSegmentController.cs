@@ -2,12 +2,18 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +31,8 @@ public class HlsSegmentController : BaseJellyfinApiController
     private readonly IFileSystem _fileSystem;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ITranscodeManager _transcodeManager;
+    private readonly IUserManager _userManager;
+    private readonly ISessionManager _sessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HlsSegmentController"/> class.
@@ -32,14 +40,20 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     public HlsSegmentController(
         IFileSystem fileSystem,
         IServerConfigurationManager serverConfigurationManager,
-        ITranscodeManager transcodeManager)
+        ITranscodeManager transcodeManager,
+        IUserManager userManager,
+        ISessionManager sessionManager)
     {
         _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
         _transcodeManager = transcodeManager;
+        _userManager = userManager;
+        _sessionManager = sessionManager;
     }
 
     /// <summary>
@@ -139,6 +153,24 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromRoute, Required] string segmentId,
         [FromRoute, Required] string segmentContainer)
     {
+        // Check video stream limits before serving video segment
+        var userId = HttpContext.User.GetUserId();
+        if (!userId.IsEmpty())
+        {
+            var user = _userManager.GetUserById(userId);
+            if (user is not null && user.MaxActiveVideoStreams > 0)
+            {
+                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                    s.UserId.Equals(user.Id) &&
+                    s.NowPlayingItem?.MediaType == MediaType.Video);
+
+                if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                {
+                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                }
+            }
+        }
+
         var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
         var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
 
