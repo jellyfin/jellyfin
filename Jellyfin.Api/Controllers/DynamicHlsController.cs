@@ -303,12 +303,15 @@ public class DynamicHlsController : BaseJellyfinApiController
             .ConfigureAwait(false);
 
         // Check video stream limits before starting transcoding
+        _logger.LogInformation("DEBUG: state.IsOutputVideo = {IsOutputVideo}", state.IsOutputVideo);
         if (state.IsOutputVideo)
         {
             var userId = HttpContext.User.GetUserId();
+            _logger.LogInformation("DEBUG: userId = {UserId}", userId);
             if (!userId.IsEmpty())
             {
                 var user = _userManager.GetUserById(userId);
+                _logger.LogInformation("DEBUG: user = {User}, MaxActiveVideoStreams = {MaxActiveVideoStreams}", user?.Username, user?.MaxActiveVideoStreams);
                 if (user is not null && user.MaxActiveVideoStreams > 0)
                 {
                     var activeVideoStreams = _sessionManager.Sessions.Count(s =>
