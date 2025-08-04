@@ -87,7 +87,7 @@ namespace Jellyfin.Naming.Tests.Video
             var files = new[]
             {
                 "300.mkv",
-                "300 trailer.mkv"
+                "300 - trailer.mkv"
             };
 
             var result = VideoListResolver.Resolve(
