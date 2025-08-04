@@ -26,7 +26,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -56,7 +55,6 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IConfigurationManager _configurationManager;
     private readonly ITranscodeManager _transcodeManager;
-    private readonly ISessionManager _sessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
@@ -73,7 +71,6 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
-    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
         IGuideManager guideManager,
@@ -86,8 +83,7 @@ public class LiveTvController : BaseJellyfinApiController
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
         IConfigurationManager configurationManager,
-        ITranscodeManager transcodeManager,
-        ISessionManager sessionManager)
+        ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
         _guideManager = guideManager;
@@ -101,7 +97,6 @@ public class LiveTvController : BaseJellyfinApiController
         _mediaSourceManager = mediaSourceManager;
         _configurationManager = configurationManager;
         _transcodeManager = transcodeManager;
-        _sessionManager = sessionManager;
     }
 
     /// <summary>
@@ -1170,24 +1165,6 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesVideoFile]
     public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
     {
-        // Check video stream limits before serving live recording
-        var userId = HttpContext.User.GetUserId();
-        if (!userId.IsEmpty())
-        {
-            var user = _userManager.GetUserById(userId);
-            if (user is not null && user.MaxActiveVideoStreams > 0)
-            {
-                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
-                    s.UserId.Equals(user.Id) &&
-                    s.NowPlayingItem?.MediaType == MediaType.Video);
-
-                if (activeVideoStreams >= user.MaxActiveVideoStreams)
-                {
-                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
-                }
-            }
-        }
-
         var path = _recordingsManager.GetActiveRecordingPath(recordingId);
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -1217,24 +1194,6 @@ public class LiveTvController : BaseJellyfinApiController
         [FromRoute, Required] string streamId,
         [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
     {
-        // Check video stream limits before serving live stream
-        var userId = HttpContext.User.GetUserId();
-        if (!userId.IsEmpty())
-        {
-            var user = _userManager.GetUserById(userId);
-            if (user is not null && user.MaxActiveVideoStreams > 0)
-            {
-                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
-                    s.UserId.Equals(user.Id) &&
-                    s.NowPlayingItem?.MediaType == MediaType.Video);
-
-                if (activeVideoStreams >= user.MaxActiveVideoStreams)
-                {
-                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
-                }
-            }
-        }
-
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)
         {
