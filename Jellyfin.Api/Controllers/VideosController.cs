@@ -28,6 +28,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -456,7 +457,10 @@ public class VideosController : BaseJellyfinApiController
                 {
                     var activeVideoStreams = _sessionManager.Sessions.Count(s =>
                         s.UserId.Equals(user.Id) &&
-                        s.NowPlayingItem?.MediaType == MediaType.Video);
+                        s.NowPlayingItem?.MediaType == MediaType.Video &&
+                        (s.TranscodingInfo != null ||
+                         (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
+                          (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
 
                     if (activeVideoStreams >= user.MaxActiveVideoStreams)
                     {
