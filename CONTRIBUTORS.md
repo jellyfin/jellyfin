@@ -140,6 +140,7 @@
  - [ThibaultNocchi](https://github.com/ThibaultNocchi)
  - [thornbill](https://github.com/thornbill)
  - [ThreeFive-O](https://github.com/ThreeFive-O)
+ - [Timminator](https://github.com/timminator)
  - [TrisMcC](https://github.com/TrisMcC)
  - [trumblejoe](https://github.com/trumblejoe)
  - [TtheCreator](https://github.com/TtheCreator)
