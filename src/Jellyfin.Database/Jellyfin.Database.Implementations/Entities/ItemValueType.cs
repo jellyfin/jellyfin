@@ -17,11 +17,6 @@ public enum ItemValueType
     AlbumArtist = 1,
 
     /// <summary>
-    /// Composer.
-    /// </summary>
-    Composer = 5,
-
-    /// <summary>
     /// Genre.
     /// </summary>
     Genre = 2,
