@@ -46,6 +46,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
     private readonly Version _minFFmpegX265BframeInFmp4 = new Version(7, 0, 1);
+    private readonly Version _minFFmpegHlsSegmentOptions = new Version(5, 0);
 
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
@@ -1606,6 +1607,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         var segmentFormat = string.Empty;
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
+        var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
         {
@@ -1620,6 +1622,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                 // on Linux/Unix, ffmpeg generate fmp4 header file to m3u8 output folder
                 false => " -hls_fmp4_init_filename \"" + outputFileNameWithoutExtension + "-1" + outputExtension + "\""
             };
+
+            var useLegacySegmentOption = _mediaEncoder.EncoderVersion < _minFFmpegHlsSegmentOptions;
+
+            // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
+            hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;
         }
@@ -1641,8 +1648,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 " -hls_base_url \"hls/{0}/\"",
                 Path.GetFileNameWithoutExtension(outputPath));
         }
-
-        var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         return string.Format(
             CultureInfo.InvariantCulture,

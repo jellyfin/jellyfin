@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} hat die Wiedergabe von {1} auf {2} gestartet",
     "UserStoppedPlayingItemWithValues": "{0} hat die Wiedergabe von {1} auf {2} beendet",
     "ValueHasBeenAddedToLibrary": "{0} wurde deiner Bibliothek hinzugefügt",
-    "ValueSpecialEpisodeName": "Extra - {0}",
+    "ValueSpecialEpisodeName": "Extra – {0}",
     "VersionNumber": "Version {0}",
     "TaskDownloadMissingSubtitlesDescription": "Sucht im Internet basierend auf den Metadaten-Einstellungen nach fehlenden Untertiteln.",
     "TaskDownloadMissingSubtitles": "Fehlende Untertitel herunterladen",

@@ -311,8 +311,8 @@ nia|||Nias|nias
 nic|||Niger-Kordofanian languages|nigéro-kordofaniennes, langues
 niu|||Niuean|niué
 nld|dut|nl|Dutch; Flemish|néerlandais; flamand
-nno||nn|Norwegian Nynorsk; Nynorsk, Norwegian|norvégien nynorsk; nynorsk, norvégien
-nob||nb|Bokmål, Norwegian; Norwegian Bokmål|norvégien bokmål
+nno||nn|Norwegian (Nynorsk)|norvégien (nynorsk)
+nob||nb|Norwegian (Bokmal)|norvégien (bokmål)
 nog|||Nogai|nogaï; nogay
 non|||Norse, Old|norrois, vieux
 nor||no|Norwegian|norvégien
@@ -391,10 +391,10 @@ slv||sl|Slovenian|slovène
 sma|||Southern Sami|sami du Sud
 sme||se|Northern Sami|sami du Nord
 smi|||Sami languages|sames, langues
-smj|||Lule Sami|sami de Lule
-smn|||Inari Sami|sami d'Inari
+smj|||Sami (Lule)|sami de Lule
+smn|||Sami (Inari)|sami d'Inari
 smo||sm|Samoan|samoan
-sms|||Skolt Sami|sami skolt
+sms|||Sami (Skolt)|sami skolt
 sna||sn|Shona|shona
 snd||sd|Sindhi|sindhi
 snk|||Soninke|soninké
@@ -483,9 +483,12 @@ zen|||Zenaga|zenaga
 zgh|||Standard Moroccan Tamazight|amazighe standard marocain
 zha||za|Zhuang; Chuang|zhuang; chuang
 zho|chi|zh|Chinese|chinois
-zho|chi|ze|Chinese; Bilingual|chinois
-zho|chi|zh-tw|Chinese; Traditional|chinois
-zho|chi|zh-hk|Chinese; Hong Kong|chinois
+zho|chi|ze|Chinese (Bilingual)|chinois
+zho|chi|zh-cn|Chinese (Simplified)|chinois
+zho|chi|zh-hans|Chinese (Simplified)|chinois
+zho|chi|zh-tw|Chinese (Traditional)|chinois
+zho|chi|zh-hant|Chinese (Traditional)|chinois
+zho|chi|zh-hk|Chinese (Hong Kong)|chinois
 znd|||Zande languages|zandé, langues
 zul||zu|Zulu|zoulou
 zun|||Zuni|zuni
