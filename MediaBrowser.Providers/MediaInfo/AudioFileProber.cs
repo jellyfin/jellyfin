@@ -246,7 +246,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 else
                 {
-                    composers = Array.Empty<string>();
+                    composers = [];
                 }
 
                 string[]? conductors = null;
