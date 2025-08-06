@@ -34,12 +34,6 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<Guid> UsersIds { get; }
 
         /// <summary>
-        /// Checks if the user's username is valid.
-        /// </summary>
-        /// <param name="name">The user's username.</param>
-        void ThrowIfInvalidUsername(string name);
-
-        /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
         /// <returns>Awaitable task.</returns>

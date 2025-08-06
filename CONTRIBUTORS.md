@@ -197,7 +197,6 @@
  - [Kenneth Cochran](https://github.com/kennethcochran)
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
- - [Jxiced](https://github.com/Jxiced)
  - [allesmi](https://github.com/allesmi)
  - [ThunderClapLP](https://github.com/ThunderClapLP)
  - [Shoham Peller](https://github.com/spellr)
