@@ -21,11 +21,6 @@ public enum PersonKind
     Director,
 
     /// <summary>
-    /// A person who writes music, especially as a professional occupation.
-    /// </summary>
-    Composer,
-
-    /// <summary>
     /// A writer of a book, article, or document. Can also be used as a generic term for music writer if there is a lack of specificity.
     /// </summary>
     Writer,
@@ -39,11 +34,6 @@ public enum PersonKind
     /// A person responsible for the financial and managerial aspects of the making of a film or broadcast or for staging a play, opera, etc.
     /// </summary>
     Producer,
-
-    /// <summary>
-    /// A person who directs the performance of an orchestra or choir.
-    /// </summary>
-    Conductor,
 
     /// <summary>
     /// A person who writes the words to a song or musical.
@@ -74,16 +64,6 @@ public enum PersonKind
     /// A person who created the material.
     /// </summary>
     Creator,
-
-    /// <summary>
-    /// A person who was the artist.
-    /// </summary>
-    Artist,
-
-    /// <summary>
-    /// A person who was the album artist.
-    /// </summary>
-    AlbumArtist,
 
     /// <summary>
     /// A person who was the author.

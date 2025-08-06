@@ -1226,21 +1226,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
             var people = new List<BaseItemPerson>();
-            if (tags.TryGetValue("composer", out var composer) && !string.IsNullOrWhiteSpace(composer))
-            {
-                foreach (var person in Split(composer, false))
-                {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Composer });
-                }
-            }
-
-            if (tags.TryGetValue("conductor", out var conductor) && !string.IsNullOrWhiteSpace(conductor))
-            {
-                foreach (var person in Split(conductor, false))
-                {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Conductor });
-                }
-            }
 
             if (tags.TryGetValue("lyricist", out var lyricist) && !string.IsNullOrWhiteSpace(lyricist))
             {

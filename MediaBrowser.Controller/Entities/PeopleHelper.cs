@@ -88,6 +88,11 @@ namespace MediaBrowser.Controller.Entities
 
         private static void MergeExisting(PersonInfo existing, PersonInfo person)
         {
+            if (existing.Id.Equals(Guid.Empty))
+            {
+                existing.Id = person.Id;
+            }
+
             existing.SortOrder = person.SortOrder ?? existing.SortOrder;
             existing.ImageUrl = person.ImageUrl ?? existing.ImageUrl;
 

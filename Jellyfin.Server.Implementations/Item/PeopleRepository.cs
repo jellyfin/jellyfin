@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -70,18 +71,83 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     {
         using var context = _dbProvider.CreateDbContext();
 
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
-        context.SaveChanges();
+        // Step 1: Get people that need IDs
+        var peopleWithoutIds = people.Where(p => p.Id == Guid.Empty).ToArray();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        // Step 2: For people without IDs, try to get existing IDs first
+        if (peopleWithoutIds.Length > 0)
+        {
+            var nameTypePairs = peopleWithoutIds
+                .Select(x => new { x.Name, PersonType = x.Type.ToString() })
+                .ToArray();
+
+            var names = nameTypePairs.Select(x => x.Name).ToArray();
+            var existingPeople = context.Peoples
+                .Where(p => names.Contains(p.Name))
+                .Select(p => new { p.Id, p.Name, p.PersonType })
+                .ToList()
+                .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
+                .ToList();
+
+            // Update people that we found existing IDs for
+            foreach (var person in peopleWithoutIds)
+            {
+                var existing = existingPeople.FirstOrDefault(e =>
+                    e.Name == person.Name && e.PersonType == person.Type.ToString());
+                if (existing != null)
+                {
+                    person.Id = existing.Id;
+                }
+            }
+        }
+
+        // Step 3: For remaining people without IDs, insert them (with individual exception handling)
+        var stillNeedIds = people.Where(p => p.Id == Guid.Empty).ToArray();
+        foreach (var person in stillNeedIds)
+        {
+            var newId = Guid.NewGuid();
+            try
+            {
+                context.Peoples.Add(new People
+                {
+                    Id = newId,
+                    Name = person.Name,
+                    PersonType = person.Type.ToString()
+                });
+                context.SaveChanges();
+                person.Id = newId; // SUCCESS: Use the new ID we created
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                // Handle race condition - someone else inserted this person
+                context.ChangeTracker.Clear();
+                var existingId = context.Peoples
+                    .Where(p => p.Name == person.Name && p.PersonType == person.Type.ToString())
+                    .Select(p => p.Id)
+                    .Single();
+                person.Id = existingId; // DUPLICATE: Use existing ID
+            }
+        }
+
+        // Now all people have valid IDs, process PeopleBaseItemMap
+        var allPeopleIds = people.Select(p => p.Id).ToArray();
+
+        // Remove obsolete mappings
+        context.PeopleBaseItemMap
+            .Where(m => m.ItemId == itemId && !allPeopleIds.Contains(m.PeopleId))
+            .ExecuteDelete();
+
+        // Upsert mappings for all people
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
-            if (existingMap is null)
+            var updated = context.PeopleBaseItemMap
+                .Where(m => m.ItemId == itemId && m.PeopleId == person.Id)
+                .ExecuteUpdate(setters => setters
+                    .SetProperty(m => m.Role, person.Role)
+                    .SetProperty(m => m.SortOrder, person.SortOrder)
+                    .SetProperty(m => m.ListOrder, person.SortOrder));
+
+            if (updated == 0)
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
@@ -94,16 +160,41 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Role = person.Role
                 });
             }
-            else
+        }
+
+        context.SaveChanges();
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        if (ex == null)
+        {
+            return false;
+        }
+
+        // SQLite
+        if (ex.InnerException is SqliteException sqliteEx)
+        {
+            const int SQLITE_CONSTRAINT_UNIQUE = 19;
+            return sqliteEx.SqliteErrorCode == SQLITE_CONSTRAINT_UNIQUE;
+        }
+
+        // PostgreSQL (check by type name since we can't reference Npgsql directly)
+        if (ex.InnerException?.GetType().Name == "PostgresException")
+        {
+            // Use reflection to check SqlState property
+            var sqlStateProperty = ex.InnerException.GetType().GetProperty("SqlState");
+            if (sqlStateProperty?.GetValue(ex.InnerException) is string sqlState)
             {
-                // person mapping already exists so remove from list
-                maps.Remove(existingMap);
+                return sqlState == "23505"; // unique_violation
             }
         }
 
-        context.PeopleBaseItemMap.RemoveRange(maps);
-
-        context.SaveChanges();
+        // Fallback: check inner exception message for generic keywords
+        var innerMessage = ex.InnerException?.Message ?? string.Empty;
+        return innerMessage.Contains("unique", StringComparison.OrdinalIgnoreCase) ||
+               innerMessage.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+               innerMessage.Contains("23505", StringComparison.OrdinalIgnoreCase); // PostgreSQL unique violation code
     }
 
     private PersonInfo Map(People people)

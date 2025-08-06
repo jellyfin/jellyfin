@@ -187,11 +187,11 @@ namespace MediaBrowser.Providers.MediaInfo
             var trackAlbumArtist = GetSanitizedStringTag(track.AlbumArtist, audio.Path);
             var trackArist = GetSanitizedStringTag(track.Artist, audio.Path);
             var trackComposer = GetSanitizedStringTag(track.Composer, audio.Path);
+            TryGetSanitizedAdditionalFields(track, "conductor", out var trackConductor);
             var trackGenre = GetSanitizedStringTag(track.Genre, audio.Path);
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
-                var people = new List<PersonInfo>();
                 string[]? albumArtists = null;
                 if (libraryOptions.PreferNonstandardArtistsTag)
                 {
@@ -210,18 +210,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
                     albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
-                }
-
-                foreach (var albumArtist in albumArtists)
-                {
-                    if (!string.IsNullOrWhiteSpace(albumArtist))
-                    {
-                        PeopleHelper.AddPerson(people, new PersonInfo
-                        {
-                            Name = albumArtist,
-                            Type = PersonKind.AlbumArtist
-                        });
-                    }
                 }
 
                 string[]? performers = null;
@@ -244,48 +232,61 @@ namespace MediaBrowser.Providers.MediaInfo
                     performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                foreach (var performer in performers)
-                {
-                    if (!string.IsNullOrWhiteSpace(performer))
-                    {
-                        PeopleHelper.AddPerson(people, new PersonInfo
-                        {
-                            Name = performer,
-                            Type = PersonKind.Artist
-                        });
-                    }
-                }
-
+                string[]? composers = null;
                 if (!string.IsNullOrWhiteSpace(trackComposer))
                 {
-                    foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                    composers = trackComposer.Split(InternalValueSeparator)
+                        .Where(c => !string.IsNullOrWhiteSpace(c))
+                        .ToArray();
+
+                    if (libraryOptions.UseCustomTagDelimiters)
                     {
-                        if (!string.IsNullOrWhiteSpace(composer))
-                        {
-                            PeopleHelper.AddPerson(people, new PersonInfo
-                            {
-                                Name = composer,
-                                Type = PersonKind.Composer
-                            });
-                        }
+                        composers = composers.SelectMany(c => SplitWithCustomDelimiter(c, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                     }
                 }
-
-                _libraryManager.UpdatePeople(audio, people);
-
-                if (options.ReplaceAllMetadata && performers.Length != 0)
+                else
                 {
-                    audio.Artists = performers;
+                    composers = Array.Empty<string>();
+                }
+
+                string[]? conductors = null;
+                if (!string.IsNullOrWhiteSpace(trackConductor))
+                {
+                    conductors = trackConductor.Split(InternalValueSeparator)
+                        .Where(c => !string.IsNullOrWhiteSpace(c))
+                        .ToArray();
+
+                    if (libraryOptions.UseCustomTagDelimiters)
+                    {
+                        conductors = conductors.SelectMany(c => SplitWithCustomDelimiter(c, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
+                    }
+                }
+                else
+                {
+                    conductors = Array.Empty<string>();
+                }
+
+                // Combine all artists (performers, conductors, composers) into a single list
+                var allArtists = new List<string>();
+                allArtists.AddRange(performers);
+                allArtists.AddRange(conductors);
+                allArtists.AddRange(composers);
+
+                // Remove duplicates
+                var uniqueArtists = allArtists.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                if (options.ReplaceAllMetadata && uniqueArtists.Length != 0)
+                {
+                    audio.Artists = uniqueArtists;
                 }
                 else if (!options.ReplaceAllMetadata
                          && (audio.Artists is null || audio.Artists.Count == 0))
                 {
-                    audio.Artists = performers;
+                    audio.Artists = uniqueArtists;
                 }
 
                 if (albumArtists.Length == 0)
                 {
-                    // Album artists not provided, fall back to performers (artists).
                     albumArtists = performers;
                 }
 

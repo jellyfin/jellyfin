@@ -540,11 +540,6 @@ namespace Emby.Server.Implementations.Dto
                         return 4;
                     }
 
-                    if (i.IsType(PersonKind.Composer))
-                    {
-                        return 4;
-                    }
-
                     return 10;
                 })
                 .ToList();
@@ -936,47 +931,26 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                // var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
-                // {
-                //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                // });
-
-                // dto.ArtistItems = artistItems.Items
-                //    .Select(i =>
-                //    {
-                //        var artist = i.Item1;
-                //        return new NameIdPair
-                //        {
-                //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
-                //        };
-                //    })
-                //    .ToList();
-
-                // Include artists that are not in the database yet, e.g., just added via metadata editor
-                // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = hasArtist.Artists
-                    // .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
-                        // This should not be necessary but we're seeing some cases of it
                         if (string.IsNullOrEmpty(i))
                         {
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
+                        var artist = _libraryManager.GetArtist(i, options);
                         if (artist is not null)
                         {
-                            return new NameGuidPair
+                            var baseItemArtist = new BaseItemArtist
                             {
                                 Name = artist.Name,
                                 Id = artist.Id
                             };
+
+                            baseItemArtist.PrimaryImageTag = GetTagAndFillBlurhash(dto, artist, ImageType.Primary);
+
+                            return baseItemArtist;
                         }
 
                         return null;
@@ -987,45 +961,26 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
-                // var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
-                // {
-                //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                // });
-
-                // dto.AlbumArtists = artistItems.Items
-                //    .Select(i =>
-                //    {
-                //        var artist = i.Item1;
-                //        return new NameIdPair
-                //        {
-                //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
-                //        };
-                //    })
-                //    .ToList();
-
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
-                    // .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
-                        // This should not be necessary but we're seeing some cases of it
                         if (string.IsNullOrEmpty(i))
                         {
                             return null;
                         }
 
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
+                        var artist = _libraryManager.GetArtist(i, options);
                         if (artist is not null)
                         {
-                            return new NameGuidPair
+                            var baseItemArtist = new BaseItemArtist
                             {
                                 Name = artist.Name,
                                 Id = artist.Id
                             };
+
+                            baseItemArtist.PrimaryImageTag = GetTagAndFillBlurhash(dto, artist, ImageType.Primary);
+
+                            return baseItemArtist;
                         }
 
                         return null;

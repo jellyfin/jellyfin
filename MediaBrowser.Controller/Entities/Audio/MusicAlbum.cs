@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// Class MusicAlbum.
     /// </summary>
     [Common.RequiresSourceSerialisation]
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
+    public partial class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
         public MusicAlbum()
         {
