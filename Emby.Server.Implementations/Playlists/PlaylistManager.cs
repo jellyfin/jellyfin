@@ -618,6 +618,11 @@ namespace Emby.Server.Implementations.Playlists
                 playlist.OpenAccess = request.Public.Value;
             }
 
+            if (request.MediaType is not null)
+            {
+                playlist.SetMediaType(request.MediaType);
+            }
+
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Entities;
 
@@ -31,4 +32,9 @@ public class UpdatePlaylistDto
     /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
     public bool? IsPublic { get; set; }
+
+    /// <summary>
+    /// Gets or sets the media type of the playlist.
+    /// </summary>
+    public MediaType? MediaType { get; set; }
 }

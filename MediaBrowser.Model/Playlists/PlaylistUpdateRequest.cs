@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Playlists;
@@ -38,4 +39,9 @@ public class PlaylistUpdateRequest
     /// Gets or sets a value indicating whether the playlist is public.
     /// </summary>
     public bool? Public { get; set; }
+
+    /// <summary>
+    /// Gets or sets the media type of the playlist.
+    /// </summary>
+    public MediaType? MediaType { get; set; }
 }

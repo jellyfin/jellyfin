@@ -144,7 +144,8 @@ public class PlaylistsController : BaseJellyfinApiController
             Name = updatePlaylistRequest.Name,
             Ids = updatePlaylistRequest.Ids,
             Users = updatePlaylistRequest.Users,
-            Public = updatePlaylistRequest.IsPublic
+            Public = updatePlaylistRequest.IsPublic,
+            MediaType = updatePlaylistRequest.MediaType
         }).ConfigureAwait(false);
 
         return NoContent();
