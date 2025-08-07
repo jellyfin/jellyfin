@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -132,16 +131,16 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
     {
-        ArgumentNullException.ThrowIfNull(startupUserDto.Name);
-        _userManager.ThrowIfInvalidUsername(startupUserDto.Name);
-
         var user = _userManager.Users.First();
         if (string.IsNullOrWhiteSpace(startupUserDto.Password))
         {
             return BadRequest("Password must not be empty");
         }
 
-        user.Username = startupUserDto.Name;
+        if (startupUserDto.Name is not null)
+        {
+            user.Username = startupUserDto.Name;
+        }
 
         await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
