@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -68,6 +69,43 @@ namespace MediaBrowser.Controller.Entities
             query.PersonIds = new[] { Id };
 
             return LibraryManager.GetItemList(query);
+        }
+
+        public TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query)
+        {
+            query.PersonIds = new[] { Id };
+
+            var counts = new TaggedItemCounts();
+
+            // TODO: Remove MusicAlbum and MusicArtist when the relationship between Persons and Music is removed
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicAlbum };
+            counts.AlbumCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicArtist };
+            counts.ArtistCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
+            counts.EpisodeCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
+            counts.MovieCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicVideo };
+            counts.MusicVideoCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram };
+            counts.ProgramCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
+            counts.SeriesCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Audio };
+            counts.SongCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Trailer };
+            counts.TrailerCount = LibraryManager.GetCount(query);
+
+            return counts;
         }
 
         public override bool CanDelete()
