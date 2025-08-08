@@ -102,21 +102,9 @@ namespace Emby.Server.Implementations.Dto
                     (programTuples ??= []).Add((item, dto));
                 }
 
-                if (item is IItemByName byName)
+                if (item is IItemByName itemByName && options.ContainsField(ItemFields.ItemCounts))
                 {
-                    if (options.ContainsField(ItemFields.ItemCounts))
-                    {
-                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
-                        {
-                            Recursive = true,
-                            DtoOptions = new DtoOptions(false)
-                            {
-                                EnableImages = false
-                            }
-                        });
-
-                        SetItemByNameInfo(item, dto, libraryItems);
-                    }
+                    SetItemByNameInfo(itemByName, dto, user);
                 }
 
                 returnItems[index] = dto;
@@ -147,32 +135,12 @@ namespace Emby.Server.Implementations.Dto
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (item is IItemByName itemByName
-                && options.ContainsField(ItemFields.ItemCounts))
+            if (item is IItemByName itemByName && options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(
-                    item,
-                    dto,
-                    GetTaggedItems(
-                        itemByName,
-                        user,
-                        new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        }));
+                SetItemByNameInfo(itemByName, dto, user);
             }
 
             return dto;
-        }
-
-        private static IReadOnlyList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
-        {
-            return byName.GetTaggedItems(
-                new InternalItemsQuery(user)
-                {
-                    Recursive = true,
-                    DtoOptions = options
-                });
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
@@ -319,12 +287,41 @@ namespace Emby.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            if (taggedItems is not null && options.ContainsField(ItemFields.ItemCounts))
+            if (options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(item, dto, taggedItems);
+                if (taggedItems is not null)
+                {
+                    SetItemByNameInfo(item, dto, taggedItems!);
+                }
+                else if (item is IItemByName itemByName)
+                {
+                    SetItemByNameInfo(itemByName, dto, user);
+                }
             }
 
             return dto;
+        }
+
+        private static void SetItemByNameInfo(IItemByName item, BaseItemDto dto, User? user)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                DtoOptions = new DtoOptions(false) { EnableImages = false }
+            };
+
+            var counts = item.GetTaggedItemCounts(query);
+
+            dto.AlbumCount = counts.AlbumCount;
+            dto.ArtistCount = counts.ArtistCount;
+            dto.EpisodeCount = counts.EpisodeCount;
+            dto.MovieCount = counts.MovieCount;
+            dto.MusicVideoCount = counts.MusicVideoCount;
+            dto.ProgramCount = counts.ProgramCount;
+            dto.SeriesCount = counts.SeriesCount;
+            dto.SongCount = counts.SongCount;
+            dto.TrailerCount = counts.TrailerCount;
+            dto.ChildCount = counts.ChildCount;
         }
 
         private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)
