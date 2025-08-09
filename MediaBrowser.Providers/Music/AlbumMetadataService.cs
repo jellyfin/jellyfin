@@ -63,8 +63,6 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
         base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
 
-        SetPeople(item);
-
         return Task.CompletedTask;
     }
 
@@ -189,40 +187,6 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
                 || !target.Equals(source, StringComparison.Ordinal)))
         {
             targetItem.SetProviderId(provider, source);
-        }
-    }
-
-    private void SetPeople(MusicAlbum item)
-    {
-        if (item.AlbumArtists.Any() || item.Artists.Any())
-        {
-            var people = new List<PersonInfo>();
-
-            foreach (var albumArtist in item.AlbumArtists)
-            {
-                if (!string.IsNullOrWhiteSpace(albumArtist))
-                {
-                    PeopleHelper.AddPerson(people, new PersonInfo
-                    {
-                        Name = albumArtist,
-                        Type = PersonKind.AlbumArtist
-                    });
-                }
-            }
-
-            foreach (var artist in item.Artists)
-            {
-                if (!string.IsNullOrWhiteSpace(artist))
-                {
-                    PeopleHelper.AddPerson(people, new PersonInfo
-                    {
-                        Name = artist,
-                        Type = PersonKind.Artist
-                    });
-                }
-            }
-
-            LibraryManager.UpdatePeople(item, people);
         }
     }
 

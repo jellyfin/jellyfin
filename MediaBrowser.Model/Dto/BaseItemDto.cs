@@ -404,7 +404,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist items.
         /// </summary>
         /// <value>The artist items.</value>
-        public NameGuidPair[] ArtistItems { get; set; }
+        public BaseItemArtist[] ArtistItems { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -452,7 +452,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
-        public NameGuidPair[] AlbumArtists { get; set; }
+        public BaseItemArtist[] AlbumArtists { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the season.

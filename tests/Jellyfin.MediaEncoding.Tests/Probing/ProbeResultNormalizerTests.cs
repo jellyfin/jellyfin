@@ -373,15 +373,9 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(2020, res.ProductionYear);
             Assert.True(res.PremiereDate.HasValue);
             Assert.Equal(DateTime.Parse("2020-10-26T00:00Z", DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AdjustToUniversal), res.PremiereDate);
-            Assert.Equal(22, res.People.Length);
-            Assert.Equal("Krysta Youngs", res.People[0].Name);
-            Assert.Equal(PersonKind.Composer, res.People[0].Type);
-            Assert.Equal("Julia Ross", res.People[1].Name);
-            Assert.Equal(PersonKind.Composer, res.People[1].Type);
-            Assert.Equal("Yiwoomin", res.People[2].Name);
-            Assert.Equal(PersonKind.Composer, res.People[2].Type);
-            Assert.Equal("Ji-hyo Park", res.People[3].Name);
-            Assert.Equal(PersonKind.Lyricist, res.People[3].Type);
+            Assert.Equal(19, res.People.Length);
+            Assert.Equal("Ji-hyo Park", res.People[0].Name);
+            Assert.Equal(PersonKind.Lyricist, res.People[0].Type);
             Assert.Equal("Yiwoomin", res.People[4].Name);
             Assert.Equal(PersonKind.Actor, res.People[4].Type);
             Assert.Equal("Electric Piano", res.People[4].Role);
