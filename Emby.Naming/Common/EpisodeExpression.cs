@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Common
@@ -60,7 +61,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets optional list of date formats used for date parsing.
         /// </summary>
-        public string[] DateTimeFormats { get; set; }
+        public IReadOnlyList<string> DateTimeFormats { get; set; }
 
         /// <summary>
         /// Gets a <see cref="Regex"/> expressions objects (creates it if null).

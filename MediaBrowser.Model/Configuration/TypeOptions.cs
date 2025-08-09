@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -9,9 +11,9 @@ namespace MediaBrowser.Model.Configuration
 {
     public class TypeOptions
     {
-        public static readonly ImageOption DefaultInstance = new ImageOption();
+        public static readonly ImageOption DefaultInstance = new();
 
-        public static readonly Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>
+        public static readonly Dictionary<string, ImageOption[]> DefaultImageOptions = new()
         {
             {
                 "Movie", new[]
@@ -304,11 +306,11 @@ namespace MediaBrowser.Model.Configuration
 
         public TypeOptions()
         {
-            MetadataFetchers = Array.Empty<string>();
-            MetadataFetcherOrder = Array.Empty<string>();
-            ImageFetchers = Array.Empty<string>();
-            ImageFetcherOrder = Array.Empty<string>();
-            ImageOptions = Array.Empty<ImageOption>();
+            MetadataFetchers = [];
+            MetadataFetcherOrder = [];
+            ImageFetchers = [];
+            ImageFetcherOrder = [];
+            ImageOptions = [];
         }
 
         public string Type { get; set; }
