@@ -202,6 +202,7 @@
  - [Shoham Peller](https://github.com/spellr)
  - [theshoeshiner](https://github.com/theshoeshiner)
  - [TokerX](https://github.com/TokerX)
+ - [Lampan-git](https://github.com/Lampan-git)
 
 # Emby Contributors
 
