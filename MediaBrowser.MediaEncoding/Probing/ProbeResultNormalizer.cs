@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Emby.Naming.Common;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Extensions;
@@ -33,6 +34,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
         private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
         private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
+
+        private readonly NamingOptions _namingOptions = new NamingOptions();
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -976,6 +979,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
+            if (streamInfo.CodecType == CodecType.Subtitle)
+            {
+                AnalyzeSubtitleTitle(stream, streamInfo);
+            }
+
             var disposition = streamInfo.Disposition;
             if (disposition is not null)
             {
@@ -1007,6 +1015,98 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Title = null;
             }
+        }
+
+        /// <summary>
+        /// Analyzes subtitle stream title to infer additional flags when disposition flags might be missing.
+        /// This provides a fallback mechanism similar to external subtitle file parsing.
+        /// </summary>
+        /// <param name="stream">The media stream to update.</param>
+        /// <param name="streamInfo">The stream info from FFprobe.</param>
+        private void AnalyzeSubtitleTitle(MediaStream stream, MediaStreamInfo streamInfo)
+        {
+            if (streamInfo.Tags?.TryGetValue("title", out var title) != true || string.IsNullOrWhiteSpace(title))
+            {
+                return;
+            }
+
+            var disposition = streamInfo.Disposition;
+            var forcedByDisposition = disposition?.GetValueOrDefault("forced") == 1;
+            var hiByDisposition = disposition?.GetValueOrDefault("hearing_impaired") == 1;
+            var defaultByDisposition = disposition?.GetValueOrDefault("default") == 1;
+
+            if (!stream.IsForced && !forcedByDisposition && ContainsFlagWord(title, _namingOptions.MediaForcedFlags))
+            {
+                stream.IsForced = true;
+                _logger.LogDebug("Detected forced subtitle from title: '{Title}' for stream {Index}", title, stream.Index);
+            }
+
+            // Analyze title for hearing impaired flags using configured tags, but avoid "hi" when language is Hindi
+            if (!stream.IsHearingImpaired && !hiByDisposition)
+            {
+                var matchedHi = false;
+                foreach (var flag in _namingOptions.MediaHearingImpairedFlags)
+                {
+                    if (flag.Equals("hi", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!IsHindiLanguage(stream) && ContainsWord(title, flag))
+                        {
+                            matchedHi = true;
+                            break;
+                        }
+                    }
+                    else if (ContainsWord(title, flag))
+                    {
+                        matchedHi = true;
+                        break;
+                    }
+                }
+
+                if (matchedHi)
+                {
+                    stream.IsHearingImpaired = true;
+                    _logger.LogDebug("Detected hearing impaired subtitle from title: '{Title}' for stream {Index}", title, stream.Index);
+                }
+            }
+
+            if (!stream.IsDefault && !defaultByDisposition && ContainsFlagWord(title, _namingOptions.MediaDefaultFlags))
+            {
+                stream.IsDefault = true;
+                _logger.LogDebug("Detected default subtitle from title: '{Title}' for stream {Index}", title, stream.Index);
+            }
+        }
+
+        private static bool ContainsFlagWord(string text, IEnumerable<string> flags)
+        {
+            foreach (var flag in flags)
+            {
+                if (ContainsWord(text, flag))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsWord(string text, string word)
+        {
+            var pattern = "(?<![\\p{L}\\p{N}_])" + Regex.Escape(word) + "(?![\\p{L}\\p{N}_])";
+            return Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static bool IsHindiLanguage(MediaStream stream)
+        {
+            var lang = stream.Language;
+            if (string.IsNullOrWhiteSpace(lang))
+            {
+                return false;
+            }
+
+            return lang.Equals("hi", StringComparison.OrdinalIgnoreCase)
+                || lang.Equals("hin", StringComparison.OrdinalIgnoreCase)
+                || lang.StartsWith("hi-", StringComparison.OrdinalIgnoreCase)
+                || lang.Equals("hindi", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
