@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -66,6 +67,47 @@ namespace MediaBrowser.Controller.Entities
             query.Years = new[] { year };
 
             return LibraryManager.GetItemList(query);
+        }
+
+        public TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query)
+        {
+            if (!int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
+            {
+                return new TaggedItemCounts();
+            }
+
+            query.Years = new[] { year };
+
+            var counts = new TaggedItemCounts();
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicAlbum };
+            counts.AlbumCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicArtist };
+            counts.ArtistCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
+            counts.EpisodeCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
+            counts.MovieCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicVideo };
+            counts.MusicVideoCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram };
+            counts.ProgramCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
+            counts.SeriesCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Audio };
+            counts.SongCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Trailer };
+            counts.TrailerCount = LibraryManager.GetCount(query);
+
+            return counts;
         }
 
         public int? GetYearValue()

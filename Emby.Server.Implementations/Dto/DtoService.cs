@@ -150,16 +150,7 @@ namespace Emby.Server.Implementations.Dto
             if (item is IItemByName itemByName
                 && options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(
-                    item,
-                    dto,
-                    GetTaggedItems(
-                        itemByName,
-                        user,
-                        new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        }));
+                SetItemByNameInfoWithCounts(item, dto, itemByName, user);
             }
 
             return dto;
@@ -325,6 +316,28 @@ namespace Emby.Server.Implementations.Dto
             }
 
             return dto;
+        }
+
+        private void SetItemByNameInfoWithCounts(BaseItem item, BaseItemDto dto, IItemByName itemByName, User? user)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                DtoOptions = new DtoOptions(false) { EnableImages = false }
+            };
+
+            var counts = itemByName.GetTaggedItemCounts(query);
+
+            dto.AlbumCount = counts.AlbumCount;
+            dto.ArtistCount = counts.ArtistCount;
+            dto.EpisodeCount = counts.EpisodeCount;
+            dto.MovieCount = counts.MovieCount;
+            dto.MusicVideoCount = counts.MusicVideoCount;
+            dto.ProgramCount = counts.ProgramCount;
+            dto.SeriesCount = counts.SeriesCount;
+            dto.SongCount = counts.SongCount;
+            dto.TrailerCount = counts.TrailerCount;
+            dto.ChildCount = counts.ChildCount;
         }
 
         private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)

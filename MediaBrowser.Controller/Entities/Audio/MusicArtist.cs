@@ -98,6 +98,24 @@ namespace MediaBrowser.Controller.Entities.Audio
             return LibraryManager.GetItemList(query);
         }
 
+        public TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query)
+        {
+            query.ArtistIds = new[] { Id };
+
+            var counts = new TaggedItemCounts();
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicAlbum };
+            counts.AlbumCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.MusicVideo };
+            counts.MusicVideoCount = LibraryManager.GetCount(query);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Audio };
+            counts.SongCount = LibraryManager.GetCount(query);
+
+            return counts;
+        }
+
         public override int GetChildCount(User user)
         {
             return IsAccessedByName ? 0 : base.GetChildCount(user);
