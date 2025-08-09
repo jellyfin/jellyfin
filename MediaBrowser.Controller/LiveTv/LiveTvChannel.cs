@@ -120,6 +120,11 @@ namespace MediaBrowser.Controller.LiveTv
             return "TvChannel";
         }
 
+        public override BaseItemKind GetBaseItemKind()
+        {
+            return BaseItemKind.LiveTvChannel;
+        }
+
         public IEnumerable<BaseItem> GetTaggedItems() => [];
 
         public override IReadOnlyList<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)

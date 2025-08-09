@@ -63,7 +63,7 @@ public class FilterController : BaseJellyfinApiController
             || !(includeItemTypes[0] == BaseItemKind.BoxSet
                  || includeItemTypes[0] == BaseItemKind.Playlist
                  || includeItemTypes[0] == BaseItemKind.Trailer
-                 || includeItemTypes[0] == BaseItemKind.Program))
+                 || includeItemTypes[0] == BaseItemKind.LiveTvProgram))
         {
             item = _libraryManager.GetParentItem(parentId, user?.Id);
         }
@@ -156,7 +156,7 @@ public class FilterController : BaseJellyfinApiController
             && (includeItemTypes[0] == BaseItemKind.BoxSet
                 || includeItemTypes[0] == BaseItemKind.Playlist
                 || includeItemTypes[0] == BaseItemKind.Trailer
-                || includeItemTypes[0] == BaseItemKind.Program))
+                || includeItemTypes[0] == BaseItemKind.LiveTvProgram))
         {
             parentItem = null;
         }

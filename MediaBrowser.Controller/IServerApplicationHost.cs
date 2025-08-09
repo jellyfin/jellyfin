@@ -3,8 +3,10 @@
 #pragma warning disable CS1591
 
 using System.Net;
+using Jellyfin.Database.Implementations;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediaBrowser.Controller
 {

@@ -60,7 +60,7 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
                     new Database.Implementations.Entities.BaseItemEntity()
                     {
                         Id = BaseItemRepository.PlaceholderId,
-                        Type = "PLACEHOLDER",
+                        ItemType = -1,
                         Name = "This is a placeholder item for UserData that has been detacted from its original item"
                     },
                     cancellationToken)
