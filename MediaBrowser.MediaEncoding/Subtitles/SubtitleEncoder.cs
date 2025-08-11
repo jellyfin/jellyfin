@@ -171,14 +171,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 using (var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false))
                 {
-                    var result = CharsetDetector.DetectFromStream(stream).Detected;
+                    var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                    var detected = result.Detected;
                     stream.Position = 0;
 
-                    if (result is not null)
+                    if (detected is not null)
                     {
-                        _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
+                        _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
-                        using var reader = new StreamReader(stream, result.Encoding);
+                        using var reader = new StreamReader(stream, detected.Encoding);
                         var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
                         return new MemoryStream(Encoding.UTF8.GetBytes(text));
@@ -938,7 +939,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
             {
-                var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName ?? string.Empty;
+                var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                var charset = result.Detected?.EncodingName ?? string.Empty;
 
                 // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
                 if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
