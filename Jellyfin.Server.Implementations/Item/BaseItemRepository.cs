@@ -1115,13 +1115,18 @@ public sealed class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
+        var itemValuesQuery = context.ItemValues
+            .Where(f => itemValueTypes.Contains(f.Type))
+            .SelectMany(f => f.BaseItemsMap!, (f, w) => new { f, w })
+            .Join(
+                innerQueryFilter,
+                fw => fw.w.ItemId,
+                g => g.Id,
+                (fw, g) => fw.f.CleanValue);
+
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
-            .Where(e => context.ItemValues!
-                .Where(f => itemValueTypes.Contains(f.Type))
-                .Where(f => innerQueryFilter.Any(g => f.BaseItemsMap!.Any(w => w.ItemId == g.Id)))
-                .Select(f => f.CleanValue)
-                .Contains(e.CleanName));
+            .Where(e => itemValuesQuery.Contains(e.CleanName));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
