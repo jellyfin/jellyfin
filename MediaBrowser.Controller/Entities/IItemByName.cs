@@ -10,8 +10,6 @@ namespace MediaBrowser.Controller.Entities
     public interface IItemByName
     {
         IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query);
-
-        TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query);
     }
 
     public interface IHasDualAccess : IItemByName

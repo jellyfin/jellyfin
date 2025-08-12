@@ -76,37 +76,6 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetItemList(query);
         }
 
-        public TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query)
-        {
-            query.GenreIds = [Id];
-            query.ExcludeItemTypes =
-            [
-                BaseItemKind.MusicVideo,
-                BaseItemKind.Audio,
-                BaseItemKind.MusicAlbum,
-                BaseItemKind.MusicArtist
-            ];
-
-            var counts = new TaggedItemCounts();
-
-            query.IncludeItemTypes = [BaseItemKind.Episode];
-            counts.EpisodeCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Movie];
-            counts.MovieCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.LiveTvProgram];
-            counts.ProgramCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Series];
-            counts.SeriesCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Trailer];
-            counts.TrailerCount = LibraryManager.GetCount(query);
-
-            return counts;
-        }
-
         public static string GetPath(string name)
         {
             return GetPath(name, true);

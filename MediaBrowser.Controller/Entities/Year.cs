@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -67,47 +66,6 @@ namespace MediaBrowser.Controller.Entities
             query.Years = new[] { year };
 
             return LibraryManager.GetItemList(query);
-        }
-
-        public TaggedItemCounts GetTaggedItemCounts(InternalItemsQuery query)
-        {
-            if (!int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
-            {
-                return new TaggedItemCounts();
-            }
-
-            query.Years = [year];
-
-            var counts = new TaggedItemCounts();
-
-            query.IncludeItemTypes = [BaseItemKind.MusicAlbum];
-            counts.AlbumCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.MusicArtist];
-            counts.ArtistCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Episode];
-            counts.EpisodeCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Movie];
-            counts.MovieCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.MusicVideo];
-            counts.MusicVideoCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.LiveTvProgram];
-            counts.ProgramCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Series];
-            counts.SeriesCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Audio];
-            counts.SongCount = LibraryManager.GetCount(query);
-
-            query.IncludeItemTypes = [BaseItemKind.Trailer];
-            counts.TrailerCount = LibraryManager.GetCount(query);
-
-            return counts;
         }
 
         public int? GetYearValue()

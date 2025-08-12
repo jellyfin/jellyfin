@@ -457,6 +457,66 @@ public sealed class BaseItemRepository
         return dbQuery.Count();
     }
 
+    /// <inheritdoc />
+    public ItemCounts GetItemCounts(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        // Hack for right now since we currently don't support filtering out these duplicates within a query
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
+
+        var counts = dbQuery
+            .GroupBy(x => x.Type)
+            .Select(x => new { x.Key, Count = x.Count() })
+            .AsEnumerable();
+
+        var lookup = _itemTypeLookup.BaseItemKindNames;
+        var result = new ItemCounts();
+        foreach (var count in counts)
+        {
+            if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
+            {
+                result.AlbumCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicArtist], StringComparison.Ordinal))
+            {
+                result.ArtistCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Episode], StringComparison.Ordinal))
+            {
+                result.EpisodeCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Movie], StringComparison.Ordinal))
+            {
+                result.MovieCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicVideo], StringComparison.Ordinal))
+            {
+                result.MusicVideoCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.LiveTvProgram], StringComparison.Ordinal))
+            {
+                result.ProgramCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Series], StringComparison.Ordinal))
+            {
+                result.SeriesCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Audio], StringComparison.Ordinal))
+            {
+                result.SongCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Trailer], StringComparison.Ordinal))
+            {
+                result.TrailerCount = count.Count;
+            }
+        }
+
+        return result;
+    }
+
 #pragma warning disable CA1307 // Specify StringComparison for clarity
     /// <summary>
     /// Gets the type.
