@@ -22,16 +22,19 @@ public class StartupController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _config;
     private readonly IUserManager _userManager;
+    private readonly IUserValidation _userValidation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupController" /> class.
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="userManager">The user manager.</param>
-    public StartupController(IServerConfigurationManager config, IUserManager userManager)
+    /// <param name="userValidation">The user verification.</param>
+    public StartupController(IServerConfigurationManager config, IUserManager userManager, IUserValidation userValidation)
     {
         _config = config;
         _userManager = userManager;
+        _userValidation = userValidation;
     }
 
     /// <summary>
@@ -133,7 +136,7 @@ public class StartupController : BaseJellyfinApiController
     public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
     {
         ArgumentNullException.ThrowIfNull(startupUserDto.Name);
-        _userManager.ThrowIfInvalidUsername(startupUserDto.Name);
+        _userValidation.ThrowIfInvalidUsername(startupUserDto.Name);
 
         var user = _userManager.Users.First();
         if (string.IsNullOrWhiteSpace(startupUserDto.Password))

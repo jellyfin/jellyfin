@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Users
 {
-    public class UserManagerTests
+    public class UserValidationTests
     {
         [Theory]
         [InlineData("this_is_valid")]
@@ -15,7 +15,9 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         [InlineData("------@@@--+++----@@--abcdefghijklmn---------@----_-_-___-_ .9foo+")]
         public void ThrowIfInvalidUsername_WhenValidUsername_DoesNotThrowArgumentException(string username)
         {
-            var ex = Record.Exception(() => UserManager.ThrowIfInvalidUsername(username));
+            var userValidation = new UserValidation();
+
+            var ex = Record.Exception(() => userValidation.ThrowIfInvalidUsername(username));
             Assert.Null(ex);
         }
 
@@ -29,7 +31,9 @@ namespace Jellyfin.Server.Implementations.Tests.Users
         [InlineData(" this has a space at both ends and inbetween ")]
         public void ThrowIfInvalidUsername_WhenInvalidUsername_ThrowsArgumentException(string username)
         {
-            Assert.Throws<ArgumentException>(() => UserManager.ThrowIfInvalidUsername(username));
+            var userValidation = new UserValidation();
+
+            Assert.Throws<ArgumentException>(() => userValidation.ThrowIfInvalidUsername(username));
         }
     }
 }

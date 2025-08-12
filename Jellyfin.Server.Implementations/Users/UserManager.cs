@@ -43,6 +43,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<UserManager> _logger;
+        private readonly IUserValidation _userValidation;
         private readonly IReadOnlyCollection<IPasswordResetProvider> _passwordResetProviders;
         private readonly IReadOnlyCollection<IAuthenticationProvider> _authenticationProviders;
         private readonly InvalidAuthProvider _invalidAuthProvider;
@@ -57,6 +58,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="eventManager">The event manager.</param>
+        /// <param name="userValidation">The user verification.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
@@ -67,6 +69,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
+            IUserValidation userValidation,
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
@@ -82,6 +85,7 @@ namespace Jellyfin.Server.Implementations.Users
             _imageProcessor = imageProcessor;
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
+            _userValidation = userValidation;
 
             _passwordResetProviders = passwordResetProviders.ToList();
             _authenticationProviders = authenticationProviders.ToList();
@@ -113,12 +117,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public IEnumerable<Guid> UsersIds => _users.Keys;
 
-        // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
-        // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-        // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex(@"^(?!\s)[\w\ \-'._@+]+(?<!\s)$")]
-        private static partial Regex ValidUsernameRegex();
-
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
         {
@@ -147,7 +145,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            ThrowIfInvalidUsername(newName);
+            _userValidation.ThrowIfInvalidUsername(newName);
 
             if (user.Username.Equals(newName, StringComparison.OrdinalIgnoreCase))
             {
@@ -216,7 +214,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<User> CreateUserAsync(string name)
         {
-            ThrowIfInvalidUsername(name);
+            _userValidation.ThrowIfInvalidUsername(name);
 
             if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -552,7 +550,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
+            if (string.IsNullOrWhiteSpace(defaultName) || !_userValidation.IsValidUsername(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
@@ -742,17 +740,6 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.ProfileImage = null;
             _users[user.Id] = user;
-        }
-
-        /// <inheritdoc/>
-        public void ThrowIfInvalidUsername(string name)
-        {
-            if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name))
-            {
-                return;
-            }
-
-            throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)

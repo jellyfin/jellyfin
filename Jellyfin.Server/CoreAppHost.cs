@@ -80,6 +80,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IEventManager, EventManager>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            serviceCollection.AddSingleton<IUserValidation, UserValidation>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
             serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
