@@ -84,6 +84,8 @@ public interface IItemRepository
 
     int GetCount(InternalItemsQuery filter);
 
+    ItemCounts GetItemCounts(InternalItemsQuery filter);
+
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
 
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
