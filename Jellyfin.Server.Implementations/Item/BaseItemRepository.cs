@@ -1967,7 +1967,7 @@ public sealed class BaseItemRepository
 
         if (filter.AlbumArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.AlbumArtistIds);
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.AlbumArtist, filter.AlbumArtistIds);
         }
 
         if (filter.ContributingArtistIds.Length > 0)
