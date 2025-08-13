@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImagesDescription": "Μετακινεί τα υπάρχοντα αρχεία trickplay σύμφωνα με τις ρυθμίσεις της βιβλιοθήκης.",
     "TaskDownloadMissingLyricsDescription": "Κατεβάζει στίχους για τραγούδια",
     "TaskExtractMediaSegments": "Σάρωση τμημάτων πολυμέσων",
-    "TaskExtractMediaSegmentsDescription": "Εξάγει ή βρίσκει τμήματα πολυμέσων από επεκτάσεις που χρησιμοποιούν το MediaSegment."
+    "TaskExtractMediaSegmentsDescription": "Εξάγει ή βρίσκει τμήματα πολυμέσων από επεκτάσεις που χρησιμοποιούν το MediaSegment.",
+    "CleanupUserDataTaskDescription": "Καθαρίζει όλα τα δεδομένα χρήστη (κατάσταση παρακολούθησης, κατάσταση αγαπημένων κ.λπ.) από πολυμέσα που δεν υπάρχουν πλέον για τουλάχιστον 90 ημέρες.",
+    "CleanupUserDataTask": "Εργασία εκκαθάρισης δεδομένων χρήστη"
 }

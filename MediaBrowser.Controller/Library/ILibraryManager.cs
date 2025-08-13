@@ -630,6 +630,8 @@ namespace MediaBrowser.Controller.Library
 
         int GetCount(InternalItemsQuery query);
 
+        ItemCounts GetItemCounts(InternalItemsQuery query);
+
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);

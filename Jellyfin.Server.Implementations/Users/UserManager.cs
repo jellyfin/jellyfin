@@ -744,8 +744,7 @@ namespace Jellyfin.Server.Implementations.Users
             _users[user.Id] = user;
         }
 
-        /// <inheritdoc/>
-        public void ThrowIfInvalidUsername(string name)
+        internal static void ThrowIfInvalidUsername(string name)
         {
             if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name))
             {
