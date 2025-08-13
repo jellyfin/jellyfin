@@ -402,7 +402,7 @@ sog|||Sogdian|sogdien
 som||so|Somali|somali
 son|||Songhai languages|songhai, langues
 sot||st|Sotho, Southern|sotho du Sud
-spa||es-mx|Spanish; Latin|espagnol; Latin
+spa||es-419|Spanish; Latin|espagnol; Latin
 spa||es|Spanish; Castilian|espagnol; castillan
 sqi|alb|sq|Albanian|albanais
 srd||sc|Sardinian|sarde
