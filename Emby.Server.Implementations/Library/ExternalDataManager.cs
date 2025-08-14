@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Trickplay;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
 
@@ -18,6 +20,7 @@ public class ExternalDataManager : IExternalDataManager
     private readonly IMediaSegmentManager _mediaSegmentManager;
     private readonly IPathManager _pathManager;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly ILogger<ExternalDataManager> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExternalDataManager"/> class.
@@ -26,16 +29,19 @@ public class ExternalDataManager : IExternalDataManager
     /// <param name="mediaSegmentManager">The media segment manager.</param>
     /// <param name="pathManager">The path manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
+    /// <param name="logger">The logger.</param>
     public ExternalDataManager(
         IKeyframeManager keyframeManager,
         IMediaSegmentManager mediaSegmentManager,
         IPathManager pathManager,
-        ITrickplayManager trickplayManager)
+        ITrickplayManager trickplayManager,
+        ILogger<ExternalDataManager> logger)
     {
         _keyframeManager = keyframeManager;
         _mediaSegmentManager = mediaSegmentManager;
         _pathManager = pathManager;
         _trickplayManager = trickplayManager;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -47,7 +53,14 @@ public class ExternalDataManager : IExternalDataManager
         {
             foreach (var path in validPaths)
             {
-                Directory.Delete(path, true);
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Unable to prune external item data at {Path}: {Exception}", path, ex);
+                }
             }
         }
 

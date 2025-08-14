@@ -1,56 +1,86 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Jellyfin.Server.Migrations.Routines;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
 /// <inheritdoc/>
 public class StartupLogger : IStartupLogger
 {
-    private readonly SetupServer.StartupLogEntry? _groupEntry;
+    private readonly StartupLogTopic? _topic;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupLogger"/> class.
     /// </summary>
-    public StartupLogger()
+    /// <param name="logger">The underlying base logger.</param>
+    public StartupLogger(ILogger logger)
     {
-        Loggers = [];
+        BaseLogger = logger;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupLogger"/> class.
     /// </summary>
-    private StartupLogger(SetupServer.StartupLogEntry? groupEntry) : this()
+    /// <param name="logger">The underlying base logger.</param>
+    /// <param name="topic">The group for this logger.</param>
+    internal StartupLogger(ILogger logger, StartupLogTopic? topic) : this(logger)
     {
-        _groupEntry = groupEntry;
+        _topic = topic;
     }
 
-    internal static IStartupLogger Logger { get; } = new StartupLogger();
+    internal static IStartupLogger Logger { get; set; } = new StartupLogger(NullLogger.Instance);
 
-    private List<ILogger> Loggers { get; set; }
+    /// <inheritdoc/>
+    public StartupLogTopic? Topic => _topic;
+
+    /// <summary>
+    /// Gets or Sets the underlying base logger.
+    /// </summary>
+    protected ILogger BaseLogger { get; set; }
 
     /// <inheritdoc/>
     public IStartupLogger BeginGroup(FormattableString logEntry)
     {
-        var startupEntry = new SetupServer.StartupLogEntry()
+        return new StartupLogger(BaseLogger, AddToTopic(logEntry));
+    }
+
+    /// <inheritdoc/>
+    public IStartupLogger With(ILogger logger)
+    {
+        return new StartupLogger(logger, Topic);
+    }
+
+    /// <inheritdoc/>
+    public IStartupLogger<TCategory> With<TCategory>(ILogger logger)
+    {
+        return new StartupLogger<TCategory>(logger, Topic);
+    }
+
+    /// <inheritdoc/>
+    public IStartupLogger<TCategory> BeginGroup<TCategory>(FormattableString logEntry)
+    {
+        return new StartupLogger<TCategory>(BaseLogger, AddToTopic(logEntry));
+    }
+
+    private StartupLogTopic AddToTopic(FormattableString logEntry)
+    {
+        var startupEntry = new StartupLogTopic()
         {
             Content = logEntry.ToString(CultureInfo.InvariantCulture),
             DateOfCreation = DateTimeOffset.Now
         };
 
-        if (_groupEntry is null)
+        if (Topic is null)
         {
             SetupServer.LogQueue?.Enqueue(startupEntry);
         }
         else
         {
-            _groupEntry.Children.Add(startupEntry);
+            Topic.Children.Add(startupEntry);
         }
 
-        return new StartupLogger(startupEntry);
+        return startupEntry;
     }
 
     /// <inheritdoc/>
@@ -69,34 +99,26 @@ public class StartupLogger : IStartupLogger
     /// <inheritdoc/>
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        foreach (var item in Loggers.Where(e => e.IsEnabled(logLevel)))
+        if (BaseLogger.IsEnabled(logLevel))
         {
-            item.Log(logLevel, eventId, state, exception, formatter);
+            // if enabled allow the base logger also to receive the message
+            BaseLogger.Log(logLevel, eventId, state, exception, formatter);
         }
 
-        var startupEntry = new SetupServer.StartupLogEntry()
+        var startupEntry = new StartupLogTopic()
         {
             LogLevel = logLevel,
             Content = formatter(state, exception),
             DateOfCreation = DateTimeOffset.Now
         };
 
-        if (_groupEntry is null)
+        if (Topic is null)
         {
             SetupServer.LogQueue?.Enqueue(startupEntry);
         }
         else
         {
-            _groupEntry.Children.Add(startupEntry);
+            Topic.Children.Add(startupEntry);
         }
-    }
-
-    /// <inheritdoc/>
-    public IStartupLogger With(ILogger logger)
-    {
-        return new StartupLogger(_groupEntry)
-        {
-            Loggers = [.. Loggers, logger]
-        };
     }
 }

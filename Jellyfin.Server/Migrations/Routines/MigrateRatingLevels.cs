@@ -23,7 +23,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
 
     public MigrateRatingLevels(
         IDbContextFactory<JellyfinDbContext> provider,
-        IStartupLogger logger,
+        IStartupLogger<MigrateRatingLevels> logger,
         ILocalizationManager localizationManager)
     {
         _provider = provider;

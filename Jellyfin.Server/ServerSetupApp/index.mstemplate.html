@@ -204,6 +204,7 @@
         </li>
         {{--| /DECLARE}}
 
+        {{#IF localNetworkRequest}}
         <div class="flex-col">
             <ol class="action-list">
                 {{#FOREACH log IN logs.Reverse()}}
@@ -211,6 +212,10 @@
                 {{/FOREACH}}
             </ol>
         </div>
+        {{#ELSE}}
+        <p>Please visit this page from your local network to view detailed startup logs.</p>
+        {{/ELSE}}
+        {{/IF}}
     </div>
 </body>
 

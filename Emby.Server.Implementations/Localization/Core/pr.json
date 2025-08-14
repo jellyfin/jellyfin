@@ -32,5 +32,14 @@
     "HeaderFavoriteShows": "Treasured Tales",
     "ChapterNameValue": "Piece {0}",
     "HeaderFavoriteSongs": "Treasured Chimes",
-    "HeaderNextUp": "Incoming"
+    "HeaderNextUp": "Incoming",
+    "HeaderLiveTV": "Scrying Glass",
+    "HearingImpaired": "Hard o' Hearing",
+    "LabelRunningTimeValue": "Journey duration: {0}",
+    "MessageApplicationUpdated": "Yer Map of the Seas has been scribbled",
+    "HomeVideos": "Yer Onboard Booty",
+    "MixedContent": "Jumbled loot",
+    "Music": "Tunes",
+    "NameInstallFailed": "Ye couldn't bring {0} aboard yer ship",
+    "MessageApplicationUpdatedTo": "Yer Map of the Seas has been scribbled with {0}"
 }

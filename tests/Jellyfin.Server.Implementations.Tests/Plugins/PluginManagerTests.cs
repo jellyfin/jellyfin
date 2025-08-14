@@ -185,7 +185,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = new Version(1, 0).ToString(),
                 ImagePath = string.Empty
@@ -221,7 +221,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Description = packageInfo.Description,
                 Overview = packageInfo.Overview,
                 TargetAbi = packageInfo.Versions[0].TargetAbi!,
-                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Timestamp = DateTimeOffset.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture).UtcDateTime,
                 Changelog = packageInfo.Versions[0].Changelog!,
                 Version = packageInfo.Versions[0].Version,
                 ImagePath = string.Empty
@@ -301,7 +301,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             var versionInfo = fixture.Create<VersionInfo>();
             versionInfo.Version = new Version(1, 0).ToString();
-            versionInfo.Timestamp = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            versionInfo.Timestamp = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
             var packageInfo = fixture.Create<PackageInfo>();
             packageInfo.Versions = new[] { versionInfo };

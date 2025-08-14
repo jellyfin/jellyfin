@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "فحص مقاطع الوسائط",
     "TaskExtractMediaSegmentsDescription": "يستخرج مقاطع وسائط من إضافات MediaSegment المُفعّلة.",
     "TaskMoveTrickplayImages": "تغيير مكان صور المعاينة السريعة",
-    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة."
+    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة.",
+    "CleanupUserDataTask": "مهمة تنظيف بيانات المستخدم",
+    "CleanupUserDataTaskDescription": "مسح جميع بيانات المستخدم (حالة المشاهدة، والحالة المفضلة وما إلى ذلك) من الوسائط التي لم تعد موجودة لمدة 90 يومًا على الأقل."
 }

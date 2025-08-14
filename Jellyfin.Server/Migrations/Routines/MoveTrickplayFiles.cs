@@ -37,7 +37,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
         ITrickplayManager trickplayManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        IStartupLogger logger)
+        IStartupLogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;

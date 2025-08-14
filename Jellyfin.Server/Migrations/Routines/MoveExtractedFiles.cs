@@ -47,7 +47,7 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
     public MoveExtractedFiles(
         IApplicationPaths appPaths,
         ILogger<MoveExtractedFiles> logger,
-        IStartupLogger startupLogger,
+        IStartupLogger<MoveExtractedFiles> startupLogger,
         IPathManager pathManager,
         IFileSystem fileSystem,
         IDbContextFactory<JellyfinDbContext> dbProvider)
