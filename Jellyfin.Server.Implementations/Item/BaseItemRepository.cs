@@ -37,6 +37,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Polly;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
@@ -586,26 +587,86 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+
         var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
-        foreach (var item in tuples)
-        {
-            var entity = Map(item.Item);
-            // TODO: refactor this "inconsistency"
-            entity.TopParentId = item.TopParent?.Id;
+        // Items to insert (working copy that gets modified during retries)
+        var itemsToInsert = newItems.ToList();
+        var itemsToUpdate = tuples.Where(t => existingItems.Contains(t.Item.Id)).ToList();
 
-            if (!existingItems.Any(e => e == entity.Id))
+        // Insert new items using Polly retry pattern
+        if (itemsToInsert.Count > 0)
+        {
+            // RetryForever is safe here because removing inserted items from the list
+            // guarantees termination once all are either inserted or matched to existing records
+            var retryPolicy = Policy
+                .Handle<DbUpdateException>()
+                .RetryForever((Exception exception, int retryCount) =>
+                {
+                    _logger.LogInformation("Retrying BaseItem operation attempt {RetryCount} due to conflicts", retryCount);
+                    context.ChangeTracker.Clear();
+
+                    // Re-check what already exists (handles concurrent inserts during retries)
+                    // Use AsNoTracking to avoid tracking conflicts from existence queries
+                    var insertIds = itemsToInsert.Select(t => t.Item.Id).ToArray();
+                    var freshExistingIds = context.BaseItems.AsNoTracking()
+                        .Where(e => insertIds.Contains(e.Id))
+                        .Select(e => e.Id)
+                        .ToList();
+
+                    // Move conflicts to update list and remove from insert list
+                    foreach (var existingId in freshExistingIds)
+                    {
+                        var conflictItem = itemsToInsert.FirstOrDefault(t => t.Item.Id == existingId);
+                        if (conflictItem.Item != null)
+                        {
+                            itemsToInsert.Remove(conflictItem);
+                            itemsToUpdate.Add(conflictItem);
+                            _logger.LogInformation(
+                                "Matched ({Name}, {Type}) with existing ID {ExistingId}",
+                                conflictItem.Item.Name,
+                                conflictItem.Item.GetType().Name,
+                                existingId);
+                        }
+                    }
+                });
+
+            retryPolicy.Execute(() =>
             {
-                context.BaseItems.Add(entity);
-            }
-            else
+                // Insert remaining new items
+                if (itemsToInsert.Count > 0)
+                {
+                    foreach (var item in itemsToInsert)
+                    {
+                        var entity = Map(item.Item);
+                        // TODO: refactor this "inconsistency"
+                        entity.TopParentId = item.TopParent?.Id;
+                        context.BaseItems.Add(entity);
+                    }
+
+                    context.SaveChanges();
+                    itemsToInsert.Clear(); // Success - clear the list
+                }
+            });
+        }
+
+        // Clear change tracker before updates to avoid tracking conflicts from earlier queries
+        context.ChangeTracker.Clear();
+
+        // Update items that need updating
+        if (itemsToUpdate.Count > 0)
+        {
+            foreach (var item in itemsToUpdate)
             {
+                var entity = Map(item.Item);
+                // TODO: refactor this "inconsistency"
+                entity.TopParentId = item.TopParent?.Id;
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
-        }
 
-        context.SaveChanges();
+            context.SaveChanges();
+        }
 
         foreach (var item in newItems)
         {
@@ -627,26 +688,78 @@ public sealed class BaseItemRepository
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
-        var existingValues = context.ItemValues
-            .Select(e => new
-            {
-                item = e,
-                Key = e.Type + "+" + e.Value
-            })
-            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
-            .Select(e => e.item)
+        var groupedByType = allListedItemValues
+            .GroupBy(e => (int)e.MagicNumber)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
+        var existingValues = groupedByType
+            .SelectMany(kvp => context.ItemValues
+                .Where(e => (int)e.Type == kvp.Key && kvp.Value.Contains(e.Value)))
             .ToArray();
-        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
-        {
-            CleanValue = GetCleanValue(f.Value),
-            ItemValueId = Guid.NewGuid(),
-            Type = f.MagicNumber,
-            Value = f.Value
-        }).ToArray();
-        context.ItemValues.AddRange(missingItemValues);
-        context.SaveChanges();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: (ItemValueType)f.Type, f.Value)))
+            .DistinctBy(f => new { f.MagicNumber, f.Value })
+            .Select(f => new ItemValue()
+            {
+                CleanValue = GetCleanValue(f.Value),
+                ItemValueId = Guid.NewGuid(),
+                Type = f.MagicNumber,
+                Value = f.Value
+            }).ToArray();
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        // Insert ItemValues using Polly retry pattern
+        var itemValuesStore = new List<ItemValue>(existingValues);
+        var missingItemValuesList = missingItemValues.ToList();
+
+        if (missingItemValuesList.Count > 0)
+        {
+            // RetryForever is safe here because removing inserted items from the list
+            // guarantees termination once all are either inserted or matched to existing records
+            var itemValuesRetryPolicy = Policy
+                .Handle<DbUpdateException>()
+                .RetryForever((Exception exception, int retryCount) =>
+                {
+                    _logger.LogInformation("Retrying ItemValues insert attempt {RetryCount} due to conflicts", retryCount);
+                    context.ChangeTracker.Clear();
+
+                    // Re-check what already exists (handles concurrent inserts during retries)
+                    // Use AsNoTracking to avoid tracking conflicts from existence queries
+                    var missingTypes = missingItemValuesList.Select(iv => iv.Type).Distinct().ToArray();
+                    var missingValues = missingItemValuesList.Select(iv => iv.Value).Distinct().ToArray();
+                    var existingItemValues = context.ItemValues.AsNoTracking()
+                        .Where(iv => missingTypes.Contains(iv.Type) && missingValues.Contains(iv.Value))
+                        .ToList()
+                        .Where(iv => missingItemValuesList.Any(m => m.Type == iv.Type && m.Value == iv.Value))
+                        .ToList();
+
+                    // Update store with newly found items and remove from insert list
+                    foreach (var existing in existingItemValues)
+                    {
+                        var missingItem = missingItemValuesList.FirstOrDefault(m =>
+                            m.Type == existing.Type && m.Value == existing.Value);
+                        if (missingItem != null)
+                        {
+                            itemValuesStore.Add(existing);
+                            missingItemValuesList.Remove(missingItem);
+                            _logger.LogInformation(
+                                "Matched ({Type}, {Value}) with existing ID {ExistingId}",
+                                existing.Type,
+                                existing.Value,
+                                existing.ItemValueId);
+                        }
+                    }
+                });
+
+            itemValuesRetryPolicy.Execute(() =>
+            {
+                // Insert missing records in progressively smaller batches after each retry
+                if (missingItemValuesList.Count > 0)
+                {
+                    context.ItemValues.AddRange(missingItemValuesList);
+                    context.SaveChanges();
+                    itemValuesStore.AddRange(missingItemValuesList); // Success - use what we created
+                }
+            });
+        }
+
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
