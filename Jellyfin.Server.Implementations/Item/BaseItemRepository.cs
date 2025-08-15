@@ -600,8 +600,8 @@ public sealed class BaseItemRepository
             }
             else
             {
-                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
+                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
             }
         }
 
