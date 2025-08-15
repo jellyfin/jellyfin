@@ -2264,14 +2264,20 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
-            var exclude = filter.ExcludeProviderIds.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.All(f => !exclude.Contains(f)));
+            var excludeGrouped = filter.ExcludeProviderIds
+                .GroupBy(e => e.Key)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
+            baseQuery = baseQuery.Where(e => !excludeGrouped
+                .Any(kvp => e.Provider!.Any(p => p.ProviderId == kvp.Key && kvp.Value.Contains(p.ProviderValue))));
         }
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            var include = filter.HasAnyProviderId.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => include.Contains(f)));
+            var includeGrouped = filter.HasAnyProviderId
+                .GroupBy(e => e.Key)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
+            baseQuery = baseQuery.Where(e => includeGrouped
+                .Any(kvp => e.Provider!.Any(p => p.ProviderId == kvp.Key && kvp.Value.Contains(p.ProviderValue))));
         }
 
         if (filter.HasImdbId.HasValue)
