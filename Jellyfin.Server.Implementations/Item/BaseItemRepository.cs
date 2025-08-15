@@ -627,14 +627,12 @@ public sealed class BaseItemRepository
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
-        var existingValues = context.ItemValues
-            .Select(e => new
-            {
-                item = e,
-                Key = e.Type + "+" + e.Value
-            })
-            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
-            .Select(e => e.item)
+        var groupedByType = allListedItemValues
+            .GroupBy(e => (int)e.MagicNumber)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
+        var existingValues = groupedByType
+            .SelectMany(kvp => context.ItemValues
+                .Where(e => (int)e.Type == kvp.Key && kvp.Value.Contains(e.Value)))
             .ToArray();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
@@ -643,10 +641,12 @@ public sealed class BaseItemRepository
             Type = f.MagicNumber,
             Value = f.Value
         }).ToArray();
+
         context.ItemValues.AddRange(missingItemValues);
         context.SaveChanges();
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
