@@ -642,10 +642,30 @@ public sealed class BaseItemRepository
             Value = f.Value
         }).ToArray();
 
-        context.ItemValues.AddRange(missingItemValues);
-        context.SaveChanges();
+        // Individual insert with duplicate handling
+        var itemValuesStore = new List<ItemValue>(existingValues);
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        foreach (var missingValue in missingItemValues)
+        {
+            try
+            {
+                context.ItemValues.Add(missingValue);
+                context.SaveChanges();
+                itemValuesStore.Add(missingValue); // Success - use what we created
+            }
+            catch (DbUpdateException)
+            {
+                context.ChangeTracker.Clear();
+
+                // Query for the existing record (someone else inserted it)
+                var existing = context.ItemValues
+                    .Where(e => e.Type == missingValue.Type && e.Value == missingValue.Value)
+                    .Single();
+
+                itemValuesStore.Add(existing); // Use the existing record
+                _logger.LogInformation("Matched ({Type}, {Value}) with existing ID {ExistingId}", existing.Type, existing.Value, existing.ItemValueId);
+            }
+        }
 
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
