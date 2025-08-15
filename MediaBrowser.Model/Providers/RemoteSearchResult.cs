@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -12,7 +14,7 @@ namespace MediaBrowser.Model.Providers
         public RemoteSearchResult()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Artists = Array.Empty<RemoteSearchResult>();
+            Artists = [];
         }
 
         /// <summary>

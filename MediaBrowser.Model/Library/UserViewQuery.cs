@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Model.Library
         public UserViewQuery()
         {
             IncludeExternalContent = true;
-            PresetViews = Array.Empty<CollectionType?>();
+            PresetViews = [];
         }
 
         /// <summary>

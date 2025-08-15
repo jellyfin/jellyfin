@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public ProgramInfo()
         {
-            Genres = new List<string>();
+            Genres = [];
 
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets or sets the genre of the program.
         /// </summary>
-        public List<string> Genres { get; set; }
+        public IReadOnlyList<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the original air date.
