@@ -588,21 +588,37 @@ public sealed class BaseItemRepository
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
         var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
-        foreach (var item in tuples)
+        var itemsToUpdate = tuples.Where(e => existingItems.Contains(e.Item.Id)).ToList();
+
+        // Try to insert new items
+        foreach (var item in newItems)
         {
             var entity = Map(item.Item);
             // TODO: refactor this "inconsistency"
             entity.TopParentId = item.TopParent?.Id;
 
-            if (!existingItems.Any(e => e == entity.Id))
+            try
             {
                 context.BaseItems.Add(entity);
+                context.SaveChanges();
             }
-            else
+            catch (DbUpdateException)
             {
-                context.BaseItems.Attach(entity).State = EntityState.Modified;
-                context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                context.ChangeTracker.Clear();
+                itemsToUpdate.Add(item);
+                _logger.LogInformation("Matched BaseItem {Name} with existing ID {ExistingId}", entity.Name, entity.Id);
             }
+        }
+
+        // Update existing items
+        foreach (var item in itemsToUpdate)
+        {
+            var entity = Map(item.Item);
+            // TODO: refactor this "inconsistency"
+            entity.TopParentId = item.TopParent?.Id;
+
+            context.BaseItems.Attach(entity).State = EntityState.Modified;
+            context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
         }
 
         context.SaveChanges();
