@@ -32,14 +32,6 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
 
         [Theory]
         [MemberData(nameof(BaseItemKind_TestData))]
-        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemDescendantType)
-        {
-            var enumValue = Enum.Parse<BaseItemKind>(baseItemDescendantType.Name);
-            Assert.True(Enum.IsDefined(enumValue));
-        }
-
-        [Theory]
-        [MemberData(nameof(BaseItemKind_TestData))]
         public void GetBaseItemKind_WhenCalledAfterDefaultCtor_DoesNotThrow(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);

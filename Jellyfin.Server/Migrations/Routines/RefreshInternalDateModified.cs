@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
@@ -28,12 +29,12 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
     private readonly IServerApplicationHost _applicationHost;
     private readonly bool _useFileCreationTimeForDateAdded;
 
-    private IReadOnlyList<string> _internalTypes = [
-         typeof(Genre).FullName!,
-         typeof(MusicGenre).FullName!,
-         typeof(MusicArtist).FullName!,
-         typeof(People).FullName!,
-         typeof(Studio).FullName!
+    private IReadOnlyList<int> _internalTypes = [
+         (int)BaseItemKind.Genre,
+         (int)BaseItemKind.MusicGenre,
+         (int)BaseItemKind.MusicArtist,
+         (int)BaseItemKind.Person,
+         (int)BaseItemKind.Studio
     ];
 
     private IReadOnlyList<string> _internalPaths;
@@ -78,13 +79,13 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
         var sw = Stopwatch.StartNew();
 
         using var context = _dbProvider.CreateDbContext();
-        var records = context.BaseItems.Count(b => _internalTypes.Contains(b.Type));
+        var records = context.BaseItems.Count(b => _internalTypes.Contains(b.ItemType));
         _logger.LogInformation("Checking if {Count} potentially internal items require refreshed DateModified", records);
 
         do
         {
             var results = context.BaseItems
-                            .Where(b => _internalTypes.Contains(b.Type))
+                            .Where(b => _internalTypes.Contains(b.ItemType))
                             .OrderBy(e => e.Id)
                             .Skip(offset)
                             .Take(Limit)

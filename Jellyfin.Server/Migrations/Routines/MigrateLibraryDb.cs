@@ -779,7 +779,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var entity = new BaseItemEntity()
         {
             Id = reader.GetGuid(0),
-            Type = reader.GetString(1),
+            ItemType = reader.GetInt32(1),
         };
 
         var index = 2;
@@ -1175,7 +1175,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.IsFolder = isFolder;
         }
 
-        var baseItem = BaseItemRepository.DeserializeBaseItem(entity, _logger, null, false);
+        var baseItem = BaseItemRepository.DeserializeBaseItem(entity, _logger, _provider);
         var dataKeys = baseItem.GetUserDataKeys();
         userDataKeys.AddRange(dataKeys);
 
