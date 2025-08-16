@@ -1122,6 +1122,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private void StartProcess(ProcessWrapper process)
         {
             process.Process.Start();
+            process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
 
             lock (_runningProcessesLock)
             {
