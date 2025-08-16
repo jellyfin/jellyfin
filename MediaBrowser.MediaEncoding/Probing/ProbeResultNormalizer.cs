@@ -850,12 +850,36 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                 }
 
-                // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
-                //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
-                //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
-
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                stream.IsAnamorphic = string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase);
+                if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else if (string.Equals(streamInfo.DisplayAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!string.Equals(
+                             streamInfo.DisplayAspectRatio,
+                             // Force GetAspectRatio() to derive ratio from Width/Height directly by using null DAR
+                             GetAspectRatio(new MediaStreamInfo
+                             {
+                                 Width = streamInfo.Width,
+                                 Height = streamInfo.Height,
+                                 DisplayAspectRatio = null
+                             }),
+                             StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else
+                {
+                    stream.IsAnamorphic = false;
+                }
 
                 if (streamInfo.Refs > 0)
                 {
