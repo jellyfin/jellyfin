@@ -1307,14 +1307,17 @@ namespace MediaBrowser.Controller.Entities
 
         private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
         {
-            foreach (var child in children)
+            var items = children.ToList();
+            var userData = UserDataManager.GetUserData(user, items);
+            foreach (var child in items)
             {
                 if (!child.IsVisible(user))
                 {
                     continue;
                 }
 
-                if (query is null || UserViewBuilder.FilterItem(child, query))
+                userData.TryGetValue(child.Id, out var userItemData);
+                if (query is null || UserViewBuilder.FilterItem(child, query, userItemData))
                 {
                     result[child.Id] = child;
                 }

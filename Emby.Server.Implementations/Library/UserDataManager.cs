@@ -225,6 +225,43 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
+        private Dictionary<Guid, UserItemData> GetUserData(Guid userId, List<(Guid ItemId, List<string> Keys)> items)
+        {
+            using var context = _repository.CreateDbContext();
+
+            // TODO this query doesn't work.
+            var flattened = items
+                .SelectMany(item => item.Keys, (item, key) => new { item.ItemId, Key = key })
+                .ToList();
+
+            var queryResult = context.UserData
+                .AsNoTracking()
+                .Where(u => u.UserId == userId
+                            && flattened.Any(f => f.ItemId == u.ItemId && f.Key == u.CustomDataKey))
+                .GroupBy(q => q.ItemId, q => q)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var userDataResult = new Dictionary<Guid, UserItemData>();
+            foreach (var item in items)
+            {
+                if (queryResult.TryGetValue(item.ItemId, out var userData)
+                    && userData.Count != 0)
+                {
+                    var itemIdStr = item.ItemId.ToString("N");
+                    var userDataReference = userData.FirstOrDefault(d => string.Equals(d.CustomDataKey, itemIdStr, StringComparison.Ordinal))
+                        ?? userData.First();
+
+                    userDataResult[item.ItemId] = Map(userDataReference);
+                }
+                else
+                {
+                    userDataResult[item.ItemId] = new UserItemData { Key = item.Keys.Last() };
+                }
+            }
+
+            return userDataResult;
+        }
+
         /// <summary>
         /// Gets the internal key.
         /// </summary>
@@ -238,6 +275,13 @@ namespace Emby.Server.Implementations.Library
         public UserItemData? GetUserData(User user, BaseItem item)
         {
             return GetUserData(user, item.Id, item.GetUserDataKeys());
+        }
+
+        /// <inheritdoc />
+        public Dictionary<Guid, UserItemData> GetUserData(User user, IReadOnlyCollection<BaseItem> items)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            return GetUserData(user.Id, items.Select(i => (i.Id, i.GetUserDataKeys())).ToList());
         }
 
         /// <inheritdoc />

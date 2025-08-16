@@ -47,6 +47,14 @@ namespace MediaBrowser.Controller.Library
         UserItemData? GetUserData(User user, BaseItem item);
 
         /// <summary>
+        /// Gets the user data for a list of items.
+        /// </summary>
+        /// <param name="user">User to use.</param>
+        /// <param name="items">The list of items.</param>
+        /// <returns>The user item data for each item.</returns>
+        Dictionary<Guid, UserItemData> GetUserData(User user, IReadOnlyCollection<BaseItem> items);
+
+        /// <summary>
         /// Gets the user data dto.
         /// </summary>
         /// <param name="item">Item to use.</param>
