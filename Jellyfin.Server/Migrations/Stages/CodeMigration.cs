@@ -34,12 +34,8 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         {
             if (service.Lifetime == ServiceLifetime.Singleton && !service.ServiceType.IsGenericTypeDefinition)
             {
-                object? serviceInstance = serviceProvider.GetService(service.ServiceType);
-                if (serviceInstance != null)
-                {
-                    childServiceCollection.AddSingleton(service.ServiceType, serviceInstance);
-                    continue;
-                }
+                childServiceCollection.AddSingleton(service.ServiceType, _ => serviceProvider.GetService(service.ServiceType)!);
+                continue;
             }
 
             childServiceCollection.Add(service);
