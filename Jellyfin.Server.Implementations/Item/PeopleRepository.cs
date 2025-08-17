@@ -103,31 +103,55 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             }
         }
 
-        // Step 3: For remaining people without IDs, insert them (with individual exception handling)
+        // Step 3: For remaining people without IDs, insert them using bulk insert with retry
         var stillNeedIds = people.Where(p => p.Id == Guid.Empty).ToArray();
-        foreach (var person in stillNeedIds)
+        if (stillNeedIds.Length > 0)
         {
-            var newId = Guid.NewGuid();
+            // Assign new IDs to all people
+            foreach (var person in stillNeedIds)
+            {
+                person.Id = Guid.NewGuid();
+            }
+
+            // Try bulk insert first
             try
             {
-                context.Peoples.Add(new People
+                context.Peoples.AddRange(stillNeedIds.Select(person => new People
                 {
-                    Id = newId,
+                    Id = person.Id,
                     Name = person.Name,
                     PersonType = person.Type.ToString()
-                });
+                }));
                 context.SaveChanges();
-                person.Id = newId; // SUCCESS: Use the new ID we created
             }
             catch (DbUpdateException)
             {
+                // Bulk insert failed, fall back to individual inserts
                 context.ChangeTracker.Clear();
-                var existingId = context.Peoples
-                    .Where(p => p.Name == person.Name && p.PersonType == person.Type.ToString())
-                    .Select(p => p.Id)
-                    .Single();
-                person.Id = existingId; // DUPLICATE: Use existing ID
-                _logger.LogInformation("Matched ({Name}, {PersonType}) with existing ID {ExistingId}", person.Name, person.Type.ToString(), existingId);
+                foreach (var person in stillNeedIds)
+                {
+                    try
+                    {
+                        context.Peoples.Add(new People
+                        {
+                            Id = person.Id,
+                            Name = person.Name,
+                            PersonType = person.Type.ToString()
+                        });
+                        context.SaveChanges();
+                        // SUCCESS: person.Id is already set to the new ID
+                    }
+                    catch (DbUpdateException)
+                    {
+                        context.ChangeTracker.Clear();
+                        var existingId = context.Peoples
+                            .Where(p => p.Name == person.Name && p.PersonType == person.Type.ToString())
+                            .Select(p => p.Id)
+                            .Single();
+                        person.Id = existingId; // DUPLICATE: Use existing ID
+                        _logger.LogInformation("Matched ({Name}, {PersonType}) with existing ID {ExistingId}", person.Name, person.Type.ToString(), existingId);
+                    }
+                }
             }
         }
 
