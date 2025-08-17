@@ -590,23 +590,53 @@ public sealed class BaseItemRepository
 
         var itemsToUpdate = tuples.Where(e => existingItems.Contains(e.Item.Id)).ToList();
 
-        // Try to insert new items
-        foreach (var item in newItems)
+        // Try bulk insert first for performance
+        if (newItems.Length > 0)
         {
-            var entity = Map(item.Item);
-            // TODO: refactor this "inconsistency"
-            entity.TopParentId = item.TopParent?.Id;
+            // Map entities once, but don't attach to context yet
+            var entities = newItems.Select(item =>
+            {
+                var entity = Map(item.Item);
+                // TODO: refactor this "inconsistency"
+                entity.TopParentId = item.TopParent?.Id;
+                return new
+                {
+                    Item = item,
+                    Entity = entity,
+                    TopParentId = item.TopParent?.Id
+                };
+            }).ToArray();
 
             try
             {
-                context.BaseItems.Add(entity);
+                // Add all entities for bulk insert
+                context.BaseItems.AddRange(entities.Select(e => e.Entity));
                 context.SaveChanges();
             }
             catch (DbUpdateException)
             {
                 context.ChangeTracker.Clear();
-                itemsToUpdate.Add(item);
-                _logger.LogInformation("Matched BaseItem {Name} with existing ID {ExistingId}", entity.Name, entity.Id);
+
+                // Fall back to individual inserts using the same mapped entities
+                foreach (var entity in entities)
+                {
+                    // Create a fresh entity for each individual insert to avoid stale tracking state
+                    var freshEntity = Map(entity.Item.Item);
+                    // TODO: refactor this "inconsistency"
+                    freshEntity.TopParentId = entity.TopParentId;
+
+                    try
+                    {
+                        context.BaseItems.Add(freshEntity);
+                        context.SaveChanges();
+                    }
+                    catch (DbUpdateException)
+                    {
+                        context.ChangeTracker.Clear();
+                        itemsToUpdate.Add(entity.Item);
+                        _logger.LogInformation("Matched BaseItem {Name} with existing ID {ExistingId}", freshEntity.Name, freshEntity.Id);
+                    }
+                }
             }
         }
 
