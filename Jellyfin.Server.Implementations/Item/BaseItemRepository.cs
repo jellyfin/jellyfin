@@ -634,36 +634,51 @@ public sealed class BaseItemRepository
             .SelectMany(kvp => context.ItemValues
                 .Where(e => (int)e.Type == kvp.Key && kvp.Value.Contains(e.Value)))
             .ToArray();
-        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
-        {
-            CleanValue = GetCleanValue(f.Value),
-            ItemValueId = Guid.NewGuid(),
-            Type = f.MagicNumber,
-            Value = f.Value
-        }).ToArray();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: (ItemValueType)f.Type, f.Value)))
+            .DistinctBy(f => new { f.MagicNumber, f.Value })
+            .Select(f => new ItemValue()
+            {
+                CleanValue = GetCleanValue(f.Value),
+                ItemValueId = Guid.NewGuid(),
+                Type = f.MagicNumber,
+                Value = f.Value
+            }).ToArray();
 
-        // Individual insert with duplicate handling
+        // Bulk insert with retry for individual items
         var itemValuesStore = new List<ItemValue>(existingValues);
 
-        foreach (var missingValue in missingItemValues)
+        try
         {
-            try
-            {
-                context.ItemValues.Add(missingValue);
-                context.SaveChanges();
-                itemValuesStore.Add(missingValue); // Success - use what we created
-            }
-            catch (DbUpdateException)
-            {
-                context.ChangeTracker.Clear();
+            // Try bulk insert first
+            context.ItemValues.AddRange(missingItemValues);
+            context.SaveChanges();
+            itemValuesStore.AddRange(missingItemValues); // Success - use what we created
+        }
+        catch (DbUpdateException)
+        {
+            context.ChangeTracker.Clear();
 
-                // Query for the existing record (someone else inserted it)
-                var existing = context.ItemValues
-                    .Where(e => e.Type == missingValue.Type && e.Value == missingValue.Value)
-                    .Single();
+            // Fall back to individual inserts with duplicate handling
+            foreach (var missingValue in missingItemValues)
+            {
+                try
+                {
+                    context.ItemValues.Add(missingValue);
+                    context.SaveChanges();
+                    itemValuesStore.Add(missingValue); // Success - use what we created
+                }
+                catch (DbUpdateException)
+                {
+                    context.ChangeTracker.Clear();
 
-                itemValuesStore.Add(existing); // Use the existing record
-                _logger.LogInformation("Matched ({Type}, {Value}) with existing ID {ExistingId}", existing.Type, existing.Value, existing.ItemValueId);
+                    // Query for the existing record (someone else inserted it)
+                    var existing = context.ItemValues
+                        .Where(e => e.Type == missingValue.Type && e.Value == missingValue.Value)
+                        .Single();
+
+                    itemValuesStore.Add(existing); // Use the existing record
+                    _logger.LogInformation("Matched ({Type}, {Value}) with existing ID {ExistingId}", existing.Type, existing.Value, existing.ItemValueId);
+                }
             }
         }
 
