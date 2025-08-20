@@ -1149,7 +1149,6 @@ namespace MediaBrowser.Providers.Manager
                 target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).DistinctBy(t => t.Url).ToArray();
             }
 
-            MergeAlbumArtist(source, target, replaceData);
             MergeVideoInfo(source, target, replaceData);
             MergeDisplayOrder(source, target, replaceData);
 
@@ -1255,22 +1254,6 @@ namespace MediaBrowser.Providers.Manager
                     {
                         targetHasDisplayOrder.DisplayOrder = displayOrder;
                     }
-                }
-            }
-        }
-
-        private static void MergeAlbumArtist(BaseItem source, BaseItem target, bool replaceData)
-        {
-            if (source is IHasAlbumArtist sourceHasAlbumArtist
-                && target is IHasAlbumArtist targetHasAlbumArtist)
-            {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
-                {
-                    targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
-                }
-                else if (sourceHasAlbumArtist.AlbumArtists.Count > 0)
-                {
-                    targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
             }
         }
