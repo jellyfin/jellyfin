@@ -5,6 +5,7 @@ using System.IO;
 using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Serilog;
+using Serilog.Core;
 using Serilog.Extensions.Logging;
 
 namespace Jellyfin.Server.Integration.Tests
@@ -95,7 +97,11 @@ namespace Jellyfin.Server.Integration.Tests
                         .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
-                });
+                })
+                .ConfigureServices(e => e
+                    .AddSingleton<IStartupLogger, NullStartupLogger<object>>()
+                    .AddTransient(typeof(IStartupLogger<>), typeof(NullStartupLogger<>))
+                    .AddSingleton(e));
         }
 
         /// <inheritdoc/>
@@ -106,7 +112,7 @@ namespace Jellyfin.Server.Integration.Tests
             appHost.ServiceProvider = host.Services;
             var applicationPaths = appHost.ServiceProvider.GetRequiredService<IApplicationPaths>();
             Program.ApplyStartupMigrationAsync((ServerApplicationPaths)applicationPaths, appHost.ServiceProvider.GetRequiredService<IConfiguration>()).GetAwaiter().GetResult();
-            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisaition).GetAwaiter().GetResult();
+            Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.CoreInitialisation).GetAwaiter().GetResult();
             appHost.InitializeServices(Mock.Of<IConfiguration>()).GetAwaiter().GetResult();
             Program.ApplyCoreMigrationsAsync(appHost.ServiceProvider, Migrations.Stages.JellyfinMigrationStageTypes.AppInitialisation).GetAwaiter().GetResult();
             host.Start();
@@ -127,6 +133,62 @@ namespace Jellyfin.Server.Integration.Tests
             _disposableComponents.Clear();
 
             base.Dispose(disposing);
+        }
+
+        private sealed class NullStartupLogger<TCategory> : IStartupLogger<TCategory>
+        {
+            public StartupLogTopic? Topic => throw new NotImplementedException();
+
+            public IStartupLogger BeginGroup(FormattableString logEntry)
+            {
+                return this;
+            }
+
+            public IStartupLogger<TCategory1> BeginGroup<TCategory1>(FormattableString logEntry)
+            {
+                return new NullStartupLogger<TCategory1>();
+            }
+
+            public IDisposable? BeginScope<TState>(TState state)
+                where TState : notnull
+            {
+                return NullLogger.Instance.BeginScope(state);
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return NullLogger.Instance.IsEnabled(logLevel);
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                NullLogger.Instance.Log(logLevel, eventId, state, exception, formatter);
+            }
+
+            public Microsoft.Extensions.Logging.ILogger With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
+
+            public IStartupLogger<TCategory1> With<TCategory1>(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return new NullStartupLogger<TCategory1>();
+            }
+
+            IStartupLogger<TCategory> IStartupLogger<TCategory>.BeginGroup(FormattableString logEntry)
+            {
+                return new NullStartupLogger<TCategory>();
+            }
+
+            IStartupLogger IStartupLogger.With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
+
+            IStartupLogger<TCategory> IStartupLogger<TCategory>.With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
         }
     }
 }

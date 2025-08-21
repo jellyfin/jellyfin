@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -29,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 using Prometheus;
 
 namespace Jellyfin.Server
@@ -195,7 +197,14 @@ namespace Jellyfin.Server
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web",
-                        ContentTypeProvider = extensionProvider
+                        ContentTypeProvider = extensionProvider,
+                        OnPrepareResponse = (context) =>
+                        {
+                            if (Path.GetFileName(context.File.Name).Equals("index.html", StringComparison.Ordinal))
+                            {
+                                context.Context.Response.Headers.CacheControl = new StringValues("no-cache");
+                            }
+                        }
                     });
 
                     mainApp.UseRobotsRedirection();
@@ -208,7 +217,6 @@ namespace Jellyfin.Server
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 
-                mainApp.UseLanFiltering();
                 mainApp.UseIPBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();

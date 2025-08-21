@@ -1389,6 +1389,25 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetCount(query);
         }
 
+        public ItemCounts GetItemCounts(InternalItemsQuery query)
+        {
+            if (query.Recursive && !query.ParentId.IsEmpty())
+            {
+                var parent = GetItemById(query.ParentId);
+                if (parent is not null)
+                {
+                    SetTopParentIdsOrAncestors(query, [parent]);
+                }
+            }
+
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            return _itemRepository.GetItemCounts(query);
+        }
+
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
@@ -1954,7 +1973,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                    return image.DateModified.Subtract(_fileSystem.GetLastWriteTimeUtc(image.Path)).Duration().TotalSeconds > 1;
                 }
                 catch (Exception ex)
                 {
@@ -2025,7 +2044,8 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    image.BlurHash = blurhash;
                 }
                 catch (Exception ex)
                 {
@@ -2035,7 +2055,8 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    var modifiedDate = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    image.DateModified = modifiedDate;
                 }
                 catch (Exception ex)
                 {
@@ -2044,18 +2065,23 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.SaveImages(item);
+
             RegisterItem(item);
         }
 
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
             foreach (var item in items)
             {
+                item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+
+                // Modify again, so saved value is after write time of externally saved metadata
+                item.DateLastSaved = DateTime.UtcNow;
             }
+
+            _itemRepository.SaveItems(items, cancellationToken);
 
             if (ItemUpdated is not null)
             {
@@ -2096,8 +2122,6 @@ namespace Emby.Server.Implementations.Library
             {
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
-
-            item.DateLastSaved = DateTime.UtcNow;
 
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
@@ -2384,12 +2408,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2447,12 +2472,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2522,12 +2548,13 @@ namespace Emby.Server.Implementations.Library
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2987,21 +3014,28 @@ namespace Emby.Server.Implementations.Library
 
                 if (personEntity is null)
                 {
-                    var path = Person.GetPath(person.Name);
-                    var info = Directory.CreateDirectory(path);
-                    var lastWriteTime = info.LastWriteTimeUtc;
-                    personEntity = new Person()
+                    try
                     {
-                        Name = person.Name,
-                        Id = GetItemByNameId<Person>(path),
-                        DateCreated = info.CreationTimeUtc,
-                        DateModified = lastWriteTime,
-                        Path = path
-                    };
+                        var path = Person.GetPath(person.Name);
+                        var info = Directory.CreateDirectory(path);
+                        personEntity = new Person()
+                        {
+                            Name = person.Name,
+                            Id = GetItemByNameId<Person>(path),
+                            DateCreated = info.CreationTimeUtc,
+                            DateModified = info.LastWriteTimeUtc,
+                            Path = path
+                        };
 
-                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
-                    saveEntity = true;
-                    createEntity = true;
+                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                        saveEntity = true;
+                        createEntity = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
+                        continue;
+                    }
                 }
 
                 foreach (var id in person.ProviderIds)
@@ -3035,6 +3069,8 @@ namespace Emby.Server.Implementations.Library
                     }
 
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                    personEntity.DateLastSaved = DateTime.UtcNow;
+
                     CreateItems([personEntity], null, CancellationToken.None);
                 }
             }

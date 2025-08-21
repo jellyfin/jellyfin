@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Scan for mediesegmenter",
     "TaskMoveTrickplayImages": "Migrer billedelokationer for trickplay-billeder",
     "TaskMoveTrickplayImagesDescription": "Flyt eksisterende trickplay-billeder jævnfør biblioteksindstillinger.",
-    "TaskExtractMediaSegmentsDescription": "Udtrækker eller henter mediesegmenter fra plugins som understøtter MediaSegment."
+    "TaskExtractMediaSegmentsDescription": "Udtrækker eller henter mediesegmenter fra plugins som understøtter MediaSegment.",
+    "CleanupUserDataTask": "Brugerdata oprydningsopgave",
+    "CleanupUserDataTaskDescription": "Rydder alle brugerdata (eks. visning- og favoritstatus) fra medier, der har været utilgængelige i mindst 90 dage."
 }

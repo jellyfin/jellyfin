@@ -61,7 +61,6 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [JsonIgnore]
         public Guid Id { get; set; }
 
         /// <summary>

@@ -188,7 +188,8 @@ namespace Emby.Naming.Common
                 "disk",
                 "vol",
                 "volume",
-                "part"
+                "part",
+                "act"
             };
 
             ArtistSubfolders = new[]
@@ -572,6 +573,18 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Filename,
+                    "sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.Filename,
+                    "theme",
+                    MediaType.Audio),
+
+                new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Suffix,
                     "-trailer",
@@ -592,13 +605,7 @@ namespace Emby.Naming.Common
                 new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Suffix,
-                    " trailer",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Sample,
-                    ExtraRuleType.Filename,
-                    "sample",
+                    "- trailer",
                     MediaType.Video),
 
                 new ExtraRule(
@@ -622,14 +629,8 @@ namespace Emby.Naming.Common
                 new ExtraRule(
                     ExtraType.Sample,
                     ExtraRuleType.Suffix,
-                    " sample",
+                    "- sample",
                     MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.ThemeSong,
-                    ExtraRuleType.Filename,
-                    "theme",
-                    MediaType.Audio),
 
                 new ExtraRule(
                     ExtraType.Scene,

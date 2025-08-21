@@ -8,13 +8,15 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,12 +27,10 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to move extracted files to the new directories.
 /// </summary>
 [JellyfinMigration("2025-04-20T21:00:00", nameof(MoveExtractedFiles))]
-#pragma warning disable CS0618 // Type or member is obsolete
-public class MoveExtractedFiles : IMigrationRoutine
-#pragma warning restore CS0618 // Type or member is obsolete
+public class MoveExtractedFiles : IAsyncMigrationRoutine
 {
     private readonly IApplicationPaths _appPaths;
-    private readonly ILogger<MoveExtractedFiles> _logger;
+    private readonly ILogger _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IPathManager _pathManager;
     private readonly IFileSystem _fileSystem;
@@ -40,18 +40,20 @@ public class MoveExtractedFiles : IMigrationRoutine
     /// </summary>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="pathManager">Instance of the <see cref="IPathManager"/> interface.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
     public MoveExtractedFiles(
         IApplicationPaths appPaths,
         ILogger<MoveExtractedFiles> logger,
+        IStartupLogger<MoveExtractedFiles> startupLogger,
         IPathManager pathManager,
         IFileSystem fileSystem,
         IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _appPaths = appPaths;
-        _logger = logger;
+        _logger = startupLogger.With(logger);
         _pathManager = pathManager;
         _fileSystem = fileSystem;
         _dbProvider = dbProvider;
@@ -62,10 +64,10 @@ public class MoveExtractedFiles : IMigrationRoutine
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public void Perform()
+    public async Task PerformAsync(CancellationToken cancellationToken)
     {
         const int Limit = 5000;
-        int itemCount = 0, offset = 0;
+        int itemCount = 0;
 
         var sw = Stopwatch.StartNew();
 
@@ -76,32 +78,27 @@ public class MoveExtractedFiles : IMigrationRoutine
         // Make sure directories exist
         Directory.CreateDirectory(SubtitleCachePath);
         Directory.CreateDirectory(AttachmentCachePath);
-        do
+
+        await foreach (var result in context.BaseItems
+                          .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
+                          .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
+                          .Select(b => new
+                          {
+                              b.Id,
+                              b.Path,
+                              b.MediaStreams
+                          })
+                          .OrderBy(e => e.Id)
+                          .WithPartitionProgress((partition) => _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", partition * Limit, itemCount, sw.Elapsed))
+                          .PartitionEagerAsync(Limit, cancellationToken)
+                          .WithCancellation(cancellationToken)
+                          .ConfigureAwait(false))
         {
-            var results = context.BaseItems
-                            .Include(e => e.MediaStreams!.Where(s => s.StreamType == MediaStreamTypeEntity.Subtitle && !s.IsExternal))
-                            .Where(b => b.MediaType == MediaType.Video.ToString() && !b.IsVirtualItem && !b.IsFolder)
-                            .OrderBy(e => e.Id)
-                            .Skip(offset)
-                            .Take(Limit)
-                            .Select(b => new Tuple<Guid, string?, ICollection<MediaStreamInfo>?>(b.Id, b.Path, b.MediaStreams)).ToList();
-
-            foreach (var result in results)
+            if (MoveSubtitleAndAttachmentFiles(result.Id, result.Path, result.MediaStreams, context))
             {
-                if (MoveSubtitleAndAttachmentFiles(result.Item1, result.Item2, result.Item3, context))
-                {
-                    itemCount++;
-                }
+                itemCount++;
             }
-
-            offset += Limit;
-            if (offset > records)
-            {
-                offset = records;
-            }
-
-            _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", offset, itemCount, sw.Elapsed);
-        } while (offset < records);
+        }
 
         _logger.LogInformation("Moved files for {Count} items in {Time}", itemCount, sw.Elapsed);
 

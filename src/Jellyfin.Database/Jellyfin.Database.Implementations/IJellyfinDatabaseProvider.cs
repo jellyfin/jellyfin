@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Implementations;
@@ -19,7 +21,8 @@ public interface IJellyfinDatabaseProvider
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
-    void Initialise(DbContextOptionsBuilder options);
+    /// <param name="databaseConfiguration">The Jellyfin database options.</param>
+    void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration);
 
     /// <summary>
     /// Will be invoked when EFCore wants to build its model.
@@ -62,4 +65,19 @@ public interface IJellyfinDatabaseProvider
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task RestoreBackupFast(string key, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes a backup that has been previously created by <see cref="MigrationBackupFast(CancellationToken)"/>.
+    /// </summary>
+    /// <param name="key">The key to the backup which should be cleaned up.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task DeleteBackup(string key);
+
+    /// <summary>
+    /// Removes all contents from the database.
+    /// </summary>
+    /// <param name="dbContext">The Database context.</param>
+    /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
+    /// <returns>A Task.</returns>
+    Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
 }

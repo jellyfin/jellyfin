@@ -136,5 +136,7 @@
     "TaskExtractMediaSegmentsDescription": "Изважда медиини сегменти от MediaSegment плъгини.",
     "TaskMoveTrickplayImages": "Мигриране на Локацията за Trickplay изображения",
     "TaskMoveTrickplayImagesDescription": "Премества съществуващите trickplay изображения спрямо настройките на библиотеката.",
-    "TaskExtractMediaSegments": "Сканиране за сегменти"
+    "TaskExtractMediaSegments": "Сканиране за сегменти",
+    "CleanupUserDataTask": "Задача за почистване на потребителски данни",
+    "CleanupUserDataTaskDescription": "Почиства всички потребителски данни (статус на гледане, любими и т.н.) от медия, която вече не е налична от поне 90 дни."
 }

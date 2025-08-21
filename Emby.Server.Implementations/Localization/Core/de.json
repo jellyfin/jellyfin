@@ -77,7 +77,7 @@
     "SubtitleDownloadFailureFromForItem": "Untertitel von {0} für {1} konnten nicht heruntergeladen werden",
     "Sync": "Synchronisation",
     "System": "System",
-    "TvShows": "TV-Serien",
+    "TvShows": "Serien",
     "User": "Benutzer",
     "UserCreatedWithName": "Benutzer {0} wurde erstellt",
     "UserDeletedWithName": "Benutzer {0} wurde gelöscht",
@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} hat die Wiedergabe von {1} auf {2} gestartet",
     "UserStoppedPlayingItemWithValues": "{0} hat die Wiedergabe von {1} auf {2} beendet",
     "ValueHasBeenAddedToLibrary": "{0} wurde deiner Bibliothek hinzugefügt",
-    "ValueSpecialEpisodeName": "Extra - {0}",
+    "ValueSpecialEpisodeName": "Extra – {0}",
     "VersionNumber": "Version {0}",
     "TaskDownloadMissingSubtitlesDescription": "Sucht im Internet basierend auf den Metadaten-Einstellungen nach fehlenden Untertiteln.",
     "TaskDownloadMissingSubtitles": "Fehlende Untertitel herunterladen",
@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Mediensegmente scannen",
     "TaskExtractMediaSegmentsDescription": "Extrahiert oder empfängt Mediensegmente von Plugins die Mediensegmente nutzen.",
     "TaskMoveTrickplayImages": "Verzeichnis für Trickplay-Bilder migrieren",
-    "TaskMoveTrickplayImagesDescription": "Trickplay-Bilder werden entsprechend der Bibliothekseinstellungen verschoben."
+    "TaskMoveTrickplayImagesDescription": "Trickplay-Bilder werden entsprechend der Bibliothekseinstellungen verschoben.",
+    "CleanupUserDataTask": "Aufgabe zur Bereinigung von Benutzerdaten",
+    "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind."
 }
