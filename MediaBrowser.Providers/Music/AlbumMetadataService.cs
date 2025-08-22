@@ -116,7 +116,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
         updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbumArtist);
 
-        if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
+        if (!item.AlbumArtists.SequenceEqual(albumArtists))
         {
             item.AlbumArtists = albumArtists;
             updateType |= ItemUpdateType.MetadataEdit;
@@ -136,7 +136,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             .Select(g => g.Key)
             .ToArray();
 
-        if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
+        if (!item.Artists.SequenceEqual(artists))
         {
             item.Artists = artists;
             updateType |= ItemUpdateType.MetadataEdit;

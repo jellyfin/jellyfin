@@ -72,6 +72,15 @@ public class AudioMetadataService : MetadataService<Audio, SongInfo>
             targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
+        if (replaceData || targetItem.AlbumArtists.Count == 0)
+        {
+            targetItem.AlbumArtists = sourceItem.AlbumArtists;
+        }
+        else
+        {
+            targetItem.AlbumArtists = targetItem.AlbumArtists.Concat(sourceItem.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
         if (replaceData || string.IsNullOrEmpty(targetItem.Album))
         {
             targetItem.Album = sourceItem.Album;
