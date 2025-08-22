@@ -199,6 +199,7 @@ public partial class AudioNormalizationTask : IScheduledTask
             {
                 _logger.LogDebug("Starting ffmpeg with arguments: {Arguments}", args);
                 process.Start();
+                process.PriorityClass = ProcessPriorityClass.BelowNormal;
             }
             catch (Exception ex)
             {
