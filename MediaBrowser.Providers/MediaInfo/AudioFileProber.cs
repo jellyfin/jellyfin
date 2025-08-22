@@ -273,12 +273,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _libraryManager.UpdatePeople(audio, people);
 
-                if (options.ReplaceAllMetadata && performers.Length != 0)
-                {
-                    audio.Artists = performers;
-                }
-                else if (!options.ReplaceAllMetadata
-                         && (audio.Artists is null || audio.Artists.Count == 0))
+                if (audio.Artists is null || !audio.Artists.SequenceEqual(performers))
                 {
                     audio.Artists = performers;
                 }
@@ -289,12 +284,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     albumArtists = performers;
                 }
 
-                if (options.ReplaceAllMetadata && albumArtists.Length != 0)
-                {
-                    audio.AlbumArtists = albumArtists;
-                }
-                else if (!options.ReplaceAllMetadata
-                         && (audio.AlbumArtists is null || audio.AlbumArtists.Count == 0))
+                if (audio.AlbumArtists is null || !audio.AlbumArtists.SequenceEqual(albumArtists))
                 {
                     audio.AlbumArtists = albumArtists;
                 }
