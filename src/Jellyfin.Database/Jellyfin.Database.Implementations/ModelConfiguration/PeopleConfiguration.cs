@@ -13,7 +13,7 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     public void Configure(EntityTypeBuilder<People> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.Name);
+        builder.HasIndex(e => new { e.Name, e.PersonType }).IsUnique();
         builder.HasMany(e => e.BaseItems);
     }
 }
