@@ -183,10 +183,6 @@ namespace MediaBrowser.Model.Users
 
         public int RemoteClientBitrateLimit { get; set; }
 
-        [XmlElement(ElementName = "AuthenticationProviderId")]
-        [Required(AllowEmptyStrings = false)]
-        public string AuthenticationProviderId { get; set; }
-
         [Required(AllowEmptyStrings= false)]
         public string PasswordResetProviderId { get; set; }
 

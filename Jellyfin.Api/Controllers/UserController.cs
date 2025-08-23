@@ -205,7 +205,7 @@ public class UserController : BaseJellyfinApiController
     /// </summary>
     /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
     /// <response code="200">User authenticated.</response>
-    /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
+    /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/> with information about the new session.</returns>
     [HttpPost("AuthenticateByName")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)

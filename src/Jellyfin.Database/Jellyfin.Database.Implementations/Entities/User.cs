@@ -18,16 +18,13 @@ namespace Jellyfin.Database.Implementations.Entities
         /// Public constructor with required data.
         /// </summary>
         /// <param name="username">The username for the new user.</param>
-        /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
-        public User(string username, string authenticationProviderId, string passwordResetProviderId)
+        public User(string username, string passwordResetProviderId)
         {
             ArgumentException.ThrowIfNullOrEmpty(username);
-            ArgumentException.ThrowIfNullOrEmpty(authenticationProviderId);
             ArgumentException.ThrowIfNullOrEmpty(passwordResetProviderId);
 
             Username = username;
-            AuthenticationProviderId = authenticationProviderId;
             PasswordResetProviderId = passwordResetProviderId;
 
             AccessSchedules = new HashSet<AccessSchedule>();
@@ -100,16 +97,6 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(255)]
         [StringLength(255)]
         public string? AudioLanguagePreference { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authentication provider id.
-        /// </summary>
-        /// <remarks>
-        /// Required, Max length = 255.
-        /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
-        public string AuthenticationProviderId { get; set; }
 
         /// <summary>
         /// Gets or sets the password reset provider id.

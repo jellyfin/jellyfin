@@ -201,7 +201,6 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName!,
                 _defaultPasswordResetProvider.GetType().FullName!)
             {
                 InternalId = max + 1
@@ -346,7 +345,6 @@ namespace Jellyfin.Server.Implementations.Users
                     MaxParentalSubRating = user.MaxParentalRatingSubScore,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
-                    AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
@@ -673,7 +671,6 @@ namespace Jellyfin.Server.Implementations.Users
                 user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
                 user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
                 user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
-                user.AuthenticationProviderId = policy.AuthenticationProviderId;
                 user.PasswordResetProviderId = policy.PasswordResetProviderId;
                 user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
                 user.LoginAttemptsBeforeLockout = maxLoginAttempts;
