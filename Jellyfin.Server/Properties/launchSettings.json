@@ -2,7 +2,7 @@
   "profiles": {
     "Jellyfin.Server": {
       "commandName": "Project",
-      "launchBrowser": false,
+      "launchBrowser": true,
       "applicationUrl": "http://localhost:8096",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
