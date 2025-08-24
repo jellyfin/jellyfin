@@ -10,6 +10,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Item;
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -22,12 +23,14 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
 /// <param name="itemTypeLookup">Items lookup service.</param>
+/// <param name="logger">Logger.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup, ILogger<PeopleRepository> logger) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
+    private readonly ILogger<PeopleRepository> _logger = logger;
 
     /// <inheritdoc/>
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
@@ -70,18 +73,107 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     {
         using var context = _dbProvider.CreateDbContext();
 
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
-        context.SaveChanges();
+        // Step 1: Get people that need IDs
+        var peopleWithoutIds = people.Where(p => p.Id == Guid.Empty).ToArray();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        // Step 2: For people without IDs, try to get existing IDs first
+        if (peopleWithoutIds.Length > 0)
+        {
+            var nameTypePairs = peopleWithoutIds
+                .Select(x => new { x.Name, PersonType = x.Type.ToString() })
+                .ToArray();
+
+            var names = nameTypePairs.Select(x => x.Name).ToArray();
+            var existingPeople = context.Peoples
+                .Where(p => names.Contains(p.Name))
+                .Select(p => new { p.Id, p.Name, p.PersonType })
+                .ToList()
+                .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
+                .ToList();
+
+            // Update people that we found existing IDs for
+            foreach (var person in peopleWithoutIds)
+            {
+                var existing = existingPeople.FirstOrDefault(e =>
+                    e.Name == person.Name && e.PersonType == person.Type.ToString());
+                if (existing != null)
+                {
+                    person.Id = existing.Id;
+                }
+            }
+        }
+
+        // Step 3: For remaining people without IDs, insert them using bulk insert with retry
+        var stillNeedIds = people.Where(p => p.Id == Guid.Empty).ToArray();
+        if (stillNeedIds.Length > 0)
+        {
+            // Assign new IDs to all people
+            foreach (var person in stillNeedIds)
+            {
+                person.Id = Guid.NewGuid();
+            }
+
+            // Try bulk insert first
+            try
+            {
+                context.Peoples.AddRange(stillNeedIds.Select(person => new People
+                {
+                    Id = person.Id,
+                    Name = person.Name,
+                    PersonType = person.Type.ToString()
+                }));
+                context.SaveChanges();
+            }
+            catch (DbUpdateException)
+            {
+                // Bulk insert failed, fall back to individual inserts
+                context.ChangeTracker.Clear();
+                foreach (var person in stillNeedIds)
+                {
+                    try
+                    {
+                        context.Peoples.Add(new People
+                        {
+                            Id = person.Id,
+                            Name = person.Name,
+                            PersonType = person.Type.ToString()
+                        });
+                        context.SaveChanges();
+                        // SUCCESS: person.Id is already set to the new ID
+                    }
+                    catch (DbUpdateException)
+                    {
+                        context.ChangeTracker.Clear();
+                        var existingId = context.Peoples
+                            .Where(p => p.Name == person.Name && p.PersonType == person.Type.ToString())
+                            .Select(p => p.Id)
+                            .Single();
+                        person.Id = existingId; // DUPLICATE: Use existing ID
+                        _logger.LogInformation("Matched ({Name}, {PersonType}) with existing ID {ExistingId}", person.Name, person.Type.ToString(), existingId);
+                    }
+                }
+            }
+        }
+
+        // Now all people have valid IDs, process PeopleBaseItemMap
+        var allPeopleIds = people.Select(p => p.Id).ToArray();
+
+        // Remove obsolete mappings
+        context.PeopleBaseItemMap
+            .Where(m => m.ItemId == itemId && !allPeopleIds.Contains(m.PeopleId))
+            .ExecuteDelete();
+
+        // Upsert mappings for all people
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
-            if (existingMap is null)
+            var updated = context.PeopleBaseItemMap
+                .Where(m => m.ItemId == itemId && m.PeopleId == person.Id)
+                .ExecuteUpdate(setters => setters
+                    .SetProperty(m => m.Role, person.Role)
+                    .SetProperty(m => m.SortOrder, person.SortOrder)
+                    .SetProperty(m => m.ListOrder, person.SortOrder));
+
+            if (updated == 0)
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
@@ -94,14 +186,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Role = person.Role
                 });
             }
-            else
-            {
-                // person mapping already exists so remove from list
-                maps.Remove(existingMap);
-            }
         }
-
-        context.PeopleBaseItemMap.RemoveRange(maps);
 
         context.SaveChanges();
     }
