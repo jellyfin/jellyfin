@@ -116,7 +116,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
         updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbumArtist);
 
-        if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
+        if (!item.AlbumArtists.SequenceEqual(albumArtists))
         {
             item.AlbumArtists = albumArtists;
             updateType |= ItemUpdateType.MetadataEdit;
@@ -136,7 +136,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
             .Select(g => g.Key)
             .ToArray();
 
-        if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
+        if (!item.Artists.SequenceEqual(artists))
         {
             item.Artists = artists;
             updateType |= ItemUpdateType.MetadataEdit;
@@ -246,6 +246,15 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         else
         {
             targetItem.Artists = targetItem.Artists.Concat(sourceItem.Artists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
+        if (replaceData || targetItem.AlbumArtists.Count == 0)
+        {
+            targetItem.AlbumArtists = sourceItem.AlbumArtists;
+        }
+        else
+        {
+            targetItem.AlbumArtists = targetItem.AlbumArtists.Concat(sourceItem.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))
