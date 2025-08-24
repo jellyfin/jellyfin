@@ -1,5 +1,6 @@
 #nullable disable
 
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Series()
         {
-            AirDays = Array.Empty<DayOfWeek>();
+            AirDays = [];
         }
 
         public DayOfWeek[] AirDays { get; set; }
@@ -168,9 +169,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             if (this.TryGetProviderId(MetadataProvider.Imdb, out var key))
             {
@@ -360,7 +361,7 @@ namespace MediaBrowser.Controller.Entities.TV
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
+        public IReadOnlyList<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
 
@@ -406,7 +407,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasonEpisodes(parentSeason, user, allItems, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
+        public IReadOnlyList<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             if (allSeriesEpisodes is null)
             {
