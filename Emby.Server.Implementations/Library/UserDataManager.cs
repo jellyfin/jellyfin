@@ -8,6 +8,7 @@ using System.Threading;
 using BitFaster.Caching.Lru;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -229,15 +230,13 @@ namespace Emby.Server.Implementations.Library
         {
             using var context = _repository.CreateDbContext();
 
-            // TODO this query doesn't work.
             var flattened = items
-                .SelectMany(item => item.Keys, (item, key) => new { item.ItemId, Key = key })
+                .SelectMany(item => item.Keys, (item, key) => $"{item.ItemId.ToUpper("D", CultureInfo.InvariantCulture)}:{key}")
                 .ToList();
 
             var queryResult = context.UserData
                 .AsNoTracking()
-                .Where(u => u.UserId == userId
-                            && flattened.Any(f => f.ItemId == u.ItemId && f.Key == u.CustomDataKey))
+                .Where(u => u.UserId == userId && flattened.Any(f => f == u.ItemId + ":" + u.CustomDataKey))
                 .GroupBy(q => q.ItemId, q => q)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -281,7 +280,36 @@ namespace Emby.Server.Implementations.Library
         public Dictionary<Guid, UserItemData> GetUserData(User user, IReadOnlyCollection<BaseItem> items)
         {
             ArgumentNullException.ThrowIfNull(user);
-            return GetUserData(user.Id, items.Select(i => (i.Id, i.GetUserDataKeys())).ToList());
+
+            var userDataCollection = new Dictionary<Guid, UserItemData>();
+
+            var itemKeys = items.Select(i => (i.Id, i.GetUserDataKeys())).ToList();
+            var cacheMiss = new List<(Guid ItemId, List<string> Keys)>();
+
+            foreach (var itemKey in itemKeys)
+            {
+                var cacheKey = GetCacheKey(user.InternalId, itemKey.Id);
+                if (_cache.TryGet(cacheKey, out var userData))
+                {
+                    userDataCollection[itemKey.Id] = userData;
+                    continue;
+                }
+
+                cacheMiss.Add(itemKey);
+            }
+
+            if (cacheMiss.Count != 0)
+            {
+                var cacheMissData = GetUserData(user.Id, cacheMiss);
+
+                foreach (var cacheMissItem in cacheMissData)
+                {
+                    userDataCollection[cacheMissItem.Key] = cacheMissItem.Value;
+                    _cache.AddOrUpdate(GetCacheKey(user.InternalId, cacheMissItem.Key), cacheMissItem.Value);
+                }
+            }
+
+            return userDataCollection;
         }
 
         /// <inheritdoc />
