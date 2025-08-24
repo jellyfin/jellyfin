@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Jellyfin.Server.Implementations.Item;
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -72,11 +73,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
 
         // Step 1: Get people that need IDs
         var peopleWithoutIds = people.Where(p => p.Id == Guid.Empty).ToArray();
 
-        // Step 2: For people without IDs, try to get existing IDs first
+        // Step 2: Check database for existing people and assign their IDs
         if (peopleWithoutIds.Length > 0)
         {
             var nameTypePairs = peopleWithoutIds
@@ -84,14 +86,14 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .ToArray();
 
             var names = nameTypePairs.Select(x => x.Name).ToArray();
-            var existingPeople = context.Peoples
+            var existingPeople = context.Peoples.AsNoTracking()
                 .Where(p => names.Contains(p.Name))
                 .Select(p => new { p.Id, p.Name, p.PersonType })
                 .ToList()
                 .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
                 .ToList();
 
-            // Update people that we found existing IDs for
+            // Assign existing IDs to found people
             foreach (var person in peopleWithoutIds)
             {
                 var existing = existingPeople.FirstOrDefault(e =>
@@ -103,78 +105,96 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             }
         }
 
-        // Step 3: For remaining people without IDs, insert them using bulk insert with retry
-        var stillNeedIds = people.Where(p => p.Id == Guid.Empty).ToArray();
-        if (stillNeedIds.Length > 0)
+        // Step 3: For people that are truly missing, assign new GUIDs and insert with Polly retry
+        var missingPeople = people.Where(p => p.Id == Guid.Empty).ToList();
+        if (missingPeople.Count > 0)
         {
-            // Assign new IDs to all people
-            foreach (var person in stillNeedIds)
+            foreach (var person in missingPeople)
             {
                 person.Id = Guid.NewGuid();
             }
 
-            // Try bulk insert first
-            try
-            {
-                context.Peoples.AddRange(stillNeedIds.Select(person => new People
+            // RetryForever is safe here because removing inserted items from the list
+            // guarantees termination once all are either inserted or matched to existing records
+            var retryPolicy = Policy
+                .Handle<DbUpdateException>()
+                .RetryForever((Exception exception, int retryCount) =>
                 {
-                    Id = person.Id,
-                    Name = person.Name,
-                    PersonType = person.Type.ToString()
-                }));
-                context.SaveChanges();
-            }
-            catch (DbUpdateException)
+                    _logger.LogInformation("Retrying people insert attempt {RetryCount} due to conflicts", retryCount);
+                    context.ChangeTracker.Clear();
+
+                    // Re-check what already exists (handles concurrent inserts during retries)
+                    // Use AsNoTracking to avoid tracking conflicts from existence queries
+                    var namesToCheck = missingPeople.Select(p => p.Name).ToArray();
+                    var existingPeople = context.Peoples.AsNoTracking()
+                        .Where(p => namesToCheck.Contains(p.Name))
+                        .Select(p => new { p.Id, p.Name, p.PersonType })
+                        .ToList()
+                        .Where(p => missingPeople.Any(person =>
+                            p.Name == person.Name && p.PersonType == person.Type.ToString()))
+                        .ToList();
+
+                    // Update IDs for people found during retry and remove from insert list
+                    foreach (var existing in existingPeople)
+                    {
+                        var person = missingPeople.First(p =>
+                            p.Name == existing.Name && p.Type.ToString() == existing.PersonType);
+                        person.Id = existing.Id;
+                        missingPeople.Remove(person);
+                        _logger.LogInformation(
+                            "Matched ({Name}, {PersonType}) with existing ID {ExistingId}",
+                            existing.Name,
+                            existing.PersonType,
+                            existing.Id);
+                    }
+                });
+
+            retryPolicy.Execute(() =>
             {
-                // Bulk insert failed, fall back to individual inserts
-                context.ChangeTracker.Clear();
-                foreach (var person in stillNeedIds)
+                // Insert missing records in progressively smaller batches after each retry
+                if (missingPeople.Count > 0)
                 {
-                    try
+                    context.Peoples.AddRange(missingPeople.Select(person => new People
                     {
-                        context.Peoples.Add(new People
-                        {
-                            Id = person.Id,
-                            Name = person.Name,
-                            PersonType = person.Type.ToString()
-                        });
-                        context.SaveChanges();
-                        // SUCCESS: person.Id is already set to the new ID
-                    }
-                    catch (DbUpdateException)
-                    {
-                        context.ChangeTracker.Clear();
-                        var existingId = context.Peoples
-                            .Where(p => p.Name == person.Name && p.PersonType == person.Type.ToString())
-                            .Select(p => p.Id)
-                            .Single();
-                        person.Id = existingId; // DUPLICATE: Use existing ID
-                        _logger.LogInformation("Matched ({Name}, {PersonType}) with existing ID {ExistingId}", person.Name, person.Type.ToString(), existingId);
-                    }
+                        Id = person.Id,
+                        Name = person.Name,
+                        PersonType = person.Type.ToString()
+                    }));
+                    context.SaveChanges();
                 }
-            }
+            });
         }
+
+        // Clear change tracker before mapping operations to avoid tracking conflicts
+        context.ChangeTracker.Clear();
 
         // Now all people have valid IDs, process PeopleBaseItemMap
         var allPeopleIds = people.Select(p => p.Id).ToArray();
 
-        // Remove obsolete mappings
-        context.PeopleBaseItemMap
-            .Where(m => m.ItemId == itemId && !allPeopleIds.Contains(m.PeopleId))
-            .ExecuteDelete();
+        // Get all existing mappings for this item in one query
+        var existingMappings = context.PeopleBaseItemMap
+            .Where(m => m.ItemId == itemId)
+            .ToDictionary(m => m.PeopleId, m => m);
+
+        // Remove obsolete mappings (people no longer in the list)
+        var obsoleteMappings = existingMappings.Values
+            .Where(m => !allPeopleIds.Contains(m.PeopleId))
+            .ToList();
+        context.PeopleBaseItemMap.RemoveRange(obsoleteMappings);
 
         // Upsert mappings for all people
         foreach (var person in people)
         {
-            var updated = context.PeopleBaseItemMap
-                .Where(m => m.ItemId == itemId && m.PeopleId == person.Id)
-                .ExecuteUpdate(setters => setters
-                    .SetProperty(m => m.Role, person.Role)
-                    .SetProperty(m => m.SortOrder, person.SortOrder)
-                    .SetProperty(m => m.ListOrder, person.SortOrder));
-
-            if (updated == 0)
+            if (existingMappings.TryGetValue(person.Id, out var existing))
             {
+                // Update existing mapping
+                existing.Role = person.Role;
+                existing.SortOrder = person.SortOrder;
+                existing.ListOrder = person.SortOrder;
+            }
+            else
+            {
+                // Add new mapping
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
@@ -189,6 +209,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
 
         context.SaveChanges();
+        transaction.Commit();
     }
 
     private PersonInfo Map(People people)
