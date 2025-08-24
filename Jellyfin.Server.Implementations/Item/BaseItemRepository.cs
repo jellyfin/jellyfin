@@ -627,26 +627,61 @@ public sealed class BaseItemRepository
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
-        var existingValues = context.ItemValues
-            .Select(e => new
-            {
-                item = e,
-                Key = e.Type + "+" + e.Value
-            })
-            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
-            .Select(e => e.item)
+        var groupedByType = allListedItemValues
+            .GroupBy(e => (int)e.MagicNumber)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
+        var existingValues = groupedByType
+            .SelectMany(kvp => context.ItemValues
+                .Where(e => (int)e.Type == kvp.Key && kvp.Value.Contains(e.Value)))
             .ToArray();
-        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
-        {
-            CleanValue = GetCleanValue(f.Value),
-            ItemValueId = Guid.NewGuid(),
-            Type = f.MagicNumber,
-            Value = f.Value
-        }).ToArray();
-        context.ItemValues.AddRange(missingItemValues);
-        context.SaveChanges();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: (ItemValueType)f.Type, f.Value)))
+            .DistinctBy(f => new { f.MagicNumber, f.Value })
+            .Select(f => new ItemValue()
+            {
+                CleanValue = GetCleanValue(f.Value),
+                ItemValueId = Guid.NewGuid(),
+                Type = f.MagicNumber,
+                Value = f.Value
+            }).ToArray();
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        // Bulk insert with retry for individual items
+        var itemValuesStore = new List<ItemValue>(existingValues);
+
+        try
+        {
+            // Try bulk insert first
+            context.ItemValues.AddRange(missingItemValues);
+            context.SaveChanges();
+            itemValuesStore.AddRange(missingItemValues); // Success - use what we created
+        }
+        catch (DbUpdateException)
+        {
+            context.ChangeTracker.Clear();
+
+            // Fall back to individual inserts with duplicate handling
+            foreach (var missingValue in missingItemValues)
+            {
+                try
+                {
+                    context.ItemValues.Add(missingValue);
+                    context.SaveChanges();
+                    itemValuesStore.Add(missingValue); // Success - use what we created
+                }
+                catch (DbUpdateException)
+                {
+                    context.ChangeTracker.Clear();
+
+                    // Query for the existing record (someone else inserted it)
+                    var existing = context.ItemValues
+                        .Where(e => e.Type == missingValue.Type && e.Value == missingValue.Value)
+                        .Single();
+
+                    itemValuesStore.Add(existing); // Use the existing record
+                    _logger.LogInformation("Matched ({Type}, {Value}) with existing ID {ExistingId}", existing.Type, existing.Value, existing.ItemValueId);
+                }
+            }
+        }
+
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
