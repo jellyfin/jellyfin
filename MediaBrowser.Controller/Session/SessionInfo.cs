@@ -73,6 +73,12 @@ namespace MediaBrowser.Controller.Session
         public string RemoteEndPoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the ID of the authentication provider used to authenticate this session.
+        /// </summary>
+        /// <value>The ID of the authentication provider used to authenticate this session.</value>
+        public string AuthenticationProviderId { get; set; }
+
+        /// <summary>
         /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>

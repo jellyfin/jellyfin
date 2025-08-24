@@ -257,13 +257,49 @@ namespace MediaBrowser.Controller.Session
         void ReportNowViewingItem(string sessionId, string itemId);
 
         /// <summary>
-        /// Authenticates the new session.
+        /// DEPRECATED: Authenticates the new session.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task{SessionInfo}.</returns>
-        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
+        /// <remarks>
+        /// This method is deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method.
+        /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
+        /// </remarks>
+        /// <param name="request">The authenticationrequest.</param>
+        /// <returns>The authentication result.</returns>
+        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
+        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
+        {
+            throw new NotImplementedException();
+        }
 
-        Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request);
+        /// <summary>
+        /// DEPRECATED: Directly authenticates the session without enforcing password.
+        /// </summary>
+        /// <remarks>
+        /// This method is deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method.
+        /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
+        /// </remarks>
+        /// <param name="request">The authenticationrequest.</param>
+        /// <returns>The authentication result.</returns>
+        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
+        Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Creates a new session for a given user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="appName">Type of the client.</param>
+        /// <param name="appVersion">The app version.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="authenticationProviderId">The authentication provider used to authenticate this user.</param>
+        /// <param name="remoteEndpoint">The remote endpoint.</param>
+        /// <returns><see cref="Task"/>&lt;<see cref="AuthenticationResult"/>&gt;.</returns>
+        Task<AuthenticationResult> CreateSession(User user, string deviceId, string appName, string appVersion, string deviceName, string authenticationProviderId, string remoteEndpoint);
 
         /// <summary>
         /// Reports the capabilities.
