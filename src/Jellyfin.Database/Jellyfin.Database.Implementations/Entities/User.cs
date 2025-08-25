@@ -305,6 +305,16 @@ namespace Jellyfin.Database.Implementations.Entities
         [ForeignKey("Permission_Permissions_Guid")]
         public virtual ICollection<Permission> Permissions { get; private set; }
 
+        /// <summary>
+        /// Gets the user-specific authentication provider data. External dependencies should not modify this directly.
+        /// </summary>
+        public IEnumerable<UserAuthenticationProviderDataMap> AuthenticationProviderDataMaps { get; } = [];
+
+        /// <summary>
+        /// Gets the global authentication providers' data. Exists for model completeness and will generally not be accessed directly.
+        /// </summary>
+        public IEnumerable<AuthenticationProviderData> AuthenticationProviderDatas { get; } = [];
+
         /*
         /// <summary>
         /// Gets the list of provider mappings this user has.
