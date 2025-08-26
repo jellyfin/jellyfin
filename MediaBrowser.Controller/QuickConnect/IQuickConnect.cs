@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.QuickConnect;
 
@@ -43,6 +42,6 @@ namespace MediaBrowser.Controller.QuickConnect
         /// </summary>
         /// <param name="secret">The secret.</param>
         /// <returns>The authentication result.</returns>
-        AuthenticationResult GetAuthorizedRequest(string secret);
+        Session.Session GetAuthorizedRequest(string secret);
     }
 }

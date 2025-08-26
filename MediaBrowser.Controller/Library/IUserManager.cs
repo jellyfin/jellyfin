@@ -120,8 +120,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="remoteEndPoint">Remove endpoint to use.</param>
         /// <param name="isUserSession">Specifies if a user session.</param>
         /// <returns>User wrapped in awaitable task.</returns>
-        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method." +
-            " For direct session creation (AFTER successful authentication), use `ISessionManager#CreateSession` instead.")]
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
+            "For direct session creation (AFTER successful authentication), use `ISessionManager#CreateSession` instead.")]
         Task<User?> AuthenticateUser(string username, string password, string remoteEndPoint, bool isUserSession);
 
         /// <summary>

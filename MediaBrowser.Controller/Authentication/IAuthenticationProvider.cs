@@ -11,24 +11,18 @@ namespace MediaBrowser.Controller.Authentication
     /// Interface for authentication providers. Custom authentication providers should generally inherit
     /// from <see cref="AbstractAuthenticationProvider{TData, TPrivateAttemptData, TPublicAttemptData, TPersistentUserData}"/> instead.
     /// </summary>
-    public interface IAuthenticationProvider
+    /// <typeparam name="TPayloadData">The payload data that (eventually) authenticates a user. This type is used as a key for signalling if an authentication provider
+    /// can handle a specific type of authentication data. For classic username-password authentication, use <see cref="PasswordData"/>. For 
+    /// this would be </typeparam>
+    public interface IAuthenticationProvider<TPayloadData>
+        where TPayloadData : struct
     {
         /// <summary>
         /// Gets the name of this authentication provider.
         /// </summary>
         string Name { get; }
 
-        /// <summary>
-        /// Gets a value indicating the interval in which this authentication method wants to provide its public data
-        /// via <see cref="GetPublicAttemptData(Guid)"/>, in seconds. Returning 0 disables its public data reporting.
-        /// </summary>
-        /// <remarks>
-        /// Public data is mostly useful for time-based 
-        /// user intervention, such as Quick Connect, e-mail magic link sign-in or TOTP 2fa.
-        /// </remarks>
-        int RefreshInterval { get => 0; }
-
-        [Obsolete("Deprecated. Authentication providers' enabled statuses are managed by IUserManager.")]
+        [Obsolete("Deprecated. Authentication providers' enabled statuses are managed by IUserAuthenticationManager.")]
         bool IsEnabled { get; }
 
         [Obsolete("Deprecated, do not implement.")]
@@ -108,6 +102,11 @@ namespace MediaBrowser.Controller.Authentication
         {
             return Task.FromResult<dynamic?>(null);
         }
+    }
+
+    public interface IAuthenticationProvider : IAuthenticationProvider<PasswordData>
+    {
+
     }
 
     [Obsolete("Deprecated. Callers should call `Authenticate(User user, T data)` instead. Authentication providers should not implement this interface anymore, and instead" +

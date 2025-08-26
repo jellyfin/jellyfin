@@ -1,5 +1,4 @@
 using System;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Events.Authentication;
@@ -12,8 +11,8 @@ public class AuthenticationResultEventArgs : EventArgs
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthenticationResultEventArgs"/> class.
     /// </summary>
-    /// <param name="result">The <see cref="AuthenticationResult"/>.</param>
-    public AuthenticationResultEventArgs(AuthenticationResult result)
+    /// <param name="result">The <see cref="Controller.Session.Session"/>.</param>
+    public AuthenticationResultEventArgs(Controller.Session.Session result)
     {
         User = result.User;
         SessionInfo = result.SessionInfo;

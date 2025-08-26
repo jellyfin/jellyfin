@@ -14,13 +14,13 @@ namespace MediaBrowser.Controller.Authentication
     /// </summary>
     /// <typeparam name="TData">Type of data that you expect to receive from the user directly (TOTP code, single use authentication code, password, quick connect code).</typeparam>
     /// <typeparam name="TPrivateAttemptData">Type of data that you want to store over the lifetime of this attempt (single use authentication code).</typeparam>
-    /// <typeparam name="TPublicAttemptData">Type of data that you want to report to the user between starting and ending this attempt (Quick connect code, progress indication). You should NOT put secrets in here.</typeparam>
+    /// <typeparam name="TIntermediateAttemptData">Type of data that you want to report to the user between starting and ending this attempt (Quick connect code, progress indication). You should NOT put secrets in here.</typeparam>
     /// <typeparam name="TPersistentUserData">Type of persistent user-specific data that you want to store or access (TOTP secret, e-mail address, password hash).</typeparam>
     /// <remarks>You can use <see cref="NoData"/> for any type parameter to indicate the absence of data.</remarks>
-    public abstract class AbstractAuthenticationProvider<TData, TPrivateAttemptData, TPublicAttemptData, TPersistentUserData> : IAuthenticationProvider
+    public abstract class AbstractAuthenticationProvider<TData, TPrivateAttemptData, TIntermediateAttemptData, TPersistentUserData> : IAuthenticationProvider
     {
         private readonly ConcurrentDictionary<Guid, TPrivateAttemptData> _privateAttemptDataMap = new();
-        private readonly ConcurrentDictionary<Guid, TPublicAttemptData> _publicAttemptDataMap = new();
+        private readonly ConcurrentDictionary<Guid, TIntermediateAttemptData> _publicAttemptDataMap = new();
 
         /// <inheritdoc/>
         public abstract string Name { get; }
@@ -28,8 +28,16 @@ namespace MediaBrowser.Controller.Authentication
         /// <inheritdoc/>
         public bool IsEnabled => true;
 
-        /// <inheritdoc/>
-        public abstract int RefreshInterval { get; }
+        /// <summary>
+        /// Gets a value indicating the interval in which this authentication method would like to provide its public data
+        /// via <see cref="GetPublicAttemptData(Guid)"/>, in seconds. Returning 0 disables automatic refreshing.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 0 (no refreshing).
+        /// Public data is mostly useful for time-based 
+        /// user intervention, such as Quick Connect, e-mail magic link sign-in or TOTP 2fa.
+        /// </remarks>
+        public virtual int RefreshInterval { get => 0; }
 
         /// <inheritdoc/>
         [Obsolete("Deprecated, do not override.")]

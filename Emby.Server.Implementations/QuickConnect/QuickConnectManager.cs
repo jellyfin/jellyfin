@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.QuickConnect
         private const int Timeout = 10;
 
         private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new();
-        private readonly ConcurrentDictionary<string, (DateTime Timestamp, AuthenticationResult AuthenticationResult)> _authorizedSecrets = new();
+        private readonly ConcurrentDictionary<string, (DateTime Timestamp, MediaBrowser.Controller.Session.Session AuthenticationResult)> _authorizedSecrets = new();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc/>
-        public AuthenticationResult GetAuthorizedRequest(string secret)
+        public MediaBrowser.Controller.Session.Session GetAuthorizedRequest(string secret)
         {
             AssertActive();
             ExpireRequests();

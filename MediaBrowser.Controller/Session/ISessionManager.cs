@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -260,14 +259,14 @@ namespace MediaBrowser.Controller.Session
         /// DEPRECATED: Authenticates the new session.
         /// </summary>
         /// <remarks>
-        /// This method is deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method.
+        /// This method is deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`.
         /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
         /// </remarks>
         /// <param name="request">The authenticationrequest.</param>
         /// <returns>The authentication result.</returns>
-        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
+        Task<Session> AuthenticateNewSession(AuthenticationRequest request)
         {
             throw new NotImplementedException();
         }
@@ -276,14 +275,14 @@ namespace MediaBrowser.Controller.Session
         /// DEPRECATED: Directly authenticates the session without enforcing password.
         /// </summary>
         /// <remarks>
-        /// This method is deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method.
+        /// This method is deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`.
         /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
         /// </remarks>
         /// <param name="request">The authenticationrequest.</param>
         /// <returns>The authentication result.</returns>
-        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request)
+        Task<Session> AuthenticateDirect(AuthenticationRequest request)
         {
             throw new NotImplementedException();
         }
@@ -298,8 +297,8 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="authenticationProviderId">The authentication provider used to authenticate this user.</param>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
-        /// <returns><see cref="Task"/>&lt;<see cref="AuthenticationResult"/>&gt;.</returns>
-        Task<AuthenticationResult> CreateSession(User user, string deviceId, string appName, string appVersion, string deviceName, string authenticationProviderId, string remoteEndpoint);
+        /// <returns><see cref="Task"/>&lt;<see cref="global::MediaBrowser.Controller.Session.Session"/>&gt;.</returns>
+        Task<Session> CreateSession(User user, string deviceId, string appName, string appVersion, string deviceName, string authenticationProviderId, string remoteEndpoint);
 
         /// <summary>
         /// Reports the capabilities.

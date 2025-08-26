@@ -1,13 +1,14 @@
 #nullable disable
 
+using MediaBrowser;
 using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Controller.Authentication;
+namespace MediaBrowser.Controller.Session;
 
 /// <summary>
-/// A class representing an authentication result.
+/// A class representing a session.
 /// </summary>
-public class AuthenticationResult
+public class Session
 {
     /// <summary>
     /// Gets or sets the user.

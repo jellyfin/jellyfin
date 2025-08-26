@@ -16,6 +16,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
@@ -38,6 +40,7 @@ namespace Jellyfin.Api.Controllers;
 public class UserController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
+    private readonly IUserAuthenticationManager _userAuthenticationManager;
     private readonly ISessionManager _sessionManager;
     private readonly INetworkManager _networkManager;
     private readonly IDeviceManager _deviceManager;
@@ -46,11 +49,13 @@ public class UserController : BaseJellyfinApiController
     private readonly ILogger _logger;
     private readonly IQuickConnect _quickConnectManager;
     private readonly IPlaylistManager _playlistManager;
+    private readonly IEventManager _eventManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
     /// </summary>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="userAuthenticationManager">Instance of the <see cref="IUserAuthenticationManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
@@ -59,8 +64,10 @@ public class UserController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
+    /// <param name="eventManager">Instance of the <see cref="IEventManager"/> interface.</param>
     public UserController(
         IUserManager userManager,
+        IUserAuthenticationManager userAuthenticationManager,
         ISessionManager sessionManager,
         INetworkManager networkManager,
         IDeviceManager deviceManager,
@@ -68,9 +75,11 @@ public class UserController : BaseJellyfinApiController
         IServerConfigurationManager config,
         ILogger<UserController> logger,
         IQuickConnect quickConnectManager,
-        IPlaylistManager playlistManager)
+        IPlaylistManager playlistManager,
+        IEventManager eventManager)
     {
         _userManager = userManager;
+        _userAuthenticationManager = userAuthenticationManager;
         _sessionManager = sessionManager;
         _networkManager = networkManager;
         _deviceManager = deviceManager;
@@ -79,6 +88,7 @@ public class UserController : BaseJellyfinApiController
         _logger = logger;
         _quickConnectManager = quickConnectManager;
         _playlistManager = playlistManager;
+        _eventManager = eventManager;
     }
 
     /// <summary>
@@ -174,14 +184,14 @@ public class UserController : BaseJellyfinApiController
     /// <response code="200">User authenticated.</response>
     /// <response code="403">Sha1-hashed password only is not allowed.</response>
     /// <response code="404">User not found.</response>
-    /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
+    /// <returns>A <see cref="Task"/> containing an <see cref="Session"/>.</returns>
     [HttpPost("{userId}/Authenticate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ApiExplorerSettings(IgnoreApi = true)]
     [Obsolete("Authenticate with username instead")]
-    public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
+    public async Task<ActionResult<Session>> AuthenticateUser(
         [FromRoute, Required] Guid userId,
         [FromQuery, Required] string pw)
     {
@@ -201,20 +211,28 @@ public class UserController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Authenticates a user by name.
+    /// Authenticates a user by name and password.
     /// </summary>
     /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
     /// <response code="200">User authenticated.</response>
-    /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/> with information about the new session.</returns>
+    /// <returns>A <see cref="Task"/> containing an <see cref="Session"/> with information about the new session.</returns>
     [HttpPost("AuthenticateByName")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
+    public async Task<ActionResult<Session>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
-        try
+        var remoteEndpoint = HttpContext.GetNormalizedRemoteIP().ToString();
+        if (string.IsNullOrWhiteSpace(request.Username))
         {
-            var result = await _sessionManager.AuthenticateNewSession(new AuthenticationRequest
+            _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndpoint);
+            throw new ArgumentNullException("request.Username");
+        }
+
+        var attemptedUser = _userManager.GetUserByName(request.Username);
+
+        if (attemptedUser is null)
+        {
+            await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(new AuthenticationRequest
             {
                 App = auth.Client,
                 AppVersion = auth.Version,
@@ -223,9 +241,20 @@ public class UserController : BaseJellyfinApiController
                 Password = request.Pw,
                 RemoteEndPoint = HttpContext.GetNormalizedRemoteIP().ToString(),
                 Username = request.Username
-            }).ConfigureAwait(false);
+            })).ConfigureAwait(false);
+            throw new AuthenticationException("Invalid username or password entered.");
+        }
 
-            return result;
+        try
+        {
+            var authenticatedUser = await _userAuthenticationManager.Authenticate(attemptedUser, new PasswordData(request.Pw)).ConfigureAwait(false);
+            if (!authenticatedUser)
+            {
+                throw new AuthenticationException("Invalid username or password entered.");
+            }
+
+            // TODO: get authentication provider ID used
+            return await _sessionManager.CreateSession(authenticatedUser, auth.DeviceId, auth.Client, auth.Version, auth.Device, "", remoteEndpoint).ConfigureAwait(false);
         }
         catch (SecurityException e)
         {
@@ -243,7 +272,7 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateWithQuickConnect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+    public ActionResult<Session> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
     {
         try
         {
@@ -294,11 +323,7 @@ public class UserController : BaseJellyfinApiController
         {
             if (!User.IsInRole(UserRoles.Administrator) || (userId.HasValue && User.GetUserId().Equals(userId.Value)))
             {
-                var success = await _userManager.AuthenticateUser(
-                    user.Username,
-                    request.CurrentPw ?? string.Empty,
-                    HttpContext.GetNormalizedRemoteIP().ToString(),
-                    false).ConfigureAwait(false);
+                var success = await _userAuthenticationManager.Authenticate(user, new PasswordData(request.CurrentPw ?? string.Empty)).ConfigureAwait(false);
 
                 if (success is null)
                 {

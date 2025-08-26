@@ -1584,7 +1584,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc/>
-        public async Task<AuthenticationResult> CreateSession(User user, string deviceId, string appName, string appVersion, string deviceName, string authenticationProviderId, string remoteEndpoint)
+        public async Task<MediaBrowser.Controller.Session.Session> CreateSession(User user, string deviceId, string appName, string appVersion, string deviceName, string authenticationProviderId, string remoteEndpoint)
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentException.ThrowIfNullOrEmpty(deviceId);
@@ -1597,7 +1597,7 @@ namespace Emby.Server.Implementations.Session
             var session = CreateSessionInfo(key, appName, appVersion, deviceId, deviceName, remoteEndpoint, authenticationProviderId, user);
             await LogSessionActivity(session, user);
 
-            return new AuthenticationResult
+            return new MediaBrowser.Controller.Authentication.Session
             {
                 User = _userManager.GetUserDto(user, remoteEndpoint),
                 SessionInfo = ToSessionInfoDto(session),
@@ -1607,26 +1607,26 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc/>
-        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        public Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
+        public Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSession(AuthenticationRequest request)
         {
-            _logger.LogWarning("Deprecated AuthenticateNewSession used. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+            _logger.LogWarning("Deprecated AuthenticateNewSession used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
             // return AuthenticateNewSessionInternal(request, true);
         }
 
         /// <inheritdoc/>
-        [Obsolete("Deprecated. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        public Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request)
+        public Task<MediaBrowser.Controller.Session.Session> AuthenticateDirect(AuthenticationRequest request)
         {
-            _logger.LogWarning("Deprecated AuthenticateDirect used. For authentication, use a specific IAuthenticationProvider's `Authenticate` method. " +
+            _logger.LogWarning("Deprecated AuthenticateDirect used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
             "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
             // return AuthenticateNewSessionInternal(request, false);
         }
 
-        internal async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
+        internal async Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
             CheckDisposed();
 
@@ -1682,7 +1682,7 @@ namespace Emby.Server.Implementations.Session
                 request.RemoteEndPoint,
                 user).ConfigureAwait(false);
 
-            var returnResult = new AuthenticationResult
+            var returnResult = new MediaBrowser.Controller.Authentication.Session
             {
                 User = _userManager.GetUserDto(user, request.RemoteEndPoint),
                 SessionInfo = ToSessionInfoDto(session),
