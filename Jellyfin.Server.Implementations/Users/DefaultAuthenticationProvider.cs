@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// <summary>
     /// The default authentication provider.
     /// </summary>
-    [Obsolete("Deprecated. Use UsernamePasswordAuthenticationProvider instead.")]
+    [Obsolete("Deprecated. Remove.")]
     public class DefaultAuthenticationProvider : IAuthenticationProvider, IRequiresResolvedUser
     {
         private readonly ILogger<DefaultAuthenticationProvider> _logger;

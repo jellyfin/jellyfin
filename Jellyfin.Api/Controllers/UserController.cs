@@ -245,16 +245,36 @@ public class UserController : BaseJellyfinApiController
             throw new AuthenticationException("Invalid username or password entered.");
         }
 
+        var mfaAwareClient = HttpContext.Request.Headers.ContainsKey("X-MFA-Aware");
+
         try
         {
-            var authenticatedUser = await _userAuthenticationManager.Authenticate(attemptedUser, new PasswordData(request.Pw)).ConfigureAwait(false);
-            if (!authenticatedUser)
-            {
-                throw new AuthenticationException("Invalid username or password entered.");
-            }
+            var (provider, authenticationResponse) = await _userAuthenticationManager.Authenticate(attemptedUser, new PasswordAuthData(request.Pw)).ConfigureAwait(false)
+                ?? throw new AuthenticationException("No valid authentication provider found.");
 
-            // TODO: get authentication provider ID used
-            return await _sessionManager.CreateSession(authenticatedUser, auth.DeviceId, auth.Client, auth.Version, auth.Device, "", remoteEndpoint).ConfigureAwait(false);
+            switch (authenticationResponse) // this endpoint does not handle multi-step authentication providers
+            {
+                case AuthenticationResponse.Success success:
+                    return await _sessionManager.CreateSession(
+                        success.User,
+                        auth.DeviceId,
+                        auth.Client,
+                        auth.Version,
+                        auth.Device,
+                        provider.GetType().Name,
+                        remoteEndpoint).ConfigureAwait(false);
+                case AuthenticationResponse.Continue cont:
+                    if (!mfaAwareClient)
+                    {
+                        throw new AuthenticationException("Received MFA continuation response, but client does not support MFA.");
+                    }
+
+                    return new RedirectResult(cont.URI.ToString());
+                case AuthenticationResponse.Failure failure:
+                    throw new AuthenticationException("Invalid username or password entered.");
+                default:
+                    throw new AuthenticationException("Unsupported authentication provider response.");
+            }
         }
         catch (SecurityException e)
         {
@@ -323,7 +343,7 @@ public class UserController : BaseJellyfinApiController
         {
             if (!User.IsInRole(UserRoles.Administrator) || (userId.HasValue && User.GetUserId().Equals(userId.Value)))
             {
-                var success = await _userAuthenticationManager.Authenticate(user, new PasswordData(request.CurrentPw ?? string.Empty)).ConfigureAwait(false);
+                var INVALID__TODO = await _userAuthenticationManager.Authenticate(user, new PasswordAuthData(request.CurrentPw ?? string.Empty)).ConfigureAwait(false);
 
                 if (success is null)
                 {

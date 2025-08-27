@@ -14,6 +14,15 @@ namespace MediaBrowser.Controller.Authentication
     /// </summary>
     public interface IUserAuthenticationManager
     {
-        Task<(User, IAuthenticationProvider)?> Authenticate(User? user, dynamic? payloadData);
+        /// <summary>
+        /// Performs an authentication attempt, with optional user and payload data.
+        /// </summary>
+        /// <param name="user">A user. Can be null if the user's identity has yet to be determined, or if the user will be created during the authentication process.</param>
+        /// <param name="payloadData">Authentication data.</param>
+        /// <typeparam name="TPayload">The payload data.</typeparam>
+        /// <returns>Null if the authentication request was unsuccessful,
+        /// otherwise a tuple containing the <see cref="IAuthenticationProvider"/> that responded, and the response itself.</returns>
+        Task<(IAuthenticationProvider<TPayload> Provider, AuthenticationResponse Response)?> Authenticate<TPayload>(User? user, TPayload payloadData)
+            where TPayload : struct;
     }
 }

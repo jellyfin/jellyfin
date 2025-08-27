@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
-    /// Simple password-based authentication provider.
+    /// Default Jellyfin password-based authentication provider.
     /// </summary>
     public class PasswordAuthenticationProvider
         : AbstractAuthenticationProvider<string>
