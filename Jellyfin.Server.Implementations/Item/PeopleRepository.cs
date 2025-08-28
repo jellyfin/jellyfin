@@ -10,6 +10,8 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Jellyfin.Server.Implementations.Item;
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -22,12 +24,14 @@ namespace Jellyfin.Server.Implementations.Item;
 /// </summary>
 /// <param name="dbProvider">Efcore Factory.</param>
 /// <param name="itemTypeLookup">Items lookup service.</param>
+/// <param name="logger">Logger.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="PeopleRepository"/> class.
 /// </remarks>
-public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup) : IPeopleRepository
+public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, IItemTypeLookup itemTypeLookup, ILogger<PeopleRepository> logger) : IPeopleRepository
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
+    private readonly ILogger<PeopleRepository> _logger = logger;
 
     /// <inheritdoc/>
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
@@ -69,20 +73,128 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
 
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
-        context.SaveChanges();
+        // Step 1: Get people that need IDs
+        var peopleWithoutIds = people.Where(p => p.Id == Guid.Empty).ToArray();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        // Step 2: Check database for existing people and assign their IDs
+        if (peopleWithoutIds.Length > 0)
+        {
+            var nameTypePairs = peopleWithoutIds
+                .Select(x => new { x.Name, PersonType = x.Type.ToString() })
+                .ToArray();
+
+            var names = nameTypePairs.Select(x => x.Name).ToArray();
+            var existingPeople = context.Peoples.AsNoTracking()
+                .Where(p => names.Contains(p.Name))
+                .Select(p => new { p.Id, p.Name, p.PersonType })
+                .ToList()
+                .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
+                .ToList();
+
+            // Assign existing IDs to found people
+            foreach (var person in peopleWithoutIds)
+            {
+                var existing = existingPeople.FirstOrDefault(e =>
+                    e.Name == person.Name && e.PersonType == person.Type.ToString());
+                if (existing != null)
+                {
+                    person.Id = existing.Id;
+                }
+            }
+        }
+
+        // Step 3: For people that are truly missing, assign new GUIDs and insert with Polly retry
+        var missingPeople = people.Where(p => p.Id == Guid.Empty).ToList();
+        if (missingPeople.Count > 0)
+        {
+            foreach (var person in missingPeople)
+            {
+                person.Id = Guid.NewGuid();
+            }
+
+            // RetryForever is safe here because removing inserted items from the list
+            // guarantees termination once all are either inserted or matched to existing records
+            var retryPolicy = Policy
+                .Handle<DbUpdateException>()
+                .RetryForever((Exception exception, int retryCount) =>
+                {
+                    _logger.LogInformation("Retrying people insert attempt {RetryCount} due to conflicts", retryCount);
+                    context.ChangeTracker.Clear();
+
+                    // Re-check what already exists (handles concurrent inserts during retries)
+                    // Use AsNoTracking to avoid tracking conflicts from existence queries
+                    var namesToCheck = missingPeople.Select(p => p.Name).ToArray();
+                    var existingPeople = context.Peoples.AsNoTracking()
+                        .Where(p => namesToCheck.Contains(p.Name))
+                        .Select(p => new { p.Id, p.Name, p.PersonType })
+                        .ToList()
+                        .Where(p => missingPeople.Any(person =>
+                            p.Name == person.Name && p.PersonType == person.Type.ToString()))
+                        .ToList();
+
+                    // Update IDs for people found during retry and remove from insert list
+                    foreach (var existing in existingPeople)
+                    {
+                        var person = missingPeople.First(p =>
+                            p.Name == existing.Name && p.Type.ToString() == existing.PersonType);
+                        person.Id = existing.Id;
+                        missingPeople.Remove(person);
+                        _logger.LogInformation(
+                            "Matched ({Name}, {PersonType}) with existing ID {ExistingId}",
+                            existing.Name,
+                            existing.PersonType,
+                            existing.Id);
+                    }
+                });
+
+            retryPolicy.Execute(() =>
+            {
+                // Insert missing records in progressively smaller batches after each retry
+                if (missingPeople.Count > 0)
+                {
+                    context.Peoples.AddRange(missingPeople.Select(person => new People
+                    {
+                        Id = person.Id,
+                        Name = person.Name,
+                        PersonType = person.Type.ToString()
+                    }));
+                    context.SaveChanges();
+                }
+            });
+        }
+
+        // Clear change tracker before mapping operations to avoid tracking conflicts
+        context.ChangeTracker.Clear();
+
+        // Now all people have valid IDs, process PeopleBaseItemMap
+        var allPeopleIds = people.Select(p => p.Id).ToArray();
+
+        // Get all existing mappings for this item in one query
+        var existingMappings = context.PeopleBaseItemMap
+            .Where(m => m.ItemId == itemId)
+            .ToDictionary(m => m.PeopleId, m => m);
+
+        // Remove obsolete mappings (people no longer in the list)
+        var obsoleteMappings = existingMappings.Values
+            .Where(m => !allPeopleIds.Contains(m.PeopleId))
+            .ToList();
+        context.PeopleBaseItemMap.RemoveRange(obsoleteMappings);
+
+        // Upsert mappings for all people
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
-            if (existingMap is null)
+            if (existingMappings.TryGetValue(person.Id, out var existing))
             {
+                // Update existing mapping
+                existing.Role = person.Role;
+                existing.SortOrder = person.SortOrder;
+                existing.ListOrder = person.SortOrder;
+            }
+            else
+            {
+                // Add new mapping
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
@@ -94,16 +206,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Role = person.Role
                 });
             }
-            else
-            {
-                // person mapping already exists so remove from list
-                maps.Remove(existingMap);
-            }
         }
 
-        context.PeopleBaseItemMap.RemoveRange(maps);
-
         context.SaveChanges();
+        transaction.Commit();
     }
 
     private PersonInfo Map(People people)
