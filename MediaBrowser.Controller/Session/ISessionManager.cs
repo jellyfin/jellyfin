@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(IEnumerable<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
@@ -215,7 +215,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="dataFn">Data function.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(IEnumerable<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.

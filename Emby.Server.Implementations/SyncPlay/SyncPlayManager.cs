@@ -256,7 +256,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
+        public IReadOnlyList<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
             if (session is null)
             {

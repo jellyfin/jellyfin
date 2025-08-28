@@ -162,9 +162,9 @@ namespace MediaBrowser.Controller.LiveTv
         [JsonIgnore]
         public override bool SupportsAncestors => false;
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             if (!IsSeries)
             {
