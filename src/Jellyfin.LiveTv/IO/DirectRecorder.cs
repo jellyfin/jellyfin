@@ -117,9 +117,12 @@ namespace Jellyfin.LiveTv.IO
                             output,
                             IODefaults.CopyToBufferSize,
                             cancellationToken).ConfigureAwait(false);
-
-                        _logger.LogInformation("Recording completed to file {0}", targetFile);
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore and let execution continue, because this is expected result of CopyUntilCancelled.
+                    _logger.LogInformation("Recording completed to file {0}", targetFile);
                 }
                 catch (Exception ex)
                 {
@@ -130,9 +133,10 @@ namespace Jellyfin.LiveTv.IO
                         return;
                     }
 
-                    int backoff = (int)Math.Pow(2, retry);
-                    _logger.LogInformation("Stream error: {Message}. Retrying in {Backoff}s...", ex.Message, backoff);
-                    await Task.Delay(TimeSpan.FromSeconds(backoff), cancellationToken).ConfigureAwait(false);
+                    // If first retry then wait for only 100 ms.
+                    int backoff = retry == 1 ? 100 : (int)Math.Pow(2, retry - 1) * 1000;
+                    _logger.LogInformation("Stream error: {Message}. Retrying in {Backoff}ms...", ex.Message, backoff);
+                    await Task.Delay(TimeSpan.FromMilliseconds(backoff), cancellationToken).ConfigureAwait(false);
                 }
             }
         }

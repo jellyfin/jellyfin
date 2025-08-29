@@ -96,13 +96,17 @@ namespace Jellyfin.LiveTv.IO
         public async Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+
+            // 128kb bufferSize
+            using var bufferedStream = new BufferedStream(source, 131072);
+
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
+                        var bytesRead = await CopyToAsyncInternal(source, target, buffer, bufferedStream, cancellationToken).ConfigureAwait(false);
 
                         if (bytesRead == 0)
                         {
@@ -127,11 +131,10 @@ namespace Jellyfin.LiveTv.IO
             }
         }
 
-        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, byte[] buffer, CancellationToken cancellationToken)
+        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, byte[] buffer, BufferedStream bufferedStream, CancellationToken cancellationToken)
         {
             int bytesRead;
             int totalBytesRead = 0;
-            using var bufferedStream = new BufferedStream(source, IODefaults.BufferStreamBufferSize);
 
             while ((bytesRead = await bufferedStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
             {
