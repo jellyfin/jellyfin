@@ -459,6 +459,8 @@ namespace MediaBrowser.LocalMetadata.Savers
                         writer.WriteElementStringAsync(null, "Format3D", null, "HTAB"),
                     Video3DFormat.MVC =>
                         writer.WriteElementStringAsync(null, "Format3D", null, "MVC"),
+                    Video3DFormat.Spatial =>
+                        writer.WriteElementStringAsync(null, "Format3D", null, "Spatial"),
                     _ => Task.CompletedTask
                 };
             }
