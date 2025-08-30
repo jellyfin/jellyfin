@@ -500,7 +500,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsLiked.HasValue)
             {
                 userData ??= userDataManager.GetUserData(user, item);
-
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
                     return false;
@@ -521,7 +520,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsFavorite.HasValue)
             {
                 userData ??= userDataManager.GetUserData(user, item);
-
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
                     return false;
