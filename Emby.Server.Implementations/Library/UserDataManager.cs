@@ -226,35 +226,31 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        private Dictionary<Guid, UserItemData> GetUserData(Guid userId, List<(Guid ItemId, List<string> Keys)> items)
+        private Dictionary<Guid, UserItemData> GetUserData(Guid userId, Dictionary<Guid, List<string>> items)
         {
             using var context = _repository.CreateDbContext();
 
-            var flattened = items
-                .SelectMany(item => item.Keys, (item, key) => $"{item.ItemId.ToUpper("D", CultureInfo.InvariantCulture)}:{key}")
-                .ToList();
-
             var queryResult = context.UserData
                 .AsNoTracking()
-                .Where(u => u.UserId == userId && flattened.Any(f => f == u.ItemId + ":" + u.CustomDataKey))
+                .Where(u => u.UserId == userId && items.Keys.Contains(u.ItemId))
                 .GroupBy(q => q.ItemId, q => q)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var userDataResult = new Dictionary<Guid, UserItemData>();
             foreach (var item in items)
             {
-                if (queryResult.TryGetValue(item.ItemId, out var userData)
+                if (queryResult.TryGetValue(item.Key, out var userData)
                     && userData.Count != 0)
                 {
-                    var itemIdStr = item.ItemId.ToString("N");
+                    var itemIdStr = item.Key.ToString("N");
                     var userDataReference = userData.FirstOrDefault(d => string.Equals(d.CustomDataKey, itemIdStr, StringComparison.Ordinal))
                         ?? userData.First();
 
-                    userDataResult[item.ItemId] = Map(userDataReference);
+                    userDataResult[item.Key] = Map(userDataReference);
                 }
                 else
                 {
-                    userDataResult[item.ItemId] = new UserItemData { Key = item.Keys.Last() };
+                    userDataResult[item.Key] = new UserItemData { Key = item.Value.Last() };
                 }
             }
 
@@ -283,19 +279,19 @@ namespace Emby.Server.Implementations.Library
 
             var userDataCollection = new Dictionary<Guid, UserItemData>();
 
-            var itemKeys = items.Select(i => (i.Id, i.GetUserDataKeys())).ToList();
-            var cacheMiss = new List<(Guid ItemId, List<string> Keys)>();
+            var itemKeys = items.Select(i => (i.Id, Keys: i.GetUserDataKeys())).ToDictionary(v => v.Id, v => v.Keys);
+            var cacheMiss = new Dictionary<Guid, List<string>>();
 
             foreach (var itemKey in itemKeys)
             {
-                var cacheKey = GetCacheKey(user.InternalId, itemKey.Id);
+                var cacheKey = GetCacheKey(user.InternalId, itemKey.Key);
                 if (_cache.TryGet(cacheKey, out var userData))
                 {
-                    userDataCollection[itemKey.Id] = userData;
+                    userDataCollection[itemKey.Key] = userData;
                     continue;
                 }
 
-                cacheMiss.Add(itemKey);
+                cacheMiss[itemKey.Key] = itemKey.Value;
             }
 
             if (cacheMiss.Count != 0)
