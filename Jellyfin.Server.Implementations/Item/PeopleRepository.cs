@@ -86,8 +86,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 .ToArray();
 
             var names = nameTypePairs.Select(x => x.Name).ToArray();
+            var personTypes = nameTypePairs.Select(x => x.PersonType).ToArray();
             var existingPeople = context.Peoples.AsNoTracking()
-                .Where(p => names.Contains(p.Name))
+                .Where(p => names.Contains(p.Name) && personTypes.Contains(p.PersonType))
                 .Select(p => new { p.Id, p.Name, p.PersonType })
                 .ToList()
                 .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
@@ -126,8 +127,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     // Re-check what already exists (handles concurrent inserts during retries)
                     // Use AsNoTracking to avoid tracking conflicts from existence queries
                     var namesToCheck = missingPeople.Select(p => p.Name).ToArray();
+                    var personTypesToCheck = missingPeople.Select(p => p.Type.ToString()).ToArray();
                     var existingPeople = context.Peoples.AsNoTracking()
-                        .Where(p => namesToCheck.Contains(p.Name))
+                        .Where(p => namesToCheck.Contains(p.Name) && personTypesToCheck.Contains(p.PersonType))
                         .Select(p => new { p.Id, p.Name, p.PersonType })
                         .ToList()
                         .Where(p => missingPeople.Any(person =>
