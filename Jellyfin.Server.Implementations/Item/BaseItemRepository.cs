@@ -688,22 +688,22 @@ public sealed class BaseItemRepository
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
-        var groupedByType = allListedItemValues
-            .GroupBy(e => (int)e.MagicNumber)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
-        var existingValues = groupedByType
-            .SelectMany(kvp => context.ItemValues
-                .Where(e => (int)e.Type == kvp.Key && kvp.Value.Contains(e.Value)))
-            .ToArray();
-        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: (ItemValueType)f.Type, f.Value)))
-            .DistinctBy(f => new { f.MagicNumber, f.Value })
-            .Select(f => new ItemValue()
+        var existingValues = context.ItemValues
+            .Select(e => new
             {
-                CleanValue = GetCleanValue(f.Value),
-                ItemValueId = Guid.NewGuid(),
-                Type = f.MagicNumber,
-                Value = f.Value
-            }).ToArray();
+                item = e,
+                Key = e.Type + "+" + e.Value
+            })
+            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
+            .Select(e => e.item)
+            .ToArray();
+        var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
+        {
+            CleanValue = GetCleanValue(f.Value),
+            ItemValueId = Guid.NewGuid(),
+            Type = f.MagicNumber,
+            Value = f.Value
+        }).ToArray();
 
         // Insert ItemValues using Polly retry pattern
         var itemValuesStore = new List<ItemValue>(existingValues);
