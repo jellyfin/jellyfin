@@ -109,14 +109,14 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
         var albumArtists = songs
             .SelectMany(i => i.AlbumArtists)
-            .GroupBy(i => i)
+            .GroupBy(i => i, StringComparer.OrdinalIgnoreCase)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
             .ToArray();
 
         updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbumArtist);
 
-        if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
+        if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.Ordinal))
         {
             item.AlbumArtists = albumArtists;
             updateType |= ItemUpdateType.MetadataEdit;
@@ -131,12 +131,12 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
 
         var artists = songs
             .SelectMany(i => i.Artists)
-            .GroupBy(i => i)
+            .GroupBy(i => i, StringComparer.OrdinalIgnoreCase)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
             .ToArray();
 
-        if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
+        if (!item.Artists.SequenceEqual(artists, StringComparer.Ordinal))
         {
             item.Artists = artists;
             updateType |= ItemUpdateType.MetadataEdit;
