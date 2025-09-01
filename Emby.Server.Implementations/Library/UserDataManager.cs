@@ -279,19 +279,18 @@ namespace Emby.Server.Implementations.Library
 
             var userDataCollection = new Dictionary<Guid, UserItemData>();
 
-            var itemKeys = items.Select(i => (i.Id, Keys: i.GetUserDataKeys())).ToDictionary(v => v.Id, v => v.Keys);
             var cacheMiss = new Dictionary<Guid, List<string>>();
 
-            foreach (var itemKey in itemKeys)
+            foreach (var item in items)
             {
-                var cacheKey = GetCacheKey(user.InternalId, itemKey.Key);
+                var cacheKey = GetCacheKey(user.InternalId, item.Id);
                 if (_cache.TryGet(cacheKey, out var userData))
                 {
-                    userDataCollection[itemKey.Key] = userData;
+                    userDataCollection[item.Id] = userData;
                     continue;
                 }
 
-                cacheMiss[itemKey.Key] = itemKey.Value;
+                cacheMiss[item.Id] = item.GetUserDataKeys();
             }
 
             if (cacheMiss.Count != 0)
