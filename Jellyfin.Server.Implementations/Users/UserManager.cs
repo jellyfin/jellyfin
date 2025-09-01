@@ -44,9 +44,6 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<UserManager> _logger;
         private readonly IReadOnlyCollection<IPasswordResetProvider> _passwordResetProviders;
-        private readonly IReadOnlyCollection<IAuthenticationProvider> _authenticationProviders;
-        private readonly InvalidAuthProvider _invalidAuthProvider;
-        private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -63,7 +60,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="logger">The logger.</param>
         /// <param name="serverConfigurationManager">The system config manager.</param>
         /// <param name="passwordResetProviders">The password reset providers.</param>
-        /// <param name="authenticationProviders">The authentication providers.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
@@ -72,8 +68,7 @@ namespace Jellyfin.Server.Implementations.Users
             IImageProcessor imageProcessor,
             ILogger<UserManager> logger,
             IServerConfigurationManager serverConfigurationManager,
-            IEnumerable<IPasswordResetProvider> passwordResetProviders,
-            IEnumerable<IAuthenticationProvider> authenticationProviders)
+            IEnumerable<IPasswordResetProvider> passwordResetProviders)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -84,10 +79,7 @@ namespace Jellyfin.Server.Implementations.Users
             _serverConfigurationManager = serverConfigurationManager;
 
             _passwordResetProviders = passwordResetProviders.ToList();
-            _authenticationProviders = authenticationProviders.ToList();
 
-            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
-            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
 
             _users = new ConcurrentDictionary<Guid, User>();
@@ -281,38 +273,14 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public Task ResetPassword(User user)
-        {
-            return ChangePassword(user, string.Empty);
-        }
-
-        /// <inheritdoc/>
-        public async Task ChangePassword(User user, string newPassword)
-        {
-            ArgumentNullException.ThrowIfNull(user);
-            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
-            {
-                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
-            }
-
-            await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
-
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
-            var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
             var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = hasPassword,
-                HasConfiguredPassword = hasPassword,
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -388,120 +356,6 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task<User?> AuthenticateUser(
-            string username,
-            string password,
-            string remoteEndPoint,
-            bool isUserSession)
-        {
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndPoint);
-                throw new ArgumentNullException(nameof(username));
-            }
-
-            var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            var authResult = await AuthenticateLocalUser(username, password, user)
-                .ConfigureAwait(false);
-            var authenticationProvider = authResult.AuthenticationProvider;
-            var success = authResult.Success;
-
-            if (user is null)
-            {
-                string updatedUsername = authResult.Username;
-
-                if (success
-                    && authenticationProvider is not null
-                    && authenticationProvider is not DefaultAuthenticationProvider)
-                {
-                    // Trust the username returned by the authentication provider
-                    username = updatedUsername;
-
-                    // Search the database for the user again
-                    // the authentication provider might have created it
-                    user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
-                    {
-                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            if (success && user is not null && authenticationProvider is not null)
-            {
-                var providerId = authenticationProvider.GetType().FullName;
-
-                if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
-                {
-                    user.AuthenticationProviderId = providerId;
-                    await UpdateUserAsync(user).ConfigureAwait(false);
-                }
-            }
-
-            if (user is null)
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new AuthenticationException("Invalid username or password entered.");
-            }
-
-            if (user.HasPermission(PermissionKind.IsDisabled))
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException(
-                    $"The {user.Username} account is currently disabled. Please consult with your administrator.");
-            }
-
-            if (!user.HasPermission(PermissionKind.EnableRemoteAccess) &&
-                !_networkManager.IsInLocalNetwork(remoteEndPoint))
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException("Forbidden.");
-            }
-
-            if (!user.IsParentalScheduleAllowed())
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException("User is not allowed access at this time.");
-            }
-
-            // Update LastActivityDate and LastLoginDate, then save
-            if (success)
-            {
-                if (isUserSession)
-                {
-                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                }
-
-                user.InvalidLoginAttemptCount = 0;
-                await UpdateUserAsync(user).ConfigureAwait(false);
-                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
-            }
-            else
-            {
-                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied (IP: {IP}).",
-                    user.Username,
-                    remoteEndPoint);
-            }
-
-            return success ? user : null;
-        }
-
-        /// <inheritdoc/>
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
@@ -569,21 +423,6 @@ namespace Jellyfin.Server.Implementations.Users
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 _users.Add(newUser.Id, newUser);
             }
-        }
-
-        /// <inheritdoc/>
-        public NameIdPair[] GetAuthenticationProviders()
-        {
-            return _authenticationProviders
-                .Where(provider => provider.IsEnabled)
-                .OrderBy(i => i is DefaultAuthenticationProvider ? 0 : 1)
-                .ThenBy(i => i.Name)
-                .Select(i => new NameIdPair
-                {
-                    Name = i.Name,
-                    Id = i.GetType().FullName
-                })
-                .ToArray();
         }
 
         /// <inheritdoc/>
@@ -751,41 +590,9 @@ namespace Jellyfin.Server.Implementations.Users
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
         }
 
-        private IAuthenticationProvider GetAuthenticationProvider(User user)
-        {
-            return GetAuthenticationProviders(user)[0];
-        }
-
         private IPasswordResetProvider GetPasswordResetProvider(User user)
         {
             return GetPasswordResetProviders(user)[0];
-        }
-
-        private List<IAuthenticationProvider> GetAuthenticationProviders(User? user)
-        {
-            var authenticationProviderId = user?.AuthenticationProviderId;
-
-            var providers = _authenticationProviders.Where(i => i.IsEnabled).ToList();
-
-            if (!string.IsNullOrEmpty(authenticationProviderId))
-            {
-                providers = providers.Where(i => string.Equals(authenticationProviderId, i.GetType().FullName, StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
-            if (providers.Count == 0)
-            {
-                // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
-                _logger.LogWarning(
-                    "User {Username} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected",
-                    user?.Username,
-                    user?.AuthenticationProviderId);
-                providers = new List<IAuthenticationProvider>
-                {
-                    _invalidAuthProvider
-                };
-            }
-
-            return providers;
         }
 
         private IPasswordResetProvider[] GetPasswordResetProviders(User user)
@@ -809,77 +616,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             return providers;
-        }
-
-        private async Task<(IAuthenticationProvider? AuthenticationProvider, string Username, bool Success)> AuthenticateLocalUser(
-                string username,
-                string password,
-                User? user)
-        {
-            bool success = false;
-            IAuthenticationProvider? authenticationProvider = null;
-
-            foreach (var provider in GetAuthenticationProviders(user))
-            {
-                var providerAuthResult =
-                    await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
-                var updatedUsername = providerAuthResult.Username;
-                success = providerAuthResult.Success;
-
-                if (success)
-                {
-                    authenticationProvider = provider;
-                    username = updatedUsername;
-                    break;
-                }
-            }
-
-            return (authenticationProvider, username, success);
-        }
-
-        private async Task<(string Username, bool Success)> AuthenticateWithProvider(
-            IAuthenticationProvider provider,
-            string username,
-            string password,
-            User? resolvedUser)
-        {
-            try
-            {
-                var authenticationResult = provider is IRequiresResolvedUser requiresResolvedUser
-                    ? await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false)
-                    : await provider.Authenticate(username, password).ConfigureAwait(false);
-
-                if (authenticationResult.Username != username)
-                {
-                    _logger.LogDebug("Authentication provider provided updated username {1}", authenticationResult.Username);
-                    username = authenticationResult.Username;
-                }
-
-                return (username, true);
-            }
-            catch (AuthenticationException ex)
-            {
-                _logger.LogDebug(ex, "Error authenticating with provider {Provider}", provider.Name);
-
-                return (username, false);
-            }
-        }
-
-        private async Task IncrementInvalidLoginAttemptCount(User user)
-        {
-            user.InvalidLoginAttemptCount++;
-            int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
-            if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
-            {
-                user.SetPermission(PermissionKind.IsDisabled, true);
-                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
-                _logger.LogWarning(
-                    "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
-                    user.Username,
-                    user.InvalidLoginAttemptCount);
-            }
-
-            await UpdateUserAsync(user).ConfigureAwait(false);
         }
 
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)

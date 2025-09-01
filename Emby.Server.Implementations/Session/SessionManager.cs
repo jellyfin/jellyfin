@@ -15,6 +15,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -36,9 +37,11 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Nikse.SubtitleEdit.Core.VobSub.Ocr.Service.GoogleCloudVisionApi.RequestBody;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -49,6 +52,7 @@ namespace Emby.Server.Implementations.Session
     public sealed class SessionManager : ISessionManager, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
+        private readonly IUserAuthenticationManager _userAuthenticationManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<SessionManager> _logger;
         private readonly IEventManager _eventManager;
@@ -79,6 +83,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">Instance of <see cref="ILogger{SessionManager}"/> interface.</param>
         /// <param name="eventManager">Instance of <see cref="IEventManager"/> interface.</param>
         /// <param name="userDataManager">Instance of <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="userAuthenticationManager">Instance of <see cref="IUserAuthenticationManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
@@ -93,6 +98,7 @@ namespace Emby.Server.Implementations.Session
             ILogger<SessionManager> logger,
             IEventManager eventManager,
             IUserDataManager userDataManager,
+            IUserAuthenticationManager userAuthenticationManager,
             IServerConfigurationManager serverConfigurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -107,6 +113,7 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _eventManager = eventManager;
             _userDataManager = userDataManager;
+            _userAuthenticationManager = userAuthenticationManager;
             _config = serverConfigurationManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -1592,74 +1599,11 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(appVersion);
             ArgumentException.ThrowIfNullOrEmpty(deviceName);
 
-            var token = await GetAuthorizationToken(user, deviceId, appName, appVersion, deviceName).ConfigureAwait(false);
             var key = GetSessionKey(appName, deviceId);
             var session = CreateSessionInfo(key, appName, appVersion, deviceId, deviceName, remoteEndpoint, authenticationProviderId, user);
-            await LogSessionActivity(session, user);
 
-            return new MediaBrowser.Controller.Authentication.Session
-            {
-                User = _userManager.GetUserDto(user, remoteEndpoint),
-                SessionInfo = ToSessionInfoDto(session),
-                AccessToken = token,
-                ServerId = _appHost.SystemId
-            };
-        }
-
-        /// <inheritdoc/>
-        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        public Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSession(AuthenticationRequest request)
-        {
-            _logger.LogWarning("Deprecated AuthenticateNewSession used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
-            // return AuthenticateNewSessionInternal(request, true);
-        }
-
-        /// <inheritdoc/>
-        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        public Task<MediaBrowser.Controller.Session.Session> AuthenticateDirect(AuthenticationRequest request)
-        {
-            _logger.LogWarning("Deprecated AuthenticateDirect used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
-            // return AuthenticateNewSessionInternal(request, false);
-        }
-
-        internal async Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
-        {
-            CheckDisposed();
-
-            ArgumentException.ThrowIfNullOrEmpty(request.App);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
-            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
-            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
-
-            User user = null;
-            if (!request.UserId.IsEmpty())
-            {
-                user = _userManager.GetUserById(request.UserId);
-            }
-
-            user ??= _userManager.GetUserByName(request.Username);
-
-            if (enforcePassword)
-            {
-                user = await _userManager.AuthenticateUser(
-                    request.Username,
-                    request.Password,
-                    request.RemoteEndPoint,
-                    true).ConfigureAwait(false);
-            }
-
-            if (user is null)
-            {
-                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
-                throw new AuthenticationException("Invalid username or password entered.");
-            }
-
-            if (!string.IsNullOrEmpty(request.DeviceId)
-                && !_deviceManager.CanAccessDevice(user, request.DeviceId))
+            if (!string.IsNullOrEmpty(deviceId)
+                && !_deviceManager.CanAccessDevice(user, deviceId))
             {
                 throw new SecurityException("User is not allowed access from this device.");
             }
@@ -1672,26 +1616,68 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("User is at their maximum number of sessions.");
             }
 
-            var token = await GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
+            var token = await GetAuthorizationToken(user, deviceId, appName, appVersion, deviceName).ConfigureAwait(false);
 
-            var session = await LogSessionActivity(
-                request.App,
-                request.AppVersion,
-                request.DeviceId,
-                request.DeviceName,
-                request.RemoteEndPoint,
-                user).ConfigureAwait(false);
+            await LogSessionActivity(session, user).ConfigureAwait(false);
 
-            var returnResult = new MediaBrowser.Controller.Authentication.Session
+            var result = new MediaBrowser.Controller.Session.Session
             {
-                User = _userManager.GetUserDto(user, request.RemoteEndPoint),
+                User = _userManager.GetUserDto(user, remoteEndpoint),
                 SessionInfo = ToSessionInfoDto(session),
                 AccessToken = token,
                 ServerId = _appHost.SystemId
             };
 
-            await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult)).ConfigureAwait(false);
-            return returnResult;
+            return result;
+        }
+
+        /// <inheritdoc/>
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
+        public Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSession(AuthenticationRequest request)
+        {
+            _logger.LogWarning("Deprecated AuthenticateNewSession used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
+            return AuthenticateNewSessionInternal(request, true);
+        }
+
+        /// <inheritdoc/>
+        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
+        public Task<MediaBrowser.Controller.Session.Session> AuthenticateDirect(AuthenticationRequest request)
+        {
+            _logger.LogWarning("Deprecated AuthenticateDirect used. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
+            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.");
+            return AuthenticateNewSessionInternal(request, false);
+        }
+
+        [Obsolete("Deprecated, only exists for legacy support. Do not call.")]
+        internal async Task<MediaBrowser.Controller.Session.Session> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
+        {
+            CheckDisposed();
+
+            if (string.IsNullOrWhiteSpace(request.Username))
+            {
+                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", request.RemoteEndPoint);
+                throw new ArgumentNullException("request.Username");
+            }
+
+            var (provider, result) = await _userAuthenticationManager.Authenticate(new UsernamePasswordAuthData(request.Username, request.Password, null), request.RemoteEndPoint).ConfigureAwait(false);
+
+            if (!result.Authenticated)
+            {
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
+                throw new AuthenticationException("Invalid username or password entered.");
+            }
+
+            return await CreateSession(
+                result.User,
+                request.DeviceId,
+                request.App,
+                request.AppVersion,
+                request.DeviceName,
+                provider.GetType().FullName,
+                request.RemoteEndPoint).ConfigureAwait(false);
         }
 
         internal async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)

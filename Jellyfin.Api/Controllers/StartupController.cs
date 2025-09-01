@@ -5,6 +5,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
@@ -21,16 +22,19 @@ public class StartupController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _config;
     private readonly IUserManager _userManager;
+    private readonly IUserAuthenticationManager _userAuthenticationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupController" /> class.
     /// </summary>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="userManager">The user manager.</param>
-    public StartupController(IServerConfigurationManager config, IUserManager userManager)
+    /// <param name="userAuthenticationManager">The user authentication manager.</param>
+    public StartupController(IServerConfigurationManager config, IUserManager userManager, IUserAuthenticationManager userAuthenticationManager)
     {
         _config = config;
         _userManager = userManager;
+        _userAuthenticationManager = userAuthenticationManager;
     }
 
     /// <summary>
@@ -146,7 +150,14 @@ public class StartupController : BaseJellyfinApiController
 
         if (!string.IsNullOrEmpty(startupUserDto.Password))
         {
-            await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
+            var passwordProvider = await _userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
+
+            if (passwordProvider is not IPasswordChangeable passwordChangeable)
+            {
+                return BadRequest("You cannot change your password for this authentication provider.");
+            }
+
+            await passwordChangeable.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
         }
 
         return NoContent();

@@ -51,6 +51,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.ClientEvent;
@@ -71,7 +72,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations
         private readonly IStartupOptions _startupOptions;
         private readonly PluginManager _pluginManager;
 
-        private List<Type> _creatingInstances;
+        private HashSet<Type> _creatingInstances;
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -301,7 +301,7 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
-            _creatingInstances ??= new List<Type>();
+            _creatingInstances ??= new HashSet<Type>();
 
             if (_creatingInstances.Contains(type))
             {
@@ -359,6 +359,19 @@ namespace Emby.Server.Implementations
             }
         }
 
+        private IEnumerable<Type> GetExportTypes(Type currentType)
+        {
+            var numberOfConcreteTypes = _allConcreteTypes.Length;
+            for (var i = 0; i < numberOfConcreteTypes; i++)
+            {
+                var type = _allConcreteTypes[i];
+                if (currentType.IsAssignableFrom(type))
+                {
+                    yield return type;
+                }
+            }
+        }
+
         /// <inheritdoc />
         public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
         {
@@ -367,6 +380,25 @@ namespace Emby.Server.Implementations
                 .Select(CreateInstanceSafe)
                 .Where(i => i is not null)
                 .Cast<T>()
+                .ToList();
+
+            if (manageLifetime)
+            {
+                foreach (var part in parts.OfType<IDisposable>())
+                {
+                    _disposableParts.Add(part);
+                }
+            }
+
+            return parts;
+        }
+
+        private IReadOnlyCollection<object> GetAuthenticationProviderExports(bool manageLifetime = true)
+        {
+            var parts = GetExportTypes(typeof(IAuthenticationProvider<>))
+                // exclude legacy authentication providers which have already been added in "InitializeServices" because they registered themselves as a service
+                .Select(CreateInstanceSafe)
+                .Where(i => i is not null)
                 .ToList();
 
             if (manageLifetime)
@@ -564,7 +596,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             serviceCollection.AddSingleton<IAuthService, AuthService>();
-            serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
@@ -594,7 +625,7 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            FindParts();
+            await FindParts().ConfigureAwait(false);
         }
 
         private X509Certificate2 GetCertificate(string path, string password)
@@ -661,7 +692,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Finds plugin components and register them with the appropriate services.
         /// </summary>
-        private void FindParts()
+        private async Task FindParts()
         {
             if (!ConfigurationManager.Configuration.IsPortAuthorized)
             {
@@ -687,6 +718,7 @@ namespace Emby.Server.Implementations
                 GetExports<IExternalUrlProvider>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
+            await Resolve<IUserAuthenticationManager>().RegisterProviders(GetAuthenticationProviderExports()).ConfigureAwait(false);
         }
 
         /// <summary>

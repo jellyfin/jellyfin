@@ -27,7 +27,7 @@ namespace Jellyfin.Api.Tests
         {
             var user = new User(
                 "jellyfin",
-                typeof(DefaultAuthenticationProvider).FullName!,
+                typeof(OldDefaultAuthenticationProvider).FullName!,
                 typeof(DefaultPasswordResetProvider).FullName!);
 
             user.AddDefaultPermissions();

@@ -90,39 +90,12 @@ namespace MediaBrowser.Controller.Library
         Task DeleteUserAsync(Guid userId);
 
         /// <summary>
-        /// Resets the password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        Task ResetPassword(User user);
-
-        /// <summary>
-        /// Changes the password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="newPassword">New password to use.</param>
-        /// <returns>Awaitable task.</returns>
-        Task ChangePassword(User user, string newPassword);
-
-        /// <summary>
         /// Gets the user dto.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>UserDto.</returns>
         UserDto GetUserDto(User user, string? remoteEndPoint = null);
-
-        /// <summary>
-        /// Authenticates the user.
-        /// </summary>
-        /// <param name="username">The user.</param>
-        /// <param name="password">The password to use.</param>
-        /// <param name="remoteEndPoint">Remove endpoint to use.</param>
-        /// <param name="isUserSession">Specifies if a user session.</param>
-        /// <returns>User wrapped in awaitable task.</returns>
-        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `ISessionManager#CreateSession` instead.")]
-        Task<User?> AuthenticateUser(string username, string password, string remoteEndPoint, bool isUserSession);
 
         /// <summary>
         /// Starts the forgot password process.
@@ -138,8 +111,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pin">The pin.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
-
-        NameIdPair[] GetAuthenticationProviders();
 
         NameIdPair[] GetPasswordResetProviders();
 

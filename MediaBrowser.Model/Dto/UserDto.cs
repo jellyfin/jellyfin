@@ -51,18 +51,6 @@ namespace MediaBrowser.Model.Dto
         public string PrimaryImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance has password.
-        /// </summary>
-        /// <value><c>true</c> if this instance has password; otherwise, <c>false</c>.</value>
-        public bool HasPassword { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has configured password.
-        /// </summary>
-        /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
-        public bool HasConfiguredPassword { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has configured easy password.
         /// </summary>
         /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>

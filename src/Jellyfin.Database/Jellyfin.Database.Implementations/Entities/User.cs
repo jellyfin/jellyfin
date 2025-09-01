@@ -39,7 +39,6 @@ namespace Jellyfin.Database.Implementations.Entities
             Id = Guid.NewGuid();
             InvalidLoginAttemptCount = 0;
             EnableUserPreferenceAccess = true;
-            MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
             DisplayCollectionsView = false;
             HidePlayedInLatest = true;
@@ -69,24 +68,6 @@ namespace Jellyfin.Database.Implementations.Entities
         [MaxLength(255)]
         [StringLength(255)]
         public string Username { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user's password, or <c>null</c> if none is set.
-        /// </summary>
-        /// <remarks>
-        /// Max length = 65535.
-        /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
-        public string? Password { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the user must update their password.
-        /// </summary>
-        /// <remarks>
-        /// Required.
-        /// </remarks>
-        public bool MustUpdatePassword { get; set; }
 
         /// <summary>
         /// Gets or sets the audio language preference.
@@ -308,12 +289,12 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets the user-specific authentication provider data. External dependencies should not modify this directly.
         /// </summary>
-        public IEnumerable<UserAuthenticationProviderDataMap> AuthenticationProviderDataMaps { get; } = [];
+        public ICollection<UserAuthenticationProviderData> AuthenticationProviderDataMaps { get; } = [];
 
         /// <summary>
-        /// Gets the global authentication providers' data. Exists for model completeness and will generally not be accessed directly.
+        /// Gets the global authentication providers that this user has data for. Exists for model completeness and generally should not be accessed directly.
         /// </summary>
-        public IEnumerable<AuthenticationProviderData> AuthenticationProviderDatas { get; } = [];
+        public ICollection<AuthenticationProviderData> AuthenticationProviderDatas { get; } = [];
 
         /*
         /// <summary>

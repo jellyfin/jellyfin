@@ -916,8 +916,13 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public bool IsInLocalNetwork(string address)
+    public bool IsInLocalNetwork(string? address)
     {
+        if (address is null)
+        {
+            return false;
+        }
+
         if (NetworkUtils.TryParseToSubnet(address, out var subnet))
         {
             return IsInLocalNetwork(subnet.Prefix);

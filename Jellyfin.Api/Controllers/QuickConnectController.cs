@@ -1,15 +1,20 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using ICU4N.Util;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Nikse.SubtitleEdit.Core.BluRaySup;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -18,18 +23,29 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 public class QuickConnectController : BaseJellyfinApiController
 {
-    private readonly IQuickConnect _quickConnect;
     private readonly IAuthorizationContext _authContext;
+    private readonly IUserAuthenticationManager _userAuthenticationManager;
+    private readonly ILogger<QuickConnectController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QuickConnectController"/> class.
     /// </summary>
-    /// <param name="quickConnect">Instance of the <see cref="IQuickConnect"/> interface.</param>
     /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-    public QuickConnectController(IQuickConnect quickConnect, IAuthorizationContext authContext)
+    /// <param name="userAuthenticationManager">Instance of the <see cref="IUserAuthenticationManager"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+    public QuickConnectController(
+        IAuthorizationContext authContext,
+        IUserAuthenticationManager userAuthenticationManager,
+        ILogger<QuickConnectController> logger)
     {
-        _quickConnect = quickConnect;
         _authContext = authContext;
+        _userAuthenticationManager = userAuthenticationManager;
+        _logger = logger;
+    }
+
+    private Task<IAuthenticationProvider<ExternallyTriggeredAuthenticationData>?> GetQuickConnectProvider()
+    {
+        return _userAuthenticationManager.ResolveProvider<ExternallyTriggeredAuthenticationData>("QuickConnect");
     }
 
     /// <summary>
@@ -39,9 +55,9 @@ public class QuickConnectController : BaseJellyfinApiController
     /// <returns>Whether Quick Connect is enabled on the server or not.</returns>
     [HttpGet("Enabled")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<bool> GetQuickConnectEnabled()
+    public async Task<ActionResult<bool>> GetQuickConnectEnabled()
     {
-        return _quickConnect.IsEnabled;
+        return await GetQuickConnectProvider().ConfigureAwait(false) != null;
     }
 
     /// <summary>
@@ -54,15 +70,37 @@ public class QuickConnectController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QuickConnectResult>> InitiateQuickConnect()
     {
-        try
-        {
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-            return _quickConnect.TryConnect(auth);
-        }
-        catch (AuthenticationException)
+        var quickConnectProvider = await GetQuickConnectProvider().ConfigureAwait(false);
+
+        if (quickConnectProvider is null)
         {
             return Unauthorized("Quick connect is disabled");
         }
+
+        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
+        {
+            return Unauthorized("Quick connect is disabled");
+        }
+
+        var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+        ArgumentException.ThrowIfNullOrEmpty(auth.DeviceId);
+        ArgumentException.ThrowIfNullOrEmpty(auth.Device);
+        ArgumentException.ThrowIfNullOrEmpty(auth.Client);
+        ArgumentException.ThrowIfNullOrEmpty(auth.Version);
+
+        var res = new QuickConnectResult(
+                DateTime.UtcNow,
+                auth.DeviceId,
+                auth.Device,
+                auth.Client,
+                auth.Version);
+
+        var monitorData = await monitorable.Initiate(res).ConfigureAwait(false);
+
+        res.Secret = monitorData.MonitorKey;
+        res.Code = monitorData.UpdateKey;
+
+        return res;
     }
 
     /// <summary>
@@ -79,26 +117,36 @@ public class QuickConnectController : BaseJellyfinApiController
     /// Attempts to retrieve authentication information.
     /// </summary>
     /// <param name="secret">Secret previously returned from the Initiate endpoint.</param>
+    /// <param name="waitForUpdate">Flag indicating whether or not to wait for update if it is equal to "1".</param>
     /// <response code="200">Quick connect result returned.</response>
     /// <response code="404">Unknown quick connect secret.</response>
     /// <returns>An updated <see cref="QuickConnectResult"/>.</returns>
     [HttpGet("Connect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<QuickConnectResult> GetQuickConnectState([FromQuery, Required] string secret)
+    public async Task<ActionResult<QuickConnectResult>> GetQuickConnectState([FromQuery, Required] string secret, [FromQuery] string? waitForUpdate = null)
     {
-        try
-        {
-            return _quickConnect.CheckRequestStatus(secret);
-        }
-        catch (ResourceNotFoundException)
-        {
-            return NotFound("Unknown secret");
-        }
-        catch (AuthenticationException)
+        ArgumentNullException.ThrowIfNullOrEmpty(secret);
+        var quickConnectProvider = await GetQuickConnectProvider().ConfigureAwait(false);
+
+        if (quickConnectProvider is null)
         {
             return Unauthorized("Quick connect is disabled");
         }
+
+        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
+        {
+            return Unauthorized("Quick connect is disabled");
+        }
+
+        var data = await monitorable.GetData(secret, waitForUpdate == "1").ConfigureAwait(false);
+
+        if (data is null)
+        {
+            return NotFound("Unknown secret");
+        }
+
+        return data;
     }
 
     /// <summary>
@@ -117,9 +165,33 @@ public class QuickConnectController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
 
+        ArgumentNullException.ThrowIfNullOrEmpty(code);
+        var quickConnectProvider = await GetQuickConnectProvider().ConfigureAwait(false);
+
+        if (quickConnectProvider is null)
+        {
+            return Unauthorized("Quick connect is disabled");
+        }
+
+        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
+        {
+            return Unauthorized("Quick connect is disabled");
+        }
+
         try
         {
-            return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
+            return await monitorable.Update(code, result =>
+            {
+                if (result.UserId is not null)
+                {
+                    throw new InvalidOperationException("Request is already authorized");
+                }
+
+                // Change the time on the request so it expires one minute into the future. It can't expire immediately as otherwise some clients wouldn't ever see that they have been authenticated.
+                result.DateAdded = DateTime.UtcNow.Add(TimeSpan.FromMinutes(1));
+                result.UserId = userId;
+                _logger.LogDebug("Authorizing device with code {Code} to login as user {UserId}", code, userId);
+            }).ConfigureAwait(false);
         }
         catch (AuthenticationException)
         {

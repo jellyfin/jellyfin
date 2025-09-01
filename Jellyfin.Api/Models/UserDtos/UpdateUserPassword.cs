@@ -16,6 +16,11 @@ public class UpdateUserPassword
     public string? CurrentPw { get; set; }
 
     /// <summary>
+    /// Gets or sets the time-based one-time password.
+    /// </summary>
+    public string? TOTP { get; set; }
+
+    /// <summary>
     /// Gets or sets the new plain text password.
     /// </summary>
     public string? NewPw { get; set; }

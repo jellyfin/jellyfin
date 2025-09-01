@@ -119,6 +119,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<Chapter> Chapters => Set<Chapter>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing global authentication provider data.
+    /// </summary>
+    public DbSet<AuthenticationProviderData> AuthenticationProviderDatas => Set<AuthenticationProviderData>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<ItemValue> ItemValues => Set<ItemValue>();

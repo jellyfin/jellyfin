@@ -81,8 +81,11 @@ namespace Jellyfin.Server
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
-            serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
+            serviceCollection.AddSingleton<IUserAuthenticationManager, UserAuthenticationManager>();
+#pragma warning disable CS0618 // Type or member is obsolete
+            serviceCollection.AddSingleton<IAuthenticationProvider, OldDefaultAuthenticationProvider>();
+#pragma warning restore CS0618 // Type or member is obsolete
+            serviceCollection.AddSingleton<IAuthenticationProvider<UsernamePasswordAuthData>, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();

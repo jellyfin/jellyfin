@@ -14,4 +14,9 @@ public class AuthenticateUserByName
     /// Gets or sets the plain text password.
     /// </summary>
     public string? Pw { get; set; }
+
+    /// <summary>
+    /// Gets or sets the time-based one time password.
+    /// </summary>
+    public string? TOTP { get; set; }
 }

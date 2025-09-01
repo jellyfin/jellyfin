@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,21 +15,29 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets or sets the authentication provider ID. This is equal to the type name of the authentication provider's implementing class.
         /// </summary>
+        [Key]
         public required string AuthenticationProviderId { get; set; }
+
+        /// <summary>
+        /// Gets the user-specific authentication provider data. External dependencies should not modify this directly.
+        /// </summary>
+        public ICollection<UserAuthenticationProviderData> AuthenticationProviderDataMaps { get; } = [];
+
+        /// <summary>
+        /// Gets the users who have data at this authentication provider. Exists for model completeness and will generally not be accessed directly.
+        /// </summary>
+        public ICollection<User> Users { get; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether or not the authentication provider is enabled.
         /// </summary>
-        /// <remarks>
-        /// Besides being enabled globally, an authentication provider needs to be enabled on a per-user basis for users to successfully log in using them.
-        /// </remarks>
         public required bool IsEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the JSON string representing this authentication provider's global data.
         /// </summary>
         /// <remarks>
-        /// You should generally not set this property directly, serialization and deserialization is handled by <see cref=""/>.
+        /// You should generally not set this property directly, and instead use the convenience functions provided by AbstractAuthenticationProvider./>.
         /// </remarks>
         public string? Data { get; set; }
     }

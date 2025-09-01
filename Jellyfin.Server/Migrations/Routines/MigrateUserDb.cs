@@ -88,11 +88,6 @@ public class MigrateUserDb : IMigrationRoutine
                 var policy = File.Exists(policyPath)
                     ? (UserPolicy?)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), policyPath) ?? new UserPolicy()
                     : new UserPolicy();
-                policy.AuthenticationProviderId = policy.AuthenticationProviderId?.Replace(
-                    "Emby.Server.Implementations.Library",
-                    "Jellyfin.Server.Implementations.Users",
-                    StringComparison.Ordinal)
-                    ?? typeof(DefaultAuthenticationProvider).FullName;
 
                 policy.PasswordResetProviderId = typeof(DefaultPasswordResetProvider).FullName;
                 int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
@@ -102,7 +97,7 @@ public class MigrateUserDb : IMigrationRoutine
                     _ => policy.LoginAttemptsBeforeLockout
                 };
 
-                var user = new User(mockup.Name, policy.AuthenticationProviderId!, policy.PasswordResetProviderId!)
+                var user = new User(mockup.Name, policy.PasswordResetProviderId!)
                 {
                     Id = entry.GetGuid(1),
                     InternalId = entry.GetInt64(0),
@@ -123,7 +118,6 @@ public class MigrateUserDb : IMigrationRoutine
                     EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = config.RememberSubtitleSelections,
                     SubtitleLanguagePreference = config.SubtitleLanguagePreference,
-                    Password = mockup.Password,
                     LastLoginDate = mockup.LastLoginDate,
                     LastActivityDate = mockup.LastActivityDate
                 };

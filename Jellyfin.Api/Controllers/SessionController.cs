@@ -8,6 +8,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -27,18 +28,22 @@ public class SessionController : BaseJellyfinApiController
 {
     private readonly ISessionManager _sessionManager;
     private readonly IUserManager _userManager;
+    private readonly IUserAuthenticationManager _userAuthenticationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionController"/> class.
     /// </summary>
     /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
     /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
+    /// <param name="userAuthenticationManager">Instance of <see cref="IUserAuthenticationManager"/> interface.</param>
     public SessionController(
         ISessionManager sessionManager,
-        IUserManager userManager)
+        IUserManager userManager,
+        IUserAuthenticationManager userAuthenticationManager)
     {
         _sessionManager = sessionManager;
         _userManager = userManager;
+        _userAuthenticationManager = userAuthenticationManager;
     }
 
     /// <summary>
@@ -433,9 +438,9 @@ public class SessionController : BaseJellyfinApiController
     [HttpGet("Auth/Providers")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<NameIdPair>> GetAuthProviders()
+    public async Task<ActionResult<IEnumerable<NameIdPair>>> GetAuthProviders()
     {
-        return _userManager.GetAuthenticationProviders();
+        return Ok(await _userAuthenticationManager.GetAuthenticationProviders().ConfigureAwait(false));
     }
 
     /// <summary>

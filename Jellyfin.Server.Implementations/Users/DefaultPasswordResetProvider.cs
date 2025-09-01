@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -23,6 +24,7 @@ namespace Jellyfin.Server.Implementations.Users
         private const string BaseResetFileName = "passwordreset";
 
         private readonly IApplicationHost _appHost;
+        // private readonly IUserAuthenticationManager _userAuthenticationManager;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -32,10 +34,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost/*, IUserAuthenticationManager userAuthenticationManager*/)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
+            // _userAuthenticationManager = userAuthenticationManager;
             _appHost = appHost;
             // TODO: Remove the circular dependency on UserManager
         }
@@ -73,9 +76,16 @@ namespace Jellyfin.Server.Implementations.Users
                     var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
 
-                    await userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
-                    usersReset.Add(resetUser.Username);
-                    File.Delete(resetFile);
+                    // var passwordProvider = await _userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
+
+                    // if (passwordProvider is not IPasswordChangeable passwordChangeable)
+                    // {
+                    throw new InvalidOperationException("You cannot change your password for this authentication provider.");
+                    // }
+
+                    // await passwordChangeable.ChangePassword(resetUser, pin).ConfigureAwait(false);
+                    // usersReset.Add(resetUser.Username);
+                    // File.Delete(resetFile);
                 }
             }
 

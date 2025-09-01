@@ -10,24 +10,18 @@ namespace MediaBrowser.Model.QuickConnect
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectResult"/> class.
         /// </summary>
-        /// <param name="secret">The secret used to query the request state.</param>
-        /// <param name="code">The code used to allow the request.</param>
         /// <param name="dateAdded">The time when the request was created.</param>
         /// <param name="deviceId">The requesting device id.</param>
         /// <param name="deviceName">The requesting device name.</param>
         /// <param name="appName">The requesting app name.</param>
         /// <param name="appVersion">The requesting app version.</param>
         public QuickConnectResult(
-            string secret,
-            string code,
             DateTime dateAdded,
             string deviceId,
             string deviceName,
             string appName,
             string appVersion)
         {
-            Secret = secret;
-            Code = code;
             DateAdded = dateAdded;
             DeviceId = deviceId;
             DeviceName = deviceName;
@@ -36,19 +30,19 @@ namespace MediaBrowser.Model.QuickConnect
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this request is authorized.
+        /// Gets or sets a value indicating an optional UserId of a user whom this request is authorized to authenticate as.
         /// </summary>
-        public bool Authenticated { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>
-        /// Gets the secret value used to uniquely identify this request. Can be used to retrieve authentication information.
+        /// Gets or sets the secret value used to uniquely identify this request. Can be used to retrieve authentication information.
         /// </summary>
-        public string Secret { get; }
+        public string? Secret { get; set; }
 
         /// <summary>
-        /// Gets the user facing code used so the user can quickly differentiate this request from others.
+        /// Gets or sets the user facing code used so the user can quickly differentiate this request from others.
         /// </summary>
-        public string Code { get; }
+        public string? Code { get; set;  }
 
         /// <summary>
         /// Gets the requesting device id.

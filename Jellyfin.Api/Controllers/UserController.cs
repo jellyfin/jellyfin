@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using ICU4N.Util;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -21,12 +22,13 @@ using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.QuickConnect;
 using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -47,7 +49,6 @@ public class UserController : BaseJellyfinApiController
     private readonly IAuthorizationContext _authContext;
     private readonly IServerConfigurationManager _config;
     private readonly ILogger _logger;
-    private readonly IQuickConnect _quickConnectManager;
     private readonly IPlaylistManager _playlistManager;
     private readonly IEventManager _eventManager;
 
@@ -62,7 +63,6 @@ public class UserController : BaseJellyfinApiController
     /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
     /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-    /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     /// <param name="eventManager">Instance of the <see cref="IEventManager"/> interface.</param>
     public UserController(
@@ -74,7 +74,6 @@ public class UserController : BaseJellyfinApiController
         IAuthorizationContext authContext,
         IServerConfigurationManager config,
         ILogger<UserController> logger,
-        IQuickConnect quickConnectManager,
         IPlaylistManager playlistManager,
         IEventManager eventManager)
     {
@@ -86,7 +85,6 @@ public class UserController : BaseJellyfinApiController
         _authContext = authContext;
         _config = config;
         _logger = logger;
-        _quickConnectManager = quickConnectManager;
         _playlistManager = playlistManager;
         _eventManager = eventManager;
     }
@@ -228,58 +226,49 @@ public class UserController : BaseJellyfinApiController
             throw new ArgumentNullException("request.Username");
         }
 
-        var attemptedUser = _userManager.GetUserByName(request.Username);
-
-        if (attemptedUser is null)
-        {
-            await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(new AuthenticationRequest
-            {
-                App = auth.Client,
-                AppVersion = auth.Version,
-                DeviceId = auth.DeviceId,
-                DeviceName = auth.Device,
-                Password = request.Pw,
-                RemoteEndPoint = HttpContext.GetNormalizedRemoteIP().ToString(),
-                Username = request.Username
-            })).ConfigureAwait(false);
-            throw new AuthenticationException("Invalid username or password entered.");
-        }
-
         var mfaAwareClient = HttpContext.Request.Headers.ContainsKey("X-MFA-Aware");
 
         try
         {
-            var (provider, authenticationResponse) = await _userAuthenticationManager.Authenticate(attemptedUser, new PasswordAuthData(request.Pw)).ConfigureAwait(false)
-                ?? throw new AuthenticationException("No valid authentication provider found.");
+            var (provider, result) = await _userAuthenticationManager.Authenticate(new UsernamePasswordAuthData(request.Username, request.Pw, request.TOTP), remoteEndpoint).ConfigureAwait(false);
 
-            switch (authenticationResponse) // this endpoint does not handle multi-step authentication providers
+            if (!result.Authenticated)
             {
-                case AuthenticationResponse.Success success:
-                    return await _sessionManager.CreateSession(
-                        success.User,
-                        auth.DeviceId,
-                        auth.Client,
-                        auth.Version,
-                        auth.Device,
-                        provider.GetType().Name,
-                        remoteEndpoint).ConfigureAwait(false);
-                case AuthenticationResponse.Continue cont:
-                    if (!mfaAwareClient)
-                    {
-                        throw new AuthenticationException("Received MFA continuation response, but client does not support MFA.");
-                    }
+                if (result.ErrorCode == 1300) // arbitrarily chosen error code used to signal that the username and password were correct, but TOTP was not
+                {
+                    throw new AuthenticationException("A TOTP code is required.");
+                }
+                else if (result.ErrorCode == 1301) // MFA setup required
+                {
+                    throw new AuthenticationException("MFA setup required.");
+                }
 
-                    return new RedirectResult(cont.URI.ToString());
-                case AuthenticationResponse.Failure failure:
-                    throw new AuthenticationException("Invalid username or password entered.");
-                default:
-                    throw new AuthenticationException("Unsupported authentication provider response.");
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(new AuthenticationRequest
+                {
+                    App = auth.Client,
+                    AppVersion = auth.Version,
+                    DeviceId = auth.DeviceId,
+                    DeviceName = auth.Device,
+                    Password = request.Pw,
+                    RemoteEndPoint = remoteEndpoint,
+                    Username = request.Username
+                })).ConfigureAwait(false);
+                throw new AuthenticationException("Invalid username or password entered.");
             }
+
+            return await _sessionManager.CreateSession(
+                result.User,
+                auth.DeviceId,
+                auth.Client,
+                auth.Version,
+                auth.Device,
+                provider.GetType().FullName,
+                remoteEndpoint).ConfigureAwait(false);
         }
         catch (SecurityException e)
         {
             // rethrow adding IP address to message
-            throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
+            throw new SecurityException($"[{remoteEndpoint}] {e.Message}", e);
         }
     }
 
@@ -292,16 +281,37 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateWithQuickConnect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<Session> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+    public async Task<ActionResult<Session>> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
     {
+        var remoteEndpoint = HttpContext.GetNormalizedRemoteIP().ToString();
+
         try
         {
-            return _quickConnectManager.GetAuthorizedRequest(request.Secret);
+            var (provider, result) = await _userAuthenticationManager.Authenticate(new ExternallyTriggeredAuthenticationData(request.Secret), remoteEndpoint, "QuickConnect").ConfigureAwait(false);
+
+            if (provider is not IKeyedMonitorable<QuickConnectResult> monitorable)
+            {
+                return Unauthorized("Quick connect is disabled");
+            }
+
+            if (!result.Authenticated)
+            {
+                return Unauthorized("Unknown secret");
+            }
+
+            var data = await monitorable.GetData(request.Secret, false).ConfigureAwait(false);
+
+            if (data is null)
+            {
+                return Unauthorized("Unknown secret");
+            }
+
+            return await _sessionManager.CreateSession(result.User, data.DeviceId, data.AppName, data.AppVersion, data.DeviceName, provider.GetType().FullName, null).ConfigureAwait(false);
         }
         catch (SecurityException e)
         {
             // rethrow adding IP address to message
-            throw new SecurityException($"[{HttpContext.GetNormalizedRemoteIP()}] {e.Message}", e);
+            throw new SecurityException($"[{remoteEndpoint}] {e.Message}", e);
         }
     }
 
@@ -335,26 +345,37 @@ public class UserController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
         }
 
+        var passwordProvider = await _userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
+
+        if (passwordProvider is not IPasswordChangeable passwordChangeable)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "You cannot change your password for this authentication provider.");
+        }
+
         if (request.ResetPassword)
         {
-            await _userManager.ResetPassword(user).ConfigureAwait(false);
+            await passwordChangeable.ResetPassword(user).ConfigureAwait(false);
         }
         else
         {
             if (!User.IsInRole(UserRoles.Administrator) || (userId.HasValue && User.GetUserId().Equals(userId.Value)))
             {
-                var INVALID__TODO = await _userAuthenticationManager.Authenticate(user, new PasswordAuthData(request.CurrentPw ?? string.Empty)).ConfigureAwait(false);
+                var authenticationRes = await passwordProvider.Authenticate(new UsernamePasswordAuthData(user.Username, request.CurrentPw ?? string.Empty, request.TOTP)).ConfigureAwait(false);
 
-                if (success is null)
+                if (!authenticationRes.Authenticated)
                 {
+                    if (authenticationRes.ErrorCode == 1300) // arbitrarily chosen error code used to signal that the username and password were correct, but TOTP was not
+                    {
+                        return StatusCode(StatusCodes.Status403Forbidden, "A TOTP code is required.");
+                    }
+
                     return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
+            await passwordChangeable.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
-
             await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
         }
 
@@ -590,7 +611,15 @@ public class UserController : BaseJellyfinApiController
         // no need to authenticate password for new user
         if (request.Password is not null)
         {
-            await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+            var passwordProvider = await _userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
+
+            if (passwordProvider is not IPasswordChangeable passwordChangeable)
+            {
+                await _userManager.DeleteUserAsync(newUser.Id).ConfigureAwait(false);
+                throw new InvalidOperationException("You cannot create a password for this authentication provider.");
+            }
+
+            await passwordChangeable.ChangePassword(newUser, request.Password).ConfigureAwait(false);
         }
 
         var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIP().ToString());
