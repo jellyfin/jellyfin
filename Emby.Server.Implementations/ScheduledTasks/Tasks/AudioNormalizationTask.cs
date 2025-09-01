@@ -117,7 +117,14 @@ public partial class AudioNormalizationTask : IScheduledTask
                         }
                         finally
                         {
-                            File.Delete(tempFile);
+                            try
+                            {
+                                File.Delete(tempFile);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to delete concat file: {FileName}.", tempFile);
+                            }
                         }
                     }
                 }
@@ -195,16 +202,24 @@ public partial class AudioNormalizationTask : IScheduledTask
             },
         })
         {
+            _logger.LogDebug("Starting ffmpeg with arguments: {Arguments}", args);
             try
             {
-                _logger.LogDebug("Starting ffmpeg with arguments: {Arguments}", args);
                 process.Start();
-                process.PriorityClass = ProcessPriorityClass.BelowNormal;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error starting ffmpeg with arguments: {Arguments}", args);
                 return null;
+            }
+
+            try
+            {
+                process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error setting ffmpeg process priority");
             }
 
             using var reader = process.StandardError;
