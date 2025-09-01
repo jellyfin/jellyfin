@@ -76,7 +76,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var transaction = context.Database.BeginTransaction();
 
         // Step 1: Get people that need IDs
-        var peopleWithoutIds = people.Where(p => p.Id == Guid.Empty).ToArray();
+        var peopleWithoutIds = people.Where(p => p.Id.IsEmpty()).ToArray();
 
         // Step 2: Check database for existing people and assign their IDs
         if (peopleWithoutIds.Length > 0)
@@ -90,7 +90,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             var existingPeople = context.Peoples.AsNoTracking()
                 .Where(p => names.Contains(p.Name) && personTypes.Contains(p.PersonType))
                 .Select(p => new { p.Id, p.Name, p.PersonType })
-                .ToList()
+                .AsEnumerable()
                 .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
                 .ToList();
 
@@ -107,7 +107,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
 
         // Step 3: For people that are truly missing, assign new GUIDs and insert with Polly retry
-        var missingPeople = people.Where(p => p.Id == Guid.Empty).ToList();
+        var missingPeople = people.Where(p => p.Id.IsEmpty()).ToList();
         if (missingPeople.Count > 0)
         {
             foreach (var person in missingPeople)
@@ -131,7 +131,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     var existingPeople = context.Peoples.AsNoTracking()
                         .Where(p => namesToCheck.Contains(p.Name) && personTypesToCheck.Contains(p.PersonType))
                         .Select(p => new { p.Id, p.Name, p.PersonType })
-                        .ToList()
+                        .AsEnumerable()
                         .Where(p => missingPeople.Any(person =>
                             p.Name == person.Name && p.PersonType == person.Type.ToString()))
                         .ToList();

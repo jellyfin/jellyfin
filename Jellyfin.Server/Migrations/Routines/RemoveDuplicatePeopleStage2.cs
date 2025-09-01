@@ -16,9 +16,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Stage 2: Remove duplicate People records and enforce unique constraints.
 /// </summary>
 [JellyfinMigration("2025-08-14T00:00:02", nameof(RemoveDuplicatePeopleStage2), Stage = JellyfinMigrationStageTypes.CoreInitialisation)]
-#pragma warning disable SA1649 // File name should match first type name
 public class RemoveDuplicatePeopleStage2 : IAsyncMigrationRoutine
-#pragma warning restore SA1649 // File name should match first type name
 {
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly ILogger<RemoveDuplicatePeopleStage2> _logger;
