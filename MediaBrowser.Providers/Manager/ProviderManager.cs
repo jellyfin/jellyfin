@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -24,6 +22,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -670,8 +669,13 @@ namespace MediaBrowser.Providers.Manager
         private async Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            var applicableSavers = savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, updateType, false)).ToList();
+            if (applicableSavers.Count == 0)
+            {
+                return;
+            }
 
-            foreach (var saver in savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, updateType, false)))
+            foreach (var saver in applicableSavers)
             {
                 _logger.LogDebug("Saving {Item} to {Saver}", item.Path ?? item.Name, saver.Name);
 
@@ -693,6 +697,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
                     {
@@ -708,6 +713,7 @@ namespace MediaBrowser.Providers.Manager
                     try
                     {
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
                     {
@@ -715,6 +721,8 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+
+            _libraryManager.CreateItem(item, null);
         }
 
         /// <summary>

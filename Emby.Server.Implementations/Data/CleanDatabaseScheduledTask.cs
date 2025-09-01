@@ -48,7 +48,7 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
         var numComplete = 0;
         var numItems = itemIds.Count + 1;
 
-        _logger.LogDebug("Cleaning {Number} items with dead parent links", numItems);
+        _logger.LogDebug("Cleaning {Number} items with dead parents", numItems);
 
         foreach (var itemId in itemIds)
         {
@@ -61,32 +61,27 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 
                 foreach (var mediaSource in item.GetMediaSources(false))
                 {
-                    // Delete extracted subtitles
-                    try
+                    // Delete extracted data
+                    var mediaSourceItem = _libraryManager.GetItemById(mediaSource.Id);
+                    if (mediaSourceItem is null)
                     {
-                        var subtitleFolder = _pathManager.GetSubtitleFolderPath(mediaSource.Id);
-                        if (Directory.Exists(subtitleFolder))
-                        {
-                            Directory.Delete(subtitleFolder, true);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning("Failed to remove subtitle cache folder for {Item}: {Exception}", item.Id, e.Message);
+                        continue;
                     }
 
-                    // Delete extracted attachments
-                    try
+                    var extractedDataFolders = _pathManager.GetExtractedDataPaths(mediaSourceItem);
+                    foreach (var folder in extractedDataFolders)
                     {
-                        var attachmentFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
-                        if (Directory.Exists(attachmentFolder))
+                        if (Directory.Exists(folder))
                         {
-                            Directory.Delete(attachmentFolder, true);
+                            try
+                            {
+                                Directory.Delete(folder, true);
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.LogWarning("Failed to remove {Folder}: {Exception}", folder, e.Message);
+                            }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning("Failed to remove attachment cache folder for {Item}: {Exception}", item.Id, e.Message);
                     }
                 }
 

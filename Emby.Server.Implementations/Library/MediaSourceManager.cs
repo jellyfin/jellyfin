@@ -379,7 +379,7 @@ namespace Emby.Server.Implementations.Library
             var culture = _localizationManager.FindLanguageInfo(language);
             if (culture is not null)
             {
-                return culture.ThreeLetterISOLanguageNames;
+                return culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase) ? [culture.Name] : culture.ThreeLetterISOLanguageNames;
             }
 
             return [language];
@@ -681,17 +681,17 @@ namespace Emby.Server.Implementations.Library
 
                 mediaInfo = await _mediaEncoder.GetMediaInfo(
                     new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
-                    ExtractChapters = false
-                },
+                    {
+                        MediaSource = mediaSource,
+                        MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                        ExtractChapters = false
+                    },
                     cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    FileStream createStream = File.Create(cacheFilePath);
+                    FileStream createStream = AsyncFile.Create(cacheFilePath);
                     await using (createStream.ConfigureAwait(false))
                     {
                         await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);

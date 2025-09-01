@@ -323,17 +323,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private IEnumerable<PersonInfo> GetPersons(TvShow seriesResult)
         {
+            var config = Plugin.Instance.Configuration;
+
             if (seriesResult.Credits?.Cast is not null)
             {
-                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
+                IEnumerable<Cast> castQuery = seriesResult.Credits.Cast.OrderBy(a => a.Order);
+
+                if (config.HideMissingCastMembers)
                 {
+                    castQuery = castQuery.Where(a => !string.IsNullOrEmpty(a.ProfilePath));
+                }
+
+                foreach (var actor in castQuery.Take(config.MaxCastMembers))
+                {
+                    if (string.IsNullOrWhiteSpace(actor.Name))
+                    {
+                        continue;
+                    }
+
                     var personInfo = new PersonInfo
                     {
                         Name = actor.Name.Trim(),
-                        Role = actor.Character.Trim(),
+                        Role = actor.Character?.Trim() ?? string.Empty,
                         Type = PersonKind.Actor,
                         SortOrder = actor.Order,
-                        ImageUrl = _tmdbClientManager.GetPosterUrl(actor.ProfilePath)
+                        ImageUrl = _tmdbClientManager.GetProfileUrl(actor.ProfilePath)
                     };
 
                     if (actor.Id > 0)
@@ -347,30 +361,44 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (seriesResult.Credits?.Crew is not null)
             {
-                var keepTypes = new[]
-                {
-                    PersonType.Director,
-                    PersonType.Writer,
-                    PersonType.Producer
-                };
+                var crewQuery = seriesResult.Credits.Crew
+                    .Select(crewMember => new
+                    {
+                        CrewMember = crewMember,
+                        PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
+                    })
+                    .Where(entry =>
+                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
+                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
-                foreach (var person in seriesResult.Credits.Crew)
+                if (config.HideMissingCrewMembers)
                 {
-                    // Normalize this
-                    var type = TmdbUtils.MapCrewToPersonType(person);
+                    crewQuery = crewQuery.Where(entry => !string.IsNullOrEmpty(entry.CrewMember.ProfilePath));
+                }
 
-                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                foreach (var entry in crewQuery.Take(config.MaxCrewMembers))
+                {
+                    var crewMember = entry.CrewMember;
+
+                    if (string.IsNullOrWhiteSpace(crewMember.Name))
                     {
                         continue;
                     }
 
-                    yield return new PersonInfo
+                    var personInfo = new PersonInfo
                     {
-                        Name = person.Name.Trim(),
-                        Role = person.Job?.Trim(),
-                        Type = type
+                        Name = crewMember.Name.Trim(),
+                        Role = crewMember.Job?.Trim() ?? string.Empty,
+                        Type = entry.PersonType,
+                        ImageUrl = _tmdbClientManager.GetProfileUrl(crewMember.ProfilePath)
                     };
+
+                    if (crewMember.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, crewMember.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    yield return personInfo;
                 }
             }
         }

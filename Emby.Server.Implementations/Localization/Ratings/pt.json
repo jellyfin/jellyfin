@@ -1,0 +1,62 @@
+{
+    "countryCode": "pt",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["Públicos"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/3"],
+            "ratingScore": {
+                "score": 3,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/6"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["M/18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["P"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        }
+    ]
+}

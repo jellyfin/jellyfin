@@ -125,8 +125,8 @@
     "TaskKeyframeExtractor": "مستخرج الإطار الرئيسي",
     "External": "خارجي",
     "HearingImpaired": "ضعاف السمع",
-    "TaskRefreshTrickplayImages": "توليد صور Trickplay",
-    "TaskRefreshTrickplayImagesDescription": "يُنشئ معاينات Trickplay لمقاطع الفيديو في المكتبات المُمكّنة.",
+    "TaskRefreshTrickplayImages": "توليد صور المعاينة السريعة",
+    "TaskRefreshTrickplayImagesDescription": "يُولّد معاينات تنقل سريع لمقاطع الفيديو ضمن المكتبات المفعّلة.",
     "TaskCleanCollectionsAndPlaylists": "حذف المجموعات وقوائم التشغيل",
     "TaskCleanCollectionsAndPlaylistsDescription": "حذف عناصر من المجموعات وقوائم التشغيل التي لم تعد موجودة.",
     "TaskAudioNormalization": "تسوية الصوت",
@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "فحص مقاطع الوسائط",
     "TaskExtractMediaSegmentsDescription": "يستخرج مقاطع وسائط من إضافات MediaSegment المُفعّلة.",
     "TaskMoveTrickplayImages": "تغيير مكان صور المعاينة السريعة",
-    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة."
+    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة.",
+    "CleanupUserDataTask": "مهمة تنظيف بيانات المستخدم",
+    "CleanupUserDataTaskDescription": "مسح جميع بيانات المستخدم (حالة المشاهدة، والحالة المفضلة وما إلى ذلك) من الوسائط التي لم تعد موجودة لمدة 90 يومًا على الأقل."
 }

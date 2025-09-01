@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -15,15 +16,15 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to move trickplay files to the new directory.
 /// </summary>
-[JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), "9540D44A-D8DC-11EF-9CBB-B77274F77C52", RunMigrationOnSetup = true)]
 #pragma warning disable CS0618 // Type or member is obsolete
+[JellyfinMigration("2025-04-20T23:00:00", nameof(MoveTrickplayFiles), RunMigrationOnSetup = true)]
 public class MoveTrickplayFiles : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly ITrickplayManager _trickplayManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
-    private readonly ILogger<MoveTrickplayFiles> _logger;
+    private readonly IStartupLogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoveTrickplayFiles"/> class.
@@ -36,7 +37,7 @@ public class MoveTrickplayFiles : IMigrationRoutine
         ITrickplayManager trickplayManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        ILogger<MoveTrickplayFiles> logger)
+        IStartupLogger<MoveTrickplayFiles> logger)
     {
         _trickplayManager = trickplayManager;
         _fileSystem = fileSystem;

@@ -10,12 +10,12 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.MediaSegments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -30,7 +30,6 @@ public class MediaSegmentManager : IMediaSegmentManager
     private readonly ILogger<MediaSegmentManager> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IMediaSegmentProvider[] _segmentProviders;
-    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaSegmentManager"/> class.
@@ -38,12 +37,10 @@ public class MediaSegmentManager : IMediaSegmentManager
     /// <param name="logger">Logger.</param>
     /// <param name="dbProvider">EFCore Database factory.</param>
     /// <param name="segmentProviders">List of all media segment providers.</param>
-    /// <param name="libraryManager">Library manager.</param>
     public MediaSegmentManager(
         ILogger<MediaSegmentManager> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
-        IEnumerable<IMediaSegmentProvider> segmentProviders,
-        ILibraryManager libraryManager)
+        IEnumerable<IMediaSegmentProvider> segmentProviders)
     {
         _logger = logger;
         _dbProvider = dbProvider;
@@ -51,13 +48,11 @@ public class MediaSegmentManager : IMediaSegmentManager
         _segmentProviders = segmentProviders
             .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
             .ToArray();
-        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc/>
-    public async Task RunSegmentPluginProviders(BaseItem baseItem, bool overwrite, CancellationToken cancellationToken)
+    public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool forceOverwrite, CancellationToken cancellationToken)
     {
-        var libraryOptions = _libraryManager.GetLibraryOptions(baseItem);
         var providers = _segmentProviders
             .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
             .OrderBy(i =>
@@ -75,18 +70,13 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!overwrite && (await db.MediaSegments.AnyAsync(e => e.ItemId.Equals(baseItem.Id), cancellationToken).ConfigureAwait(false)))
-        {
-            _logger.LogDebug("Skip {MediaPath} as it already contains media segments", baseItem.Path);
-            return;
-        }
-
         _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
-        await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-
-        // no need to recreate the request object every time.
-        var requestItem = new MediaSegmentGenerationRequest() { ItemId = baseItem.Id };
+        if (forceOverwrite)
+        {
+            // delete all existing media segments if forceOverwrite is set.
+            await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         foreach (var provider in providers)
         {
@@ -96,13 +86,54 @@ public class MediaSegmentManager : IMediaSegmentManager
                 continue;
             }
 
+            IQueryable<MediaSegment> existingSegments;
+            if (forceOverwrite)
+            {
+                existingSegments = Array.Empty<MediaSegment>().AsQueryable();
+            }
+            else
+            {
+                existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+            }
+
+            var requestItem = new MediaSegmentGenerationRequest()
+            {
+                ItemId = baseItem.Id,
+                ExistingSegments = existingSegments.Select(e => Map(e)).ToArray()
+            };
+
             try
             {
                 var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
                     .ConfigureAwait(false);
-                if (segments.Count == 0)
+
+                if (!forceOverwrite)
+                {
+                    var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
+                    if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
+                    {
+                        return
+                            e.StartTicks == f.StartTicks &&
+                            e.EndTicks == f.EndTicks &&
+                            e.Type == f.Type;
+                    })))
+                    {
+                        _logger.LogDebug("Media Segment provider {ProviderName} did not modify any segments for {MediaPath}", provider.Name, baseItem.Path);
+                        continue;
+                    }
+
+                    // delete existing media segments that were re-generated.
+                    await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
                 {
                     _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
+                    continue;
+                }
+                else if (segments.Count == 0 && requestItem.ExistingSegments.Any())
+                {
+                    _logger.LogDebug("Media Segment provider {ProviderName} deleted all segments for {MediaPath}", provider.Name, baseItem.Path);
                     continue;
                 }
 
@@ -140,22 +171,21 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(Guid itemId, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
+    public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        var baseItem = _libraryManager.GetItemById(itemId);
+        using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+    }
 
-        if (baseItem is null)
+    /// <inheritdoc />
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem? item, IEnumerable<MediaSegmentType>? typeFilter, LibraryOptions libraryOptions, bool filterByProvider = true)
+    {
+        if (item is null)
         {
             _logger.LogError("Tried to request segments for an invalid item");
             return [];
         }
 
-        return await GetSegmentsAsync(baseItem, typeFilter, filterByProvider).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem item, IEnumerable<MediaSegmentType>? typeFilter, bool filterByProvider = true)
-    {
         using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
 
         var query = db.MediaSegments
@@ -168,7 +198,6 @@ public class MediaSegmentManager : IMediaSegmentManager
 
         if (filterByProvider)
         {
-            var libraryOptions = _libraryManager.GetLibraryOptions(item);
             var providerIds = _segmentProviders
                 .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
                 .Select(f => GetProviderId(f.Name))

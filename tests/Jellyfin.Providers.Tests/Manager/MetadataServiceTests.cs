@@ -22,7 +22,7 @@ namespace Jellyfin.Providers.Tests.Manager
         {
             var newLocked = new[] { MetadataField.Genres, MetadataField.Cast };
             var newString = "new";
-            var newDate = DateTime.Now;
+            var newDate = DateTime.UtcNow;
 
             var oldLocked = new[] { MetadataField.Genres };
             var oldString = "old";
@@ -39,6 +39,7 @@ namespace Jellyfin.Providers.Tests.Manager
                     DateCreated = newDate
                 }
             };
+
             if (defaultDate)
             {
                 source.Item.DateCreated = default;
@@ -141,8 +142,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 { "ProductionYear", 1, 2 },
                 { "CommunityRating", 1.0f, 2.0f },
                 { "CriticRating", 1.0f, 2.0f },
-                { "EndDate", DateTime.UnixEpoch, DateTime.Now },
-                { "PremiereDate", DateTime.UnixEpoch, DateTime.Now },
+                { "EndDate", DateTime.UnixEpoch, DateTime.UtcNow },
+                { "PremiereDate", DateTime.UnixEpoch, DateTime.UtcNow },
                 { "Video3DFormat", Video3DFormat.HalfSideBySide, Video3DFormat.FullSideBySide }
             };
 

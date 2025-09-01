@@ -119,5 +119,7 @@
     "Forced": "Tvungen",
     "Default": "Standard",
     "External": "Ekstern",
-    "HearingImpaired": "Nedsett høyrsel"
+    "HearingImpaired": "Nedsett høyrsel",
+    "TaskRefreshTrickplayImages": "Generer Trickplay-bilete",
+    "TaskAudioNormalization": "Normalisering av lyd"
 }

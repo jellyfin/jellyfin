@@ -42,6 +42,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Season>();
+            var config = Plugin.Instance.Configuration;
 
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);
 
@@ -65,10 +66,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             result.Item = new Season
             {
                 IndexNumber = seasonNumber,
-                Overview = seasonResult.Overview
+                Overview = seasonResult.Overview,
+                PremiereDate = seasonResult.AirDate,
+                ProductionYear = seasonResult.AirDate?.Year
             };
 
-            if (Plugin.Instance.Configuration.ImportSeasonName)
+            if (config.ImportSeasonName)
             {
                 result.Item.Name = seasonResult.Name;
             }
@@ -77,46 +80,80 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
+
             if (credits?.Cast is not null)
             {
-                var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
-                for (var i = 0; i < cast.Count; i++)
+                var castQuery = config.HideMissingCastMembers
+                    ? credits.Cast.Where(a => !string.IsNullOrEmpty(a.ProfilePath)).OrderBy(a => a.Order)
+                    : credits.Cast.OrderBy(a => a.Order);
+
+                foreach (var actor in castQuery.Take(config.MaxCastMembers))
                 {
-                    var member = cast[i];
-                    result.AddPerson(new PersonInfo
+                    if (string.IsNullOrWhiteSpace(actor.Name))
                     {
-                        Name = member.Name.Trim(),
-                        Role = member.Character.Trim(),
+                        continue;
+                    }
+
+                    var personInfo = new PersonInfo
+                    {
+                        Name = actor.Name.Trim(),
+                        Role = actor.Character?.Trim() ?? string.Empty,
                         Type = PersonKind.Actor,
-                        SortOrder = member.Order
-                    });
+                        SortOrder = actor.Order,
+                        ImageUrl = _tmdbClientManager.GetProfileUrl(actor.ProfilePath)
+                    };
+
+                    if (actor.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    result.AddPerson(personInfo);
                 }
             }
 
             if (credits?.Crew is not null)
             {
-                foreach (var person in credits.Crew)
-                {
-                    // Normalize this
-                    var type = TmdbUtils.MapCrewToPersonType(person);
+                var crewQuery = credits.Crew
+                    .Select(crewMember => new
+                    {
+                        CrewMember = crewMember,
+                        PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
+                    })
+                    .Where(entry =>
+                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
+                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
 
-                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                if (config.HideMissingCrewMembers)
+                {
+                    crewQuery = crewQuery.Where(entry => !string.IsNullOrEmpty(entry.CrewMember.ProfilePath));
+                }
+
+                foreach (var entry in crewQuery.Take(config.MaxCrewMembers))
+                {
+                    var crewMember = entry.CrewMember;
+
+                    if (string.IsNullOrWhiteSpace(crewMember.Name))
                     {
                         continue;
                     }
 
-                    result.AddPerson(new PersonInfo
+                    var personInfo = new PersonInfo
                     {
-                        Name = person.Name.Trim(),
-                        Role = person.Job?.Trim(),
-                        Type = type
-                    });
+                        Name = crewMember.Name.Trim(),
+                        Role = crewMember.Job?.Trim() ?? string.Empty,
+                        Type = entry.PersonType,
+                        ImageUrl = _tmdbClientManager.GetProfileUrl(crewMember.ProfilePath)
+                    };
+
+                    if (crewMember.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, crewMember.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    result.AddPerson(personInfo);
                 }
             }
-
-            result.Item.PremiereDate = seasonResult.AirDate;
-            result.Item.ProductionYear = seasonResult.AirDate?.Year;
 
             return result;
         }
