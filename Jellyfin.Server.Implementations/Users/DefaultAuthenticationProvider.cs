@@ -32,6 +32,8 @@ namespace Jellyfin.Server.Implementations.Users
         : AbstractAuthenticationProvider<UsernamePasswordAuthData, NoData, DefaultAuthProviderUserData>(contextFactory, userManager),
         IPasswordChangeable
     {
+        private const int TOTPCodeLength = 6;
+
         /// <inheritdoc />
         public override string Name => "UsernamePassword";
 
@@ -69,10 +71,30 @@ namespace Jellyfin.Server.Implementations.Users
                 return AuthenticationResult.Failure(user);
             }
 
-            PasswordHash readyHash = PasswordHash.Parse(userData.PasswordHash);
-            if (!cryptographyProvider.Verify(readyHash, authenticationData.Password))
+            if (string.IsNullOrEmpty(authenticationData.Password))
             {
                 return AuthenticationResult.Failure(user);
+            }
+
+            var mfaEnabled = userData.TOTPSecret is not null;
+            var attemptedPassword = authenticationData.Password;
+            var attemptedTOTP = authenticationData.TOTP;
+
+            PasswordHash readyHash = PasswordHash.Parse(userData.PasswordHash);
+            if (!cryptographyProvider.Verify(readyHash, attemptedPassword))
+            {
+                if (mfaEnabled // mfa enabled for this account
+                    && attemptedTOTP is null // no explicit TOTP code provided
+                    && attemptedPassword.Length > TOTPCodeLength // we can safely substring the password
+                    && cryptographyProvider.Verify(readyHash, attemptedPassword.AsSpan()[..^TOTPCodeLength])) // substringed password is valid
+                {
+                    attemptedTOTP = attemptedPassword[^TOTPCodeLength..];
+                    attemptedPassword = attemptedPassword[..^TOTPCodeLength];
+                }
+                else
+                {
+                    return AuthenticationResult.Failure(user);
+                }
             }
 
             // Migrate old hashes to the new default
@@ -80,10 +102,10 @@ namespace Jellyfin.Server.Implementations.Users
                 || int.Parse(readyHash.Parameters["iterations"], CultureInfo.InvariantCulture) != Constants.DefaultIterations)
             {
                 logger.LogInformation("Migrating password hash of {User} to the latest default", user.Username);
-                await ChangePassword(user, authenticationData.Password).ConfigureAwait(false);
+                await ChangePassword(user, attemptedPassword).ConfigureAwait(false);
             }
 
-            if (userData.TOTPSecret is null) // no mfa, done here
+            if (!mfaEnabled) // no mfa, done here
             {
                 return AuthenticationResult.Success(user);
             }
@@ -92,21 +114,21 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (!userData.MfaSetup) // MFA required but was not yet set up
             {
-                if (authenticationData.TOTP is null) // client has not sent a TOTP with this request, inform them that setup is required
+                if (attemptedTOTP is null) // client has not sent a TOTP with this request, inform them that setup is required
                 {
-                    return AuthenticationResult.Failure(user, 1301, new OtpUri(OtpType.Totp, userData.TOTPSecret, user.Username, "Jellyfin").ToString());
+                    return AuthenticationResult.Failure(user, 1301, new OtpUri(OtpType.Totp, userData.TOTPSecret, user.Username, issuer: "Jellyfin", digits: TOTPCodeLength).ToString());
                 }
 
                 settingUpTOTP = true; // since client has included a TOTP code on a user that has not set up their MFA yet, they must be trying to set up just now
             }
 
-            if (authenticationData.TOTP is null)
+            if (attemptedTOTP is null)
             {
                 return AuthenticationResult.Failure(user, 1300); // incorrect or missing TOTP
             }
 
-            var totp = new Totp(userData.TOTPSecret);
-            if (!totp.VerifyTotp(authenticationData.TOTP, out _, VerificationWindow.RfcSpecifiedNetworkDelay))
+            var totpVerifier = new Totp(userData.TOTPSecret, totpSize: TOTPCodeLength);
+            if (!totpVerifier.VerifyTotp(attemptedTOTP, out _, VerificationWindow.RfcSpecifiedNetworkDelay))
             {
                 return AuthenticationResult.Failure(user, 1300); // incorrect or missing TOTP
             }
