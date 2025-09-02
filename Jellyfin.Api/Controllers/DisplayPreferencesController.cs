@@ -96,7 +96,6 @@ public class DisplayPreferencesController : BaseJellyfinApiController
             dto.CustomPrefs.TryAdd(key, value);
         }
 
-        _displayPreferencesManager.SetCustomItemDisplayPreferences(userId.Value, itemId, displayPreferences.Client, dto.CustomPrefs);
         return dto;
     }
 
