@@ -44,6 +44,7 @@ using Jellyfin.Server.Implementations.FullSystemBackup;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Implementations.MediaSegments;
 using Jellyfin.Server.Implementations.SystemBackupService;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -359,19 +360,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private IEnumerable<Type> GetExportTypes(Type currentType)
-        {
-            var numberOfConcreteTypes = _allConcreteTypes.Length;
-            for (var i = 0; i < numberOfConcreteTypes; i++)
-            {
-                var type = _allConcreteTypes[i];
-                if (currentType.IsAssignableFrom(type))
-                {
-                    yield return type;
-                }
-            }
-        }
-
         /// <inheritdoc />
         public IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true)
         {
@@ -393,23 +381,54 @@ namespace Emby.Server.Implementations
             return parts;
         }
 
-        private IReadOnlyCollection<object> GetAuthenticationProviderExports(bool manageLifetime = true)
+        private IReadOnlyCollection<object> GetAuthenticationProviderExports()
         {
-            var parts = GetExportTypes(typeof(IAuthenticationProvider<>))
-                // exclude legacy authentication providers which have already been added in "InitializeServices" because they registered themselves as a service
-                .Select(CreateInstanceSafe)
-                .Where(i => i is not null)
-                .ToList();
-
-            if (manageLifetime)
+            var authenticationProviderType = typeof(IAuthenticationProvider<>);
+            var authenticationProviders = new List<object>();
+            foreach (var type in _allConcreteTypes)
             {
-                foreach (var part in parts.OfType<IDisposable>())
+                var interfaces = type.FindInterfaces(
+                    (m, criteria) =>
+                    {
+                        if (m.IsGenericType && m.GetGenericTypeDefinition() == authenticationProviderType)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    },
+                    null);
+
+                if (interfaces.Length > 0) // implements generic IAuthenticationProvider
                 {
-                    _disposableParts.Add(part);
+                    var instance = CreateInstanceSafe(type);
+                    authenticationProviders.Add(instance);
+                    if (instance is IDisposable disposable)
+                    {
+                        _disposableParts.Add(disposable);
+                    }
                 }
             }
 
-            return parts;
+            var defaultAssembly = typeof(DefaultAuthenticationProvider).Assembly;
+
+            // Sort the authentication providers so that internal ones are first,
+            // which allows external ones to override internal ones.
+            // We don't sort others since plugin load order is non deterministic anyway.
+            authenticationProviders.Sort((a, b) =>
+            {
+                var aDefault = a.GetType().Assembly == defaultAssembly;
+                var bDefault = b.GetType().Assembly == defaultAssembly;
+
+                if (aDefault == bDefault) // both internal or both external
+                {
+                    return 0;
+                }
+
+                return aDefault ? -1 : 1;
+            });
+
+            return authenticationProviders;
         }
 
         /// <inheritdoc />

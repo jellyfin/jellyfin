@@ -41,16 +41,20 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task RegisterProviders(IEnumerable<object> providers)
         {
+            var authenticationProviderTypeName = typeof(IAuthenticationProvider<>).Name;
             foreach (var provider in providers)
             {
-                var interfaceType = provider.GetType().GetInterface(typeof(IAuthenticationProvider<>).Name)
+                var interfaceType = provider.GetType().GetInterface(authenticationProviderTypeName)
                     ?? throw new InvalidOperationException("Attempted to register an authentication provider that does not inherit from IAuthenticationProvider<T>.");
 
-                // TODO: get optional type filter val and append
+                var payloadHandlerInfo = _providerMap.GetOrAdd(interfaceType.GetGenericArguments()[0], new PayloadHandlerInfo() { All = new(), ByTypeFilter = new() });
+                payloadHandlerInfo.All.Push(provider);
+                string? authenticationType = (string?)interfaceType.GetProperty(nameof(DefaultAuthenticationProvider.AuthenticationType))!.GetValue(provider);
 
-                var payloadHandlerInfo = _providerMap.GetOrAdd(interfaceType.GetGenericArguments()[0], new PayloadHandlerInfo() { OrderedProviders = new(), Providers = new() });
-                payloadHandlerInfo.OrderedProviders.Push(provider);
-                // payloadHandlerInfo.Providers[Cast(provider, interfaceType).AuthenticationType ?? string.Empty] = provider;
+                if (authenticationType != null)
+                {
+                    payloadHandlerInfo.ByTypeFilter[authenticationType] = provider;
+                }
 
                 var dbContext = await contextFactory.CreateDbContextAsync().ConfigureAwait(false);
                 var typeName = provider.GetType().FullName!;
@@ -71,7 +75,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// Gets the first enabled legacy authentication provider, if any.
         /// </summary>
         /// <returns>The first enabled legacy authentication provider, or else null.</returns>
-        public async Task<IAuthenticationProvider?> GetLegacyAuthenticationProvider()
+        private async Task<IAuthenticationProvider?> GetLegacyAuthenticationProvider()
         {
             if (legacyAuthProviders is null)
             {
@@ -238,7 +242,7 @@ namespace Jellyfin.Server.Implementations.Users
                 return null;
             }
 
-            IEnumerable<object?> providersRaw = authenticationTypeFilter == null ? payloadHandlerInfo.OrderedProviders : [payloadHandlerInfo.Providers[authenticationTypeFilter]];
+            IEnumerable<object?> providersRaw = authenticationTypeFilter == null ? payloadHandlerInfo.All : [payloadHandlerInfo.ByTypeFilter[authenticationTypeFilter]];
 
             foreach (var providerRaw in providersRaw)
             {
@@ -273,14 +277,15 @@ namespace Jellyfin.Server.Implementations.Users
             List<NameIdPair> providers = [];
             foreach (var entry in _providerMap.Values)
             {
-                foreach (var providerRaw in entry.OrderedProviders)
+                foreach (var providerRaw in entry.All)
                 {
                     if (providerRaw is null)
                     {
                         continue;
                     }
 
-                    var typeName = providerRaw.GetType().FullName!;
+                    var providerType = providerRaw.GetType();
+                    var typeName = providerType.FullName!;
 
                     var dbContext = await contextFactory.CreateDbContextAsync().ConfigureAwait(false);
                     AuthenticationProviderData? data;
@@ -294,7 +299,7 @@ namespace Jellyfin.Server.Implementations.Users
                         continue;
                     }
 
-                    providers.Add(new NameIdPair() { Id = typeName, Name = "TODO: name" });
+                    providers.Add(new NameIdPair() { Id = typeName, Name = (string)providerType.GetProperty(nameof(DefaultAuthenticationProvider.Name))!.GetValue(providerRaw)! });
                 }
             }
 
@@ -303,9 +308,9 @@ namespace Jellyfin.Server.Implementations.Users
 
         private record PayloadHandlerInfo
         {
-            public required ConcurrentDictionary<string, object> Providers { get; set; }
+            public required ConcurrentDictionary<string, object> ByTypeFilter { get; set; }
 
-            public required ConcurrentStack<object> OrderedProviders { get; set; }
+            public required ConcurrentStack<object> All { get; set; }
         }
     }
 }

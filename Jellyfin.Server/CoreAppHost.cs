@@ -85,7 +85,7 @@ namespace Jellyfin.Server
 #pragma warning disable CS0618 // Type or member is obsolete
             serviceCollection.AddSingleton<IAuthenticationProvider, OldDefaultAuthenticationProvider>();
 #pragma warning restore CS0618 // Type or member is obsolete
-            serviceCollection.AddSingleton<IAuthenticationProvider<UsernamePasswordAuthData>, DefaultAuthenticationProvider>();
+            // serviceCollection.AddSingleton<IAuthenticationProvider<UsernamePasswordAuthData>, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();
             serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
