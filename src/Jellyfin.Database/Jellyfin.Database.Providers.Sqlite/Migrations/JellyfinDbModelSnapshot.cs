@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -137,6 +137,24 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("ItemId", "Index");
 
                     b.ToTable("AttachmentStreamInfos");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AuthenticationProviderData", b =>
+                {
+                    b.Property<string>("AuthenticationProviderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthenticationProviderId");
+
+                    b.ToTable("AuthenticationProviderData");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1246,11 +1264,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AuthenticationProviderId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("CastReceiverId")
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
@@ -1300,13 +1313,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("MaxParentalRatingSubScore")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("MustUpdatePassword")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Password")
-                        .HasMaxLength(65535)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("PasswordResetProviderId")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1349,6 +1355,26 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserAuthenticationProviderData", b =>
+                {
+                    b.Property<string>("AuthenticationProviderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AuthenticationProviderId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAuthenticationProviderData");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1627,6 +1653,21 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserAuthenticationProviderData", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.AuthenticationProviderData", null)
+                        .WithMany("UserAuthenticationProviderDatas")
+                        .HasForeignKey("AuthenticationProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                        .WithMany("UserAuthenticationProviderDatas")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.UserData", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1644,6 +1685,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AuthenticationProviderData", b =>
+                {
+                    b.Navigation("UserAuthenticationProviderDatas");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemEntity", b =>
@@ -1699,6 +1745,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Preferences");
 
                     b.Navigation("ProfileImage");
+
+                    b.Navigation("UserAuthenticationProviderDatas");
                 });
 #pragma warning restore 612, 618
         }

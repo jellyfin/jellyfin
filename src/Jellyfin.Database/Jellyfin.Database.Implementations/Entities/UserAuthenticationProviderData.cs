@@ -9,13 +9,12 @@ namespace Jellyfin.Database.Implementations.Entities
     /// <remarks>
     /// Links <see cref="AuthenticationProviderData"/> to <see cref="User"/>.
     /// </remarks>
-    [PrimaryKey(nameof(AuthenticationProviderDataId), nameof(UserId))]
     public class UserAuthenticationProviderData
     {
         /// <summary>
         /// Gets or sets the authentication provider ID. This is equal to the full type name of the authentication provider's implementing class.
         /// </summary>
-        public required string AuthenticationProviderDataId { get; set; }
+        public required string AuthenticationProviderId { get; set; }
 
         /// <summary>
         /// Gets or sets the user ID.

@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Authentication
             ArgumentNullException.ThrowIfNull(user);
 
             var typeName = GetType().FullName;
-            var data = user.AuthenticationProviderDataMaps.First(provider => provider.AuthenticationProviderDataId == typeName);
+            var data = user.UserAuthenticationProviderDatas.First(provider => provider.AuthenticationProviderId == typeName);
 
             if (string.IsNullOrEmpty(data.Data))
             {
@@ -126,16 +126,16 @@ namespace MediaBrowser.Controller.Authentication
             ArgumentNullException.ThrowIfNull(user);
 
             var typeName = GetType().FullName!;
-            var data = user.AuthenticationProviderDataMaps.First(provider => provider.AuthenticationProviderDataId == typeName);
+            var data = user.UserAuthenticationProviderDatas.First(provider => provider.AuthenticationProviderId == typeName);
 
             if (data is null)
             {
                 data = new UserAuthenticationProviderData()
                 {
-                    AuthenticationProviderDataId = typeName,
+                    AuthenticationProviderId = typeName,
                     UserId = user.Id
                 };
-                user.AuthenticationProviderDataMaps.Add(data);
+                user.UserAuthenticationProviderDatas.Add(data);
             }
 
             data.Data = JsonSerializer.Serialize(userData, JsonDefaults.Options);
@@ -155,16 +155,16 @@ namespace MediaBrowser.Controller.Authentication
             ArgumentNullException.ThrowIfNull(userDataFactory);
 
             var typeName = GetType().FullName!;
-            var data = user.AuthenticationProviderDataMaps.First(provider => provider.AuthenticationProviderDataId == typeName);
+            var data = user.UserAuthenticationProviderDatas.First(provider => provider.AuthenticationProviderId == typeName);
 
             if (data is null)
             {
                 data = new UserAuthenticationProviderData()
                 {
-                    AuthenticationProviderDataId = typeName,
+                    AuthenticationProviderId = typeName,
                     UserId = user.Id
                 };
-                user.AuthenticationProviderDataMaps.Add(data);
+                user.UserAuthenticationProviderDatas.Add(data);
             }
 
             data.Data = JsonSerializer.Serialize(userDataFactory(string.IsNullOrEmpty(data.Data) ? await InitialUserData().ConfigureAwait(false) : JsonSerializer.Deserialize<TUserData>(data.Data, JsonDefaults.Options)), JsonDefaults.Options);

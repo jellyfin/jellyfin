@@ -1,15 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Database.Implementations.Entities
 {
     /// <summary>
     /// An entity that represents arbitrary global (NOT user-specific) data for an authentication provider, as well as whether or not it is enabled globally.
     /// </summary>
+    [Table("AuthenticationProviderData")]
     public class AuthenticationProviderData
     {
         /// <summary>
@@ -21,7 +19,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets the user-specific authentication provider data. External dependencies should not modify this directly.
         /// </summary>
-        public ICollection<UserAuthenticationProviderData> AuthenticationProviderDataMaps { get; } = [];
+        public ICollection<UserAuthenticationProviderData> UserAuthenticationProviderDatas { get; } = [];
 
         /// <summary>
         /// Gets the users who have data at this authentication provider. Exists for model completeness and will generally not be accessed directly.

@@ -289,7 +289,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <summary>
         /// Gets the user-specific authentication provider data. External dependencies should not modify this directly.
         /// </summary>
-        public ICollection<UserAuthenticationProviderData> AuthenticationProviderDataMaps { get; } = [];
+        public ICollection<UserAuthenticationProviderData> UserAuthenticationProviderDatas { get; } = [];
 
         /// <summary>
         /// Gets the global authentication providers that this user has data for. Exists for model completeness and generally should not be accessed directly.
