@@ -381,7 +381,7 @@ namespace Emby.Server.Implementations.Library
                         UserView userView => userView.CollectionType,
                         _ => null
                     })
-                    .FirstOrDefault(type => type != null);
+                    .FirstOrDefault(type => type is not null);
 
                 if (collectionType == CollectionType.tvshows)
                 {
