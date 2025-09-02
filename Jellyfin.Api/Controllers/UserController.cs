@@ -306,7 +306,7 @@ public class UserController : BaseJellyfinApiController
                 return Unauthorized("Unknown secret");
             }
 
-            return await _sessionManager.CreateSession(result.User, data.DeviceId, data.AppName, data.AppVersion, data.DeviceName, provider.GetType().FullName, null).ConfigureAwait(false);
+            return await _sessionManager.CreateSession(result.User, data.DeviceId, data.AppName, data.AppVersion, data.DeviceName, provider.GetType().FullName, remoteEndpoint).ConfigureAwait(false);
         }
         catch (SecurityException e)
         {
