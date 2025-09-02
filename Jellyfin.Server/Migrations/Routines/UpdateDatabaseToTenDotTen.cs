@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Updates the library.db to version 10.10.z in preperation for the EFCore migration.
+/// Updates the library.db to version 10.10.z in preparation for the EFCore migration.
 /// Replaces the migration code from the old SqliteItemRepository and SqliteUserDataRepository.
 /// </summary>
 [JellyfinMigration("2025-04-20T19:15:00", nameof(UpdateDatabaseToTenDotTen))]
