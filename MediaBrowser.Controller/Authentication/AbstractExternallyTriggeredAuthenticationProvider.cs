@@ -109,7 +109,7 @@ namespace MediaBrowser.Controller.Authentication
             var updateKey = await GenerateUpdateKey(data).ConfigureAwait(false);
 
             _updateToMonitorKeyMap[updateKey] = monitorKey;
-            _monitorMap[monitorKey] = new MonitorEntry<TAttemptData>(data, updateKey, new(0), DateTimeOffset.Now);
+            _monitorMap[monitorKey] = new MonitorEntry<TAttemptData>(data, updateKey, new(0, 5), DateTimeOffset.Now);
 
             return new MonitorData(monitorKey, updateKey);
         }
@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.Authentication
             }
 
             updater(entry.Data);
-            entry.UpdateEvent.Release(entry.UpdateEvent.Release(0));
+            entry.UpdateEvent.Release(5);
             return Task.FromResult(true);
         }
 

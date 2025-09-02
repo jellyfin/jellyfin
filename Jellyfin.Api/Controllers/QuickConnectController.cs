@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.QuickConnect;
 using ICU4N.Util;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
@@ -43,9 +44,9 @@ public class QuickConnectController : BaseJellyfinApiController
         _logger = logger;
     }
 
-    private Task<IAuthenticationProvider<ExternallyTriggeredAuthenticationData>?> GetQuickConnectProvider()
+    private Task<QuickConnectManager?> GetQuickConnectProvider()
     {
-        return _userAuthenticationManager.ResolveProvider<ExternallyTriggeredAuthenticationData>("QuickConnect");
+        return _userAuthenticationManager.ResolveConcrete<QuickConnectManager>();
     }
 
     /// <summary>
@@ -77,11 +78,6 @@ public class QuickConnectController : BaseJellyfinApiController
             return Unauthorized("Quick connect is disabled");
         }
 
-        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
-        {
-            return Unauthorized("Quick connect is disabled");
-        }
-
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
         ArgumentException.ThrowIfNullOrEmpty(auth.DeviceId);
         ArgumentException.ThrowIfNullOrEmpty(auth.Device);
@@ -95,7 +91,7 @@ public class QuickConnectController : BaseJellyfinApiController
                 auth.Client,
                 auth.Version);
 
-        var monitorData = await monitorable.Initiate(res).ConfigureAwait(false);
+        var monitorData = await quickConnectProvider.Initiate(res).ConfigureAwait(false);
 
         res.Secret = monitorData.MonitorKey;
         res.Code = monitorData.UpdateKey;
@@ -126,7 +122,7 @@ public class QuickConnectController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<QuickConnectResult>> GetQuickConnectState([FromQuery, Required] string secret, [FromQuery] string? waitForUpdate = null)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(secret);
+        ArgumentException.ThrowIfNullOrEmpty(secret);
         var quickConnectProvider = await GetQuickConnectProvider().ConfigureAwait(false);
 
         if (quickConnectProvider is null)
@@ -134,12 +130,7 @@ public class QuickConnectController : BaseJellyfinApiController
             return Unauthorized("Quick connect is disabled");
         }
 
-        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
-        {
-            return Unauthorized("Quick connect is disabled");
-        }
-
-        var data = await monitorable.GetData(secret, waitForUpdate == "1").ConfigureAwait(false);
+        var data = await quickConnectProvider.GetData(secret, waitForUpdate == "1").ConfigureAwait(false);
 
         if (data is null)
         {
@@ -166,6 +157,11 @@ public class QuickConnectController : BaseJellyfinApiController
         userId = RequestHelpers.GetUserId(User, userId);
 
         ArgumentNullException.ThrowIfNullOrEmpty(code);
+        if (!userId.HasValue)
+        {
+            throw new ArgumentNullException(nameof(userId));
+        }
+
         var quickConnectProvider = await GetQuickConnectProvider().ConfigureAwait(false);
 
         if (quickConnectProvider is null)
@@ -173,25 +169,15 @@ public class QuickConnectController : BaseJellyfinApiController
             return Unauthorized("Quick connect is disabled");
         }
 
-        if (quickConnectProvider is not IKeyedMonitorable<QuickConnectResult> monitorable)
-        {
-            return Unauthorized("Quick connect is disabled");
-        }
-
         try
         {
-            return await monitorable.Update(code, result =>
+            var success = await quickConnectProvider.Authorize(code, userId.Value).ConfigureAwait(false);
+            if (success)
             {
-                if (result.UserId is not null)
-                {
-                    throw new InvalidOperationException("Request is already authorized");
-                }
-
-                // Change the time on the request so it expires one minute into the future. It can't expire immediately as otherwise some clients wouldn't ever see that they have been authenticated.
-                result.DateAdded = DateTime.UtcNow.Add(TimeSpan.FromMinutes(1));
-                result.UserId = userId;
                 _logger.LogDebug("Authorizing device with code {Code} to login as user {UserId}", code, userId);
-            }).ConfigureAwait(false);
+            }
+
+            return success;
         }
         catch (AuthenticationException)
         {

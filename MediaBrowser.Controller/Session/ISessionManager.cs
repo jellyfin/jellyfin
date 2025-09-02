@@ -256,38 +256,6 @@ namespace MediaBrowser.Controller.Session
         void ReportNowViewingItem(string sessionId, string itemId);
 
         /// <summary>
-        /// DEPRECATED: Authenticates the new session.
-        /// </summary>
-        /// <remarks>
-        /// This method is deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`.
-        /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
-        /// </remarks>
-        /// <param name="request">The authenticationrequest.</param>
-        /// <returns>The authentication result.</returns>
-        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        Task<Session> AuthenticateNewSession(AuthenticationRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// DEPRECATED: Directly authenticates the session without enforcing password.
-        /// </summary>
-        /// <remarks>
-        /// This method is deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`.
-        /// For direct session creation (AFTER successful authentication), use `CreateSession` instead.
-        /// </remarks>
-        /// <param name="request">The authenticationrequest.</param>
-        /// <returns>The authentication result.</returns>
-        [Obsolete("Deprecated. For authentication, use `IUserAuthenticationManager#Authenticate`. " +
-            "For direct session creation (AFTER successful authentication), use `CreateSession` instead.")]
-        Task<Session> AuthenticateDirect(AuthenticationRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Creates a new session for a given user.
         /// </summary>
         /// <param name="user">The user.</param>

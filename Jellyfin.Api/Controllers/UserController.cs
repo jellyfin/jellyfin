@@ -11,6 +11,7 @@ using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -236,11 +237,15 @@ public class UserController : BaseJellyfinApiController
             {
                 if (result.ErrorCode == 1300) // arbitrarily chosen error code used to signal that the username and password were correct, but TOTP was not
                 {
-                    throw new AuthenticationException("A TOTP code is required.");
+                    throw new AuthenticationException("Incorrect or missing TOTP code.");
                 }
-                else if (result.ErrorCode == 1301) // MFA setup required
+
+                // MFA setup required. If client is MFA aware, send them the setup URI.
+                // If not, simply send an error message to avoid unnecessary leaking of secret, in case of
+                // clients that might display the raw error message on a screen, for example.
+                else if (result.ErrorCode == 1301)
                 {
-                    throw new AuthenticationException("MFA setup required.");
+                    throw new AuthenticationException((mfaAwareClient && result.ErrorData != null) ? result.ErrorData : "MFA setup required.");
                 }
 
                 await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(new AuthenticationRequest
@@ -299,14 +304,9 @@ public class UserController : BaseJellyfinApiController
                 return Unauthorized("Unknown secret");
             }
 
-            var data = await monitorable.GetData(request.Secret, false).ConfigureAwait(false);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
-            if (data is null)
-            {
-                return Unauthorized("Unknown secret");
-            }
-
-            return await _sessionManager.CreateSession(result.User, data.DeviceId, data.AppName, data.AppVersion, data.DeviceName, provider.GetType().FullName, remoteEndpoint).ConfigureAwait(false);
+            return await _sessionManager.CreateSession(result.User, auth.DeviceId, auth.Client, auth.Version, auth.Device, provider.GetType().FullName, remoteEndpoint).ConfigureAwait(false);
         }
         catch (SecurityException e)
         {
@@ -663,6 +663,41 @@ public class UserController : BaseJellyfinApiController
     {
         var result = await _userManager.RedeemPasswordResetPin(forgotPasswordPinRequest.Pin).ConfigureAwait(false);
         return result;
+    }
+
+    /// <summary>
+    /// Enables or disables MFA for a user.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="request">The <see cref="SetUserMFADto"/> containing a boolean that indicates whether you want to disable or enable MFA for this user.</param>
+    /// <response code="200">Success.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>A <see cref="OkResult"/> indicating success, a <see cref="NotFoundResult"/> if the user was not found,
+    /// or a <see cref="BadRequestResult"/> if the default username/password authentication provider is not enabled and thus MFA
+    /// cannot be enabled.</returns>
+    [HttpPost("MFA/{userId}")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> SetMFA([FromRoute, Required] Guid userId, [FromBody, Required] SetUserMFADto request)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var defaultProvider = await _userAuthenticationManager.ResolveConcrete<DefaultAuthenticationProvider>().ConfigureAwait(false);
+
+        if (defaultProvider is null)
+        {
+            return BadRequest("Default authentication provider is not enabled.");
+        }
+
+        await defaultProvider.SetMFA(user, request.Enable).ConfigureAwait(false);
+
+        return Ok();
     }
 
     /// <summary>

@@ -59,7 +59,7 @@ INSERT INTO AuthenticationProviderData (AuthenticationProviderId, IsEnabled) VAL
 """);
 
             migrationBuilder.Sql("""
-INSERT INTO UserAuthenticationProviderData (UserId, Data, AuthenticationProviderId) SELECT Id, '{"PasswordHash":"' || Password || '","MfaEnabled":false,"TOTPSecret":null}', 'Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider' FROM Users;
+INSERT INTO UserAuthenticationProviderData (UserId, Data, AuthenticationProviderId) SELECT Id, '{"PasswordHash":"' || Password || '","MfaSetup":false,"TOTPSecret":null}', 'Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider' FROM Users;
 """);
 
             migrationBuilder.DropColumn(

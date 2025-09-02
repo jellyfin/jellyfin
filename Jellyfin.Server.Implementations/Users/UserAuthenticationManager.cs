@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Data;
@@ -20,6 +21,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -37,6 +39,7 @@ namespace Jellyfin.Server.Implementations.Users
     {
         // Dictionary<TResponseC2S, Dictionary<AuthenticationType, IAuthenticationProvider<TResponseC2S>>>
         private readonly ConcurrentDictionary<Type, PayloadHandlerInfo> _providerMap = new();
+        private readonly ConcurrentDictionary<Type, object> _providersByImpType = new();
 
         /// <inheritdoc/>
         public async Task RegisterProviders(IEnumerable<object> providers)
@@ -44,20 +47,23 @@ namespace Jellyfin.Server.Implementations.Users
             var authenticationProviderTypeName = typeof(IAuthenticationProvider<>).Name;
             foreach (var provider in providers)
             {
-                var interfaceType = provider.GetType().GetInterface(authenticationProviderTypeName)
+                var providerType = provider.GetType();
+                var interfaceType = providerType.GetInterface(authenticationProviderTypeName)
                     ?? throw new InvalidOperationException("Attempted to register an authentication provider that does not inherit from IAuthenticationProvider<T>.");
 
                 var payloadHandlerInfo = _providerMap.GetOrAdd(interfaceType.GetGenericArguments()[0], new PayloadHandlerInfo() { All = new(), ByTypeFilter = new() });
                 payloadHandlerInfo.All.Push(provider);
-                string? authenticationType = (string?)interfaceType.GetProperty(nameof(DefaultAuthenticationProvider.AuthenticationType))!.GetValue(provider);
 
+                string? authenticationType = (string?)interfaceType.GetProperty(nameof(DefaultAuthenticationProvider.AuthenticationType))!.GetValue(provider);
                 if (authenticationType != null)
                 {
                     payloadHandlerInfo.ByTypeFilter[authenticationType] = provider;
                 }
 
+                _providersByImpType[providerType] = provider;
+
                 var dbContext = await contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-                var typeName = provider.GetType().FullName!;
+                var typeName = providerType.FullName!;
                 var entryExists = false;
                 await using (dbContext)
                 {
@@ -274,6 +280,9 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<IEnumerable<NameIdPair>> GetAuthenticationProviders()
         {
+            // TODO: revise. probably want to include legacy authentication providers too, for the time being
+            // and maybe also disabled ones (depending on how API was used in the past) if this is going to be
+            // used mainly for config pages and stuff, so that admins can enable/disable them through this API
             List<NameIdPair> providers = [];
             foreach (var entry in _providerMap.Values)
             {
@@ -304,6 +313,33 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             return providers;
+        }
+
+        /// <inheritdoc/>
+        public async Task<T?> ResolveConcrete<T>()
+            where T : class
+        {
+            var providerType = typeof(T);
+            var providerRaw = _providersByImpType[providerType];
+            if (providerRaw is null)
+            {
+                return null;
+            }
+
+            var typeName = providerType.FullName!;
+            var dbContext = await contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+            AuthenticationProviderData? data;
+            await using (dbContext.ConfigureAwait(false))
+            {
+                data = dbContext.AuthenticationProviderDatas.First(dbProvider => dbProvider.AuthenticationProviderId == typeName);
+            }
+
+            if (data?.IsEnabled != true)
+            {
+                return null;
+            }
+
+            return providerRaw as T;
         }
 
         private record PayloadHandlerInfo

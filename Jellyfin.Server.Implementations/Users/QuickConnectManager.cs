@@ -33,12 +33,6 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc/>
-        public override Task<NoData> InitialUserData()
-        {
-            return Task.FromResult(default(NoData));
-        }
-
-        /// <inheritdoc/>
         protected override Task<AuthenticationResult> AuthenticateAttempt(QuickConnectResult attemptData)
         {
             if (attemptData is null || !attemptData.UserId.HasValue)
@@ -69,6 +63,29 @@ namespace Emby.Server.Implementations.QuickConnect
 
             int code = (int)(min + ((max - min) * (scale / (double)uint.MaxValue)));
             return code.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Authorizes the given code to log in as the given user ID.
+        /// </summary>
+        /// <param name="code">The quick connect code.</param>
+        /// <param name="userId">The user ID.</param>
+        /// <returns>A boolean indicating whether or not the authorization succeeded.</returns>
+        /// <exception cref="InvalidOperationException">If the request had already been authorized.</exception>
+        public Task<bool> Authorize(string code, Guid userId)
+        {
+            return Update(code, result =>
+            {
+                if (result.UserId is not null)
+                {
+                    throw new InvalidOperationException("Request is already authorized");
+                }
+
+                // Change the time on the request so it expires one minute into the future. It can't expire immediately as otherwise some clients wouldn't ever see that they have been authenticated.
+                result.DateAdded = DateTime.UtcNow.Add(TimeSpan.FromMinutes(1));
+                result.UserId = userId;
+                result.Authenticated = true;
+            });
         }
     }
 }

@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.Authentication
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>The data associated with this user.</returns>
-        protected async Task<TUserData> GetUserData(User user)
+        protected Task<TUserData?> GetUserData(User user)
         {
             ArgumentNullException.ThrowIfNull(user);
 
@@ -103,17 +103,11 @@ namespace MediaBrowser.Controller.Authentication
 
             if (string.IsNullOrEmpty(data?.Data))
             {
-                return await InitialUserData().ConfigureAwait(false);
+                return Task.FromResult<TUserData?>(null);
             }
 
-            return JsonSerializer.Deserialize<TUserData>(data.Data, JsonDefaults.Options);
+            return Task.FromResult<TUserData?>(JsonSerializer.Deserialize<TUserData>(data.Data, JsonDefaults.Options));
         }
-
-        /// <summary>
-        /// Gets the initial user data for this authentication provider.
-        /// </summary>
-        /// <returns>The initial user data for this authentication provider.</returns>
-        public abstract Task<TUserData> InitialUserData();
 
         /// <summary>
         /// Saves user data for a specific user.
@@ -149,7 +143,7 @@ namespace MediaBrowser.Controller.Authentication
         /// <param name="user">The user.</param>
         /// <param name="userDataFactory">The user data factory.</param>
         /// <returns>A task that resolves upon completion.</returns>
-        protected async Task SaveUserData(User user, Func<TUserData, TUserData> userDataFactory)
+        protected async Task SaveUserData(User user, Func<TUserData?, TUserData> userDataFactory)
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentNullException.ThrowIfNull(userDataFactory);
@@ -167,7 +161,7 @@ namespace MediaBrowser.Controller.Authentication
                 user.UserAuthenticationProviderDatas.Add(data);
             }
 
-            data.Data = JsonSerializer.Serialize(userDataFactory(string.IsNullOrEmpty(data.Data) ? await InitialUserData().ConfigureAwait(false) : JsonSerializer.Deserialize<TUserData>(data.Data, JsonDefaults.Options)), JsonDefaults.Options);
+            data.Data = JsonSerializer.Serialize(userDataFactory(string.IsNullOrEmpty(data.Data) ? null : JsonSerializer.Deserialize<TUserData>(data.Data, JsonDefaults.Options)), JsonDefaults.Options);
 
             await userManager.UpdateUserAsync(user).ConfigureAwait(false);
         }

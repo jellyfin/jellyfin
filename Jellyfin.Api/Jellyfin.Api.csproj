@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
     <ProjectReference Include="..\src\Jellyfin.MediaEncoding.Hls\Jellyfin.MediaEncoding.Hls.csproj" />

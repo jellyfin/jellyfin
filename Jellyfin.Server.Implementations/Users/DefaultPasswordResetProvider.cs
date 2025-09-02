@@ -24,7 +24,6 @@ namespace Jellyfin.Server.Implementations.Users
         private const string BaseResetFileName = "passwordreset";
 
         private readonly IApplicationHost _appHost;
-        // private readonly IUserAuthenticationManager _userAuthenticationManager;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -34,13 +33,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost/*, IUserAuthenticationManager userAuthenticationManager*/)
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
-            // _userAuthenticationManager = userAuthenticationManager;
             _appHost = appHost;
-            // TODO: Remove the circular dependency on UserManager
         }
 
         /// <inheritdoc />
@@ -52,7 +49,12 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
+            // TODO: this function depends on userManager, while userManager also depends on this password reset provider.
+            // Similarly, this function depends on userAuthenticationManager which, as stated above, depends on this password reset provider.
+            // IMHO, the entire password reset flow should be revised and ideally moved into IUserAuthenticationManager, which is free to depend
+            // on userManager.
             var userManager = _appHost.Resolve<IUserManager>();
+            var userAuthenticationManager = _appHost.Resolve<IUserAuthenticationManager>();
             var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
@@ -76,16 +78,16 @@ namespace Jellyfin.Server.Implementations.Users
                     var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
 
-                    // var passwordProvider = await _userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
+                    var passwordProvider = await userAuthenticationManager.ResolveProvider<UsernamePasswordAuthData>().ConfigureAwait(false);
 
-                    // if (passwordProvider is not IPasswordChangeable passwordChangeable)
-                    // {
-                    throw new InvalidOperationException("You cannot change your password for this authentication provider.");
-                    // }
+                    if (passwordProvider is not IPasswordChangeable passwordChangeable)
+                    {
+                        throw new InvalidOperationException("You cannot change your password for this authentication provider.");
+                    }
 
-                    // await passwordChangeable.ChangePassword(resetUser, pin).ConfigureAwait(false);
-                    // usersReset.Add(resetUser.Username);
-                    // File.Delete(resetFile);
+                    await passwordChangeable.ChangePassword(resetUser, pin).ConfigureAwait(false);
+                    usersReset.Add(resetUser.Username);
+                    File.Delete(resetFile);
                 }
             }
 

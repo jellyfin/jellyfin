@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,9 +55,24 @@ namespace MediaBrowser.Controller.Authentication
             where TResponseC2S : struct;
 
         /// <summary>
+        /// Resolves an authentication provider by its concrete implementation type, only if it is enabled.
+        /// </summary>
+        /// <typeparam name="T">The implementation type to resolve.</typeparam>
+        /// <returns>The authentication provider, if found.</returns>
+        Task<T?> ResolveConcrete<T>()
+            where T : class;
+
+        /// <summary>
         /// Get the enabled authentication providers.
         /// </summary>
+        /// <remarks>
+        /// This API will change in the future to include more information and configuration options.
+        /// It should be the basis for customisation done through the admin panel.
+        /// Right now, only a global enable/disable is exposed, and some hardcoded actions for the default
+        /// authentication provider are implemented.
+        /// </remarks>
         /// <returns>The enabled authentication providers.</returns>
+        [Experimental(diagnosticId: "AuthenticationManager_GetAuthenticationProviders")]
         Task<IEnumerable<NameIdPair>> GetAuthenticationProviders();
     }
 }

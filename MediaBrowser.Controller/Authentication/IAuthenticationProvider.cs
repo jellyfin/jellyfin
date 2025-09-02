@@ -33,14 +33,7 @@ namespace MediaBrowser.Controller.Authentication
         /// Attempts to authenticate a user.
         /// </summary>
         /// <param name="authenticationData">The authentication data.</param>
-        /// <returns>A User if authentication was successful, or null if not.</returns>
-        /// <remarks>
-        /// Note to callers: An authentication provider is free to return a non existing user, return an existing user with modifications,
-        /// or return an entirely different user than the one provided as a parameter. You are expected to take care of persisting these changes.
-        /// Note to implementors: This function should have no persistent side effects. If you want to update the user, simply return the modified user.
-        /// Users are indexed by their Id, not their name, so you can also change their Username property. If you want to create a new user,
-        /// simply return the new user. Callers are expected to deal with persistence of this data.
-        /// </remarks>
+        /// <returns>An authentication result.</returns>
         Task<AuthenticationResult> Authenticate(TResponseC2S authenticationData);
     }
 

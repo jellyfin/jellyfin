@@ -440,7 +440,9 @@ public class SessionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<NameIdPair>>> GetAuthProviders()
     {
+#pragma warning disable AuthenticationManager_GetAuthenticationProviders // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return Ok(await _userAuthenticationManager.GetAuthenticationProviders().ConfigureAwait(false));
+#pragma warning restore AuthenticationManager_GetAuthenticationProviders // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>

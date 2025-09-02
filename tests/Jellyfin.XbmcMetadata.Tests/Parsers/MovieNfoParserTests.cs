@@ -29,7 +29,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
         public MovieNfoParserTests()
         {
-            _testUser = new User("Test User", "Auth provider", "Reset provider");
+            _testUser = new User("Test User", "Reset provider");
 
             var providerManager = new Mock<IProviderManager>();
 

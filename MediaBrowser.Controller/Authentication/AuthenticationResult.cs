@@ -5,7 +5,7 @@ using Jellyfin.Database.Implementations.Entities;
 namespace MediaBrowser.Controller.Authentication
 {
     /// <summary>
-    /// Represents a response to an authentication attempt via <see cref="IUserAuthenticationManager"/>.
+    /// Represents a response to an authentication attempt via <see cref="IAuthenticationProvider{TResponseC2S}"/> or <see cref="IUserAuthenticationManager"/>.
     /// </summary>
     public class AuthenticationResult
     {
@@ -22,6 +22,11 @@ namespace MediaBrowser.Controller.Authentication
         /// Gets the optional error code returned from unsuccessful authentication.
         /// </summary>
         public int? ErrorCode { get; private set; }
+
+        /// <summary>
+        /// Gets optional additional error data returned from unsuccessful authentication.
+        /// </summary>
+        public string? ErrorData { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not authentication was successful.
@@ -44,10 +49,11 @@ namespace MediaBrowser.Controller.Authentication
         /// </summary>
         /// <param name="user">The user that was identified but did not successfully authenticate.</param>
         /// <param name="errorCode">An optional user-defined error code to convey extra information to the caller.</param>
+        /// <param name="errorData">Optional additional error data to convey extra information to the caller.</param>
         /// <returns>The <see cref="AuthenticationResult"/> instance.</returns>
-        public static AuthenticationResult Failure(User user, int? errorCode = null)
+        public static AuthenticationResult Failure(User user, int? errorCode = null, string? errorData = null)
         {
-            return new AuthenticationResult() { User = user, Authenticated = false, ErrorCode = errorCode };
+            return new AuthenticationResult() { User = user, Authenticated = false, ErrorCode = errorCode, ErrorData = errorData };
         }
 
         /// <summary>
@@ -55,10 +61,11 @@ namespace MediaBrowser.Controller.Authentication
         /// If you know the user that was trying to log in, use <see cref="Failure"/> instead, since it is used for user-based rate limiting and blocking.
         /// </summary>
         /// <param name="errorCode">An optional user-defined error code to convey extra information to the caller.</param>
+        /// <param name="errorData">Optional additional error data to convey extra information to the caller.</param>
         /// <returns>The <see cref="AuthenticationResult"/> instance.</returns>
-        public static AuthenticationResult AnonymousFailure(int? errorCode = null)
+        public static AuthenticationResult AnonymousFailure(int? errorCode = null, string? errorData = null)
         {
-            return new AuthenticationResult() { ErrorCode = errorCode, Authenticated = false };
+            return new AuthenticationResult() { ErrorCode = errorCode, Authenticated = false, ErrorData = errorData };
         }
     }
 }

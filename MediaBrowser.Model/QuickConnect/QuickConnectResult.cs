@@ -30,6 +30,11 @@ namespace MediaBrowser.Model.QuickConnect
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this request is authorized.
+        /// </summary>
+        public bool Authenticated { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating an optional UserId of a user whom this request is authorized to authenticate as.
         /// </summary>
         public Guid? UserId { get; set; }
