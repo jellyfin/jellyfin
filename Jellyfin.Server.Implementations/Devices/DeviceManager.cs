@@ -296,6 +296,11 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public ClientCapabilitiesDto ToClientCapabilitiesDto(ClientCapabilities capabilities)
         {
+            if (capabilities is null)
+            {
+                return new();
+            }
+
             return new()
             {
                 PlayableMediaTypes = capabilities.PlayableMediaTypes,

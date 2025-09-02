@@ -99,9 +99,9 @@ namespace MediaBrowser.Controller.Authentication
             ArgumentNullException.ThrowIfNull(user);
 
             var typeName = GetType().FullName;
-            var data = user.UserAuthenticationProviderDatas.First(provider => provider.AuthenticationProviderId == typeName);
+            var data = user.UserAuthenticationProviderDatas.FirstOrDefault(provider => provider.AuthenticationProviderId == typeName);
 
-            if (string.IsNullOrEmpty(data.Data))
+            if (string.IsNullOrEmpty(data?.Data))
             {
                 return await InitialUserData().ConfigureAwait(false);
             }

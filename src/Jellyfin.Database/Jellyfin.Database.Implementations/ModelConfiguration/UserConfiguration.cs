@@ -54,6 +54,9 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
                     r => r.HasOne<AuthenticationProviderData>().WithMany(d => d.UserAuthenticationProviderDatas).HasForeignKey("AuthenticationProviderId"),
                     l => l.HasOne<User>().WithMany(d => d.UserAuthenticationProviderDatas).HasForeignKey("UserId"));
 
+            builder.Navigation(u => u.UserAuthenticationProviderDatas)
+                .AutoInclude();
+
             builder
                 .HasIndex(entity => entity.Username)
                 .IsUnique();
