@@ -157,7 +157,17 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, null, newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            // Video3DFormat - null values do NOT replace existing data
+            if (propName == "Video3DFormat")
+            {
+                Assert.False(
+                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            }
+            else
+            {
+                Assert.True(
+                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            }
         }
 
         [Fact]
