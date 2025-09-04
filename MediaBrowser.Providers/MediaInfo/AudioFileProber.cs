@@ -453,7 +453,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var supportedLyrics = track.Lyrics.Where(l => l.Format != LyricsInfo.LyricsFormat.SRT).ToList();
             var candidateSynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is not LyricsInfo.LyricsFormat.UNSYNCHRONIZED and not LyricsInfo.LyricsFormat.OTHER && l.SynchronizedLyrics is not null);
             var candidateUnsynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is LyricsInfo.LyricsFormat.UNSYNCHRONIZED or LyricsInfo.LyricsFormat.OTHER && l.UnsynchronizedLyrics is not null);
-            var lyrics = candidateSynchronizedLyric is not null ? candidateSynchronizedLyric.FormatSynch() : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
+            var lyrics = candidateSynchronizedLyric is not null ? FixLrcTimestampPadding(candidateSynchronizedLyric.FormatSynch()) : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
             if (!string.IsNullOrWhiteSpace(lyrics)
                 && tryExtractEmbeddedLyrics)
             {
@@ -536,6 +536,20 @@ namespace MediaBrowser.Providers.MediaInfo
             var hasField = track.AdditionalFields.TryGetValue(field, out value);
             value = GetSanitizedStringTag(value, track.Path);
             return hasField;
+        }
+
+        // Fixes LRC timestamp padding to ensure hundredths of seconds always have two digits.
+        // The ATL library's FormatSynch() method strips leading zeros, converting [00:21.05] to [00:21.5].
+        // This method fixes this by ensuring all decimal places in timestamps have exactly two digits.
+        internal static string? FixLrcTimestampPadding(string? lrcContent)
+        {
+            if (string.IsNullOrEmpty(lrcContent))
+            {
+                return lrcContent;
+            }
+
+            var timestampPattern = @"\[(\d{2}:\d{2})\.(\d{1})\]";
+            return System.Text.RegularExpressions.Regex.Replace(lrcContent, timestampPattern, "[$1.${2}0]");
         }
     }
 }
