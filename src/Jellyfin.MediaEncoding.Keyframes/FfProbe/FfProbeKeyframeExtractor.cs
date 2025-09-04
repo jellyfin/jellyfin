@@ -42,6 +42,7 @@ public static class FfProbeKeyframeExtractor
         try
         {
             process.Start();
+            process.PriorityClass = ProcessPriorityClass.BelowNormal;
 
             return ParseStream(process.StandardOutput);
         }

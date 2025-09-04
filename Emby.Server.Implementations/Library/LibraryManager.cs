@@ -1389,6 +1389,25 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetCount(query);
         }
 
+        public ItemCounts GetItemCounts(InternalItemsQuery query)
+        {
+            if (query.Recursive && !query.ParentId.IsEmpty())
+            {
+                var parent = GetItemById(query.ParentId);
+                if (parent is not null)
+                {
+                    SetTopParentIdsOrAncestors(query, [parent]);
+                }
+            }
+
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            return _itemRepository.GetItemCounts(query);
+        }
+
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
@@ -1981,8 +2000,6 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
-            var anyChange = false;
-
             foreach (var img in outdated)
             {
                 var image = img;
@@ -2014,7 +2031,6 @@ namespace Emby.Server.Implementations.Library
                 try
                 {
                     size = _imageProcessor.GetImageDimensions(item, image);
-                    anyChange = image.Width != size.Width || image.Height != size.Height;
                     image.Width = size.Width;
                     image.Height = size.Height;
                 }
@@ -2022,7 +2038,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
                     size = default;
-                    anyChange = image.Width != size.Width || image.Height != size.Height;
                     image.Width = 0;
                     image.Height = 0;
                 }
@@ -2030,20 +2045,17 @@ namespace Emby.Server.Implementations.Library
                 try
                 {
                     var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
-                    anyChange = anyChange || !blurhash.Equals(image.BlurHash, StringComparison.Ordinal);
                     image.BlurHash = blurhash;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot compute blurhash for {ImagePath}", image.Path);
-                    anyChange = anyChange || !string.IsNullOrEmpty(image.BlurHash);
                     image.BlurHash = string.Empty;
                 }
 
                 try
                 {
                     var modifiedDate = _fileSystem.GetLastWriteTimeUtc(image.Path);
-                    anyChange = anyChange || modifiedDate != image.DateModified;
                     image.DateModified = modifiedDate;
                 }
                 catch (Exception ex)
@@ -2052,10 +2064,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (anyChange)
-            {
-                _itemRepository.SaveImages(item);
-            }
+            _itemRepository.SaveImages(item);
 
             RegisterItem(item);
         }

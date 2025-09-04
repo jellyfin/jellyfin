@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -37,6 +38,77 @@ namespace Emby.Server.Implementations.Dto
 {
     public class DtoService : IDtoService
     {
+        private static readonly FrozenDictionary<BaseItemKind, BaseItemKind[]> _relatedItemKinds = new Dictionary<BaseItemKind, BaseItemKind[]>
+        {
+            {
+                BaseItemKind.Genre, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.MusicArtist, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicVideo
+                ]
+            },
+            {
+                BaseItemKind.MusicGenre, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo
+                ]
+            },
+            {
+                BaseItemKind.Person, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.Studio, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.Year, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            }
+        }.ToFrozenDictionary();
+
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
@@ -102,21 +174,9 @@ namespace Emby.Server.Implementations.Dto
                     (programTuples ??= []).Add((item, dto));
                 }
 
-                if (item is IItemByName byName)
+                if (options.ContainsField(ItemFields.ItemCounts))
                 {
-                    if (options.ContainsField(ItemFields.ItemCounts))
-                    {
-                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
-                        {
-                            Recursive = true,
-                            DtoOptions = new DtoOptions(false)
-                            {
-                                EnableImages = false
-                            }
-                        });
-
-                        SetItemByNameInfo(item, dto, libraryItems);
-                    }
+                    SetItemByNameInfo(dto, user);
                 }
 
                 returnItems[index] = dto;
@@ -147,32 +207,12 @@ namespace Emby.Server.Implementations.Dto
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (item is IItemByName itemByName
-                && options.ContainsField(ItemFields.ItemCounts))
+            if (options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(
-                    item,
-                    dto,
-                    GetTaggedItems(
-                        itemByName,
-                        user,
-                        new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        }));
+                SetItemByNameInfo(dto, user);
             }
 
             return dto;
-        }
-
-        private static IReadOnlyList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
-        {
-            return byName.GetTaggedItems(
-                new InternalItemsQuery(user)
-                {
-                    Recursive = true,
-                    DtoOptions = options
-                });
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
@@ -315,16 +355,71 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <inheritdoc />
+        /// TODO refactor this to use the new SetItemByNameInfo.
+        /// Some callers already have the counts extracted so no reason to retrieve them again.
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem>? taggedItems, User? user = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            if (taggedItems is not null && options.ContainsField(ItemFields.ItemCounts))
+            if (options.ContainsField(ItemFields.ItemCounts)
+                && taggedItems is not null
+                && taggedItems.Count != 0)
             {
                 SetItemByNameInfo(item, dto, taggedItems);
             }
 
             return dto;
+        }
+
+        private void SetItemByNameInfo(BaseItemDto dto, User? user)
+        {
+            if (!_relatedItemKinds.TryGetValue(dto.Type, out var relatedItemKinds))
+            {
+                return;
+            }
+
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                DtoOptions = new DtoOptions(false) { EnableImages = false },
+                IncludeItemTypes = relatedItemKinds
+            };
+
+            switch (dto.Type)
+            {
+                case BaseItemKind.Genre:
+                case BaseItemKind.MusicGenre:
+                    query.GenreIds = [dto.Id];
+                    break;
+                case BaseItemKind.MusicArtist:
+                    query.ArtistIds = [dto.Id];
+                    break;
+                case BaseItemKind.Person:
+                    query.PersonIds = [dto.Id];
+                    break;
+                case BaseItemKind.Studio:
+                    query.StudioIds = [dto.Id];
+                    break;
+                case BaseItemKind.Year
+                    when int.TryParse(dto.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year):
+                    query.Years = [year];
+                    break;
+                default:
+                    return;
+            }
+
+            var counts = _libraryManager.GetItemCounts(query);
+
+            dto.AlbumCount = counts.AlbumCount;
+            dto.ArtistCount = counts.ArtistCount;
+            dto.EpisodeCount = counts.EpisodeCount;
+            dto.MovieCount = counts.MovieCount;
+            dto.MusicVideoCount = counts.MusicVideoCount;
+            dto.ProgramCount = counts.ProgramCount;
+            dto.SeriesCount = counts.SeriesCount;
+            dto.SongCount = counts.SongCount;
+            dto.TrailerCount = counts.TrailerCount;
+            dto.ChildCount = counts.TotalItemCount();
         }
 
         private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)

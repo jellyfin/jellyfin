@@ -22,67 +22,45 @@ namespace Emby.Naming.Video
         /// <returns>Returns <see cref="ExtraResult"/> object.</returns>
         public static ExtraResult GetExtraInfo(string path, NamingOptions namingOptions, string? libraryRoot = "")
         {
-            var result = new ExtraResult();
+            ExtraResult result = new ExtraResult();
 
-            for (var i = 0; i < namingOptions.VideoExtraRules.Length; i++)
+            bool isAudioFile = AudioFileParser.IsAudioFile(path, namingOptions);
+            bool isVideoFile = VideoResolver.IsVideoFile(path, namingOptions);
+
+            ReadOnlySpan<char> pathSpan = path.AsSpan();
+            ReadOnlySpan<char> fileName = Path.GetFileName(pathSpan);
+            ReadOnlySpan<char> fileNameWithoutExtension = Path.GetFileNameWithoutExtension(pathSpan);
+            // Trim the digits from the end of the filename so we can recognize things like -trailer2
+            ReadOnlySpan<char> trimmedFileNameWithoutExtension = fileNameWithoutExtension.TrimEnd(_digits);
+            ReadOnlySpan<char> directoryName = Path.GetFileName(Path.GetDirectoryName(pathSpan));
+            string fullDirectory = Path.GetDirectoryName(pathSpan).ToString();
+
+            foreach (ExtraRule rule in namingOptions.VideoExtraRules)
             {
-                var rule = namingOptions.VideoExtraRules[i];
-                if ((rule.MediaType == MediaType.Audio && !AudioFileParser.IsAudioFile(path, namingOptions))
-                    || (rule.MediaType == MediaType.Video && !VideoResolver.IsVideoFile(path, namingOptions)))
+                if ((rule.MediaType == MediaType.Audio && !isAudioFile)
+                    || (rule.MediaType == MediaType.Video && !isVideoFile))
                 {
                     continue;
                 }
 
-                var pathSpan = path.AsSpan();
-                if (rule.RuleType == ExtraRuleType.Filename)
+                bool isMatch = rule.RuleType switch
                 {
-                    var filename = Path.GetFileNameWithoutExtension(pathSpan);
+                    ExtraRuleType.Filename => fileNameWithoutExtension.Equals(rule.Token, StringComparison.OrdinalIgnoreCase),
+                    ExtraRuleType.Suffix => trimmedFileNameWithoutExtension.EndsWith(rule.Token, StringComparison.OrdinalIgnoreCase),
+                    ExtraRuleType.Regex => Regex.IsMatch(fileName, rule.Token, RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    ExtraRuleType.DirectoryName => directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase)
+                                                 && !string.Equals(fullDirectory, libraryRoot, StringComparison.OrdinalIgnoreCase),
+                    _ => false,
+                };
 
-                    if (filename.Equals(rule.Token, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.ExtraType = rule.ExtraType;
-                        result.Rule = rule;
-                    }
-                }
-                else if (rule.RuleType == ExtraRuleType.Suffix)
+                if (!isMatch)
                 {
-                    // Trim the digits from the end of the filename so we can recognize things like -trailer2
-                    var filename = Path.GetFileNameWithoutExtension(pathSpan).TrimEnd(_digits);
-
-                    if (filename.EndsWith(rule.Token, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.ExtraType = rule.ExtraType;
-                        result.Rule = rule;
-                    }
-                }
-                else if (rule.RuleType == ExtraRuleType.Regex)
-                {
-                    var filename = Path.GetFileName(path.AsSpan());
-
-                    var isMatch = Regex.IsMatch(filename, rule.Token, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-                    if (isMatch)
-                    {
-                        result.ExtraType = rule.ExtraType;
-                        result.Rule = rule;
-                    }
-                }
-                else if (rule.RuleType == ExtraRuleType.DirectoryName)
-                {
-                    var directoryName = Path.GetFileName(Path.GetDirectoryName(pathSpan));
-                    string fullDirectory = Path.GetDirectoryName(pathSpan).ToString();
-                    if (directoryName.Equals(rule.Token, StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(fullDirectory, libraryRoot, StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.ExtraType = rule.ExtraType;
-                        result.Rule = rule;
-                    }
+                    continue;
                 }
 
-                if (result.ExtraType is not null)
-                {
-                    return result;
-                }
+                result.ExtraType = rule.ExtraType;
+                result.Rule = rule;
+                return result;
             }
 
             return result;

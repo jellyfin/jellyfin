@@ -502,7 +502,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsLiked.HasValue)
             {
                 userData = userDataManager.GetUserData(user, item);
-
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
                     return false;
@@ -511,7 +510,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= userDataManager.GetUserData(user, item);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -522,8 +521,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavorite.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
-
+                userData ??= userDataManager.GetUserData(user, item);
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
                     return false;
@@ -532,7 +530,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsResumable.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= userDataManager.GetUserData(user, item);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)
@@ -543,7 +541,8 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (item.IsPlayed(user) != query.IsPlayed.Value)
+                userData ??= userDataManager.GetUserData(user, item);
+                if (userData.Played != query.IsPlayed.Value)
                 {
                     return false;
                 }

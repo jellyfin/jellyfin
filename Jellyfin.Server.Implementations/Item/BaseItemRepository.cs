@@ -457,6 +457,66 @@ public sealed class BaseItemRepository
         return dbQuery.Count();
     }
 
+    /// <inheritdoc />
+    public ItemCounts GetItemCounts(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        // Hack for right now since we currently don't support filtering out these duplicates within a query
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
+
+        var counts = dbQuery
+            .GroupBy(x => x.Type)
+            .Select(x => new { x.Key, Count = x.Count() })
+            .AsEnumerable();
+
+        var lookup = _itemTypeLookup.BaseItemKindNames;
+        var result = new ItemCounts();
+        foreach (var count in counts)
+        {
+            if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
+            {
+                result.AlbumCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicArtist], StringComparison.Ordinal))
+            {
+                result.ArtistCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Episode], StringComparison.Ordinal))
+            {
+                result.EpisodeCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Movie], StringComparison.Ordinal))
+            {
+                result.MovieCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicVideo], StringComparison.Ordinal))
+            {
+                result.MusicVideoCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.LiveTvProgram], StringComparison.Ordinal))
+            {
+                result.ProgramCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Series], StringComparison.Ordinal))
+            {
+                result.SeriesCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Audio], StringComparison.Ordinal))
+            {
+                result.SongCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Trailer], StringComparison.Ordinal))
+            {
+                result.TrailerCount = count.Count;
+            }
+        }
+
+        return result;
+    }
+
 #pragma warning disable CA1307 // Specify StringComparison for clarity
     /// <summary>
     /// Gets the type.
@@ -482,6 +542,13 @@ public sealed class BaseItemRepository
 
         var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
+
+        if (!context.BaseItems.Any(bi => bi.Id == item.Id))
+        {
+            _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
+            return;
+        }
+
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
         context.BaseItemImageInfos.AddRange(images);
         context.SaveChanges();
@@ -1108,13 +1175,18 @@ public sealed class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
+        var itemValuesQuery = context.ItemValues
+            .Where(f => itemValueTypes.Contains(f.Type))
+            .SelectMany(f => f.BaseItemsMap!, (f, w) => new { f, w })
+            .Join(
+                innerQueryFilter,
+                fw => fw.w.ItemId,
+                g => g.Id,
+                (fw, g) => fw.f.CleanValue);
+
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
-            .Where(e => context.ItemValues!
-                .Where(f => itemValueTypes.Contains(f.Type))
-                .Where(f => innerQueryFilter.Any(g => f.BaseItemsMap!.Any(w => w.ItemId == g.Id)))
-                .Select(f => f.CleanValue)
-                .Contains(e.CleanName));
+            .Where(e => itemValuesQuery.Contains(e.CleanName));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
@@ -1895,7 +1967,7 @@ public sealed class BaseItemRepository
 
         if (filter.AlbumArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.AlbumArtistIds);
+            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.AlbumArtist, filter.AlbumArtistIds);
         }
 
         if (filter.ContributingArtistIds.Length > 0)
