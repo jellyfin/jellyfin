@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Jellyfin.LiveTv.IO
 {
@@ -81,32 +82,83 @@ namespace Jellyfin.LiveTv.IO
 
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
-            _logger.LogInformation("Opened recording stream from tuner provider");
+            var retryPolicy = Policy.Handle<Exception>()
+                .WaitAndRetryAsync(
+                    5,
+                    retryAttempt => TimeSpan.FromMilliseconds(
+                        retryAttempt == 1 ? 100 : (int)Math.Pow(2, retryAttempt - 1) * 1000),
+                    (exception, timeSpan, retryCount, context) =>
+                    {
+                        if (exception is OperationCanceledException)
+                        {
+                            _logger.LogInformation("Recording completed to file {TargetFile}", targetFile);
+                            return;
+                        }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
+                        _logger.LogInformation(
+                            "Stream error: {Message}. Retrying in {TimeSpan}ms...",
+                            exception.Message,
+                            timeSpan.TotalMilliseconds);
+                    });
 
-            var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
-            await using (output.ConfigureAwait(false))
+            // The media source is infinite so we need to handle stopping ourselves
+            using var durationToken = new CancellationTokenSource(duration);
+            using var linkedCancellationToken =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
+            cancellationToken = linkedCancellationToken.Token;
+
+            try
             {
+                // Execute only the HTTP request in the retry policy
+                using var response = await retryPolicy.ExecuteAsync(
+                async ct =>
+                {
+                    var resp = await httpClient.GetAsync(
+                        mediaSource.Path,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        ct).ConfigureAwait(false);
+
+                    try
+                    {
+                        resp.EnsureSuccessStatusCode();
+                        return resp;
+                    }
+                    catch
+                    {
+                        resp.Dispose(); // dispose failed response to avoid socket leaks
+                        throw;
+                    }
+                },
+                cancellationToken).ConfigureAwait(false);
+
+                _logger.LogInformation("Opened recording stream from tuner provider");
+
+                Directory.CreateDirectory(Path.GetDirectoryName(targetFile)
+                    ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
+
+                var output = new FileStream(targetFile, FileMode.Append, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+
                 onStarted();
 
-                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
-
-                // The media source if infinite so we need to handle stopping ourselves
-                using var durationToken = new CancellationTokenSource(duration);
-                using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
-                cancellationToken = linkedCancellationToken.Token;
+                _logger.LogInformation("Copying recording stream to file {TargetFile}", targetFile);
 
                 await _streamHelper.CopyUntilCancelled(
                     await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
                     output,
                     IODefaults.CopyToBufferSize,
                     cancellationToken).ConfigureAwait(false);
-
-                _logger.LogInformation("Recording completed to file {0}", targetFile);
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore and let execution continue, because this is expected result of CopyUntilCancelled.
+                _logger.LogInformation("Recording completed to file {TargetFile}", targetFile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Stream failed permanently: {Message}", ex.Message);
+                throw;
             }
         }
 
