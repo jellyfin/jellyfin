@@ -726,7 +726,7 @@ public sealed class BaseItemRepository
                     var missingValues = missingItemValuesList.Select(iv => iv.Value).Distinct().ToArray();
                     var existingItemValues = context.ItemValues.AsNoTracking()
                         .Where(iv => missingTypes.Contains(iv.Type) && missingValues.Contains(iv.Value))
-                        .ToList()
+                        .AsEnumerable()
                         .Where(iv => missingItemValuesList.Any(m => m.Type == iv.Type && m.Value == iv.Value))
                         .ToList();
 
