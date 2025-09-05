@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
@@ -390,6 +391,151 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Contains("Trance", res.Genres);
             Assert.Contains("Dance", res.Genres);
             Assert.Contains("Jazz", res.Genres);
+        }
+
+        [Theory]
+        [InlineData("Forced", "eng", true, false, false)]
+        [InlineData("DEFAULT", "eng", false, true, false)]
+        [InlineData("sdh", "eng", false, false, true)]
+        [InlineData("HI", "eng", false, false, true)]
+        [InlineData("hi", "hi", false, false, false)] // Hindi language code - should not mark HI from 'hi' in title
+        [InlineData("hi", "hin", false, false, false)] // Hindi three-letter code - should not mark HI from 'hi' in title
+        [InlineData("somethinghithere", "eng", false, false, false)] // 'hi' in the middle of a word must NOT match
+        [InlineData("Hindi", "eng", false, false, false)] // 'hi' contained within a larger word must NOT match
+        [InlineData("fOrCeD dEfAuLt sDh", "eng", true, true, true)] // mixed case, all flags
+        [InlineData("Forced Default SDH", "eng", true, true, true)] // all flags, normal case
+        public void AnalyzeSubtitleTitle_Flags_FromTitle_Combinations(string title, string language, bool expForced, bool expDefault, bool expHi)
+        {
+            var internalMediaInfoResult = new InternalMediaInfoResult
+            {
+                Streams = new[]
+                {
+                    new MediaStreamInfo
+                    {
+                        Index = 0,
+                        CodecType = CodecType.Subtitle,
+                        CodecName = "subrip",
+                        Tags = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "title", title },
+                            { "language", language }
+                        },
+                        Disposition = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "default", 0 },
+                            { "forced", 0 },
+                            { "hearing_impaired", 0 }
+                        }
+                    }
+                }
+            };
+
+            var mockLocalization = new Mock<ILocalizationManager>();
+            mockLocalization.Setup(x => x.GetLocalizedString(It.IsAny<string>())).Returns<string>(x => x);
+            var localizedProbeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), mockLocalization.Object);
+
+            var res = localizedProbeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/generated/synthetic.mkv", MediaProtocol.File);
+
+            Assert.Single(res.MediaStreams);
+            var sub = res.MediaStreams[0];
+            Assert.Equal(MediaStreamType.Subtitle, sub.Type);
+            Assert.Equal(language, sub.Language);
+            Assert.Equal(expForced, sub.IsForced);
+            Assert.Equal(expDefault, sub.IsDefault);
+            Assert.Equal(expHi, sub.IsHearingImpaired);
+
+            // Case A: default disposition set, others absent
+            var withDefaultDisp = new InternalMediaInfoResult
+            {
+                Streams = new[]
+                {
+                    new MediaStreamInfo
+                    {
+                        Index = 0,
+                        CodecType = CodecType.Subtitle,
+                        CodecName = "subrip",
+                        Tags = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "title", title },
+                            { "language", language }
+                        },
+                        Disposition = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "default", 1 },
+                            { "forced", 0 },
+                            { "hearing_impaired", 0 }
+                        }
+                    }
+                }
+            };
+            var resDefault = localizedProbeResultNormalizer.GetMediaInfo(withDefaultDisp, VideoType.VideoFile, false, "Test Data/Probing/generated/synthetic.mkv", MediaProtocol.File);
+            Assert.Single(resDefault.MediaStreams);
+            var subDefault = resDefault.MediaStreams[0];
+            Assert.True(subDefault.IsDefault); // disposition wins or stays true
+            Assert.Equal(expForced, subDefault.IsForced); // forced inferred from title if present
+            Assert.Equal(expHi, subDefault.IsHearingImpaired); // HI inferred from title if present
+
+            // Case B: forced disposition set, others absent
+            var withForcedDisp = new InternalMediaInfoResult
+            {
+                Streams = new[]
+                {
+                    new MediaStreamInfo
+                    {
+                        Index = 0,
+                        CodecType = CodecType.Subtitle,
+                        CodecName = "subrip",
+                        Tags = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "title", title },
+                            { "language", language }
+                        },
+                        Disposition = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "default", 0 },
+                            { "forced", 1 },
+                            { "hearing_impaired", 0 }
+                        }
+                    }
+                }
+            };
+            var resForced = localizedProbeResultNormalizer.GetMediaInfo(withForcedDisp, VideoType.VideoFile, false, "Test Data/Probing/generated/synthetic.mkv", MediaProtocol.File);
+            Assert.Single(resForced.MediaStreams);
+            var subForced = resForced.MediaStreams[0];
+            Assert.True(subForced.IsForced); // disposition wins or stays true
+            Assert.Equal(expDefault, subForced.IsDefault); // default inferred from title if present
+            Assert.Equal(expHi, subForced.IsHearingImpaired); // HI inferred from title if present
+
+            // Case C: hearing impaired disposition set, others absent
+            var withHiDisp = new InternalMediaInfoResult
+            {
+                Streams = new[]
+                {
+                    new MediaStreamInfo
+                    {
+                        Index = 0,
+                        CodecType = CodecType.Subtitle,
+                        CodecName = "subrip",
+                        Tags = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "title", title },
+                            { "language", language }
+                        },
+                        Disposition = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "default", 0 },
+                            { "forced", 0 },
+                            { "hearing_impaired", 1 }
+                        }
+                    }
+                }
+            };
+            var resHi = localizedProbeResultNormalizer.GetMediaInfo(withHiDisp, VideoType.VideoFile, false, "Test Data/Probing/generated/synthetic.mkv", MediaProtocol.File);
+            Assert.Single(resHi.MediaStreams);
+            var subHi = resHi.MediaStreams[0];
+            Assert.True(subHi.IsHearingImpaired); // disposition wins or stays true
+            Assert.Equal(expForced, subHi.IsForced); // forced inferred from title if present
+            Assert.Equal(expDefault, subHi.IsDefault); // default inferred from title if present
         }
     }
 }
