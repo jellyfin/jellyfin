@@ -48,6 +48,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly LyricResolver _lyricResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly AudioFileProber _audioProber;
+        private readonly IServerConfigurationManager _config;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
         /// <summary>
@@ -87,6 +88,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _lyricResolver = new LyricResolver(loggerFactory.CreateLogger<LyricResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _config = config;
 
             _videoProber = new FFProbeVideoInfo(
                 loggerFactory.CreateLogger<FFProbeVideoInfo>(),
@@ -130,10 +132,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
+                    if (file is not null)
                     {
-                        _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
-                        return true;
+                        bool fileChanged = _config.Configuration.FileChangeRequireSizeChange
+                            ? item.HasChanged(file.LastWriteTimeUtc) && item.Size != file.Length
+                            : item.HasChanged(file.LastWriteTimeUtc);
+
+                        if (fileChanged)
+                        {
+                            _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
+                            return true;
+                        }
                     }
                 }
             }
