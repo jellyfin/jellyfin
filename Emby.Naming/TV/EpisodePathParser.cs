@@ -110,11 +110,11 @@ namespace Emby.Naming.TV
                 if (expression.IsByDate)
                 {
                     DateTime date;
-                    if (expression.DateTimeFormats.Length > 0)
+                    if (expression.DateTimeFormats.Count > 0)
                     {
                         if (DateTime.TryParseExact(
                             match.Groups[0].ValueSpan,
-                            expression.DateTimeFormats,
+                            expression.DateTimeFormats.ToArray(),
                             CultureInfo.InvariantCulture,
                             DateTimeStyles.None,
                             out date))
