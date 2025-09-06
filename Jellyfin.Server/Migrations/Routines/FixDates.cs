@@ -41,14 +41,17 @@ public class FixDates : IAsyncMigrationRoutine
     {
         if (!TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
         {
-            using var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var sw = Stopwatch.StartNew();
+            var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (context.ConfigureAwait(false))
+            {
+                var sw = Stopwatch.StartNew();
 
-            await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
-            sw.Reset();
-            await FixChaptersAsync(context, sw, cancellationToken).ConfigureAwait(false);
-            sw.Reset();
-            await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
+                await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
+                sw.Reset();
+                await FixChaptersAsync(context, sw, cancellationToken).ConfigureAwait(false);
+                sw.Reset();
+                await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
