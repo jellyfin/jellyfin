@@ -405,6 +405,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (child.IsDirectory)
                 {
+                    if (NamingOptions.AllExtrasTypesFolderNames.ContainsKey(filename))
+                    {
+                        continue;
+                    }
+
                     if (IsDvdDirectory(child.FullName, filename, directoryService))
                     {
                         var movie = new T
