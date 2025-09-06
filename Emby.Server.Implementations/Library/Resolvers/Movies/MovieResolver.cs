@@ -405,11 +405,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (child.IsDirectory)
                 {
-                    if (IgnorePatterns.ShouldIgnore(child.FullName))
-                    {
-                        continue;
-                    }
-
                     if (NamingOptions.AllExtrasTypesFolderNames.ContainsKey(filename))
                     {
                         continue;
