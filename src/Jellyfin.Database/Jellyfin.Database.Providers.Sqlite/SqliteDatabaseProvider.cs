@@ -60,9 +60,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             .ConfigureWarnings(warnings =>
                 warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
 
-        if (bool.TryParse(Environment.GetEnvironmentVariable("EFCORE_ENABLE_SENSITIVE_DATA_LOGGING"), out bool enableSensitiveDataLogging))
+        var enableSensitiveDataLoggingOption = databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("EnableSensitiveDataLogging", StringComparison.OrdinalIgnoreCase))?.Value;
+        if (!string.IsNullOrEmpty(enableSensitiveDataLoggingOption) && bool.TryParse(enableSensitiveDataLoggingOption, out bool enableSensitiveDataLogging) && enableSensitiveDataLogging)
         {
             options.EnableSensitiveDataLogging(enableSensitiveDataLogging);
+            _logger.LogInformation("EnableSensitiveDataLogging is enabled on SQLite connection");
         }
     }
 
