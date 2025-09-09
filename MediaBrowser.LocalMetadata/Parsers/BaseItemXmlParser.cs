@@ -488,6 +488,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             video.Video3DFormat = Video3DFormat.MVC;
                         }
+                        else if (string.Equals("Spatial", val, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.Spatial;
+                        }
                     }
 
                     break;

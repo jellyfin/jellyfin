@@ -8,6 +8,7 @@ namespace MediaBrowser.Model.Entities
         FullSideBySide,
         FullTopAndBottom,
         HalfTopAndBottom,
-        MVC
+        MVC,
+        Spatial
     }
 }

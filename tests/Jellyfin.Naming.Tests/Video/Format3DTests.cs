@@ -46,6 +46,7 @@ namespace Jellyfin.Naming.Tests.Video
             Test("Super movie.tab.mp4", true, "tab");
             Test("Super movie.sbs3d.mp4", true, "sbs3d");
             Test("Super movie.3d.mvc.mp4", true, "mvc");
+            Test("Super movie.3d.spatial.mov", true, "spatial");
 
             Test("Super movie [3d].mp4", false, null);
             Test("Super movie [hsbs].mp4", true, "hsbs");
