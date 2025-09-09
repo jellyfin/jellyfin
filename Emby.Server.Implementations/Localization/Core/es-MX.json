@@ -137,5 +137,6 @@
     "TaskExtractMediaSegmentsDescription": "Extrae u obtiene segmentos de medios de plugins habilitados para MediaSegment.",
     "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay",
     "TaskMoveTrickplayImagesDescription": "Mueve archivos de trickplay existentes según la configuración de la biblioteca.",
-    "CleanupUserDataTask": "Tarea de limpieza de los datos del usuario"
+    "CleanupUserDataTask": "Tarea de limpieza de los datos del usuario",
+    "CleanupUserDataTaskDescription": "Limpia toda la información de usuario (Estado de última vez visto, favoritos, etc) del archivo media que no está presente por los últimos 90 días."
 }

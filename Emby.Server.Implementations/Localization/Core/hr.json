@@ -136,5 +136,7 @@
     "TaskDownloadMissingLyricsDescription": "Preuzmi tekstove pjesama",
     "TaskExtractMediaSegmentsDescription": "Izvlači ili pribavlja dijelove medija iz omogućenih media pluginova.",
     "TaskMoveTrickplayImages": "Preseli lokaciju Trickplay slika",
-    "TaskMoveTrickplayImagesDescription": "Preseli lokaciju Trickplay slika prema postavkama zbirke."
+    "TaskMoveTrickplayImagesDescription": "Preseli lokaciju Trickplay slika prema postavkama zbirke.",
+    "CleanupUserDataTask": "Zadatak čišćenja korisničkih podataka",
+    "CleanupUserDataTaskDescription": "Briše sve korisničke podatke (stanje gledanja, status favorita itd.) s medija koji više nisu prisutni najmanje 90 dana."
 }
