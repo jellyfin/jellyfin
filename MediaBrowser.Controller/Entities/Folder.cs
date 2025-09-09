@@ -1669,7 +1669,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override bool IsPlayed(User user)
+        public override bool IsPlayed(User user, UserItemData userItemData = null)
         {
             var itemsResult = GetItemList(new InternalItemsQuery(user)
             {
@@ -1679,13 +1679,23 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             });
 
-            return itemsResult
-                .All(i => i.IsPlayed(user));
+            var childItemUserDataMap = UserDataManager.GetUserData(user, itemsResult);
+
+            foreach (var item in itemsResult)
+            {
+                childItemUserDataMap.TryGetValue(item.Id, out var childItemUserData);
+                if (!item.IsPlayed(user, childItemUserData))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        public override bool IsUnplayed(User user)
+        public override bool IsUnplayed(User user, UserItemData userItemData = null)
         {
-            return !IsPlayed(user);
+            return !IsPlayed(user, userItemData);
         }
 
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
