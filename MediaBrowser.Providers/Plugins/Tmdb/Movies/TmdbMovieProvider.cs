@@ -340,9 +340,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             if (movieResult.Videos?.Results is not null)
             {
                 var trailers = new List<MediaUrl>();
-                for (var i = 0; i < movieResult.Videos.Results.Count; i++)
+
+                var sortedVideos = movieResult.Videos.Results
+                    .OrderByDescending(video => string.Equals(video.Type, "trailer", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var video in sortedVideos)
                 {
-                    var video = movieResult.Videos.Results[i];
                     if (!TmdbUtils.IsTrailerType(video))
                     {
                         continue;
