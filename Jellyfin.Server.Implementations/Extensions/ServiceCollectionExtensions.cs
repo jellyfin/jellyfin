@@ -136,7 +136,7 @@ public static class ServiceCollectionExtensions
                 break;
         }
 
-        serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
+        serviceCollection.AddDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
             provider.Initialise(opt, efCoreConfiguration);
