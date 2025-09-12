@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return GetMediaSourceCount(new HashSet<Guid>());
+                return GetMediaSourceCount();
             }
         }
 
@@ -250,8 +250,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override MediaType MediaType => MediaType.Video;
 
-        private int GetMediaSourceCount(HashSet<Guid> callstack)
+        private int GetMediaSourceCount(HashSet<Guid> callstack = null)
         {
+            callstack ??= new();
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
                 var item = LibraryManager.GetItemById(PrimaryVersionId);

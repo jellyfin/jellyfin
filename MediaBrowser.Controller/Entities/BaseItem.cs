@@ -701,7 +701,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return GetCustomRatingForComparision(new HashSet<Guid>());
+                return GetCustomRatingForComparision();
             }
         }
 
@@ -779,8 +779,9 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
-        private string GetCustomRatingForComparision(HashSet<Guid> callstack)
+        private string GetCustomRatingForComparision(HashSet<Guid> callstack = null)
         {
+            callstack ??= new();
             var customRating = CustomRating;
             if (!string.IsNullOrEmpty(customRating))
             {
