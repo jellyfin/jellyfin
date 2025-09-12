@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -5,79 +6,77 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Jellyfin.CodeAnalysis
+namespace Jellyfin.CodeAnalysis;
+
+/// <summary>
+/// Analyzer to detect sync disposal of async-created IAsyncDisposable objects.
+/// </summary>
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public class AsyncDisposalPatternAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    /// Analyzer to detect sync disposal of async-created IAsyncDisposable objects.
+    /// Diagnostic descriptor for sync disposal of async-created IAsyncDisposable objects.
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class AsyncDisposalPatternAnalyzer : DiagnosticAnalyzer
+    public static readonly DiagnosticDescriptor AsyncDisposableSyncDisposal = new(
+        id: "JF0001",
+        title: "Async-created IAsyncDisposable objects should use 'await using'",
+        messageFormat: "Using 'using' with async-created IAsyncDisposable object '{0}'. Use 'await using' instead to prevent resource leaks.",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Objects that implement IAsyncDisposable and are created using 'await' should be disposed using 'await using' to prevent resource leaks.");
+
+    /// <inheritdoc/>
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [AsyncDisposableSyncDisposal];
+
+    /// <inheritdoc/>
+    public override void Initialize(AnalysisContext context)
     {
-        /// <summary>
-        /// Diagnostic descriptor for sync disposal of async-created IAsyncDisposable objects.
-        /// </summary>
-        public static readonly DiagnosticDescriptor AsyncDisposableSyncDisposal = new DiagnosticDescriptor(
-            id: "JF0001",
-            title: "Async-created IAsyncDisposable objects should use 'await using'",
-            messageFormat: "Using 'using' with async-created IAsyncDisposable object '{0}'. Use 'await using' instead to prevent resource leaks.",
-            category: "Usage",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
-            description: "Objects that implement IAsyncDisposable and are created using 'await' should be disposed using 'await using' to prevent resource leaks.");
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(AnalyzeUsingStatement, SyntaxKind.UsingStatement);
+    }
 
-        /// <inheritdoc/>
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-            ImmutableArray.Create(AsyncDisposableSyncDisposal);
+    private static void AnalyzeUsingStatement(SyntaxNodeAnalysisContext context)
+    {
+        var usingStatement = (UsingStatementSyntax)context.Node;
 
-        /// <inheritdoc/>
-        public override void Initialize(AnalysisContext context)
+        // Skip 'await using' statements
+        if (usingStatement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
         {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeUsingStatement, SyntaxKind.UsingStatement);
+            return;
         }
 
-        private static void AnalyzeUsingStatement(SyntaxNodeAnalysisContext context)
+        // Check if there's a variable declaration
+        if (usingStatement.Declaration?.Variables is null)
         {
-            var usingStatement = (UsingStatementSyntax)context.Node;
+            return;
+        }
 
-            // Skip 'await using' statements
-            if (usingStatement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
+        foreach (var variable in usingStatement.Declaration.Variables)
+        {
+            if (variable.Initializer?.Value is AwaitExpressionSyntax awaitExpression)
             {
-                return;
-            }
+                var typeInfo = context.SemanticModel.GetTypeInfo(awaitExpression);
+                var type = typeInfo.Type;
 
-            // Check if there's a variable declaration
-            if (usingStatement.Declaration?.Variables == null)
-            {
-                return;
-            }
-
-            foreach (var variable in usingStatement.Declaration.Variables)
-            {
-                if (variable.Initializer?.Value is AwaitExpressionSyntax awaitExpression)
+                if (type is not null && ImplementsIAsyncDisposable(type))
                 {
-                    var typeInfo = context.SemanticModel.GetTypeInfo(awaitExpression);
-                    var type = typeInfo.Type;
+                    var diagnostic = Diagnostic.Create(
+                        AsyncDisposableSyncDisposal,
+                        usingStatement.GetLocation(),
+                        type.Name);
 
-                    if (type != null && ImplementsIAsyncDisposable(type))
-                    {
-                        var diagnostic = Diagnostic.Create(
-                            AsyncDisposableSyncDisposal,
-                            usingStatement.GetLocation(),
-                            type.Name);
-
-                        context.ReportDiagnostic(diagnostic);
-                    }
+                    context.ReportDiagnostic(diagnostic);
                 }
             }
         }
+    }
 
-        private static bool ImplementsIAsyncDisposable(ITypeSymbol type)
-        {
-            return type.AllInterfaces.Any(i =>
-                i.Name == "IAsyncDisposable" &&
-                i.ContainingNamespace?.ToDisplayString() == "System");
-        }
+    private static bool ImplementsIAsyncDisposable(ITypeSymbol type)
+    {
+        return type.AllInterfaces.Any(i =>
+            string.Equals(i.Name, "IAsyncDisposable", StringComparison.Ordinal)
+            && string.Equals(i.ContainingNamespace?.ToDisplayString(), "System", StringComparison.Ordinal));
     }
 }
