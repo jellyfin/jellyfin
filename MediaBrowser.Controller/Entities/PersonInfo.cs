@@ -17,7 +17,6 @@ namespace MediaBrowser.Controller.Entities
         public PersonInfo()
         {
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Id = Guid.NewGuid();
         }
 
         /// <summary>
