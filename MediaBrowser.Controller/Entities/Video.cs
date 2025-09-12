@@ -152,16 +152,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(PrimaryVersionId))
-                {
-                    var item = LibraryManager.GetItemById(PrimaryVersionId);
-                    if (item is Video video)
-                    {
-                        return video.MediaSourceCount;
-                    }
-                }
-
-                return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
+                return GetMediaSourceCount(new HashSet<Guid>());
             }
         }
 
@@ -258,6 +249,26 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The type of the media.</value>
         [JsonIgnore]
         public override MediaType MediaType => MediaType.Video;
+
+        private int GetMediaSourceCount(HashSet<Guid> callstack)
+        {
+            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            {
+                var item = LibraryManager.GetItemById(PrimaryVersionId);
+                if (item is Video video)
+                {
+                    if (callstack.Contains(video.Id))
+                    {
+                        return video.LinkedAlternateVersions.Length + video.LocalAlternateVersions.Length + 1;
+                    }
+
+                    callstack.Add(video.Id);
+                    return video.GetMediaSourceCount(callstack);
+                }
+            }
+
+            return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
+        }
 
         public override List<string> GetUserDataKeys()
         {
