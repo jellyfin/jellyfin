@@ -1,3 +1,4 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -15,9 +16,9 @@ namespace MediaBrowser.Model.Search
             IncludePeople = true;
             IncludeStudios = true;
 
-            MediaTypes = Array.Empty<MediaType>();
-            IncludeItemTypes = Array.Empty<BaseItemKind>();
-            ExcludeItemTypes = Array.Empty<BaseItemKind>();
+            MediaTypes = [];
+            IncludeItemTypes = [];
+            ExcludeItemTypes = [];
         }
 
         /// <summary>

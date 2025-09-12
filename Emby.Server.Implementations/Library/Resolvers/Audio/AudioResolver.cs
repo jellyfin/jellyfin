@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
-            List<FileSystemMetadata> files,
+            IReadOnlyList<FileSystemMetadata> files,
             CollectionType? collectionType,
             IDirectoryService directoryService)
         {
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
         private MultiItemResolverResult ResolveMultipleInternal(
             Folder parent,
-            List<FileSystemMetadata> files,
+            IReadOnlyList<FileSystemMetadata> files,
             CollectionType? collectionType)
         {
             if (collectionType == CollectionType.books)
@@ -179,7 +179,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             var result = new MultiItemResolverResult
             {
                 ExtraFiles = leftOver,
-                Items = new List<BaseItem>()
+                Items = []
             };
 
             var isInMixedFolder = resolverResult.Count > 1 || (parent is not null && parent.IsTopParent);

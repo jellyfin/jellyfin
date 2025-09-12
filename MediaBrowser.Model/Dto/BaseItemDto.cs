@@ -1,11 +1,12 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Jellyfin.Data.Enums;
-using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -563,7 +564,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>
-        public List<ChapterInfo> Chapters { get; set; }
+        public ChapterInfo[] Chapters { get; set; }
 
         /// <summary>
         /// Gets or sets the trickplay manifest.

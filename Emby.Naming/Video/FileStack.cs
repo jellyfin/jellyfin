@@ -7,7 +7,9 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Object holding list of files paths with additional information.
     /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     public class FileStack
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FileStack"/> class.

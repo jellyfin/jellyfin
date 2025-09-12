@@ -1,7 +1,8 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
-using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
@@ -10,8 +11,8 @@ namespace MediaBrowser.Model.Configuration
     {
         public MetadataPluginSummary()
         {
-            SupportedImageTypes = Array.Empty<ImageType>();
-            Plugins = Array.Empty<MetadataPlugin>();
+            SupportedImageTypes = [];
+            Plugins = [];
         }
 
         /// <summary>

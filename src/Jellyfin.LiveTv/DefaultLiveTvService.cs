@@ -459,7 +459,7 @@ namespace Jellyfin.LiveTv
             throw new NotImplementedException();
         }
 
-        public async Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
+        public async Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, IReadOnlyList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Streaming Channel {Id}", channelId);
 

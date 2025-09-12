@@ -2010,7 +2010,7 @@ namespace MediaBrowser.Model.Dlna
                             }
                             else if (condition.Condition == ProfileConditionType.NotEquals)
                             {
-                                item.SetOption(qualifier, "rangetype", string.Join(',', Enum.GetNames(typeof(VideoRangeType)).Except(values)));
+                                item.SetOption(qualifier, "rangetype", string.Join(',', Enum.GetNames<VideoRangeType>().Except(values)));
                             }
                             else if (condition.Condition == ProfileConditionType.EqualsAny)
                             {

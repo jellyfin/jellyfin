@@ -985,7 +985,7 @@ namespace MediaBrowser.Controller.Entities
             return _userViewManager.GetUserSubView(parent.Id, type, localizationKey, sortName);
         }
 
-        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, Guid adjacentTo)
+        public static IEnumerable<BaseItem> FilterForAdjacency(IReadOnlyList<BaseItem> list, Guid adjacentTo)
         {
             var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentTo));
 

@@ -100,14 +100,14 @@ namespace MediaBrowser.Controller.Entities.TV
             return series is null ? SeriesName : series.SortName;
         }
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             var series = Series;
             if (series is not null)
             {
-                var newList = series.GetUserDataKeys();
+                var newList = series.GetUserDataKeys().ToList();
                 var suffix = (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
                 for (int i = 0; i < newList.Count; i++)
                 {
@@ -158,7 +158,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 try
                 {
                     query.Parent = this;
-                    query.ChannelIds = new[] { ChannelId };
+                    query.ChannelIds = [ChannelId];
                     return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch
@@ -189,27 +189,27 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <param name="options">The options to use.</param>
         /// <param name="shouldIncludeMissingEpisodes">If missing episodes should be included.</param>
         /// <returns>Set of episodes.</returns>
-        public List<BaseItem> GetEpisodes(User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
+        public IReadOnlyList<BaseItem> GetEpisodes(User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             return GetEpisodes(Series, user, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
+        public IReadOnlyList<BaseItem> GetEpisodes(Series series, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             return GetEpisodes(series, user, null, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
+        public IReadOnlyList<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes);
         }
 
-        public List<BaseItem> GetEpisodes()
+        public IReadOnlyList<BaseItem> GetEpisodes()
         {
             return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true), true);
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetEpisodes(user, new DtoOptions(true), true);
         }

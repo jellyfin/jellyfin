@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -12,12 +14,12 @@ namespace MediaBrowser.Model.MediaInfo
     {
         public MediaInfo()
         {
-            Chapters = Array.Empty<ChapterInfo>();
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-            Studios = Array.Empty<string>();
-            Genres = Array.Empty<string>();
-            People = Array.Empty<BaseItemPerson>();
+            Chapters = [];
+            Artists = [];
+            AlbumArtists = [];
+            Studios = [];
+            Genres = [];
+            People = [];
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 

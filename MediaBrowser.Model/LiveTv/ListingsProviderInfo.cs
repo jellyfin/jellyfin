@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -10,13 +12,13 @@ namespace MediaBrowser.Model.LiveTv
     {
         public ListingsProviderInfo()
         {
-            NewsCategories = new[] { "news", "journalism", "documentary", "current affairs" };
-            SportsCategories = new[] { "sports", "basketball", "baseball", "football" };
-            KidsCategories = new[] { "kids", "family", "children", "childrens", "disney" };
-            MovieCategories = new[] { "movie" };
-            EnabledTuners = Array.Empty<string>();
+            NewsCategories = ["news", "journalism", "documentary", "current affairs"];
+            SportsCategories = ["sports", "basketball", "baseball", "football"];
+            KidsCategories = ["kids", "family", "children", "childrens", "disney"];
+            MovieCategories = ["movie"];
+            EnabledTuners = [];
             EnableAllTuners = true;
-            ChannelMappings = Array.Empty<NameValuePair>();
+            ChannelMappings = [];
         }
 
         public string Id { get; set; }

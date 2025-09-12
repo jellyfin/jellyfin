@@ -811,7 +811,7 @@ namespace MediaBrowser.Controller.Entities
             return IsFileProtocol;
         }
 
-        public virtual bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
+        public virtual bool IsAuthorizedToDelete(User user, IReadOnlyList<Folder> allCollectionFolders)
         {
             if (user.HasPermission(PermissionKind.EnableContentDeletion))
             {
@@ -844,7 +844,7 @@ namespace MediaBrowser.Controller.Entities
             return ownerId.IsEmpty() ? null : LibraryManager.GetItemById(ownerId);
         }
 
-        public bool CanDelete(User user, List<Folder> allCollectionFolders)
+        public bool CanDelete(User user, IReadOnlyList<Folder> allCollectionFolders)
         {
             return CanDelete() && IsAuthorizedToDelete(user, allCollectionFolders);
         }
@@ -1433,7 +1433,7 @@ namespace MediaBrowser.Controller.Entities
             return info.Exists && this.HasChanged(info.LastWriteTimeUtc);
         }
 
-        public virtual List<string> GetUserDataKeys()
+        public virtual IReadOnlyList<string> GetUserDataKeys()
         {
             var list = new List<string>();
 
@@ -1620,7 +1620,7 @@ namespace MediaBrowser.Controller.Entities
             return LocalizationManager.GetRatingScore(rating);
         }
 
-        public List<string> GetInheritedTags()
+        public IReadOnlyList<string> GetInheritedTags()
         {
             var list = new List<string>();
             list.AddRange(Tags);
@@ -2173,7 +2173,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if images were added or updated, <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
-        public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
+        public bool AddImages(ImageType imageType, IReadOnlyList<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -2249,7 +2249,7 @@ namespace MediaBrowser.Controller.Entities
             }.Concat(GetLocalMetadataFilesToDelete());
         }
 
-        protected List<FileSystemMetadata> GetLocalMetadataFilesToDelete()
+        protected IReadOnlyList<FileSystemMetadata> GetLocalMetadataFilesToDelete()
         {
             if (IsFolder || !IsInMixedFolder)
             {
@@ -2507,7 +2507,7 @@ namespace MediaBrowser.Controller.Entities
             return string.Join('|', list).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
-        protected virtual List<string> GetEtagValues(User user)
+        protected virtual IReadOnlyList<string> GetEtagValues(User user)
         {
             return
             [

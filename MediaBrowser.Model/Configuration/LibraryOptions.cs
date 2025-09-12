@@ -1,8 +1,8 @@
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
 using System.ComponentModel;
-using System.Linq;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -12,14 +12,14 @@ namespace MediaBrowser.Model.Configuration
 
         public LibraryOptions()
         {
-            TypeOptions = Array.Empty<TypeOptions>();
-            DisabledSubtitleFetchers = Array.Empty<string>();
-            DisabledMediaSegmentProviders = Array.Empty<string>();
-            MediaSegmentProviderOrder = Array.Empty<string>();
-            SubtitleFetcherOrder = Array.Empty<string>();
-            DisabledLocalMetadataReaders = Array.Empty<string>();
-            DisabledLyricFetchers = Array.Empty<string>();
-            LyricFetcherOrder = Array.Empty<string>();
+            TypeOptions = [];
+            DisabledSubtitleFetchers = [];
+            DisabledMediaSegmentProviders = [];
+            MediaSegmentProviderOrder = [];
+            SubtitleFetcherOrder = [];
+            DisabledLocalMetadataReaders = [];
+            DisabledLyricFetchers = [];
+            LyricFetcherOrder = [];
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -30,14 +30,14 @@ namespace MediaBrowser.Model.Configuration
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
             SaveTrickplayWithMedia = false;
-            PathInfos = Array.Empty<MediaPathInfo>();
+            PathInfos = [];
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
 
             PreferNonstandardArtistsTag = false;
             UseCustomTagDelimiters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
-            DelimiterWhitelist = Array.Empty<string>();
+            DelimiterWhitelist = [];
         }
 
         public bool Enabled { get; set; } = true;

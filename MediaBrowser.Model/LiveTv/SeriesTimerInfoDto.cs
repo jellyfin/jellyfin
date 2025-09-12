@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -22,8 +24,8 @@ namespace MediaBrowser.Model.LiveTv
     {
         public SeriesTimerInfoDto()
         {
-            ImageTags = new Dictionary<ImageType, string>();
-            Days = Array.Empty<DayOfWeek>();
+            ImageTags = [];
+            Days = [];
             Type = "SeriesTimer";
         }
 

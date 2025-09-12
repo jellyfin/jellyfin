@@ -155,14 +155,14 @@ namespace MediaBrowser.Controller.Entities.TV
             return 16.0 / 9;
         }
 
-        public override List<string> GetUserDataKeys()
+        public override IReadOnlyList<string> GetUserDataKeys()
         {
-            var list = base.GetUserDataKeys();
+            var list = base.GetUserDataKeys().ToList();
 
             var series = Series;
             if (series is not null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                var seriesUserDataKeys = series.GetUserDataKeys();
+                var seriesUserDataKeys = series.GetUserDataKeys().ToList();
                 var take = seriesUserDataKeys.Count;
                 if (seriesUserDataKeys.Count > 1)
                 {

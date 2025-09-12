@@ -1,4 +1,6 @@
 #nullable disable
+
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591
 
 using System;
@@ -9,9 +11,9 @@ namespace MediaBrowser.Model.LiveTv
     {
         public LiveTvOptions()
         {
-            TunerHosts = Array.Empty<TunerHostInfo>();
-            ListingProviders = Array.Empty<ListingsProviderInfo>();
-            MediaLocationsCreated = Array.Empty<string>();
+            TunerHosts = [];
+            ListingProviders = [];
+            MediaLocationsCreated = [];
             RecordingPostProcessorArguments = "\"{path}\"";
         }
 

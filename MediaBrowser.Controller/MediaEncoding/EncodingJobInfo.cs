@@ -1,10 +1,10 @@
 #nullable disable
 
+#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CS1591, SA1401
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Enums;
@@ -31,9 +31,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             TranscodingType = jobType;
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SupportedAudioCodecs = Array.Empty<string>();
-            SupportedVideoCodecs = Array.Empty<string>();
-            SupportedSubtitleCodecs = Array.Empty<string>();
+            SupportedAudioCodecs = [];
+            SupportedVideoCodecs = [];
+            SupportedSubtitleCodecs = [];
         }
 
         public TranscodeReason TranscodeReasons
@@ -599,7 +599,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return Array.Empty<string>();
+            return [];
         }
 
         public string[] GetRequestedRangeTypes(string codec)
@@ -619,7 +619,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return Array.Empty<string>();
+            return [];
         }
 
         public string[] GetRequestedCodecTags(string codec)
@@ -639,7 +639,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return Array.Empty<string>();
+            return [];
         }
 
         public string GetRequestedLevel(string codec)
