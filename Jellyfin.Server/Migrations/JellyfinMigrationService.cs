@@ -62,7 +62,7 @@ internal class JellyfinMigrationService
 #pragma warning disable CS0618 // Type or member is obsolete
         Migrations = [.. typeof(IMigrationRoutine).Assembly.GetTypes().Where(e => typeof(IMigrationRoutine).IsAssignableFrom(e) || typeof(IAsyncMigrationRoutine).IsAssignableFrom(e))
             .Select(e => (Type: e, Metadata: e.GetCustomAttribute<JellyfinMigrationAttribute>(), Backup: e.GetCustomAttributes<JellyfinMigrationBackupAttribute>()))
-            .Where(e => e.Metadata != null)
+            .Where(e => e.Metadata is not null)
             .GroupBy(e => e.Metadata!.Stage)
             .Select(f =>
             {
@@ -137,7 +137,7 @@ internal class JellyfinMigrationService
             var migrationOptions = File.Exists(migrationConfigPath)
                  ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
                  : null;
-            if (migrationOptions != null && migrationOptions.Applied.Count > 0)
+            if (migrationOptions is not null && migrationOptions.Applied.Count > 0)
             {
                 logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
                 try
@@ -383,7 +383,7 @@ internal class JellyfinMigrationService
             }
         }
 
-        if (backupInstruction.JellyfinDb && _jellyfinDatabaseProvider != null)
+        if (backupInstruction.JellyfinDb && _jellyfinDatabaseProvider is not null)
         {
             logger.LogInformation("A migration will attempt to modify the jellyfin.db, will attempt to backup the file now.");
             _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false), _backupKey.FullBackup);

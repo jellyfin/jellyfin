@@ -568,7 +568,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (recursive && child is Folder folder)
                 {
-                    await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

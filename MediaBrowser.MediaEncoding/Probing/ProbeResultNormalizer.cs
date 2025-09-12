@@ -30,9 +30,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const string ArtistReplaceValue = " | ";
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
-        private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
-        private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
+        private static readonly char[] _basicDelimiters = ['/', ';'];
+        private static readonly char[] _nameDelimiters = [.. _basicDelimiters, '|', '\\'];
+        private static readonly char[] _genreDelimiters = [.. _basicDelimiters, ','];
+        private static readonly string[] _webmVideoCodecs = ["av1", "vp8", "vp9"];
+        private static readonly string[] _webmAudioCodecs = ["opus", "vorbis"];
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -174,7 +176,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("artists", out var artists) && !string.IsNullOrWhiteSpace(artists))
             {
-                info.Artists = SplitDistinctArtists(artists, new[] { '/', ';' }, false).ToArray();
+                info.Artists = SplitDistinctArtists(artists, _basicDelimiters, false).ToArray();
             }
             else
             {
@@ -932,12 +934,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 var frameInfo = frameInfoList?.FirstOrDefault(i => i.StreamIndex == stream.Index);
-                if (frameInfo?.SideDataList != null)
+                if (frameInfo?.SideDataList is not null
+                    && frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        stream.Hdr10PlusPresentFlag = true;
-                    }
+                    stream.Hdr10PlusPresentFlag = true;
                 }
             }
             else if (streamInfo.CodecType == CodecType.Data)
@@ -1554,7 +1554,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("WM/Genre", out var genres) && !string.IsNullOrWhiteSpace(genres))
             {
-                var genreList = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var genreList = genres.Split(_genreDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                 // If this is empty then don't overwrite genres that might have been fetched earlier
                 if (genreList.Length > 0)
@@ -1571,7 +1571,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (tags.TryGetValue("WM/MediaCredits", out var people) && !string.IsNullOrEmpty(people))
             {
                 video.People = Array.ConvertAll(
-                    people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    people.Split(_basicDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                     i => new BaseItemPerson { Name = i, Type = PersonKind.Actor });
             }
 

@@ -304,7 +304,7 @@ namespace Emby.Server.Implementations.Library
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= runtimeTicks)
+                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
                 {
                     // mark as completed close to the end
                     positionTicks = 0;

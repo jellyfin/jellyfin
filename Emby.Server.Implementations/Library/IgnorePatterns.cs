@@ -48,6 +48,8 @@ namespace Emby.Server.Implementations.Library
             "**/.wd_tv",
             "**/lost+found/**",
             "**/lost+found",
+            "**/subs/**",
+            "**/subs",
 
             // Trickplay files
             "**/*.trickplay",

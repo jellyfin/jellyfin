@@ -1189,7 +1189,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             ItemId = baseItemId,
             Id = Guid.NewGuid(),
             Path = e.Path,
-            Blurhash = e.BlurHash != null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
+            Blurhash = e.BlurHash is not null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,
