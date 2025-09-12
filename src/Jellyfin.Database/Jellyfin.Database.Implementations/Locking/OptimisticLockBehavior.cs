@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -28,15 +29,34 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         TimeSpan[] sleepDurations = [
             TimeSpan.FromMilliseconds(50),
             TimeSpan.FromMilliseconds(50),
+            TimeSpan.FromMilliseconds(50),
+            TimeSpan.FromMilliseconds(50),
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromMilliseconds(250),
             TimeSpan.FromMilliseconds(250),
             TimeSpan.FromMilliseconds(150),
+            TimeSpan.FromMilliseconds(150),
+            TimeSpan.FromMilliseconds(150),
             TimeSpan.FromMilliseconds(500),
+            TimeSpan.FromMilliseconds(150),
             TimeSpan.FromMilliseconds(500),
+            TimeSpan.FromMilliseconds(150),
             TimeSpan.FromSeconds(3)
         ];
+
+        Func<int, Context, TimeSpan> backoffProvider = (index, context) =>
+        {
+            var backoff = sleepDurations[index];
+            return backoff + TimeSpan.FromMilliseconds(RandomNumberGenerator.GetInt32(0, (int)(backoff.TotalMilliseconds * .5)));
+        };
+
         _logger = logger;
-        _writePolicy = Policy.HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase)).WaitAndRetry(sleepDurations, RetryHandle);
-        _writeAsyncPolicy = Policy.HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase)).WaitAndRetryAsync(sleepDurations, RetryHandle);
+        _writePolicy = Policy
+            .HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase))
+            .WaitAndRetry(sleepDurations.Length, backoffProvider, RetryHandle);
+        _writeAsyncPolicy = Policy
+            .HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase))
+            .WaitAndRetryAsync(sleepDurations.Length, backoffProvider, RetryHandle);
 
         void RetryHandle(Exception exception, TimeSpan timespan, int retryNo, Context context)
         {
