@@ -4,6 +4,7 @@ namespace MediaBrowser.Model.Entities
 {
     public enum TrailerType
     {
+        None = 0,
         ComingSoonToTheaters = 1,
         ComingSoonToDvd = 2,
         ComingSoonToStreaming = 3,

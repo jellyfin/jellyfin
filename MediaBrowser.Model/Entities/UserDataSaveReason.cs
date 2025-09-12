@@ -6,6 +6,11 @@ namespace MediaBrowser.Model.Entities
     public enum UserDataSaveReason
     {
         /// <summary>
+        /// Required None value.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// The playback start.
         /// </summary>
         PlaybackStart = 1,
