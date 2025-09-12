@@ -70,7 +70,7 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
         if (mergeMetadataSettings)
         {
             // TODO: Change to only replace when currently empty or requested. This is currently not done because the metadata service is not handling attaching collection items based on the provider responses
-            targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.LibraryItemId).ToArray();
+            targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.Path).ToArray();
         }
     }
 
