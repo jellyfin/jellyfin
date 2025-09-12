@@ -932,12 +932,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 var frameInfo = frameInfoList?.FirstOrDefault(i => i.StreamIndex == stream.Index);
-                if (frameInfo?.SideDataList != null)
+                if (frameInfo?.SideDataList is not null
+                    && frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        stream.Hdr10PlusPresentFlag = true;
-                    }
+                    stream.Hdr10PlusPresentFlag = true;
                 }
             }
             else if (streamInfo.CodecType == CodecType.Data)
