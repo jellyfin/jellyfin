@@ -504,8 +504,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         {
             Id = Guid.NewGuid(),
             Name = reader.GetString(1),
-            PersonType = reader.GetString(3)
         };
+
+        if (reader.TryGetString(3, out var type))
+        {
+            item.PersonType = type;
+        }
 
         return item;
     }
