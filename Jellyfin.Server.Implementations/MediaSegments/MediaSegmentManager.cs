@@ -68,86 +68,88 @@ public class MediaSegmentManager : IMediaSegmentManager
             return;
         }
 
-        using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-        _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
-
-        if (forceOverwrite)
+        var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
         {
-            // delete all existing media segments if forceOverwrite is set.
-            await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        }
+            _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
-        foreach (var provider in providers)
-        {
-            if (!await provider.Supports(baseItem).ConfigureAwait(false))
-            {
-                _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
-                continue;
-            }
-
-            IQueryable<MediaSegment> existingSegments;
             if (forceOverwrite)
             {
-                existingSegments = Array.Empty<MediaSegment>().AsQueryable();
-            }
-            else
-            {
-                existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+                // delete all existing media segments if forceOverwrite is set.
+                await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var requestItem = new MediaSegmentGenerationRequest()
+            foreach (var provider in providers)
             {
-                ItemId = baseItem.Id,
-                ExistingSegments = existingSegments.Select(e => Map(e)).ToArray()
-            };
-
-            try
-            {
-                var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (!forceOverwrite)
+                if (!await provider.Supports(baseItem).ConfigureAwait(false))
                 {
-                    var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
-                    if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
+                    _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
+                    continue;
+                }
+
+                IQueryable<MediaSegment> existingSegments;
+                if (forceOverwrite)
+                {
+                    existingSegments = Array.Empty<MediaSegment>().AsQueryable();
+                }
+                else
+                {
+                    existingSegments = db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id) && e.SegmentProviderId == GetProviderId(provider.Name));
+                }
+
+                var requestItem = new MediaSegmentGenerationRequest()
+                {
+                    ItemId = baseItem.Id,
+                    ExistingSegments = existingSegments.Select(e => Map(e)).ToArray()
+                };
+
+                try
+                {
+                    var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (!forceOverwrite)
                     {
-                        return
-                            e.StartTicks == f.StartTicks &&
-                            e.EndTicks == f.EndTicks &&
-                            e.Type == f.Type;
-                    })))
+                        var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
+                        if (segments.Count == requestItem.ExistingSegments.Count && segments.All(e => existingSegmentsList.Any(f =>
+                        {
+                            return
+                                e.StartTicks == f.StartTicks &&
+                                e.EndTicks == f.EndTicks &&
+                                e.Type == f.Type;
+                        })))
+                        {
+                            _logger.LogDebug("Media Segment provider {ProviderName} did not modify any segments for {MediaPath}", provider.Name, baseItem.Path);
+                            continue;
+                        }
+
+                        // delete existing media segments that were re-generated.
+                        await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                    }
+
+                    if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
                     {
-                        _logger.LogDebug("Media Segment provider {ProviderName} did not modify any segments for {MediaPath}", provider.Name, baseItem.Path);
+                        _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
+                        continue;
+                    }
+                    else if (segments.Count == 0 && requestItem.ExistingSegments.Any())
+                    {
+                        _logger.LogDebug("Media Segment provider {ProviderName} deleted all segments for {MediaPath}", provider.Name, baseItem.Path);
                         continue;
                     }
 
-                    // delete existing media segments that were re-generated.
-                    await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
+                    var providerId = GetProviderId(provider.Name);
+                    foreach (var segment in segments)
+                    {
+                        segment.ItemId = baseItem.Id;
+                        await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
+                    }
                 }
-
-                if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
+                catch (Exception ex)
                 {
-                    _logger.LogDebug("Media Segment provider {ProviderName} did not find any segments for {MediaPath}", provider.Name, baseItem.Path);
-                    continue;
+                    _logger.LogError(ex, "Provider {ProviderName} failed to extract segments from {MediaPath}", provider.Name, baseItem.Path);
                 }
-                else if (segments.Count == 0 && requestItem.ExistingSegments.Any())
-                {
-                    _logger.LogDebug("Media Segment provider {ProviderName} deleted all segments for {MediaPath}", provider.Name, baseItem.Path);
-                    continue;
-                }
-
-                _logger.LogInformation("Media Segment provider {ProviderName} found {CountSegments} for {MediaPath}", provider.Name, segments.Count, baseItem.Path);
-                var providerId = GetProviderId(provider.Name);
-                foreach (var segment in segments)
-                {
-                    segment.ItemId = baseItem.Id;
-                    await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Provider {ProviderName} failed to extract segments from {MediaPath}", provider.Name, baseItem.Path);
             }
         }
     }
@@ -157,24 +159,34 @@ public class MediaSegmentManager : IMediaSegmentManager
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
 
-        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        db.MediaSegments.Add(Map(mediaSegment, segmentProviderId));
-        await db.SaveChangesAsync().ConfigureAwait(false);
+        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
+        {
+            db.MediaSegments.Add(Map(mediaSegment, segmentProviderId));
+            await db.SaveChangesAsync().ConfigureAwait(false);
+        }
+
         return mediaSegment;
     }
 
     /// <inheritdoc />
     public async Task DeleteSegmentAsync(Guid segmentId)
     {
-        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync().ConfigureAwait(false);
+        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
+        {
+            await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync().ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
     public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        using var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
+        {
+            await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -186,36 +198,38 @@ public class MediaSegmentManager : IMediaSegmentManager
             return [];
         }
 
-        using var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-
-        var query = db.MediaSegments
-            .Where(e => e.ItemId.Equals(item.Id));
-
-        if (typeFilter is not null)
+        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (db.ConfigureAwait(false))
         {
-            query = query.Where(e => typeFilter.Contains(e.Type));
-        }
+            var query = db.MediaSegments
+                .Where(e => e.ItemId.Equals(item.Id));
 
-        if (filterByProvider)
-        {
-            var providerIds = _segmentProviders
-                .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
-                .Select(f => GetProviderId(f.Name))
-                .ToArray();
-            if (providerIds.Length == 0)
+            if (typeFilter is not null)
             {
-                return [];
+                query = query.Where(e => typeFilter.Contains(e.Type));
             }
 
-            query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
-        }
+            if (filterByProvider)
+            {
+                var providerIds = _segmentProviders
+                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                    .Select(f => GetProviderId(f.Name))
+                    .ToArray();
+                if (providerIds.Length == 0)
+                {
+                    return [];
+                }
 
-        return query
-            .OrderBy(e => e.StartTicks)
-            .AsNoTracking()
-            .AsEnumerable()
-            .Select(Map)
-            .ToArray();
+                query = query.Where(e => providerIds.Contains(e.SegmentProviderId));
+            }
+
+            return query
+                .OrderBy(e => e.StartTicks)
+                .AsNoTracking()
+                .AsEnumerable()
+                .Select(Map)
+                .ToArray();
+        }
     }
 
     private static MediaSegmentDto Map(MediaSegment segment)
