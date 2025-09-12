@@ -2307,27 +2307,27 @@ namespace MediaBrowser.Controller.Entities
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public virtual bool IsPlayed(User user)
+        public virtual bool IsPlayed(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && userdata.Played;
+            return userItemData is not null && userItemData.Played;
         }
 
-        public bool IsFavoriteOrLiked(User user)
+        public bool IsFavoriteOrLiked(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && (userdata.IsFavorite || (userdata.Likes ?? false));
+            return userItemData is not null && (userItemData.IsFavorite || (userItemData.Likes ?? false));
         }
 
-        public virtual bool IsUnplayed(User user)
+        public virtual bool IsUnplayed(User user, UserItemData userItemData)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is null || !userdata.Played;
+            return userItemData is null || !userItemData.Played;
         }
 
         ItemLookupInfo IHasLookupInfo<ItemLookupInfo>.GetLookupInfo()
