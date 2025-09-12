@@ -89,6 +89,14 @@ public class ItemUpdateController : BaseJellyfinApiController
             request.DisplayOrder ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
 
+        // Check if album artist information is being updated for an audio item
+        var audioItem = item as Audio;
+        var albumArtistChanged = audioItem is not null
+            && request.AlbumArtists is not null
+            && !audioItem.AlbumArtists.SequenceEqual(
+                Array.ConvertAll(request.AlbumArtists, i => i.Name),
+                StringComparer.OrdinalIgnoreCase);
+
         // Do this first so that metadata savers can pull the updates from the database.
         if (request.People is not null)
         {
@@ -130,6 +138,48 @@ public class ItemUpdateController : BaseJellyfinApiController
                     ReplaceAllMetadata = true
                 },
                 RefreshPriority.High);
+        }
+
+        // If album artist information was changed on an audio item, refresh the parent album
+        // and the album artist entities to update the album's artist information based on its child tracks
+        if (albumArtistChanged)
+        {
+            var parentAlbum = audioItem!.AlbumEntity;
+            if (parentAlbum is not null)
+            {
+                _providerManager.QueueRefresh(
+                    parentAlbum.Id,
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = MetadataRefreshMode.None
+                    },
+                    RefreshPriority.Normal);
+            }
+
+            // Also refresh the album artist entities themselves so they show up in the Album Artists tab
+            var oldAlbumArtists = audioItem.AlbumArtists ?? Array.Empty<string>();
+            var newAlbumArtists = Array.ConvertAll(request.AlbumArtists!, i => i.Name);
+            var allArtists = oldAlbumArtists.Concat(newAlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var artistName in allArtists)
+            {
+                if (!string.IsNullOrEmpty(artistName))
+                {
+                    var artist = _libraryManager.GetArtist(artistName);
+                    if (artist.IsAccessedByName)
+                    {
+                        _providerManager.QueueRefresh(
+                            artist.Id,
+                            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                            {
+                                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                                ImageRefreshMode = MetadataRefreshMode.None
+                            },
+                            RefreshPriority.Low);
+                    }
+                }
+            }
         }
 
         return NoContent();
