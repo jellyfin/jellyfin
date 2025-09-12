@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsPlayed.HasValue)
             {
                 userData ??= userDataManager.GetUserData(user, item);
-                if (userData.Played != query.IsPlayed.Value)
+                if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
                 {
                     return false;
                 }
