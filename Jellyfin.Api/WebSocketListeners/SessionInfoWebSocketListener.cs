@@ -64,7 +64,7 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     protected override Task<IEnumerable<SessionInfo>> GetDataToSendForConnection(IWebSocketConnection connection)
     {
         // For non-admin users, filter the sessions to only include their own sessions
-        if (connection.AuthorizationInfo?.User != null &&
+        if (connection.AuthorizationInfo?.User is not null &&
             !connection.AuthorizationInfo.IsApiKey &&
             !connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
         {
