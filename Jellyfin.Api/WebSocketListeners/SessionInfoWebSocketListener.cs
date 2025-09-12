@@ -56,11 +56,7 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
         return Task.FromResult(_sessionManager.Sessions);
     }
 
-    /// <summary>
-    /// Gets the data to send for a specific connection.
-    /// </summary>
-    /// <param name="connection">The connection.</param>
-    /// <returns>Task{IEnumerable{SessionInfo}}.</returns>
+    /// <inheritdoc />
     protected override Task<IEnumerable<SessionInfo>> GetDataToSendForConnection(IWebSocketConnection connection)
     {
         // For non-admin users, filter the sessions to only include their own sessions
