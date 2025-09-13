@@ -41,5 +41,7 @@
     "MixedContent": "Jumbled loot",
     "Music": "Tunes",
     "NameInstallFailed": "Ye couldn't bring {0} aboard yer ship",
-    "MessageApplicationUpdatedTo": "Yer Map of the Seas has been scribbled with {0}"
+    "MessageApplicationUpdatedTo": "Yer Map of the Seas has been scribbled with {0}",
+    "MessageNamedServerConfigurationUpdatedWithValue": "Yer Map Drawer has been rescribbled to {0}",
+    "MessageServerConfigurationUpdated": "Yer Map drawer has been rescribbled"
 }

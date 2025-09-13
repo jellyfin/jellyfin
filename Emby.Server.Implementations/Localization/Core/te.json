@@ -59,5 +59,6 @@
     "NotificationOptionAudioPlayback": "ఆడియో ప్లే కావడం మొదలైంది",
     "NotificationOptionCameraImageUploaded": "కెమెరా చిత్రాన్ని అప్లోడ్ చేశారు",
     "NotificationOptionInstallationFailed": "ఇన్స్టాలేషన్ విఫలమైంది",
-    "NotificationOptionServerRestartRequired": "సర్వర్ రీస్టార్ట్ అవసరం"
+    "NotificationOptionServerRestartRequired": "సర్వర్ రీస్టార్ట్ అవసరం",
+    "Inherit": "సంక్రమించు"
 }

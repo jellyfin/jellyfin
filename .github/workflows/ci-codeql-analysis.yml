@@ -22,16 +22,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
     - name: Setup .NET
-      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
       with:
         dotnet-version: '9.0.x'
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@df559355d593797519d70b90fc8edd5db049e7a2 # v3.29.9
+      uses: github/codeql-action/init@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
       with:
         languages: ${{ matrix.language }}
         queries: +security-extended
     - name: Autobuild
-      uses: github/codeql-action/autobuild@df559355d593797519d70b90fc8edd5db049e7a2 # v3.29.9
+      uses: github/codeql-action/autobuild@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@df559355d593797519d70b90fc8edd5db049e7a2 # v3.29.9
+      uses: github/codeql-action/analyze@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3

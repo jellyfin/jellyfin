@@ -60,8 +60,15 @@ namespace MediaBrowser.Controller
         void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences);
 
         /// <summary>
-        /// Saves changes made to the database.
+        /// Updates or Creates the display preferences.
         /// </summary>
-        void SaveChanges();
+        /// <param name="displayPreferences">The entity to update or create.</param>
+        void UpdateDisplayPreferences(DisplayPreferences displayPreferences);
+
+        /// <summary>
+        /// Updates or Creates the display preferences for the given item.
+        /// </summary>
+        /// <param name="itemDisplayPreferences">The entity to update or create.</param>
+        void UpdateItemDisplayPreferences(ItemDisplayPreferences itemDisplayPreferences);
     }
 }

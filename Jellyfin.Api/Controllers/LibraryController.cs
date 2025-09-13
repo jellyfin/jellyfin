@@ -784,6 +784,7 @@ public class LibraryController : BaseJellyfinApiController
             DtoOptions = dtoOptions,
             EnableTotalRecordCount = !isMovie ?? true,
             EnableGroupByMetadataKey = isMovie ?? false,
+            ExcludeItemIds = [itemId]
         };
 
         // ExcludeArtistIds

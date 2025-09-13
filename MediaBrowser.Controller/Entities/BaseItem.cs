@@ -701,19 +701,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                var customRating = CustomRating;
-                if (!string.IsNullOrEmpty(customRating))
-                {
-                    return customRating;
-                }
-
-                var parent = DisplayParent;
-                if (parent is not null)
-                {
-                    return parent.CustomRatingForComparison;
-                }
-
-                return null;
+                return GetCustomRatingForComparision();
             }
         }
 
@@ -790,6 +778,26 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
+
+        private string GetCustomRatingForComparision(HashSet<Guid> callstack = null)
+        {
+            callstack ??= new();
+            var customRating = CustomRating;
+            if (!string.IsNullOrEmpty(customRating))
+            {
+                return customRating;
+            }
+
+            callstack.Add(Id);
+
+            var parent = DisplayParent;
+            if (parent is not null && !callstack.Contains(parent.Id))
+            {
+                return parent.GetCustomRatingForComparision(callstack);
+            }
+
+            return null;
+        }
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {

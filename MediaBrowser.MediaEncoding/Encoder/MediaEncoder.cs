@@ -511,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
 
-            if (_proberSupportsFirstVideoFrame)
+            if (!isAudio && _proberSupportsFirstVideoFrame)
             {
                 args += " -show_frames -only_first_vframe";
             }
@@ -1122,6 +1122,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private void StartProcess(ProcessWrapper process)
         {
             process.Process.Start();
+            process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
 
             lock (_runningProcessesLock)
             {

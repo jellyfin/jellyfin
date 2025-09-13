@@ -1279,7 +1279,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (source is Video sourceCast && target is Video targetCast)
             {
-                if (replaceData || !targetCast.Video3DFormat.HasValue)
+                if (sourceCast.Video3DFormat.HasValue && (replaceData || !targetCast.Video3DFormat.HasValue))
                 {
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }

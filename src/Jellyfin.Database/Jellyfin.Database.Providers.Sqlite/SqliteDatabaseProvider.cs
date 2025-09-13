@@ -45,15 +45,27 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var sqliteConnectionBuilder = new SqliteConnectionStringBuilder();
         sqliteConnectionBuilder.DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         sqliteConnectionBuilder.Cache = Enum.Parse<SqliteCacheMode>(databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("cache", StringComparison.OrdinalIgnoreCase))?.Value ?? nameof(SqliteCacheMode.Default));
-        sqliteConnectionBuilder.Pooling = (databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("pooling", StringComparison.OrdinalIgnoreCase))?.Value ?? bool.FalseString).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
+        sqliteConnectionBuilder.Pooling = (databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("pooling", StringComparison.OrdinalIgnoreCase))?.Value ?? bool.TrueString).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
+
+        var connectionString = sqliteConnectionBuilder.ToString();
+
+        // Log SQLite connection parameters
+        _logger.LogInformation("SQLite connection string: {ConnectionString}", connectionString);
 
         options
             .UseSqlite(
-                sqliteConnectionBuilder.ToString(),
+                connectionString,
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
                 warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
+
+        var enableSensitiveDataLoggingOption = databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("EnableSensitiveDataLogging", StringComparison.OrdinalIgnoreCase))?.Value;
+        if (!string.IsNullOrEmpty(enableSensitiveDataLoggingOption) && bool.TryParse(enableSensitiveDataLoggingOption, out bool enableSensitiveDataLogging) && enableSensitiveDataLogging)
+        {
+            options.EnableSensitiveDataLogging(enableSensitiveDataLogging);
+            _logger.LogInformation("EnableSensitiveDataLogging is enabled on SQLite connection");
+        }
     }
 
     /// <inheritdoc/>
@@ -62,16 +74,11 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            if (context.Database.IsSqlite())
-            {
-                await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
-                await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
-                _logger.LogInformation("jellyfin.db optimized successfully!");
-            }
-            else
-            {
-                _logger.LogInformation("This database doesn't support optimization");
-            }
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("jellyfin.db optimized successfully!");
         }
     }
 

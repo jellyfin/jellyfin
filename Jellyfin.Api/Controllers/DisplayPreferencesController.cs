@@ -96,9 +96,6 @@ public class DisplayPreferencesController : BaseJellyfinApiController
             dto.CustomPrefs.TryAdd(key, value);
         }
 
-        // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
-        _displayPreferencesManager.SaveChanges();
-
         return dto;
     }
 
@@ -210,8 +207,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         // Set all remaining custom preferences.
         _displayPreferencesManager.SetCustomItemDisplayPreferences(userId.Value, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
-        _displayPreferencesManager.SaveChanges();
-
+        _displayPreferencesManager.UpdateItemDisplayPreferences(itemPrefs);
+        _displayPreferencesManager.UpdateDisplayPreferences(existingDisplayPreferences);
         return NoContent();
     }
 }

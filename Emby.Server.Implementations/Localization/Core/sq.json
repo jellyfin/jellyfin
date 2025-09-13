@@ -135,5 +135,7 @@
     "TaskCleanCollectionsAndPlaylists": "Pastron koleksionet dhe listat e këngëve",
     "TaskCleanCollectionsAndPlaylistsDescription": "Heq elementet nga koleksionet dhe listat e këngëve që nuk ekzistojnë më.",
     "TaskAudioNormalization": "Normalizimi i audios",
-    "TaskAudioNormalizationDescription": "Skannon skedarët për të dhëna të normalizimit të audios."
+    "TaskAudioNormalizationDescription": "Skannon skedarët për të dhëna të normalizimit të audios.",
+    "CleanupUserDataTaskDescription": "Pastron të gjitha të dhënat e përdorueseve (gjendja e shikimit, statusi i të preferuarave etj.) nga mediat që nuk janë më të pranishme për të paktën 90 ditë.",
+    "CleanupUserDataTask": "Veprim për pastrimin të dhënave të përdorueseve"
 }
