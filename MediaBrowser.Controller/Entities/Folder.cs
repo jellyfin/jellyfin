@@ -960,22 +960,31 @@ namespace MediaBrowser.Controller.Entities
 
             IEnumerable<BaseItem> items;
 
+            int totalItemCount = 0;
             if (query.User is null)
             {
                 items = Children.Where(filter);
+                totalItemCount = items.Count();
             }
             else
             {
                 // need to pass this param to the children.
                 var childQuery = new InternalItemsQuery
                 {
-                    DisplayAlbumFolders = query.DisplayAlbumFolders
+                    DisplayAlbumFolders = query.DisplayAlbumFolders,
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex
                 };
 
-                items = GetChildren(user, true, childQuery).Where(filter);
+                items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
+
+                query.Limit = null;
+                query.StartIndex = null;
             }
 
-            return PostFilterAndSort(items, query);
+            var result = PostFilterAndSort(items, query);
+            result.TotalRecordCount = totalItemCount;
+            return result;
         }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
@@ -1258,7 +1267,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query = null)
+        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, out int totalItemCount, InternalItemsQuery query = null)
         {
             ArgumentNullException.ThrowIfNull(user);
             query ??= new InternalItemsQuery();
@@ -1267,14 +1276,19 @@ namespace MediaBrowser.Controller.Entities
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
             {
-                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren, query);
+                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren, out totalItemCount, query);
             }
 
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildren(user, includeLinkedChildren, result, false, query);
+            totalItemCount = AddChildren(user, includeLinkedChildren, result, false, query);
 
             return result.Values.ToArray();
+        }
+
+        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query = null)
+        {
+            return GetChildren(user, includeLinkedChildren, out _, query);
         }
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
