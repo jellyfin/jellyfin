@@ -33,7 +33,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
 
     private int? PageSize { get; }
 
-    private string InitialCommand { get; set; }
+    private string? InitialCommand { get; set; }
 
     /// <inheritdoc/>
     public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
