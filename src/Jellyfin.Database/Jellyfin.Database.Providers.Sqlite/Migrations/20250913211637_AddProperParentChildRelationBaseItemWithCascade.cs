@@ -10,10 +10,6 @@ namespace Jellyfin.Server.Implementations.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_BaseItems_BaseItems_ParentId",
-                table: "BaseItems");
-
             migrationBuilder.AddForeignKey(
                 name: "FK_BaseItems_BaseItems_ParentId",
                 table: "BaseItems",
@@ -29,13 +25,6 @@ namespace Jellyfin.Server.Implementations.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_BaseItems_BaseItems_ParentId",
                 table: "BaseItems");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_BaseItems_BaseItems_ParentId",
-                table: "BaseItems",
-                column: "ParentId",
-                principalTable: "BaseItems",
-                principalColumn: "Id");
         }
     }
 }
