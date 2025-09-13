@@ -437,15 +437,6 @@ public sealed class BaseItemRepository
             .Include(e => e.LockedFields)
             .Include(e => e.UserData);
 
-        // if (filter.Recursive)
-        // {
-        //     dbQuery = dbQuery.Include(e => e.DirectChildren)!
-        //         .ThenInclude(e => e.TrailerTypes)
-        //         .Include(e => e.Provider)
-        //         .Include(e => e.LockedFields)
-        //         .Include(e => e.UserData);
-        // }
-
         if (filter.DtoOptions.EnableImages)
         {
             dbQuery = dbQuery.Include(e => e.Images);
