@@ -1454,7 +1454,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "DirectParent")
                         .WithMany("DirectChildren")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("DirectParent");
                 });
