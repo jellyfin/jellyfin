@@ -42,10 +42,28 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
+        static T? GetOption<T>(ICollection<CustomDatabaseOption>? options, string key, Func<string, T> converter, Func<T>? defaultValue = null)
+        {
+            if (options is null)
+            {
+                return defaultValue != null ? defaultValue() : default;
+            }
+
+            var value = options.FirstOrDefault(e => e.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+            if (value == null)
+            {
+                return defaultValue != null ? defaultValue() : default;
+            }
+
+            return converter(value.Value);
+        }
+
+        var customOptions = databaseConfiguration.CustomProviderOptions?.Options;
+
         var sqliteConnectionBuilder = new SqliteConnectionStringBuilder();
         sqliteConnectionBuilder.DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        sqliteConnectionBuilder.Cache = Enum.Parse<SqliteCacheMode>(databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("cache", StringComparison.OrdinalIgnoreCase))?.Value ?? nameof(SqliteCacheMode.Default));
-        sqliteConnectionBuilder.Pooling = (databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("pooling", StringComparison.OrdinalIgnoreCase))?.Value ?? bool.TrueString).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
+        sqliteConnectionBuilder.Cache = GetOption(customOptions, "cache", Enum.Parse<SqliteCacheMode>, () => SqliteCacheMode.Default);
+        sqliteConnectionBuilder.Pooling = GetOption(customOptions, "pooling", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => true);
 
         var connectionString = sqliteConnectionBuilder.ToString();
 
@@ -59,10 +77,17 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
                 warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning))
-            .AddInterceptors(new PragmaConnectionInterceptor(134_217_728, "NORMAL", 134_217_728, null));
+            .AddInterceptors(new PragmaConnectionInterceptor(
+                GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
+                GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
+                GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
+                GetOption<int?>(customOptions, "pagesize", e => int.Parse(e, CultureInfo.InvariantCulture)),
+                GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
+                GetOption(customOptions, "syncmode", int.Parse, () => 1),
+                customOptions?.Where(e => e.Key.StartsWith("#PRAGMA:", StringComparison.OrdinalIgnoreCase)).ToDictionary(e => e.Key["#PRAGMA:".Length..], e => e.Value) ?? []));
 
-        var enableSensitiveDataLoggingOption = databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("EnableSensitiveDataLogging", StringComparison.OrdinalIgnoreCase))?.Value;
-        if (!string.IsNullOrEmpty(enableSensitiveDataLoggingOption) && bool.TryParse(enableSensitiveDataLoggingOption, out bool enableSensitiveDataLogging) && enableSensitiveDataLogging)
+        var enableSensitiveDataLogging = GetOption(customOptions, "EnableSensitiveDataLogging", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => false);
+        if (enableSensitiveDataLogging)
         {
             options.EnableSensitiveDataLogging(enableSensitiveDataLogging);
             _logger.LogInformation("EnableSensitiveDataLogging is enabled on SQLite connection");

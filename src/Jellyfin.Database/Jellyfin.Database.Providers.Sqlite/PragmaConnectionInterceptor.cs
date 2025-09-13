@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
@@ -10,6 +11,14 @@ namespace Jellyfin.Database.Providers.Sqlite;
 /// </summary>
 public class PragmaConnectionInterceptor : DbConnectionInterceptor
 {
+    private readonly int? _cacheSize;
+    private readonly string _lockingMode;
+    private readonly int? _journalSizeLimit;
+    private readonly int? _pageSize;
+    private readonly int _tempStoreMode;
+    private readonly int _syncMode;
+    private readonly IDictionary<string, string> _customPragma;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PragmaConnectionInterceptor"/> class.
     /// </summary>
@@ -17,21 +26,21 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// <param name="lockingMode">Locking mode.</param>
     /// <param name="journalSizeLimit">Journal Size.</param>
     /// <param name="pageSize">Page Size.</param>
-    public PragmaConnectionInterceptor(int? cacheSize, string lockingMode, int? journalSizeLimit, int? pageSize)
+    /// <param name="tempStoreMode">The https://sqlite.org/pragma.html#pragma_temp_store pragma.</param>
+    /// <param name="syncMode">The https://sqlite.org/pragma.html#pragma_synchronous pragma.</param>
+    /// <param name="customPragma">A list of custom provided Pragma in the list of CustomOptions starting with "#PRAGMA:".</param>
+    public PragmaConnectionInterceptor(int? cacheSize, string lockingMode, int? journalSizeLimit, int? pageSize, int tempStoreMode, int syncMode, IDictionary<string, string> customPragma)
     {
-        CacheSize = cacheSize;
-        LockingMode = lockingMode;
-        JournalSizeLimit = journalSizeLimit;
-        PageSize = pageSize;
+        _cacheSize = cacheSize;
+        _lockingMode = lockingMode;
+        _journalSizeLimit = journalSizeLimit;
+        _pageSize = pageSize;
+        _tempStoreMode = tempStoreMode;
+        _syncMode = syncMode;
+        _customPragma = customPragma;
+
+        InitialCommand ??= BuildCommandText();
     }
-
-    private int? CacheSize { get; }
-
-    private string LockingMode { get; }
-
-    private int? JournalSizeLimit { get; }
-
-    private int? PageSize { get; }
 
     private string? InitialCommand { get; set; }
 
@@ -43,7 +52,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         using (var command = connection.CreateCommand())
         {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-            command.CommandText = InitialCommand ??= BuildCommandText();
+            command.CommandText = InitialCommand;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             command.ExecuteNonQuery();
         }
@@ -52,28 +61,33 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     private string BuildCommandText()
     {
         var sb = new StringBuilder();
-        if (CacheSize.HasValue)
+        if (_cacheSize.HasValue)
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA cache_size={CacheSize.Value};");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA cache_size={_cacheSize.Value};");
         }
 
-        if (!string.IsNullOrWhiteSpace(LockingMode))
+        if (!string.IsNullOrWhiteSpace(_lockingMode))
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA locking_mode={LockingMode};");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA locking_mode={_lockingMode};");
         }
 
-        if (JournalSizeLimit.HasValue)
+        if (_journalSizeLimit.HasValue)
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA journal_size_limit={JournalSizeLimit};");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA journal_size_limit={_journalSizeLimit};");
         }
 
-        if (PageSize.HasValue)
+        if (_pageSize.HasValue)
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA page_size={JournalSizeLimit};");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA page_size={_pageSize};");
         }
 
-        sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA synchronous=1;");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA temp_store=2;");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA synchronous={_syncMode};");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA temp_store={_tempStoreMode};");
+
+        foreach (var item in _customPragma)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA {item.Key}={item.Value};");
+        }
 
         return sb.ToString();
     }
