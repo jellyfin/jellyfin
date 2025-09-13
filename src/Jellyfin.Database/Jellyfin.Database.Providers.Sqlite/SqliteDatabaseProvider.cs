@@ -58,7 +58,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
-                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning));
+                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning))
+            .AddInterceptors(new PragmaConnectionInterceptor(134_217_728, "NORMAL", 134_217_728, null));
 
         var enableSensitiveDataLoggingOption = databaseConfiguration.CustomProviderOptions?.Options.FirstOrDefault(e => e.Key.Equals("EnableSensitiveDataLogging", StringComparison.OrdinalIgnoreCase))?.Value;
         if (!string.IsNullOrEmpty(enableSensitiveDataLoggingOption) && bool.TryParse(enableSensitiveDataLoggingOption, out bool enableSensitiveDataLogging) && enableSensitiveDataLogging)
