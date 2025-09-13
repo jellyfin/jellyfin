@@ -15,6 +15,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.TunerHosts
@@ -23,6 +24,7 @@ namespace Jellyfin.LiveTv.TunerHosts
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
+        private readonly IServerAddressesFeature _serverAddresses;
 
         public SharedHttpStream(
             MediaSourceInfo mediaSource,
@@ -33,11 +35,13 @@ namespace Jellyfin.LiveTv.TunerHosts
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            IStreamHelper streamHelper)
+            IStreamHelper streamHelper,
+            IServerAddressesFeature serverAddresses)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
+            _serverAddresses = serverAddresses;
             OriginalStreamId = originalStreamId;
         }
 
@@ -63,7 +67,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
-            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess(_serverAddresses) + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
             var res = await taskCompletionSource.Task.ConfigureAwait(false);
