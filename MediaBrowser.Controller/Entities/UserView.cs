@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
         /// <inheritdoc />
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count;
+            return GetChildren(user, true, null).Count;
         }
 
         /// <inheritdoc />
@@ -145,9 +145,9 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
         {
-            return GetChildren(user, false);
+            return GetChildren(user, false, query);
         }
 
         public static bool IsUserSpecific(Folder folder)

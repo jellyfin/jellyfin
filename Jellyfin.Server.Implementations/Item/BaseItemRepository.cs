@@ -437,6 +437,15 @@ public sealed class BaseItemRepository
             .Include(e => e.LockedFields)
             .Include(e => e.UserData);
 
+        // if (filter.Recursive)
+        // {
+        //     dbQuery = dbQuery.Include(e => e.DirectChildren)!
+        //         .ThenInclude(e => e.TrailerTypes)
+        //         .Include(e => e.Provider)
+        //         .Include(e => e.LockedFields)
+        //         .Include(e => e.UserData);
+        // }
+
         if (filter.DtoOptions.EnableImages)
         {
             dbQuery = dbQuery.Include(e => e.Images);
@@ -746,8 +755,9 @@ public sealed class BaseItemRepository
     /// <param name="entity">The entity.</param>
     /// <param name="dto">The dto base instance.</param>
     /// <param name="appHost">The Application server Host.</param>
+    /// <param name="logger">The applogger.</param>
     /// <returns>The dto to map.</returns>
-    public static BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto, IServerApplicationHost? appHost)
+    public static BaseItemDto Map(BaseItemEntity entity, BaseItemDto dto, IServerApplicationHost? appHost, ILogger logger)
     {
         dto.Id = entity.Id;
         dto.ParentId = entity.ParentId.GetValueOrDefault();
@@ -892,6 +902,7 @@ public sealed class BaseItemRepository
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+            folder.Children = entity.DirectChildren?.Select(e => DeserializeBaseItem(e, logger, appHost)).ToArray() ?? null;
         }
 
         return dto;
@@ -1147,7 +1158,7 @@ public sealed class BaseItemRepository
             dto = Activator.CreateInstance(type) as BaseItemDto ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
         }
 
-        return Map(baseItemEntity, dto, appHost);
+        return Map(baseItemEntity, dto, appHost, logger);
     }
 
     private QueryResult<(BaseItemDto Item, ItemCounts? ItemCounts)> GetItemValues(InternalItemsQuery filter, IReadOnlyList<ItemValueType> itemValueTypes, string returnType)

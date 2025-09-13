@@ -42,6 +42,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
+        private IEnumerable<BaseItem> _children;
+
         public Folder()
         {
             LinkedChildren = Array.Empty<LinkedChild>();
@@ -108,11 +110,18 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the actual children.
+        /// Gets or Sets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
         [JsonIgnore]
-        public virtual IEnumerable<BaseItem> Children => LoadChildren();
+        public virtual IEnumerable<BaseItem> Children
+        {
+            get
+            {
+                return _children ?? (_children = LoadChildren());
+            }
+            set => _children = value;
+        }
 
         /// <summary>
         /// Gets thread-safe access to all recursive children of this folder - without regard to user.
@@ -914,6 +923,44 @@ namespace MediaBrowser.Controller.Entities
             return GetItemsInternal(query).Items;
         }
 
+        protected virtual int GetItemListCount(InternalItemsQuery query)
+        {
+            if (query.Recursive)
+            {
+                if (this is not UserRootFolder
+                && this is not AggregateFolder
+                && query.ParentId.IsEmpty())
+                {
+                    query.Parent = this;
+                }
+
+                return LibraryManager.GetCount(query);
+            }
+
+            var user = query.User;
+
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+            IEnumerable<BaseItem> items;
+
+            if (query.User is null)
+            {
+                items = Children.Where(filter);
+            }
+            else
+            {
+                // need to pass this param to the children.
+                var childQuery = new InternalItemsQuery
+                {
+                    DisplayAlbumFolders = query.DisplayAlbumFolders
+                };
+
+                items = GetChildren(user, true, childQuery).Where(filter);
+            }
+
+            return PostFilterAndSort(items, query).Items.Count;
+        }
+
         protected virtual QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (SourceType == SourceType.Channel)
@@ -1242,16 +1289,11 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query = null)
         {
             ArgumentNullException.ThrowIfNull(user);
-
-            return GetChildren(user, includeLinkedChildren, new InternalItemsQuery(user));
-        }
-
-        public virtual IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
-        {
-            ArgumentNullException.ThrowIfNull(user);
+            query ??= new InternalItemsQuery();
+            query.User = user;
 
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
@@ -1266,8 +1308,13 @@ namespace MediaBrowser.Controller.Entities
             return result.Values.ToArray();
         }
 
-        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
         {
+            if (query.Limit.HasValue)
+            {
+                return Children.Take(query.Limit.Value);
+            }
+
             return Children;
         }
 
@@ -1294,7 +1341,7 @@ namespace MediaBrowser.Controller.Entities
             // If there are not sub-folders, proceed as normal.
             if (children is null)
             {
-                children = GetEligibleChildrenForRecursiveChildren(user);
+                children = GetEligibleChildrenForRecursiveChildren(user, query);
             }
 
             AddChildrenFromCollection(children, user, includeLinkedChildren, result, recursive, query, visitedFolders);
@@ -1678,6 +1725,15 @@ namespace MediaBrowser.Controller.Entities
 
             return itemsResult
                 .All(i => i.IsPlayed(user, userItemData: null));
+
+            // return GetItemListCount(new InternalItemsQuery(user)
+            // {
+            //     Recursive = true,
+            //     IsFolder = false,
+            //     IsVirtualItem = false,
+            //     EnableTotalRecordCount = false,
+            //     IsPlayed = true
+            // }) > 0;
         }
 
         public override bool IsUnplayed(User user, UserItemData userItemData)

@@ -88,9 +88,9 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, true).Count;
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
         {
-            var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
+            var list = base.GetEligibleChildrenForRecursiveChildren(user, query).ToList();
             list.AddRange(LibraryManager.RootFolder.VirtualChildren);
 
             return list;
