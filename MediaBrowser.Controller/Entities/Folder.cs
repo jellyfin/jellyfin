@@ -704,6 +704,8 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     items = GetRecursiveChildren(user, query, out totalCount);
+                    query.Limit = null;
+                    query.StartIndex = null; // override these here as they have already been applied
                 }
 
                 var result = PostFilterAndSort(items, query);
@@ -1319,15 +1321,17 @@ namespace MediaBrowser.Controller.Entities
 
         private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
         {
+            query ??= new InternalItemsQuery();
             var limit = query.Limit;
             query.Limit = 100; // this is a bit of a dirty hack thats in favor of specifically the webUI as it does not show more then +99 elements in its badges so there is no point in reading more then that.
 
-            foreach (var child in children.Where(e => e.IsVisible(user)).TakeWhile(e => result.Count <= (limit ?? 1000)))
+            foreach (var child in children
+                .Where(e => e.IsVisible(user))
+                .Skip(query.StartIndex ?? 0)
+                .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
+                .Take(query.Limit ?? 1000))
             {
-                if (query is null || UserViewBuilder.FilterItem(child, query))
-                {
-                    result[child.Id] = child;
-                }
+                result[child.Id] = child;
 
                 if (recursive && child.IsFolder)
                 {
