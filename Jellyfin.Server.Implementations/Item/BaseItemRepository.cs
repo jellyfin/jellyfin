@@ -902,7 +902,6 @@ public sealed class BaseItemRepository
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-            folder.Children = entity.DirectChildren?.Select(e => DeserializeBaseItem(e, logger, appHost)).ToArray() ?? null;
         }
 
         return dto;

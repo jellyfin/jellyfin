@@ -134,14 +134,16 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
             query.SetUser(user);
             query.Recursive = true;
             query.EnableTotalRecordCount = false;
             query.ForceDirect = true;
+            var data = GetItemList(query);
+            totalCount = data.Count;
 
-            return GetItemList(query);
+            return data;
         }
 
         /// <inheritdoc />

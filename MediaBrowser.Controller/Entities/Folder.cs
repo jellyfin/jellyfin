@@ -695,16 +695,20 @@ namespace MediaBrowser.Controller.Entities
                 IEnumerable<BaseItem> items;
                 Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
+                var totalCount = 0;
                 if (query.User is null)
                 {
                     items = GetRecursiveChildren(filter);
+                    totalCount = items.Count();
                 }
                 else
                 {
-                    items = GetRecursiveChildren(user, query);
+                    items = GetRecursiveChildren(user, query, out totalCount);
                 }
 
-                return PostFilterAndSort(items, query);
+                var result = PostFilterAndSort(items, query);
+                result.TotalRecordCount = totalCount;
+                return result;
             }
 
             if (this is not UserRootFolder
@@ -921,44 +925,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return GetItemsInternal(query).Items;
-        }
-
-        protected virtual int GetItemListCount(InternalItemsQuery query)
-        {
-            if (query.Recursive)
-            {
-                if (this is not UserRootFolder
-                && this is not AggregateFolder
-                && query.ParentId.IsEmpty())
-                {
-                    query.Parent = this;
-                }
-
-                return LibraryManager.GetCount(query);
-            }
-
-            var user = query.User;
-
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
-            IEnumerable<BaseItem> items;
-
-            if (query.User is null)
-            {
-                items = Children.Where(filter);
-            }
-            else
-            {
-                // need to pass this param to the children.
-                var childQuery = new InternalItemsQuery
-                {
-                    DisplayAlbumFolders = query.DisplayAlbumFolders
-                };
-
-                items = GetChildren(user, true, childQuery).Where(filter);
-            }
-
-            return PostFilterAndSort(items, query).Items.Count;
         }
 
         protected virtual QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -1298,7 +1264,7 @@ namespace MediaBrowser.Controller.Entities
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
             {
-                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
+                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren, query);
             }
 
             var result = new Dictionary<Guid, BaseItem>();
@@ -1310,24 +1276,19 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
         {
-            if (query.Limit.HasValue)
-            {
-                return Children.Take(query.Limit.Value);
-            }
-
             return Children;
         }
 
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders = null)
+        private int AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders = null)
         {
             // Prevent infinite recursion of nested folders
             visitedFolders ??= new HashSet<Folder>();
             if (!visitedFolders.Add(this))
             {
-                return;
+                return 0;
             }
 
             // If Query.AlbumFolders is set, then enforce the format as per the db in that it permits sub-folders in music albums.
@@ -1348,19 +1309,21 @@ namespace MediaBrowser.Controller.Entities
 
             if (includeLinkedChildren)
             {
-                AddChildrenFromCollection(GetLinkedChildren(user), user, includeLinkedChildren, result, recursive, query, visitedFolders);
+                var linkedChildren = GetLinkedChildren(user);
+                AddChildrenFromCollection(linkedChildren, user, includeLinkedChildren, result, recursive, query, visitedFolders);
+                return linkedChildren.Concat(children).Count(child => UserViewBuilder.FilterItem(child, query));
             }
+
+            return children.Count(child => UserViewBuilder.FilterItem(child, query));
         }
 
         private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
         {
-            foreach (var child in children)
-            {
-                if (!child.IsVisible(user))
-                {
-                    continue;
-                }
+            var limit = query.Limit;
+            query.Limit = 100; // this is a bit of a dirty hack thats in favor of specifically the webUI as it does not show more then +99 elements in its badges so there is no point in reading more then that.
 
+            foreach (var child in children.Where(e => e.IsVisible(user)).TakeWhile(e => result.Count <= (limit ?? 1000)))
+            {
                 if (query is null || UserViewBuilder.FilterItem(child, query))
                 {
                     result[child.Id] = child;
@@ -1375,13 +1338,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public virtual IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public virtual IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
             ArgumentNullException.ThrowIfNull(user);
 
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildren(user, true, result, true, query);
+            totalCount = AddChildren(user, true, result, true, query);
 
             return result.Values.ToArray();
         }

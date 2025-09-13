@@ -149,9 +149,11 @@ namespace MediaBrowser.Controller.Playlists
             return [];
         }
 
-        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
-            return GetPlayableItems(user, query);
+            var items = GetPlayableItems(user, query);
+            totalCount = items.Count;
+            return items;
         }
 
         public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems()
