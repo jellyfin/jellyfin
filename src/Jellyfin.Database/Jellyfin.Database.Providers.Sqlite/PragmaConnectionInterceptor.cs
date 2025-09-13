@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -55,6 +57,20 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
             command.CommandText = InitialCommand;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             command.ExecuteNonQuery();
+        }
+    }
+
+    /// <inheritdoc/>
+    public override async Task ConnectionOpenedAsync(DbConnection connection, ConnectionEndEventData eventData, CancellationToken cancellationToken = default)
+    {
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken).ConfigureAwait(false);
+
+        using (var command = connection.CreateCommand())
+        {
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+            command.CommandText = InitialCommand;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
