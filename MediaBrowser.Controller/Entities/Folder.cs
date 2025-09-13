@@ -290,6 +290,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true, bool allowRemoveRoot = false, CancellationToken cancellationToken = default)
         {
+            Children = null; // invalidate cached children.
             return ValidateChildrenInternal(progress, recursive, true, allowRemoveRoot, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
