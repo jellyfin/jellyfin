@@ -314,7 +314,9 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            var newPriorItemIndex = newIndex > oldIndexAccessible ? newIndex : newIndex - 1 < 0 ? 0 : newIndex - 1;
+            // Subtract when (newIndex > oldIndexAccessible), as the existing item is removed from the list.
+            // Otherwise, the index is now one greater than expected
+            var newPriorItemIndex = newIndex - 1 < 0 ? 0 : newIndex - 1;
             var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
             var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
             var adjustedNewIndex = DetermineAdjustedIndex(newPriorItemIndexOnAllChildren, newIndex);
