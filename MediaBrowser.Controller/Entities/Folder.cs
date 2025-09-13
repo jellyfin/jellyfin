@@ -298,6 +298,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var dictionary = new Dictionary<Guid, BaseItem>();
 
+            Children = null; // invalidate cached children.
             var childrenList = Children.ToList();
 
             foreach (var child in childrenList)
@@ -536,6 +537,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (validChildrenNeedGeneration)
                     {
+                        Children = null; // invalidate cached children.
                         validChildren = Children.ToList();
                     }
 
@@ -578,6 +580,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (recursive && child is Folder folder)
                 {
+                    folder.Children = null; // invalidate cached children.
                     await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
                 }
             }
