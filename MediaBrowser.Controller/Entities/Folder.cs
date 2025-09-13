@@ -1710,15 +1710,6 @@ namespace MediaBrowser.Controller.Entities
 
             return itemsResult
                 .All(i => i.IsPlayed(user, userItemData: null));
-
-            // return GetItemListCount(new InternalItemsQuery(user)
-            // {
-            //     Recursive = true,
-            //     IsFolder = false,
-            //     IsVirtualItem = false,
-            //     EnableTotalRecordCount = false,
-            //     IsPlayed = true
-            // }) > 0;
         }
 
         public override bool IsUnplayed(User user, UserItemData userItemData)

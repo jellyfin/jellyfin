@@ -246,8 +246,6 @@ namespace Emby.Server.Implementations.Library
             {
                 Key = item.GetUserDataKeys()[0],
             };
-
-            // return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
 
         /// <inheritdoc />
