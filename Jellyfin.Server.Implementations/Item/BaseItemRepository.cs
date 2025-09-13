@@ -434,7 +434,8 @@ public sealed class BaseItemRepository
         dbQuery = dbQuery.AsSingleQuery()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
-            .Include(e => e.LockedFields);
+            .Include(e => e.LockedFields)
+            .Include(e => e.UserData);
 
         if (filter.DtoOptions.EnableImages)
         {
@@ -791,6 +792,8 @@ public sealed class BaseItemRepository
         dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
+        dto.UserData = entity.UserData;
+
         if (entity.Provider is not null)
         {
             dto.ProviderIds = entity.Provider.ToDictionary(e => e.ProviderId, e => e.ProviderValue);

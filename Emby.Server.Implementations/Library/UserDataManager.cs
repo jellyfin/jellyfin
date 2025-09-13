@@ -159,7 +159,12 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        private UserItemData Map(UserData dto)
+        /// <summary>
+        /// Maps a UserData entity to an UserItemData dto.
+        /// </summary>
+        /// <param name="dto">Entity.</param>
+        /// <returns>Dto.</returns>
+        private static UserItemData Map(UserData dto)
         {
             return new UserItemData()
             {
@@ -237,7 +242,12 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
-            return GetUserData(user, item.Id, item.GetUserDataKeys());
+            return item.UserData.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+            {
+                Key = item.GetUserDataKeys()[0],
+            };
+
+            // return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
 
         /// <inheritdoc />
