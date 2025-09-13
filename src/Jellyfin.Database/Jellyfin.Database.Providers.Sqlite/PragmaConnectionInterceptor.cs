@@ -33,6 +33,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
 
     private int? PageSize { get; }
 
+    private string InitialCommand { get; set; }
+
     /// <inheritdoc/>
     public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
     {
@@ -41,7 +43,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         using (var command = connection.CreateCommand())
         {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-            command.CommandText = BuildCommandText();
+            command.CommandText = InitialCommand ??= BuildCommandText();
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             command.ExecuteNonQuery();
         }
