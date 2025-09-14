@@ -2453,4 +2453,40 @@ public sealed class BaseItemRepository
             return await dbContext.BaseItems.AnyAsync(f => f.Id == id).ConfigureAwait(false);
         }
     }
+
+    /// <inheritdoc/>
+    public bool GetIsPlayed(User user, Guid id, bool recursive)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        if (recursive)
+        {
+            var folderStack = new HashSet<Guid>()
+            {
+                id
+            };
+            var folderList = new HashSet<Guid>()
+            {
+                id
+            };
+
+            while (folderStack.Count != 0)
+            {
+                var items = folderStack.ToArray();
+                folderStack.Clear();
+                foreach (var item in dbContext.BaseItems
+                    .Where(e => items.Contains(e.ParentId!.Value) && e.IsFolder).Select(e => e.Id).ToArray())
+                {
+                    folderList.Add(item);
+                    folderStack.Add(item);
+                }
+            }
+
+            return dbContext.BaseItems
+                    .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder)
+                  .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+        }
+
+        return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+    }
 }
