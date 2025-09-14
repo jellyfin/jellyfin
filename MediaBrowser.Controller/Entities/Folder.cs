@@ -1325,19 +1325,15 @@ namespace MediaBrowser.Controller.Entities
                 children = GetEligibleChildrenForRecursiveChildren(user);
             }
 
-            AddChildrenFromCollection(children, user, includeLinkedChildren, result, recursive, query, visitedFolders);
-
             if (includeLinkedChildren)
             {
-                var linkedChildren = GetLinkedChildren(user);
-                AddChildrenFromCollection(linkedChildren, user, includeLinkedChildren, result, recursive, query, visitedFolders);
-                return linkedChildren.Concat(children).Count();
+                children = children.Concat(GetLinkedChildren(user)).ToArray();
             }
 
-            return children.Count();
+            return AddChildrenFromCollection(children, user, includeLinkedChildren, result, recursive, query, visitedFolders);
         }
 
-        private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
+        private int AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
         {
             query ??= new InternalItemsQuery();
             var limit = query.Limit;
@@ -1346,12 +1342,19 @@ namespace MediaBrowser.Controller.Entities
             var visibileChildren = children
                 .Where(e => e.IsVisible(user))
                 .ToArray();
-            foreach (var child in visibileChildren
+
+            var realChildren = visibileChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
-                .Skip(query.StartIndex ?? 0)
-                .TakeWhile(e => query.Limit >= result.Count))
+                .ToArray();
+            var childCount = realChildren.Count();
+            if (result.Count < query.Limit)
             {
-                result[child.Id] = child;
+                foreach (var child in realChildren
+                    .Skip(query.StartIndex ?? 0)
+                    .TakeWhile(e => query.Limit >= result.Count))
+                {
+                    result[child.Id] = child;
+                }
             }
 
             if (result.Count < query.Limit && recursive)
@@ -1361,9 +1364,11 @@ namespace MediaBrowser.Controller.Entities
                     .OfType<Folder>()
                     .TakeWhile(e => query.Limit >= result.Count))
                 {
-                    child.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
+                    childCount += child.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
                 }
             }
+
+            return childCount;
         }
 
         public virtual IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
