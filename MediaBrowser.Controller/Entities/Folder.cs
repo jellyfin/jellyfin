@@ -1357,12 +1357,11 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (result.Count < query.Limit && recursive)
+            if (recursive)
             {
                 foreach (var child in visibileChildren
                     .Where(e => e.IsFolder)
-                    .OfType<Folder>()
-                    .TakeWhile(e => query.Limit >= result.Count))
+                    .OfType<Folder>())
                 {
                     childCount += child.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
                 }
