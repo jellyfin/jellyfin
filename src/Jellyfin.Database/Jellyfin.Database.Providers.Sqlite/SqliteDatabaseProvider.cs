@@ -81,7 +81,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
                 GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),
-                GetOption<int?>(customOptions, "pagesize", e => int.Parse(e, CultureInfo.InvariantCulture)),
                 GetOption(customOptions, "tempstoremode", int.Parse, () => 2),
                 GetOption(customOptions, "syncmode", int.Parse, () => 1),
                 customOptions?.Where(e => e.Key.StartsWith("#PRAGMA:", StringComparison.OrdinalIgnoreCase)).ToDictionary(e => e.Key["#PRAGMA:".Length..], e => e.Value) ?? []));
