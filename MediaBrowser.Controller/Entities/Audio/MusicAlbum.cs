@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return null;
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return Tracks;
         }

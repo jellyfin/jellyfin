@@ -1279,7 +1279,7 @@ namespace MediaBrowser.Controller.Entities
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
             {
-                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren, out totalItemCount, query);
+                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren, out totalItemCount);
             }
 
             var result = new Dictionary<Guid, BaseItem>();
@@ -1294,7 +1294,7 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, includeLinkedChildren, out _, query);
         }
 
-        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
+        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return Children;
         }
@@ -1322,7 +1322,7 @@ namespace MediaBrowser.Controller.Entities
             // If there are not sub-folders, proceed as normal.
             if (children is null)
             {
-                children = GetEligibleChildrenForRecursiveChildren(user, query);
+                children = GetEligibleChildrenForRecursiveChildren(user);
             }
 
             AddChildrenFromCollection(children, user, includeLinkedChildren, result, recursive, query, visitedFolders);
@@ -1331,10 +1331,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 var linkedChildren = GetLinkedChildren(user);
                 AddChildrenFromCollection(linkedChildren, user, includeLinkedChildren, result, recursive, query, visitedFolders);
-                return linkedChildren.Concat(children).Count(child => UserViewBuilder.FilterItem(child, query));
+                return linkedChildren.Concat(children).Count();
             }
 
-            return children.Count(child => UserViewBuilder.FilterItem(child, query));
+            return children.Count();
         }
 
         private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
@@ -1343,19 +1343,25 @@ namespace MediaBrowser.Controller.Entities
             var limit = query.Limit;
             query.Limit = 100; // this is a bit of a dirty hack thats in favor of specifically the webUI as it does not show more then +99 elements in its badges so there is no point in reading more then that.
 
-            foreach (var child in children
+            var visibileChildren = children
                 .Where(e => e.IsVisible(user))
-                .Skip(query.StartIndex ?? 0)
+                .ToArray();
+            foreach (var child in visibileChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
-                .Take(query.Limit ?? 1000))
+                .Skip(query.StartIndex ?? 0)
+                .TakeWhile(e => query.Limit >= result.Count))
             {
                 result[child.Id] = child;
+            }
 
-                if (recursive && child.IsFolder)
+            if (result.Count < query.Limit && recursive)
+            {
+                foreach (var child in visibileChildren
+                    .Where(e => e.IsFolder)
+                    .OfType<Folder>()
+                    .TakeWhile(e => query.Limit >= result.Count))
                 {
-                    var folder = (Folder)child;
-
-                    folder.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
+                    child.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
                 }
             }
         }

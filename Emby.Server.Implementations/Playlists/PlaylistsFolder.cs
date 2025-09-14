@@ -29,9 +29,9 @@ namespace Emby.Server.Implementations.Playlists
         [JsonIgnore]
         public override CollectionType? CollectionType => Jellyfin.Data.Enums.CollectionType.playlists;
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return base.GetEligibleChildrenForRecursiveChildren(user, query).OfType<Playlist>();
+            return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)

@@ -147,9 +147,9 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user, InternalItemsQuery query)
+        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return GetChildren(user, false, query);
+            return GetChildren(user, false, null);
         }
 
         public static bool IsUserSpecific(Folder folder)
