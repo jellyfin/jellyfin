@@ -80,6 +80,7 @@ namespace Emby.Server.Implementations.Library
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
             _cache.AddOrUpdate(cacheKey, userData);
+            item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).ToArray(); // rehydrate the cached userdata
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
