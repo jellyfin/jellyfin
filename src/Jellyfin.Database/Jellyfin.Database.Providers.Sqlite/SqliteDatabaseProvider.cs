@@ -78,6 +78,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             .ConfigureWarnings(warnings =>
                 warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning))
             .AddInterceptors(new PragmaConnectionInterceptor(
+                _logger,
                 GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),
                 GetOption(customOptions, "lockingmode", e => e, () => "NORMAL")!,
                 GetOption(customOptions, "journalsizelimit", int.Parse, () => 134_217_728),

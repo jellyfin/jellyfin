@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
 
@@ -13,6 +14,7 @@ namespace Jellyfin.Database.Providers.Sqlite;
 /// </summary>
 public class PragmaConnectionInterceptor : DbConnectionInterceptor
 {
+    private readonly ILogger _logger;
     private readonly int? _cacheSize;
     private readonly string _lockingMode;
     private readonly int? _journalSizeLimit;
@@ -23,14 +25,16 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// <summary>
     /// Initializes a new instance of the <see cref="PragmaConnectionInterceptor"/> class.
     /// </summary>
+    /// <param name="logger">The logger.</param>
     /// <param name="cacheSize">Cache size.</param>
     /// <param name="lockingMode">Locking mode.</param>
     /// <param name="journalSizeLimit">Journal Size.</param>
     /// <param name="tempStoreMode">The https://sqlite.org/pragma.html#pragma_temp_store pragma.</param>
     /// <param name="syncMode">The https://sqlite.org/pragma.html#pragma_synchronous pragma.</param>
     /// <param name="customPragma">A list of custom provided Pragma in the list of CustomOptions starting with "#PRAGMA:".</param>
-    public PragmaConnectionInterceptor(int? cacheSize, string lockingMode, int? journalSizeLimit, int tempStoreMode, int syncMode, IDictionary<string, string> customPragma)
+    public PragmaConnectionInterceptor(ILogger logger, int? cacheSize, string lockingMode, int? journalSizeLimit, int tempStoreMode, int syncMode, IDictionary<string, string> customPragma)
     {
+        _logger = logger;
         _cacheSize = cacheSize;
         _lockingMode = lockingMode;
         _journalSizeLimit = journalSizeLimit;
@@ -38,7 +42,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         _syncMode = syncMode;
         _customPragma = customPragma;
 
-        InitialCommand ??= BuildCommandText();
+        InitialCommand = BuildCommandText();
+        _logger.LogInformation("SQLITE connection pragma command set to: \r\n {PragmaCommand}", InitialCommand);
     }
 
     private string? InitialCommand { get; set; }
