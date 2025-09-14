@@ -2475,16 +2475,18 @@ public sealed class BaseItemRepository
                 var items = folderStack.ToArray();
                 folderStack.Clear();
                 foreach (var item in dbContext.BaseItems
-                    .Where(e => items.Contains(e.ParentId!.Value) && e.IsFolder).Select(e => e.Id).ToArray())
+                    .Where(e => items.Contains(e.ParentId!.Value) && (e.IsFolder || e.IsVirtualItem)).Select(e => e.Id).ToArray())
                 {
-                    folderList.Add(item);
-                    folderStack.Add(item);
+                    if (folderList.Add(item))
+                    {
+                        folderStack.Add(item);
+                    }
                 }
             }
 
             return dbContext.BaseItems
-                    .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder)
-                  .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+                    .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder && !e.IsVirtualItem)
+                    .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
         }
 
         return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
