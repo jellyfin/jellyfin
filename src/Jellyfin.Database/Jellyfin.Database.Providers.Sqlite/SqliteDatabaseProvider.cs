@@ -46,13 +46,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         {
             if (options is null)
             {
-                return defaultValue != null ? defaultValue() : default;
+                return defaultValue is not null ? defaultValue() : default;
             }
 
             var value = options.FirstOrDefault(e => e.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
-            if (value == null)
+            if (value is null)
             {
-                return defaultValue != null ? defaultValue() : default;
+                return defaultValue is not null ? defaultValue() : default;
             }
 
             return converter(value.Value);
