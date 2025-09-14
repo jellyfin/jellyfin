@@ -67,7 +67,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     {
         await base.ConnectionOpenedAsync(connection, eventData, cancellationToken).ConfigureAwait(false);
 
-        using (var command = connection.CreateCommand())
+        var command = connection.CreateCommand();
+        await using (command.ConfigureAwait(false))
         {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = InitialCommand;
