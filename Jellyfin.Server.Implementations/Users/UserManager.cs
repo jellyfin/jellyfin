@@ -272,12 +272,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var dbUser = await dbContext.Users.FindAsync(userId).ConfigureAwait(false);
-                if (dbUser is not null)
-                {
-                    dbContext.Users.Remove(dbUser);
-                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                }
+                await dbContext.Users.Where(e => e.Id.Equals(userId)).ExecuteDeleteAsync().ConfigureAwait(false);
             }
 
             _users.Remove(userId);
