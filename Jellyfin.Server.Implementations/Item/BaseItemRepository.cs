@@ -111,13 +111,15 @@ public sealed class BaseItemRepository
 
         var date = (DateTime?)DateTime.UtcNow;
 
+        var relatedItems = TraverseHirachyDown(id, context).ToArray();
+
         // Remove any UserData entries for the placeholder item that would conflict with the UserData
         // being detached from the item being deleted. This is necessary because, during an update,
         // UserData may be reattached to a new entry, but some entries can be left behind.
         // Ensures there are no duplicate UserId/CustomDataKey combinations for the placeholder.
         context.UserData
             .Join(
-                context.UserData.Where(e => e.ItemId == id),
+                context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId),
                 placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
                 userData => new { userData.UserId, userData.CustomDataKey },
                 (placeholder, userData) => placeholder)
@@ -125,29 +127,31 @@ public sealed class BaseItemRepository
             .ExecuteDelete();
 
         // Detach all user watch data
-        context.UserData.Where(e => e.ItemId == id)
+        context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId)
             .ExecuteUpdate(e => e
                 .SetProperty(f => f.RetentionDate, date)
                 .SetProperty(f => f.ItemId, PlaceholderId));
 
-        context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
-        context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemMetadataFields.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItemTrailerTypes.Where(e => e.ItemId == id).ExecuteDelete();
-        context.BaseItems.Where(e => e.Id == id).ExecuteDelete();
-        context.Chapters.Where(e => e.ItemId == id).ExecuteDelete();
-        context.CustomItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
-        context.ItemDisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
+        context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ParentItemId).ExecuteDelete();
+        context.AttachmentStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemImageInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
+        context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-        context.ItemValuesMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.KeyframeData.Where(e => e.ItemId == id).ExecuteDelete();
-        context.MediaSegments.Where(e => e.ItemId == id).ExecuteDelete();
-        context.MediaStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
-        context.PeopleBaseItemMap.Where(e => e.ItemId == id).ExecuteDelete();
-        context.Peoples.Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
-        context.TrickplayInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        var query = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
+        context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.Peoples.WhereOneOrMany(query, e => e.Id).Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
+        context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.SaveChanges();
         transaction.Commit();
     }
@@ -2461,28 +2465,7 @@ public sealed class BaseItemRepository
 
         if (recursive)
         {
-            var folderStack = new HashSet<Guid>()
-            {
-                id
-            };
-            var folderList = new HashSet<Guid>()
-            {
-                id
-            };
-
-            while (folderStack.Count != 0)
-            {
-                var items = folderStack.ToArray();
-                folderStack.Clear();
-                foreach (var item in dbContext.BaseItems
-                    .Where(e => items.Contains(e.ParentId!.Value) && (e.IsFolder || e.IsVirtualItem)).Select(e => e.Id).ToArray())
-                {
-                    if (folderList.Add(item))
-                    {
-                        folderStack.Add(item);
-                    }
-                }
-            }
+            var folderList = TraverseHirachyDown(id, dbContext, item => (item.IsFolder || item.IsVirtualItem));
 
             return dbContext.BaseItems
                     .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder && !e.IsVirtualItem)
@@ -2490,5 +2473,40 @@ public sealed class BaseItemRepository
         }
 
         return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+    }
+
+    private static HashSet<Guid> TraverseHirachyDown(Guid parentId, JellyfinDbContext dbContext, Expression<Func<BaseItemEntity, bool>>? filter = null)
+    {
+        var folderStack = new HashSet<Guid>()
+            {
+                parentId
+            };
+        var folderList = new HashSet<Guid>()
+            {
+                parentId
+            };
+
+        while (folderStack.Count != 0)
+        {
+            var items = folderStack.ToArray();
+            folderStack.Clear();
+            var query = dbContext.BaseItems
+                .WhereOneOrMany(items, e => e.ParentId!.Value);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var item in query.Select(e => e.Id).ToArray())
+            {
+                if (folderList.Add(item))
+                {
+                    folderStack.Add(item);
+                }
+            }
+        }
+
+        return folderList;
     }
 }
