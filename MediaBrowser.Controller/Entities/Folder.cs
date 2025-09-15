@@ -116,10 +116,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual IEnumerable<BaseItem> Children
         {
-            get
-            {
-                return _children ?? (_children = LoadChildren());
-            }
+            get => _children ??= LoadChildren();
             set => _children = value;
         }
 
