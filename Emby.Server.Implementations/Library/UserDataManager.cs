@@ -160,11 +160,6 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        /// <summary>
-        /// Maps a UserData entity to an UserItemData dto.
-        /// </summary>
-        /// <param name="dto">Entity.</param>
-        /// <returns>Dto.</returns>
         private static UserItemData Map(UserData dto)
         {
             return new UserItemData()
