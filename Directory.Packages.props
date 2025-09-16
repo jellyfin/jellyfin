@@ -29,6 +29,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.9" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
@@ -70,7 +73,7 @@
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.2.0" />
-     <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
+    <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
     <PackageVersion Include="SkiaSharp" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
