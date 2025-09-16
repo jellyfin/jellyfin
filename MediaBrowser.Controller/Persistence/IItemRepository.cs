@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -112,4 +113,13 @@ public interface IItemRepository
     /// <param name="id">The id to check.</param>
     /// <returns>True if the item exists, otherwise false.</returns>
     Task<bool> ItemExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets a value indicating wherever all children of the requested Id has been played.
+    /// </summary>
+    /// <param name="user">The userdata to check against.</param>
+    /// <param name="id">The Top id to check.</param>
+    /// <param name="recursive">Whever the check should be done recursive. Warning expensive operation.</param>
+    /// <returns>A value indicating whever all children has been played.</returns>
+    bool GetIsPlayed(User user, Guid id, bool recursive);
 }

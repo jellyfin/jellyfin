@@ -107,7 +107,14 @@ namespace MediaBrowser.Controller.Entities
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             ExtraIds = Array.Empty<Guid>();
+            UserData = [];
         }
+
+        /// <summary>
+        /// Gets or Sets the user data collection as cached from the last Db query.
+        /// </summary>
+        [JsonIgnore]
+        public ICollection<UserData> UserData { get; set; }
 
         [JsonIgnore]
         public string PreferredMetadataCountryCode { get; set; }

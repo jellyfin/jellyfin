@@ -1090,6 +1090,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
+            RootFolder.Children = null;
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
@@ -1100,9 +1101,12 @@ namespace Emby.Server.Implementations.Library
                 allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            var rootFolder = GetUserRootFolder();
+            rootFolder.Children = null;
 
-            await GetUserRootFolder().ValidateChildren(
+            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+
+            await rootFolder.ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
@@ -1110,7 +1114,7 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
-            foreach (var child in GetUserRootFolder().Children.OfType<Folder>())
+            foreach (var child in rootFolder.Children!.OfType<Folder>())
             {
                 // If the user has somehow deleted the collection directory, remove the metadata from the database.
                 if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
