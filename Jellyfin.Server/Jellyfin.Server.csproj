@@ -40,10 +40,10 @@
     <PackageReference Include="SerilogAnalyzer" PrivateAssets="All" />
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />

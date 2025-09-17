@@ -12,7 +12,6 @@
     <PackageVersion Include="BitFaster.Caching" Version="2.5.4" />
     <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
-    <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Diacritics" Version="4.0.17" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
@@ -82,6 +81,7 @@
     <PackageVersion Include="Svg.Skia" Version="3.0.6" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.3" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.9" />

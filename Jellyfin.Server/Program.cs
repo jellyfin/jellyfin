@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
@@ -70,15 +69,16 @@ namespace Jellyfin.Server
         /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
-            static Task ErrorParsingArguments(IEnumerable<Error> errors)
-            {
-                Environment.ExitCode = 1;
-                return Task.CompletedTask;
-            }
+            RootCommand rootCommand = new("Jellyfin.Server");
+            StartupOptions.Setup(rootCommand);
 
-            // Parse the command line arguments and either start the app or exit indicating error
-            return Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, ErrorParsingArguments);
+            rootCommand.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
+            {
+                StartupOptions startupOptions = new(parseResult);
+                return StartApp(startupOptions);
+            });
+
+            return rootCommand.Parse(args).InvokeAsync();
         }
 
         private static async Task StartApp(StartupOptions options)

@@ -1,83 +1,185 @@
 using System.Collections.Generic;
-using CommandLine;
+using System.CommandLine;
 using Emby.Server.Implementations;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Server
 {
     /// <summary>
-    /// Class used by CommandLine package when parsing the command line arguments.
+    /// Class used by when parsing the command line arguments for startup.
     /// </summary>
-    public class StartupOptions : IStartupOptions
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "SA1201:A field should not follow a property", Justification = "It is much easier to read this way since they work by pair.")]
+    public class StartupOptions : Options, IStartupOptions
     {
         /// <summary>
-        /// Gets or sets the path to the data directory.
+        /// Setup the options needed for Jellyfin server mode.
+        /// </summary>
+        /// <param name="cmd">The <see cref="RootCommand"/> or <see cref="Command"/> to add the arguments to.</param>
+        public static void Setup(Command cmd)
+        {
+            Options.Setup(cmd, typeof(StartupOptions));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StartupOptions"/> class.
+        /// </summary>
+        /// <param name="parseResult">Instance of the <see cref="ParseResult"/> interface.</param>
+        public StartupOptions(ParseResult parseResult) : base(parseResult)
+        {
+        }
+
+        /// <summary>
+        /// Gets the path to the data directory.
         /// </summary>
         /// <value>The path to the data directory.</value>
-        [Option('d', "datadir", Required = false, HelpText = "Path to use for the data folder (database files, etc.).")]
-        public string? DataDir { get; set; }
+        public string? DataDir
+        {
+            get { return ParseResult.GetValue(dataDirOption); }
+        }
+
+        private static Option<string> dataDirOption = new("--datadir", "-d")
+        {
+            Description = "Path to use for the data folder (database files, etc.)."
+        };
 
         /// <summary>
-        /// Gets or sets a value indicating whether the server should not host the web client.
+        /// Gets a value indicating whether the server should not host the web client.
         /// </summary>
-        [Option("nowebclient", Required = false, HelpText = "Indicates that the web server should not host the web client.")]
-        public bool NoWebClient { get; set; }
+        public bool NoWebClient
+        {
+            get { return ParseResult.GetValue(noWebClientOption); }
+        }
+
+        private static Option<bool> noWebClientOption = new("--nowebclient")
+        {
+            Description = "Indicates that the web server should not host the web client."
+        };
 
         /// <summary>
-        /// Gets or sets the path to the web directory.
+        /// Gets the path to the web directory.
         /// </summary>
         /// <value>The path to the web directory.</value>
-        [Option('w', "webdir", Required = false, HelpText = "Path to the Jellyfin web UI resources.")]
-        public string? WebDir { get; set; }
+        public string? WebDir
+        {
+            get { return ParseResult.GetValue(webDirOption); }
+        }
+
+        private static Option<string> webDirOption = new("--webdir", "-w")
+        {
+            Description = "Path to the Jellyfin web UI resources."
+        };
 
         /// <summary>
-        /// Gets or sets the path to the cache directory.
+        /// Gets the path to the cache directory.
         /// </summary>
         /// <value>The path to the cache directory.</value>
-        [Option('C', "cachedir", Required = false, HelpText = "Path to use for caching.")]
-        public string? CacheDir { get; set; }
+        public string? CacheDir
+        {
+            get { return ParseResult.GetValue(cacheDirOption); }
+        }
+
+        private static Option<string> cacheDirOption = new("--cachedir", "-C")
+        {
+            Description = "Path to use for caching."
+        };
 
         /// <summary>
-        /// Gets or sets the path to the config directory.
+        /// Gets the path to the config directory.
         /// </summary>
         /// <value>The path to the config directory.</value>
-        [Option('c', "configdir", Required = false, HelpText = "Path to use for configuration data (user settings and pictures).")]
-        public string? ConfigDir { get; set; }
+        public string? ConfigDir
+        {
+            get { return ParseResult.GetValue(configDirOption); }
+        }
+
+        private static Option<string> configDirOption = new("--configdir", "-c")
+        {
+            Description = "Path to use for configuration data (user settings and pictures)."
+        };
 
         /// <summary>
-        /// Gets or sets the path to the log directory.
+        /// Gets the path to the log directory.
         /// </summary>
         /// <value>The path to the log directory.</value>
-        [Option('l', "logdir", Required = false, HelpText = "Path to use for writing log files.")]
-        public string? LogDir { get; set; }
+        public string? LogDir
+        {
+            get { return ParseResult.GetValue(logDirOption); }
+        }
+
+        private static Option<string> logDirOption = new("--logdir", "-l")
+        {
+            Description = "Path to use for writing log files."
+        };
 
         /// <inheritdoc />
-        [Option("ffmpeg", Required = false, HelpText = "Path to external FFmpeg executable to use in place of default found in PATH.")]
-        public string? FFmpegPath { get; set; }
+        public string? FFmpegPath
+        {
+            get { return ParseResult.GetValue(ffmpegOption); }
+        }
+
+        private static Option<string> ffmpegOption = new("--ffmpeg")
+        {
+            Description = "Path to external FFmpeg executable to use in place of default found in PATH."
+        };
 
         /// <inheritdoc />
-        [Option("service", Required = false, HelpText = "Run as headless service.")]
-        public bool IsService { get; set; }
+        public bool IsService
+        {
+            get { return ParseResult.GetValue(isServiceOption); }
+        }
+
+        private static Option<bool> isServiceOption = new("--service")
+        {
+            Description = "Run as headless service."
+        };
 
         /// <inheritdoc />
-        [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
-        public string? PackageName { get; set; }
+        public string? PackageName
+        {
+            get { return ParseResult.GetValue(packageNameOption); }
+        }
+
+        private static Option<string> packageNameOption = new("--packageName")
+        {
+            Description = "Used when packaging Jellyfin (example, synology)."
+        };
 
         /// <inheritdoc />
-        [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
-        public string? PublishedServerUrl { get; set; }
+        public string? PublishedServerUrl
+        {
+            get { return ParseResult.GetValue(publishedServerUrlOption); }
+        }
+
+        private static Option<string> publishedServerUrlOption = new("--published-server-url")
+        {
+            Description = "Jellyfin Server URL to publish via auto discover process."
+        };
 
         /// <summary>
-        /// Gets or sets a value indicating whether the server should not detect network status change.
+        /// Gets a value indicating whether the server should not detect network status change.
         /// </summary>
-        [Option("nonetchange", Required = false, HelpText = "Indicates that the server should not detect network status change.")]
-        public bool NoDetectNetworkChange { get; set; }
+        public bool NoDetectNetworkChange
+        {
+            get { return ParseResult.GetValue(noNetChangeOption); }
+        }
+
+        private static Option<bool> noNetChangeOption = new("--nonetchange")
+        {
+            Description = "Indicates that the server should not detect network status change."
+        };
 
         /// <summary>
-        /// Gets or sets the path to an jellyfin backup archive to restore the application to.
+        /// Gets the path to an jellyfin backup archive to restore the application to.
         /// </summary>
-        [Option("restore-archive", Required = false, HelpText = "Path to a Jellyfin backup archive to restore from")]
-        public string? RestoreArchive { get; set; }
+        public string? RestoreArchive
+        {
+            get { return ParseResult.GetValue(restoreArchiveOption); }
+        }
+
+        private Option<string> restoreArchiveOption = new("--restore-archive")
+        {
+            Description = "Path to a Jellyfin backup archive to restore from."
+        };
 
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.

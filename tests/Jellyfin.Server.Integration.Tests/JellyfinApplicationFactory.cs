@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.CommandLine;
 using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations;
@@ -54,7 +55,10 @@ namespace Jellyfin.Server.Integration.Tests
             // Skip ffmpeg check for testing
             Environment.SetEnvironmentVariable("JELLYFIN_FFMPEG__NOVALIDATION", "true");
             // Specify the startup command line options
-            var commandLineOpts = new StartupOptions();
+            RootCommand rootCommand = new("Jellyfin.Server");
+            StartupOptions.Setup(rootCommand);
+            ParseResult parseResult = rootCommand.Parse([]);
+            var commandLineOpts = new StartupOptions(parseResult);
 
             // Use a temporary directory for the application paths
             var webHostPathRoot = Path.Combine(_testPathRoot, "test-host-" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
