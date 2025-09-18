@@ -1086,12 +1086,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         if (reader.TryGetString(index++, out var providerIds))
         {
-            entity.Provider = providerIds.Split('|').Select(e => e.Split("="))
+            entity.Provider = providerIds.Split('|').Select(e => e.Split("=")).Where(e => e.Length >= 2)
             .Select(e => new BaseItemProvider()
             {
                 Item = null!,
                 ProviderId = e[0],
-                ProviderValue = e[1]
+                ProviderValue = string.Join('|', e.Skip(1))
             }).ToArray();
         }
 
