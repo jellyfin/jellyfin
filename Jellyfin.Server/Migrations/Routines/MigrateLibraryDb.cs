@@ -121,8 +121,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 }
             }
 
-            allItemsLookup = allItemsLookup.ToFrozenDictionary();
-
             bool DoesResolve(Guid? parentId, HashSet<(BaseItemEntity BaseItem, string[] Keys)> checkStack)
             {
                 if (parentId is null)
