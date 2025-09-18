@@ -1,6 +1,7 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
@@ -99,6 +100,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         var baseItemIds = new HashSet<Guid>();
         using (var operation = GetPreparedDbContext("Moving TypedBaseItem"))
         {
+            IDictionary<Guid, (BaseItemEntity BaseItem, string[] Keys)> allItemsLookup = new Dictionary<Guid, (BaseItemEntity BaseItem, string[] Keys)>();
             const string typedBaseItemsQuery =
             """
             SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
@@ -115,12 +117,51 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
                 {
                     var baseItem = GetItem(dto);
-                    operation.JellyfinDbContext.BaseItems.Add(baseItem.BaseItem);
-                    baseItemIds.Add(baseItem.BaseItem.Id);
-                    foreach (var dataKey in baseItem.LegacyUserDataKey)
+                    allItemsLookup.Add(baseItem.BaseItem.Id, baseItem);
+                }
+            }
+
+            allItemsLookup = allItemsLookup.ToFrozenDictionary();
+
+            bool DoesResolve(Guid? parentId, HashSet<(BaseItemEntity BaseItem, string[] Keys)> checkStack)
+            {
+                if (parentId is null)
+                {
+                    return true;
+                }
+
+                if (!allItemsLookup.TryGetValue(parentId.Value, out var parent))
+                {
+                    return false; // item is detached and has no root anymore.
+                }
+
+                if (!checkStack.Add(parent))
+                {
+                    return false; // recursive structure. Abort.
+                }
+
+                return DoesResolve(parent.BaseItem.ParentId, checkStack);
+            }
+
+            using (new TrackedMigrationStep("Clean TypedBaseItems hierarchy", _logger))
+            {
+                var checkStack = new HashSet<(BaseItemEntity BaseItem, string[] Keys)>();
+
+                foreach (var item in allItemsLookup)
+                {
+                    var cachedItem = item.Value;
+                    if (DoesResolve(cachedItem.BaseItem.ParentId, checkStack))
                     {
-                        legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
+                        checkStack.Add(cachedItem);
+                        operation.JellyfinDbContext.BaseItems.Add(cachedItem.BaseItem);
+                        baseItemIds.Add(cachedItem.BaseItem.Id);
+                        foreach (var dataKey in cachedItem.Keys)
+                        {
+                            legacyBaseItemWithUserKeys[dataKey] = cachedItem.BaseItem;
+                        }
                     }
+
+                    checkStack.Clear();
                 }
             }
 
@@ -128,6 +169,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
+
+            allItemsLookup.Clear();
         }
 
         using (var operation = GetPreparedDbContext("Moving ItemValues"))
