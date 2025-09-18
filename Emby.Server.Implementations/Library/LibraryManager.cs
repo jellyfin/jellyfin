@@ -799,6 +799,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _logger.LogInformation("Resetting root folder path to {0}", rootFolderPath);
                 rootFolder.Path = rootFolderPath;
+                rootFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             // Add in the plug-in folders
