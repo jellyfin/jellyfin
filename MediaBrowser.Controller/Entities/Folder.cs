@@ -1336,19 +1336,20 @@ namespace MediaBrowser.Controller.Entities
             var limit = query.Limit;
             query.Limit = 100; // this is a bit of a dirty hack thats in favor of specifically the webUI as it does not show more then +99 elements in its badges so there is no point in reading more then that.
 
-            var visibileChildren = children
+            var visibleChildren = children
                 .Where(e => e.IsVisible(user))
                 .ToArray();
 
-            var realChildren = visibileChildren
+            var realChildren = visibleChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
                 .ToArray();
-            var childCount = realChildren.Count();
+            var childCount = realChildren.Length;
             if (result.Count < query.Limit)
             {
+                var remainingCount = query.Limit.Value - result.Count;
                 foreach (var child in realChildren
                     .Skip(query.StartIndex ?? 0)
-                    .TakeWhile(e => query.Limit >= result.Count))
+                    .Take(remainingCount))
                 {
                     result[child.Id] = child;
                 }
@@ -1356,7 +1357,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                foreach (var child in visibileChildren
+                foreach (var child in visibleChildren
                     .Where(e => e.IsFolder)
                     .OfType<Folder>())
                 {
