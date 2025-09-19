@@ -1,7 +1,6 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
