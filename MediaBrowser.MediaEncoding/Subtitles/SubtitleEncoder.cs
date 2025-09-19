@@ -963,15 +963,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                    {
-                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                            .GetAsync(new Uri(path), cancellationToken)
-                            .ConfigureAwait(false);
-                        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                {
+                    var client = _httpClientFactory.CreateClient(NamedClient.Default);
+                    var bytes = await client.GetByteArrayAsync(new Uri(path), cancellationToken).ConfigureAwait(false);
+                    return new MemoryStream(bytes, writable: false);
+                }
 
                 case MediaProtocol.File:
                     return AsyncFile.OpenRead(path);
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }
