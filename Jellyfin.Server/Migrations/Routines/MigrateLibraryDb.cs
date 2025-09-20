@@ -544,12 +544,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         {
             Id = Guid.NewGuid(),
             Name = reader.GetString(1),
+            PersonType = reader.TryGetString(3, out var type) && !string.IsNullOrEmpty(type) ? type : "Unknown"
         };
-
-        if (reader.TryGetString(3, out var type))
-        {
-            item.PersonType = type;
-        }
 
         return item;
     }

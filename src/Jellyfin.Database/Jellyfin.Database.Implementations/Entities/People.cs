@@ -23,7 +23,7 @@ public class People
     /// <summary>
     /// Gets or Sets the Type.
     /// </summary>
-    public string? PersonType { get; set; }
+    public required string PersonType { get; set; }
 
     /// <summary>
     /// Gets or Sets the mapping of People to BaseItems.

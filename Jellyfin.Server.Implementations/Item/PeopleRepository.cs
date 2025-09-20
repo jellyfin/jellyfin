@@ -68,22 +68,89 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
-
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
-        context.SaveChanges();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        // Step 1: Get people that need IDs
+        var peopleWithoutIds = people.Where(p => p.Id.IsEmpty()).ToArray();
+
+        // Step 2: Check database for existing people and assign their IDs
+        if (peopleWithoutIds.Length > 0)
+        {
+            var nameTypePairs = peopleWithoutIds
+                .Select(x => new { x.Name, PersonType = x.Type.ToString() })
+                .ToArray();
+
+            var names = nameTypePairs.Select(x => x.Name).ToArray();
+            var personTypes = nameTypePairs.Select(x => x.PersonType).ToArray();
+            var existingPeople = context.Peoples.AsNoTracking()
+                .Where(p => names.Contains(p.Name) && personTypes.Contains(p.PersonType))
+                .Select(p => new { p.Id, p.Name, p.PersonType })
+                .AsEnumerable()
+                .Where(p => nameTypePairs.Any(pair => p.Name == pair.Name && p.PersonType == pair.PersonType))
+                .ToList();
+
+            // Assign existing IDs to found people
+            foreach (var person in peopleWithoutIds)
+            {
+                var existing = existingPeople.FirstOrDefault(e =>
+                    e.Name == person.Name && e.PersonType == person.Type.ToString());
+                if (existing != null)
+                {
+                    person.Id = existing.Id;
+                }
+            }
+        }
+
+        // Step 3: For people that are truly missing, assign new GUIDs and insert
+        var missingPeople = people.Where(p => p.Id.IsEmpty()).ToList();
+        if (missingPeople.Count > 0)
+        {
+            foreach (var person in missingPeople)
+            {
+                person.Id = Guid.NewGuid();
+            }
+
+            // Insert missing records
+            context.Peoples.AddRange(missingPeople.Select(person => new People
+            {
+                Id = person.Id,
+                Name = person.Name,
+                PersonType = person.Type.ToString()
+            }));
+            context.SaveChanges();
+        }
+
+        // Clear change tracker before mapping operations to avoid tracking conflicts
+        context.ChangeTracker.Clear();
+
+        // Now all people have valid IDs, process PeopleBaseItemMap
+        var allPeopleIds = people.Select(p => p.Id).ToArray();
+
+        // Get all existing mappings for this item in one query
+        var existingMappings = context.PeopleBaseItemMap
+            .Where(m => m.ItemId == itemId)
+            .ToDictionary(m => m.PeopleId, m => m);
+
+        // Remove obsolete mappings (people no longer in the list)
+        var obsoleteMappings = existingMappings.Values
+            .Where(m => !allPeopleIds.Contains(m.PeopleId))
+            .ToList();
+        context.PeopleBaseItemMap.RemoveRange(obsoleteMappings);
+
+        // Upsert mappings for all people
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
-            if (existingMap is null)
+            if (existingMappings.TryGetValue(person.Id, out var existing))
             {
+                // Update existing mapping
+                existing.Role = person.Role;
+                existing.SortOrder = person.SortOrder;
+                existing.ListOrder = person.SortOrder;
+            }
+            else
+            {
+                // Add new mapping
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
@@ -95,14 +162,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Role = person.Role
                 });
             }
-            else
-            {
-                // person mapping already exists so remove from list
-                maps.Remove(existingMap);
-            }
         }
-
-        context.PeopleBaseItemMap.RemoveRange(maps);
 
         context.SaveChanges();
         transaction.Commit();

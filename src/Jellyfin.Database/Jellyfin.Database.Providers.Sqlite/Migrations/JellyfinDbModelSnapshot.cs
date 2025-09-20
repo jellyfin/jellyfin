@@ -980,11 +980,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PersonType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("Name", "PersonType")
+                        .IsUnique();
 
                     b.ToTable("Peoples");
 
