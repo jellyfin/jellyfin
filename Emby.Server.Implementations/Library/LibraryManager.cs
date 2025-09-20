@@ -2032,6 +2032,12 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
+                if (!File.Exists(image.Path))
+                {
+                    _logger.LogWarning("Image not found at {ImagePath}", image.Path);
+                    continue;
+                }
+
                 ImageDimensions size;
                 try
                 {
