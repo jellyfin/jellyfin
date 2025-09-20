@@ -272,6 +272,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                dbContext.Users.Attach(user);
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -887,7 +888,8 @@ namespace Jellyfin.Server.Implementations.Users
 
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
-            dbContext.Users.Update(user);
+            dbContext.Users.Attach(user);
+            dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
