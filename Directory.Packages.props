@@ -29,6 +29,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.9" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
@@ -54,7 +57,7 @@
     <PackageVersion Include="Morestachio" Version="5.0.1.631" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="1.1.0.5" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="PlaylistsNET" Version="1.4.1" />
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.1" />
@@ -70,13 +73,13 @@
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.2.0" />
-     <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
+    <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
     <PackageVersion Include="SkiaSharp" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
-    <PackageVersion Include="Svg.Skia" Version="3.0.6" />
+    <PackageVersion Include="Svg.Skia" Version="3.2.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
@@ -85,8 +88,8 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.9" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.9" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.3.0" />
-    <PackageVersion Include="TMDbLib" Version="2.2.0" />
+    <PackageVersion Include="z440.atl.core" Version="7.5.0" />
+    <PackageVersion Include="TMDbLib" Version="2.3.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />

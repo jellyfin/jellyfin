@@ -80,6 +80,7 @@ namespace Emby.Server.Implementations.Library
             var userId = user.InternalId;
             var cacheKey = GetCacheKey(userId, item.Id);
             _cache.AddOrUpdate(cacheKey, userData);
+            item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray(); // rehydrate the cached userdata
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
@@ -159,7 +160,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        private UserItemData Map(UserData dto)
+        private static UserItemData Map(UserData dto)
         {
             return new UserItemData()
             {
@@ -237,7 +238,10 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
-            return GetUserData(user, item.Id, item.GetUserDataKeys());
+            return item.UserData.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+            {
+                Key = item.GetUserDataKeys()[0],
+            };
         }
 
         /// <inheritdoc />

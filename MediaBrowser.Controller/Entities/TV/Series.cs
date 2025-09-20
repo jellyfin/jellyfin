@@ -297,6 +297,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            Children = null; // invalidate cached children.
             // Refresh bottom up, seasons and episodes first, then the series
             var items = GetRecursiveChildren();
 

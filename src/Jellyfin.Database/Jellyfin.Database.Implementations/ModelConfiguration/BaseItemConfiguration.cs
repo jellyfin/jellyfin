@@ -27,6 +27,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.Provider);
         builder.HasMany(e => e.Parents);
         builder.HasMany(e => e.Children);
+        builder.HasMany(e => e.DirectChildren).WithOne(e => e.DirectParent).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);

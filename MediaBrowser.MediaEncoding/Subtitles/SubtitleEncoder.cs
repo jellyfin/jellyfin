@@ -169,7 +169,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (fileInfo.IsExternal)
             {
-                using (var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false))
+                var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+                await using (stream.ConfigureAwait(false))
                 {
                     var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
                     var detected = result.Detected;
@@ -937,7 +938,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
+            var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
                 var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
                 var charset = result.Detected?.EncodingName ?? string.Empty;
