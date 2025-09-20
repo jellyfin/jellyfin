@@ -42,6 +42,7 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
+        private readonly IFileSystem _fileSystem;
         private readonly ILogger<ProbeProvider> _logger;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
@@ -83,6 +84,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaAttachmentRepository mediaAttachmentRepository,
             IMediaStreamRepository mediaStreamRepository)
         {
+            _fileSystem = fileSystem;
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -153,6 +155,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                    return true;
+                }
+
+                var xmlFilePath = MediaInfoResolver.GetExternalChapterFile(video);
+                externalFiles = new HashSet<string>([xmlFilePath], StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.ChapterFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external chapter change.", item.Path);
+                    return true;
+                }
+
+                if (xmlFilePath != null && _fileSystem.GetLastWriteTimeUtc(xmlFilePath) > item.DateLastSaved)
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to external chapter change.", item.Path);
                     return true;
                 }
             }
