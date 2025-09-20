@@ -152,17 +152,20 @@ public class ItemUpdateController : BaseJellyfinApiController
                     new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                        ImageRefreshMode = MetadataRefreshMode.None
+                        ImageRefreshMode = MetadataRefreshMode.None,
+                        ReplaceAllMetadata = false // Only update metadata from children, don't replace all
                     },
                     RefreshPriority.Normal);
             }
 
-            // Also refresh the album artist entities themselves so they show up in the Album Artists tab
-            var oldAlbumArtists = audioItem.AlbumArtists ?? Array.Empty<string>();
-            var newAlbumArtists = Array.ConvertAll(request.AlbumArtists!, i => i.Name);
-            var allArtists = oldAlbumArtists.Concat(newAlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase);
+            // Refresh only the album artist entities that actually changed (more efficient)
+            var oldAlbumArtists = new HashSet<string>(audioItem.AlbumArtists ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var newAlbumArtists = new HashSet<string>(Array.ConvertAll(request.AlbumArtists ?? Array.Empty<NameGuidPair>(), i => i.Name ?? string.Empty), StringComparer.OrdinalIgnoreCase);
 
-            foreach (var artistName in allArtists)
+            // Artists that were removed or added (only these need refresh)
+            var changedArtists = oldAlbumArtists.Except(newAlbumArtists).Concat(newAlbumArtists.Except(oldAlbumArtists));
+
+            foreach (var artistName in changedArtists)
             {
                 if (!string.IsNullOrEmpty(artistName))
                 {
@@ -174,7 +177,9 @@ public class ItemUpdateController : BaseJellyfinApiController
                             new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                             {
                                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                                ImageRefreshMode = MetadataRefreshMode.None
+                                ImageRefreshMode = MetadataRefreshMode.None,
+                                ReplaceAllMetadata = false,
+                                EnableRemoteContentProbe = false // Skip remote lookups for performance
                             },
                             RefreshPriority.Low);
                     }
@@ -333,8 +338,8 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
 
-        var currentTags = item.Tags;
-        var newTags = request.Tags;
+        var currentTags = item.Tags ?? Array.Empty<string>();
+        var newTags = request.Tags ?? Array.Empty<string>();
         var removedTags = currentTags.Except(newTags).ToList();
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;
@@ -449,15 +454,16 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.RunTimeTicks = request.RunTimeTicks;
         }
 
-        foreach (var pair in request.ProviderIds.ToList())
+        var providerIds = request.ProviderIds ?? new Dictionary<string, string>();
+        foreach (var pair in providerIds.ToList())
         {
             if (string.IsNullOrEmpty(pair.Value))
             {
-                request.ProviderIds.Remove(pair.Key);
+                providerIds.Remove(pair.Key);
             }
         }
 
-        item.ProviderIds = request.ProviderIds;
+        item.ProviderIds = providerIds;
 
         if (item is Video video)
         {
