@@ -9,6 +9,11 @@ namespace MediaBrowser.Model.Providers
     public enum ExternalIdMediaType
     {
         /// <summary>
+        /// Required None value.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// A music album.
         /// </summary>
         Album = 1,
