@@ -1333,8 +1333,8 @@ namespace MediaBrowser.Controller.Entities
         private int AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
         {
             query ??= new InternalItemsQuery();
-            var limit = query.Limit.HasValue && query.Limit > 0 ? query.Limit : int.MaxValue;
-            // query.Limit = 100; // this is a bit of a dirty hack thats in favor of specifically the webUI as it does not show more then +99 elements in its badges so there is no point in reading more then that.
+            var limit = query.Limit > 0 ? query.Limit : int.MaxValue;
+            query.Limit = 0;
 
             var visibileChildren = children
                 .Where(e => e.IsVisible(user))
@@ -1348,7 +1348,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in realChildren
                     .Skip(query.StartIndex ?? 0)
-                    .TakeWhile(e => limit >= result.Count))
+                    .TakeWhile(e => limit > result.Count))
                 {
                     result[child.Id] = child;
                 }
