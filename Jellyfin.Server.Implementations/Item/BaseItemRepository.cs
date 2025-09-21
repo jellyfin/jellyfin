@@ -2281,7 +2281,7 @@ public sealed class BaseItemRepository
             var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
             if (includeAny.Length > 0)
             {
-                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId)!.Any(f => includeAny.Contains(f)));
+                baseQuery = baseQuery.Where(e => e.Provider!.Any(f => includeAny.Contains(f.ProviderId)));
             }
 
             var includeSelected = filter.HasAnyProviderId.Where(e => !string.IsNullOrEmpty(e.Value)).Select(e => $"{e.Key}:{e.Value}").ToArray();
