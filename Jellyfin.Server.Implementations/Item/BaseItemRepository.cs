@@ -2278,8 +2278,17 @@ public sealed class BaseItemRepository
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            var include = filter.HasAnyProviderId.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => include.Contains(f)));
+            var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
+            if (includeAny.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId)!.Any(f => includeAny.Contains(f)));
+            }
+
+            var includeSelected = filter.HasAnyProviderId.Where(e => !string.IsNullOrEmpty(e.Value)).Select(e => $"{e.Key}:{e.Value}").ToArray();
+            if (includeSelected.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeSelected.Contains(f)));
+            }
         }
 
         if (filter.HasImdbId.HasValue)
