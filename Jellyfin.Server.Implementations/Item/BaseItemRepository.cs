@@ -2278,6 +2278,7 @@ public sealed class BaseItemRepository
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
+            // Allow setting a null or empty value to get all items that have the specified provider set.
             var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
             if (includeAny.Length > 0)
             {
