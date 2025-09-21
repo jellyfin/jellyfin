@@ -21,7 +21,7 @@ namespace Emby.Naming.TV
         /// Regex that matches titles with year in parentheses, optionally preceded by a minus sign.
         /// Captures the title (which may be numeric) before the year.
         /// </summary>
-        [GeneratedRegex(@"^-?(?<title>.+?)\s*\(\d{4}\)")]
+        [GeneratedRegex(@"(?<title>.+?)\s*\(\d{4}\)")]
         private static partial Regex TitleWithYearRegex();
 
         /// <summary>
