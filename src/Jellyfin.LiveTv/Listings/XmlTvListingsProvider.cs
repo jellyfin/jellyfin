@@ -66,11 +66,40 @@ namespace Jellyfin.LiveTv.Listings
 
             if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
             {
-                return cacheFile;
-            }
+                try
+                {
+                    if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using var headRequest = new HttpRequestMessage(HttpMethod.Head, info.Path);
+                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                            .SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                            .ConfigureAwait(false);
 
-            // Must check if file exists as parent directory may not exist.
-            if (File.Exists(cacheFile))
+                        if (response.Content.Headers.LastModified.HasValue &&
+                            response.Content.Headers.LastModified.Value.UtcDateTime <= File.GetLastWriteTimeUtc(cacheFile))
+                        {
+                            return cacheFile;
+                        }
+
+                        File.Delete(cacheFile);
+                    }
+                    else if (File.Exists(info.Path))
+                    {
+                        if (File.GetLastWriteTimeUtc(info.Path) <= File.GetLastWriteTimeUtc(cacheFile))
+                        {
+                            return cacheFile;
+                        }
+
+                        File.Delete(cacheFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Unable to get last modified time for {Path}", info.Path);
+                    File.Delete(cacheFile);
+                }
+            }
+            else if (File.Exists(cacheFile))
             {
                 File.Delete(cacheFile);
             }
