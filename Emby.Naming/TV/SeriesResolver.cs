@@ -18,8 +18,8 @@ namespace Emby.Naming.TV
         private static partial Regex SeriesNameRegex();
 
         /// <summary>
-        /// Regex that matches titles with year in parentheses, optionally preceded by a minus sign.
-        /// Captures the title (which may be numeric) before the year.
+        /// Regex that matches titles with year in parentheses. Captures the title (which may be
+        /// numeric) before the year, i.e. turns "1923 (2022)" into "1923".
         /// </summary>
         [GeneratedRegex(@"(?<title>.+?)\s*\(\d{4}\)")]
         private static partial Regex TitleWithYearRegex();
