@@ -70,11 +70,16 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     {
         // TODO: yes for __SOME__ reason there can be duplicates.
         people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
+        var personKeys = people.Select(e => e.Name + "-" + e.Role).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
+        var existingPersons = context.Peoples.Select(e => new
+            {
+                item = e,
+                SelectionKey = e.Name + "-" + e.PersonType
+            })
+            .Where(p => personKeys.Contains(p.SelectionKey)).Select(f => f.item.Id).ToArray();
         context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
         context.SaveChanges();
 
