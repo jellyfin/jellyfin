@@ -23,9 +23,6 @@ namespace MediaBrowser.Controller.MediaEncoding
     {
         private static readonly char[] _separators = ['|', ','];
 
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
-
         private TranscodeReason? _transcodeReasons = null;
 
         public EncodingJobInfo(TranscodingJobType jobType)
@@ -36,6 +33,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedVideoCodecs = Array.Empty<string>();
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
+
+        public int? OutputAudioBitrate { get; set; }
+
+        public int? OutputAudioChannels { get; set; }
 
         public TranscodeReason TranscodeReasons
         {
