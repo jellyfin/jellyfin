@@ -90,14 +90,15 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
             if (existingMap is null)
             {
+                var sortOrder = (person.SortOrder ?? context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).Max(e => e.SortOrder) ?? 0) + 1;
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
                     ItemId = itemId,
                     People = null!,
                     PeopleId = person.Id,
-                    ListOrder = person.SortOrder,
-                    SortOrder = person.SortOrder,
+                    ListOrder = sortOrder,
+                    SortOrder = sortOrder,
                     Role = person.Role
                 });
             }
