@@ -381,26 +381,31 @@ public sealed class BaseItemRepository
         {
             var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
-            dbQuery = ApplyOrder(dbQuery, filter);
         }
         else if (enableGroupByPresentationUniqueKey)
         {
             var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
-            dbQuery = ApplyOrder(dbQuery, filter);
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
             var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
-            dbQuery = ApplyOrder(dbQuery, filter);
         }
         else
         {
             dbQuery = dbQuery.Distinct();
-            dbQuery = ApplyOrder(dbQuery, filter);
         }
 
+        dbQuery = ApplyOrder(dbQuery, filter);
+
+        dbQuery = ApplyNavigations(dbQuery, filter);
+
+        return dbQuery;
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
         dbQuery = dbQuery.Include(e => e.TrailerTypes)
            .Include(e => e.Provider)
            .Include(e => e.LockedFields)
@@ -410,9 +415,6 @@ public sealed class BaseItemRepository
         {
             dbQuery = dbQuery.Include(e => e.Images);
         }
-
-        // dbQuery = dbQuery.Distinct();
-        // dbQuery = ApplyOrder(dbQuery, filter);
 
         return dbQuery;
     }
@@ -440,7 +442,6 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
-        // dbQuery = ApplyOrder(dbQuery, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         return dbQuery;
@@ -1322,7 +1323,13 @@ public sealed class BaseItemRepository
             result.Items =
             [
                 .. query
-                    .Select(e => e.First())
+                    .Select(e => e.AsQueryable()
+                        .Include(e => e.TrailerTypes)
+                        .Include(e => e.Provider)
+                        .Include(e => e.LockedFields)
+                        .Include(e => e.Images)
+                        .AsSingleQuery()
+                        .First())
                     .AsEnumerable()
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
