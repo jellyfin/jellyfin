@@ -87,9 +87,11 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             var partitionSize = 100;
             var iterator = 0;
             int itemCounter;
+            var buffer = new IEnumerable<Guid>[100];
             do
             {
                 itemCounter = 0;
+
                 await foreach (var item in dupQuery
                     .Skip(partitionSize * iterator)
                     .Take(partitionSize)
@@ -97,14 +99,19 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                     .WithCancellation(cancellationToken)
                     .ConfigureAwait(false))
                 {
+                    buffer[itemCounter++] = item;
+                }
+
+                for (int i = 0; i < itemCounter; i++)
+                {
+                    var item = buffer[i];
                     var reference = item.First();
                     var dups = item.Skip(1).ToArray();
                     await context.PeopleBaseItemMap.WhereOneOrMany(dups, e => e.PeopleId)
                         .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
                         .ConfigureAwait(false);
                     await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                    subProgress.Report(total / 100 * itemCounter);
-                    itemCounter++;
+                    subProgress.Report(total / 100 * i);
                 }
 
                 iterator++;
