@@ -110,7 +110,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                         .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
                         .ConfigureAwait(false);
                     await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                    subProgress.Report(total / 100 * i);
+                    subProgress.Report(100 / total * ((iterator * partitionSize) + i));
                 }
 
                 iterator++;

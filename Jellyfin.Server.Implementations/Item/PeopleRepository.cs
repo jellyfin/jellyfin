@@ -83,10 +83,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
         context.SaveChanges();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        var maps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
+            var existingMap = maps.FirstOrDefault(e => e.People.Name == person.Name && e.Role == person.Role);
             if (existingMap is null)
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
