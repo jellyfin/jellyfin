@@ -39,7 +39,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         if (!filter.ItemId.IsEmpty())
         {
             dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
-                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder);
+                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
+                .ThenBy(e => e.Name);
         }
         else
         {
