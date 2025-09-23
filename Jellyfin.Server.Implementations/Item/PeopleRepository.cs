@@ -35,16 +35,20 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        if (filter.Limit > 0)
-        {
-            dbQuery = dbQuery.Take(filter.Limit);
-        }
-
         // Include PeopleBaseItemMap
         if (!filter.ItemId.IsEmpty())
         {
             dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
                 .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder);
+        }
+        else
+        {
+            dbQuery = dbQuery.OrderBy(e => e.Name);
+        }
+
+        if (filter.Limit > 0)
+        {
+            dbQuery = dbQuery.Take(filter.Limit);
         }
 
         return dbQuery.AsEnumerable().Select(Map).ToArray();
