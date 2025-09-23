@@ -826,6 +826,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!folder.ParentId.Equals(rootFolder.Id))
             {
+                rootFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
                 folder.ParentId = rootFolder.Id;
                 folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
             }
@@ -2029,6 +2030,12 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogWarning(ex, "Cannot fetch image from {ImagePath}. Http status code: {HttpStatus}", img.Path, ex.StatusCode);
                         continue;
                     }
+                }
+
+                if (!File.Exists(image.Path))
+                {
+                    _logger.LogWarning("Image not found at {ImagePath}", image.Path);
+                    continue;
                 }
 
                 ImageDimensions size;

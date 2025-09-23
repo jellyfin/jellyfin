@@ -79,7 +79,7 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
-    <PackageVersion Include="Svg.Skia" Version="3.0.6" />
+    <PackageVersion Include="Svg.Skia" Version="3.2.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
@@ -88,7 +88,7 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.9" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.9" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.3.0" />
+    <PackageVersion Include="z440.atl.core" Version="7.5.0" />
     <PackageVersion Include="TMDbLib" Version="2.3.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
