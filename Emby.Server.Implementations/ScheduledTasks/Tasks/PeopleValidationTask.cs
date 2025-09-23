@@ -93,7 +93,6 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                 itemCounter = 0;
 
                 await foreach (var item in dupQuery
-                    .Skip(partitionSize * iterator)
                     .Take(partitionSize)
                     .AsAsyncEnumerable()
                     .WithCancellation(cancellationToken)
