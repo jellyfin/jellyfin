@@ -69,7 +69,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
         // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
+        people = people.DistinctBy(e => e.Name + "-" + e.Role).ToArray();
         var personKeys = people.Select(e => e.Name + "-" + e.Role).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
