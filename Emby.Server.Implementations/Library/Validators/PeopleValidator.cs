@@ -55,6 +55,8 @@ public class PeopleValidator
 
         var numPeople = people.Count;
 
+        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+
         _logger.LogDebug("Will refresh {Amount} people", numPeople);
 
         foreach (var person in people)
@@ -92,7 +94,7 @@ public class PeopleValidator
             double percent = numComplete;
             percent /= numPeople;
 
-            progress.Report(100 * percent);
+            subProgress.Report(100 * percent);
         }
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
@@ -102,8 +104,11 @@ public class PeopleValidator
             IsLocked = false
         });
 
-        foreach (var item in deadEntities)
+        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+
+        for (var i = 0; i < deadEntities.Count; i++)
         {
+            var item = deadEntities[i];
             _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
 
             _libraryManager.DeleteItem(
@@ -113,6 +118,7 @@ public class PeopleValidator
                     DeleteFileLocation = false
                 },
                 false);
+            subProgress.Report(100 / deadEntities.Count * i);
         }
 
         progress.Report(100);
