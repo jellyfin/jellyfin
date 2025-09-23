@@ -271,7 +271,7 @@ public sealed class BaseItemRepository
             result.TotalRecordCount = dbQuery.Count();
         }
 
-        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
@@ -290,7 +290,7 @@ public sealed class BaseItemRepository
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
-        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
@@ -332,7 +332,7 @@ public sealed class BaseItemRepository
         var mainquery = PrepareItemQuery(context, filter);
         mainquery = TranslateQuery(mainquery, context, filter);
         mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
-        mainquery = ApplyGroupingFilter(mainquery, filter);
+        mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
         return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
@@ -369,36 +369,52 @@ public sealed class BaseItemRepository
         return query.ToArray();
     }
 
-    private IQueryable<BaseItemEntity> ApplyGroupingFilter(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         // This whole block is needed to filter duplicate entries on request
         // for the time being it cannot be used because it would destroy the ordering
         // this results in "duplicate" responses for queries that try to lookup individual series or multiple versions but
         // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
 
-        // var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        // if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
-        // {
-        //     dbQuery = ApplyOrder(dbQuery, filter);
-        //     dbQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.First());
-        // }
-        // else if (enableGroupByPresentationUniqueKey)
-        // {
-        //     dbQuery = ApplyOrder(dbQuery, filter);
-        //     dbQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.First());
-        // }
-        // else if (filter.GroupBySeriesPresentationUniqueKey)
-        // {
-        //     dbQuery = ApplyOrder(dbQuery, filter);
-        //     dbQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.First());
-        // }
-        // else
-        // {
-        //     dbQuery = dbQuery.Distinct();
-        //     dbQuery = ApplyOrder(dbQuery, filter);
-        // }
-        dbQuery = dbQuery.Distinct();
+        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        {
+            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+        }
+        else if (enableGroupByPresentationUniqueKey)
+        {
+            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+        }
+        else if (filter.GroupBySeriesPresentationUniqueKey)
+        {
+            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+        }
+        else
+        {
+            dbQuery = dbQuery.Distinct();
+        }
+
         dbQuery = ApplyOrder(dbQuery, filter);
+
+        dbQuery = ApplyNavigations(dbQuery, filter);
+
+        return dbQuery;
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        dbQuery = dbQuery.Include(e => e.TrailerTypes)
+           .Include(e => e.Provider)
+           .Include(e => e.LockedFields)
+           .Include(e => e.UserData);
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            dbQuery = dbQuery.Include(e => e.Images);
+        }
 
         return dbQuery;
     }
@@ -426,8 +442,7 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> ApplyQueryFilter(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
-        dbQuery = ApplyOrder(dbQuery, filter);
-        dbQuery = ApplyGroupingFilter(dbQuery, filter);
+        dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         return dbQuery;
     }
@@ -435,16 +450,7 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
         IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking();
-        dbQuery = dbQuery.AsSingleQuery()
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields)
-            .Include(e => e.UserData);
-
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
+        dbQuery = dbQuery.AsSingleQuery();
 
         return dbQuery;
     }
@@ -729,13 +735,20 @@ public sealed class BaseItemRepository
         }
 
         using var context = _dbProvider.CreateDbContext();
-        var item = PrepareItemQuery(context, new()
+        var dbQuery = PrepareItemQuery(context, new()
         {
             DtoOptions = new()
             {
                 EnableImages = true
             }
-        }).FirstOrDefault(e => e.Id == id);
+        });
+        dbQuery = dbQuery.Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields)
+            .Include(e => e.UserData)
+            .Include(e => e.Images);
+
+        var item = dbQuery.FirstOrDefault(e => e.Id == id);
         if (item is null)
         {
             return null;
@@ -1310,7 +1323,13 @@ public sealed class BaseItemRepository
             result.Items =
             [
                 .. query
-                    .Select(e => e.First())
+                    .Select(e => e.AsQueryable()
+                        .Include(e => e.TrailerTypes)
+                        .Include(e => e.Provider)
+                        .Include(e => e.LockedFields)
+                        .Include(e => e.Images)
+                        .AsSingleQuery()
+                        .First())
                     .AsEnumerable()
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
@@ -2278,8 +2297,18 @@ public sealed class BaseItemRepository
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            var include = filter.HasAnyProviderId.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => include.Contains(f)));
+            // Allow setting a null or empty value to get all items that have the specified provider set.
+            var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
+            if (includeAny.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Any(f => includeAny.Contains(f.ProviderId)));
+            }
+
+            var includeSelected = filter.HasAnyProviderId.Where(e => !string.IsNullOrEmpty(e.Value)).Select(e => $"{e.Key}:{e.Value}").ToArray();
+            if (includeSelected.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeSelected.Contains(f)));
+            }
         }
 
         if (filter.HasImdbId.HasValue)
