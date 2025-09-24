@@ -319,7 +319,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         {
             const string personsQuery =
             """
-            SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
+            SELECT ItemId, Name, Role, PersonType, SortOrder, ListOrder FROM People
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
             """;
 
@@ -347,6 +347,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
+                    int? listOrder = reader.IsDBNull(5) ? null : reader.GetInt32(5);
 
                     personCache.Items.Add(new PeopleBaseItemMap()
                     {
@@ -354,7 +355,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         ItemId = itemId,
                         People = null!,
                         PeopleId = personCache.Person.Id,
-                        ListOrder = sortOrder,
+                        ListOrder = listOrder,
                         SortOrder = sortOrder,
                         Role = role
                     });

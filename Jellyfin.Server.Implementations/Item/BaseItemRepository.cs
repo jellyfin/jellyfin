@@ -481,7 +481,7 @@ public sealed class BaseItemRepository
         var counts = dbQuery
             .GroupBy(x => x.Type)
             .Select(x => new { x.Key, Count = x.Count() })
-            .AsEnumerable();
+            .ToArray();
 
         var lookup = _itemTypeLookup.BaseItemKindNames;
         var result = new ItemCounts();
