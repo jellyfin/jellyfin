@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -106,19 +106,11 @@ public class PeopleValidator
 
         subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
 
-        for (var i = 0; i < deadEntities.Count; i++)
+        var i = 0;
+        foreach (var item in deadEntities.Chunk(500))
         {
-            var item = deadEntities[i];
-            _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
-
-            _libraryManager.DeleteItem(
-                item,
-                new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                },
-                false);
-            subProgress.Report(100 / deadEntities.Count * i);
+            _libraryManager.DeleteItemsUnsafeFast(item);
+            subProgress.Report(100f / deadEntities.Count * (i++ * 100));
         }
 
         progress.Report(100);

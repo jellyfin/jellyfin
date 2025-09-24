@@ -87,7 +87,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             var partitionSize = 100;
             var iterator = 0;
             int itemCounter;
-            var buffer = new IEnumerable<Guid>[100];
+            var buffer = new IEnumerable<Guid>[partitionSize];
             do
             {
                 itemCounter = 0;
