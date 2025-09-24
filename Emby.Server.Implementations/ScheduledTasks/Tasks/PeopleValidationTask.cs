@@ -72,7 +72,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
-        // await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
+        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
 
         subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
