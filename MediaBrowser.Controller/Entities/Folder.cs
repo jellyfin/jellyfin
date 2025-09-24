@@ -975,7 +975,8 @@ namespace MediaBrowser.Controller.Entities
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
                     NameStartsWith = query.NameStartsWith,
-                    NameStartsWithOrGreater = query.NameStartsWithOrGreater
+                    NameStartsWithOrGreater = query.NameStartsWithOrGreater,
+                    NameLessThan = query.NameLessThan
                 };
 
                 items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);

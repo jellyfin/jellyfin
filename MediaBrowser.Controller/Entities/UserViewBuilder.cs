@@ -472,7 +472,17 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
-            if (query.NameStartsWith != null && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(query.NameStartsWith) && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater) && string.Compare(query.NameStartsWithOrGreater, item.SortName, StringComparison.OrdinalIgnoreCase) <= 1)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(query.NameLessThan) && string.Compare(query.NameLessThan, item.SortName, StringComparison.OrdinalIgnoreCase) > 1)
             {
                 return false;
             }
