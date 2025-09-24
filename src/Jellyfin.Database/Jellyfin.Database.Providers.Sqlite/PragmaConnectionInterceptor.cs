@@ -43,7 +43,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         _customPragma = customPragma;
 
         InitialCommand = BuildCommandText();
-        _logger.LogInformation("SQLITE connection pragma command set to: \r\n {PragmaCommand}", InitialCommand);
+        _logger.LogInformation("SQLITE connection pragma command set to: \r\n{PragmaCommand}", InitialCommand);
     }
 
     private string? InitialCommand { get; set; }

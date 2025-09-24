@@ -327,6 +327,45 @@ namespace Emby.Server.Implementations.Library
             DeleteItem(item, options, parent, notifyParentItem);
         }
 
+        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items)
+        {
+            var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();
+
+            foreach (var (item, internalPaths, pathsToDelete) in pathMaps)
+            {
+                foreach (var metadataPath in internalPaths)
+                {
+                    if (!Directory.Exists(metadataPath))
+                    {
+                        continue;
+                    }
+
+                    _logger.LogDebug(
+                        "Deleting metadata path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        metadataPath,
+                        item.Id);
+
+                    try
+                    {
+                        Directory.Delete(metadataPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error deleting {MetadataPath}", metadataPath);
+                    }
+                }
+
+                foreach (var fileSystemInfo in pathsToDelete)
+                {
+                    DeleteItemPath(item, false, fileSystemInfo);
+                }
+            }
+
+            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+        }
+
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
         {
             ArgumentNullException.ThrowIfNull(item);
@@ -403,59 +442,7 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var fileSystemInfo in item.GetDeletePaths())
                 {
-                    if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
-                    {
-                        try
-                        {
-                            _logger.LogInformation(
-                                "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-
-                            if (fileSystemInfo.IsDirectory)
-                            {
-                                Directory.Delete(fileSystemInfo.FullName, true);
-                            }
-                            else
-                            {
-                                File.Delete(fileSystemInfo.FullName);
-                            }
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
-                            _logger.LogInformation(
-                                "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            _logger.LogInformation(
-                                "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-                        }
-                        catch (IOException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                    }
+                    DeleteItemPath(item, isRequiredForDelete, fileSystemInfo);
 
                     isRequiredForDelete = false;
                 }
@@ -463,15 +450,71 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            _itemRepository.DeleteItem(item.Id);
+            _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
-                _itemRepository.DeleteItem(child.Id);
                 _cache.TryRemove(child.Id, out _);
             }
 
             ReportItemRemoved(item, parent);
+        }
+
+        private void DeleteItemPath(BaseItem item, bool isRequiredForDelete, FileSystemMetadata fileSystemInfo)
+        {
+            if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
+            {
+                try
+                {
+                    _logger.LogInformation(
+                        "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+
+                    if (fileSystemInfo.IsDirectory)
+                    {
+                        Directory.Delete(fileSystemInfo.FullName, true);
+                    }
+                    else
+                    {
+                        File.Delete(fileSystemInfo.FullName);
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    _logger.LogInformation(
+                        "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+                }
+                catch (FileNotFoundException)
+                {
+                    _logger.LogInformation(
+                        "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+                }
+                catch (IOException)
+                {
+                    if (isRequiredForDelete)
+                    {
+                        throw;
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    if (isRequiredForDelete)
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         private bool IsInternalItem(BaseItem item)
@@ -990,6 +1033,11 @@ namespace Emby.Server.Implementations.Library
             return GetArtist(name, new DtoOptions(true));
         }
 
+        public IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names)
+        {
+            return _itemRepository.FindArtists(names);
+        }
+
         public MusicArtist GetArtist(string name, DtoOptions options)
         {
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
@@ -1115,17 +1163,23 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
+            var toDelete = new List<Guid>();
             foreach (var child in rootFolder.Children!.OfType<Folder>())
             {
                 // If the user has somehow deleted the collection directory, remove the metadata from the database.
                 if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
                 {
-                    _itemRepository.DeleteItem(collectionFolder.Id);
+                    toDelete.Add(collectionFolder.Id);
                 }
                 else
                 {
                     await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
+            }
+
+            if (toDelete.Count > 0)
+            {
+                _itemRepository.DeleteItem(toDelete.ToArray());
             }
         }
 

@@ -1336,19 +1336,20 @@ namespace MediaBrowser.Controller.Entities
             var limit = query.Limit > 0 ? query.Limit : int.MaxValue;
             query.Limit = 0;
 
-            var visibileChildren = children
+            var visibleChildren = children
                 .Where(e => e.IsVisible(user))
                 .ToArray();
 
-            var realChildren = visibileChildren
+            var realChildren = visibleChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
                 .ToArray();
             var childCount = realChildren.Length;
             if (result.Count < limit)
             {
+                var remainingCount = (int)(limit - result.Count);
                 foreach (var child in realChildren
                     .Skip(query.StartIndex ?? 0)
-                    .TakeWhile(e => limit > result.Count))
+                    .Take(remainingCount))
                 {
                     result[child.Id] = child;
                 }
@@ -1356,7 +1357,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (recursive)
             {
-                foreach (var child in visibileChildren
+                foreach (var child in visibleChildren
                     .Where(e => e.IsFolder)
                     .OfType<Folder>())
                 {
