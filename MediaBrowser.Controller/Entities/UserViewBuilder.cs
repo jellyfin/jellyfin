@@ -472,6 +472,11 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
+            if (query.NameStartsWith != null && !item.Name.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType))
             {
                 return false;
