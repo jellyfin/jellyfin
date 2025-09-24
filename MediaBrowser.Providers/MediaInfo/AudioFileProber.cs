@@ -437,12 +437,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
                 }
-                else if (TryGetSanitizedAdditionalFields(track, "UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
+                else if (track.AdditionalFields.TryGetValue("UFID", out var rawUfidValue) && !string.IsNullOrEmpty(rawUfidValue))
                 {
-                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
-                    if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    if (rawUfidValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
                     {
-                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, rawUfidValue.AsSpan().RightPart('\0').ToString());
                     }
                 }
             }
