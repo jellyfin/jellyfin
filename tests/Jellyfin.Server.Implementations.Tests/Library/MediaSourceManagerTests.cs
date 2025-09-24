@@ -39,10 +39,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             _mediaSourceManager = fixture.Create<MediaSourceManager>();
 
-            _item = fixture.Build<Video>()
-                .With(v => v.OwnerId, Guid.Empty)
-                .With(v => v.ParentId, Guid.Empty)
-                .Create();
+            _item = new Video { Id = Guid.NewGuid(), OwnerId = Guid.Empty, ParentId = Guid.Empty };
 
             _user = fixture.Create<User>();
         }
@@ -72,6 +69,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData(2, "OriginalLanguage", "jpn", false, true)]
         [InlineData(2, "OriginalLanguage", "jpn,eng", false, true)]
         [InlineData(4, "OriginalLanguage", null, false, true)]
+        [InlineData(2, "OriginalLanguage", null, true, true)]
         [InlineData(4, "OriginalLanguage", "", false, true)]
         [InlineData(2, "OriginalLanguage", "", false, false)]
         [InlineData(2, "OriginalLanguage", "ger", false, true)]
