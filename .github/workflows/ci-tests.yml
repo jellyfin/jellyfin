@@ -35,7 +35,7 @@ jobs:
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@e15fac9a0be12d67bc1edd3a7b379b298cc186f5 # v5.4.13
+        uses: danielpalme/ReportGenerator-GitHub-Action@18e0cd4c1bebd0c8b3978b380a6a4ea61c51178e # v5.4.15
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"
