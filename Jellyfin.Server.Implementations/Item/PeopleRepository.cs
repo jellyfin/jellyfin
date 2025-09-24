@@ -35,16 +35,22 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
-        if (filter.Limit > 0)
-        {
-            dbQuery = dbQuery.Take(filter.Limit);
-        }
-
         // Include PeopleBaseItemMap
         if (!filter.ItemId.IsEmpty())
         {
-            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
+            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
+                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
+                .ThenBy(e => e.PersonType)
+                .ThenBy(e => e.Name);
+        }
+        else
+        {
+            dbQuery = dbQuery.OrderBy(e => e.Name);
+        }
+
+        if (filter.Limit > 0)
+        {
+            dbQuery = dbQuery.Take(filter.Limit);
         }
 
         return dbQuery.AsEnumerable().Select(Map).ToArray();
@@ -84,14 +90,15 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
             if (existingMap is null)
             {
+                var sortOrder = (person.SortOrder ?? context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).Max(e => e.SortOrder) ?? 0) + 1;
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
                     ItemId = itemId,
                     People = null!,
                     PeopleId = person.Id,
-                    ListOrder = person.SortOrder,
-                    SortOrder = person.SortOrder,
+                    ListOrder = sortOrder,
+                    SortOrder = sortOrder,
                     Role = person.Role
                 });
             }
