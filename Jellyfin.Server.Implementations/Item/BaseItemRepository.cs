@@ -99,11 +99,11 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public void DeleteItem(Guid id)
+    public void DeleteItem(params IReadOnlyList<Guid> ids)
     {
-        if (id.IsEmpty() || id.Equals(PlaceholderId))
+        if (ids is null || ids.Count == 0 || ids.Any(f => f.Equals(PlaceholderId)))
         {
-            throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(id));
+            throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(ids));
         }
 
         using var context = _dbProvider.CreateDbContext();
@@ -111,7 +111,7 @@ public sealed class BaseItemRepository
 
         var date = (DateTime?)DateTime.UtcNow;
 
-        var relatedItems = TraverseHirachyDown(id, context).ToArray();
+        var relatedItems = ids.SelectMany(f => TraverseHirachyDown(f, context)).ToArray();
 
         // Remove any UserData entries for the placeholder item that would conflict with the UserData
         // being detached from the item being deleted. This is necessary because, during an update,
@@ -2537,5 +2537,17 @@ public sealed class BaseItemRepository
         }
 
         return folderList;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var artists = dbContext.BaseItems.Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
+            .Where(e => artistNames.Contains(e.Name))
+            .ToArray();
+
+        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
     }
 }

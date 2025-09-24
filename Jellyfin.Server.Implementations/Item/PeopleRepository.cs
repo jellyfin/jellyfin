@@ -74,20 +74,34 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
+        // multiple metadata providers can provide the _same_ person
+        people = people.DistinctBy(e => e.Name + "-" + e.Type).ToArray();
+        var personKeys = people.Select(e => e.Name + "-" + e.Type).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
+        var existingPersons = context.Peoples.Select(e => new
+            {
+                item = e,
+                SelectionKey = e.Name + "-" + e.PersonType
+            })
+            .Where(p => personKeys.Contains(p.SelectionKey))
+            .Select(f => f.item)
+            .ToArray();
+
+        var toAdd = people
+            .Where(e => !existingPersons.Any(f => f.Name == e.Name && f.PersonType == e.Type.ToString()))
+            .Select(Map);
+        context.Peoples.AddRange(toAdd);
         context.SaveChanges();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        var personsEntities = toAdd.Concat(existingPersons).ToArray();
+
+        var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
+            var entityPerson = personsEntities.First(e => e.Name == person.Name && e.PersonType == person.Type.ToString());
+            var existingMap = existingMaps.FirstOrDefault(e => e.People.Name == person.Name && e.Role == person.Role);
             if (existingMap is null)
             {
                 var sortOrder = (person.SortOrder ?? context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).Max(e => e.SortOrder) ?? 0) + 1;
@@ -96,7 +110,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Item = null!,
                     ItemId = itemId,
                     People = null!,
-                    PeopleId = person.Id,
+                    PeopleId = entityPerson.Id,
                     ListOrder = sortOrder,
                     SortOrder = sortOrder,
                     Role = person.Role
@@ -105,11 +119,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             else
             {
                 // person mapping already exists so remove from list
-                maps.Remove(existingMap);
+                existingMaps.Remove(existingMap);
             }
         }
 
-        context.PeopleBaseItemMap.RemoveRange(maps);
+        context.PeopleBaseItemMap.RemoveRange(existingMaps);
 
         context.SaveChanges();
         transaction.Commit();
