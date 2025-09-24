@@ -437,11 +437,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
                 }
-                else if (track.AdditionalFields.TryGetValue("UFID", out var rawUfidValue) && !string.IsNullOrEmpty(rawUfidValue))
+                else if (TryGetSanitizedUFIDFields(track, out var owner, out var identifier) && !string.IsNullOrEmpty(owner) && !string.IsNullOrEmpty(identifier))
                 {
-                    if (rawUfidValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
+                    if (owner.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
                     {
-                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, rawUfidValue.AsSpan().RightPart('\0').ToString());
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, identifier);
                     }
                 }
             }
@@ -535,6 +536,25 @@ namespace MediaBrowser.Providers.MediaInfo
             var hasField = track.AdditionalFields.TryGetValue(field, out value);
             value = GetSanitizedStringTag(value, track.Path);
             return hasField;
+        }
+
+        private bool TryGetSanitizedUFIDFields(Track track, out string? owner, out string? identifier)
+        {
+            var hasField = track.AdditionalFields.TryGetValue("UFID", out string? value);
+            if (hasField && !string.IsNullOrEmpty(value))
+            {
+                string[] parts = value.Split('\0');
+                if (parts.Length == 2)
+                {
+                    owner = GetSanitizedStringTag(parts[0], track.Path);
+                    identifier = GetSanitizedStringTag(parts[1], track.Path);
+                    return true;
+                }
+            }
+
+            owner = null;
+            identifier = null;
+            return false;
         }
     }
 }
