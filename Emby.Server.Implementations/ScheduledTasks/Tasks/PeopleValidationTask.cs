@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -71,7 +72,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
-        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
+        // await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
 
         subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -80,41 +81,47 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
-                    .Select(e => e.Select(f => f.Id));
+                    .Select(e => e.Select(f => f.Id).ToArray());
 
             var total = dupQuery.Count();
 
-            var partitionSize = 100;
+            const int PartitionSize = 100;
             var iterator = 0;
             int itemCounter;
-            var buffer = new IEnumerable<Guid>[partitionSize];
-            do
+            var buffer = ArrayPool<Guid[]>.Shared.Rent(PartitionSize)!;
+            try
             {
-                itemCounter = 0;
-
-                await foreach (var item in dupQuery
-                    .Take(partitionSize)
-                    .AsAsyncEnumerable()
-                    .WithCancellation(cancellationToken)
-                    .ConfigureAwait(false))
+                do
                 {
-                    buffer[itemCounter++] = item;
-                }
+                    itemCounter = 0;
+                    await foreach (var item in dupQuery
+                        .Take(PartitionSize)
+                        .AsAsyncEnumerable()
+                        .WithCancellation(cancellationToken)
+                        .ConfigureAwait(false))
+                    {
+                        buffer[itemCounter++] = item;
+                    }
 
-                for (int i = 0; i < itemCounter; i++)
-                {
-                    var item = buffer[i];
-                    var reference = item.First();
-                    var dups = item.Skip(1).ToArray();
-                    await context.PeopleBaseItemMap.WhereOneOrMany(dups, e => e.PeopleId)
-                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
-                        .ConfigureAwait(false);
-                    await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                    subProgress.Report(100 / total * ((iterator * partitionSize) + i));
-                }
+                    for (int i = 0; i < itemCounter; i++)
+                    {
+                        var item = buffer[i];
+                        var reference = item[0];
+                        var dups = item[1..];
+                        await context.PeopleBaseItemMap.WhereOneOrMany(dups, e => e.PeopleId)
+                            .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
+                            .ConfigureAwait(false);
+                        await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                        subProgress.Report(100f / total * ((iterator * PartitionSize) + i));
+                    }
 
-                iterator++;
-            } while (itemCounter == partitionSize && !cancellationToken.IsCancellationRequested);
+                    iterator++;
+                } while (itemCounter == PartitionSize && !cancellationToken.IsCancellationRequested);
+            }
+            finally
+            {
+                ArrayPool<Guid[]>.Shared.Return(buffer);
+            }
 
             subProgress.Report(100);
         }
