@@ -23,7 +23,7 @@ public interface IItemRepository
     /// Deletes the item.
     /// </summary>
     /// <param name="ids">The identifier to delete.</param>
-    void DeleteItem(Guid[] ids);
+    void DeleteItem(params IReadOnlyList<Guid> ids);
 
     /// <summary>
     /// Saves the items.

@@ -68,7 +68,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        // TODO: yes for __SOME__ reason there can be duplicates.
+        // multiple metadata providers can provide the _same_ person
         people = people.DistinctBy(e => e.Name + "-" + e.Type).ToArray();
         var personKeys = people.Select(e => e.Name + "-" + e.Type).ToArray();
 

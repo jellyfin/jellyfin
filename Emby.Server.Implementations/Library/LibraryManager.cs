@@ -363,7 +363,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.DeleteItem(pathMaps.Select(f => f.Item.Id).ToArray());
+            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)

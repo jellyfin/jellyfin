@@ -99,9 +99,9 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public void DeleteItem(Guid[] ids)
+    public void DeleteItem(params IReadOnlyList<Guid> ids)
     {
-        if (ids is null || ids.Length == 0 || ids.Any(f => f.Equals(PlaceholderId)))
+        if (ids is null || ids.Count == 0 || ids.Any(f => f.Equals(PlaceholderId)))
         {
             throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(ids));
         }
