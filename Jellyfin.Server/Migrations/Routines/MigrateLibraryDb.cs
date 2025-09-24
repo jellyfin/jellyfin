@@ -337,9 +337,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     var entity = GetPerson(reader);
-                    if (!peopleCache.TryGetValue(entity.Name, out var personCache))
+                    if (!peopleCache.TryGetValue(entity.Name + "|" + entity.PersonType, out var personCache))
                     {
-                        peopleCache[entity.Name] = personCache = (entity, []);
+                        peopleCache[entity.Name + "|" + entity.PersonType] = personCache = (entity, []);
                     }
 
                     if (reader.TryGetString(2, out var role))
