@@ -85,12 +85,17 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         context.SaveChanges();
 
         var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+
+        var maxSortOrder = Math.Max(
+            context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId && e.People.PersonType == PersonKind.Actor.ToString()).Max(e => (int?)e.SortOrder) ?? 0,
+            people.Where(p => p.Type == PersonKind.Actor && p.SortOrder.HasValue).Max(p => (int?)p.SortOrder) ?? 0);
+
         foreach (var person in people)
         {
             var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
             if (existingMap is null)
             {
-                var sortOrder = (person.SortOrder ?? context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).Max(e => e.SortOrder) ?? 0) + 1;
+                var sortOrder = person.Type == PersonKind.Actor ? (person.SortOrder ?? ++maxSortOrder) : person.SortOrder;
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
                 {
                     Item = null!,
