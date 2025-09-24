@@ -2538,4 +2538,16 @@ public sealed class BaseItemRepository
 
         return folderList;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var artists = dbContext.BaseItems.Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
+            .Where(e => artistNames.Contains(e.Name))
+            .ToArray();
+
+        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+    }
 }

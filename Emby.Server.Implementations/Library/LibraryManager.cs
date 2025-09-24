@@ -1033,6 +1033,11 @@ namespace Emby.Server.Implementations.Library
             return GetArtist(name, new DtoOptions(true));
         }
 
+        public IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names)
+        {
+            return _itemRepository.FindArtists(names);
+        }
+
         public MusicArtist GetArtist(string name, DtoOptions options)
         {
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);

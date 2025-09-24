@@ -1051,30 +1051,15 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                dto.ArtistItems = hasArtist.Artists
-                    // .Except(foundArtists, new DistinctNameComparer())
+                dto.ArtistItems = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))])
+                    .Where(e => e.Value.Length > 0)
                     .Select(i =>
                     {
-                        // This should not be necessary but we're seeing some cases of it
-                        if (string.IsNullOrEmpty(i))
+                        return new NameGuidPair
                         {
-                            return null;
-                        }
-
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
-                        if (artist is not null)
-                        {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
-                        }
-
-                        return null;
+                            Name = i.Key,
+                            Id = i.Value.First().Id
+                        };
                     }).Where(i => i is not null).ToArray();
             }
 

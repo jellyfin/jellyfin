@@ -631,6 +631,8 @@ namespace MediaBrowser.Controller.Library
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
+        IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names);
+
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
@@ -122,4 +123,11 @@ public interface IItemRepository
     /// <param name="recursive">Whever the check should be done recursive. Warning expensive operation.</param>
     /// <returns>A value indicating whever all children has been played.</returns>
     bool GetIsPlayed(User user, Guid id, bool recursive);
+
+    /// <summary>
+    /// Gets all artist matches from the db.
+    /// </summary>
+    /// <param name="artistNames">The names of the artists.</param>
+    /// <returns>A map of the artist name and the potential matches.</returns>
+    IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames);
 }
