@@ -106,7 +106,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         foreach (var person in people)
         {
             var entityPerson = personsEntities.First(e => e.Name == person.Name && e.PersonType == person.Type.ToString());
-            var existingMap = existingMaps.FirstOrDefault(e => e.People.Name == person.Name && e.Role == person.Role);
+            var existingMap = existingMaps.FirstOrDefault(e => e.People.Name == person.Name && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
             if (existingMap is null)
             {
                 var sortOrder = person.Type == PersonKind.Actor ? (person.SortOrder ?? ++maxSortOrder) : person.SortOrder;
