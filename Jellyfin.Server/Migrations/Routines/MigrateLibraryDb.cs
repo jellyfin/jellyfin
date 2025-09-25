@@ -186,6 +186,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
                 {
                     var itemId = dto.GetGuid(0);
+                    if (!baseItemIds.Contains(itemId))
+                    {
+                        continue;
+                    }
+
                     var entity = GetItemValue(dto);
                     var key = ((int)entity.Type, entity.Value);
                     if (!localItems.TryGetValue(key, out var existing))
