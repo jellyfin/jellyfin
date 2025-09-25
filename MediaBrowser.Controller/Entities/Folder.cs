@@ -973,7 +973,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     DisplayAlbumFolders = query.DisplayAlbumFolders,
                     Limit = query.Limit,
-                    StartIndex = query.StartIndex
+                    StartIndex = query.StartIndex,
+                    NameStartsWith = query.NameStartsWith,
+                    NameStartsWithOrGreater = query.NameStartsWithOrGreater,
+                    NameLessThan = query.NameLessThan
                 };
 
                 items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
