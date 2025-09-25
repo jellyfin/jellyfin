@@ -11,16 +11,26 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("""
-WITH RECURSIVE detachedParents AS (
-    SELECT Id FROM BaseItems child
+DELETE FROM BaseItems
         WHERE
-        child.ParentId IS NOT NULL
+        ParentId IS NOT NULL
         AND
-        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE child.ParentId = parent.Id)
-)
-
-SELECT * FROM detachedParents
-DELETE FROM BaseItems d WHERE
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
 """);
             migrationBuilder.AddForeignKey(
                 name: "FK_BaseItems_BaseItems_ParentId",
