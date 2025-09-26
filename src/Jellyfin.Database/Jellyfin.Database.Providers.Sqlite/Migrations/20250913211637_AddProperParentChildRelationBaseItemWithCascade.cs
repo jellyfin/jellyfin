@@ -10,6 +10,28 @@ namespace Jellyfin.Server.Implementations.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("""
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+DELETE FROM BaseItems
+        WHERE
+        ParentId IS NOT NULL
+        AND
+        NOT EXISTS(SELECT 1 FROM BaseItems parent WHERE ParentId = parent.Id);
+""");
             migrationBuilder.AddForeignKey(
                 name: "FK_BaseItems_BaseItems_ParentId",
                 table: "BaseItems",
