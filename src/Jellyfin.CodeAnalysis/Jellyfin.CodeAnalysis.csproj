@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Jellyfin Code Analysis</Authors>
+    <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.CodeAnalysis</PackageId>
     <VersionPrefix>10.11.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
