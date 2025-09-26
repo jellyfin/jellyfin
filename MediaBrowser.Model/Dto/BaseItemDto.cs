@@ -790,6 +790,12 @@ namespace MediaBrowser.Model.Dto
         public float? NormalizationGain { get; set; }
 
         /// <summary>
+        /// Gets or sets the gain required for audio normalization. This field is inherited from music album normalization gain.
+        /// </summary>
+        /// <value>The gain required for audio normalization.</value>
+        public float? AlbumNormalizationGain { get; set; }
+
+        /// <summary>
         /// Gets or sets the current program.
         /// </summary>
         /// <value>The current program.</value>
