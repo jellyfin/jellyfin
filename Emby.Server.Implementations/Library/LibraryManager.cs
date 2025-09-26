@@ -1151,9 +1151,6 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var rootFolder = GetUserRootFolder();
-            rootFolder.Children = null;
-
-            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             await rootFolder.ValidateChildren(
                 new Progress<double>(),
