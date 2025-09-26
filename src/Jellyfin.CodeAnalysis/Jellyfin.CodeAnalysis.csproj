@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Jellyfin Contributors</Authors>
-    <PackageId>Jellyfin.Data</PackageId>
+    <Authors>Jellyfin Code Analysis</Authors>
+    <PackageId>Jellyfin.CodeAnalysis</PackageId>
     <VersionPrefix>10.11.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
