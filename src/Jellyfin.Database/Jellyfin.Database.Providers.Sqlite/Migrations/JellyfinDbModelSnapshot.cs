@@ -999,16 +999,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("PeopleId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ListOrder")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Role")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("ListOrder")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("SortOrder")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ItemId", "PeopleId");
+                    b.HasKey("ItemId", "PeopleId", "Role");
 
                     b.HasIndex("PeopleId");
 
