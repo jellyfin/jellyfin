@@ -337,6 +337,11 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
+                if (GetParents().Any(f => f.Id.Equals(Id)))
+                {
+                    throw new InvalidOperationException("Recursive datastructure detected abort processing this item.");
+                }
+
                 await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
             }
             finally
