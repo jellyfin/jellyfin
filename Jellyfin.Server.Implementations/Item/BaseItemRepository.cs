@@ -1362,6 +1362,16 @@ public sealed class BaseItemRepository
             return value;
         }
 
+        return NormalizeNameForSearch(value);
+    }
+
+    private static string NormalizeNameForSearch(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
         var noDiacritics = value.RemoveDiacritics();
 
         // Build a string where any punctuation or symbol is treated as a separator (space).
