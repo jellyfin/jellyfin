@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         }
 
         [Fact]
-        public void CleanName_keeps_punctuation_and_search_without_punctuation_fails()
+        public void CleanName_keeps_punctuation_and_search_without_punctuation_passes()
         {
             var series = new Series
             {
@@ -47,16 +47,41 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                 Name = "Mr. Robot"
             };
 
-       series.SortName = "Mr. Robot";
+            series.SortName = "Mr. Robot";
 
             var entity = _repo.Map(series);
-
-            // Map sets CleanName using GetCleanValue (lowercases, removes diacritics but keeps punctuation)
-            Assert.Equal("mr. robot", entity.CleanName);
+            Assert.Equal("mr robot", entity.CleanName);
 
             var searchTerm = "Mr Robot".ToLowerInvariant();
 
-         Assert.Contains(searchTerm, entity.CleanName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(searchTerm, entity.CleanName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("Spider-Man: Homecoming", "spider man homecoming")]
+        [InlineData("Beyoncé — Live!", "beyonce live")]
+        [InlineData("Hello, World!", "hello world")]
+        [InlineData("(The) Good, the Bad & the Ugly", "the good the bad the ugly")]
+        [InlineData("Wall-E", "wall e")]
+        [InlineData("No. 1: The Beginning", "no 1 the beginning")]
+        [InlineData("Café-au-lait", "cafe au lait")]
+        public void CleanName_normalizes_various_punctuation(string title, string expectedClean)
+        {
+            var series = new Series
+            {
+                Id = Guid.NewGuid(),
+                Name = title
+            };
+
+            series.SortName = title;
+
+            var entity = _repo.Map(series);
+
+            Assert.Equal(expectedClean, entity.CleanName);
+
+            // Ensure a search term without punctuation would match
+            var searchTerm = expectedClean;
+            Assert.Contains(searchTerm, entity.CleanName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

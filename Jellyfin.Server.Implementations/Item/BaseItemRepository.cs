@@ -1362,7 +1362,27 @@ public sealed class BaseItemRepository
             return value;
         }
 
-        return value.RemoveDiacritics().ToLowerInvariant();
+        var noDiacritics = value.RemoveDiacritics();
+
+        // Build a string where any punctuation or symbol is treated as a separator (space).
+        var sb = new StringBuilder(noDiacritics.Length);
+        foreach (var ch in noDiacritics)
+        {
+            // Keep letters, digits and whitespace. Treat anything else as a space.
+            if (char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch))
+            {
+                sb.Append(ch);
+            }
+            else
+            {
+                sb.Append(' ');
+            }
+        }
+
+        // Collapse multiple spaces into single space and trim.
+        var collapsed = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), "\\s+", " ").Trim();
+
+        return collapsed.ToLowerInvariant();
     }
 
     private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
