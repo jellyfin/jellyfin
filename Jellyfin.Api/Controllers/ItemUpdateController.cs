@@ -89,6 +89,14 @@ public class ItemUpdateController : BaseJellyfinApiController
             request.DisplayOrder ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
 
+        // Check if album artist information is being updated for an audio item
+        var audioItem = item as Audio;
+        var albumArtistChanged = audioItem is not null
+            && request.AlbumArtists is not null
+            && !audioItem.AlbumArtists.SequenceEqual(
+                Array.ConvertAll(request.AlbumArtists, i => i.Name),
+                StringComparer.OrdinalIgnoreCase);
+
         // Do this first so that metadata savers can pull the updates from the database.
         if (request.People is not null)
         {
@@ -130,6 +138,53 @@ public class ItemUpdateController : BaseJellyfinApiController
                     ReplaceAllMetadata = true
                 },
                 RefreshPriority.High);
+        }
+
+        // If album artist information was changed on an audio item, refresh the parent album
+        // and the album artist entities to update the album's artist information based on its child tracks
+        if (albumArtistChanged)
+        {
+            var parentAlbum = audioItem!.AlbumEntity;
+            if (parentAlbum is not null)
+            {
+                _providerManager.QueueRefresh(
+                    parentAlbum.Id,
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = MetadataRefreshMode.None,
+                        ReplaceAllMetadata = false // Only update metadata from children, don't replace all
+                    },
+                    RefreshPriority.Normal);
+            }
+
+            // Refresh only the album artist entities that actually changed (more efficient)
+            var oldAlbumArtists = new HashSet<string>(audioItem.AlbumArtists ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var newAlbumArtists = new HashSet<string>(Array.ConvertAll(request.AlbumArtists ?? Array.Empty<NameGuidPair>(), i => i.Name ?? string.Empty), StringComparer.OrdinalIgnoreCase);
+
+            // Artists that were removed or added (only these need refresh)
+            var changedArtists = oldAlbumArtists.Except(newAlbumArtists).Concat(newAlbumArtists.Except(oldAlbumArtists));
+
+            foreach (var artistName in changedArtists)
+            {
+                if (!string.IsNullOrEmpty(artistName))
+                {
+                    var artist = _libraryManager.GetArtist(artistName);
+                    if (artist.IsAccessedByName)
+                    {
+                        _providerManager.QueueRefresh(
+                            artist.Id,
+                            new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                            {
+                                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                                ImageRefreshMode = MetadataRefreshMode.None,
+                                ReplaceAllMetadata = false,
+                                EnableRemoteContentProbe = false // Skip remote lookups for performance
+                            },
+                            RefreshPriority.Low);
+                    }
+                }
+            }
         }
 
         return NoContent();
@@ -283,8 +338,8 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
 
-        var currentTags = item.Tags;
-        var newTags = request.Tags;
+        var currentTags = item.Tags ?? Array.Empty<string>();
+        var newTags = request.Tags ?? Array.Empty<string>();
         var removedTags = currentTags.Except(newTags).ToList();
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;
@@ -399,15 +454,16 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.RunTimeTicks = request.RunTimeTicks;
         }
 
-        foreach (var pair in request.ProviderIds.ToList())
+        var providerIds = request.ProviderIds ?? new Dictionary<string, string>();
+        foreach (var pair in providerIds.ToList())
         {
             if (string.IsNullOrEmpty(pair.Value))
             {
-                request.ProviderIds.Remove(pair.Key);
+                providerIds.Remove(pair.Key);
             }
         }
 
-        item.ProviderIds = request.ProviderIds;
+        item.ProviderIds = providerIds;
 
         if (item is Video video)
         {
