@@ -151,7 +151,17 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public override string CreatePresentationUniqueKey()
         {
-            return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
+
+            var name = (Name ?? string.Empty).RemoveDiacritics();
+
+            // If the artist has a MusicBrainz ID, include it in the unique key to prevent merging
+            // of different artists with the same name
+            if (this.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var mbid))
+            {
+                return $"Artist-{name}-{mbid}";
+            }
+
+            return "Artist-" + name;
         }
 
         protected override bool GetBlockUnratedValue(User user)
