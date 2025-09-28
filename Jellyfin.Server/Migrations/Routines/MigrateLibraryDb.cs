@@ -257,6 +257,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         continue;
                     }
 
+                    if (!baseItemIds.Contains(refItem.Id))
+                    {
+                        continue;
+                    }
+
                     userData.ItemId = refItem.Id;
                     operation.JellyfinDbContext.UserData.Add(userData);
                 }
@@ -287,7 +292,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             {
                 foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
                 {
-                    operation.JellyfinDbContext.MediaStreamInfos.Add(GetMediaStream(dto));
+                    var entity = GetMediaStream(dto);
+                    if (!baseItemIds.Contains(entity.ItemId))
+                    {
+                        continue;
+                    }
+
+                    operation.JellyfinDbContext.MediaStreamInfos.Add(entity);
                 }
             }
 
@@ -310,7 +321,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             {
                 foreach (SqliteDataReader dto in connection.Query(mediaAttachmentQuery))
                 {
-                    operation.JellyfinDbContext.AttachmentStreamInfos.Add(GetMediaAttachment(dto));
+                    var entity = GetMediaAttachment(dto);
+                    if (!baseItemIds.Contains(entity.ItemId))
+                    {
+                        continue;
+                    }
+
+                    operation.JellyfinDbContext.AttachmentStreamInfos.Add(entity);
                 }
             }
 
@@ -396,6 +413,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 foreach (SqliteDataReader dto in connection.Query(chapterQuery))
                 {
                     var chapter = GetChapter(dto);
+                    if (!baseItemIds.Contains(chapter.ItemId))
+                    {
+                        continue;
+                    }
+
                     operation.JellyfinDbContext.Chapters.Add(chapter);
                 }
             }
@@ -422,6 +444,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
                 {
                     var ancestorId = GetAncestorId(dto);
+                    if (!baseItemIds.Contains(ancestorId.ItemId) || !baseItemIds.Contains(ancestorId.ParentItemId))
+                    {
+                        continue;
+                    }
+
                     operation.JellyfinDbContext.AncestorIds.Add(ancestorId);
                 }
             }
