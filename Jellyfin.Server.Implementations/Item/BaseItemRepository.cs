@@ -1366,22 +1366,37 @@ public sealed class BaseItemRepository
 
         // Build a string where any punctuation or symbol is treated as a separator (space).
         var sb = new StringBuilder(noDiacritics.Length);
+        var previousWasSpace = false;
         foreach (var ch in noDiacritics)
         {
-            // Keep letters, digits and whitespace. Treat anything else as a space.
+            char outCh;
             if (char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch))
             {
-                sb.Append(ch);
+                outCh = ch;
             }
             else
             {
-                sb.Append(' ');
+                outCh = ' ';
+            }
+
+            // normalize any whitespace character to a single ASCII space.
+            if (char.IsWhiteSpace(outCh))
+            {
+                if (!previousWasSpace)
+                {
+                    sb.Append(' ');
+                    previousWasSpace = true;
+                }
+            }
+            else
+            {
+                sb.Append(outCh);
+                previousWasSpace = false;
             }
         }
 
-        // Collapse multiple spaces into single space and trim.
-        var collapsed = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), "\\s+", " ").Trim();
-
+        // trim leading/trailing spaces that may have been added.
+        var collapsed = sb.ToString().Trim();
         return collapsed.ToLowerInvariant();
     }
 
