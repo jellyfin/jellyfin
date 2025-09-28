@@ -477,13 +477,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Extracts all extractable subtitles (text and pgs).
-        /// </summary>
-        /// <param name="mediaSource">The mediaSource.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
