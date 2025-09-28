@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             // If the artist has a MusicBrainz ID, include it in the unique key to prevent merging
             // of different artists with the same name
-            if (this.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var mbid))
+            if (TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var mbid))
             {
                 return $"Artist-{name}-{mbid}";
             }
