@@ -2054,22 +2054,26 @@ public sealed class BaseItemRepository
         if (filter.MinParentalRating != null)
         {
             var min = filter.MinParentalRating;
-            minParentalRatingFilter = e => e.InheritedParentalRatingValue >= min.Score || e.InheritedParentalRatingValue == null;
-            if (min.SubScore != null)
-            {
-                minParentalRatingFilter = minParentalRatingFilter.And(e => e.InheritedParentalRatingValue >= min.SubScore || e.InheritedParentalRatingValue == null);
-            }
+            var minScore = min.Score;
+            var minSubScore = min.SubScore ?? 0;
+
+            minParentalRatingFilter = e =>
+                e.InheritedParentalRatingValue == null ||
+                e.InheritedParentalRatingValue > minScore ||
+                (e.InheritedParentalRatingValue == minScore && (e.InheritedParentalRatingSubValue ?? 0) >= minSubScore);
         }
 
         Expression<Func<BaseItemEntity, bool>>? maxParentalRatingFilter = null;
         if (filter.MaxParentalRating != null)
         {
             var max = filter.MaxParentalRating;
-            maxParentalRatingFilter = e => e.InheritedParentalRatingValue <= max.Score || e.InheritedParentalRatingValue == null;
-            if (max.SubScore != null)
-            {
-                maxParentalRatingFilter = maxParentalRatingFilter.And(e => e.InheritedParentalRatingValue <= max.SubScore || e.InheritedParentalRatingValue == null);
-            }
+            var maxScore = max.Score;
+            var maxSubScore = max.SubScore ?? 0;
+
+            maxParentalRatingFilter = e =>
+                e.InheritedParentalRatingValue == null ||
+                e.InheritedParentalRatingValue < maxScore ||
+                (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore);
         }
 
         if (filter.HasParentalRating ?? false)
