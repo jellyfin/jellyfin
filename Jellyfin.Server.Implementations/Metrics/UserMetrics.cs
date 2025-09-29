@@ -1,7 +1,6 @@
 #pragma warning disable CA1307
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Entities;
@@ -159,7 +158,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             // Count users by authentication provider
-            var authProviderGroups = users.GroupBy(u => u.AuthenticationProviderId ?? "Default").ToList();
+            var authProviderGroups = users.GroupBy(u => u.AuthenticationProviderId).ToList();
             foreach (var group in authProviderGroups)
             {
                 var providerName = GetProviderNameById(group.Key);
@@ -192,7 +191,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         private void UpdateSecurityMetrics(List<User> users)
         {
             // Users with failed login attempts
-            var usersWithSomeFailedLogins = users.Count(u => u.InvalidLoginAttemptCount > 0 && u.InvalidLoginAttemptCount < 3);
+            var usersWithSomeFailedLogins = users.Count(u => u.InvalidLoginAttemptCount is > 0 and < 3);
             var usersWithManyFailedLogins = users.Count(u => u.InvalidLoginAttemptCount >= 3);
 
             _usersWithFailedLogins.WithLabels("1-2").Set(usersWithSomeFailedLogins);
@@ -202,11 +201,11 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <summary>
         /// Gets Provider display name.
         /// </summary>
-        /// <param name="provider">Authenction provider.</param>
+        /// <param name="provider">Authentication provider.</param>
         /// <returns>The display name of provider.</returns>
         private string GetProviderDisplayName(IAuthenticationProvider provider)
         {
-            return provider.Name ?? provider.GetType().Name;
+            return provider.Name;
         }
 
         /// <summary>
