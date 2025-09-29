@@ -64,7 +64,7 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <summary>
         /// Updates All User Metrics.
         /// </summary>
-        public void UpdateMetrics()
+        public void UpdateUserMetrics()
         {
             try
             {

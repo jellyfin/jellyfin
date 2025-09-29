@@ -103,7 +103,7 @@ namespace Jellyfin.Server.Implementations.Users
                 .AsEnumerable())
             {
                 _users.Add(user.Id, user);
-                _userMetrics?.UpdateMetrics();
+                _userMetrics?.UpdateUserMetrics();
             }
         }
 
@@ -207,7 +207,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
-            _userMetrics?.UpdateMetrics();
+            _userMetrics?.UpdateUserMetrics();
 
             return user;
         }
@@ -276,7 +276,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             _users.Remove(userId);
-            _userMetrics?.UpdateMetrics();
+            _userMetrics?.UpdateUserMetrics();
 
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
@@ -499,7 +499,7 @@ namespace Jellyfin.Server.Implementations.Users
                     remoteEndPoint);
             }
 
-            _userMetrics?.UpdateMetrics();
+            _userMetrics?.UpdateUserMetrics();
             return success ? user : null;
         }
 
@@ -721,7 +721,7 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Update(user);
                 _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _userMetrics?.UpdateMetrics();
+                _userMetrics?.UpdateUserMetrics();
             }
         }
 
@@ -890,7 +890,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Update(user);
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            _userMetrics?.UpdateMetrics();
+            _userMetrics?.UpdateUserMetrics();
         }
     }
 }
