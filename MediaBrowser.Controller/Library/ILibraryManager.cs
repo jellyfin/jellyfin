@@ -213,6 +213,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns>IEnumerable{System.String}.</returns>
         Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
 
+        public bool SupportsScanner(IScanner scanner);
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -227,6 +229,8 @@ namespace MediaBrowser.Controller.Library
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPostScanTask> postScanTasks);
+
+        void AddScanners(IEnumerable<IScanner> scanners);
 
         /// <summary>
         /// Sorts the specified items.
