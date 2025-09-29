@@ -392,6 +392,24 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the MediaStreams for this Video and all alternate Versions (linked and local).
+        /// </summary>
+        /// <returns>A list of all MediaStreams which are linked to this Video.</returns>
+        public IEnumerable<MediaStream> GetAllLinkedMediaStreams()
+        {
+            return GetAllItemsForMediaSources().SelectMany(item => item.Item.GetMediaStreams());
+        }
+
+        /// <summary>
+        /// Returns this video and all alternate versions (linked and local).
+        /// </summary>
+        /// <returns>A list of all Items which are linked to this Video.</returns>
+        public IEnumerable<BaseItem> GetAllLinkedItems()
+        {
+            return GetAllItemsForMediaSources().Select(item => item.Item);
+        }
+
+        /// <summary>
         /// Gets the additional parts.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>
