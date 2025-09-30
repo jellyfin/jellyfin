@@ -109,7 +109,8 @@ namespace Jellyfin.Server.Implementations.Users
 
             _userMetrics = userMetrics;
             // Update metrics after initialization
-            _userMetrics?.UpdateUserMetrics();
+
+            _userMetrics?.UpdateUserMetrics(_users.Values);
         }
 
         /// <inheritdoc/>
@@ -217,7 +218,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
-            _userMetrics?.UpdateUserMetrics();
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             return user;
         }
 
@@ -285,7 +286,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             _users.Remove(userId);
-            _userMetrics?.UpdateUserMetrics();
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
@@ -508,7 +509,7 @@ namespace Jellyfin.Server.Implementations.Users
                     remoteEndPoint);
             }
 
-            _userMetrics?.UpdateUserMetrics();
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             return success ? user : null;
         }
 
@@ -731,7 +732,7 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Update(user);
                 _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _userMetrics?.UpdateUserMetrics();
+                _userMetrics?.UpdateUserMetrics(_users.Values);
             }
         }
 
@@ -901,7 +902,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            _userMetrics?.UpdateUserMetrics();
+            _userMetrics?.UpdateUserMetrics(_users.Values);
         }
     }
 }

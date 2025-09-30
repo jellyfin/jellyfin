@@ -19,7 +19,6 @@ namespace Jellyfin.Server.Implementations.Metrics
     /// </summary>
     public class UserMetrics
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<UserMetrics> _logger;
         private readonly IEnumerable<IAuthenticationProvider> _authenticationProviders;
 
@@ -52,11 +51,9 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Initializes a new instance of the <see cref="UserMetrics"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="serviceProvider">Service Provider For userManager.</param>
         /// <param name="authenticationProviders">The authentication providers.</param>
-        public UserMetrics(ILogger<UserMetrics> logger, IEnumerable<IAuthenticationProvider> authenticationProviders, IServiceProvider serviceProvider)
+        public UserMetrics(ILogger<UserMetrics> logger, IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
-            _serviceProvider = serviceProvider;
             _authenticationProviders = authenticationProviders;
             _logger = logger;
         }
@@ -64,29 +61,29 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// <summary>
         /// Updates All User Metrics.
         /// </summary>
-        public void UpdateUserMetrics()
+        /// <param name="users">List of users to update in metrics.</param>
+        public void UpdateUserMetrics(IEnumerable<User> users)
         {
             try
             {
-                var userManager = _serviceProvider.GetRequiredService<IUserManager>();
-                var users = userManager.Users.ToList();
+                var userList = users.ToList();
 
                 // Basic user count metrics
-                UpdateBasicUserCounts(users);
+                UpdateBasicUserCounts(userList);
 
                 // Authentication provider metrics
-                UpdateAuthProviderMetrics(users);
+                UpdateAuthProviderMetrics(userList);
 
                 // Permission-based metrics
-                UpdatePermissionMetrics(users);
+                UpdatePermissionMetrics(userList);
 
                 // Activity-based metrics
-                UpdateActivityMetrics(users);
+                UpdateActivityMetrics(userList);
 
                 // Security-related metrics
-                UpdateSecurityMetrics(users);
+                UpdateSecurityMetrics(userList);
 
-                _logger.LogDebug("Updated user metrics for {UserCount} users", users.Count);
+                _logger.LogDebug("Updated user metrics for {UserCount} users", userList.Count);
             }
             catch (Exception ex)
             {
@@ -98,15 +95,16 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Updates Basic User Counts.
         /// </summary>
         /// <param name="users">List of users to update in metrics.</param>
-        private void UpdateBasicUserCounts(List<User> users)
+        private void UpdateBasicUserCounts(IEnumerable<User> users)
         {
+            var userList = users.ToList();
             // Total user accounts
-            _totalUserAccounts.Set(users.Count);
+            _totalUserAccounts.Set(userList.Count);
             // Active user accounts (not disabled)
-            var activeUsers = users.Count(u => !u.HasPermission(PermissionKind.IsDisabled));
+            var activeUsers = userList.Count(u => !u.HasPermission(PermissionKind.IsDisabled));
             _activeUserAccounts.Set(activeUsers);
             // Administrator accounts
-            var adminUsers = users.Count(u => u.HasPermission(PermissionKind.IsAdministrator));
+            var adminUsers = userList.Count(u => u.HasPermission(PermissionKind.IsAdministrator));
             _adminUserAccounts.Set(adminUsers);
         }
 
@@ -114,8 +112,10 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Update user permissions related metrics.
         /// </summary>
         /// <param name="users">List of users to update in metrics.</param>
-        private void UpdatePermissionMetrics(List<User> users)
+        private void UpdatePermissionMetrics(IEnumerable<User> users)
         {
+            var userList = users.ToList();
+
             // Define key permissions to track
             var permissionsToTrack = new[]
             {
@@ -140,7 +140,7 @@ namespace Jellyfin.Server.Implementations.Metrics
 
             foreach (var permission in permissionsToTrack)
             {
-                var userCount = users.Count(u => u.HasPermission(permission));
+                var userCount = userList.Count(u => u.HasPermission(permission));
                 _usersByPermission.WithLabels(permission.ToString()).Set(userCount);
             }
         }
@@ -149,8 +149,10 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Update provider related metrics.
         /// </summary>
         /// <param name="users">List of users to update in metrics.</param>
-        private void UpdateAuthProviderMetrics(List<User> users)
+        private void UpdateAuthProviderMetrics(IEnumerable<User> users)
         {
+            var userList = users.ToList();
+
             // Reset all auth provider metrics
             foreach (var provider in _authenticationProviders)
             {
@@ -159,7 +161,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             // Count users by authentication provider
-            var authProviderGroups = users.GroupBy(u => u.AuthenticationProviderId).ToList();
+            var authProviderGroups = userList.GroupBy(u => u.AuthenticationProviderId).ToList();
             foreach (var group in authProviderGroups)
             {
                 var providerName = GetProviderNameById(group.Key);
@@ -167,7 +169,7 @@ namespace Jellyfin.Server.Implementations.Metrics
             }
 
             // Count users with external authentication (non-default providers)
-            var externalAuthUsers = users.Count(u => !string.IsNullOrEmpty(u.AuthenticationProviderId) && !u.AuthenticationProviderId.Contains("DefaultAuthenticationProvider"));
+            var externalAuthUsers = userList.Count(u => !string.IsNullOrEmpty(u.AuthenticationProviderId) && !u.AuthenticationProviderId.Contains("DefaultAuthenticationProvider"));
             _usersWithExternalAuth.Set(externalAuthUsers);
         }
 
@@ -175,13 +177,14 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Updates user activity metrics.
         /// </summary>
         /// <param name="users">List of users to update in metrics.</param>
-        private void UpdateActivityMetrics(List<User> users)
+        private void UpdateActivityMetrics(IEnumerable<User> users)
         {
+            var userList = users.ToList();
             var now = DateTime.UtcNow;
             var thirtyDaysAgo = now.AddDays(-30);
 
             // Users active within last 30 days
-            var recentlyActiveCount = users.Count(u => u.LastActivityDate.HasValue && u.LastActivityDate.Value >= thirtyDaysAgo);
+            var recentlyActiveCount = userList.Count(u => u.LastActivityDate.HasValue && u.LastActivityDate.Value >= thirtyDaysAgo);
             _recentlyActiveUsers.Set(recentlyActiveCount);
         }
 
@@ -189,11 +192,13 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// Updates security related metrics.
         /// </summary>
         /// <param name="users">List of users to update in metrics.</param>
-        private void UpdateSecurityMetrics(List<User> users)
+        private void UpdateSecurityMetrics(IEnumerable<User> users)
         {
+            var userList = users.ToList();
+
             // Users with failed login attempts
-            var usersWithSomeFailedLogins = users.Count(u => u.InvalidLoginAttemptCount is > 0 and < 3);
-            var usersWithManyFailedLogins = users.Count(u => u.InvalidLoginAttemptCount >= 3);
+            var usersWithSomeFailedLogins = userList.Count(u => u.InvalidLoginAttemptCount is > 0 and < 3);
+            var usersWithManyFailedLogins = userList.Count(u => u.InvalidLoginAttemptCount >= 3);
 
             _usersWithFailedLogins.WithLabels("1-2").Set(usersWithSomeFailedLogins);
             _usersWithFailedLogins.WithLabels("3+").Set(usersWithManyFailedLogins);
