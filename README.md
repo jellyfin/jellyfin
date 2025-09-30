@@ -37,6 +37,13 @@
 </a>
 </p>
 
+
+Inside the podman folder there is a docker-compose.yml file created to run Jellyfin with Podman. 
+Edit the file to include your desired parameters.
+Common issues usually have to do with volume folder permissions, ports not whitelisted, Selinux permissions or tags inside Jellyfin not indexing certain media formats. In such cases, you must give the volume folders the proper permissions, whitelist the ports you are going to use, set the proper Selinux configuration and, if your volume folder is recognized by Jellyfin but your media is not indexed, select another library tag in the library creation menu or move the file to another library folder, as some library tags only index certain media formats (i.e, files with the extension '.webm' will be ignored by certain configurations but '.mkv' will be indexed just fine, or more clearly, video files inside a music folder will probably not be indexed). Also, search within the Jellyfin library creation GUI within the folders that are inside the container (i.e the /media or the /media2 folders by default), there will be the files.
+
+Enjoy!
+
 ---
 
 Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support. 
