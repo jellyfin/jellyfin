@@ -779,12 +779,14 @@ public class LibraryController : BaseJellyfinApiController
         var query = new InternalItemsQuery(user)
         {
             Genres = item.Genres,
+            Tags = item.Tags,
             Limit = limit,
             IncludeItemTypes = includeItemTypes.ToArray(),
             DtoOptions = dtoOptions,
             EnableTotalRecordCount = !isMovie ?? true,
             EnableGroupByMetadataKey = isMovie ?? false,
-            ExcludeItemIds = [itemId]
+            ExcludeItemIds = [itemId],
+            OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
         };
 
         // ExcludeArtistIds
