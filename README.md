@@ -39,7 +39,7 @@
 
 ---
 
-Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support. 
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support.
 
 There are no strings attached, no premium licenses or features, and no hidden agendas: just a team that wants to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
@@ -98,7 +98,7 @@ Note that it is also possible to [host the web client separately](#hosting-the-w
 
 There are three options to get the files for the web client.
 
-1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
+1. Download one of the finished builds from the [`Push and Release` GitHub Actions pipeline](https://github.com/jellyfin/jellyfin-web/actions/workflows/push.yml). For a specific commit in pull requests, you can use [`Pull Request` pipeline](https://github.com/jellyfin/jellyfin-web/actions/workflows/pull_request.yml). The builds are zipped and located at the `Artifact` section near page's end.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
