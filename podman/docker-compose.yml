@@ -1,0 +1,44 @@
+services:   # This file is based on the official Jellyfin instructions for Docker, with tweaks to make it work on Podman.
+
+  jellyfin:
+
+    image: jellyfin/jellyfin
+
+    container_name: jellyfin
+
+    user: uid:gid
+
+    network_mode: 'host'
+
+    volumes:  # Set your folders here, these are just examples
+    
+      - /home/user/docker/jellyfin/config:/config:Z
+
+      - /home/user/docker/jellyfin/cache:/cache:Z
+
+      - /mnt/user/movies:/media:Z
+
+      - /mnt/user/tvshows:/media2:Z
+       
+
+    restart: 'unless-stopped'
+
+                
+    environment:    # Set the local ip of your server.
+
+      - JELLYFIN_PublishedServerUrl=<set the local ip>:8096
+
+    
+    extra_hosts:    # This might be needed.
+
+      - 'host.podman.internal:host-gateway'
+  
+ 
+
+
+
+
+
+
+
+
