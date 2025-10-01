@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Providers
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Implementations", "src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj", "{8C9F9221-8415-496C-B1F5-E7756F03FA59}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.CodeAnalysis", "src\Jellyfin.CodeAnalysis\Jellyfin.CodeAnalysis.csproj", "{11643D0F-6761-4EF7-AB71-6F9F8DE00714}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -258,6 +260,10 @@ Global
 		{8C9F9221-8415-496C-B1F5-E7756F03FA59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C9F9221-8415-496C-B1F5-E7756F03FA59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C9F9221-8415-496C-B1F5-E7756F03FA59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11643D0F-6761-4EF7-AB71-6F9F8DE00714}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11643D0F-6761-4EF7-AB71-6F9F8DE00714}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11643D0F-6761-4EF7-AB71-6F9F8DE00714}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11643D0F-6761-4EF7-AB71-6F9F8DE00714}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -289,6 +295,7 @@ Global
 		{4C54CE05-69C8-48FA-8785-39F7F6DB1CAD} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 		{A5590358-33CC-4B39-BDE7-DC62FEB03C76} = {4C54CE05-69C8-48FA-8785-39F7F6DB1CAD}
 		{8C9F9221-8415-496C-B1F5-E7756F03FA59} = {4C54CE05-69C8-48FA-8785-39F7F6DB1CAD}
+		{11643D0F-6761-4EF7-AB71-6F9F8DE00714} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}

@@ -35,16 +35,22 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
-        if (filter.Limit > 0)
-        {
-            dbQuery = dbQuery.Take(filter.Limit);
-        }
-
         // Include PeopleBaseItemMap
         if (!filter.ItemId.IsEmpty())
         {
-            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
+            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
+                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
+                .ThenBy(e => e.PersonType)
+                .ThenBy(e => e.Name);
+        }
+        else
+        {
+            dbQuery = dbQuery.OrderBy(e => e.Name);
+        }
+
+        if (filter.Limit > 0)
+        {
+            dbQuery = dbQuery.Take(filter.Limit);
         }
 
         return dbQuery.AsEnumerable().Select(Map).ToArray();
@@ -68,19 +74,42 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        using var context = _dbProvider.CreateDbContext();
+        foreach (var item in people.Where(e => e.Role is null))
+        {
+            item.Role = string.Empty;
+        }
 
-        // TODO: yes for __SOME__ reason there can be duplicates.
-        people = people.DistinctBy(e => e.Id).ToArray();
-        var personids = people.Select(f => f.Id);
-        var existingPersons = context.Peoples.Where(p => personids.Contains(p.Id)).Select(f => f.Id).ToArray();
-        context.Peoples.AddRange(people.Where(e => !existingPersons.Contains(e.Id)).Select(Map));
+        // multiple metadata providers can provide the _same_ person
+        people = people.DistinctBy(e => e.Name + "-" + e.Type).ToArray();
+        var personKeys = people.Select(e => e.Name + "-" + e.Type).ToArray();
+
+        using var context = _dbProvider.CreateDbContext();
+        using var transaction = context.Database.BeginTransaction();
+        var existingPersons = context.Peoples.Select(e => new
+            {
+                item = e,
+                SelectionKey = e.Name + "-" + e.PersonType
+            })
+            .Where(p => personKeys.Contains(p.SelectionKey))
+            .Select(f => f.item)
+            .ToArray();
+
+        var toAdd = people
+            .Where(e => !existingPersons.Any(f => f.Name == e.Name && f.PersonType == e.Type.ToString()))
+            .Select(Map);
+        context.Peoples.AddRange(toAdd);
         context.SaveChanges();
 
-        var maps = context.PeopleBaseItemMap.Where(e => e.ItemId == itemId).ToList();
+        var personsEntities = toAdd.Concat(existingPersons).ToArray();
+
+        var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
+
+        var listOrder = 0;
+
         foreach (var person in people)
         {
-            var existingMap = maps.FirstOrDefault(e => e.PeopleId == person.Id);
+            var entityPerson = personsEntities.First(e => e.Name == person.Name && e.PersonType == person.Type.ToString());
+            var existingMap = existingMaps.FirstOrDefault(e => e.People.Name == person.Name && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
             if (existingMap is null)
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
@@ -88,22 +117,28 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                     Item = null!,
                     ItemId = itemId,
                     People = null!,
-                    PeopleId = person.Id,
-                    ListOrder = person.SortOrder,
+                    PeopleId = entityPerson.Id,
+                    ListOrder = listOrder,
                     SortOrder = person.SortOrder,
                     Role = person.Role
                 });
             }
             else
             {
+                // Update the order for existing mappings
+                existingMap.ListOrder = listOrder;
+                existingMap.SortOrder = person.SortOrder;
                 // person mapping already exists so remove from list
-                maps.Remove(existingMap);
+                existingMaps.Remove(existingMap);
             }
+
+            listOrder++;
         }
 
-        context.PeopleBaseItemMap.RemoveRange(maps);
+        context.PeopleBaseItemMap.RemoveRange(existingMaps);
 
         context.SaveChanges();
+        transaction.Commit();
     }
 
     private PersonInfo Map(People people)

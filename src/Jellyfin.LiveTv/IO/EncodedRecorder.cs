@@ -73,6 +73,10 @@ namespace Jellyfin.LiveTv.IO
         {
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
+            if (!File.Exists(targetFile))
+            {
+                FileHelper.CreateEmpty(targetFile);
+            }
 
             var processStartInfo = new ProcessStartInfo
             {

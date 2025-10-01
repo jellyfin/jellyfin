@@ -53,5 +53,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         Task<string> GetSubtitleFilePath(MediaStream subtitleStream, MediaSourceInfo mediaSource, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Extracts all extractable subtitles (text and pgs).
+        /// </summary>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken);
     }
 }

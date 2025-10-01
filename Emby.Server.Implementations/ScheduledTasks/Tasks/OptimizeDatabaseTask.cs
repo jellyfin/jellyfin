@@ -61,7 +61,7 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
         yield return new TaskTriggerInfo
         {
             Type = TaskTriggerInfoType.IntervalTrigger,
-            IntervalTicks = TimeSpan.FromHours(24).Ticks
+            IntervalTicks = TimeSpan.FromHours(6).Ticks
         };
     }
 

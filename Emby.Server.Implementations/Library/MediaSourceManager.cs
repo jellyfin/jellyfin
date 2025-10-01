@@ -379,7 +379,7 @@ namespace Emby.Server.Implementations.Library
             var culture = _localizationManager.FindLanguageInfo(language);
             if (culture is not null)
             {
-                return culture.ThreeLetterISOLanguageNames;
+                return culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase) ? [culture.Name] : culture.ThreeLetterISOLanguageNames;
             }
 
             return [language];
@@ -657,7 +657,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogDebug(ex, "_jsonSerializer.DeserializeFromFile threw an exception.");
+                    _logger.LogDebug(ex, "Error parsing cached media info.");
                 }
                 finally
                 {

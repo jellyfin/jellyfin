@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Implementations;
@@ -20,7 +21,8 @@ public interface IJellyfinDatabaseProvider
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
-    void Initialise(DbContextOptionsBuilder options);
+    /// <param name="databaseConfiguration">The Jellyfin database options.</param>
+    void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration);
 
     /// <summary>
     /// Will be invoked when EFCore wants to build its model.

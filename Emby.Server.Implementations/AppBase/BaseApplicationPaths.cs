@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.AppBase
         private void CheckOrCreateMarker(string path, string markerName, bool recursive = false)
         {
             var otherMarkers = GetMarkers(path, recursive).FirstOrDefault(e => Path.GetFileName(e) != markerName);
-            if (otherMarkers != null)
+            if (otherMarkers is not null)
             {
                 throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");
             }

@@ -45,11 +45,14 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyList<BaseItem> GetInstantMixFromFolder(Folder item, User? user, DtoOptions dtoOptions)
         {
             var genres = item
-               .GetRecursiveChildren(user, new InternalItemsQuery(user)
-               {
-                   IncludeItemTypes = [BaseItemKind.Audio],
-                   DtoOptions = dtoOptions
-               })
+               .GetRecursiveChildren(
+                user,
+                new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    DtoOptions = dtoOptions
+                },
+                out _)
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
