@@ -528,7 +528,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Genre => _configurationManager.ApplicationPaths.GenrePath,
                 MusicArtist => _configurationManager.ApplicationPaths.ArtistsPath,
-                MusicGenre => _configurationManager.ApplicationPaths.GenrePath,
+                MusicGenre => _configurationManager.ApplicationPaths.MusicGenrePath,
                 Person => _configurationManager.ApplicationPaths.PeoplePath,
                 Studio => _configurationManager.ApplicationPaths.StudioPath,
                 Year => _configurationManager.ApplicationPaths.YearPath,
