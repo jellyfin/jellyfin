@@ -1346,6 +1346,14 @@ namespace MediaBrowser.Controller.Entities
             var realChildren = visibleChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
                 .ToArray();
+
+            if (this is BoxSet && (query.OrderBy == null || query.OrderBy.Count == 0))
+            {
+                realChildren = realChildren
+                    .OrderBy(e => e.ProductionYear ?? int.MaxValue)
+                    .ToArray();
+            }
+
             var childCount = realChildren.Length;
             if (result.Count < limit)
             {
