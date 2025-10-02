@@ -52,7 +52,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.9" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Morestachio" Version="5.0.1.631" />
     <PackageVersion Include="Moq" Version="4.18.4" />
