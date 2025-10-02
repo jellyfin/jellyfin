@@ -127,7 +127,7 @@ jobs:
           direction: last
           body-includes: openapi-diff-workflow-comment
       - name: Reply or edit difference comment (changed)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: ${{ steps.read-diff.outputs.ApiChanged == '1' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -135,7 +135,7 @@ jobs:
           edit-mode: replace
           body-path: openapi-changes-reply.md
       - name: Edit difference comment (unchanged)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: ${{ steps.read-diff.outputs.ApiChanged == '0' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
