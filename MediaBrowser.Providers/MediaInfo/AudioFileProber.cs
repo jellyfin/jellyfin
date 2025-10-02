@@ -533,14 +533,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private bool TryGetSanitizedAdditionalFields(Track track, string field, out string? value)
         {
-            var hasField = track.AdditionalFields.TryGetValue(field, out value);
+            var hasField = TryGetAdditionalFieldWithFallback(track, field, out value);
             value = GetSanitizedStringTag(value, track.Path);
             return hasField;
         }
 
         private bool TryGetSanitizedUFIDFields(Track track, out string? owner, out string? identifier)
         {
-            var hasField = track.AdditionalFields.TryGetValue("UFID", out string? value);
+            var hasField = TryGetAdditionalFieldWithFallback(track, "UFID", out string? value);
             if (hasField && !string.IsNullOrEmpty(value))
             {
                 string[] parts = value.Split('\0');
@@ -554,6 +554,38 @@ namespace MediaBrowser.Providers.MediaInfo
 
             owner = null;
             identifier = null;
+            return false;
+        }
+
+        // Build the explicit mka-style fallback key (e.g., ARTISTS -> track.artists, "MusicBrainz Artist Id" -> track.musicbrainz_artist_id)
+        private static string GetMkaFallbackKey(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return key;
+            }
+
+            var normalized = key.Trim().Replace(' ', '_').ToLowerInvariant();
+            return "track." + normalized;
+        }
+
+        // First try the normal key exactly; if missing, try the mka-style fallback key.
+        private bool TryGetAdditionalFieldWithFallback(Track track, string key, out string? value)
+        {
+            // Prefer the normal key (as-is, case-sensitive)
+            if (track.AdditionalFields.TryGetValue(key, out value))
+            {
+                return true;
+            }
+
+            // Fallback to mka-style: "track." + lower-case(original key)
+            var fallbackKey = GetMkaFallbackKey(key);
+            if (track.AdditionalFields.TryGetValue(fallbackKey, out value))
+            {
+                return true;
+            }
+
+            value = null;
             return false;
         }
     }
