@@ -70,7 +70,7 @@
     "ScheduledTaskFailedWithName": "{0} - неудачна",
     "ScheduledTaskStartedWithName": "{0} - запущена",
     "ServerNameNeedsToBeRestarted": "Необходим перезапуск {0}",
-    "Shows": "Телешоу",
+    "Shows": "Сериалы",
     "Songs": "Композиции",
     "StartupEmbyServerIsLoading": "Jellyfin Server загружается. Повторите попытку в ближайшее время.",
     "SubtitleDownloadFailureForItem": "Субтитры к {0} не удалось загрузить",

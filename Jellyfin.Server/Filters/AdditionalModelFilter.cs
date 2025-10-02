@@ -175,7 +175,7 @@ namespace Jellyfin.Server.Filters
 
             // Manually generate sync play GroupUpdate messages.
             var groupUpdateTypes = typeof(GroupUpdate<>).Assembly.GetTypes()
-                .Where(t => t.BaseType != null
+                .Where(t => t.BaseType is not null
                             && t.BaseType.IsGenericType
                             && t.BaseType.GetGenericTypeDefinition() == typeof(GroupUpdate<>))
                 .ToList();
