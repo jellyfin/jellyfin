@@ -267,12 +267,13 @@ public sealed class BaseItemRepository
         IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
 
         dbQuery = TranslateQuery(dbQuery, context, filter);
+        dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+
         if (filter.EnableTotalRecordCount)
         {
             result.TotalRecordCount = dbQuery.Count();
         }
 
-        dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
