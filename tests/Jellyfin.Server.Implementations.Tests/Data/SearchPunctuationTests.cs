@@ -83,5 +83,27 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             var searchTerm = expectedClean;
             Assert.Contains(searchTerm, entity.CleanName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         }
+
+        [Theory]
+        [InlineData("Face/Off", "face off")]
+        [InlineData("V/H/S", "v h s")]
+        public void CleanName_normalizes_titles_withslashes(string title, string expectedClean)
+        {
+            var series = new Series
+            {
+                Id = Guid.NewGuid(),
+                Name = title
+            };
+
+            series.SortName = title;
+
+            var entity = _repo.Map(series);
+
+            Assert.Equal(expectedClean, entity.CleanName);
+
+            // Ensure a search term without punctuation would match
+            var searchTerm = expectedClean;
+            Assert.Contains(searchTerm, entity.CleanName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
