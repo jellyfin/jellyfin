@@ -95,6 +95,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         {
             var tmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
             var language = info.MetadataLanguage;
+            if (language == "es-419" && !string.IsNullOrEmpty(info.MetadataCountryCode))
+            {
+                language = info.MetadataCountryCode == "AR" ? "es-AR" : "es-MX";
+            }
+
             // We don't already have an Id, need to fetch it
             if (tmdbId <= 0)
             {

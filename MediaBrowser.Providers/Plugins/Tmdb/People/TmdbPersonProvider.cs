@@ -97,11 +97,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 }
             }
 
+            var metadataLanguage = info.MetadataLanguage;
+            if (metadataLanguage == "es-419" && !string.IsNullOrEmpty(info.MetadataCountryCode))
+            {
+                metadataLanguage = info.MetadataCountryCode == "AR" ? "es-AR" : "es-MX";
+            }
+
             var result = new MetadataResult<Person>();
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, metadataLanguage, cancellationToken).ConfigureAwait(false);
                 if (person is null)
                 {
                     return result;

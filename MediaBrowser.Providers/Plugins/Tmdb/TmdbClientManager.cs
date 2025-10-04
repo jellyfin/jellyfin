@@ -301,7 +301,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Gets a person eg. cast or crew member from the TMDb API based on its TMDb id.
         /// </summary>
         /// <param name="personTmdbId">The person's TMDb id.</param>
-        /// <param name="language">The episode's language.</param>
+        /// <param name="language">The person's language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb person information or null if not found.</returns>
         public async Task<Person?> GetPersonAsync(int personTmdbId, string language, CancellationToken cancellationToken)
