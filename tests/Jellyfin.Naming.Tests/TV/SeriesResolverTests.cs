@@ -19,6 +19,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/some/path/The Show", "The Show")]
         [InlineData("/some/path/The Show s02e10 720p hdtv", "The Show")]
         [InlineData("/some/path/The Show s02e10 the episode 720p hdtv", "The Show")]
+        [InlineData("/some/path/1923 (2022)", "1923")]
         public void SeriesResolverResolveTest(string path, string name)
         {
             var res = SeriesResolver.Resolve(_namingOptions, path);
