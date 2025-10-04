@@ -610,6 +610,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                // Code intentionally generates MultipleCollectionIncludeWarning
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
                                .Include(u => u.Preferences)
@@ -654,6 +655,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                // Code intentionally generates MultipleCollectionIncludeWarning
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
                                .Include(u => u.Preferences)
