@@ -185,7 +185,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return requestLanguage;
             }
 
-            return imageLanguage;
+            // TMDb now returns xx for no language instead of an empty string.
+            return string.Equals(imageLanguage, "xx", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : imageLanguage;
         }
 
         /// <summary>

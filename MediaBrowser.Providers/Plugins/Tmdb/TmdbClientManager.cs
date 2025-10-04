@@ -595,10 +595,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 var language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage);
 
                 // Return Backdrops with a language specified (it has text) as Thumb.
-                // TMDb now returns "no language" as "xx".
-                if (imageType == ImageType.Backdrop
-                    && !string.IsNullOrEmpty(language)
-                    && !string.Equals(language, "xx", StringComparison.OrdinalIgnoreCase))
+                if (imageType == ImageType.Backdrop && !string.IsNullOrEmpty(language))
                 {
                     imageType = ImageType.Thumb;
                 }
