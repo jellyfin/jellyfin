@@ -89,12 +89,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            var metadataLanguage = info.MetadataLanguage;
-            if (metadataLanguage == "es-419" && !string.IsNullOrEmpty(info.MetadataCountryCode))
-            {
-                metadataLanguage = info.MetadataCountryCode == "AR" ? "es-AR" : "es-MX";
-            }
-
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
             var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
@@ -119,7 +113,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 List<TvEpisode>? result = null;
                 for (int? episode = startindex; episode <= endindex; episode++)
                 {
-                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, metadataLanguage, TmdbUtils.GetImageLanguagesParam(metadataLanguage), cancellationToken).ConfigureAwait(false);
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                     if (episodeInfo is not null)
                     {
                         (result ??= new List<TvEpisode>()).Add(episodeInfo);
@@ -163,7 +157,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             else
             {
                 episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, metadataLanguage, TmdbUtils.GetImageLanguagesParam(metadataLanguage), cancellationToken)
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -178,7 +172,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (!string.IsNullOrEmpty(episodeResult.Overview))
             {
                 // if overview is non-empty, we can assume that localized data was returned
-                metadataResult.ResultLanguage = metadataLanguage;
+                metadataResult.ResultLanguage = info.MetadataLanguage;
             }
 
             var item = new Episode

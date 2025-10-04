@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
             {
                 var series = await _tmdbClientManager
-                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, cancellationToken)
+                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (series is not null)
@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
                 var findResult = await _tmdbClientManager
-                    .FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, searchInfo.MetadataLanguage, cancellationToken)
+                    .FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
 
                 var tvResults = findResult?.TvResults;
@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
                 var findResult = await _tmdbClientManager
-                    .FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, searchInfo.MetadataLanguage, cancellationToken)
+                    .FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
 
                 var tvResults = findResult?.TvResults;
@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken: cancellationToken)
+            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             var remoteResults = new RemoteSearchResult[tvSearchResults.Count];
@@ -169,17 +169,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 QueriedById = true
             };
 
-            var metadataLanguage = info.MetadataLanguage;
-            if (metadataLanguage == "es-419" && !string.IsNullOrEmpty(info.MetadataCountryCode))
-            {
-                metadataLanguage = info.MetadataCountryCode == "AR" ? "es-AR" : "es-MX";
-            }
-
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
 
             if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
-                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, metadataLanguage, cancellationToken).ConfigureAwait(false);
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (searchResult?.TvResults.Count > 0)
                 {
                     tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
@@ -188,7 +182,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
-                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, metadataLanguage, cancellationToken).ConfigureAwait(false);
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (searchResult?.TvResults.Count > 0)
                 {
                     tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
@@ -202,7 +196,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, metadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.MetadataCountryCode, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
@@ -218,7 +212,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var tvShow = await _tmdbClientManager
-                .GetSeriesAsync(tmdbIdInt, metadataLanguage, TmdbUtils.GetImageLanguagesParam(metadataLanguage), cancellationToken)
+                .GetSeriesAsync(tmdbIdInt, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                 .ConfigureAwait(false);
 
             if (tvShow is null)
@@ -229,7 +223,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             result = new MetadataResult<Series>
             {
                 Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
-                ResultLanguage = metadataLanguage ?? tvShow.OriginalLanguage
+                ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
             };
 
             foreach (var person in GetPersons(tvShow))

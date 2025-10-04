@@ -44,12 +44,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var result = new MetadataResult<Season>();
             var config = Plugin.Instance.Configuration;
 
-            var metadataLanguage = info.MetadataLanguage;
-            if (metadataLanguage == "es-419" && !string.IsNullOrEmpty(info.MetadataCountryCode))
-            {
-                metadataLanguage = info.MetadataCountryCode == "AR" ? "es-AR" : "es-MX";
-            }
-
             info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
@@ -60,7 +54,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var seasonResult = await _tmdbClientManager
-                .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, metadataLanguage, TmdbUtils.GetImageLanguagesParam(metadataLanguage), cancellationToken)
+                .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                 .ConfigureAwait(false);
 
             if (seasonResult is null)
