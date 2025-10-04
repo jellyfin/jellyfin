@@ -3051,10 +3051,10 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
-
                     StartScanInBackground();
                 }
                 else
