@@ -108,7 +108,7 @@ namespace Jellyfin.Server.Implementations.Users
                 UserName = user.Username
             };
 
-            FileStream fileStream = AsyncFile.OpenWrite(filePath);
+            FileStream fileStream = AsyncFile.Create(filePath);
             await using (fileStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
