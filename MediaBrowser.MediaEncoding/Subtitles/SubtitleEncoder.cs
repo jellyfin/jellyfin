@@ -187,11 +187,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     response.EnsureSuccessStatusCode();
 
-                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    using var reader = new StreamReader(stream, detected.Encoding);
-                    var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                      using var reader = new StreamReader(stream, detected.Encoding);
+                      var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                    return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                      return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                    }
                 }
             }
 
@@ -967,12 +970,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     using var resp = await _httpClientFactory
                       .CreateClient(NamedClient.Default)
-                      .GetAsync(new Uri(path), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                      .GetAsync(new Uri(path), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                      .ConfigureAwait(false);
 
                     resp.EnsureSuccessStatusCode();
 
-                    using var s = await resp.Content.ReadAsStreamAsync(cancellationToken);
-                    return await CharsetDetector.DetectFromStreamAsync(s, cancellationToken);
+                    using var s = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    return await CharsetDetector.DetectFromStreamAsync(s, cancellationToken).ConfigureAwait(false);
                 }
 
                 case MediaProtocol.File:
