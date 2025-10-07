@@ -277,7 +277,6 @@ public partial class AudioNormalizationTask : IScheduledTask
 
                 lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
                 foundLufs = true;
-                // Don't break - keep draining stderr to prevent buffer deadlock
             }
 
             if (lufs is null)
