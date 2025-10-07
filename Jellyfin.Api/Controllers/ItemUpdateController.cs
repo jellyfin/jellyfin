@@ -443,14 +443,14 @@ public class ItemUpdateController : BaseJellyfinApiController
             case MusicVideo musicVideo:
                 musicVideo.Album = request.Album;
                 break;
-            case Series series:
+            case Series s:
                 {
-                    series.Status = GetSeriesStatus(request);
+                    s.Status = GetSeriesStatus(request);
 
                     if (request.AirDays is not null)
                     {
-                        series.AirDays = request.AirDays;
-                        series.AirTime = request.AirTime;
+                        s.AirDays = request.AirDays;
+                        s.AirTime = request.AirTime;
                     }
 
                     break;
