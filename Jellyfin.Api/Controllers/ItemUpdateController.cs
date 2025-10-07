@@ -381,6 +381,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             hasDisplayOrder.DisplayOrder = request.DisplayOrder;
         }
 
+        if (item is Series series && request.InvertEpisodeOrder.HasValue)
+        {
+            series.InvertEpisodeOrder = request.InvertEpisodeOrder.Value;
+        }
+
         if (item is IHasAspectRatio hasAspectRatio)
         {
             hasAspectRatio.AspectRatio = request.AspectRatio;

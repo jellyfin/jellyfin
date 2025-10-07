@@ -916,6 +916,11 @@ namespace Emby.Server.Implementations.Dto
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
             }
 
+            if (item is Series series)
+            {
+                dto.InvertEpisodeOrder = series.InvertEpisodeOrder;
+            }
+
             if (item is IHasCollectionType hasCollectionType)
             {
                 dto.CollectionType = hasCollectionType.CollectionType;
