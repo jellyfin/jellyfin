@@ -1876,7 +1876,7 @@ public sealed class BaseItemRepository
         if (filter.PersonIds.Length > 0)
         {
             var peopleEntityIds = context.BaseItems
-                .Where(b => filter.PersonIds.Contains(b.Id))
+                .WhereOneOrMany(filter.PersonIds, b => b.Id)
                 .Join(
                     context.Peoples,
                     b => b.Name,
