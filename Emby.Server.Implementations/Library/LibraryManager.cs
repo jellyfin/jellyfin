@@ -528,7 +528,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Genre => _configurationManager.ApplicationPaths.GenrePath,
                 MusicArtist => _configurationManager.ApplicationPaths.ArtistsPath,
-                MusicGenre => _configurationManager.ApplicationPaths.GenrePath,
+                MusicGenre => _configurationManager.ApplicationPaths.MusicGenrePath,
                 Person => _configurationManager.ApplicationPaths.PeoplePath,
                 Studio => _configurationManager.ApplicationPaths.StudioPath,
                 Year => _configurationManager.ApplicationPaths.YearPath,
@@ -2129,6 +2129,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            item.ValidateImages();
+
             _itemRepository.SaveImages(item);
 
             RegisterItem(item);
@@ -3051,10 +3053,10 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
-
                     StartScanInBackground();
                 }
                 else

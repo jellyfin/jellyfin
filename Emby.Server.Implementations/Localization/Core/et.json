@@ -135,5 +135,7 @@
     "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",
     "TaskExtractMediaSegments": "Meediasegmentide skaneerimine",
     "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
-    "TaskMoveTrickplayImages": "Migreeri trickplay piltide asukoht"
+    "TaskMoveTrickplayImages": "Migreeri trickplay piltide asukoht",
+    "CleanupUserDataTask": "Kasutajaandmete puhastamise ülesanne",
+    "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mis pole enam vähemalt 90 päeva saadaval olnud."
 }
