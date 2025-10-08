@@ -2,8 +2,12 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,7 +18,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Migration to refresh CleanName values for all library items.
 /// </summary>
 [JellyfinMigration("2025-10-08T12:00:00", nameof(RefreshCleanNames))]
-public class RefreshCleanNames : IDatabaseMigrationRoutine
+[JellyfinMigrationBackup(JellyfinDb = true)]
+public class RefreshCleanNames : IAsyncMigrationRoutine
 {
     private readonly IStartupLogger<RefreshCleanNames> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
@@ -33,119 +38,77 @@ public class RefreshCleanNames : IDatabaseMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public async Task PerformAsync(CancellationToken cancellationToken)
     {
         const int batchSize = 1000;
         int itemCount = 0, offset = 0;
 
         var sw = Stopwatch.StartNew();
 
-        using var context = _dbProvider.CreateDbContext();
-        var totalRecords = context.BaseItems.Count(b => !string.IsNullOrEmpty(b.Name));
-        _logger.LogInformation("Refreshing CleanName for {Count} library items", totalRecords);
-
-        do
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
         {
-            var batch = context.BaseItems
-                .Where(b => !string.IsNullOrEmpty(b.Name))
-                .OrderBy(e => e.Id)
-                .Skip(offset)
-                .Take(batchSize)
-                .ToList();
+            var totalRecords = await context.BaseItems.CountAsync(b => !string.IsNullOrEmpty(b.Name), cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Refreshing CleanName for {Count} library items", totalRecords);
 
-            if (batch.Count == 0)
+            do
             {
-                break;
-            }
+                var baseQuery = context.BaseItems
+                    .Where(b => !string.IsNullOrEmpty(b.Name))
+                    .OrderBy(e => e.Id);
 
-            foreach (var item in batch)
-            {
-                try
+                IQueryable<BaseItemEntity> query = baseQuery;
+
+                if (offset > 0)
                 {
-                    var newCleanName = GetCleanValue(item.Name);
-                    if (newCleanName != item.CleanName)
+                    query = query.Skip(offset);
+                }
+
+                var batch = await query.Take(batchSize).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+                if (batch.Count == 0)
+                {
+                    break;
+                }
+
+                foreach (var item in batch)
+                {
+                    try
                     {
-                        _logger.LogDebug(
-                            "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
-                            item.Id,
-                            item.CleanName,
-                            newCleanName);
-                        item.CleanName = newCleanName;
-                        itemCount++;
+                        var newCleanName = BaseItemRepository.GetCleanValue(item.Name ?? string.Empty);
+                        if (newCleanName != item.CleanName)
+                        {
+                            _logger.LogDebug(
+                                "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
+                                item.Id,
+                                item.CleanName,
+                                newCleanName);
+                            item.CleanName = newCleanName;
+                            itemCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
-                }
-            }
 
-            context.SaveChanges();
-            offset += batch.Count;
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                offset += batch.Count;
+
+                _logger.LogInformation(
+                    "Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}",
+                    offset,
+                    totalRecords,
+                    itemCount,
+                    sw.Elapsed);
+            } while (offset < totalRecords);
 
             _logger.LogInformation(
-                "Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}",
-                offset,
-                totalRecords,
+                "Refreshed CleanName for {UpdatedCount} out of {TotalCount} items in {Time}",
                 itemCount,
+                totalRecords,
                 sw.Elapsed);
-        } while (offset < totalRecords);
-
-        _logger.LogInformation(
-            "Refreshed CleanName for {UpdatedCount} out of {TotalCount} items in {Time}",
-            itemCount,
-            totalRecords,
-            sw.Elapsed);
-    }
-
-    /// <summary>
-    /// Gets the clean value for search and sorting purposes.
-    /// This is a copy of the GetCleanValue logic from BaseItemRepository.
-    /// </summary>
-    /// <param name="value">The value to clean.</param>
-    /// <returns>The cleaned value.</returns>
-    private static string? GetCleanValue(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return value;
         }
-
-        var noDiacritics = value.RemoveDiacritics();
-
-        // Build a string where any punctuation or symbol is treated as a separator (space).
-        var sb = new StringBuilder(noDiacritics.Length);
-        var previousWasSpace = false;
-        foreach (var ch in noDiacritics)
-        {
-            char outCh;
-            if (char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch))
-            {
-                outCh = ch;
-            }
-            else
-            {
-                outCh = ' ';
-            }
-
-            // normalize any whitespace character to a single ASCII space.
-            if (char.IsWhiteSpace(outCh))
-            {
-                if (!previousWasSpace)
-                {
-                    sb.Append(' ');
-                    previousWasSpace = true;
-                }
-            }
-            else
-            {
-                sb.Append(outCh);
-                previousWasSpace = false;
-            }
-        }
-
-        // trim leading/trailing spaces that may have been added.
-        var collapsed = sb.ToString().Trim();
-        return collapsed.ToLowerInvariant();
     }
 }

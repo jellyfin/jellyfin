@@ -1357,7 +1357,12 @@ public sealed class BaseItemRepository
         }
     }
 
-    private string GetCleanValue(string value)
+    /// <summary>
+    /// Gets the clean value for search and sorting purposes.
+    /// </summary>
+    /// <param name="value">The value to clean.</param>
+    /// <returns>The cleaned value.</returns>
+    public static string GetCleanValue(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
