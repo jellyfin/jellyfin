@@ -206,7 +206,8 @@ namespace Emby.Server.Implementations.SyncPlay
             foreach (var itemId in queue)
             {
                 var item = _libraryManager.GetItemById(itemId);
-                if (!item?.IsVisibleStandalone(user) ?? false)
+
+                if (!item?.IsVisibleStandalone(user) ?? true)
                 {
                     return false;
                 }
