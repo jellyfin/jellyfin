@@ -107,6 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // Additional Mappings
             _validProviderIds.Add("collectionnumber", "TmdbCollection");
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("tmdbcol", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
 
             Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
