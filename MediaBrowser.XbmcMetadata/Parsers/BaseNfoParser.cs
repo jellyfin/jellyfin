@@ -591,7 +591,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    item.TrySetProviderId(provider, providerId);
+
+                    if (!string.IsNullOrEmpty(provider))
+                    {
+                        if (_validProviderIds.TryGetValue(provider, out string? normalizedProvider))
+                        {
+                            item.TrySetProviderId(normalizedProvider, providerId);
+                        }
+                        else
+                        {
+                            item.TrySetProviderId(provider, providerId);
+                        }
+                    }
 
                     break;
                 case "thumb":
