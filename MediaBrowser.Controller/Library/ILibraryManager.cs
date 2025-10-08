@@ -337,6 +337,13 @@ namespace MediaBrowser.Controller.Library
         void DeleteItem(BaseItem item, DeleteOptions options);
 
         /// <summary>
+        /// Deletes items that are not having any children like Actors.
+        /// </summary>
+        /// <param name="items">Items to delete.</param>
+        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
+        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items);
+
+        /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="item">Item to delete.</param>
@@ -623,6 +630,8 @@ namespace MediaBrowser.Controller.Library
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
+
+        IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 

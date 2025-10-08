@@ -169,7 +169,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (fileInfo.IsExternal)
             {
-                using (var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false))
+                var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+                await using (stream.ConfigureAwait(false))
                 {
                     var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
                     var detected = result.Detected;
@@ -476,13 +477,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Extracts all extractable subtitles (text and pgs).
-        /// </summary>
-        /// <param name="mediaSource">The mediaSource.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
@@ -937,7 +933,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
+            var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
                 var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
                 var charset = result.Detected?.EncodingName ?? string.Empty;

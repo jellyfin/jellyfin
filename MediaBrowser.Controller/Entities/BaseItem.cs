@@ -107,7 +107,14 @@ namespace MediaBrowser.Controller.Entities
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             ExtraIds = Array.Empty<Guid>();
+            UserData = [];
         }
+
+        /// <summary>
+        /// Gets or Sets the user data collection as cached from the last Db query.
+        /// </summary>
+        [JsonIgnore]
+        public ICollection<UserData> UserData { get; set; }
 
         [JsonIgnore]
         public string PreferredMetadataCountryCode { get; set; }
@@ -701,19 +708,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                var customRating = CustomRating;
-                if (!string.IsNullOrEmpty(customRating))
-                {
-                    return customRating;
-                }
-
-                var parent = DisplayParent;
-                if (parent is not null)
-                {
-                    return parent.CustomRatingForComparison;
-                }
-
-                return null;
+                return GetCustomRatingForComparision();
             }
         }
 
@@ -790,6 +785,26 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
+
+        private string GetCustomRatingForComparision(HashSet<Guid> callstack = null)
+        {
+            callstack ??= new();
+            var customRating = CustomRating;
+            if (!string.IsNullOrEmpty(customRating))
+            {
+                return customRating;
+            }
+
+            callstack.Add(Id);
+
+            var parent = DisplayParent;
+            if (parent is not null && !callstack.Contains(parent.Id))
+            {
+                return parent.GetCustomRatingForComparision(callstack);
+            }
+
+            return null;
+        }
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
@@ -2307,27 +2322,27 @@ namespace MediaBrowser.Controller.Entities
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public virtual bool IsPlayed(User user)
+        public virtual bool IsPlayed(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && userdata.Played;
+            return userItemData is not null && userItemData.Played;
         }
 
-        public bool IsFavoriteOrLiked(User user)
+        public bool IsFavoriteOrLiked(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && (userdata.IsFavorite || (userdata.Likes ?? false));
+            return userItemData is not null && (userItemData.IsFavorite || (userItemData.Likes ?? false));
         }
 
-        public virtual bool IsUnplayed(User user)
+        public virtual bool IsUnplayed(User user, UserItemData userItemData)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is null || !userdata.Played;
+            return userItemData is null || !userItemData.Played;
         }
 
         ItemLookupInfo IHasLookupInfo<ItemLookupInfo>.GetLookupInfo()

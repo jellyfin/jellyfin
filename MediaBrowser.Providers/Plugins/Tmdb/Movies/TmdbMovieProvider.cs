@@ -213,15 +213,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
 
                 var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
-                var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
 
                 if (ourRelease is not null)
                 {
                     movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
                 }
-                else if (usRelease is not null)
+                else
                 {
-                    movie.OfficialRating = usRelease.Certification;
+                    var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
+                    if (usRelease is not null)
+                    {
+                        movie.OfficialRating = usRelease.Certification;
+                    }
                 }
             }
 
@@ -340,9 +343,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             if (movieResult.Videos?.Results is not null)
             {
                 var trailers = new List<MediaUrl>();
-                for (var i = 0; i < movieResult.Videos.Results.Count; i++)
+
+                var sortedVideos = movieResult.Videos.Results
+                    .OrderByDescending(video => string.Equals(video.Type, "trailer", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var video in sortedVideos)
                 {
-                    var video = movieResult.Videos.Results[i];
                     if (!TmdbUtils.IsTrailerType(video))
                     {
                         continue;
