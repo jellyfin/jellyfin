@@ -2129,6 +2129,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            item.ValidateImages();
+
             _itemRepository.SaveImages(item);
 
             RegisterItem(item);
