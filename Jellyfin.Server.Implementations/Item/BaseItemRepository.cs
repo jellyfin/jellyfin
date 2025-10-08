@@ -1875,10 +1875,17 @@ public sealed class BaseItemRepository
 
         if (filter.PersonIds.Length > 0)
         {
+            var peopleEntityIds = context.BaseItems
+                .WhereOneOrMany(filter.PersonIds, b => b.Id)
+                .Join(
+                    context.Peoples,
+                    b => b.Name,
+                    p => p.Name,
+                    (b, p) => p.Id);
+
             baseQuery = baseQuery
-                .Where(e =>
-                    context.PeopleBaseItemMap.Where(w => context.BaseItems.Where(r => filter.PersonIds.Contains(r.Id)).Any(f => f.Name == w.People.Name))
-                        .Any(f => f.ItemId == e.Id));
+                .Where(e => context.PeopleBaseItemMap
+                    .Any(m => m.ItemId == e.Id && peopleEntityIds.Contains(m.PeopleId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Person))
