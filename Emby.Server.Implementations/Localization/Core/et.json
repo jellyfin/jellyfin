@@ -124,8 +124,8 @@
     "HearingImpaired": "Kuulmispuudega",
     "TaskKeyframeExtractorDescription": "Eraldab videofailidest võtmekaadreid, et luua täpsemaid HLS-i esitusloendeid. See ülesanne võib kesta pikka aega.",
     "TaskKeyframeExtractor": "Võtmekaadri ekstraktor",
-    "TaskRefreshTrickplayImages": "Loo eelvaate pildid",
-    "TaskRefreshTrickplayImagesDescription": "Loob eelvaated videotele, kus lubatud.",
+    "TaskRefreshTrickplayImages": "Loo trickplay pildid",
+    "TaskRefreshTrickplayImagesDescription": "Loob trickplay eelvaated videotele lubatud meediakogudes.",
     "TaskAudioNormalization": "Heli Normaliseerimine",
     "TaskAudioNormalizationDescription": "Skaneerib faile heli normaliseerimise andmete jaoks.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest asjad, mida enam ei eksisteeri.",
@@ -135,7 +135,7 @@
     "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",
     "TaskExtractMediaSegments": "Meediasegmentide skaneerimine",
     "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
-    "TaskMoveTrickplayImages": "Migreeri trickplay piltide asukoht",
+    "TaskMoveTrickplayImages": "Muuda trickplay piltide asukoht",
     "CleanupUserDataTask": "Kasutajaandmete puhastamise ülesanne",
     "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mis pole enam vähemalt 90 päeva saadaval olnud."
 }
