@@ -123,7 +123,7 @@
     "External": "Väline",
     "HearingImpaired": "Kuulmispuudega",
     "TaskKeyframeExtractorDescription": "Eraldab videofailidest võtmekaadreid, et luua täpsemaid HLS-i esitusloendeid. See ülesanne võib kesta pikka aega.",
-    "TaskKeyframeExtractor": "Võtmekaadri ekstraktor",
+    "TaskKeyframeExtractor": "Võtmekaadrite eraldamine",
     "TaskRefreshTrickplayImages": "Loo trickplay pildid",
     "TaskRefreshTrickplayImagesDescription": "Loob trickplay eelvaated videotele lubatud meediakogudes.",
     "TaskAudioNormalization": "Heli Normaliseerimine",
