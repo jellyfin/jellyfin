@@ -83,6 +83,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "Smith/Kotzen",
             "We;Na",
             "LSR/CITY",
+            "Kairon; IRSE!",
         };
 
         /// <summary>
