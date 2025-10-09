@@ -12,6 +12,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Cleans up all Music artists that have been migrated in the 10.11 RC migrations.
 /// </summary>
+[JellyfinMigration("2025-10-09T20:00:00", nameof(CleanMusicArtist))]
+[JellyfinMigrationBackup(JellyfinDb = true)]
 public class CleanMusicArtist : IAsyncMigrationRoutine
 {
     private readonly IStartupLogger<CleanMusicArtist> _startupLogger;
