@@ -22,7 +22,7 @@ public class AudioDbArtistExternalUrlProvider : IExternalUrlProvider
             var baseUrl = "https://www.theaudiodb.com/";
             switch (item)
             {
-                case MusicAlbum:
+                case MusicArtist:
                 case Person:
                     yield return baseUrl + $"artist/{externalId}";
                     break;
