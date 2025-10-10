@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 var item = _libraryManager.GetItemById(itemId);
 
-                if (!item?.IsVisibleStandalone(user) ?? true)
+                if (item is null || !item.IsVisibleStandalone(user))
                 {
                     return false;
                 }
