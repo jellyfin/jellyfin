@@ -29,6 +29,7 @@ public class EncodingOptions
         // plus it's the default one in ffmpeg if you don't specify anything
         VaapiDevice = "/dev/dri/renderD128";
         QsvDevice = string.Empty;
+        CudaDevice = 0;
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         EnableVideoToolboxTonemapping = false;
@@ -145,6 +146,11 @@ public class EncodingOptions
     /// Gets or sets the QSV device.
     /// </summary>
     public string QsvDevice { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Cuda device.
+    /// </summary>
+    public int CudaDevice { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether tonemapping is enabled.
