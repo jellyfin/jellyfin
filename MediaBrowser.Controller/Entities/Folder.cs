@@ -457,6 +457,12 @@ namespace MediaBrowser.Controller.Entities
                 {
                     foreach (var item in itemsRemoved)
                     {
+                        if (!item.CanDelete())
+                        {
+                            Logger.LogDebug("Item marked as non-removable, skipping: {Path}", item.Path ?? item.Name);
+                            continue;
+                        }
+
                         if (item.IsFileProtocol)
                         {
                             Logger.LogDebug("Removed item: {Path}", item.Path);
