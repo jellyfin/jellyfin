@@ -1238,7 +1238,6 @@ public sealed class BaseItemRepository
             .Select(e => e!.Id);
 
         var query = context.BaseItems
-            .AsQueryable()
             .Include(e => e.TrailerTypes)
             .Include(e => e.Provider)
             .Include(e => e.LockedFields)
