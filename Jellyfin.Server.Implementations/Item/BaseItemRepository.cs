@@ -1245,7 +1245,7 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
-        ApplyOrder(query, filter);
+        query = ApplyOrder(query, filter);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
