@@ -49,7 +49,6 @@ namespace Jellyfin.Server.Implementations.Tests.SyncPlay
         [Fact]
         public void HasAccessToPlayQueue_ReturnsFalse_WhenLibraryReturnsNullForItem()
         {
-            // Arrange
             var mockLogger = new Mock<ILogger<Emby.Server.Implementations.SyncPlay.Group>>();
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
