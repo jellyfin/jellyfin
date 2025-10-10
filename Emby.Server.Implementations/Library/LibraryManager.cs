@@ -2129,6 +2129,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            item.ValidateImages();
+
             _itemRepository.SaveImages(item);
 
             RegisterItem(item);
@@ -3051,10 +3053,10 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
-
                     StartScanInBackground();
                 }
                 else
