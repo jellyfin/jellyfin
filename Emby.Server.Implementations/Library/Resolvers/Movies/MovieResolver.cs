@@ -369,12 +369,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // We need to only look at the name of this actual item (not parents)
                 var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path.AsSpan()) : Path.GetFileName(item.ContainingFolderPath.AsSpan());
 
-                if (!justName.IsEmpty)
+                var tmdbid = justName.GetAttributeValue("tmdbid");
+
+                // If not in a mixed folder and ID not found in folder path, check filename
+                if (string.IsNullOrEmpty(tmdbid) && !item.IsInMixedFolder)
                 {
-                    // Check for TMDb id
-                    var tmdbid = justName.GetAttributeValue("tmdbid");
-                    item.TrySetProviderId(MetadataProvider.Tmdb, tmdbid);
+                    tmdbid = Path.GetFileName(item.Path.AsSpan()).GetAttributeValue("tmdbid");
                 }
+
+                item.TrySetProviderId(MetadataProvider.Tmdb, tmdbid);
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
