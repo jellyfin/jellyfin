@@ -107,6 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // Additional Mappings
             _validProviderIds.Add("collectionnumber", "TmdbCollection");
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("tmdbcol", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
 
             Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
@@ -590,7 +591,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    item.TrySetProviderId(provider, providerId);
+
+                    if (!string.IsNullOrEmpty(provider))
+                    {
+                        if (_validProviderIds.TryGetValue(provider, out string? normalizedProvider))
+                        {
+                            item.TrySetProviderId(normalizedProvider, providerId);
+                        }
+                        else
+                        {
+                            item.TrySetProviderId(provider, providerId);
+                        }
+                    }
 
                     break;
                 case "thumb":
