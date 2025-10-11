@@ -275,5 +275,24 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.StartsWith(">>", item.Overview, StringComparison.InvariantCulture);
             Assert.EndsWith("<<", item.Overview, StringComparison.InvariantCulture);
         }
+
+        [Fact]
+        public void Parse_TmdbcolUniqueId_NormalizedToTmdbCollection()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Lilo & Stitch.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            // Verify that <uniqueid type="tmdbcol"> is normalized to TmdbCollection
+            Assert.True(item.ProviderIds.ContainsKey(MetadataProvider.TmdbCollection.ToString()));
+            Assert.Equal("97020", item.ProviderIds[MetadataProvider.TmdbCollection.ToString()]);
+
+            // Verify that the lowercase "tmdbcol" is NOT in the provider IDs
+            Assert.False(item.ProviderIds.ContainsKey("tmdbcol"));
+        }
     }
 }
