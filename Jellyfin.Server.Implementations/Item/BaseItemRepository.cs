@@ -1232,8 +1232,20 @@ public sealed class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
-        var query = TranslateQuery(innerQuery, context, outerQueryFilter)
-            .GroupBy(e => e.PresentationUniqueKey);
+        var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
+            .GroupBy(e => e.PresentationUniqueKey)
+            .Select(e => e.FirstOrDefault())
+            .Select(e => e!.Id);
+
+        var query = context.BaseItems
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields)
+            .Include(e => e.Images)
+            .AsSingleQuery()
+            .Where(e => masterQuery.Contains(e.Id));
+
+        query = ApplyOrder(query, filter);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
@@ -1288,12 +1300,7 @@ public sealed class BaseItemRepository
 
             var resultQuery = query.Select(e => new
             {
-                item = e.AsQueryable()
-                        .Include(e => e.TrailerTypes)
-                        .Include(e => e.Provider)
-                        .Include(e => e.LockedFields)
-                        .Include(e => e.Images)
-                        .AsSingleQuery().First(),
+                item = e,
                 // TODO: This is bad refactor!
                 itemCount = new ItemCounts()
                 {
@@ -1325,13 +1332,6 @@ public sealed class BaseItemRepository
             result.Items =
             [
                 .. query
-                    .Select(e => e.AsQueryable()
-                        .Include(e => e.TrailerTypes)
-                        .Include(e => e.Provider)
-                        .Include(e => e.LockedFields)
-                        .Include(e => e.Images)
-                        .AsSingleQuery()
-                        .First())
                     .AsEnumerable()
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
