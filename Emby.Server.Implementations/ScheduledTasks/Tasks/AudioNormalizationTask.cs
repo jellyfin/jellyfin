@@ -261,14 +261,22 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             using var reader = process.StandardError;
             float? lufs = null;
+            var foundLufs = false;
             await foreach (var line in reader.ReadAllLinesAsync(cancellationToken).ConfigureAwait(false))
             {
-                Match match = LUFSRegex().Match(line);
-                if (match.Success)
+                if (foundLufs)
                 {
-                    lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
-                    break;
+                    continue;
                 }
+
+                Match match = LUFSRegex().Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                lufs = float.Parse(match.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                foundLufs = true;
             }
 
             if (lufs is null)
