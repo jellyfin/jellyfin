@@ -50,6 +50,8 @@ public interface IChapterManager
     /// <summary>
     /// Deletes the chapter images.
     /// </summary>
-    /// <param name="video">Video to use.</param>
-    void DeleteChapterImages(Video video);
+    /// <param name="itemId">The item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
+    Task DeleteChapterImageDataAsync(Guid itemId, CancellationToken cancellationToken);
 }
