@@ -2024,7 +2024,18 @@ public sealed class BaseItemRepository
 
         if (filter.ContributingArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ContributingArtistIds);
+            var contributingNames = context.BaseItems
+                .Where(b => filter.ContributingArtistIds.Contains(b.Id))
+                .Select(b => b.CleanName);
+
+            baseQuery = baseQuery.Where(e =>
+                e.ItemValues!.Any(ivm =>
+                    ivm.ItemValue.Type == ItemValueType.Artist &&
+                    contributingNames.Contains(ivm.ItemValue.CleanValue))
+                &&
+                !e.ItemValues!.Any(ivm =>
+                    ivm.ItemValue.Type == ItemValueType.AlbumArtist &&
+                    contributingNames.Contains(ivm.ItemValue.CleanValue)));
         }
 
         if (filter.AlbumIds.Length > 0)
