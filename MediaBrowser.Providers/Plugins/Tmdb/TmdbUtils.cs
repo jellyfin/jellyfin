@@ -152,9 +152,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             // Handle es-419 (Latin American Spanish) by converting to regional variant
-            if (language == "es-419" && !string.IsNullOrEmpty(countryCode))
+            if (string.Equals(language, "es-419", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(countryCode))
             {
-                language = countryCode == "AR" ? "es-AR" : "es-MX";
+                language = string.Equals(countryCode, "AR", StringComparison.OrdinalIgnoreCase)
+                    ? "es-AR"
+                    : "es-MX";
             }
 
             // TMDb requires this to be uppercase
