@@ -80,6 +80,11 @@ public class ConfigurationController : BaseJellyfinApiController
     [ProducesFile(MediaTypeNames.Application.Json)]
     public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
     {
+        if (string.Equals(key, "database", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound();
+        }
+
         return _configurationManager.GetConfiguration(key);
     }
 
@@ -95,6 +100,11 @@ public class ConfigurationController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateNamedConfiguration([FromRoute, Required] string key, [FromBody, Required] JsonDocument configuration)
     {
+        if (string.Equals(key, "database", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound();
+        }
+
         var configurationType = _configurationManager.GetConfigurationType(key);
         var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions);
 
