@@ -316,7 +316,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.Played = played;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
@@ -333,7 +337,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.PlayCount = count;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
@@ -350,7 +358,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (userData is not null)
                             {
                                 userData.LastPlayedDate = lastPlayed;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
                             }
                         }
                     }
