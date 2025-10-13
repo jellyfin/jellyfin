@@ -72,6 +72,6 @@ public class ExternalDataManager : IExternalDataManager
         await _keyframeManager.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
         await _mediaSegmentManager.DeleteSegmentsAsync(itemId, cancellationToken).ConfigureAwait(false);
         await _trickplayManager.DeleteTrickplayDataAsync(itemId, cancellationToken).ConfigureAwait(false);
-        await _chapterManager.DeleteChapterImageDataAsync(itemId, cancellationToken).ConfigureAwait(false);
+        await _chapterManager.DeleteChapterDataAsync(itemId, cancellationToken).ConfigureAwait(false);
     }
 }

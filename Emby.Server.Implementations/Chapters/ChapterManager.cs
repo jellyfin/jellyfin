@@ -250,7 +250,7 @@ public class ChapterManager : IChapterManager
     }
 
     /// <inheritdoc />
-    public async Task DeleteChapterImageDataAsync(Guid itemId, CancellationToken cancellationToken)
+    public async Task DeleteChapterDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
         await _chapterRepository.DeleteChaptersAsync(itemId, cancellationToken).ConfigureAwait(false);
     }
