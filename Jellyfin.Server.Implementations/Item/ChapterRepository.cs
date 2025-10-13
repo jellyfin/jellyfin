@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Drawing;
@@ -82,11 +84,14 @@ public class ChapterRepository : IChapterRepository
     }
 
     /// <inheritdoc />
-    public void DeleteChapters(Guid itemId)
+    public async Task DeleteChaptersAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        using var context = _dbProvider.CreateDbContext();
-        context.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDelete();
-        context.SaveChanges();
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            await dbContext.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private Chapter Map(ChapterInfo chapterInfo, int index, Guid itemId)
