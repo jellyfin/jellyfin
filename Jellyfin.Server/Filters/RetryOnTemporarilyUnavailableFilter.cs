@@ -8,7 +8,7 @@ internal class RetryOnTemporarilyUnavailableFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        operation.Responses.Add(
+        operation.Responses.TryAdd(
             "503",
             new OpenApiResponse
             {
