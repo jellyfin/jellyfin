@@ -317,7 +317,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 userData.Played = played;
 
-                                if (!item.Id.Equals(Guid.Empty))
+                                if (!item.Id.IsEmpty())
                                 {
                                     _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                                 }
@@ -338,7 +338,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 userData.PlayCount = count;
 
-                                if (!item.Id.Equals(Guid.Empty))
+                                if (!item.Id.IsEmpty())
                                 {
                                     _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                                 }
@@ -359,7 +359,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 userData.LastPlayedDate = lastPlayed;
 
-                                if (!item.Id.Equals(Guid.Empty))
+                                if (!item.Id.IsEmpty())
                                 {
                                     _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                                 }
