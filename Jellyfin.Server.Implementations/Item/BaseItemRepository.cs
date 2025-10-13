@@ -2014,7 +2014,7 @@ public sealed class BaseItemRepository
 
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ArtistIds);
+            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ArtistIds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
