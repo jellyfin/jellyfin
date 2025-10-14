@@ -86,7 +86,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken).ConfigureAwait(false);
 
             // No need to pass the cancellation token to GetReleaseGroupResultAsync as we're already passing it to ToBlockingEnumerable
-            return GetReleaseGroupResult(releaseGroupResult.Releases, CancellationToken.None);
+            return GetReleaseGroupResultAsync(releaseGroupResult.Releases, CancellationToken.None).ToBlockingEnumerable(cancellationToken);
         }
 
         var artistMusicBrainzId = searchInfo.GetMusicBrainzArtistId();
@@ -131,7 +131,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         }
     }
 
-    private IEnumerable<RemoteSearchResult> GetReleaseGroupResult(IEnumerable<IRelease>? releaseSearchResults, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    private async IAsyncEnumerable<RemoteSearchResult> GetReleaseGroupResultAsync(IEnumerable<IRelease>? releaseSearchResults, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (releaseSearchResults is null)
         {
@@ -141,7 +141,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         foreach (var result in releaseSearchResults)
         {
             // Fetch full release info, otherwise artists are missing
-            var fullResult = _musicBrainzQuery.LookupRelease(result.Id, Include.Artists | Include.ReleaseGroups, cancellationToken);
+            var fullResult = await _musicBrainzQuery.LookupReleaseAsync(result.Id, Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
             yield return GetReleaseResult(fullResult);
         }
     }
