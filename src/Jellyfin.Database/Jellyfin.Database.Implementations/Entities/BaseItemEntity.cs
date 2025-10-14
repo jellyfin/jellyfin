@@ -146,6 +146,8 @@ public class BaseItemEntity
 
     public Guid? ParentId { get; set; }
 
+    public BaseItemEntity? DirectParent { get; set; }
+
     public Guid? TopParentId { get; set; }
 
     public Guid? SeasonId { get; set; }
@@ -167,6 +169,8 @@ public class BaseItemEntity
     public ICollection<AncestorId>? Parents { get; set; }
 
     public ICollection<AncestorId>? Children { get; set; }
+
+    public ICollection<BaseItemEntity>? DirectChildren { get; set; }
 
     public ICollection<BaseItemMetadataField>? LockedFields { get; set; }
 

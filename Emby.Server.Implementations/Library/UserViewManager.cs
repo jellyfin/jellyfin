@@ -374,13 +374,22 @@ namespace Emby.Server.Implementations.Library
 
             if (request.GroupItems)
             {
-                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.tvshows))
+                var collectionType = parents
+                    .Select(parent => parent switch
+                    {
+                        ICollectionFolder collectionFolder => collectionFolder.CollectionType,
+                        UserView userView => userView.CollectionType,
+                        _ => null
+                    })
+                    .FirstOrDefault(type => type is not null);
+
+                if (collectionType == CollectionType.tvshows)
                 {
                     query.Limit = limit;
                     return _libraryManager.GetLatestItemList(query, parents, CollectionType.tvshows);
                 }
 
-                if (parents.OfType<ICollectionFolder>().All(i => i.CollectionType == CollectionType.music))
+                if (collectionType == CollectionType.music)
                 {
                     query.Limit = limit;
                     return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);

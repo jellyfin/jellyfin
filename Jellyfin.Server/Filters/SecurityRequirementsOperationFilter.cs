@@ -66,15 +66,8 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
             return;
         }
 
-        if (!operation.Responses.ContainsKey("401"))
-        {
-            operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-        }
-
-        if (!operation.Responses.ContainsKey("403"))
-        {
-            operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
-        }
+        operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
+        operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
 
         var scheme = new OpenApiSecurityScheme
         {

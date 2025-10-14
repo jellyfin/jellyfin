@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -999,16 +999,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid>("PeopleId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ListOrder")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Role")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("ListOrder")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("SortOrder")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ItemId", "PeopleId");
+                    b.HasKey("ItemId", "PeopleId", "Role");
 
                     b.HasIndex("PeopleId");
 
@@ -1450,6 +1450,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemEntity", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "DirectParent")
+                        .WithMany("DirectChildren")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("DirectParent");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1651,6 +1661,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Chapters");
 
                     b.Navigation("Children");
+
+                    b.Navigation("DirectChildren");
 
                     b.Navigation("Images");
 

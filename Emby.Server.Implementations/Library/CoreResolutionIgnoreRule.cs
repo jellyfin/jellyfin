@@ -37,16 +37,16 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
+            if (IgnorePatterns.ShouldIgnore(fileInfo.FullName))
+            {
+                return true;
+            }
+
             // Don't ignore top level folders
             if (fileInfo.IsDirectory
                 && (parent is AggregateFolder || (parent?.IsTopParent ?? false)))
             {
                 return false;
-            }
-
-            if (IgnorePatterns.ShouldIgnore(fileInfo.FullName))
-            {
-                return true;
             }
 
             if (parent is null)

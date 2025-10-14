@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            var result = GetChildren(user, true).Count;
+            var result = GetChildren(user, true, null).Count;
 
             return result;
         }

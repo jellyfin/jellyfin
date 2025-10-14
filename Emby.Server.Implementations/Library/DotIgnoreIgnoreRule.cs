@@ -50,6 +50,13 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
                 return false;
             }
 
+            // Fast path in case the ignore files isn't a symlink and is empty
+            if ((dirIgnoreFile.Attributes & FileAttributes.ReparsePoint) == 0
+                && dirIgnoreFile.Length == 0)
+            {
+                return true;
+            }
+
             // ignore the directory only if the .ignore file is empty
             // evaluate individual files otherwise
             return string.IsNullOrWhiteSpace(GetFileContent(dirIgnoreFile));

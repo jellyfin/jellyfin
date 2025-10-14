@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 List<TvEpisode>? result = null;
                 for (int? episode = startindex; episode <= endindex; episode++)
                 {
-                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                     if (episodeInfo is not null)
                     {
                         (result ??= new List<TvEpisode>()).Add(episodeInfo);
@@ -157,7 +157,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             else
             {
                 episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
             }
 

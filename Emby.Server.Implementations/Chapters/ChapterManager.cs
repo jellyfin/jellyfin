@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -251,23 +250,9 @@ public class ChapterManager : IChapterManager
     }
 
     /// <inheritdoc />
-    public void DeleteChapterImages(Video video)
+    public async Task DeleteChapterDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        var path = _pathManager.GetChapterImageFolderPath(video);
-        try
-        {
-            if (Directory.Exists(path))
-            {
-                _logger.LogInformation("Removing chapter images for {Name} [{Id}]", video.Name, video.Id);
-                Directory.Delete(path, true);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("Failed to remove chapter image folder for {Item}: {Exception}", video.Id, ex);
-        }
-
-        _chapterRepository.DeleteChapters(video.Id);
+        await _chapterRepository.DeleteChaptersAsync(itemId, cancellationToken).ConfigureAwait(false);
     }
 
     private IReadOnlyList<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)

@@ -6,7 +6,6 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Sorting
 {
@@ -54,7 +53,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsFavoriteOrLiked(User) ? 0 : 1;
+            return x.IsFavoriteOrLiked(User, userItemData: null) ? 0 : 1;
         }
     }
 }

@@ -39,7 +39,7 @@ public class BackupService : IBackupService
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
     };
 
-    private readonly Version _backupEngineVersion = Version.Parse("0.2.0");
+    private readonly Version _backupEngineVersion = new Version(0, 2, 0);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupService"/> class.
