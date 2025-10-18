@@ -1019,6 +1019,15 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.AlbumId = albumParent.Id;
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
+                    if (albumParent.LUFS.HasValue)
+                    {
+                        // -18 LUFS reference, same as ReplayGain 2.0, compatible with ReplayGain 1.0
+                        dto.AlbumNormalizationGain = -18f - albumParent.LUFS;
+                    }
+                    else if (albumParent.NormalizationGain.HasValue)
+                    {
+                        dto.AlbumNormalizationGain = albumParent.NormalizationGain;
+                    }
                 }
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))
