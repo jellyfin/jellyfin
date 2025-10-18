@@ -371,28 +371,29 @@ public sealed class BaseItemRepository
         return query.ToArray();
     }
 
-    private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyGroupingFilter(
+    JellyfinDbContext context,
+    IQueryable<BaseItemEntity> dbQuery,
+    InternalItemsQuery filter)
     {
-        // This whole block is needed to filter duplicate entries on request
-        // for the time being it cannot be used because it would destroy the ordering
-        // this results in "duplicate" responses for queries that try to lookup individual series or multiple versions but
-        // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
+        var groupByPresentation = EnableGroupByPresentationUniqueKey(filter);
+        var groupBySeries = filter.GroupBySeriesPresentationUniqueKey;
 
-        var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
+        if (groupByPresentation || groupBySeries)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
-        }
-        else if (enableGroupByPresentationUniqueKey)
-        {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
-        }
-        else if (filter.GroupBySeriesPresentationUniqueKey)
-        {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+            var reps =
+                dbQuery
+                    .GroupBy(e => new
+                    {
+                        Presentation = groupByPresentation ? e.PresentationUniqueKey : null,
+                        Series = groupBySeries ? e.SeriesPresentationUniqueKey : null
+                    })
+                    .Select(g => g
+                        .OrderBy(x => x.PrimaryVersionId != null)
+                        .Select(x => x.Id)
+                        .First());
+
+            dbQuery = dbQuery.Where(e => reps.Contains(e.Id));
         }
         else
         {
@@ -400,9 +401,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyOrder(dbQuery, filter);
-
         dbQuery = ApplyNavigations(dbQuery, filter);
-
         return dbQuery;
     }
 
