@@ -15,6 +15,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Metrics;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -37,6 +38,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public partial class UserManager : IUserManager
     {
+        private readonly UserMetrics? _userMetrics;
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
         private readonly INetworkManager _networkManager;
@@ -64,6 +66,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="serverConfigurationManager">The system config manager.</param>
         /// <param name="passwordResetProviders">The password reset providers.</param>
         /// <param name="authenticationProviders">The authentication providers.</param>
+        /// <param name="userMetrics">User metrics processor.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
@@ -73,7 +76,8 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger,
             IServerConfigurationManager serverConfigurationManager,
             IEnumerable<IPasswordResetProvider> passwordResetProviders,
-            IEnumerable<IAuthenticationProvider> authenticationProviders)
+            IEnumerable<IAuthenticationProvider> authenticationProviders,
+            UserMetrics? userMetrics = null)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -102,6 +106,11 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 _users.Add(user.Id, user);
             }
+
+            _userMetrics = userMetrics;
+            // Update metrics after initialization
+
+            _userMetrics?.UpdateUserMetrics(_users.Values);
         }
 
         /// <inheritdoc/>
@@ -209,7 +218,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
-
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             return user;
         }
 
@@ -238,7 +247,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
-
             return newUser;
         }
 
@@ -278,7 +286,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             _users.Remove(userId);
-
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
@@ -501,6 +509,7 @@ namespace Jellyfin.Server.Implementations.Users
                     remoteEndPoint);
             }
 
+            _userMetrics?.UpdateUserMetrics(_users.Values);
             return success ? user : null;
         }
 
@@ -723,6 +732,7 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Update(user);
                 _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _userMetrics?.UpdateUserMetrics(_users.Values);
             }
         }
 
@@ -892,6 +902,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            _userMetrics?.UpdateUserMetrics(_users.Values);
         }
     }
 }
