@@ -18,6 +18,13 @@ namespace Emby.Naming.TV
         private static partial Regex SeriesNameRegex();
 
         /// <summary>
+        /// Regex that matches titles with year in parentheses. Captures the title (which may be
+        /// numeric) before the year, i.e. turns "1923 (2022)" into "1923".
+        /// </summary>
+        [GeneratedRegex(@"(?<title>.+?)\s*\(\d{4}\)")]
+        private static partial Regex TitleWithYearRegex();
+
+        /// <summary>
         /// Resolve information about series from path.
         /// </summary>
         /// <param name="options"><see cref="NamingOptions"/> object passed to <see cref="SeriesPathParser"/>.</param>
@@ -26,6 +33,20 @@ namespace Emby.Naming.TV
         public static SeriesInfo Resolve(NamingOptions options, string path)
         {
             string seriesName = Path.GetFileName(path);
+
+            // First check if the filename matches a title with year pattern (handles numeric titles)
+            if (!string.IsNullOrEmpty(seriesName))
+            {
+                var titleWithYearMatch = TitleWithYearRegex().Match(seriesName);
+                if (titleWithYearMatch.Success)
+                {
+                    seriesName = titleWithYearMatch.Groups["title"].Value.Trim();
+                    return new SeriesInfo(path)
+                    {
+                        Name = seriesName
+                    };
+                }
+            }
 
             SeriesPathParserResult result = SeriesPathParser.Parse(options, path);
             if (result.Success)
