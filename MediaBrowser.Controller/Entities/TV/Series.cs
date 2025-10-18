@@ -65,6 +65,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public string DisplayOrder { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether episode lists should be inverted.
+        /// </summary>
+        public bool InvertEpisodeOrder { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
@@ -418,7 +423,9 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var sortBy = (parentSeason.IndexNumber ?? -1) == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
 
-            return LibraryManager.Sort(episodes, user, new[] { sortBy }, SortOrder.Ascending).ToList();
+            var sortOrder = InvertEpisodeOrder ? SortOrder.Descending : SortOrder.Ascending;
+
+            return LibraryManager.Sort(episodes, user, new[] { sortBy }, sortOrder).ToList();
         }
 
         /// <summary>
