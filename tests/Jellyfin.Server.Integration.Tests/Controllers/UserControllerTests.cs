@@ -147,5 +147,22 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
+
+        [Fact]
+        [Priority(2)]
+        public async Task UpdateUserPassword_Empty_RemoveSetPassword()
+        {
+            var client = _factory.CreateClient();
+
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+
+            var createRequest = new UpdateUserPassword()
+            {
+                CurrentPw = "4randomPa$$word",
+            };
+
+            using var response = await UpdateUserPassword(client, _testUserId, createRequest);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
     }
 }
