@@ -148,7 +148,7 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
             }
             catch (JsonException jsonException)
             {
-                _logger.LogWarning("Failed to read {Path}; {Exception}", cachePath, jsonException);
+                _logger.LogWarning(jsonException, "Failed to read {Path}", cachePath);
             }
         }
 
