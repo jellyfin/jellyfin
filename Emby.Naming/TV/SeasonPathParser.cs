@@ -86,7 +86,7 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (filename.Length > 0 && char.ToLowerInvariant(filename[0]) == 's')
+            if (filename.Length > 0 && (filename[0] == 'S' || filename[0] == 's'))
             {
                 var testFilename = filename.AsSpan()[1..];
 
