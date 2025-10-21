@@ -614,6 +614,13 @@ public sealed class BaseItemRepository
             else
             {
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+
+                if (entity.Images is { Count: > 0 })
+                {
+                    context.BaseItemImageInfos.AddRange(entity.Images);
+                }
+
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
         }
