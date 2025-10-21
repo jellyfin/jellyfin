@@ -250,6 +250,7 @@ public sealed class SetupServer : IDisposable
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
                                                 { "logs", startupLogEntries },
+                                                { "networkManagerReady", networkManager is not null },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
                                             new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
