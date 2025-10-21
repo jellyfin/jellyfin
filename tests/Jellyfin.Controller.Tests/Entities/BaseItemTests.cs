@@ -179,7 +179,7 @@ public class BaseItemTests
         return (video, mediaSourceManager);
     }
 
-    private class TestableVideo : Video
+    private sealed class TestableVideo : Video
     {
         public TestableVideo()
         {
