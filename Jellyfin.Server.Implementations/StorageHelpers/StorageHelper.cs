@@ -27,7 +27,7 @@ public static class StorageHelper
         TestDataDirectorySize(applicationPaths.LogDirectoryPath, logger, FiveHundredAndTwelveMegaByte);
         TestDataDirectorySize(applicationPaths.CachePath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.ProgramDataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.TempDirectory, logger, TwoGigabyte);
+        TestDataDirectorySize(applicationPaths.TempDirectory, logger, FiveHundredAndTwelveMegaByte);
     }
 
     /// <summary>
