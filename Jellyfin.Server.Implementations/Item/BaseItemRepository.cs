@@ -2353,17 +2353,17 @@ public sealed class BaseItemRepository
 
         if (filter.HasImdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "imdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Imdb"));
         }
 
         if (filter.HasTmdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tmdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Tmdb"));
         }
 
         if (filter.HasTvdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tvdb"));
+            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Tvdb"));
         }
 
         var queryTopParentIds = filter.TopParentIds;
