@@ -590,7 +590,6 @@ public sealed class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
 
         if (!context.BaseItems.Any(bi => bi.Id == item.Id))
@@ -600,7 +599,7 @@ public sealed class BaseItemRepository
         }
 
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(images);
+        context.BaseItemImageInfos.AddRange(item.ImageInfos.Select(e => Map(item.Id, e)));
         context.SaveChanges();
     }
 
@@ -965,7 +964,17 @@ public sealed class BaseItemRepository
 
         if (entity.Images is not null)
         {
-            dto.ImageInfos = entity.Images.Select(e => Map(e, appHost)).ToArray();
+            // Order images by priority matching LocalImageProvider discovery order
+            var mediaFileName = !string.IsNullOrEmpty(entity.Path)
+                ? System.IO.Path.GetFileNameWithoutExtension(entity.Path)
+                : null;
+
+            dto.ImageInfos = entity.Images
+                .OrderBy(e => GetImageOrderPriority(e.Path, mediaFileName))
+                .ThenBy(e => GetNumericImageIndex(e.Path))
+                .ThenBy(e => e.Path, StringComparer.OrdinalIgnoreCase)
+                .Select(e => Map(e, appHost))
+                .ToArray();
         }
 
         // dto.Type = entity.Type;
@@ -1495,6 +1504,112 @@ public sealed class BaseItemRepository
             Width = e.Width,
             Type = (ImageType)e.ImageType
         };
+    }
+
+    /// <summary>
+    /// Gets the priority group for image ordering based on filename patterns.
+    /// This matches the discovery order in LocalImageProvider.
+    /// </summary>
+    /// <param name="path">The image path.</param>
+    /// <param name="mediaFileName">The media file name without extension.</param>
+    /// <returns>Priority group (lower number = higher priority).</returns>
+    private static int GetImageOrderPriority(string path, string? mediaFileName)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return 999;
+        }
+
+        var normalizedPath = path.Replace('\\', '/');
+        var fileName = System.IO.Path.GetFileNameWithoutExtension(normalizedPath);
+        var fileNameLower = fileName.ToLowerInvariant();
+
+        // Priority 0: {mediaFileName}-fanart (any extension)
+        if (!string.IsNullOrEmpty(mediaFileName))
+        {
+            var expectedName = $"{mediaFileName}-fanart".ToLowerInvariant();
+            if (fileNameLower == expectedName)
+            {
+                return 0;
+            }
+        }
+
+        // Priority 1: fanart (not in extrafanart folder)
+        if (fileNameLower == "fanart" && !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        // Priority 2: fanart-N (numbered, not in extrafanart)
+        if (fileNameLower.StartsWith("fanart-", StringComparison.Ordinal) &&
+            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        // Priority 3: background or background-N
+        if (fileNameLower == "background" || fileNameLower.StartsWith("background-", StringComparison.Ordinal))
+        {
+            return 3;
+        }
+
+        // Priority 4: art or art-N
+        if (fileNameLower == "art" || fileNameLower.StartsWith("art-", StringComparison.Ordinal))
+        {
+            return 4;
+        }
+
+        // Priority 5: extrafanart folder
+        if (normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 5;
+        }
+
+        // Priority 6: backdrop or backdropN
+        if (fileNameLower == "backdrop" || fileNameLower.StartsWith("backdrop", StringComparison.Ordinal))
+        {
+            return 6;
+        }
+
+        // Default: lowest priority
+        return 999;
+    }
+
+    /// <summary>
+    /// Gets numeric index from numbered image filenames (e.g., fanart-5 returns 5, backdrop2 returns 2).
+    /// </summary>
+    private static int GetNumericImageIndex(string path)
+    {
+        var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+        // Try with dash first (fanart-5, background-2)
+        var dashIndex = fileName.LastIndexOf('-');
+        if (dashIndex >= 0 && dashIndex < fileName.Length - 1)
+        {
+            var numberPart = fileName.Substring(dashIndex + 1);
+            if (int.TryParse(numberPart, out var index))
+            {
+                return index;
+            }
+        }
+
+        // Try without dash for backdrop files (backdrop1, backdrop2)
+        // Find where the trailing digits start
+        var fileNameLower = fileName.ToLowerInvariant();
+        if (fileNameLower.StartsWith("backdrop", StringComparison.Ordinal))
+        {
+            var digitsStart = 8; // "backdrop".Length
+            if (digitsStart < fileName.Length)
+            {
+                var digitsPart = fileName.Substring(digitsStart);
+                if (int.TryParse(digitsPart, out var index))
+                {
+                    return index;
+                }
+            }
+        }
+
+        return int.MaxValue;
     }
 
     private string? GetPathToSave(string path)
