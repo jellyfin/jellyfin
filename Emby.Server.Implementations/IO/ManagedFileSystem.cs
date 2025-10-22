@@ -152,6 +152,10 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public void MoveDirectory(string source, string destination)
         {
+            // Make sure parent directory of target exists
+            var parent = Directory.GetParent(destination);
+            parent?.Create();
+
             try
             {
                 Directory.Move(source, destination);
