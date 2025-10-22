@@ -77,7 +77,7 @@ public static class StorageHelper
         var drive = new DriveInfo(path);
         if (threshold != -1 && drive.AvailableFreeSpace < threshold)
         {
-            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Required: at least {HumanizeStorageSize(threshold)}.");
+            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Available: {HumanizeStorageSize(drive.AvailableFreeSpace)}, Required: {HumanizeStorageSize(threshold)}.");
         }
 
         logger.LogInformation(
