@@ -2046,7 +2046,7 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ExcludeArtistIds, true);
+            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ExcludeArtistIds, true);
         }
 
         if (filter.GenreIds.Count > 0)
