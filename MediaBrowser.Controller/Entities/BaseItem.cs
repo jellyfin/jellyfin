@@ -2317,25 +2317,21 @@ namespace MediaBrowser.Controller.Entities
                 return Task.CompletedTask;
             }
 
-            if (!info1.IsLocalFile || !info2.IsLocalFile)
+            // Swap the SortOrder in the database instead of swapping physical files
+            ItemRepository.SwapImageSortOrder(Id, type, index1, index2);
+
+            // Swap the in-memory ImageInfos to reflect the new order
+            var images = ImageInfos.Where(i => i.Type == type).ToList();
+            if (index1 < images.Count && index2 < images.Count)
             {
-                // TODO: Not supported  yet
-                return Task.CompletedTask;
+                var imageIndex1 = Array.IndexOf(ImageInfos, images[index1]);
+                var imageIndex2 = Array.IndexOf(ImageInfos, images[index2]);
+
+                if (imageIndex1 >= 0 && imageIndex2 >= 0)
+                {
+                    (ImageInfos[imageIndex1], ImageInfos[imageIndex2]) = (ImageInfos[imageIndex2], ImageInfos[imageIndex1]);
+                }
             }
-
-            var path1 = info1.Path;
-            var path2 = info2.Path;
-
-            FileSystem.SwapFiles(path1, path2);
-
-            // Refresh these values
-            info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
-            info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
-
-            info1.Width = 0;
-            info1.Height = 0;
-            info2.Width = 0;
-            info2.Height = 0;
 
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
