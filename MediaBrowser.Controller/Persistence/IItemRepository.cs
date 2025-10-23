@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
@@ -34,6 +35,20 @@ public interface IItemRepository
     void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
 
     void SaveImages(BaseItem item);
+
+    /// <summary>
+    /// Swaps the sort order of two images for the specified item.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="imageType">The image type.</param>
+    /// <param name="index1">The first image index.</param>
+    /// <param name="index2">The second image index.</param>
+    void SwapImageSortOrder(Guid itemId, ImageType imageType, int index1, int index2)
+    {
+        // Default implementation for compatibility with external implementations
+        // that may not have been updated to support this method
+        throw new NotSupportedException("SwapImageSortOrder is not implemented for this repository.");
+    }
 
     /// <summary>
     /// Retrieves the item.
