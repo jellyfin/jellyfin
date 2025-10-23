@@ -40,75 +40,66 @@ public class RefreshCleanNames : IAsyncMigrationRoutine
     /// <inheritdoc />
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        const int batchSize = 1000;
-        int itemCount = 0, offset = 0;
+        const int Limit = 1000;
+        int itemCount = 0;
 
         var sw = Stopwatch.StartNew();
 
-        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        using var context = _dbProvider.CreateDbContext();
+        var records = context.BaseItems.Count(b => !string.IsNullOrEmpty(b.Name));
+        _logger.LogInformation("Refreshing CleanName for {Count} library items", records);
+
+        var processedInPartition = 0;
+
+        await foreach (var item in context.BaseItems
+                          .Where(b => !string.IsNullOrEmpty(b.Name))
+                          .OrderBy(e => e.Id)
+                          .WithPartitionProgress((partition) => _logger.LogInformation("Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}", partition * Limit, records, itemCount, sw.Elapsed))
+                          .PartitionEagerAsync(Limit, cancellationToken)
+                          .WithCancellation(cancellationToken)
+                          .ConfigureAwait(false))
         {
-            var totalRecords = await context.BaseItems.CountAsync(b => !string.IsNullOrEmpty(b.Name), cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Refreshing CleanName for {Count} library items", totalRecords);
-
-            do
+            try
             {
-                var baseQuery = context.BaseItems
-                    .Where(b => !string.IsNullOrEmpty(b.Name))
-                    .OrderBy(e => e.Id);
-
-                IQueryable<BaseItemEntity> query = baseQuery;
-
-                if (offset > 0)
+                var newCleanName = BaseItemRepository.GetCleanValue(item.Name ?? string.Empty);
+                if (newCleanName != item.CleanName)
                 {
-                    query = query.Skip(offset);
+                    _logger.LogDebug(
+                        "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
+                        item.Id,
+                        item.CleanName,
+                        newCleanName);
+                    item.CleanName = newCleanName;
+                    itemCount++;
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
+            }
 
-                var batch = await query.Take(batchSize).ToListAsync(cancellationToken).ConfigureAwait(false);
+            processedInPartition++;
 
-                if (batch.Count == 0)
-                {
-                    break;
-                }
-
-                foreach (var item in batch)
-                {
-                    try
-                    {
-                        var newCleanName = BaseItemRepository.GetCleanValue(item.Name ?? string.Empty);
-                        if (newCleanName != item.CleanName)
-                        {
-                            _logger.LogDebug(
-                                "Updating CleanName for item {Id}: '{OldValue}' -> '{NewValue}'",
-                                item.Id,
-                                item.CleanName,
-                                newCleanName);
-                            item.CleanName = newCleanName;
-                            itemCount++;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to update CleanName for item {Id} ({Name})", item.Id, item.Name);
-                    }
-                }
-
+            if (processedInPartition >= Limit)
+            {
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                offset += batch.Count;
-
-                _logger.LogInformation(
-                    "Processed: {Offset}/{Total} - Updated: {UpdatedCount} - Time: {Elapsed}",
-                    offset,
-                    totalRecords,
-                    itemCount,
-                    sw.Elapsed);
-            } while (offset < totalRecords);
-
-            _logger.LogInformation(
-                "Refreshed CleanName for {UpdatedCount} out of {TotalCount} items in {Time}",
-                itemCount,
-                totalRecords,
-                sw.Elapsed);
+                // Clear tracked entities to avoid memory growth across partitions
+                context.ChangeTracker.Clear();
+                processedInPartition = 0;
+            }
         }
+
+        // Save any remaining changes after the loop
+        if (processedInPartition > 0)
+        {
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            context.ChangeTracker.Clear();
+        }
+
+        _logger.LogInformation(
+            "Refreshed CleanName for {UpdatedCount} out of {TotalCount} items in {Time}",
+            itemCount,
+            records,
+            sw.Elapsed);
     }
 }
