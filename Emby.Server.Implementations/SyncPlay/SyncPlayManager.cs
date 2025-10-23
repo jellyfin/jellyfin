@@ -315,6 +315,26 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public IReadOnlyList<SyncPlayQueueItem> GetQueue(SessionInfo session)
+        {
+            ArgumentNullException.ThrowIfNull(session);
+            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
+            {
+                // Group lock required as Group is not thread-safe.
+                lock (group)
+                {
+                    // Make sure that session still belongs to this group.
+                    if (_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup) && checkGroup.GroupId.Equals(group.GroupId))
+                    {
+                        return group.PlayQueue.GetPlaylist();
+                    }
+                }
+            }
+
+            return new List<SyncPlayQueueItem>();
+        }
+
+        /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
             if (session is null)

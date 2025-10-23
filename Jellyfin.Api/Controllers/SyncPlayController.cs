@@ -222,6 +222,21 @@ public class SyncPlayController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets the current SyncPlay queue.
+    /// </summary>
+    /// <response code="200">Queue returned.</response>
+    /// <returns>An <see cref="IEnumerable{SyncPlayQueueItem}"/> containing the current queue items.</returns>
+    [HttpGet("Queue")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+    public async Task<ActionResult<IEnumerable<SyncPlayQueueItem>>> SyncPlayGetQueue()
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var queue = _syncPlayManager.GetQueue(currentSession) ?? [];
+        return Ok(queue.AsEnumerable());
+    }
+
+    /// <summary>
     /// Request unpause in SyncPlay group.
     /// </summary>
     /// <response code="204">Unpause update sent to all group members.</response>
