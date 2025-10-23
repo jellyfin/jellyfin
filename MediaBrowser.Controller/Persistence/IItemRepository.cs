@@ -51,12 +51,7 @@ public interface IItemRepository
     /// <param name="imageType">The image type.</param>
     /// <param name="index1">The first image index.</param>
     /// <param name="index2">The second image index.</param>
-    void SwapImageSortOrder(Guid itemId, ImageType imageType, int index1, int index2)
-    {
-        // Default implementation for compatibility with external implementations
-        // that may not have been updated to support this method
-        throw new NotSupportedException("SwapImageSortOrder is not implemented for this repository.");
-    }
+    void SwapImageSortOrder(Guid itemId, ImageType imageType, int index1, int index2);
 
     /// <summary>
     /// Retrieves the item.
