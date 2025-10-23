@@ -61,9 +61,10 @@ namespace MediaBrowser.Controller.Playlists
         /// </summary>
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="itemIds">The item ids.</param>
+        /// <param name="moveToTop">Optional. Whether to move the added item to the top.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId);
+        Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, bool? moveToTop, Guid userId);
 
         /// <summary>
         /// Removes from playlist.
