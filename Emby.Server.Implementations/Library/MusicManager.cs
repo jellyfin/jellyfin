@@ -30,11 +30,8 @@ namespace Emby.Server.Implementations.Library
         {
             var instantMixItems = GetInstantMixFromGenres(item.Genres, user, dtoOptions);
 
-            var result = new List<BaseItem> { item };
-            result.AddRange(instantMixItems.Where(i => !i.Id.Equals(item.Id)));
-
-            return result;
-}
+            return [item, .. instantMixItems.Where(i => !i.Id.Equals(item.Id))];
+        }
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User? user, DtoOptions dtoOptions)
