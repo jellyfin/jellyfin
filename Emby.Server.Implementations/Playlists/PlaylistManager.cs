@@ -198,7 +198,7 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(items, user, options);
         }
 
-        public Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, bool? moveToTop, Guid userId)
+        public Task AddItemToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, int? position, Guid userId)
         {
             var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
 
@@ -210,10 +210,10 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     EnableImages = true
                 },
-                moveToTop);
+                position);
         }
 
-        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User user, DtoOptions options, bool? moveToTop = null)
+        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User user, DtoOptions options, int? position = null)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
@@ -248,9 +248,24 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             // Update the playlist in the repository
-            if (moveToTop.HasValue && moveToTop.Value)
+            if (position.HasValue)
             {
-                playlist.LinkedChildren = [.. childrenToAdd, .. playlist.LinkedChildren];
+                if (position.Value <= 0)
+                {
+                    playlist.LinkedChildren = [.. childrenToAdd, .. playlist.LinkedChildren];
+                }
+                else if (position.Value >= playlist.LinkedChildren.Length)
+                {
+                    playlist.LinkedChildren = [.. playlist.LinkedChildren, .. childrenToAdd];
+                }
+                else
+                {
+                    playlist.LinkedChildren = [
+                        .. playlist.LinkedChildren[0..position.Value],
+                        .. childrenToAdd,
+                        .. playlist.LinkedChildren[position.Value..playlist.LinkedChildren.Length]
+                    ];
+                }
             }
             else
             {

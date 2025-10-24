@@ -359,7 +359,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="ids">Item id, comma delimited.</param>
-    /// <param name="moveToTop">Optional. Whether to move the added item to the top.</param>
+    /// <param name="position">Optional. 0-based index where to place the items or at the end if null.</param>
     /// <param name="userId">The userId.</param>
     /// <response code="204">Items added to playlist.</response>
     /// <response code="403">Access forbidden.</response>
@@ -372,7 +372,7 @@ public class PlaylistsController : BaseJellyfinApiController
     public async Task<ActionResult> AddItemToPlaylist(
         [FromRoute, Required] Guid playlistId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
-        [FromQuery] bool? moveToTop,
+        [FromQuery] int? position,
         [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -390,7 +390,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.AddItemToPlaylistAsync(playlistId, ids, moveToTop, userId.Value).ConfigureAwait(false);
+        await _playlistManager.AddItemToPlaylistAsync(playlistId, ids, position, userId.Value).ConfigureAwait(false);
         return NoContent();
     }
 
