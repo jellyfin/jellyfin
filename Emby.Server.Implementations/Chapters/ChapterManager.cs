@@ -223,7 +223,7 @@ public class ChapterManager : IChapterManager
 
         if (saveChapters && changesMade)
         {
-            _chapterRepository.SaveChapters(video.Id, chapters);
+            SaveChapters(video, chapters);
         }
 
         DeleteDeadImages(currentImages, chapters);
@@ -234,7 +234,9 @@ public class ChapterManager : IChapterManager
     /// <inheritdoc />
     public void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
     {
-        _chapterRepository.SaveChapters(video.Id, chapters);
+        // Remove any chapters that are outside of the runtime of the video
+        var validChapters = chapters.Where(c => c.StartPositionTicks < video.RunTimeTicks).ToList();
+        _chapterRepository.SaveChapters(video.Id, validChapters);
     }
 
     /// <inheritdoc />
