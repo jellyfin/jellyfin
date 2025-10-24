@@ -42,7 +42,15 @@ public static class FfProbeKeyframeExtractor
         try
         {
             process.Start();
-            process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            try
+            {
+                process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            }
+            catch
+            {
+                // We do not care if process priority setting fails
+                // Ideally log a warning but this does not have a logger available
+            }
 
             return ParseStream(process.StandardOutput);
         }
