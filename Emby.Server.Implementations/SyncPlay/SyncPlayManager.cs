@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -44,6 +45,11 @@ namespace Emby.Server.Implementations.SyncPlay
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
+        /// The dto service.
+        /// </summary>
+        private readonly IDtoService _dtoService;
+
+        /// <summary>
         /// The map between users and counter of active sessions.
         /// </summary>
         private readonly ConcurrentDictionary<Guid, int> _activeUsers =
@@ -78,16 +84,19 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="dtoService">The dto service.</param>
         public SyncPlayManager(
             ILoggerFactory loggerFactory,
             IUserManager userManager,
             ISessionManager sessionManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IDtoService dtoService)
         {
             _loggerFactory = loggerFactory;
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
+            _dtoService = dtoService;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
             _sessionManager.SessionEnded += OnSessionEnded;
         }
@@ -122,7 +131,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, leaveGroupRequest, cancellationToken);
                 }
 
-                var group = new Group(_loggerFactory, _userManager, _sessionManager, _libraryManager);
+                var group = new Group(_loggerFactory, _userManager, _sessionManager, _libraryManager, _dtoService);
                 _groups[group.GroupId] = group;
 
                 if (!_sessionToGroupMap.TryAdd(session.Id, group))
