@@ -224,6 +224,12 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
 
                 return null;
             }
+            catch (UnauthorizedAccessException e)
+            {
+                _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
+
+                return null;
+            }
             catch (ArgumentOutOfRangeException e)
             {
                 _logger.LogDebug("Skipping attachment at index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
@@ -270,6 +276,12 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
             date = File.GetLastWriteTimeUtc(path);
         }
         catch (ArgumentOutOfRangeException e)
+        {
+            _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
+
+            return null;
+        }
+        catch (UnauthorizedAccessException e)
         {
             _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
 
