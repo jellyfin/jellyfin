@@ -1,7 +1,6 @@
 using System;
-using MediaBrowser.Model.Dto;
 
-namespace MediaBrowser.Model.SyncPlay;
+namespace MediaBrowser.Model.Dto;
 
 /// <summary>
 /// Enhanced SyncPlay queue item that includes full BaseItemDto details.

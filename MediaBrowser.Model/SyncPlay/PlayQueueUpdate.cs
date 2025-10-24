@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.SyncPlay;
 

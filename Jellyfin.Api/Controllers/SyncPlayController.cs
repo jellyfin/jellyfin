@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Controller.SyncPlay.Requests;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;

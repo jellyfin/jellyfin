@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.SyncPlay.Queue
