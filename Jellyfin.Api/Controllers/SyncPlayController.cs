@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
 using MediaBrowser.Controller.SyncPlay.Requests;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -225,15 +226,15 @@ public class SyncPlayController : BaseJellyfinApiController
     /// Gets the current SyncPlay queue.
     /// </summary>
     /// <response code="200">Queue returned.</response>
-    /// <returns>An <see cref="IEnumerable{SyncPlayQueueItem}"/> containing the current queue items.</returns>
+    /// <returns>A <see cref="QueryResult{SyncPlayQueueItem}"/> containing the current queue items.</returns>
     [HttpGet("Queue")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
-    public async Task<ActionResult<IEnumerable<SyncPlayQueueItem>>> SyncPlayGetQueue()
+    public async Task<ActionResult<QueryResult<SyncPlayQueueItem>>> SyncPlayGetQueue()
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var queue = _syncPlayManager.GetQueue(currentSession) ?? [];
-        return Ok(queue.AsEnumerable());
+        var queue = _syncPlayManager.GetQueue(currentSession);
+        return Ok(new QueryResult<SyncPlayQueueItem>(queue));
     }
 
     /// <summary>
