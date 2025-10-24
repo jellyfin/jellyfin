@@ -269,6 +269,12 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
         {
             date = File.GetLastWriteTimeUtc(path);
         }
+        catch (ArgumentOutOfRangeException e)
+        {
+            _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
+
+            return null;
+        }
         catch (IOException e)
         {
             _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
