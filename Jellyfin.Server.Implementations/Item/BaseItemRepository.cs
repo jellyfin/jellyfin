@@ -2354,22 +2354,22 @@ public sealed class BaseItemRepository
         if (filter.HasImdbId.HasValue)
         {
             baseQuery = filter.HasImdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Imdb.ToString(), StringComparison.OrdinalIgnoreCase)))
-                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Imdb.ToString(), StringComparison.OrdinalIgnoreCase)));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Imdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Imdb.ToString().ToLower()));
         }
 
         if (filter.HasTmdbId.HasValue)
         {
             baseQuery = filter.HasTmdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Tmdb.ToString(), StringComparison.OrdinalIgnoreCase)))
-                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Tmdb.ToString(), StringComparison.OrdinalIgnoreCase)));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tmdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tmdb.ToString().ToLower()));
         }
 
         if (filter.HasTvdbId.HasValue)
         {
             baseQuery = filter.HasTvdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Tvdb.ToString(), StringComparison.OrdinalIgnoreCase)))
-                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Tvdb.ToString(), StringComparison.OrdinalIgnoreCase)));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tvdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tvdb.ToString().ToLower()));
         }
 
         var queryTopParentIds = filter.TopParentIds;
