@@ -21,6 +21,10 @@
                         <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
                         <span>When an artist is found during a metadata search, replace the artist name with the value on the server.</span>
                     </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="getMissingTrackInfo" />
+                        <span>If track number or track length is missing, retrieve it from MusicBrainz.</span>
+                    </label>
                     <br />
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
