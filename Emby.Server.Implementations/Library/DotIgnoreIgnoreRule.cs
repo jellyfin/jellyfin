@@ -51,8 +51,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             }
 
             // Fast path in case the ignore files isn't a symlink and is empty
-            if ((dirIgnoreFile.Attributes & FileAttributes.ReparsePoint) == 0
-                && dirIgnoreFile.Length == 0)
+            if (dirIgnoreFile.LinkTarget is null && dirIgnoreFile.Length == 0)
             {
                 return true;
             }
@@ -93,6 +92,12 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
     private static string GetFileContent(FileInfo dirIgnoreFile)
     {
+        dirIgnoreFile = (FileInfo?)dirIgnoreFile.ResolveLinkTarget(returnFinalTarget: true) ?? dirIgnoreFile;
+        if (!dirIgnoreFile.Exists)
+        {
+            return string.Empty;
+        }
+
         using (var reader = dirIgnoreFile.OpenText())
         {
             return reader.ReadToEnd();
