@@ -2353,17 +2353,23 @@ public sealed class BaseItemRepository
 
         if (filter.HasImdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Imdb"));
+            baseQuery = filter.HasImdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Imdb.ToString(), StringComparison.OrdinalIgnoreCase)))
+                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Imdb.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         if (filter.HasTmdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Tmdb"));
+            baseQuery = filter.HasTmdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Tmdb.ToString(), StringComparison.OrdinalIgnoreCase)))
+                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Tmdb.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         if (filter.HasTvdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "Tvdb"));
+            baseQuery = filter.HasTvdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => string.Equals(f.ProviderId, MetadataProvider.Tvdb.ToString(), StringComparison.OrdinalIgnoreCase)))
+                : baseQuery.Where(e => e.Provider!.All(f => !string.Equals(f.ProviderId, MetadataProvider.Tvdb.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         var queryTopParentIds = filter.TopParentIds;
