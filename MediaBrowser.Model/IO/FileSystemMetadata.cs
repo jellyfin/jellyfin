@@ -54,11 +54,5 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
         public bool IsDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is a symbolic link.
-        /// </summary>
-        /// <value><c>true</c> if this instance is a symbolic link; otherwise, <c>false</c>.</value>
-        public bool IsSymlink { get; set; }
     }
 }

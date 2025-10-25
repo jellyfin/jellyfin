@@ -254,18 +254,22 @@ namespace Emby.Server.Implementations.IO
 
                 if (info is FileInfo fileInfo)
                 {
+                    result.CreationTimeUtc = GetCreationTimeUtc(info);
+                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
                     if (fileInfo.LinkTarget is not null)
                     {
-                        result.IsSymlink = true;
                         try
                         {
                             var targetFileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true);
                             if (targetFileInfo is not null)
                             {
                                 result.Exists = targetFileInfo.Exists;
-                                result.Length = targetFileInfo.Length;
-                                result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
-                                result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
+                                if (result.Exists)
+                                {
+                                    result.Length = targetFileInfo.Length;
+                                    result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
+                                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
+                                }
                             }
                             else
                             {
@@ -281,11 +285,6 @@ namespace Emby.Server.Implementations.IO
                     {
                         result.Length = fileInfo.Length;
                     }
-                }
-                else
-                {
-                    result.CreationTimeUtc = GetCreationTimeUtc(info);
-                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
                 }
             }
             else
