@@ -236,12 +236,20 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public UserItemData? GetUserData(User user, BaseItem item)
+        public UserItemData GetUserData(User user, BaseItem item)
         {
-            return item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+            var cacheKey = GetCacheKey(user.InternalId, item.Id);
+            if (_cache.TryGet(cacheKey, out var cachedData))
             {
-                Key = item.GetUserDataKeys()[0],
-            };
+                return cachedData;
+            }
+
+            var data = item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+                {
+                    Key = item.GetUserDataKeys()[0],
+                };
+
+            return _cache.GetOrAdd(cacheKey, _ => data);
         }
 
         /// <inheritdoc />
