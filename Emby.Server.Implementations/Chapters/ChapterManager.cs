@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -32,6 +33,7 @@ public class ChapterManager : IChapterManager
     private readonly IChapterRepository _chapterRepository;
     private readonly ILibraryManager _libraryManager;
     private readonly IPathManager _pathManager;
+    private readonly IServerConfigurationManager _config;
 
     /// <summary>
     /// The first chapter ticks.
@@ -47,13 +49,15 @@ public class ChapterManager : IChapterManager
     /// <param name="chapterRepository">The <see cref="IChapterRepository"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
     /// <param name="pathManager">The <see cref="IPathManager"/>.</param>
+    /// <param name="config">The server configuration manager.</param>
     public ChapterManager(
         ILogger<ChapterManager> logger,
         IFileSystem fileSystem,
         IMediaEncoder encoder,
         IChapterRepository chapterRepository,
         ILibraryManager libraryManager,
-        IPathManager pathManager)
+        IPathManager pathManager,
+        IServerConfigurationManager config)
     {
         _logger = logger;
         _fileSystem = fileSystem;
@@ -61,6 +65,7 @@ public class ChapterManager : IChapterManager
         _chapterRepository = chapterRepository;
         _libraryManager = libraryManager;
         _pathManager = pathManager;
+        _config = config;
     }
 
     /// <summary>
@@ -111,12 +116,81 @@ public class ChapterManager : IChapterManager
         return sum / chapters.Count;
     }
 
+    /// <summary>
+    /// Creates dummy chapters.
+    /// </summary>
+    /// <param name="video">The video.</param>
+    /// <returns>An array of dummy chapters.</returns>
+    private ChapterInfo[] CreateDummyChapters(Video video)
+    {
+        var runtime = video.RunTimeTicks.GetValueOrDefault();
+
+        // Only process files with a runtime
+        if (runtime <= 0)
+        {
+            return [];
+        }
+
+        // Get chapter duration from configuration
+        var dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
+        if (dummyChapterDuration <= 0)
+        {
+            return [];
+        }
+
+        int chapterCount = (int)(runtime / dummyChapterDuration);
+
+        if (chapterCount <= 1)
+        {
+            return [];
+        }
+
+        var chapters = new ChapterInfo[chapterCount];
+        long currentChapterTicks = 0;
+
+        for (int i = 0; i < chapterCount; i++)
+        {
+            chapters[i] = new ChapterInfo
+            {
+                StartPositionTicks = currentChapterTicks,
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Chapter {0}",
+                    (i + 1).ToString(CultureInfo.InvariantCulture))
+            };
+
+            currentChapterTicks += dummyChapterDuration;
+        }
+
+        return chapters;
+    }
+
     /// <inheritdoc />
     public async Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, IReadOnlyList<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
     {
-        if (chapters.Count == 0)
+        var changesMade = false;
+
+        // Create dummy chapters when there are no or only one chapter
+        if (chapters.Count <= 1)
         {
-            return true;
+            if (_config.Configuration.DummyChapterDuration > 0)
+            {
+                var dummyChapters = CreateDummyChapters(video);
+                if (dummyChapters.Length > 1)
+                {
+                    _logger.LogInformation("Created {Count} dummy chapters for {Video}", dummyChapters.Length, video.Name);
+                    chapters = dummyChapters;
+                    changesMade = true;
+                }
+                else if (chapters.Count == 0)
+                {
+                    return true;
+                }
+            }
+            else if (chapters.Count == 0)
+            {
+                return true;
+            }
         }
 
         var libraryOptions = _libraryManager.GetLibraryOptions(video);
@@ -135,7 +209,6 @@ public class ChapterManager : IChapterManager
         }
 
         var success = true;
-        var changesMade = false;
 
         var runtimeTicks = video.RunTimeTicks ?? 0;
 
