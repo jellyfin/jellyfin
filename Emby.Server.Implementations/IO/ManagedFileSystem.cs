@@ -252,47 +252,41 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                // if (!result.IsDirectory)
-                // {
-                //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                // }
-
                 if (info is FileInfo fileInfo)
                 {
-                    result.Length = fileInfo.Length;
-
-                    // Issue #2354 get the size of files behind symbolic links. Also Enum.HasFlag is bad as it boxes!
-                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+                    if (fileInfo.LinkTarget is not null)
                     {
+                        result.IsSymlink = true;
                         try
                         {
-                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            var targetFileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true);
+                            if (targetFileInfo is not null)
                             {
-                                result.Length = RandomAccess.GetLength(fileHandle);
+                                result.Exists = targetFileInfo.Exists;
+                                result.Length = targetFileInfo.Length;
+                                result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
+                                result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
                             }
-                        }
-                        catch (FileNotFoundException ex)
-                        {
-                            // Dangling symlinks cannot be detected before opening the file unfortunately...
-                            _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
-                            result.Exists = false;
+                            else
+                            {
+                                result.Exists = false;
+                            }
                         }
                         catch (UnauthorizedAccessException ex)
                         {
                             _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                         }
-                        catch (IOException ex)
-                        {
-                            // IOException generally means the file is not accessible due to filesystem issues
-                            // Catch this exception and mark the file as not exist to ignore it
-                            _logger.LogError(ex, "Reading the file at {Path} failed due to an IO Exception. Marking the file as not existing", fileInfo.FullName);
-                            result.Exists = false;
-                        }
+                    }
+                    else
+                    {
+                        result.Length = fileInfo.Length;
                     }
                 }
-
-                result.CreationTimeUtc = GetCreationTimeUtc(info);
-                result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
+                else
+                {
+                    result.CreationTimeUtc = GetCreationTimeUtc(info);
+                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
+                }
             }
             else
             {
