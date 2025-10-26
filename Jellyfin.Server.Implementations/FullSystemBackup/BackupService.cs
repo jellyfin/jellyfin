@@ -128,7 +128,8 @@ public class BackupService : IBackupService
                     var targetPath = Path.GetFullPath(Path.Combine(target, Path.GetRelativePath(source, item.FullName)));
 
                     if (!sourcePath.StartsWith(fullSourcePath, StringComparison.Ordinal)
-                        || !targetPath.StartsWith(fullTargetRoot, StringComparison.Ordinal))
+                        || !targetPath.StartsWith(fullTargetRoot, StringComparison.Ordinal)
+                        || Path.EndsInDirectorySeparator(item.FullName))
                     {
                         continue;
                     }
