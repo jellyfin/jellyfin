@@ -122,6 +122,16 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         {
             lastWriteTimeUtc = File.GetLastWriteTimeUtc(filePath);
         }
+        catch (ArgumentOutOfRangeException e)
+        {
+            _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
+            return null;
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
+            return null;
+        }
         catch (IOException e)
         {
             _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
