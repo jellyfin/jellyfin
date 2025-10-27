@@ -92,13 +92,26 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, bool isInNetwork)
         {
+            DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
+
+            if (user is null || !isInNetwork)
+            {
+                // If an invalid user is requested or the request is made outside of local network, return a response
+                // using a random GUID in place of the user ID.
+                return new ForgotPasswordResult
+                {
+                    Action = ForgotPasswordAction.PinCode,
+                    PinExpirationDate = expireTime,
+                    PinFile = _passwordResetFileBase + Guid.NewGuid() + ".json"
+                };
+            }
+
             byte[] bytes = new byte[4];
             RandomNumberGenerator.Fill(bytes);
             string pin = BitConverter.ToString(bytes);
 
-            DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
             string filePath = _passwordResetFileBase + user.Id + ".json";
             SerializablePasswordReset spr = new SerializablePasswordReset
             {
