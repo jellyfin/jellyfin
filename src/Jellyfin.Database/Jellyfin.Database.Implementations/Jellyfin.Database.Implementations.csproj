@@ -3,13 +3,8 @@
   <Import Project="$(SolutionDir)Project.Nuget.targets"/>
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <PackageId>Jellyfin.Database.Implementations</PackageId>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
