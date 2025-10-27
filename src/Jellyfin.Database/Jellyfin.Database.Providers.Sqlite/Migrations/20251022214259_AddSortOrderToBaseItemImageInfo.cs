@@ -22,16 +22,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 defaultValue: 0);
 
             migrationBuilder.CreateIndex(
-                name: "IX_BaseItemImageInfos_ItemId_SortOrder",
+                name: "IX_BaseItemImageInfos_ItemId_ImageType_SortOrder",
                 table: "BaseItemImageInfos",
-                columns: new[] { "ItemId", "SortOrder" });
+                columns: new[] { "ItemId", "ImageType", "SortOrder" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_BaseItemImageInfos_ItemId_SortOrder",
+                name: "IX_BaseItemImageInfos_ItemId_ImageType_SortOrder",
                 table: "BaseItemImageInfos");
 
             migrationBuilder.DropColumn(

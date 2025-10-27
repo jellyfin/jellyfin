@@ -445,7 +445,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId", "SortOrder");
+                    b.HasIndex("ItemId", "ImageType", "SortOrder");
 
                     b.ToTable("BaseItemImageInfos");
 

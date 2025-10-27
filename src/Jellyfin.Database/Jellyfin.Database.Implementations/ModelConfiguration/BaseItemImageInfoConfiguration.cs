@@ -15,7 +15,8 @@ public class BaseItemImageInfoConfiguration : IEntityTypeConfiguration<BaseItemI
         builder.HasKey(e => e.Id);
         builder.HasOne(e => e.Item).WithMany(e => e.Images).HasForeignKey(e => e.ItemId);
 
-        // Index on SortOrder for efficient ordering queries
-        builder.HasIndex(e => new { e.ItemId, e.SortOrder });
+        // Index on ImageType and SortOrder for efficient ordering queries
+        // ImageType is required because SortOrder is per-type (each type starts from 0)
+        builder.HasIndex(e => new { e.ItemId, e.ImageType, e.SortOrder });
     }
 }
