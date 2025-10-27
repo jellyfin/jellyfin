@@ -399,7 +399,7 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Distinct();
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter);
+        dbQuery = ApplyOrder(dbQuery, filter, context);
 
         dbQuery = ApplyNavigations(dbQuery, filter);
 
@@ -1245,7 +1245,7 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
-        query = ApplyOrder(query, filter);
+        query = ApplyOrder(query, filter, context);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
@@ -1511,7 +1511,7 @@ public sealed class BaseItemRepository
             || query.IncludeItemTypes.Contains(BaseItemKind.Season);
     }
 
-    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
         var orderBy = filter.OrderBy;
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
@@ -1530,7 +1530,7 @@ public sealed class BaseItemRepository
         var firstOrdering = orderBy.FirstOrDefault();
         if (firstOrdering != default)
         {
-            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter);
+            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
             if (firstOrdering.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = query.OrderBy(expression);
@@ -1555,7 +1555,7 @@ public sealed class BaseItemRepository
 
         foreach (var item in orderBy.Skip(1))
         {
-            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter);
+            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
             if (item.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = orderedQuery!.ThenBy(expression);

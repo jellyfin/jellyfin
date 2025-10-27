@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,9 @@ public static class OrderMapper
     /// </summary>
     /// <param name="sortBy">Item property to sort by.</param>
     /// <param name="query">Context Query.</param>
+    /// <param name="jellyfinDbContext">Context.</param>
     /// <returns>Func to be executed later for sorting query.</returns>
-    public static Expression<Func<BaseItemEntity, object?>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query)
+    public static Expression<Func<BaseItemEntity, object?>> MapOrderByField(ItemSortBy sortBy, InternalItemsQuery query, JellyfinDbContext jellyfinDbContext)
     {
         return sortBy switch
         {
@@ -38,6 +40,10 @@ public static class OrderMapper
             ItemSortBy.Studio => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             ItemSortBy.OfficialRating => e => e.InheritedParentalRatingValue,
             // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
+            // ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey).Max(f => f.UserData!.Where(e => e.Played).Max(e => e.LastPlayedDate)),
+            ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.BaseItems
+                .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                .Max(f => f.UserData!.Where(e => e.Played).Max(e => e.LastPlayedDate)),
             ItemSortBy.SeriesSortName => e => e.SeriesName,
             // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
             ItemSortBy.Album => e => e.Album,
