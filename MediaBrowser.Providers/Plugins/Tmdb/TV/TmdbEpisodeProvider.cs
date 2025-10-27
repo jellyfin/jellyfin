@@ -177,8 +177,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var item = new Episode
             {
-                IndexNumber = info.IndexNumber,
-                ParentIndexNumber = info.ParentIndexNumber,
+                IndexNumber = episodeNumber,
+                ParentIndexNumber = seasonNumber,
                 IndexNumberEnd = info.IndexNumberEnd,
                 Name = episodeResult.Name,
                 PremiereDate = episodeResult.AirDate,
