@@ -66,7 +66,7 @@ public class ListingsManager : IListingsManager
         if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
         {
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            config.ListingProviders = [..list, info];
+            config.ListingProviders = [.. list, info];
         }
         else
         {
@@ -245,7 +245,7 @@ public class ListingsManager : IListingsManager
                 Name = tunerChannelNumber,
                 Value = providerChannelNumber
             };
-            listingsProviderInfo.ChannelMappings = [..listingsProviderInfo.ChannelMappings, newItem];
+            listingsProviderInfo.ChannelMappings = [.. listingsProviderInfo.ChannelMappings, newItem];
         }
 
         _config.SaveConfiguration("livetv", config);

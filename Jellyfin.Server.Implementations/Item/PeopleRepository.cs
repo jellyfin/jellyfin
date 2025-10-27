@@ -86,10 +86,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         var existingPersons = context.Peoples.Select(e => new
-            {
-                item = e,
-                SelectionKey = e.Name + "-" + e.PersonType
-            })
+        {
+            item = e,
+            SelectionKey = e.Name + "-" + e.PersonType
+        })
             .Where(p => personKeys.Contains(p.SelectionKey))
             .Select(f => f.item)
             .ToArray();

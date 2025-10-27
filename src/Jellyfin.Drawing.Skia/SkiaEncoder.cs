@@ -229,20 +229,20 @@ public class SkiaEncoder : IImageEncoder
                 return default;
 
             default:
-            {
-                var boundsInfo = SKBitmap.DecodeBounds(safePath);
-
-                if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
                 {
-                    return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
-                }
+                    var boundsInfo = SKBitmap.DecodeBounds(safePath);
 
-                _logger.LogWarning(
-                    "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
-                    path,
-                    result);
-                return default;
-            }
+                    if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                    {
+                        return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                    }
+
+                    _logger.LogWarning(
+                        "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
+                        path,
+                        result);
+                    return default;
+                }
         }
     }
 
@@ -366,7 +366,7 @@ public class SkiaEncoder : IImageEncoder
 
         try
         {
-             // If we have to resize these they often end up distorted
+            // If we have to resize these they often end up distorted
             if (resultBitmap.ColorType == SKColorType.Gray8)
             {
                 using (resultBitmap)

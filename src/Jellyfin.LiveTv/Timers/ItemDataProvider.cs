@@ -116,7 +116,7 @@ namespace Jellyfin.LiveTv.Timers
                     throw new ArgumentException("item already exists", nameof(item));
                 }
 
-                _items = [.._items, item];
+                _items = [.. _items, item];
 
                 SaveList();
             }
@@ -131,7 +131,7 @@ namespace Jellyfin.LiveTv.Timers
                 int index = Array.FindIndex(_items, i => EqualityComparer(i, item));
                 if (index == -1)
                 {
-                    _items = [.._items, item];
+                    _items = [.. _items, item];
                 }
                 else
                 {

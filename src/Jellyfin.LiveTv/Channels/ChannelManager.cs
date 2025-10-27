@@ -1132,7 +1132,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Tags = [..item.Tags, "livestream"];
+                    item.Tags = [.. item.Tags, "livestream"];
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
                     forceUpdate = true;
                 }

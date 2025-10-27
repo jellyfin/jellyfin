@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    item.Tags = [..current, name];
+                    item.Tags = [.. current, name];
                 }
             }
         }
