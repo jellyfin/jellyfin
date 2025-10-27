@@ -41,9 +41,9 @@ public static class OrderMapper
             ItemSortBy.OfficialRating => e => e.InheritedParentalRatingValue,
             // ItemSortBy.SeriesDatePlayed => "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)",
             // ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey).Max(f => f.UserData!.Where(e => e.Played).Max(e => e.LastPlayedDate)),
-            ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.BaseItems
-                .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                .Max(f => f.UserData!.Where(e => e.Played).Max(e => e.LastPlayedDate)),
+            ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.UserData
+                .Where(u => u.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey && u.Played)
+                .Max(f => f.LastPlayedDate),
             ItemSortBy.SeriesSortName => e => e.SeriesName,
             // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
             ItemSortBy.Album => e => e.Album,
