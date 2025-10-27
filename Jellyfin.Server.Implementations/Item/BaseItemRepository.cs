@@ -1763,7 +1763,8 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Path))
         {
-            baseQuery = baseQuery.Where(e => e.Path == filter.Path);
+            var pathToQuery = GetPathToSave(filter.Path);
+            baseQuery = baseQuery.Where(e => e.Path == pathToQuery);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.PresentationUniqueKey))
