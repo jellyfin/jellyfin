@@ -1122,7 +1122,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private void StartProcess(ProcessWrapper process)
         {
             process.Process.Start();
-            process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+
+            try
+            {
+                process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}", process.Process.StartInfo.FileName);
+            }
 
             lock (_runningProcessesLock)
             {
