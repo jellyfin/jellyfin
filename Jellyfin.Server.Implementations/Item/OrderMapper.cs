@@ -53,11 +53,13 @@ public static class OrderMapper
             (ItemSortBy.VideoBitRate, _) => e => e.TotalBitrate,
             (ItemSortBy.ParentIndexNumber, _) => e => e.ParentIndexNumber,
             (ItemSortBy.IndexNumber, _) => e => e.IndexNumber,
-            (ItemSortBy.SeriesDatePlayed, not null) => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .GroupJoin(jellyfinDbContext.UserData.Where(e => e.UserId == query.User.Id), f => f.Id, f => f.ItemId, (item, userData) => userData.Where(f => f.Played).Max(f => f.LastPlayedDate))
+            (ItemSortBy.SeriesDatePlayed, not null) => e =>
+                            jellyfinDbContext.BaseItems
+                                .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                                .Join(jellyfinDbContext.UserData.Where(w => w.UserId == query.User.Id && w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
                                 .Max(f => f),
             (ItemSortBy.SeriesDatePlayed, null) => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .GroupJoin(jellyfinDbContext.UserData, f => f.Id, f => f.ItemId, (item, userData) => userData.Where(f => f.Played).Max(f => f.LastPlayedDate))
+                                .Join(jellyfinDbContext.UserData.Where(w => w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
                                 .Max(f => f),
             // ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.UserData
             //     .Where(u => u.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey && u.Played)
