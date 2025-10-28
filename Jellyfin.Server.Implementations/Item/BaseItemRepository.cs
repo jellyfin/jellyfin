@@ -275,6 +275,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -294,6 +295,7 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -336,6 +338,8 @@ public sealed class BaseItemRepository
         mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
         mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
+
+        mainquery = ApplyNavigations(mainquery, filter);
 
         return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -401,8 +405,6 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyOrder(dbQuery, filter, context);
 
-        dbQuery = ApplyNavigations(dbQuery, filter);
-
         return dbQuery;
     }
 
@@ -446,6 +448,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
     }
 
