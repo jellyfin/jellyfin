@@ -137,5 +137,6 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "從資料庫及播放清單中移除已不存在的項目。",
     "TaskMoveTrickplayImagesDescription": "根據媒體庫設定移動現有的 Trickplay 檔案。",
     "TaskMoveTrickplayImages": "轉移 Trickplay 影像位置",
-    "CleanupUserDataTask": "用戶資料清理工作"
+    "CleanupUserDataTask": "用戶資料清理工作",
+    "CleanupUserDataTaskDescription": "從用戶數據中清除已經被刪除超過 90 日的媒體相關資料。"
 }
