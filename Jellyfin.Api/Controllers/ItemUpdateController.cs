@@ -214,7 +214,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         var path = item.ContainingFolderPath;
 
-        var types = _serverConfigurationManager.Configuration.ContentTypes
+        var types = _serverConfigurationManager.ServerConfig.ContentTypes
             .Where(i => !string.IsNullOrWhiteSpace(i.Name))
             .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -228,7 +228,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             });
         }
 
-        _serverConfigurationManager.Configuration.ContentTypes = types.ToArray();
+        _serverConfigurationManager.ServerConfig.ContentTypes = types.ToArray();
         _serverConfigurationManager.SaveConfiguration();
         return NoContent();
     }

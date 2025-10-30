@@ -499,7 +499,7 @@ public class MediaInfoHelper
 
         if (remoteClientMaxBitrate <= 0)
         {
-            remoteClientMaxBitrate = _serverConfigurationManager.Configuration.RemoteClientBitrateLimit;
+            remoteClientMaxBitrate = _serverConfigurationManager.ServerConfig.RemoteClientBitrateLimit;
         }
 
         if (remoteClientMaxBitrate > 0)

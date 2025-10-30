@@ -26,7 +26,7 @@ public class AddDefaultCastReceivers : IMigrationRoutine
     /// <inheritdoc />
     public void Perform()
     {
-        _serverConfigurationManager.Configuration.CastReceiverApplications =
+        _serverConfigurationManager.ServerConfig.CastReceiverApplications =
         [
             new()
             {

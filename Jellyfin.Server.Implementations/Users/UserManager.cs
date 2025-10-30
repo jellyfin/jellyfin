@@ -307,7 +307,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
             var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
-            var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
+            var castReceiverApplications = _serverConfigurationManager.ServerConfig.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
@@ -632,7 +632,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 // Only set cast receiver id if it is passed in and it exists in the server config.
                 if (!string.IsNullOrEmpty(config.CastReceiverId)
-                    && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                    && _serverConfigurationManager.ServerConfig.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
                 {
                     user.CastReceiverId = config.CastReceiverId;
                 }

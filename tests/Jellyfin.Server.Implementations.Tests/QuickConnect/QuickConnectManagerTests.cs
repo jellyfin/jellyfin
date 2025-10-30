@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
         {
             _config = new ServerConfiguration();
             var configManager = new Mock<IServerConfigurationManager>();
-            configManager.Setup(x => x.Configuration).Returns(_config);
+            configManager.Setup(x => x.ServerConfig).Returns(_config);
 
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization

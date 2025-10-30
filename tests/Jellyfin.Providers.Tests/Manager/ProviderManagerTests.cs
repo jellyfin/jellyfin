@@ -557,7 +557,7 @@ namespace Jellyfin.Providers.Tests.Manager
             IBaseItemManager? baseItemManager = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
-            serverConfigurationManager.Setup(i => i.Configuration)
+            serverConfigurationManager.Setup(i => i.ServerConfig)
                 .Returns(serverConfiguration ?? new ServerConfiguration());
 
             var libraryManager = new Mock<ILibraryManager>(MockBehavior.Strict);

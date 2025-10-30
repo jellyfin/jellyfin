@@ -42,8 +42,8 @@ public class ResponseTimeMiddleware
     {
         var startTimestamp = Stopwatch.GetTimestamp();
 
-        var enableWarning = serverConfigurationManager.Configuration.EnableSlowResponseWarning;
-        var warningThreshold = serverConfigurationManager.Configuration.SlowResponseThresholdMs;
+        var enableWarning = serverConfigurationManager.ServerConfig.EnableSlowResponseWarning;
+        var warningThreshold = serverConfigurationManager.ServerConfig.SlowResponseThresholdMs;
         context.Response.OnStarting(() =>
         {
             var responseTime = Stopwatch.GetElapsedTime(startTimestamp);

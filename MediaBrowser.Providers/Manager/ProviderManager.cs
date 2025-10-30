@@ -837,12 +837,12 @@ namespace MediaBrowser.Providers.Manager
 
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataLanguage))
             {
-                searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
+                searchInfo.SearchInfo.MetadataLanguage = _configurationManager.ServerConfig.PreferredMetadataLanguage;
             }
 
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
-                searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
+                searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.ServerConfig.MetadataCountryCode;
             }
 
             var resultList = new List<RemoteSearchResult>();

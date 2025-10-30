@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Library
         {
             _config = config;
             _repository = repository;
-            _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _config.Configuration.CacheSize, StringComparer.OrdinalIgnoreCase);
+            _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _config.ServerConfig.CacheSize, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -303,12 +303,12 @@ namespace Emby.Server.Implementations.Library
             {
                 var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
-                if (pctIn < _config.Configuration.MinResumePct)
+                if (pctIn < _config.ServerConfig.MinResumePct)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
+                else if (pctIn > _config.ServerConfig.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
                 {
                     // mark as completed close to the end
                     positionTicks = 0;
@@ -318,7 +318,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < _config.ServerConfig.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
@@ -330,12 +330,12 @@ namespace Emby.Server.Implementations.Library
                 var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
 
-                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
+                if (playbackPositionInMinutes < _config.ServerConfig.MinAudiobookResume)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                else if (remainingTimeInMinutes < _config.ServerConfig.MaxAudiobookResume || positionTicks >= runtimeTicks)
                 {
                     // mark as completed close to the end
                     positionTicks = 0;

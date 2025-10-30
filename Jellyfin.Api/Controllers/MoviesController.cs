@@ -101,7 +101,7 @@ public class MoviesController : BaseJellyfinApiController
         var recentlyPlayedMovies = _libraryManager.GetItemList(query);
 
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfigurationManager.ServerConfig.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -184,7 +184,7 @@ public class MoviesController : BaseJellyfinApiController
         RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfigurationManager.ServerConfig.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -225,7 +225,7 @@ public class MoviesController : BaseJellyfinApiController
     private IEnumerable<RecommendationDto> GetWithActor(User? user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfigurationManager.ServerConfig.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -264,7 +264,7 @@ public class MoviesController : BaseJellyfinApiController
     private IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfigurationManager.ServerConfig.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);

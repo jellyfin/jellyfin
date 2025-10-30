@@ -29,7 +29,7 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
     public void Perform()
     {
         var updated = false;
-        foreach (var repo in _serverConfigurationManager.Configuration.PluginRepositories)
+        foreach (var repo in _serverConfigurationManager.ServerConfig.PluginRepositories)
         {
             if (string.Equals(repo.Url, OldRepositoryUrl, StringComparison.OrdinalIgnoreCase))
             {

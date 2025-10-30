@@ -99,14 +99,14 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     private bool ShouldForceSequentialOperation()
     {
         // if the user either set the setting to 1 or it's unset and we have fewer than 4 cores it's better to run sequentially.
-        var fanoutSetting = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        var fanoutSetting = _serverConfigurationManager.ServerConfig.LibraryScanFanoutConcurrency;
         return fanoutSetting == 1 || (fanoutSetting <= 0 && Environment.ProcessorCount <= 3);
     }
 
     private int CalculateScanConcurrencyLimit()
     {
         // when this is invoked, we already checked ShouldForceSequentialOperation for the sequential check.
-        var fanoutConcurrency = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        var fanoutConcurrency = _serverConfigurationManager.ServerConfig.LibraryScanFanoutConcurrency;
         if (fanoutConcurrency <= 0)
         {
             // in case the user did not set a limit manually, we can assume he has 3 or more cores as already checked by ShouldForceSequentialOperation.

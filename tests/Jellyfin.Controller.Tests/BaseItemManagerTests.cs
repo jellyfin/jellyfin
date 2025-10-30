@@ -35,7 +35,7 @@ namespace Jellyfin.Controller.Tests
             }
 
             var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
+            serverConfigurationManager.Setup(scm => scm.ServerConfig)
                 .Returns(serverConfiguration);
 
             var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
@@ -68,7 +68,7 @@ namespace Jellyfin.Controller.Tests
             }
 
             var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
+            serverConfigurationManager.Setup(scm => scm.ServerConfig)
                 .Returns(serverConfiguration);
 
             var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);

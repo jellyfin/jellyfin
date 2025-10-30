@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
-                ConfigurationManager.Configuration,
+                ConfigurationManager.ServerConfig,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
 
@@ -267,9 +267,9 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         public string FriendlyName =>
-            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
+            string.IsNullOrEmpty(ConfigurationManager.ServerConfig.ServerName)
                 ? Environment.MachineName
-                : ConfigurationManager.Configuration.ServerName;
+                : ConfigurationManager.ServerConfig.ServerName;
 
         public string RestoreBackupPath { get; set; }
 
@@ -438,7 +438,7 @@ namespace Emby.Server.Implementations
             NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
-            if (ConfigurationManager.Configuration.EnableMetrics)
+            if (ConfigurationManager.ServerConfig.EnableMetrics)
             {
                 _disposableParts.Add(DotNetRuntimeStatsBuilder.Default().StartCollecting());
             }
@@ -663,9 +663,9 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void FindParts()
         {
-            if (!ConfigurationManager.Configuration.IsPortAuthorized)
+            if (!ConfigurationManager.ServerConfig.IsPortAuthorized)
             {
-                ConfigurationManager.Configuration.IsPortAuthorized = true;
+                ConfigurationManager.ServerConfig.IsPortAuthorized = true;
                 ConfigurationManager.SaveConfiguration();
             }
 
@@ -748,9 +748,9 @@ namespace Emby.Server.Implementations
                 if (networkConfiguration.InternalHttpPort != HttpPort
                     || networkConfiguration.InternalHttpsPort != HttpsPort)
                 {
-                    if (ConfigurationManager.Configuration.IsPortAuthorized)
+                    if (ConfigurationManager.ServerConfig.IsPortAuthorized)
                     {
-                        ConfigurationManager.Configuration.IsPortAuthorized = false;
+                        ConfigurationManager.ServerConfig.IsPortAuthorized = false;
                         ConfigurationManager.SaveConfiguration();
 
                         requiresRestart = true;

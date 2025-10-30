@@ -51,7 +51,7 @@ public class ConfigurationController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<ServerConfiguration> GetConfiguration()
     {
-        return _configurationManager.Configuration;
+        return _configurationManager.ServerConfig;
     }
 
     /// <summary>

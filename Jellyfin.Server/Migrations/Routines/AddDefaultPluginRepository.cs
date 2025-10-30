@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
+            _serverConfigurationManager.ServerConfig.PluginRepositories = new[] { _defaultRepositoryInfo };
             _serverConfigurationManager.SaveConfiguration();
         }
     }

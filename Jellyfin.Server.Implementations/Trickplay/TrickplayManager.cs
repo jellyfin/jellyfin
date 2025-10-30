@@ -80,7 +80,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
-        var options = _config.Configuration.TrickplayOptions;
+        var options = _config.ServerConfig.TrickplayOptions;
         if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction || !CanGenerateTrickplay(video, options.Interval))
         {
             return;
@@ -138,7 +138,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
-        var options = _config.Configuration.TrickplayOptions;
+        var options = _config.ServerConfig.TrickplayOptions;
         if (!CanGenerateTrickplay(video, options.Interval) || libraryOptions is null)
         {
             return;

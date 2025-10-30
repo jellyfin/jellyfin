@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +17,9 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.TV
 {
+    /// <summary>
+    /// Manages TV series data and operations.
+    /// </summary>
     public class TVSeriesManager : ITVSeriesManager
     {
         private readonly IUserDataManager _userDataManager;
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.TV
 
                 var nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().FirstOrDefault();
 
-                if (_configurationManager.Configuration.DisplaySpecialsWithinSeasons)
+                if (_configurationManager.ServerConfig.DisplaySpecialsWithinSeasons)
                 {
                     var consideredEpisodes = _libraryManager.GetItemList(new InternalItemsQuery(user)
                     {

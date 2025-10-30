@@ -224,7 +224,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 await stream.CopyToAsync(filestream).ConfigureAwait(false);
             }
 
-            if (ConfigurationManager.Configuration.SaveMetadataHidden)
+            if (ConfigurationManager.ServerConfig.SaveMetadataHidden)
             {
                 SetHidden(path, true);
             }
