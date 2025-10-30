@@ -511,7 +511,7 @@ namespace Jellyfin.Server.Implementations.Users
             var passwordResetProvider = GetPasswordResetProvider(user);
 
             var result = await passwordResetProvider
-                .StartForgotPasswordProcess(user, isInNetwork)
+                .StartForgotPasswordProcess(user, enteredUsername, isInNetwork)
                 .ConfigureAwait(false);
 
             if (user is not null && isInNetwork)

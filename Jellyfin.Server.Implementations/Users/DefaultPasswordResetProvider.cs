@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -92,7 +93,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, string enteredUsername, bool isInNetwork)
         {
             DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
 
@@ -100,11 +101,12 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 // If an invalid user is requested or the request is made outside of local network, return a response
                 // using a random GUID in place of the user ID.
+                string hash = enteredUsername.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 return new ForgotPasswordResult
                 {
                     Action = ForgotPasswordAction.PinCode,
                     PinExpirationDate = expireTime,
-                    PinFile = _passwordResetFileBase + Guid.NewGuid() + ".json"
+                    PinFile = _passwordResetFileBase + hash + ".json"
                 };
             }
 
@@ -112,7 +114,8 @@ namespace Jellyfin.Server.Implementations.Users
             RandomNumberGenerator.Fill(bytes);
             string pin = BitConverter.ToString(bytes);
 
-            string filePath = _passwordResetFileBase + user.Id + ".json";
+            string usernameHash = user.Username.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            string filePath = _passwordResetFileBase + usernameHash + ".json";
             SerializablePasswordReset spr = new SerializablePasswordReset
             {
                 ExpirationDate = expireTime,

@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Authentication
 
         bool IsEnabled { get; }
 
-        Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, bool isInNetwork);
+        Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, string enteredUsername, bool isInNetwork);
 
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
     }
