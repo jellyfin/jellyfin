@@ -37,6 +37,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Sentry.AspNetCore" />
+    <PackageReference Include="Sentry.EntityFramework" />
     <PackageReference Include="SerilogAnalyzer" PrivateAssets="All" />
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />

@@ -31,6 +31,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Sentry;
+using Sentry.AspNetCore;
 using Serilog;
 using Serilog.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -106,8 +108,12 @@ namespace Jellyfin.Server
             StartupLogger.Logger = new StartupLogger(_logger);
 
             // Use the logging framework for uncaught exceptions instead of std error
-            AppDomain.CurrentDomain.UnhandledException += (_, e)
-                => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
+            AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            {
+                var exception = (Exception)e.ExceptionObject;
+                SentrySdk.CaptureException(exception);
+                _logger.LogCritical(exception, "Unhandled Exception");
+            };
 
             _logger.LogInformation(
                 "Jellyfin version: {Version}",
@@ -163,6 +169,18 @@ namespace Jellyfin.Server
                             startupConfig);
             _appHost = appHost;
             var configurationCompleted = false;
+            var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
+            var isSentryEnabled = !string.IsNullOrWhiteSpace(sentryDsn);
+
+            if (isSentryEnabled)
+            {
+                _logger.LogInformation("Sentry monitoring enabled with DSN: {Dsn}", sentryDsn);
+            }
+            else
+            {
+                _logger.LogInformation("Sentry monitoring disabled - no SENTRY_DSN environment variable found");
+            }
+
             try
             {
                 _jellyfinHost = Host.CreateDefaultBuilder()
@@ -170,6 +188,18 @@ namespace Jellyfin.Server
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
                     {
+                        // Configuration Sentry conditionnelle
+                        if (isSentryEnabled)
+                        {
+                            webHostBuilder.UseSentry(o =>
+                            {
+                                o.Dsn = sentryDsn;
+                                o.Debug = true; // Mettre à false en production
+                                o.TracesSampleRate = 1.0;
+                                o.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+                            });
+                        }
+
                         webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
                         if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {
@@ -216,6 +246,13 @@ namespace Jellyfin.Server
                     await _setupServer!.StopAsync().ConfigureAwait(false);
                     await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
+                    // Test Sentry si activé
+                    if (isSentryEnabled)
+                    {
+                        SentrySdk.CaptureMessage("Jellyfin server started successfully");
+                        _logger.LogInformation("Sentry test message sent");
+                    }
+
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
                         var socketPath = StartupHelpers.GetUnixSocketPath(startupConfig, appPaths);
@@ -240,6 +277,11 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 _restartOnShutdown = false;
+                if (isSentryEnabled)
+                {
+                    SentrySdk.CaptureException(ex);
+                }
+
                 _logger.LogCritical(ex, "Error while starting server");
                 if (_setupServer!.IsAlive && !configurationCompleted)
                 {

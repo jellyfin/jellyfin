@@ -121,7 +121,7 @@ namespace Jellyfin.Server
             yield return typeof(JellyfinDbContext).Assembly;
 
             // Jellyfin.Server.Implementations
-            yield return typeof(ServiceCollectionExtensions).Assembly;
+            yield return typeof(Jellyfin.Server.Implementations.Extensions.ServiceCollectionExtensions).Assembly;
 
             // Jellyfin.LiveTv
             yield return typeof(LiveTvManager).Assembly;

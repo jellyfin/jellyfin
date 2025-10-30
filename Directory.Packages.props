@@ -63,6 +63,8 @@
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.1" />
     <PackageVersion Include="prometheus-net" Version="8.2.1" />
     <PackageVersion Include="Polly" Version="8.6.4" />
+    <PackageVersion Include="Sentry.AspNetCore" Version="5.16.1" />
+    <PackageVersion Include="Sentry.EntityFramework" Version="5.16.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageVersion Include="Serilog.Expressions" Version="5.0.0" />
