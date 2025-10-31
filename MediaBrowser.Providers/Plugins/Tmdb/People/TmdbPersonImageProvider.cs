@@ -60,7 +60,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             }
 
             var language = item.GetPreferredMetadataLanguage();
-            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
+            var countryCode = item.GetPreferredMetadataCountryCode();
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, countryCode, cancellationToken).ConfigureAwait(false);
             if (personResult?.Images?.Profiles is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();

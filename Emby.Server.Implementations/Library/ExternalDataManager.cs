@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaSegments;
@@ -20,6 +21,7 @@ public class ExternalDataManager : IExternalDataManager
     private readonly IMediaSegmentManager _mediaSegmentManager;
     private readonly IPathManager _pathManager;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly IChapterManager _chapterManager;
     private readonly ILogger<ExternalDataManager> _logger;
 
     /// <summary>
@@ -29,18 +31,21 @@ public class ExternalDataManager : IExternalDataManager
     /// <param name="mediaSegmentManager">The media segment manager.</param>
     /// <param name="pathManager">The path manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
+    /// <param name="chapterManager">The chapter manager.</param>
     /// <param name="logger">The logger.</param>
     public ExternalDataManager(
         IKeyframeManager keyframeManager,
         IMediaSegmentManager mediaSegmentManager,
         IPathManager pathManager,
         ITrickplayManager trickplayManager,
+        IChapterManager chapterManager,
         ILogger<ExternalDataManager> logger)
     {
         _keyframeManager = keyframeManager;
         _mediaSegmentManager = mediaSegmentManager;
         _pathManager = pathManager;
         _trickplayManager = trickplayManager;
+        _chapterManager = chapterManager;
         _logger = logger;
     }
 
@@ -67,5 +72,6 @@ public class ExternalDataManager : IExternalDataManager
         await _keyframeManager.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
         await _mediaSegmentManager.DeleteSegmentsAsync(itemId, cancellationToken).ConfigureAwait(false);
         await _trickplayManager.DeleteTrickplayDataAsync(itemId, cancellationToken).ConfigureAwait(false);
+        await _chapterManager.DeleteChapterDataAsync(itemId, cancellationToken).ConfigureAwait(false);
     }
 }

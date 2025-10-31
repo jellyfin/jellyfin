@@ -224,6 +224,18 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
 
                 return null;
             }
+            catch (UnauthorizedAccessException e)
+            {
+                _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
+
+                return null;
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                _logger.LogDebug("Skipping attachment at index {Index} for {Path}: {Exception}", attachmentStreamIndex, mediaPath, e.Message);
+
+                return null;
+            }
 
             filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Value.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
         }
@@ -262,6 +274,18 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
         try
         {
             date = File.GetLastWriteTimeUtc(path);
+        }
+        catch (ArgumentOutOfRangeException e)
+        {
+            _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
+
+            return null;
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            _logger.LogDebug("Skipping subtitle at index {Index} for {Path}: {Exception}", streamIndex, path, e.Message);
+
+            return null;
         }
         catch (IOException e)
         {

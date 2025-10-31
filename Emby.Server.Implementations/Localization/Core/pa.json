@@ -134,6 +134,8 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "ਕਲੈਕਸ਼ਨਾਂ ਅਤੇ ਪਲੇਲਿਸਟਾਂ ਵਿੱਚੋਂ ਉਹ ਆਈਟਮ ਹਟਾਉਂਦਾ ਹੈ ਜੋ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹਨ।",
     "TaskCleanCollectionsAndPlaylists": "ਕਲੈਕਸ਼ਨਾਂ ਅਤੇ ਪਲੇਲਿਸਟਾਂ ਨੂੰ ਸਾਫ ਕਰੋ",
     "TaskAudioNormalization": "ਆਵਾਜ਼ ਸਧਾਰਣੀਕਰਨ",
-    "TaskRefreshTrickplayImagesDescription": "ਚਲ ਰਹੀ ਲਾਇਬ੍ਰੇਰੀਆਂ ਵਿੱਚ ਵੀਡੀਓਜ਼ ਲਈ ਟ੍ਰਿਕਪਲੇ ਪ੍ਰੀਵਿਊ ਬਣਾਉਂਦਾ ਹੈ।",
-    "TaskKeyframeExtractorDescription": "ਕੀ-ਫ੍ਰੇਮਜ਼ ਨੂੰ ਵੀਡੀਓ ਫਾਈਲਾਂ ਵਿੱਚੋਂ ਨਿਕਾਲਦਾ ਹੈ ਤਾਂ ਜੋ ਹੋਰ ਜ਼ਿਆਦਾ ਸਟਿਕ ਹੋਣ ਵਾਲੀਆਂ HLS ਪਲੇਲਿਸਟਾਂ ਬਣਾਈਆਂ ਜਾ ਸਕਣ। ਇਹ ਕੰਮ ਲੰਬੇ ਸਮੇਂ ਤੱਕ ਚੱਲ ਸਕਦਾ ਹੈ।"
+    "TaskRefreshTrickplayImagesDescription": "ਵੀਡੀਓ ਲਈ ਟ੍ਰਿਕਪਲੇ ਪ੍ਰੀਵਿਊ ਬਣਾਉਂਦਾ ਹੈ (ਜੇ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਚੁਣਿਆ ਗਿਆ ਹੈ)।",
+    "TaskKeyframeExtractorDescription": "ਕੀ-ਫ੍ਰੇਮਜ਼ ਨੂੰ ਵੀਡੀਓ ਫਾਈਲਾਂ ਵਿੱਚੋਂ ਨਿਕਾਲਦਾ ਹੈ ਤਾਂ ਜੋ ਹੋਰ ਜ਼ਿਆਦਾ ਸਟਿਕ ਹੋਣ ਵਾਲੀਆਂ HLS ਪਲੇਲਿਸਟਾਂ ਬਣਾਈਆਂ ਜਾ ਸਕਣ। ਇਹ ਕੰਮ ਲੰਬੇ ਸਮੇਂ ਤੱਕ ਚੱਲ ਸਕਦਾ ਹੈ।",
+    "CleanupUserDataTaskDescription": "ਘੱਟੋ-ਘੱਟ 90 ਦਿਨਾਂ ਤੋਂ ਮੌਜੂਦ ਨਾ ਹੋਣ ਵਾਲੇ ਮੀਡੀਆ ਤੋਂ ਸਾਰੇ ਉਪਭੋਗਤਾ ਡੇਟਾ (ਵਾਚ ਸਟੇਟ, ਮਨਪਸੰਦ ਸਟੇਟਸ ਆਦਿ) ਨੂੰ ਸਾਫ਼ ਕਰਦਾ ਹੈ।",
+    "CleanupUserDataTask": "ਯੂਜ਼ਰ ਡਾਟਾ ਸਾਫ਼ ਕਰਨ ਦਾ ਕੰਮ"
 }
