@@ -75,7 +75,7 @@ public class MigrateUserDb : IMigrationRoutine
                 if (row.GetInt32(0) == 0)
                 {
                     _logger.LogWarning("Table 'LocalUsersv2' doesn't exist in {UserDbPath}, nothing to migrate", userDbPath);
-                    break;
+                    return;
                 }
             }
 
