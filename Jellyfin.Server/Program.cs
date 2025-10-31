@@ -53,6 +53,11 @@ namespace Jellyfin.Server
         /// </summary>
         public const string LoggingConfigFileSystem = "logging.json";
 
+        /// <summary>
+        /// The name of the general jellyfin configuration file.
+        /// </summary>
+        public const string JellyfinConfigFileDefault = "appsettings.json";
+
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static SetupServer? _setupServer;
         private static CoreAppHost? _appHost;
@@ -341,6 +346,7 @@ namespace Jellyfin.Server
             return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(inMemoryDefaultConfig)
+                .AddJsonFile(JellyfinConfigFileDefault, optional: true, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
