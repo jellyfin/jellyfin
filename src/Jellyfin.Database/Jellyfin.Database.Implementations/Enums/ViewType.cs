@@ -108,5 +108,10 @@ public enum ViewType
     /// <summary>
     /// Shows upcoming.
     /// </summary>
-    Upcoming = 20
+    Upcoming = 20,
+
+    /// <summary>
+    /// Shows watchlist.
+    /// </summary>
+    Watchlist = 21,
 }

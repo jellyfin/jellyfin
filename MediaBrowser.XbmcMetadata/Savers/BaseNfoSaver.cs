@@ -96,6 +96,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "isuserfavorite",
             "userrating",
 
+            "iswatchlisted",
             "countrycode"
         };
 

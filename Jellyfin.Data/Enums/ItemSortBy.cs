@@ -154,4 +154,9 @@ public enum ItemSortBy
     /// The index number.
     /// </summary>
     IndexNumber = 29,
+
+    /// <summary>
+    /// The IsWatchlisted boolean.
+    /// </summary>
+    IsWatchlisted = 30
 }

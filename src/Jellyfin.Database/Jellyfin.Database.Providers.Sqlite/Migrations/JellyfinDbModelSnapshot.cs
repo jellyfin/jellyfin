@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1370,6 +1370,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsWatchlisted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("LastPlayedDate")
                         .HasColumnType("TEXT");
 
@@ -1399,6 +1402,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("ItemId", "UserId", "IsFavorite");
+
+                    b.HasIndex("ItemId", "UserId", "IsWatchlisted");
 
                     b.HasIndex("ItemId", "UserId", "LastPlayedDate");
 
