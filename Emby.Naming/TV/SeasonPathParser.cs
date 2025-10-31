@@ -113,8 +113,10 @@ namespace Emby.Naming.TV
             var numberString = match.Groups["seasonnumber"];
             if (numberString.Success)
             {
-                var seasonNumber = int.Parse(numberString.Value, CultureInfo.InvariantCulture);
-                return (seasonNumber, true);
+                if (int.TryParse(numberString.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber))
+                {
+                    return (seasonNumber, true);
+                }
             }
 
             return (null, false);
