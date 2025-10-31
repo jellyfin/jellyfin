@@ -96,45 +96,35 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User? user, string enteredUsername, bool isInNetwork)
         {
             DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
+            var usernameHash = enteredUsername.ToUpperInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            var pinFile = _passwordResetFileBase + usernameHash + ".json";
 
-            if (user is null || !isInNetwork)
+            if (user is not null && isInNetwork)
             {
-                // If an invalid user is requested or the request is made outside of local network, return a response
-                // using a random GUID in place of the user ID.
-                string hash = enteredUsername.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                return new ForgotPasswordResult
+                byte[] bytes = new byte[4];
+                RandomNumberGenerator.Fill(bytes);
+                string pin = BitConverter.ToString(bytes);
+
+                SerializablePasswordReset spr = new SerializablePasswordReset
                 {
-                    Action = ForgotPasswordAction.PinCode,
-                    PinExpirationDate = expireTime,
-                    PinFile = _passwordResetFileBase + hash + ".json"
+                    ExpirationDate = expireTime,
+                    Pin = pin,
+                    PinFile = pinFile,
+                    UserName = user.Username
                 };
-            }
 
-            byte[] bytes = new byte[4];
-            RandomNumberGenerator.Fill(bytes);
-            string pin = BitConverter.ToString(bytes);
-
-            string usernameHash = user.Username.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-            string filePath = _passwordResetFileBase + usernameHash + ".json";
-            SerializablePasswordReset spr = new SerializablePasswordReset
-            {
-                ExpirationDate = expireTime,
-                Pin = pin,
-                PinFile = filePath,
-                UserName = user.Username
-            };
-
-            FileStream fileStream = AsyncFile.Create(filePath);
-            await using (fileStream.ConfigureAwait(false))
-            {
-                await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
+                FileStream fileStream = AsyncFile.Create(pinFile);
+                await using (fileStream.ConfigureAwait(false))
+                {
+                    await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
+                }
             }
 
             return new ForgotPasswordResult
             {
                 Action = ForgotPasswordAction.PinCode,
                 PinExpirationDate = expireTime,
-                PinFile = filePath
+                PinFile = pinFile
             };
         }
 
