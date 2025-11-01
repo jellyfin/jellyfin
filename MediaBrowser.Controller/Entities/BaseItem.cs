@@ -1127,6 +1127,15 @@ namespace MediaBrowser.Controller.Entities
 
             var protocol = item.PathProtocol;
 
+            // Resolve the item path so everywhere we use the media source it will always point to
+            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
+            // path will return null, so it's safe to check for all paths.
+            var itemPath = item.Path;
+            if (File.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { } linkInfo)
+            {
+                itemPath = linkInfo.FullName;
+            }
+
             var info = new MediaSourceInfo
             {
                 Id = item.Id.ToString("N", CultureInfo.InvariantCulture),
@@ -1134,7 +1143,7 @@ namespace MediaBrowser.Controller.Entities
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
                 Name = GetMediaSourceName(item),
-                Path = enablePathSubstitution ? GetMappedPath(item, item.Path, protocol) : item.Path,
+                Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
                 Size = item.Size,
