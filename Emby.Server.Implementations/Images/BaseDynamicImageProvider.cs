@@ -82,12 +82,9 @@ namespace Emby.Server.Implementations.Images
 
             if (image is not null)
             {
-                if (!image.IsLocalFile)
-                {
-                    return Task.FromResult(ItemUpdateType.None);
-                }
-
-                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                // Only skip generation if there's already a local image in the metadata folder
+                // This allows dynamic images to be generated even when remote images exist
+                if (image.IsLocalFile && FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
                 {
                     return Task.FromResult(ItemUpdateType.None);
                 }
