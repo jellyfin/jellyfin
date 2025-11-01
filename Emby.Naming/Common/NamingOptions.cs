@@ -12,7 +12,7 @@ using MediaBrowser.Model.Entities;
 namespace Emby.Naming.Common
 {
     /// <summary>
-    /// Big ugly class containing lot of different naming options that should be split and injected instead of passes everywhere.
+    /// Big ugly class containing lot of different naming options that should be split and injected instead of passed everywhere.
     /// </summary>
     public class NamingOptions
     {
@@ -736,7 +736,7 @@ namespace Emby.Naming.Common
                 @"p(?:ar)?t[\s_-]?(?<part>[0-9]+)",
                 // Chapter is often beginning of filename
                 "^(?<chapter>[0-9]+)",
-                // Part if often ending of filename
+                // Part is often ending of filename
                 "(?<!ch(?:apter) )(?<part>[0-9]+)$",
                 // Sometimes named as 0001_005 (chapter_part)
                 "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
