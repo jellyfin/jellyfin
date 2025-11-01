@@ -101,6 +101,11 @@ namespace MediaBrowser.Model.Querying
         OriginalTitle,
 
         /// <summary>
+        /// The original language.
+        /// </summary>
+        OriginalLanguage,
+
+        /// <summary>
         /// The item overview.
         /// </summary>
         Overview,
