@@ -1250,7 +1250,7 @@ public class StreamInfo
 
         if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
         {
-            if (MediaSource.Protocol == MediaProtocol.File || !string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) || !stream.IsExternal)
+            if (MediaSource.Protocol == MediaProtocol.File || MediaSource.Protocol == MediaProtocol.Http || !string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) || !stream.IsExternal)
             {
                 info.Url = string.Format(
                     CultureInfo.InvariantCulture,
