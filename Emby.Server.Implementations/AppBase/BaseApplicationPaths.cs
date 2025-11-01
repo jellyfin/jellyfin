@@ -110,7 +110,7 @@ namespace Emby.Server.Implementations.AppBase
             var otherMarkers = GetMarkers(path, recursive).FirstOrDefault(e => Path.GetFileName(e) != markerName);
             if (otherMarkers is not null)
             {
-                throw new InvalidOperationException($"Exepected to find only {markerName} but found marker for {otherMarkers}.");
+                throw new InvalidOperationException($"Expected to find only {markerName} but found marker for {otherMarkers}.");
             }
 
             var markerPath = Path.Combine(path, markerName);
