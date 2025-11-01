@@ -85,12 +85,9 @@ body:
     id: version
     attributes:
       label: Jellyfin Server version
-      description: What version of Jellyfin are you using?
-      options:
-        - 10.10.0+
-        - Master
-        - Unstable
-        - Older*
+      description: What version of Jellyfin are you using? ("Build version" on your server dashboard, or specify if self-built.)
+      placeholder: |
+        X.Y.Z (stable) | YYYYMMDDHHMM (unstable)
     validations:
       required: true
   - type: input
