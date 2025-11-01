@@ -1192,7 +1192,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesVideoFile]
     public ActionResult GetLiveStreamFile(
         [FromRoute, Required] string streamId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
+        [FromRoute, Required][RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
     {
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)

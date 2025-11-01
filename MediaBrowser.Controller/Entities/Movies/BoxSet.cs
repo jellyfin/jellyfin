@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (sortBy == ItemSortBy.Default)
             {
-              return items;
+                return items;
             }
 
             return LibraryManager.Sort(items, user, new[] { sortBy }, SortOrder.Ascending);

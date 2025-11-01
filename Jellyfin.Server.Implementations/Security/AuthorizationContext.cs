@@ -302,7 +302,7 @@ namespace Jellyfin.Server.Implementations.Security
                 }
                 else if (!escaped && token == '=')
                 {
-                    key = authorizationHeader[start.. i].Trim().ToString();
+                    key = authorizationHeader[start..i].Trim().ToString();
                     start = i + 1;
                 }
             }

@@ -357,7 +357,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         lock (_initLock)
         {
-           _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
+            _interfaces = FilterBindSettings(config, _interfaces, IsIPv4Enabled, IsIPv6Enabled).ToList();
         }
     }
 
