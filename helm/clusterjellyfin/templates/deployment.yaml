@@ -49,6 +49,24 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+      - name: wait-for-db
+        image: postgres:15-alpine
+        command:
+          - sh
+          - -c
+          - |
+            until pg_isready -h {{ include "clusterjellyfin.postgresqlHost" . }} -p {{ include "clusterjellyfin.postgresqlPort" . }} -U {{ include "clusterjellyfin.postgresqlUsername" . }}; do
+              echo "Waiting for PostgreSQL to be ready..."
+              sleep 2
+            done
+            echo "PostgreSQL is ready!"
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.postgresqlSecretName" . }}
+              key: {{ include "clusterjellyfin.postgresqlSecretPasswordKey" . }}
       containers:
       - name: {{ .Chart.Name }}
         securityContext:
