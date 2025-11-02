@@ -393,6 +393,22 @@ namespace MediaBrowser.Controller.Entities
 
         public string ShortcutPath { get; set; }
 
+        [JsonIgnore]
+        public MediaProtocol? ShortcutPathProtocol
+        {
+            get
+            {
+                var path = ShortcutPath;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return null;
+                }
+
+                return MediaSourceManager.GetPathProtocol(path);
+            }
+        }
+
         public int Width { get; set; }
 
         public int Height { get; set; }
@@ -1173,7 +1189,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
                 {
-                    var shortcutProtocol = MediaSourceManager.GetPathProtocol(video.ShortcutPath);
+                    var shortcutProtocol = video.ShortcutPathProtocol ?? MediaSourceManager.GetPathProtocol(video.ShortcutPath);
 
                     // Only allow remote shortcut paths — local file paths in .strm files
                     // could be used to read arbitrary files from the server.

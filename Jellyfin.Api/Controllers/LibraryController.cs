@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -17,6 +18,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -31,6 +33,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -55,6 +58,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILogger<LibraryController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
@@ -68,6 +72,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ILibraryManager libraryManager,
@@ -77,7 +82,8 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IHttpClientFactory httpClientFactory)
     {
         _providerManager = providerManager;
         _libraryManager = libraryManager;
@@ -88,6 +94,7 @@ public class LibraryController : BaseJellyfinApiController
         _libraryMonitor = libraryMonitor;
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
+        _httpClientFactory = httpClientFactory;
     }
 
     /// <summary>
@@ -384,7 +391,7 @@ public class LibraryController : BaseJellyfinApiController
 
         _libraryManager.DeleteItem(
             item,
-            new DeleteOptions { DeleteFileLocation = true },
+            new DeleteOptions { DeleteFileLocation = item.IsFileProtocol },
             true);
 
         return NoContent();
@@ -696,6 +703,12 @@ public class LibraryController : BaseJellyfinApiController
         if (user is not null)
         {
             await LogDownloadAsync(item, user).ConfigureAwait(false);
+        }
+
+        if ((item.ShortcutPathProtocol ?? item.PathProtocol) == MediaProtocol.Http)
+        {
+          var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+          return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(item.ShortcutPath ?? item.Path, httpClient, HttpContext, true).ConfigureAwait(false);
         }
 
         // Quotes are valid in linux. They'll possibly cause issues here.

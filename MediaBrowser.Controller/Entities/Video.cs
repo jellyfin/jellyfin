@@ -222,17 +222,23 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (IsFileProtocol)
+                if (string.IsNullOrEmpty(Path))
                 {
-                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
-                    {
-                        return System.IO.Path.GetFileName(Path);
-                    }
-
-                    return System.IO.Path.GetFileNameWithoutExtension(Path);
+                    return null;
                 }
 
-                return null;
+                if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
+                {
+                    return System.IO.Path.GetFileName(Path);
+                }
+
+                var path = Path;
+                if (!IsFileProtocol && Uri.TryCreate(Path, UriKind.Absolute, out var uri))
+                {
+                    path = System.IO.Path.GetFileName(uri.LocalPath);
+                }
+
+                return System.IO.Path.GetFileNameWithoutExtension(path);
             }
         }
 
@@ -341,7 +347,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return IsFileProtocol;
+            return PathProtocol == MediaProtocol.Http || PathProtocol == MediaProtocol.File;
         }
 
         protected override bool IsActiveRecording()
@@ -356,7 +362,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return base.CanDelete();
+            return true;
         }
 
         public IEnumerable<Guid> GetAdditionalPartIds()

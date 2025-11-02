@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(BaseItem item)
         {
-            var shortcutPath = File.ReadAllLines(item.Path)
+            var shortcutPath = item.ShortcutPath ?? File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
 
