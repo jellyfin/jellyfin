@@ -1,0 +1,165 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - 'feature/postgres-provider-*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+    inputs:
+      push:
+        description: 'Push images to registry'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=postgres,enable=true
+            type=sha,prefix={{branch}}-
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event.inputs.push == 'true') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
+
+      - name: Generate artifact attestation
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  test-container:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build test image
+        run: docker build -t jellyfin-test:latest .
+
+      - name: Test container startup
+        run: |
+          # Start PostgreSQL
+          docker run -d \
+            --name test-postgres \
+            -e POSTGRES_USER=jellyfin \
+            -e POSTGRES_PASSWORD=jellyfin \
+            -e POSTGRES_DB=jellyfin \
+            postgres:15-alpine
+
+          # Wait for PostgreSQL to be ready
+          sleep 10
+
+          # Start Jellyfin container
+          docker run -d \
+            --name test-jellyfin \
+            --link test-postgres:postgres \
+            -e JELLYFIN_POSTGRES_HOST=postgres \
+            -e JELLYFIN_POSTGRES_PORT=5432 \
+            -e JELLYFIN_POSTGRES_DATABASE=jellyfin \
+            -e JELLYFIN_POSTGRES_USER=jellyfin \
+            -e JELLYFIN_POSTGRES_PASSWORD=jellyfin \
+            jellyfin-test:latest
+
+          # Wait for startup
+          sleep 15
+
+          # Check if container is running
+          docker ps | grep test-jellyfin
+
+          # Check logs for successful startup
+          docker logs test-jellyfin | grep "Startup complete"
+
+          # Cleanup
+          docker stop test-jellyfin test-postgres
+          docker rm test-jellyfin test-postgres
+
+      - name: Test result
+        run: echo "Container test passed!"
+
+  scan-vulnerabilities:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
