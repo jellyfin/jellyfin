@@ -214,7 +214,9 @@ namespace MediaBrowser.Providers.MediaInfo
             };
 
             string extractedAttachmentPath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
+                item.Container != null && item.Container.Contains("mkv", StringComparison.InvariantCultureIgnoreCase)
+                ? await _mediaEncoder.ExtractMkvAttachment(item.Path, mediaSource, attachmentStream.Index, extension, cancellationToken).ConfigureAwait(false)
+                : await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse

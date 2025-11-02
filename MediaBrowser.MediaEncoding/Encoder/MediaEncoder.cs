@@ -611,6 +611,71 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, targetFormat, cancellationToken);
         }
 
+        /// <inheritdoc />
+        public async Task<string> ExtractMkvAttachment(
+            string inputFile,
+            MediaSourceInfo mediaSource,
+            int imageStreamIndex,
+            string outputExtension,
+            CancellationToken cancellationToken)
+        {
+            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
+            Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
+
+            var inputArgument = GetInputPathArgument(inputFile, mediaSource);
+
+            var args = string.Format(CultureInfo.InvariantCulture, "-dump_attachment:{0} {1} -i {2} -map 0:t -f null /dev/null -y", imageStreamIndex, tempExtractPath, inputArgument);
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _ffmpegPath,
+                    Arguments = args,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                },
+                EnableRaisingEvents = true
+            };
+
+            _logger.LogDebug("{ProcessFileName} {ProcessArguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            using (var processWrapper = new ProcessWrapper(process, this))
+            {
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    StartProcess(processWrapper);
+
+                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    if (timeoutMs <= 0)
+                    {
+                        timeoutMs = DefaultSdrImageExtractionTimeout;
+                    }
+
+                    try
+                    {
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        process.Kill(true);
+                        throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction timed out for {0} after {1}ms", inputFile, timeoutMs), ex);
+                    }
+                }
+
+                var file = _fileSystem.GetFileInfo(tempExtractPath);
+
+                if (processWrapper.ExitCode > 0 || !file.Exists || file.Length == 0)
+                {
+                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0}", inputFile));
+                }
+
+                return tempExtractPath;
+            }
+        }
+
         private async Task<string> ExtractImage(
             string inputFile,
             string container,

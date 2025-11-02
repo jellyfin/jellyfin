@@ -159,6 +159,17 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Extracts the attachment specified by stream index.
+        /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="imageStreamIndex">Index of the stream to extract from.</param>
+        /// <param name="outputExtension">The extension of the file to write.</param>
+        /// <param name="cancellationToken"> to use for operation.</param>
+        /// <returns>Location of extracted file.</returns>
+        Task<string> ExtractMkvAttachment(string inputFile, MediaSourceInfo mediaSource, int imageStreamIndex, string outputExtension, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
         /// <param name="inputFile">Input file.</param>
