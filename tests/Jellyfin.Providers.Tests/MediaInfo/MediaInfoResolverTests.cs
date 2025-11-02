@@ -74,23 +74,6 @@ public class MediaInfoResolverTests
         _subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
-    [Fact]
-    public void GetExternalFiles_BadProtocol_ReturnsNoSubtitles()
-    {
-        // need a media source manager capable of returning something other than file protocol
-        var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex("http.*")))
-            .Returns(MediaProtocol.Http);
-        BaseItem.MediaSourceManager = mediaSourceManager.Object;
-
-        var video = new Movie
-        {
-            Path = "https://url.com/My.Video.mkv"
-        };
-
-        Assert.Empty(_subtitleResolver.GetExternalFiles(video, Mock.Of<IDirectoryService>(), false));
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

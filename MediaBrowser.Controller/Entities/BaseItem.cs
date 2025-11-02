@@ -393,6 +393,22 @@ namespace MediaBrowser.Controller.Entities
 
         public string ShortcutPath { get; set; }
 
+        [JsonIgnore]
+        public MediaProtocol? ShortcutPathProtocol
+        {
+            get
+            {
+                var path = ShortcutPath;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return null;
+                }
+
+                return MediaSourceManager.GetPathProtocol(path);
+            }
+        }
+
         public int Width { get; set; }
 
         public int Height { get; set; }
@@ -1166,7 +1182,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     info.IsRemote = true;
                     info.Path = video.ShortcutPath;
-                    info.Protocol = MediaSourceManager.GetPathProtocol(info.Path);
+                    info.Protocol = video.ShortcutPathProtocol ?? MediaProtocol.File;
                 }
 
                 if (string.IsNullOrEmpty(info.Container))
