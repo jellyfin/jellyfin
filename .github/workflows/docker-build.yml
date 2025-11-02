@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+      - postgresql
       - 'feature/postgres-provider-*'
     tags:
       - 'v*'
