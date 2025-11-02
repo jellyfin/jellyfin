@@ -99,6 +99,14 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
     /// <returns>The PostgreSQL connection string.</returns>
     private string BuildConnectionString(DatabaseConfigurationOptions databaseConfiguration)
     {
+        // First check for full connection string in environment variable
+        var envConnectionString = Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_CONNECTION_STRING");
+        if (!string.IsNullOrEmpty(envConnectionString))
+        {
+            return envConnectionString;
+        }
+
+        // Then check configuration
         var connectionString = databaseConfiguration.CustomProviderOptions?.Options?.FirstOrDefault(o => o.Key.Equals("connectionstring", StringComparison.OrdinalIgnoreCase))?.Value;
 
         if (!string.IsNullOrEmpty(connectionString))
@@ -106,14 +114,19 @@ public sealed class PostgresDatabaseProvider : IJellyfinDatabaseProvider
             return connectionString;
         }
 
-        // Fallback to individual parameters
+        // Fallback to individual parameters (check environment variables first, then config)
         var builder = new NpgsqlConnectionStringBuilder
         {
-            Host = GetOption(databaseConfiguration.CustomProviderOptions?.Options, "host", s => s, () => "localhost"),
-            Port = GetOption(databaseConfiguration.CustomProviderOptions?.Options, "port", int.Parse, () => 5432),
-            Database = GetOption(databaseConfiguration.CustomProviderOptions?.Options, "database", s => s, () => "jellyfin"),
-            Username = GetOption(databaseConfiguration.CustomProviderOptions?.Options, "username", s => s, () => "jellyfin"),
-            Password = GetOption(databaseConfiguration.CustomProviderOptions?.Options, "password", s => s, () => string.Empty),
+            Host = Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_HOST")
+                   ?? GetOption(databaseConfiguration.CustomProviderOptions?.Options, "host", s => s, () => "localhost"),
+            Port = int.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_PORT"), out var port) ? port
+                   : GetOption(databaseConfiguration.CustomProviderOptions?.Options, "port", int.Parse, () => 5432),
+            Database = Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_DATABASE")
+                       ?? GetOption(databaseConfiguration.CustomProviderOptions?.Options, "database", s => s, () => "jellyfin"),
+            Username = Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_USER")
+                       ?? GetOption(databaseConfiguration.CustomProviderOptions?.Options, "username", s => s, () => "jellyfin"),
+            Password = Environment.GetEnvironmentVariable("JELLYFIN_POSTGRES_PASSWORD")
+                       ?? GetOption(databaseConfiguration.CustomProviderOptions?.Options, "password", s => s, () => string.Empty),
 
             // SSL/TLS Configuration
             SslMode = ParseSslMode(GetOption(databaseConfiguration.CustomProviderOptions?.Options, "sslmode", s => s, () => "Disable") ?? "Disable"),

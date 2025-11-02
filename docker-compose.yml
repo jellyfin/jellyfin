@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: jellyfin-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jellyfin
+      POSTGRES_PASSWORD: jellyfin
+      POSTGRES_DB: jellyfin
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jellyfin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jellyfin
+
+  jellyfin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jellyfin
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # PostgreSQL Configuration
+      JELLYFIN_POSTGRES_HOST: postgres
+      JELLYFIN_POSTGRES_PORT: 5432
+      JELLYFIN_POSTGRES_DATABASE: jellyfin
+      JELLYFIN_POSTGRES_USER: jellyfin
+      JELLYFIN_POSTGRES_PASSWORD: jellyfin
+
+      # Jellyfin Configuration
+      TZ: America/Los_Angeles
+
+      # Optional: Uncomment to enable specific features
+      # JELLYFIN_FFmpeg_probesize: 50000000
+      # JELLYFIN_FFmpeg_analyzeduration: 50000000
+    ports:
+      - "8096:8096"   # HTTP
+      - "8920:8920"   # HTTPS (optional)
+    volumes:
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+      - ./media:/media  # Mount your media directory here
+    networks:
+      - jellyfin
+    # Optional: Hardware acceleration (uncomment as needed)
+    # devices:
+    #   - /dev/dri:/dev/dri  # Intel/AMD GPU
+    #   - /dev/nvidia0:/dev/nvidia0  # NVIDIA GPU
+    #   - /dev/nvidiactl:/dev/nvidiactl  # NVIDIA GPU
+
+networks:
+  jellyfin:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+  jellyfin-config:
+    driver: local
+  jellyfin-cache:
+    driver: local

@@ -1,11 +1,52 @@
-.git
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.rider/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Node modules
+**/node_modules/
+**/npm-debug.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
 .dockerignore
-Dockerfile
-Dockerfile.arm
-Dockerfile.arm64
-CONTRIBUTORS.md
-README.md
-deployment/*/dist
-deployment/*/pkg-dist
-deployment/collect-dist/
-ci/
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Logs
+*.log
+
+# Temporary files
+**/*.tmp
+**/*.temp
