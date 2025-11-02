@@ -1008,14 +1008,14 @@ namespace Jellyfin.Database.Providers.Postgres.Migrations
                 table: "Permissions",
                 columns: new[] { "UserId", "Kind" },
                 unique: true,
-                filter: "[UserId] IS NOT NULL");
+                filter: "\"UserId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Preferences_UserId_Kind",
                 table: "Preferences",
                 columns: new[] { "UserId", "Kind" },
                 unique: true,
-                filter: "[UserId] IS NOT NULL");
+                filter: "\"UserId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_ItemId_UserId_IsFavorite",
