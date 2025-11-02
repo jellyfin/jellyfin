@@ -16,16 +16,18 @@ RUN dotnet publish Jellyfin.Server/Jellyfin.Server.csproj \
     --no-restore \
     -p:DebugType=none
 
-# Web UI stage
-FROM node:alpine AS web
-ARG JELLYFIN_WEB_VERSION=10.12.0
+# Web UI stage - Build from source
+FROM node:20-alpine AS web
+ARG JELLYFIN_WEB_VERSION=v10.11.1
 WORKDIR /web
 
-# Download and extract jellyfin-web from GitHub releases
-RUN apk add --no-cache wget tar && \
-    wget -O jellyfin-web.tar.gz "https://github.com/jellyfin/jellyfin-web/releases/download/v${JELLYFIN_WEB_VERSION}/jellyfin-web_${JELLYFIN_WEB_VERSION}.tar.gz" && \
-    tar -xzf jellyfin-web.tar.gz -C /web && \
-    rm jellyfin-web.tar.gz
+# Download and build jellyfin-web from source
+RUN apk add --no-cache wget tar git && \
+    wget -O jellyfin-web.tar.gz "https://api.github.com/repos/jellyfin/jellyfin-web/tarball/${JELLYFIN_WEB_VERSION}" && \
+    tar -xzf jellyfin-web.tar.gz --strip-components=1 && \
+    rm jellyfin-web.tar.gz && \
+    npm ci --no-audit && \
+    npm run build:production
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
@@ -45,8 +47,8 @@ RUN apt-get update && \
 # Copy application
 COPY --from=build /app/jellyfin .
 
-# Copy Web UI
-COPY --from=web /web /jellyfin/jellyfin-web
+# Copy Web UI (from the dist directory created by build)
+COPY --from=web /web/dist /jellyfin/jellyfin-web
 
 # Create directories
 RUN mkdir -p /config /cache /media && \
