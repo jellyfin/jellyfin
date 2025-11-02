@@ -66,6 +66,9 @@ public class SeasonPathParserTests
     [InlineData("/Drive/SPECIALS", "/Drive", 0, true)]
     [InlineData("/Drive/Episode 1 Season 2", "/Drive", null, false)]
     [InlineData("/Drive/Episode 1 SEASON 2", "/Drive", null, false)]
+    [InlineData("/media/YouTube/Devyn Johnston/2024-01-24 4070 Ti SUPER in under 7 minutes", "/media/YouTube/Devyn Johnston", null, false)]
+    [InlineData("/media/YouTube/Devyn Johnston/2025-01-28 5090 vs 2 SFF Cases", "/media/YouTube/Devyn Johnston", null, false)]
+    [InlineData("/Drive/202401244070", "/Drive", null, false)]
     public void GetSeasonNumberFromPathTest(string path, string? parentPath, int? seasonNumber, bool isSeasonDirectory)
     {
         var result = SeasonPathParser.Parse(path, parentPath, true, true);
