@@ -64,7 +64,7 @@ PostgreSQL host
 */}}
 {{- define "clusterjellyfin.postgresqlHost" -}}
 {{- if .Values.postgresql.enabled }}
-{{- printf "%s-postgresql" (include "clusterjellyfin.fullname" .) }}
+{{- printf "%s-postgresql" .Release.Name }}
 {{- else }}
 {{- .Values.externalPostgresql.host }}
 {{- end }}
@@ -108,7 +108,7 @@ PostgreSQL secret name
 */}}
 {{- define "clusterjellyfin.postgresqlSecretName" -}}
 {{- if .Values.postgresql.enabled }}
-{{- printf "%s-postgresql" (include "clusterjellyfin.fullname" .) }}
+{{- printf "%s-postgresql" .Release.Name }}
 {{- else if .Values.externalPostgresql.existingSecret }}
 {{- .Values.externalPostgresql.existingSecret }}
 {{- else }}
