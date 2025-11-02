@@ -16,8 +16,16 @@ RUN dotnet publish Jellyfin.Server/Jellyfin.Server.csproj \
     --no-restore \
     -p:DebugType=none
 
-# NOTE: Web UI stage commented out for now - will add after PostgreSQL testing
-# You can manually mount a web UI directory or test API-only for now
+# Web UI stage
+FROM node:alpine AS web
+ARG JELLYFIN_WEB_VERSION=10.12.0
+WORKDIR /web
+
+# Download and extract jellyfin-web from GitHub releases
+RUN apk add --no-cache wget tar && \
+    wget -O jellyfin-web.tar.gz "https://github.com/jellyfin/jellyfin-web/releases/download/v${JELLYFIN_WEB_VERSION}/jellyfin-web_${JELLYFIN_WEB_VERSION}.tar.gz" && \
+    tar -xzf jellyfin-web.tar.gz -C /web && \
+    rm jellyfin-web.tar.gz
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
@@ -37,8 +45,8 @@ RUN apt-get update && \
 # Copy application
 COPY --from=build /app/jellyfin .
 
-# Web UI will be mounted or added later
-# COPY --from=web /web/dist /jellyfin/jellyfin-web
+# Copy Web UI
+COPY --from=web /web /jellyfin/jellyfin-web
 
 # Create directories
 RUN mkdir -p /config /cache /media && \
@@ -86,7 +94,7 @@ exec dotnet jellyfin.dll \\\n\
   --configdir "${JELLYFIN_CONFIG_DIR}" \\\n\
   --cachedir "${JELLYFIN_CACHE_DIR}" \\\n\
   --logdir "${JELLYFIN_LOG_DIR}" \\\n\
-  --nowebclient\n\
+  --webdir /jellyfin/jellyfin-web\n\
 ' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 VOLUME ["/config", "/cache", "/media"]
