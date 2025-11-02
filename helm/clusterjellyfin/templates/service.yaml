@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.http.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+    {{- if and (eq .Values.service.type "NodePort") .Values.service.http.nodePort }}
+    nodePort: {{ .Values.service.http.nodePort }}
+    {{- end }}
+  {{- if .Values.service.https.enabled }}
+  - port: {{ .Values.service.https.port }}
+    targetPort: https
+    protocol: TCP
+    name: https
+    {{- if and (eq .Values.service.type "NodePort") .Values.service.https.nodePort }}
+    nodePort: {{ .Values.service.https.nodePort }}
+    {{- end }}
+  {{- end }}
+  selector:
+    {{- include "clusterjellyfin.selectorLabels" . | nindent 4 }}

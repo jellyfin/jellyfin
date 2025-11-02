@@ -1,0 +1,141 @@
+name: Build and Publish Helm Chart
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - postgresql
+    paths:
+      - 'helm/clusterjellyfin/**'
+  pull_request:
+    branches:
+      - master
+      - main
+    paths:
+      - 'helm/clusterjellyfin/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  CHART_NAME: clusterjellyfin
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Add Bitnami repo
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Update chart dependencies
+        run: |
+          cd helm/clusterjellyfin
+          helm dependency update
+
+      - name: Lint Helm chart
+        run: |
+          cd helm/clusterjellyfin
+          helm lint .
+
+      - name: Template Helm chart
+        run: |
+          cd helm/clusterjellyfin
+          helm template test-release . > /dev/null
+
+  package-publish:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Add Bitnami repo
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Update chart dependencies
+        run: |
+          cd helm/clusterjellyfin
+          helm dependency update
+
+      - name: Package Helm chart
+        run: |
+          cd helm/clusterjellyfin
+          helm package .
+          mkdir -p ../../packages
+          mv *.tgz ../../packages/
+
+      - name: Generate index
+        run: |
+          cd packages
+          helm repo index . --url https://github.com/${{ github.repository }}/releases/download/helm-charts
+
+      - name: Upload chart artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-charts
+          path: packages/
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: helm-chart-${{ github.run_number }}
+          name: Helm Chart Release ${{ github.run_number }}
+          files: packages/*
+          body: |
+            ## Helm Chart Release
+
+            ### Installation
+            ```bash
+            helm repo add celesrenata https://github.com/${{ github.repository }}/releases/download/helm-charts
+            helm repo update
+            helm install jellyfin celesrenata/clusterjellyfin
+            ```
+
+            Or install directly from package:
+            ```bash
+            helm install jellyfin packages/clusterjellyfin-*.tgz
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push chart to OCI registry
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          cd packages
+          for chart in *.tgz; do
+            helm push "$chart" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          done

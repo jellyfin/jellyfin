@@ -1,0 +1,23 @@
+apiVersion: v2
+name: clusterjellyfin
+description: A Helm chart for deploying Jellyfin with PostgreSQL backend on Kubernetes
+type: application
+version: 1.0.0
+appVersion: "10.11.1"
+keywords:
+  - jellyfin
+  - media
+  - streaming
+  - postgresql
+home: https://jellyfin.org
+sources:
+  - https://github.com/celesrenata/jellyfin
+maintainers:
+  - name: celesrenata
+    email: celesrenata@example.com
+
+dependencies:
+  - name: postgresql
+    version: "15.5.38"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

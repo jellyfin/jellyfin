@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "clusterjellyfin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "clusterjellyfin.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "clusterjellyfin.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "clusterjellyfin.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.hwaccel.enabled }}
+      {{- with .Values.hwaccel.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hwaccel.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- else }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8096
+          protocol: TCP
+        {{- if .Values.service.https.enabled }}
+        - name: https
+          containerPort: 8920
+          protocol: TCP
+        {{- end }}
+        env:
+        # PostgreSQL configuration
+        - name: JELLYFIN_POSTGRES_HOST
+          value: {{ include "clusterjellyfin.postgresqlHost" . | quote }}
+        - name: JELLYFIN_POSTGRES_PORT
+          value: {{ include "clusterjellyfin.postgresqlPort" . | quote }}
+        - name: JELLYFIN_POSTGRES_DATABASE
+          value: {{ include "clusterjellyfin.postgresqlDatabase" . | quote }}
+        - name: JELLYFIN_POSTGRES_USER
+          value: {{ include "clusterjellyfin.postgresqlUsername" . | quote }}
+        - name: JELLYFIN_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.postgresqlSecretName" . }}
+              key: {{ include "clusterjellyfin.postgresqlSecretPasswordKey" . }}
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- range $key, $value := .Values.extraEnv }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe:
+          {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe:
+          {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if .Values.startupProbe.enabled }}
+        startupProbe:
+          {{- omit .Values.startupProbe "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: cache
+          mountPath: /cache
+        - name: media
+          mountPath: /media
+        - name: database-config
+          mountPath: /config/database.xml
+          subPath: database.xml
+        {{- if .Values.hwaccel.enabled }}
+        {{- if .Values.hwaccel.devices.dri.enabled }}
+        - name: dri
+          mountPath: /dev/dri
+        {{- end }}
+        {{- if .Values.hwaccel.devices.nvidia.enabled }}
+        {{- range .Values.hwaccel.devices.nvidia.devices }}
+        - name: {{ . | replace "/" "-" | trimPrefix "-" }}
+          mountPath: {{ . }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      volumes:
+      - name: config
+        {{- if .Values.persistence.config.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.config.existingClaim | default (printf "%s-config" (include "clusterjellyfin.fullname" .)) }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: cache
+        {{- if .Values.persistence.cache.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.cache.existingClaim | default (printf "%s-cache" (include "clusterjellyfin.fullname" .)) }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: media
+        {{- if .Values.persistence.media.enabled }}
+        {{- if .Values.persistence.media.nfs.enabled }}
+        nfs:
+          server: {{ .Values.persistence.media.nfs.server }}
+          path: {{ .Values.persistence.media.nfs.path }}
+        {{- else }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.media.existingClaim | default (printf "%s-media" (include "clusterjellyfin.fullname" .)) }}
+        {{- end }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: database-config
+        configMap:
+          name: {{ include "clusterjellyfin.fullname" . }}-config
+      {{- if .Values.hwaccel.enabled }}
+      {{- if .Values.hwaccel.devices.dri.enabled }}
+      - name: dri
+        hostPath:
+          path: {{ .Values.hwaccel.devices.dri.hostPath }}
+      {{- end }}
+      {{- if .Values.hwaccel.devices.nvidia.enabled }}
+      {{- range .Values.hwaccel.devices.nvidia.devices }}
+      - name: {{ . | replace "/" "-" | trimPrefix "-" }}
+        hostPath:
+          path: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- end }}

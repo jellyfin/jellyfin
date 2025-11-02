@@ -1,0 +1,62 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+{{- if .Values.ingress.enabled }}
+
+Jellyfin will be available at:
+{{- range .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if eq .Values.service.type "LoadBalancer" }}
+
+Get the application URL by running these commands:
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+        You can watch the status by running 'kubectl get svc -w {{ include "clusterjellyfin.fullname" . }}'
+  
+  export SERVICE_IP=$(kubectl get svc {{ include "clusterjellyfin.fullname" . }} --namespace {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.service.http.port }}
+{{- else if eq .Values.service.type "NodePort" }}
+
+Get the application URL by running these commands:
+  export NODE_PORT=$(kubectl get svc {{ include "clusterjellyfin.fullname" . }} --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}")
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if eq .Values.service.type "ClusterIP" }}
+
+Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "clusterjellyfin.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:8096 to access Jellyfin"
+  kubectl port-forward $POD_NAME 8096:8096
+{{- end }}
+
+Database Configuration:
+  Type: PostgreSQL
+  {{- if .Values.postgresql.enabled }}
+  Host: {{ include "clusterjellyfin.postgresqlHost" . }}
+  Database: {{ include "clusterjellyfin.postgresqlDatabase" . }}
+  (Using bundled PostgreSQL chart)
+  {{- else }}
+  Host: {{ .Values.externalPostgresql.host }}
+  Database: {{ .Values.externalPostgresql.database }}
+  (Using external PostgreSQL)
+  {{- end }}
+
+Storage:
+  Config: {{ if .Values.persistence.config.enabled }}Enabled ({{ .Values.persistence.config.size }}){{ else }}Disabled{{ end }}
+  Cache: {{ if .Values.persistence.cache.enabled }}Enabled ({{ .Values.persistence.cache.size }}){{ else }}Disabled{{ end }}
+  Media: {{ if .Values.persistence.media.enabled }}Enabled ({{ .Values.persistence.media.size }}){{ else }}Disabled{{ end }}
+
+{{- if .Values.hwaccel.enabled }}
+
+Hardware Acceleration: Enabled ({{ .Values.hwaccel.type }})
+{{- end }}
+
+For complete documentation, visit: https://jellyfin.org/docs/

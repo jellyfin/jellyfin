@@ -1,0 +1,259 @@
+# Default values for clusterjellyfin
+
+# Jellyfin image configuration
+image:
+  repository: ghcr.io/celesrenata/jellyfin
+  tag: postgres
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Number of replicas (Jellyfin does not support horizontal scaling - keep at 1)
+replicaCount: 1
+
+# Service configuration
+service:
+  type: ClusterIP
+  annotations: {}
+  http:
+    port: 8096
+    nodePort: null
+  https:
+    enabled: false
+    port: 8920
+    nodePort: null
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  hosts:
+    - host: jellyfin.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: jellyfin-tls
+    #   hosts:
+    #     - jellyfin.local
+
+# PostgreSQL configuration
+postgresql:
+  # Enable bundled PostgreSQL chart
+  enabled: true
+  auth:
+    username: jellyfin
+    password: jellyfin
+    database: jellyfin
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: ""
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+
+# External PostgreSQL configuration (if postgresql.enabled is false)
+externalPostgresql:
+  enabled: false
+  host: ""
+  port: 5432
+  database: jellyfin
+  username: jellyfin
+  password: ""
+  # Alternatively, use existing secret
+  existingSecret: ""
+  existingSecretPasswordKey: password
+
+# Persistence configuration
+persistence:
+  # Configuration and metadata
+  config:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    existingClaim: ""
+    annotations: {}
+  
+  # Transcoding cache
+  cache:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    existingClaim: ""
+    annotations: {}
+  
+  # Media files
+  media:
+    enabled: true
+    size: 100Gi
+    storageClass: ""
+    accessMode: ReadWriteMany
+    existingClaim: ""
+    annotations: {}
+    # For NFS or other shared storage
+    nfs:
+      enabled: false
+      server: ""
+      path: ""
+
+# Environment variables
+env:
+  # Timezone
+  TZ: "America/Los_Angeles"
+  
+  # Jellyfin directories (managed by chart, don't change unless needed)
+  JELLYFIN_DATA_DIR: "/config/data"
+  JELLYFIN_CACHE_DIR: "/cache"
+  JELLYFIN_LOG_DIR: "/config/log"
+  JELLYFIN_CONFIG_DIR: "/config"
+  
+  # PostgreSQL connection (auto-configured from postgresql or externalPostgresql)
+  # JELLYFIN_POSTGRES_HOST: auto-configured
+  # JELLYFIN_POSTGRES_PORT: auto-configured
+  # JELLYFIN_POSTGRES_DATABASE: auto-configured
+  # JELLYFIN_POSTGRES_USER: auto-configured
+  # JELLYFIN_POSTGRES_PASSWORD: auto-configured
+  
+  # Optional FFmpeg settings
+  # JELLYFIN_FFmpeg_probesize: "50000000"
+  # JELLYFIN_FFmpeg_analyzeduration: "50000000"
+
+# Additional environment variables (key-value pairs)
+extraEnv: {}
+  # CUSTOM_VAR: "value"
+
+# Resources limits and requests
+resources:
+  limits:
+    cpu: 4000m
+    memory: 4Gi
+  requests:
+    cpu: 1000m
+    memory: 1Gi
+
+# Hardware acceleration configuration
+hwaccel:
+  enabled: false
+  # Type: intel, nvidia, or amd
+  type: ""
+  
+  # Device configuration
+  devices:
+    # Intel/AMD GPU
+    dri:
+      enabled: false
+      hostPath: /dev/dri
+    # NVIDIA GPU
+    nvidia:
+      enabled: false
+      devices:
+        - /dev/nvidia0
+        - /dev/nvidiactl
+        - /dev/nvidia-uvm
+  
+  # Node selector for GPU nodes
+  nodeSelector: {}
+    # gpu: "true"
+  
+  # Tolerations for GPU nodes
+  tolerations: []
+    # - key: nvidia.com/gpu
+    #   operator: Exists
+    #   effect: NoSchedule
+
+# Security context
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  runAsUser: 0
+  # For hardware acceleration, container needs privileged access
+  privileged: false
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 0
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Liveness probe
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Readiness probe
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Startup probe
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 60
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Network policy
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector: {}
+  egress:
+    - to:
+      - namespaceSelector: {}

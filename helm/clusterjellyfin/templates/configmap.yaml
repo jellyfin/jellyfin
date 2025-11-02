@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-config
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+data:
+  database.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <DatabaseConfigurationOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <DatabaseType>Jellyfin-PostgreSQL</DatabaseType>
+      <LockingBehavior>NoLock</LockingBehavior>
+    </DatabaseConfigurationOptions>
