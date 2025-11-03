@@ -65,15 +65,6 @@ namespace Jellyfin.Server.Migrations.Routines
             using (var connection = new SqliteConnection($"Filename={activityLogPath}"))
             {
                 connection.Open();
-                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='ActivityLog';");
-                foreach (var row in tableQuery)
-                {
-                    if (row.GetInt32(0) == 0)
-                    {
-                        _logger.LogWarning("Table 'ActivityLog' doesn't exist in {ActivityLogPath}, nothing to migrate", activityLogPath);
-                        return;
-                    }
-                }
 
                 using var userDbConnection = new SqliteConnection($"Filename={Path.Combine(dataPath, "users.db")}");
                 userDbConnection.Open();
