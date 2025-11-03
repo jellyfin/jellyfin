@@ -78,9 +78,27 @@ namespace Jellyfin.Server.Migrations.Routines
             var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
+
+            if (!File.Exists(dbFilePath))
+            {
+                _logger.LogWarning("{Path} doesn't exist, nothing to migrate", dbFilePath);
+                return;
+            }
+
             using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
                 connection.Open();
+
+                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='userdisplaypreferences';");
+                foreach (var row in tableQuery)
+                {
+                    if (row.GetInt32(0) == 0)
+                    {
+                        _logger.LogWarning("Table 'userdisplaypreferences' doesn't exist in {Path}, nothing to migrate", dbFilePath);
+                        return;
+                    }
+                }
+
                 using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
