@@ -730,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var result = PostFilterAndSort(items, query);
-                result.TotalRecordCount = totalCount;
+                result.TotalRecordCount = result.Items.Count;
                 return result;
             }
 
