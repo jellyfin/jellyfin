@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Database.Implementations.Entities;
@@ -26,33 +23,32 @@ using Photo = MediaBrowser.Controller.Entities.Photo;
 namespace Jellyfin.Drawing;
 
 /// <summary>
-/// Class ImageProcessor.
+/// Provides optimized image processing functionality for Jellyfin
+/// with concurrency-limited encoding and cache-aware performance.
 /// </summary>
 public sealed class ImageProcessor : IImageProcessor, IDisposable
 {
-    // Increment this when there's a change requiring caches to be invalidated
     private const char Version = '3';
 
-    private static readonly HashSet<string> _transparentImageTypes
-        = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
+    private static readonly HashSet<string> TransparentExtensions =
+        new(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif", ".svg" };
 
     private readonly ILogger<ImageProcessor> _logger;
     private readonly IFileSystem _fileSystem;
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
-
     private readonly AsyncNonKeyedLocker _parallelEncodingLimit;
 
-    private bool _disposed;
+    private volatile bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageProcessor"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="appPaths">The server application paths.</param>
-    /// <param name="fileSystem">The filesystem.</param>
+    /// <param name="appPaths">The application paths.</param>
+    /// <param name="fileSystem">The file system interface.</param>
     /// <param name="imageEncoder">The image encoder.</param>
-    /// <param name="config">The configuration.</param>
+    /// <param name="config">The configuration manager.</param>
     public ImageProcessor(
         ILogger<ImageProcessor> logger,
         IServerApplicationPaths appPaths,
@@ -76,79 +72,49 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
     private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
 
-    /// <inheritdoc />
-    public IReadOnlyCollection<string> SupportedInputFormats =>
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "tiff",
-            "tif",
-            "jpeg",
-            "jpg",
-            "png",
-            "aiff",
-            "cr2",
-            "crw",
-            "nef",
-            "orf",
-            "pef",
-            "arw",
-            "webp",
-            "gif",
-            "bmp",
-            "erf",
-            "raf",
-            "rw2",
-            "nrw",
-            "dng",
-            "ico",
-            "astc",
-            "ktx",
-            "pkm",
-            "wbmp",
-            "avif"
-        };
+    /// <inheritdoc/>
+    public IReadOnlyCollection<string> SupportedInputFormats => _imageEncoder.SupportedInputFormats;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;
 
-    /// <inheritdoc />
-    public IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats()
-        => _imageEncoder.SupportedOutputFormats;
+    /// <inheritdoc/>
+    public IReadOnlyCollection<ImageFormat> GetSupportedImageOutputFormats() => _imageEncoder.SupportedOutputFormats;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
     {
-        ItemImageInfo originalImage = options.Image;
-        BaseItem item = options.Item;
+        ArgumentNullException.ThrowIfNull(options);
+
+        var originalImage = options.Image;
+        var item = options.Item;
 
         string originalImagePath = originalImage.Path;
         DateTime dateModified = originalImage.DateModified;
         ImageDimensions? originalImageSize = null;
+
         if (originalImage.Width > 0 && originalImage.Height > 0)
         {
             originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
         }
 
-        var mimeType = MimeTypes.GetMimeType(originalImagePath);
         if (!_imageEncoder.SupportsImageEncoding)
         {
-            return (originalImagePath, mimeType, dateModified);
+            return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
         }
 
-        var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
-        originalImagePath = supportedImageInfo.Path;
+        var supported = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
+        originalImagePath = supported.Path;
+        dateModified = supported.DateModified;
 
-        // Original file doesn't exist, or original file is gif.
-        if (!File.Exists(originalImagePath) || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
+        if (!File.Exists(originalImagePath) || IsGif(originalImagePath))
         {
-            return (originalImagePath, mimeType, dateModified);
+            return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
         }
-
-        dateModified = supportedImageInfo.DateModified;
-        bool requiresTransparency = _transparentImageTypes.Contains(Path.GetExtension(originalImagePath));
 
         bool autoOrient = false;
         ImageOrientation? orientation = null;
+
         if (item is Photo photo)
         {
             if (photo.Orientation.HasValue)
@@ -161,231 +127,180 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             }
             else
             {
-                // Orientation unknown, so do it
                 autoOrient = true;
                 orientation = photo.Orientation;
             }
         }
 
-        if (options.HasDefaultOptions(originalImagePath, originalImageSize) && (!autoOrient || !options.RequiresAutoOrientation))
+        if (options.HasDefaultOptions(originalImagePath, originalImageSize)
+            && (!autoOrient || !options.RequiresAutoOrientation))
         {
-            // Just spit out the original file if all the options are default
             return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
         }
 
-        int quality = options.Quality;
+        bool needsTransparency = TransparentExtensions.Contains(Path.GetExtension(originalImagePath));
+        ImageFormat outputFormat = SelectOutputFormat(options.SupportedOutputFormats, needsTransparency);
 
-        ImageFormat outputFormat = GetOutputFormat(options.SupportedOutputFormats, requiresTransparency);
-        string cacheFilePath = GetCacheFilePath(
-            originalImagePath,
-            options.Width,
-            options.Height,
-            options.MaxWidth,
-            options.MaxHeight,
-            options.FillWidth,
-            options.FillHeight,
-            quality,
-            dateModified,
-            outputFormat,
-            options.PercentPlayed,
-            options.UnplayedCount,
-            options.Blur,
-            options.BackgroundColor,
-            options.ForegroundLayer);
+        string cacheFilePath = BuildCacheFilePath(originalImagePath, options, dateModified, outputFormat);
 
         try
         {
             if (!File.Exists(cacheFilePath))
             {
-                string resultPath;
-
-                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
                 using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
                 {
-                    resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
-                }
+                    var resultPath = _imageEncoder.EncodeImage(
+                        originalImagePath,
+                        dateModified,
+                        cacheFilePath,
+                        autoOrient && options.RequiresAutoOrientation,
+                        orientation,
+                        options.Quality,
+                        options,
+                        outputFormat);
 
-                if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                    if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                    }
                 }
             }
 
-            return (cacheFilePath, outputFormat.GetMimeType(), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
+            var lastWrite = _fileSystem.GetLastWriteTimeUtc(cacheFilePath);
+            return (cacheFilePath, outputFormat.GetMimeType(), lastWrite);
         }
         catch (Exception ex)
         {
-            // If it fails for whatever reason, return the original image
-            _logger.LogError(ex, "Error encoding image");
+            _logger.LogError(ex, "Error encoding image: {Path}", originalImagePath);
             return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
         }
     }
 
-    private ImageFormat GetOutputFormat(IReadOnlyCollection<ImageFormat> clientSupportedFormats, bool requiresTransparency)
+    private static bool IsGif(string path)
     {
-        var serverFormats = GetSupportedImageOutputFormats();
+        var ext = Path.GetExtension(path);
+        return ext.Equals(".gif", StringComparison.OrdinalIgnoreCase);
+    }
 
-        // Client doesn't care about format, so start with webp if supported
-        if (serverFormats.Contains(ImageFormat.Webp) && clientSupportedFormats.Contains(ImageFormat.Webp))
+    private static ImageFormat SelectOutputFormat(IReadOnlyCollection<ImageFormat> clientSupportedFormats, bool requiresTransparency)
+    {
+        if (clientSupportedFormats.Contains(ImageFormat.Webp))
         {
             return ImageFormat.Webp;
         }
 
-        // If transparency is needed and webp isn't supported, than png is the only option
         if (requiresTransparency && clientSupportedFormats.Contains(ImageFormat.Png))
         {
             return ImageFormat.Png;
         }
 
-        foreach (var format in clientSupportedFormats)
+        if (clientSupportedFormats.Contains(ImageFormat.Jpg))
         {
-            if (serverFormats.Contains(format))
-            {
-                return format;
-            }
+            return ImageFormat.Jpg;
         }
 
-        // We should never actually get here
         return ImageFormat.Jpg;
     }
 
-    /// <summary>
-    /// Gets the cache file path based on a set of parameters.
-    /// </summary>
-    private string GetCacheFilePath(
+    private string BuildCacheFilePath(
         string originalPath,
-        int? width,
-        int? height,
-        int? maxWidth,
-        int? maxHeight,
-        int? fillWidth,
-        int? fillHeight,
-        int quality,
+        ImageProcessingOptions options,
         DateTime dateModified,
-        ImageFormat format,
-        double percentPlayed,
-        int? unwatchedCount,
-        int? blur,
-        string backgroundColor,
-        string foregroundLayer)
+        ImageFormat format)
     {
-        var filename = new StringBuilder(256);
-        filename.Append(originalPath);
+        var sb = new StringBuilder(256);
+        sb.Append(originalPath);
+        sb.Append(",q=").Append(options.Quality);
+        sb.Append(",dm=").Append(dateModified.Ticks);
+        sb.Append(",f=").Append(format);
 
-        filename.Append(",quality=");
-        filename.Append(quality);
-
-        filename.Append(",datemodified=");
-        filename.Append(dateModified.Ticks);
-
-        filename.Append(",f=");
-        filename.Append(format);
-
-        if (width.HasValue)
+        if (options.Width.HasValue)
         {
-            filename.Append(",width=");
-            filename.Append(width.Value);
+            sb.Append(",w=").Append(options.Width.Value);
         }
 
-        if (height.HasValue)
+        if (options.Height.HasValue)
         {
-            filename.Append(",height=");
-            filename.Append(height.Value);
+            sb.Append(",h=").Append(options.Height.Value);
         }
 
-        if (maxWidth.HasValue)
+        if (options.MaxWidth.HasValue)
         {
-            filename.Append(",maxwidth=");
-            filename.Append(maxWidth.Value);
+            sb.Append(",mw=").Append(options.MaxWidth.Value);
         }
 
-        if (maxHeight.HasValue)
+        if (options.MaxHeight.HasValue)
         {
-            filename.Append(",maxheight=");
-            filename.Append(maxHeight.Value);
+            sb.Append(",mh=").Append(options.MaxHeight.Value);
         }
 
-        if (fillWidth.HasValue)
+        if (options.FillWidth.HasValue)
         {
-            filename.Append(",fillwidth=");
-            filename.Append(fillWidth.Value);
+            sb.Append(",fw=").Append(options.FillWidth.Value);
         }
 
-        if (fillHeight.HasValue)
+        if (options.FillHeight.HasValue)
         {
-            filename.Append(",fillheight=");
-            filename.Append(fillHeight.Value);
+            sb.Append(",fh=").Append(options.FillHeight.Value);
         }
 
-        if (percentPlayed > 0)
+        if (options.PercentPlayed > 0)
         {
-            filename.Append(",p=");
-            filename.Append(percentPlayed);
+            sb.Append(",p=").Append(options.PercentPlayed.ToString(CultureInfo.InvariantCulture));
         }
 
-        if (unwatchedCount.HasValue)
+        if (options.UnplayedCount.HasValue)
         {
-            filename.Append(",p=");
-            filename.Append(unwatchedCount.Value);
+            sb.Append(",up=").Append(options.UnplayedCount.Value);
         }
 
-        if (blur.HasValue)
+        if (options.Blur.HasValue)
         {
-            filename.Append(",blur=");
-            filename.Append(blur.Value);
+            sb.Append(",bl=").Append(options.Blur.Value);
         }
 
-        if (!string.IsNullOrEmpty(backgroundColor))
+        if (!string.IsNullOrEmpty(options.BackgroundColor))
         {
-            filename.Append(",b=");
-            filename.Append(backgroundColor);
+            sb.Append(",bg=").Append(options.BackgroundColor);
         }
 
-        if (!string.IsNullOrEmpty(foregroundLayer))
+        if (!string.IsNullOrEmpty(options.ForegroundLayer))
         {
-            filename.Append(",fl=");
-            filename.Append(foregroundLayer);
+            sb.Append(",fl=").Append(options.ForegroundLayer);
         }
 
-        filename.Append(",v=");
-        filename.Append(Version);
-
-        return GetCachePath(ResizedImageCachePath, filename.ToString(), format.GetExtension());
+        sb.Append(",v=").Append(Version);
+        var fileName = sb.ToString().GetMD5() + format.GetExtension();
+        return GetCachePath(ResizedImageCachePath, fileName);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
     {
-        int width = info.Width;
-        int height = info.Height;
-
-        if (height > 0 && width > 0)
+        if (info.Width > 0 && info.Height > 0)
         {
-            return new ImageDimensions(width, height);
+            return new ImageDimensions(info.Width, info.Height);
         }
 
-        string path = info.Path;
-        _logger.LogDebug("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
-
-        ImageDimensions size = GetImageDimensions(path);
+        var path = info.Path;
+        _logger.LogDebug("Reading image size for {ItemType} {Path}", item.GetType().Name, path);
+        var size = GetImageDimensions(path);
         info.Width = size.Width;
         info.Height = size.Height;
-
         return size;
     }
 
-    /// <inheritdoc />
-    public ImageDimensions GetImageDimensions(string path)
-        => _imageEncoder.GetImageSize(path);
+    /// <inheritdoc/>
+    public ImageDimensions GetImageDimensions(string path) => _imageEncoder.GetImageSize(path);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string GetImageBlurHash(string path)
     {
         var size = GetImageDimensions(path);
         return GetImageBlurHash(path, size);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string GetImageBlurHash(string path, ImageDimensions imageDimensions)
     {
         if (imageDimensions.Width <= 0 || imageDimensions.Height <= 0)
@@ -393,9 +308,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return string.Empty;
         }
 
-        // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
-        // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
-        // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
         float xCompF = MathF.Sqrt(16.0f * imageDimensions.Width / imageDimensions.Height);
         float yCompF = xCompF * imageDimensions.Height / imageDimensions.Width;
 
@@ -405,19 +317,23 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string GetImageCacheTag(string baseItemPath, DateTime imageDateModified)
-        => (baseItemPath + imageDateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+    {
+        return (baseItemPath + imageDateModified.Ticks.ToString(CultureInfo.InvariantCulture))
+            .GetMD5()
+            .ToString("N", CultureInfo.InvariantCulture);
+    }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
         => GetImageCacheTag(item.Path, image.DateModified);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string GetImageCacheTag(BaseItemDto item, ItemImageInfo image)
         => GetImageCacheTag(item.Path, image.DateModified);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string? GetImageCacheTag(BaseItemDto item, ChapterInfo chapter)
     {
         if (chapter.ImagePath is null)
@@ -428,7 +344,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         return GetImageCacheTag(item.Path, chapter.ImageDateModified);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string? GetImageCacheTag(BaseItem item, ChapterInfo chapter)
     {
         if (chapter.ImagePath is null)
@@ -444,7 +360,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         });
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string? GetImageCacheTag(User user)
     {
         if (user.ProfileImage is null)
@@ -455,33 +371,18 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         return GetImageCacheTag(user.ProfileImage.Path, user.ProfileImage.LastModified);
     }
 
-    private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+    private static Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
     {
-        var inputFormat = Path.GetExtension(originalImagePath.AsSpan()).TrimStart('.').ToString();
-
-        // These are just jpg files renamed as tbn
-        if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
-        {
-            return Task.FromResult((originalImagePath, dateModified));
-        }
-
         return Task.FromResult((originalImagePath, dateModified));
     }
 
     /// <summary>
-    /// Gets the cache path.
+    /// Builds the cache path for the resized image.
     /// </summary>
-    /// <param name="path">The path.</param>
-    /// <param name="uniqueName">Name of the unique.</param>
+    /// <param name="path">The base path.</param>
+    /// <param name="uniqueName">The unique name.</param>
     /// <param name="fileExtension">The file extension.</param>
-    /// <returns>System.String.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// path
-    /// or
-    /// uniqueName
-    /// or
-    /// fileExtension.
-    /// </exception>
+    /// <returns>The combined cache file path.</returns>
     public string GetCachePath(string path, string uniqueName, string fileExtension)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -489,21 +390,15 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(fileExtension);
 
         var filename = uniqueName.GetMD5() + fileExtension;
-
         return GetCachePath(path, filename);
     }
 
     /// <summary>
-    /// Gets the cache path.
+    /// Builds a cache path with a shard prefix for directory balancing.
     /// </summary>
-    /// <param name="path">The path.</param>
+    /// <param name="path">The base directory.</param>
     /// <param name="filename">The filename.</param>
-    /// <returns>System.String.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// path
-    /// or
-    /// filename.
-    /// </exception>
+    /// <returns>The sharded full path.</returns>
     public string GetCachePath(ReadOnlySpan<char> path, ReadOnlySpan<char> filename)
     {
         if (path.IsEmpty)
@@ -517,21 +412,18 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         }
 
         var prefix = filename.Slice(0, 1);
-
         return Path.Join(path, prefix, filename);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
     {
-        _logger.LogDebug("Creating image collage and saving to {Path}", options.OutputPath);
-
+        _logger.LogDebug("Creating image collage → {Path}", options.OutputPath);
         _imageEncoder.CreateImageCollage(options, libraryName);
-
-        _logger.LogDebug("Completed creation of image collage and saved to {Path}", options.OutputPath);
+        _logger.LogDebug("Collage created → {Path}", options.OutputPath);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_disposed)
@@ -541,11 +433,17 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
         if (_imageEncoder is IDisposable disposable)
         {
-            disposable.Dispose();
+            try
+            {
+                disposable.Dispose();
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
-        _parallelEncodingLimit?.Dispose();
-
+        _parallelEncodingLimit.Dispose();
         _disposed = true;
     }
 }
