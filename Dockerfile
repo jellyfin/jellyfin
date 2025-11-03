@@ -41,7 +41,8 @@ RUN apt-get update && \
     libfreetype6 \
     libssl3 \
     ca-certificates \
-    postgresql-client && \
+    postgresql-client \
+    openssl && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy application
