@@ -38,6 +38,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly LyricResolver _lyricResolver;
         private readonly ILyricManager _lyricManager;
         private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -49,6 +50,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/>.</param>
+        /// <param name="mediaAttachmentRepository">Instance of the <see cref="IMediaAttachmentRepository"/>.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
@@ -56,7 +58,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ILibraryManager libraryManager,
             LyricResolver lyricResolver,
             ILyricManager lyricManager,
-            IMediaStreamRepository mediaStreamRepository)
+            IMediaStreamRepository mediaStreamRepository,
+            IMediaAttachmentRepository mediaAttachmentRepository)
         {
             _mediaEncoder = mediaEncoder;
             _libraryManager = libraryManager;
@@ -65,6 +68,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
             _mediaStreamRepository = mediaStreamRepository;
+            _mediaAttachmentRepository = mediaAttachmentRepository;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
             ATL.Settings.UseFileNameWhenNoTitle = false;
             ATL.Settings.ID3v2_separatev2v3Values = false;
@@ -151,6 +155,8 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
+
+            _mediaAttachmentRepository.SaveMediaAttachments(audio.Id, mediaInfo.MediaAttachments, cancellationToken);
         }
 
         /// <summary>
