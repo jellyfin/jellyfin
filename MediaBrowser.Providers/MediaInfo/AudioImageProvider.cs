@@ -15,8 +15,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -57,7 +60,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <inheritdoc />
-        public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
+        public async Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
         {
             var imageStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
@@ -66,12 +69,48 @@ namespace MediaBrowser.Providers.MediaInfo
             });
 
             // Can't extract if we didn't find a video stream in the file
-            if (imageStreams.Count == 0)
+            if (imageStreams.Count > 0)
             {
-                return Task.FromResult(new DynamicImageResponse { HasImage = false });
+                return await GetImage((Audio)item, imageStreams, cancellationToken).ConfigureAwait(false);
             }
 
-            return GetImage((Audio)item, imageStreams, cancellationToken);
+            if (!item.Container.Contains("mkv", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return new DynamicImageResponse { HasImage = false };
+            }
+
+            string[] primaryImageFileNames = ["poster", "folder", "cover", "default", "movie", "show"];
+
+            var attachmentStream = _mediaSourceManager.GetMediaAttachments(item.Id)
+                .FirstOrDefault(stream =>
+                    !string.IsNullOrEmpty(stream.MimeType)
+                    && stream.MimeType.StartsWith("image", StringComparison.InvariantCultureIgnoreCase)
+                    && !string.IsNullOrEmpty(stream.FileName)
+                    && primaryImageFileNames.Any(name => stream.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
+
+            if (attachmentStream == null)
+            {
+                return new DynamicImageResponse { HasImage = false };
+            }
+
+            MediaSourceInfo mediaSource = new MediaSourceInfo
+            {
+                Protocol = item.PathProtocol ?? MediaProtocol.File,
+            };
+            var extension = string.IsNullOrEmpty(attachmentStream.MimeType)
+                ? Path.GetExtension(attachmentStream.FileName)
+                : MimeTypes.ToExtension(attachmentStream.MimeType);
+            var path = await _mediaEncoder.ExtractMkvAttachment(item.Path, mediaSource, attachmentStream.Index, extension, cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(path))
+            {
+                return new DynamicImageResponse
+                {
+                    HasImage = true,
+                    Path = path
+                };
+            }
+
+            return new DynamicImageResponse { HasImage = false };
         }
 
         private async Task<DynamicImageResponse> GetImage(Audio item, IReadOnlyList<MediaStream> imageStreams, CancellationToken cancellationToken)
