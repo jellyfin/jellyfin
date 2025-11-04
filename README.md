@@ -14,7 +14,7 @@
 <img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/>
 </a>
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
-<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
+<img alt="Translation Status" src="https://img.shields.io/badge/translate-jellyfin-core-ffa500?logo=weblate"/>
 </a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin">
 <img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/>
@@ -30,29 +30,29 @@
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfinorg:matrix.org.svg?logo=matrix"/>
 </a>
 <a href="https://github.com/jellyfin/jellyfin/releases.atom">
-<img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
+<img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss"/>
 </a>
 <a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
-<img alt="Master Commits RSS Feed" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
+<img alt="Master Commits RSS Feed" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss"/>
 </a>
 </p>
 
 ---
 
-Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support. 
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support.
 
 There are no strings attached, no premium licenses or features, and no hidden agendas: just a team that wants to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
 For further details, please see [our documentation page](https://jellyfin.org/docs/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://jellyfin.org/docs/general/getting-help). For more information about the project, please see our [about page](https://jellyfin.org/docs/general/about).
 
 <strong>Want to get started?</strong><br/>
-Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://jellyfin.org/docs/general/installation/">installation guide</a>, then see our <a href="https://jellyfin.org/docs/general/quick-start">quick start guide</a>. You can also <a href="https://jellyfin.org/docs/general/installation/source">build from source</a>.<br/>
+Check out our <a href="https://jellyfin.org/downloads">downloads page</a> or our <a href="https://jellyfin.org/docs/general/installation/">installation guide</a>, then see our <a href="https://jellyfin.org/docs/general/quick-start/">quick start guide</a>. You can also <a href="https://jellyfin.org/docs/general/installation/source">build from source</a>.<br/>
 
 <strong>Something not working right?</strong><br/>
 Open an <a href="https://jellyfin.org/docs/general/contributing/issues">Issue</a> on GitHub.<br/>
 
 <strong>Want to contribute?</strong><br/>
-Check out our <a href="https://jellyfin.org/contribute">contributing choose-your-own-adventure</a> to see where you can help, then see our <a href="https://jellyfin.org/docs/general/contributing/">contributing guide</a> and our <a href="https://jellyfin.org/docs/general/community-standards">community standards</a>.<br/>
+Check out our <a href="https://jellyfin.org/contribute">contributing choose-your-own-adventure</a> to see where you can help, then see our <a href="https://jellyfin.org/docs/general/contributing/">contributing guide</a> and our <a href="https://jellyfin.org/docs/general/community-standards/">community standards</a>.<br/>
 
 <strong>New idea or improvement?</strong><br/>
 Check out our <a href="https://features.jellyfin.org/?view=most-wanted">feature request hub</a>.<br/>
@@ -72,7 +72,7 @@ This repository contains the code for Jellyfin's backend server. Note that this 
 
 ## Server Development
 
-These instructions will help you get set up with a local development environment in order to contribute to this repository. Before you start, please be sure to completely read our [guidelines on development contributions](https://jellyfin.org/docs/general/contributing/development.html). Note that this project is supported on all major operating systems except FreeBSD, which is still incompatible.
+These instructions will help you get set up with a local development environment to contribute to this repository. Before you start, please be sure to completely read our [guidelines on development contributions](https://jellyfin.org/docs/general/contributing/development.html). Note that this project is supported on all major operating systems except FreeBSD, which is still incompatible.
 
 ### Prerequisites
 
@@ -81,6 +81,8 @@ Before the project can be built, you must first install the [.NET 9.0 SDK](https
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
 [ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
+
+**PostgreSQL**: Install PostgreSQL server (version 12+) and configure the connection string in `appsettings.json` (see [context/postgresql_components.md](context/postgresql_components.md) for details).
 
 ### Cloning the Repository
 
@@ -120,11 +122,11 @@ After the required extensions are installed, you can run the server by pressing 
 
 #### Running From the Command Line
 
-To run the server from the command line you can use the `dotnet run` command. The example below shows how to do this if you have cloned the repository into a directory named `jellyfin` (the default directory name) and should work on all operating systems.
+To run the server from the command line you can use the `dotnet run` command. The example below shows how to do this if you have cloned the repository into a directory named `jellyfin` (the default directory name), and should work on all operating systems.
 
 ```bash
 cd jellyfin                          # Move into the repository directory
-dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist # Run the server startup project
+dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.
@@ -142,8 +144,7 @@ cd Jellyfin.Server/bin/Debug/net9.0 # Change into the build output directory
 
 If the Server is configured to host the Web Client, and the Server is running, the Web Client can be accessed at `http://localhost:8096` by default.
 
-API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`
-
+API documentation can be viewed at `http://localhost:8096/api-docs/swagger/index.html`.
 
 ### Running from GitHub Codespaces
 
@@ -156,17 +157,17 @@ As Jellyfin will run on a container on a GitHub hosted server, JF needs to handl
 **NOTE:** When first opening the server instance with any WebUI, you will be sent to the login instead of the setup page. Refresh the login page once and you should be redirected to the Setup.
 
 There are two configurations for you to choose from.
+
 #### Default - Development Jellyfin Server
-This creates a container that has everything to run and debug the Jellyfin Media server but does not setup anything else. Each time you create a new container you have to run through the whole setup again. There is also no ffmpeg, webclient or media preloaded. Use the `.NET Launch (nowebclient)` launch config to start the server.
+This creates a container that has everything to run and debug the Jellyfin Media server but does not setup anything else. Each time you create a new container you have to run through the whole setup again. There is also no ffmpeg, webclient, or media preloaded. Use the `.NET Launch (nowebclient)` launch config to start the server.
 
 > Keep in mind that as this has no web client you have to connect to it via an external client. This can be just another codespace container running the WebUI. vuejs does not work from the get-go as it does not support the setup steps.
 
 #### Development Jellyfin Server ffmpeg
-this extends the default server with a default installation of ffmpeg6 though the means described here: https://jellyfin.org/docs/general/installation/linux#repository-manual
+This extends the default server with a default installation of ffmpeg6 through the means described here: https://jellyfin.org/docs/general/installation/linux#repository-manual
 If you want to install a specific ffmpeg version, follow the comments embedded in the `.devcontainer/Dev - Server Ffmpeg/install.ffmpeg.sh` file.
 
 Use the `ghcs .NET Launch (nowebclient, ffmpeg)` launch config to run with the jellyfin-ffmpeg enabled.
-
 
 ### Running The Tests
 
@@ -184,8 +185,7 @@ The following sections describe some more advanced scenarios for running the ser
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
-To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can be specified using the command line
-switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can be specified using the command line switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
 
