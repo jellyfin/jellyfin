@@ -118,12 +118,9 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             var path = linkedChild.Path;
             var itemId = linkedChild.ItemId;
 
-            if (itemId is not null)
+            if (itemId is not null && _libraryManager.GetItemById(itemId.Value) is not null)
             {
-               if (_libraryManager.GetItemById(itemId.Value) is not null)
-               {
-                  continue;
-               }
+                continue;
             }
 
             if (!File.Exists(path) && !Directory.Exists(path))
