@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
+        /// <summary>
+        /// Gets a value indicating whether this audiobook is stacked (has multiple parts).
+        /// </summary>
+        [JsonIgnore]
+        public bool IsStacked => AdditionalParts.Length > 0;
+
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
 
@@ -122,6 +128,18 @@ namespace MediaBrowser.Controller.Entities
                 (this, MediaSourceType.Default)
             };
 
+            // Add additional parts for stacked audiobooks
+            if (IsStacked)
+            {
+                var additionalParts = GetAdditionalPartIds()
+                    .Select(LibraryManager.GetItemById)
+                    .Where(i => i is not null)
+                    .OrderBy(i => i.SortName)
+                    .ToList();
+
+                list.AddRange(additionalParts.Select(i => (i, MediaSourceType.Default)));
+            }
+
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i is not null)
@@ -141,7 +159,18 @@ namespace MediaBrowser.Controller.Entities
                 if (!AdditionalParts.SequenceEqual(newAudioBook.AdditionalParts, StringComparer.Ordinal))
                 {
                     AdditionalParts = newAudioBook.AdditionalParts;
-                    updateType |= ItemUpdateType.MetadataImport;
+
+                    // When AdditionalParts changes, we need to recalculate the total duration
+                    // Clear the runtime so AudioFileProber will recalculate it
+                    if (AdditionalParts.Length > 0)
+                    {
+                        RunTimeTicks = null;
+                        updateType |= ItemUpdateType.MetadataImport;
+                    }
+                    else
+                    {
+                        updateType |= ItemUpdateType.MetadataImport;
+                    }
                 }
 
                 if (!LocalAlternateVersions.SequenceEqual(newAudioBook.LocalAlternateVersions, StringComparer.Ordinal))
