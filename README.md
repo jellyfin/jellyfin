@@ -1,4 +1,4 @@
-<h1 align="center">Jellyfin</h1>
+<h1 align="center">Jellyfin for Nirwan</h1>
 <h3 align="center">The Free Software Media System</h3>
 
 ---
