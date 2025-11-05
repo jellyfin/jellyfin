@@ -22,6 +22,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 /// </summary>
 public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
 {
+    private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly ICollectionManager _collectionManager;
     private readonly IPlaylistManager _playlistManager;
@@ -31,18 +32,21 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanupCollectionAndPlaylistPathsTask"/> class.
     /// </summary>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="collectionManager">Instance of the <see cref="ICollectionManager"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
+        ILibraryManager libraryManager,
         ILocalizationManager localization,
         ICollectionManager collectionManager,
         IPlaylistManager playlistManager,
         ILogger<CleanupCollectionAndPlaylistPathsTask> logger,
         IProviderManager providerManager)
     {
+        _libraryManager = libraryManager;
         _localization = localization;
         _collectionManager = collectionManager;
         _playlistManager = playlistManager;
@@ -112,6 +116,16 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         foreach (var linkedChild in folder.LinkedChildren)
         {
             var path = linkedChild.Path;
+            var itemId = linkedChild.ItemId;
+
+            if (itemId is not null)
+            {
+               if (_libraryManager.GetItemById(itemId.Value) is not null)
+               {
+                  continue;
+               }
+            }
+
             if (!File.Exists(path) && !Directory.Exists(path))
             {
                 _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
