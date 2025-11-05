@@ -71,7 +71,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     if (row.GetInt32(0) == 0)
                     {
                         _logger.LogWarning("Table 'ActivityLog' doesn't exist in {ActivityLogPath}, nothing to migrate", activityLogPath);
-                        break;
+                        return;
                     }
                 }
 
