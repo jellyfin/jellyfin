@@ -729,9 +729,7 @@ namespace MediaBrowser.Controller.Entities
                     query.StartIndex = startIndex;
                 }
 
-                var result = PostFilterAndSort(items, query);
-                result.TotalRecordCount = result.Items.Count;
-                return result;
+                return PostFilterAndSort(items, query);
             }
 
             if (this is not UserRootFolder
@@ -1001,9 +999,7 @@ namespace MediaBrowser.Controller.Entities
                 items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
             }
 
-            var result = PostFilterAndSort(items, query);
-            result.TotalRecordCount = totalItemCount;
-            return result;
+            return PostFilterAndSort(items, query);
         }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
@@ -1039,7 +1035,15 @@ namespace MediaBrowser.Controller.Entities
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
+            var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
+            var result = UserViewBuilder.SortAndPage(filteredItems, null, query, LibraryManager);
+
+            if (query.EnableTotalRecordCount)
+            {
+                result.TotalRecordCount = filteredItems.Count;
+            }
+
+            return result;
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
