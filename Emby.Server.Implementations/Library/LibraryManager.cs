@@ -2162,6 +2162,12 @@ namespace Emby.Server.Implementations.Library
 
             _itemRepository.SaveItems(items, cancellationToken);
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             if (ItemUpdated is not null)
             {
                 foreach (var item in items)
