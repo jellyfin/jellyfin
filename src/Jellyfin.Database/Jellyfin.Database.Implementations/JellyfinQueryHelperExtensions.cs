@@ -54,6 +54,34 @@ public static class JellyfinQueryHelperExtensions
     }
 
     /// <summary>
+    /// Builds a query that checks referenced ItemValues for a cross BaseItem lookup.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="itemValueTypes">The type of item value to reference.</param>
+    /// <param name="referenceIds">The list of BaseItem ids to check matches.</param>
+    /// <param name="invert">If set an exclusion check is performed instead.</param>
+    /// <returns>A Query.</returns>
+    public static IQueryable<BaseItemEntity> WhereReferencedItemMultipleTypes(
+        this IQueryable<BaseItemEntity> baseQuery,
+        JellyfinDbContext context,
+        IList<ItemValueType> itemValueTypes,
+        IList<Guid> referenceIds,
+        bool invert = false)
+    {
+        var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
+        var typeFilter = OneOrManyExpressionBuilder<ItemValue, ItemValueType>(itemValueTypes, iv => iv.Type);
+
+        return baseQuery.Where(item =>
+            context.ItemValues
+                .Where(typeFilter)
+                .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (itemVal, map) => new { itemVal, map })
+                .Any(val =>
+                    context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.itemVal.CleanValue)
+                    && val.map.ItemId == item.Id) == EF.Constant(!invert));
+    }
+
+    /// <summary>
     /// Builds a query expression that checks referenced ItemValues for a cross BaseItem lookup.
     /// </summary>
     /// <param name="context">The database context.</param>

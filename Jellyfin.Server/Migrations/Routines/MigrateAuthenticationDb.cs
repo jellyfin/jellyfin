@@ -50,9 +50,28 @@ namespace Jellyfin.Server.Migrations.Routines
         public void Perform()
         {
             var dataPath = _appPaths.DataPath;
-            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
+            var dbFilePath = Path.Combine(dataPath, DbFilename);
+
+            if (!File.Exists(dbFilePath))
+            {
+                _logger.LogWarning("{Path} doesn't exist, nothing to migrate", dbFilePath);
+                return;
+            }
+
+            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
                 connection.Open();
+
+                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Tokens';");
+                foreach (var row in tableQuery)
+                {
+                    if (row.GetInt32(0) == 0)
+                    {
+                        _logger.LogWarning("Table 'Tokens' doesn't exist in {Path}, nothing to migrate", dbFilePath);
+                        return;
+                    }
+                }
+
                 using var dbContext = _dbProvider.CreateDbContext();
 
                 var authenticatedDevices = connection.Query("SELECT * FROM Tokens");

@@ -213,7 +213,12 @@
             </ol>
         </div>
         {{#ELSE}}
+        {{#IF networkManagerReady}}
         <p>Please visit this page from your local network to view detailed startup logs.</p>
+        {{#ELSE}}
+        <p>Initializing network settings. Please wait.</p>
+        {{/ELSE}}
+        {{/IF}}
         {{/ELSE}}
         {{/IF}}
     </div>

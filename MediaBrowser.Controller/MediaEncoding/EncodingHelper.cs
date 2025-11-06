@@ -2390,8 +2390,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
                             || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
-                    // If the video stream is in a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
-                    if (videoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG)
+                    // If the video stream is in HDR10+ or a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
+                    if (videoStream.VideoRangeType is VideoRangeType.HDR10Plus or VideoRangeType.HDR10 or VideoRangeType.HLG)
                     {
                         return false;
                     }
@@ -6552,7 +6552,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (isD3d11Supported && isCodecAvailable)
                 {
                     return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11 -noautorotate" + stripRotationDataArgs : string.Empty)
-                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 2" + (isAv1 ? " -c:v av1" : string.Empty);
                 }
             }
 

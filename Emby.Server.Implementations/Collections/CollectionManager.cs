@@ -104,6 +104,8 @@ namespace Emby.Server.Implementations.Collections
 
             await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);
 
+            _libraryManager.RootFolder.Children = null;
+
             return FindFolders(path).First();
         }
 

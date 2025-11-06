@@ -132,5 +132,10 @@
     "TaskDownloadMissingLyrics": "उपलब्ध नसलेली गीतपट्टी (Lyrics) डाउनलोड करा",
     "TaskAudioNormalization": "ऑडिओ सामान्यीकरण",
     "TaskAudioNormalizationDescription": "ऑडिओ सामान्यीकरणाचा डाटा स्कॅन करतो.",
-    "TaskDownloadMissingLyricsDescription": "गाण्यांची गीतपट्टी (Lyrics) डाउनलोड करतो"
+    "TaskDownloadMissingLyricsDescription": "गाण्यांची गीतपट्टी (Lyrics) डाउनलोड करतो",
+    "TaskExtractMediaSegmentsDescription": "सक्रिय असलेल्या प्लगिनमधून मीडिया विभाग प्राप्त करते.",
+    "TaskMoveTrickplayImagesDescription": "लायब्ररीच्या सेटिंग्जप्रमाणे आधीपासून अस्तित्वात असलेल्या ट्रिकप्ले फाइल्सचे स्थान बदलते.",
+    "TaskCleanCollectionsAndPlaylistsDescription": "जे संग्रह आणि प्लेलिस्ट आता अस्तित्वात नाहीत, त्यांमधील घटक हटवते.",
+    "CleanupUserDataTask": "वापरकर्ता डेटाची स्वच्छता प्रक्रिया",
+    "CleanupUserDataTaskDescription": "९० दिवसांहून अधिक काळ अनुपस्थित असलेल्या माध्यमांवरील सर्व वापरकर्ता माहिती (जसे पाहण्याची स्थिती, आवडी इ.) हटवते."
 }

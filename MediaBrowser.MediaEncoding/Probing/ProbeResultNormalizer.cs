@@ -930,6 +930,15 @@ namespace MediaBrowser.MediaEncoding.Probing
                         {
                             stream.Rotation = data.Rotation;
                         }
+
+                        // Parse video frame cropping metadata from side_data
+                        // TODO: save them and make HW filters to apply them in HWA pipelines
+                        else if (string.Equals(data.SideDataType, "Frame Cropping", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Streams containing artificially added frame cropping
+                            // metadata should not be marked as anamorphic.
+                            stream.IsAnamorphic = false;
+                        }
                     }
                 }
 

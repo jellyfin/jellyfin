@@ -123,5 +123,9 @@
     "TaskCleanActivityLogDescription": "تشکیل شدہ عمر سے زیادہ پرانی سرگرمی لاگ اندراجات کو حذف کرتا ہے۔",
     "External": "بیرونی",
     "HearingImpaired": "قوت سماعت سے محروم",
-    "TaskCleanActivityLog": "سرگرمی لاگ کو صاف کریں"
+    "TaskCleanActivityLog": "سرگرمی لاگ کو صاف کریں",
+    "TaskDownloadMissingLyrics": "غائب بول ڈاؤن لوڈ کریں",
+    "TaskDownloadMissingLyricsDescription": "گانے کے غائب بول ڈاؤن لوڈ کریں",
+    "TaskAudioNormalization": "آڈیو نارملائزیشن",
+    "TaskAudioNormalizationDescription": "آڈیو نارملائزیشن ڈیٹا کے لیے فائلوں کو سکین کرتا ہے۔"
 }
