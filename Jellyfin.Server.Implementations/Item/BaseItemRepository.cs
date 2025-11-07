@@ -600,43 +600,22 @@ public sealed class BaseItemRepository
 
         using var transaction = context.Database.BeginTransaction();
 
-        // Load existing images to check if user has customized SortOrder via SwapImages
-        var existingImagesList = context.BaseItemImageInfos
-            .Where(e => e.ItemId == item.Id)
-            .ToList();
-
-        var existingImages = existingImagesList.ToDictionary(e => e.Path, StringComparer.OrdinalIgnoreCase);
-
-        // Track maximum SortOrder per image type to append new images at the end
-        var maxSortOrderByType = existingImagesList
-            .GroupBy(e => e.ImageType)
-            .ToDictionary(g => g.Key, g => g.Max(e => e.SortOrder));
-
+        // Delete existing images - we'll recreate them with correct SortOrder
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
 
-        // For each image, preserve existing SortOrder if it exists (user may have swapped)
-        // For new images, append at the end of existing images of the same type
+        // Group images by type and assign sequential SortOrder per type
+        // Images in item.ImageInfos are already in the correct order (from LocalImageProvider or other sources)
         var imagesToSave = new List<BaseItemImageInfo>();
+        var imagesByType = item.ImageInfos.GroupBy(img => img.Type);
 
-        foreach (var imageInfo in item.ImageInfos)
+        foreach (var typeGroup in imagesByType)
         {
-            var imageType = (ImageInfoImageType)imageInfo.Type;
+            var imageList = typeGroup.ToList();
 
-            // Check if this image path already existed with a SortOrder
-            if (existingImages.TryGetValue(imageInfo.Path, out var existingImage))
+            // Assign sequential SortOrder (0, 1, 2, ...) based on input order
+            for (int i = 0; i < imageList.Count; i++)
             {
-                // Preserve the existing SortOrder (maintains user swaps)
-                imagesToSave.Add(Map(item.Id, imageInfo, existingImage.SortOrder));
-            }
-            else
-            {
-                // New image: assign SortOrder after all existing images of this type
-                var newSortOrder = maxSortOrderByType.TryGetValue(imageType, out var maxSortOrder)
-                    ? maxSortOrder + 1
-                    : 0;
-
-                imagesToSave.Add(Map(item.Id, imageInfo, newSortOrder));
-                maxSortOrderByType[imageType] = newSortOrder; // Update max for next new image
+                imagesToSave.Add(Map(item.Id, imageList[i], sortOrder: i));
             }
         }
 
