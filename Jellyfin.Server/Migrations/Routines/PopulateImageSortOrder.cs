@@ -12,7 +12,10 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.Routines;
 
 /// <summary>
-/// Populate SortOrder for existing images after the AddSortOrderToBaseItemImageInfo migration.
+/// Corrects SortOrder to match LocalImageProvider discovery priority.
+/// The EF migration populated SortOrder based on DateModified, but this may not match
+/// the actual discovery order (e.g., {mediaFileName}-fanart should be first).
+/// This migration fixes the ordering to match LocalImageProvider.PopulateBackdrops priority.
 /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 [JellyfinMigration("2025-10-23T02:30:00", nameof(PopulateImageSortOrder), "A7B3F8E9-4C2D-4E1A-9B5F-6D8E3F2A1C9B")]
@@ -36,7 +39,7 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
     /// <inheritdoc/>
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting SortOrder population for existing images");
+        _logger.LogInformation("Correcting SortOrder to match LocalImageProvider discovery priority");
 
         using var context = _dbProvider.CreateDbContext();
 
@@ -49,7 +52,7 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
 
         if (totalItemCount == 0)
         {
-            _logger.LogInformation("No items with images found, skipping SortOrder population");
+            _logger.LogInformation("No items with images found, skipping SortOrder correction");
             return;
         }
 
@@ -132,12 +135,14 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
                 if (processedCount % batchSize == 0)
                 {
                     await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                    context.ChangeTracker.Clear();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing images for item {ItemId}", itemId);
                 errorCount++;
+                context.ChangeTracker.Clear();
             }
         }
 
@@ -145,14 +150,38 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
         try
         {
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            context.ChangeTracker.Clear();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving final batch");
         }
 
+        // Reindex the 3-column index after population for optimal query performance
+        // This rebuilds the index with the actual SortOrder values (not all 0s from migration)
+        try
+        {
+            _logger.LogInformation("Reindexing 3-column index (ItemId, ImageType, SortOrder) after population");
+
+            // Reindex to optimize the index structure with the new SortOrder values
+            await context.Database.ExecuteSqlRawAsync(
+                "REINDEX IX_BaseItemImageInfos_ItemId_ImageType_SortOrder",
+                cancellationToken).ConfigureAwait(false);
+
+            // Update query planner statistics
+            await context.Database.ExecuteSqlRawAsync(
+                "ANALYZE BaseItemImageInfos",
+                cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation("Reindexing completed successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reindexing");
+        }
+
         _logger.LogInformation(
-            "SortOrder population completed. Processed: {Processed}, Errors: {Errors}, Total: {Total}",
+            "SortOrder correction completed. Processed: {Processed}, Errors: {Errors}, Total: {Total}",
             processedCount,
             errorCount,
             totalItemCount);
@@ -167,39 +196,41 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
 
         var normalizedPath = path.Replace('\\', '/');
         var fileName = Path.GetFileNameWithoutExtension(normalizedPath);
-        var fileNameLower = fileName.ToLowerInvariant();
 
         // Priority 0: {mediaFileName}-fanart (any extension)
         if (!string.IsNullOrEmpty(mediaFileName))
         {
-            var expectedName = $"{mediaFileName}-fanart".ToLowerInvariant();
-            if (fileNameLower == expectedName)
+            var expectedName = $"{mediaFileName}-fanart";
+            if (fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase))
             {
                 return 0;
             }
         }
 
         // Priority 1: fanart (not in extrafanart folder)
-        if (fileNameLower == "fanart" && !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        if (fileName.Equals("fanart", StringComparison.OrdinalIgnoreCase) &&
+            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
 
         // Priority 2: fanart-N (numbered, not in extrafanart)
-        if (fileNameLower.StartsWith("fanart-", StringComparison.Ordinal) &&
+        if (fileName.StartsWith("fanart-", StringComparison.OrdinalIgnoreCase) &&
             !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
         {
             return 2;
         }
 
         // Priority 3: background or background-N
-        if (fileNameLower == "background" || fileNameLower.StartsWith("background-", StringComparison.Ordinal))
+        if (fileName.Equals("background", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("background-", StringComparison.OrdinalIgnoreCase))
         {
             return 3;
         }
 
         // Priority 4: art or art-N
-        if (fileNameLower == "art" || fileNameLower.StartsWith("art-", StringComparison.Ordinal))
+        if (fileName.Equals("art", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("art-", StringComparison.OrdinalIgnoreCase))
         {
             return 4;
         }
@@ -212,7 +243,8 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
         }
 
         // Priority 6: backdrop or backdropN
-        if (fileNameLower == "backdrop" || fileNameLower.StartsWith("backdrop", StringComparison.Ordinal))
+        if (fileName.Equals("backdrop", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("backdrop", StringComparison.OrdinalIgnoreCase))
         {
             return 6;
         }
