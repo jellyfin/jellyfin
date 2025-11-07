@@ -229,6 +229,11 @@ namespace MediaBrowser.Providers.Manager
                         if (file is not null)
                         {
                             item.DateModified = file.LastWriteTimeUtc;
+
+                            if (!file.IsDirectory)
+                            {
+                                item.Size = file.Length;
+                            }
                         }
                     }
 

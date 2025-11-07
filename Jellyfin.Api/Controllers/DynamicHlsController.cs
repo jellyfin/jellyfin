@@ -1625,8 +1625,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             var useLegacySegmentOption = _mediaEncoder.EncoderVersion < _minFFmpegHlsSegmentOptions;
 
-            // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
-            hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+            if (state.VideoStream is not null && state.IsOutputVideo)
+            {
+                // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
+                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+            }
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;
         }

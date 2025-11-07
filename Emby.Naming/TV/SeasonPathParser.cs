@@ -10,10 +10,10 @@ namespace Emby.Naming.TV
     /// </summary>
     public static partial class SeasonPathParser
     {
-        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$")]
+        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPre();
 
-        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>(?>\d+)(?!\s*[Ee]\d+))(?<rightpart>.*)$")]
+        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>(?>\d+)(?!\s*[Ee]\d+))(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPost();
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (filename.StartsWith('s'))
+            if (filename.Length > 0 && (filename[0] == 'S' || filename[0] == 's'))
             {
                 var testFilename = filename.AsSpan()[1..];
 
@@ -113,8 +113,10 @@ namespace Emby.Naming.TV
             var numberString = match.Groups["seasonnumber"];
             if (numberString.Success)
             {
-                var seasonNumber = int.Parse(numberString.Value, CultureInfo.InvariantCulture);
-                return (seasonNumber, true);
+                if (int.TryParse(numberString.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber))
+                {
+                    return (seasonNumber, true);
+                }
             }
 
             return (null, false);

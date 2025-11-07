@@ -184,6 +184,12 @@ namespace Jellyfin.Server
                         .AddSingleton<IServiceCollection>(e))
                     .Build();
 
+                /*
+                 * Initialize the transcode path marker so we avoid starting Jellyfin in a broken state.
+                 * This should really be a part of IApplicationPaths but this path is configured differently.
+                 */
+                _ = appHost.ConfigurationManager.GetTranscodePath();
+
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
                 PrepareDatabaseProvider(appHost.ServiceProvider);

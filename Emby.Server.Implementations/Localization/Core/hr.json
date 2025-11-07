@@ -125,8 +125,8 @@
     "TaskKeyframeExtractor": "Izvoditelj ključnog okvira",
     "TaskOptimizeDatabaseDescription": "Sažima bazu podataka i uklanja prazan prostor. Pokretanje ovog zadatka, može poboljšati performanse nakon provođenja indeksiranja biblioteke ili provođenja drugih promjena koje utječu na bazu podataka.",
     "HearingImpaired": "Oštećen sluh",
-    "TaskRefreshTrickplayImages": "Generiraj Trickplay Slike",
-    "TaskRefreshTrickplayImagesDescription": "Kreira trickplay pretpreglede za videe u omogućenim knjižnicama.",
+    "TaskRefreshTrickplayImages": "Generiraj slike brzog pregledavanja",
+    "TaskRefreshTrickplayImagesDescription": "Stvara preglede brzog pregledavanja za videa u aktiviranim bibliotekama.",
     "TaskAudioNormalization": "Normalizacija zvuka",
     "TaskAudioNormalizationDescription": "Skenira datoteke u potrazi za podacima o normalizaciji zvuka.",
     "TaskCleanCollectionsAndPlaylistsDescription": "Uklanja stavke iz zbirki i popisa za reprodukciju koje više ne postoje.",
@@ -135,8 +135,8 @@
     "TaskDownloadMissingLyrics": "Preuzmi tekstove koji nedostaju",
     "TaskDownloadMissingLyricsDescription": "Preuzmi tekstove pjesama",
     "TaskExtractMediaSegmentsDescription": "Izvlači ili pribavlja dijelove medija iz omogućenih media pluginova.",
-    "TaskMoveTrickplayImages": "Preseli lokaciju Trickplay slika",
-    "TaskMoveTrickplayImagesDescription": "Preseli lokaciju Trickplay slika prema postavkama zbirke.",
+    "TaskMoveTrickplayImages": "Premjesti mjesto slika brzog pregledavanja",
+    "TaskMoveTrickplayImagesDescription": "Premješta postojeće datoteke brzog pregledavanja prema postavkama biblioteke.",
     "CleanupUserDataTask": "Zadatak čišćenja korisničkih podataka",
     "CleanupUserDataTaskDescription": "Briše sve korisničke podatke (stanje gledanja, status favorita itd.) s medija koji više nisu prisutni najmanje 90 dana."
 }
