@@ -25,6 +25,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 internal class PopulateImageSortOrder : IAsyncMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
+    private const int UnknownImagePriority = 999;
+
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IStartupLogger<PopulateImageSortOrder> _logger;
 
@@ -114,7 +116,7 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
                         .Select(img => new
                         {
                             Image = img,
-                            Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, mediaFileName),
+                            Priority = GetImageOrderPriority(img.Path, mediaFileName),
                             NumericIndex = ImageOrderingUtilities.GetNumericImageIndex(img.Path)
                         })
                         .OrderBy(x => x.Priority)
@@ -189,5 +191,63 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
             processedCount,
             errorCount,
             totalItemCount);
+    }
+
+    private static int GetImageOrderPriority(string? path, string? mediaFileName)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return UnknownImagePriority;
+        }
+
+        var normalizedPath = path.Replace('\\', '/');
+        var fileName = Path.GetFileNameWithoutExtension(normalizedPath);
+
+        if (!string.IsNullOrEmpty(mediaFileName))
+        {
+            var expectedName = $"{mediaFileName}-fanart";
+            if (fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+        }
+
+        if (fileName.Equals("fanart", StringComparison.OrdinalIgnoreCase) &&
+            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        if (fileName.StartsWith("fanart-", StringComparison.OrdinalIgnoreCase) &&
+            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        if (fileName.Equals("background", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("background-", StringComparison.OrdinalIgnoreCase))
+        {
+            return 3;
+        }
+
+        if (fileName.Equals("art", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("art-", StringComparison.OrdinalIgnoreCase))
+        {
+            return 4;
+        }
+
+        if (normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase) ||
+            normalizedPath.StartsWith("extrafanart/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 5;
+        }
+
+        if (fileName.Equals("backdrop", StringComparison.OrdinalIgnoreCase) ||
+            fileName.StartsWith("backdrop", StringComparison.OrdinalIgnoreCase))
+        {
+            return 6;
+        }
+
+        return UnknownImagePriority;
     }
 }

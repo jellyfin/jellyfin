@@ -2056,7 +2056,38 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
-            ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+            var removed = deletedImages?.ToArray();
+            if (removed is null || removed.Length == 0)
+            {
+                return;
+            }
+
+            ImageInfos = ImageInfos.Except(removed).ToArray();
+
+            var typesToNormalize = removed
+                .Select(i => i.Type)
+                .Where(type => AllowsMultipleImages(type) && type != ImageType.Chapter)
+                .Distinct()
+                .ToList();
+
+            if (typesToNormalize.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var type in typesToNormalize)
+            {
+                var orderedTypeImages = GetImages(type)
+                    .OrderBy(i => i.SortOrder)
+                    .ThenBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Path))
+                    .ThenBy(i => i.Path, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                for (int i = 0; i < orderedTypeImages.Count; i++)
+                {
+                    orderedTypeImages[i].SortOrder = i;
+                }
+            }
         }
 
         public void AddImage(ItemImageInfo image)
