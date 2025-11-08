@@ -1992,7 +1992,20 @@ namespace MediaBrowser.Controller.Entities
 
             if (image is null)
             {
-                AddImage(GetImageInfo(file, type));
+                var newImage = GetImageInfo(file, type);
+
+                if (AllowsMultipleImages(type))
+                {
+                    var maxSortOrder = ImageInfos
+                        .Where(i => i.Type == type)
+                        .Select(i => i.SortOrder)
+                        .DefaultIfEmpty(-1)
+                        .Max();
+
+                    newImage.SortOrder = maxSortOrder + 1;
+                }
+
+                AddImage(newImage);
             }
             else
             {
