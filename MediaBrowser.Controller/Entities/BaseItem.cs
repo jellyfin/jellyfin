@@ -2254,7 +2254,35 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                ImageInfos = ImageInfos.Concat(newImageList.Select(i => GetImageInfo(i, imageType))).ToArray();
+                // Get all images of this type (existing + new) and assign proper SortOrder
+                var allImages = existingImages
+                    .Concat(newImageList.Select(i => GetImageInfo(i, imageType)))
+                    .ToList();
+
+                // Calculate priority and assign SortOrder
+                var sortedImages = allImages
+                    .Select(img => new
+                    {
+                        Image = img,
+                        Priority = Utilities.ImageOrderingUtilities.GetImageOrderPriority(img.Path, FileNameWithoutExtension),
+                        NumericIndex = Utilities.ImageOrderingUtilities.GetNumericImageIndex(img.Path)
+                    })
+                    .OrderBy(x => x.Priority)
+                    .ThenBy(x => x.NumericIndex)
+                    .ThenBy(x => x.Image.Path, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                // Assign SortOrder values (0, 1, 2, ...)
+                for (int i = 0; i < sortedImages.Count; i++)
+                {
+                    sortedImages[i].Image.SortOrder = i;
+                }
+
+                // Update ImageInfos array with properly sorted images
+                ImageInfos = ImageInfos
+                    .Where(i => i.Type != imageType)
+                    .Concat(sortedImages.Select(x => x.Image))
+                    .ToArray();
             }
 
             return imageUpdated || newImageList.Count > 0;
