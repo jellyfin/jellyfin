@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
@@ -81,35 +82,33 @@ public static class FileSystemHelper
             return null;
         }
 
-        FileInfo? targetInfo = null;
-        if (returnFinalTarget)
+        if (!returnFinalTarget)
         {
-            while (File.ResolveLinkTarget(targetInfo?.FullName ?? linkPath, returnFinalTarget: false) is FileInfo { } linkInfo)
-            {
-                // Guard against infinite loops; if we reach the original path or the current target, we're done.
-                // Since this will be an infinite loop, we'll just return the original path or current target as our final target.
-                if (linkPath == linkInfo.FullName)
-                {
-                    return new FileInfo(linkPath);
-                }
-
-                if (targetInfo?.FullName == linkInfo.FullName)
-                {
-                    return new FileInfo(targetInfo.FullName);
-                }
-
-                targetInfo = linkInfo;
-
-                // Exit the loop if the target doesn't exist, so the native resolve handler won't throw at us.
-                if (!targetInfo.Exists)
-                {
-                    break;
-                }
-            }
+            return File.ResolveLinkTarget(linkPath, returnFinalTarget: false) as FileInfo;
         }
-        else if (File.ResolveLinkTarget(linkPath, returnFinalTarget: false) is FileInfo { } linkInfo)
+
+        FileInfo? targetInfo = null;
+        var currentPath = linkPath;
+        var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath };
+        while (File.ResolveLinkTarget(currentPath, returnFinalTarget: false) is FileInfo linkInfo)
         {
+            var targetPath = linkInfo.FullName;
+
+            // If an infinite loop is detected, return the file info for the
+            // first link in the loop we encountered.
+            if (!visited.Add(targetPath))
+            {
+                return new FileInfo(targetPath);
+            }
+
             targetInfo = linkInfo;
+            currentPath = targetPath;
+
+            // Exit if the target doesn't exist, so the native resolve handler won't throw at us.
+            if (!targetInfo.Exists)
+            {
+                break;
+            }
         }
 
         return targetInfo;
