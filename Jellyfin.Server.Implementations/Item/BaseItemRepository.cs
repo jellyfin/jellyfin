@@ -614,6 +614,13 @@ public sealed class BaseItemRepository
             else
             {
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+
+                if (entity.Images is { Count: > 0 })
+                {
+                    context.BaseItemImageInfos.AddRange(entity.Images);
+                }
+
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
             }
         }
@@ -1232,8 +1239,20 @@ public sealed class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
-        var query = TranslateQuery(innerQuery, context, outerQueryFilter)
-            .GroupBy(e => e.PresentationUniqueKey);
+        var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
+            .GroupBy(e => e.PresentationUniqueKey)
+            .Select(e => e.FirstOrDefault())
+            .Select(e => e!.Id);
+
+        var query = context.BaseItems
+            .Include(e => e.TrailerTypes)
+            .Include(e => e.Provider)
+            .Include(e => e.LockedFields)
+            .Include(e => e.Images)
+            .AsSingleQuery()
+            .Where(e => masterQuery.Contains(e.Id));
+
+        query = ApplyOrder(query, filter);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
@@ -1288,12 +1307,7 @@ public sealed class BaseItemRepository
 
             var resultQuery = query.Select(e => new
             {
-                item = e.AsQueryable()
-                        .Include(e => e.TrailerTypes)
-                        .Include(e => e.Provider)
-                        .Include(e => e.LockedFields)
-                        .Include(e => e.Images)
-                        .AsSingleQuery().First(),
+                item = e,
                 // TODO: This is bad refactor!
                 itemCount = new ItemCounts()
                 {
@@ -1325,13 +1339,6 @@ public sealed class BaseItemRepository
             result.Items =
             [
                 .. query
-                    .Select(e => e.AsQueryable()
-                        .Include(e => e.TrailerTypes)
-                        .Include(e => e.Provider)
-                        .Include(e => e.LockedFields)
-                        .Include(e => e.Images)
-                        .AsSingleQuery()
-                        .First())
                     .AsEnumerable()
                     .Where(e => e is not null)
                     .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
@@ -1756,7 +1763,8 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Path))
         {
-            baseQuery = baseQuery.Where(e => e.Path == filter.Path);
+            var pathToQuery = GetPathToSave(filter.Path);
+            baseQuery = baseQuery.Where(e => e.Path == pathToQuery);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.PresentationUniqueKey))
@@ -2014,7 +2022,7 @@ public sealed class BaseItemRepository
 
         if (filter.ArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ArtistIds);
+            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ArtistIds);
         }
 
         if (filter.AlbumArtistIds.Length > 0)
@@ -2024,7 +2032,18 @@ public sealed class BaseItemRepository
 
         if (filter.ContributingArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ContributingArtistIds);
+            var contributingNames = context.BaseItems
+                .Where(b => filter.ContributingArtistIds.Contains(b.Id))
+                .Select(b => b.CleanName);
+
+            baseQuery = baseQuery.Where(e =>
+                e.ItemValues!.Any(ivm =>
+                    ivm.ItemValue.Type == ItemValueType.Artist &&
+                    contributingNames.Contains(ivm.ItemValue.CleanValue))
+                &&
+                !e.ItemValues!.Any(ivm =>
+                    ivm.ItemValue.Type == ItemValueType.AlbumArtist &&
+                    contributingNames.Contains(ivm.ItemValue.CleanValue)));
         }
 
         if (filter.AlbumIds.Length > 0)
@@ -2035,7 +2054,7 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeArtistIds.Length > 0)
         {
-            baseQuery = baseQuery.WhereReferencedItem(context, ItemValueType.Artist, filter.ExcludeArtistIds, true);
+            baseQuery = baseQuery.WhereReferencedItemMultipleTypes(context, [ItemValueType.Artist, ItemValueType.AlbumArtist], filter.ExcludeArtistIds, true);
         }
 
         if (filter.GenreIds.Count > 0)
@@ -2342,17 +2361,23 @@ public sealed class BaseItemRepository
 
         if (filter.HasImdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "imdb"));
+            baseQuery = filter.HasImdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Imdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Imdb.ToString().ToLower()));
         }
 
         if (filter.HasTmdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tmdb"));
+            baseQuery = filter.HasTmdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tmdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tmdb.ToString().ToLower()));
         }
 
         if (filter.HasTvdbId.HasValue)
         {
-            baseQuery = baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId == "tvdb"));
+            baseQuery = filter.HasTvdbId.Value
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tvdb.ToString().ToLower()))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tvdb.ToString().ToLower()));
         }
 
         var queryTopParentIds = filter.TopParentIds;

@@ -57,11 +57,28 @@ public class MigrateUserDb : IMigrationRoutine
     public void Perform()
     {
         var dataPath = _paths.DataPath;
+        var userDbPath = Path.Combine(dataPath, DbFilename);
+        if (!File.Exists(userDbPath))
+        {
+            _logger.LogWarning("{UserDbPath} doesn't exist, nothing to migrate", userDbPath);
+            return;
+        }
+
         _logger.LogInformation("Migrating the user database may take a while, do not stop Jellyfin.");
 
-        using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
+        using (var connection = new SqliteConnection($"Filename={userDbPath}"))
         {
             connection.Open();
+            var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='LocalUsersv2';");
+            foreach (var row in tableQuery)
+            {
+                if (row.GetInt32(0) == 0)
+                {
+                    _logger.LogWarning("Table 'LocalUsersv2' doesn't exist in {UserDbPath}, nothing to migrate", userDbPath);
+                    return;
+                }
+            }
+
             using var dbContext = _provider.CreateDbContext();
 
             var queryResult = connection.Query("SELECT * FROM LocalUsersv2");

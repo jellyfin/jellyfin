@@ -105,14 +105,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Normalizes a language string for use with TMDb's include image language parameter.
         /// </summary>
         /// <param name="preferredLanguage">The preferred language as either a 2 letter code with or without country code.</param>
+        /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <returns>The comma separated language string.</returns>
-        public static string GetImageLanguagesParam(string preferredLanguage)
+        public static string GetImageLanguagesParam(string preferredLanguage, string? countryCode = null)
         {
             var languages = new List<string>();
 
             if (!string.IsNullOrEmpty(preferredLanguage))
             {
-                preferredLanguage = NormalizeLanguage(preferredLanguage);
+                preferredLanguage = NormalizeLanguage(preferredLanguage, countryCode);
 
                 languages.Add(preferredLanguage);
 
@@ -140,13 +141,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Normalizes a language string for use with TMDb's language parameter.
         /// </summary>
         /// <param name="language">The language code.</param>
+        /// <param name="countryCode">The country code.</param>
         /// <returns>The normalized language code.</returns>
         [return: NotNullIfNotNull(nameof(language))]
-        public static string? NormalizeLanguage(string? language)
+        public static string? NormalizeLanguage(string? language, string? countryCode = null)
         {
             if (string.IsNullOrEmpty(language))
             {
                 return language;
+            }
+
+            // Handle es-419 (Latin American Spanish) by converting to regional variant
+            if (string.Equals(language, "es-419", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(countryCode))
+            {
+                language = string.Equals(countryCode, "AR", StringComparison.OrdinalIgnoreCase)
+                    ? "es-AR"
+                    : "es-MX";
             }
 
             // TMDb requires this to be uppercase

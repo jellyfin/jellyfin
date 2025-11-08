@@ -457,6 +457,12 @@ namespace MediaBrowser.Controller.Entities
                 {
                     foreach (var item in itemsRemoved)
                     {
+                        if (!item.CanDelete())
+                        {
+                            Logger.LogDebug("Item marked as non-removable, skipping: {Path}", item.Path ?? item.Name);
+                            continue;
+                        }
+
                         if (item.IsFileProtocol)
                         {
                             Logger.LogDebug("Removed item: {Path}", item.Path);
@@ -709,9 +715,18 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    items = GetRecursiveChildren(user, query, out totalCount);
+                    // Save pagination params before clearing them to prevent pagination from happening
+                    // before sorting. PostFilterAndSort will apply pagination after sorting.
+                    var limit = query.Limit;
+                    var startIndex = query.StartIndex;
                     query.Limit = null;
-                    query.StartIndex = null; // override these here as they have already been applied
+                    query.StartIndex = null;
+
+                    items = GetRecursiveChildren(user, query, out totalCount);
+
+                    // Restore pagination params so PostFilterAndSort can apply them after sorting
+                    query.Limit = limit;
+                    query.StartIndex = startIndex;
                 }
 
                 var result = PostFilterAndSort(items, query);
@@ -974,20 +989,16 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 // need to pass this param to the children.
+                // Note: Don't pass Limit/StartIndex here as pagination should happen after sorting in PostFilterAndSort
                 var childQuery = new InternalItemsQuery
                 {
                     DisplayAlbumFolders = query.DisplayAlbumFolders,
-                    Limit = query.Limit,
-                    StartIndex = query.StartIndex,
                     NameStartsWith = query.NameStartsWith,
                     NameStartsWithOrGreater = query.NameStartsWithOrGreater,
                     NameLessThan = query.NameLessThan
                 };
 
                 items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
-
-                query.Limit = null;
-                query.StartIndex = null;
             }
 
             var result = PostFilterAndSort(items, query);
