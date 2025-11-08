@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
+using MediaBrowser.Controller.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -23,8 +24,6 @@ namespace Jellyfin.Server.Migrations.Routines;
 internal class PopulateImageSortOrder : IAsyncMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
-    private const int UnknownImagePriority = 999;
-
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IStartupLogger<PopulateImageSortOrder> _logger;
 
@@ -114,8 +113,8 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
                         .Select(img => new
                         {
                             Image = img,
-                            Priority = GetImageOrderPriority(img.Path, mediaFileName),
-                            NumericIndex = GetNumericImageIndex(img.Path)
+                            Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, mediaFileName),
+                            NumericIndex = ImageOrderingUtilities.GetNumericImageIndex(img.Path)
                         })
                         .OrderBy(x => x.Priority)
                         .ThenBy(x => x.NumericIndex)
@@ -185,111 +184,5 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
             processedCount,
             errorCount,
             totalItemCount);
-    }
-
-    private static int GetImageOrderPriority(string? path, string? mediaFileName)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return UnknownImagePriority;
-        }
-
-        var normalizedPath = path.Replace('\\', '/');
-        var fileName = Path.GetFileNameWithoutExtension(normalizedPath);
-
-        // Priority 0: {mediaFileName}-fanart (any extension)
-        if (!string.IsNullOrEmpty(mediaFileName))
-        {
-            var expectedName = $"{mediaFileName}-fanart";
-            if (fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase))
-            {
-                return 0;
-            }
-        }
-
-        // Priority 1: fanart (not in extrafanart folder)
-        if (fileName.Equals("fanart", StringComparison.OrdinalIgnoreCase) &&
-            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
-        {
-            return 1;
-        }
-
-        // Priority 2: fanart-N (numbered, not in extrafanart)
-        if (fileName.StartsWith("fanart-", StringComparison.OrdinalIgnoreCase) &&
-            !normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase))
-        {
-            return 2;
-        }
-
-        // Priority 3: background or background-N
-        if (fileName.Equals("background", StringComparison.OrdinalIgnoreCase) ||
-            fileName.StartsWith("background-", StringComparison.OrdinalIgnoreCase))
-        {
-            return 3;
-        }
-
-        // Priority 4: art or art-N
-        if (fileName.Equals("art", StringComparison.OrdinalIgnoreCase) ||
-            fileName.StartsWith("art-", StringComparison.OrdinalIgnoreCase))
-        {
-            return 4;
-        }
-
-        // Priority 5: extrafanart folder
-        if (normalizedPath.Contains("/extrafanart/", StringComparison.OrdinalIgnoreCase) ||
-            normalizedPath.StartsWith("extrafanart/", StringComparison.OrdinalIgnoreCase))
-        {
-            return 5;
-        }
-
-        // Priority 6: backdrop or backdropN
-        if (fileName.Equals("backdrop", StringComparison.OrdinalIgnoreCase) ||
-            fileName.StartsWith("backdrop", StringComparison.OrdinalIgnoreCase))
-        {
-            return 6;
-        }
-
-        // Default: lowest priority
-        return UnknownImagePriority;
-    }
-
-    private static int GetNumericImageIndex(string? path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return int.MaxValue;
-        }
-
-        var normalizedPath = path.Replace('\\', '/');
-        var fileName = Path.GetFileNameWithoutExtension(normalizedPath);
-
-        // Try to extract numeric index from various patterns
-        // For extrafanart/fanart1.jpg, fanart10.jpg, etc.
-        if (fileName.Length > 0)
-        {
-            int digitStartIndex = -1;
-            for (int i = fileName.Length - 1; i >= 0; i--)
-            {
-                if (char.IsDigit(fileName[i]))
-                {
-                    digitStartIndex = i;
-                }
-                else if (digitStartIndex >= 0)
-                {
-                    break;
-                }
-            }
-
-            if (digitStartIndex >= 0)
-            {
-                var numericPart = fileName.Substring(digitStartIndex);
-                if (int.TryParse(numericPart, out var index))
-                {
-                    return index;
-                }
-            }
-        }
-
-        return int.MaxValue;
     }
 }

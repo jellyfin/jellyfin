@@ -603,20 +603,13 @@ public sealed class BaseItemRepository
         // Delete existing images - we'll recreate them with correct SortOrder
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
 
-        // Group images by type and assign sequential SortOrder per type
-        // Images in item.ImageInfos are already in the correct order (from LocalImageProvider or other sources)
+        // Group images by type and preserve SortOrder calculated by BaseItem.AddImages()
+        // Images in item.ImageInfos already have priority-based SortOrder from LocalImageProvider discovery
         var imagesToSave = new List<BaseItemImageInfo>();
-        var imagesByType = item.ImageInfos.GroupBy(img => img.Type);
 
-        foreach (var typeGroup in imagesByType)
+        foreach (var imageInfo in item.ImageInfos)
         {
-            var imageList = typeGroup.ToList();
-
-            // Assign sequential SortOrder (0, 1, 2, ...) based on input order
-            for (int i = 0; i < imageList.Count; i++)
-            {
-                imagesToSave.Add(Map(item.Id, imageList[i], sortOrder: i));
-            }
+            imagesToSave.Add(Map(item.Id, imageInfo, sortOrder: imageInfo.SortOrder));
         }
 
         context.BaseItemImageInfos.AddRange(imagesToSave);
@@ -1219,7 +1212,9 @@ public sealed class BaseItemRepository
 
         if (dto.ImageInfos is not null)
         {
-            entity.Images = dto.ImageInfos.Select(f => Map(dto.Id, f)).ToArray();
+            entity.Images = dto.ImageInfos
+                .Select(f => Map(dto.Id, f, f.SortOrder))
+                .ToArray();
         }
 
         if (dto is Trailer trailer)
@@ -1583,7 +1578,8 @@ public sealed class BaseItemRepository
             DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
             Height = e.Height,
             Width = e.Width,
-            Type = (ImageType)e.ImageType
+            Type = (ImageType)e.ImageType,
+            SortOrder = e.SortOrder
         };
     }
 
