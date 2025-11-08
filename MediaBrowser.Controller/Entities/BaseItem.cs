@@ -29,6 +29,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Utilities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -2264,8 +2265,8 @@ namespace MediaBrowser.Controller.Entities
                     .Select(img => new
                     {
                         Image = img,
-                        Priority = Utilities.ImageOrderingUtilities.GetImageOrderPriority(img.Path, FileNameWithoutExtension),
-                        NumericIndex = Utilities.ImageOrderingUtilities.GetNumericImageIndex(img.Path)
+                        Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, FileNameWithoutExtension),
+                        NumericIndex = ImageOrderingUtilities.GetNumericImageIndex(img.Path)
                     })
                     .OrderBy(x => x.Priority)
                     .ThenBy(x => x.NumericIndex)

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Utilities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
@@ -352,7 +353,7 @@ namespace MediaBrowser.LocalMetadata.Images
             // (e.g., fanart1.jpg, fanart2.jpg, ..., fanart10.jpg instead of alphabetical fanart1, fanart10, fanart2)
             var sortedFiles = imageFiles
                 .Where(i => i.Length > 0)
-                .OrderBy(i => GetNumericIndex(i.Name))
+                .OrderBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Name))
                 .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             images.AddRange(sortedFiles.Select(i => new LocalImageInfo
@@ -360,41 +361,6 @@ namespace MediaBrowser.LocalMetadata.Images
                 FileInfo = i,
                 Type = ImageType.Backdrop
             }));
-        }
-
-        private static int GetNumericIndex(string filename)
-        {
-            if (string.IsNullOrEmpty(filename))
-            {
-                return int.MaxValue;
-            }
-
-            var nameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
-
-            // Extract trailing digits from filename (e.g., "fanart10" -> 10)
-            int digitStartIndex = -1;
-            for (int i = nameWithoutExtension.Length - 1; i >= 0; i--)
-            {
-                if (char.IsDigit(nameWithoutExtension[i]))
-                {
-                    digitStartIndex = i;
-                }
-                else if (digitStartIndex >= 0)
-                {
-                    break;
-                }
-            }
-
-            if (digitStartIndex >= 0)
-            {
-                var numericPart = nameWithoutExtension.Substring(digitStartIndex);
-                if (int.TryParse(numericPart, out var index))
-                {
-                    return index;
-                }
-            }
-
-            return int.MaxValue;
         }
 
         private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
