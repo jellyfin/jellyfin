@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -1135,7 +1136,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 try
                 {
-                    if (File.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
+                    if (FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
                     {
                         itemPath = linkInfo.FullName;
                     }

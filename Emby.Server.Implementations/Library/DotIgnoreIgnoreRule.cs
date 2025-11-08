@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
@@ -92,7 +93,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
     private static string GetFileContent(FileInfo dirIgnoreFile)
     {
-        dirIgnoreFile = (FileInfo?)dirIgnoreFile.ResolveLinkTarget(returnFinalTarget: true) ?? dirIgnoreFile;
+        dirIgnoreFile = FileSystemHelper.ResolveLinkTarget(dirIgnoreFile, returnFinalTarget: true) ?? dirIgnoreFile;
         if (!dirIgnoreFile.Exists)
         {
             return string.Empty;
