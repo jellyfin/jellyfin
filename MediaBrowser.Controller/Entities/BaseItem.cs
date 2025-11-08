@@ -2268,34 +2268,32 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                // Get all images of this type (existing + new) and assign proper SortOrder
-                var allImages = existingImages
-                    .Concat(newImageList.Select(i => GetImageInfo(i, imageType)))
+                // Normalize existing sort order so we can append deterministically
+                var orderedExistingImages = existingImages
+                    .OrderBy(i => i.SortOrder)
+                    .ThenBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Path))
+                    .ThenBy(i => i.Path, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                // Calculate priority and assign SortOrder
-                var sortedImages = allImages
-                    .Select(img => new
-                    {
-                        Image = img,
-                        Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, FileNameWithoutExtension),
-                        NumericIndex = ImageOrderingUtilities.GetNumericImageIndex(img.Path)
-                    })
-                    .OrderBy(x => x.Priority)
-                    .ThenBy(x => x.NumericIndex)
-                    .ThenBy(x => x.Image.Path, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                // Assign SortOrder values (0, 1, 2, ...)
-                for (int i = 0; i < sortedImages.Count; i++)
+                for (int i = 0; i < orderedExistingImages.Count; i++)
                 {
-                    sortedImages[i].Image.SortOrder = i;
+                    orderedExistingImages[i].SortOrder = i;
                 }
 
-                // Update ImageInfos array with properly sorted images
+                var nextSortOrder = orderedExistingImages.Count;
+                var newImages = newImageList
+                    .Select(fileInfo =>
+                    {
+                        var imageInfo = GetImageInfo(fileInfo, imageType);
+                        imageInfo.SortOrder = nextSortOrder++;
+                        return imageInfo;
+                    })
+                    .ToList();
+
                 ImageInfos = ImageInfos
                     .Where(i => i.Type != imageType)
-                    .Concat(sortedImages.Select(x => x.Image))
+                    .Concat(orderedExistingImages)
+                    .Concat(newImages)
                     .ToArray();
             }
 
@@ -2372,6 +2370,15 @@ namespace MediaBrowser.Controller.Entities
                 if (imageIndex1 >= 0 && imageIndex2 >= 0)
                 {
                     (ImageInfos[imageIndex1], ImageInfos[imageIndex2]) = (ImageInfos[imageIndex2], ImageInfos[imageIndex1]);
+                }
+
+                if (type != ImageType.Chapter)
+                {
+                    var orderedTypeImages = GetImages(type).ToList();
+                    for (int i = 0; i < orderedTypeImages.Count; i++)
+                    {
+                        orderedTypeImages[i].SortOrder = i;
+                    }
                 }
             }
 
