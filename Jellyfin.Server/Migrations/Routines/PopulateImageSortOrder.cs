@@ -8,6 +8,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -158,25 +159,29 @@ internal class PopulateImageSortOrder : IAsyncMigrationRoutine
 
         // Reindex the 3-column index after population for optimal query performance
         // This rebuilds the index with the actual SortOrder values (not all 0s from migration)
-        try
+        // SQLite-specific optimization - only run on SQLite databases
+        if (context.Database.IsSqlite())
         {
-            _logger.LogInformation("Reindexing 3-column index (ItemId, ImageType, SortOrder) after population");
+            try
+            {
+                _logger.LogInformation("Reindexing 3-column index (ItemId, ImageType, SortOrder) after population");
 
-            // Reindex to optimize the index structure with the new SortOrder values
-            await context.Database.ExecuteSqlRawAsync(
-                "REINDEX IX_BaseItemImageInfos_ItemId_ImageType_SortOrder",
-                cancellationToken).ConfigureAwait(false);
+                // Reindex to optimize the index structure with the new SortOrder values
+                await context.Database.ExecuteSqlRawAsync(
+                    "REINDEX IX_BaseItemImageInfos_ItemId_ImageType_SortOrder",
+                    cancellationToken).ConfigureAwait(false);
 
-            // Update query planner statistics
-            await context.Database.ExecuteSqlRawAsync(
-                "ANALYZE BaseItemImageInfos",
-                cancellationToken).ConfigureAwait(false);
+                // Update query planner statistics
+                await context.Database.ExecuteSqlRawAsync(
+                    "ANALYZE BaseItemImageInfos",
+                    cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Reindexing completed successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error reindexing");
+                _logger.LogInformation("Reindexing completed successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reindexing");
+            }
         }
 
         _logger.LogInformation(
