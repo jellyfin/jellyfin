@@ -27,10 +27,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             // Populate SortOrder based on DateModified order
             // Uses ROW_NUMBER() to assign sequential SortOrder per (ItemId, ImageType) group
+            // Path is included as secondary sort key to ensure deterministic ordering
             migrationBuilder.Sql(
                 @"WITH ImageInfos AS
                 (
-                    SELECT Id, ROW_NUMBER() OVER (PARTITION BY ItemId, ImageType ORDER BY DateModified) - 1 AS OrderId
+                    SELECT Id, ROW_NUMBER() OVER (PARTITION BY ItemId, ImageType ORDER BY DateModified, Path) - 1 AS OrderId
                     FROM BaseItemImageInfos
                 )
                 UPDATE BaseItemImageInfos
