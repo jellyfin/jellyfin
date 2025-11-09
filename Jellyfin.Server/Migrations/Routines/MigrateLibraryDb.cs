@@ -383,8 +383,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     });
                 }
 
-                baseItemIds.Clear();
-
                 foreach (var item in peopleCache)
                 {
                     operation.JellyfinDbContext.Peoples.Add(item.Value.Person);
