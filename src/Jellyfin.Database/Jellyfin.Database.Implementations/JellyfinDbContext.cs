@@ -114,6 +114,12 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<BaseItemEntity> BaseItems => Set<BaseItemEntity>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> for the FTS5 full-text search virtual table.
+    /// Use this for full-text search queries without raw SQL.
+    /// </summary>
+    public DbSet<BaseItemFtsEntity> BaseItemsFts => Set<BaseItemFtsEntity>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
     public DbSet<Chapter> Chapters => Set<Chapter>();
