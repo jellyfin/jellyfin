@@ -87,9 +87,13 @@ public static class FileSystemHelper
             return File.ResolveLinkTarget(linkPath, returnFinalTarget: false) as FileInfo;
         }
 
-        FileInfo? targetInfo = null;
-        var currentPath = linkPath;
-        var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath };
+        if (File.ResolveLinkTarget(linkPath, returnFinalTarget: false) is not FileInfo targetInfo)
+        {
+            return null;
+        }
+
+        var currentPath = targetInfo.FullName;
+        var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath, currentPath };
         while (File.ResolveLinkTarget(currentPath, returnFinalTarget: false) is FileInfo linkInfo)
         {
             var targetPath = linkInfo.FullName;
