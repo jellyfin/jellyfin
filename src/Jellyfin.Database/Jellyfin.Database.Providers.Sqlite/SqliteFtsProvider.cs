@@ -55,16 +55,23 @@ public class SqliteFtsProvider : IFullTextSearchProvider
 
         Console.WriteLine($"[FTS] Fetching up to {ftsLimit} FTS results");
 
-        var ftsIds = context.Set<BaseItemFtsEntity>()
+        /*var ftsIds = context.Set<BaseItemFtsEntity>()
             .Where(fts => fts.Match == ftsMatchQuery)
             .OrderBy(fts => fts.Rank) // Lower rank = better match
             .Select(fts => fts.Id)
-            .ToHashSet(); // Materialize limited FTS results
+            .ToHashSet(); // Materialize limited FTS results*/
 
-        Console.WriteLine($"[FTS] Retrieved {ftsIds.Count} FTS IDs, filtering main query");
+        // Console.WriteLine($"[FTS] Retrieved {ftsIds.Count} FTS IDs, filtering main query");
 
         // Filter the already-filtered query by FTS results
-        var result = query.Where(item => ftsIds.Contains(((BaseItemEntity)(object)item).Id));
+        var result = query
+        .Join(
+            context.Set<BaseItemFtsEntity>().Where(fts => fts.Match == ftsMatchQuery),
+            item => ((BaseItemEntity)(object)item).Id,
+            fts => fts.Id,
+            (item, fts) => new { item, fts })
+        .OrderBy(x => x.fts.Rank)
+        .Select(x => x.item);
 
         Console.WriteLine("[FTS] Filter applied successfully");
         return result;
