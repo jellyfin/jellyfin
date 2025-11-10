@@ -51,14 +51,13 @@ public class SqliteFtsProvider : IFullTextSearchProvider
         // Get FTS results ordered by rank (most relevant first)
         // Use a reasonable limit to prevent overwhelming the query
         // The input query is already filtered, so we take more results to account for additional filtering
-        var ftsLimit = options.Limit > 0 ? options.Limit * 5 : 5000;
+        var ftsLimit = options.Limit > 0 ? options.Limit : -1;
 
         Console.WriteLine($"[FTS] Fetching up to {ftsLimit} FTS results");
 
         var ftsIds = context.Set<BaseItemFtsEntity>()
             .Where(fts => fts.Match == ftsMatchQuery)
             .OrderBy(fts => fts.Rank) // Lower rank = better match
-            .Take(ftsLimit)
             .Select(fts => fts.Id)
             .ToHashSet(); // Materialize limited FTS results
 
