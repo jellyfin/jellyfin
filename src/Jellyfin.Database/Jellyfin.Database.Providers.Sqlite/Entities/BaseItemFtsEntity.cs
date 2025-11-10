@@ -1,9 +1,8 @@
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jellyfin.Database.Implementations.Entities;
 
-namespace Jellyfin.Database.Implementations.Entities;
+namespace Jellyfin.Database.Providers.Sqlite.Entities;
 
 /// <summary>
 /// Entity mapped to the BaseItems_fts FTS5 virtual table.
