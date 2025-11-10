@@ -24,6 +24,11 @@ namespace Jellyfin.Database.Implementations;
 public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
 {
     /// <summary>
+    /// Gets the database provider for database-specific operations.
+    /// </summary>
+    public IJellyfinDatabaseProvider DatabaseProvider { get; } = jellyfinDatabaseProvider;
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
     /// </summary>
     public DbSet<AccessSchedule> AccessSchedules => Set<AccessSchedule>();
@@ -112,12 +117,6 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
     public DbSet<BaseItemEntity> BaseItems => Set<BaseItemEntity>();
-
-    /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> for the FTS5 full-text search virtual table.
-    /// Use this for full-text search queries without raw SQL.
-    /// </summary>
-    public DbSet<BaseItemFtsEntity> BaseItemsFts => Set<BaseItemFtsEntity>();
 
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
@@ -316,7 +315,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        jellyfinDatabaseProvider.OnModelCreating(modelBuilder);
+        DatabaseProvider.OnModelCreating(modelBuilder);
         base.OnModelCreating(modelBuilder);
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
@@ -326,7 +325,7 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        jellyfinDatabaseProvider.ConfigureConventions(configurationBuilder);
+        DatabaseProvider.ConfigureConventions(configurationBuilder);
         base.ConfigureConventions(configurationBuilder);
     }
 }

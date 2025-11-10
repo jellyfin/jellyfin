@@ -1,8 +1,9 @@
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Providers.Sqlite.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Jellyfin.Database.Implementations.ModelConfiguration;
+namespace Jellyfin.Database.Providers.Sqlite.ModelConfiguration;
 
 /// <summary>
 /// Configuration for BaseItemFtsEntity - maps to the FTS5 virtual table.

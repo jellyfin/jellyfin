@@ -40,6 +40,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
+    public IFullTextSearchProvider? FullTextSearchProvider { get; } = new SqliteFtsProvider();
+
+    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         static T? GetOption<T>(ICollection<CustomDatabaseOption>? options, string key, Func<string, T> converter, Func<T>? defaultValue = null)
@@ -112,6 +115,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
+        modelBuilder.ApplyConfiguration(new ModelConfiguration.BaseItemFtsEntityConfiguration());
     }
 
     /// <inheritdoc/>

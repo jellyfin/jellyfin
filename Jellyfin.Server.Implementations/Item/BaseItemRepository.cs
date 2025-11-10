@@ -19,7 +19,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
-using Jellyfin.Database.Providers.Sqlite.Extensions;
+using Jellyfin.Database.Implementations.Extensions;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Implementations.Extensions;
@@ -1227,7 +1227,7 @@ public sealed class BaseItemRepository
             Genres = filter.Genres,
             Years = filter.Years,
             NameContains = filter.NameContains,
-            SearchTerm = filter.SearchTerm,
+            // Don't copy SearchTerm - it will be applied separately via FTS
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
@@ -1691,10 +1691,7 @@ public sealed class BaseItemRepository
             }
         }
 
-        if (!string.IsNullOrEmpty(filter.SearchTerm))
-        {
-            baseQuery = baseQuery.SearchByTextCaseInsensitive(context, filter.SearchTerm);
-        }
+        // SearchTerm will be applied AFTER other filters - see below
 
         if (filter.IsFolder.HasValue)
         {
@@ -1901,8 +1898,9 @@ public sealed class BaseItemRepository
         }
 
         // These are the same, for now
+        // Don't use NameContains if SearchTerm is present - FTS will handle it
         var nameContains = filter.NameContains;
-        if (!string.IsNullOrWhiteSpace(nameContains))
+        if (!string.IsNullOrWhiteSpace(nameContains) && string.IsNullOrEmpty(filter.SearchTerm))
         {
             baseQuery = baseQuery.Where(e =>
                 e.CleanName!.Contains(nameContains)
@@ -2472,6 +2470,19 @@ public sealed class BaseItemRepository
                 baseQuery = baseQuery
                     .Where(e => e.ExtraIds == null);
             }
+        }
+
+        // Apply full-text search AFTER all other filters
+        // This ensures FTS operates on an already-filtered dataset
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            baseQuery = baseQuery.SearchFullText(
+                context,
+                filter.SearchTerm,
+                filter.Limit,
+                e => e.Name,
+                e => e.CleanName,
+                e => e.OriginalTitle);
         }
 
         return baseQuery;

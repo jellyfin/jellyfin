@@ -1,5 +1,4 @@
 using System;
-using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Database.Providers.Sqlite.Extensions;
 
@@ -10,31 +9,33 @@ namespace Jellyfin.Database.Providers.Sqlite.Extensions;
 public static class SqliteFtsDbFunctions
 {
     /// <summary>
-    /// Performs a full-text search match against the FTS5 index.
-    /// This function is translated to SQL and executes on the database.
+    /// Checks if an item ID exists in the FTS5 search results.
+    /// This function is translated to SQL: EXISTS (SELECT 1 FROM BaseItems_fts WHERE Id = @itemId AND BaseItems_fts MATCH @searchQuery).
     /// </summary>
-    /// <param name="ftsTableName">The name of the FTS5 table to search.</param>
-    /// <param name="searchQuery">The FTS5 search query string.</param>
-    /// <returns>True if the search matches, false otherwise.</returns>
+    /// <param name="itemId">The ID of the item to check.</param>
+    /// <param name="searchQuery">The FTS5 search query string (already escaped).</param>
+    /// <returns>True if the item matches the search query.</returns>
     /// <exception cref="NotSupportedException">Always thrown if called directly in C# code.</exception>
     /// <remarks>
     /// This method should only be used within LINQ queries where it will be translated to SQL.
-    /// The SQL translation performs a subquery lookup in the FTS5 index.
-    ///
     /// Example usage:
     /// <code>
     /// var results = context.BaseItems
-    ///     .Where(item => SqliteFtsDbFunctions.FtsMatch("BaseItems_fts", "avatar"))
+    ///     .Where(item => SqliteFtsDbFunctions.MatchesFts(item.Id, "avatar*"))
     ///     .ToList();
     /// </code>
     ///
     /// This translates to SQL:
     /// <code>
     /// SELECT * FROM BaseItems
-    /// WHERE rowid IN (SELECT rowid FROM BaseItems_fts WHERE BaseItems_fts MATCH 'avatar')
+    /// WHERE EXISTS (
+    ///     SELECT 1 FROM BaseItems_fts
+    ///     WHERE BaseItems_fts.Id = BaseItems.Id
+    ///     AND BaseItems_fts MATCH 'avatar*'
+    /// )
     /// </code>
     /// </remarks>
-    public static bool FtsMatch(string ftsTableName, string searchQuery)
+    public static bool MatchesFts(Guid itemId, string searchQuery)
     {
         throw new NotSupportedException(
             "This method is a database function placeholder and should only be used in LINQ queries. " +

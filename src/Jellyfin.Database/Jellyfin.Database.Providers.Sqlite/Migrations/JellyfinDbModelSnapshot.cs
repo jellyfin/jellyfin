@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AccessSchedules");
+                    b.ToTable("AccessSchedules", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -89,7 +89,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("DateCreated");
 
-                    b.ToTable("ActivityLogs");
+                    b.ToTable("ActivityLogs", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -106,7 +106,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ParentItemId");
 
-                    b.ToTable("AncestorIds");
+                    b.ToTable("AncestorIds", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -136,7 +136,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "Index");
 
-                    b.ToTable("AttachmentStreamInfos");
+                    b.ToTable("AttachmentStreamInfos", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -389,7 +389,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Type", "TopParentId", "IsVirtualItem", "PresentationUniqueKey", "DateCreated");
 
-                    b.ToTable("BaseItems");
+                    b.ToTable("BaseItems", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
 
@@ -441,7 +441,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemImageInfos");
+                    b.ToTable("BaseItemImageInfos", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -458,7 +458,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemMetadataFields");
+                    b.ToTable("BaseItemMetadataFields", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -479,7 +479,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ProviderId", "ProviderValue", "ItemId");
 
-                    b.ToTable("BaseItemProviders");
+                    b.ToTable("BaseItemProviders", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -496,7 +496,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BaseItemTrailerTypes");
+                    b.ToTable("BaseItemTrailerTypes", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -523,7 +523,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ChapterIndex");
 
-                    b.ToTable("Chapters");
+                    b.ToTable("Chapters", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -557,7 +557,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "ItemId", "Client", "Key")
                         .IsUnique();
 
-                    b.ToTable("CustomItemDisplayPreferences");
+                    b.ToTable("CustomItemDisplayPreferences", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -616,7 +616,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "ItemId", "Client")
                         .IsUnique();
 
-                    b.ToTable("DisplayPreferences");
+                    b.ToTable("DisplayPreferences", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -640,7 +640,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("DisplayPreferencesId");
 
-                    b.ToTable("HomeSection");
+                    b.ToTable("HomeSection", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -667,7 +667,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ImageInfos");
+                    b.ToTable("ImageInfos", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -713,7 +713,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ItemDisplayPreferences");
+                    b.ToTable("ItemDisplayPreferences", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -742,7 +742,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Type", "Value")
                         .IsUnique();
 
-                    b.ToTable("ItemValues");
+                    b.ToTable("ItemValues", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -759,7 +759,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("ItemValuesMap");
+                    b.ToTable("ItemValuesMap", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -777,7 +777,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId");
 
-                    b.ToTable("KeyframeData");
+                    b.ToTable("KeyframeData", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -806,7 +806,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MediaSegments");
+                    b.ToTable("MediaSegments", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -964,7 +964,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("StreamIndex", "StreamType", "Language");
 
-                    b.ToTable("MediaStreamInfos");
+                    b.ToTable("MediaStreamInfos", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -986,7 +986,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("Peoples");
+                    b.ToTable("Peoples", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1016,7 +1016,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "SortOrder");
 
-                    b.ToTable("PeopleBaseItemMap");
+                    b.ToTable("PeopleBaseItemMap", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1049,7 +1049,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1084,7 +1084,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Preferences");
+                    b.ToTable("Preferences", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1115,7 +1115,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("AccessToken")
                         .IsUnique();
 
-                    b.ToTable("ApiKeys");
+                    b.ToTable("ApiKeys", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1175,7 +1175,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId", "DeviceId");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1198,7 +1198,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("DeviceId")
                         .IsUnique();
 
-                    b.ToTable("DeviceOptions");
+                    b.ToTable("DeviceOptions", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1231,7 +1231,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "Width");
 
-                    b.ToTable("TrickplayInfos");
+                    b.ToTable("TrickplayInfos", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1348,7 +1348,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1406,7 +1406,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "Played");
 
-                    b.ToTable("UserData");
+                    b.ToTable("UserData", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
