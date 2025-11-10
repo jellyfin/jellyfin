@@ -18,6 +18,11 @@ public interface IJellyfinDatabaseProvider
     IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <summary>
+    /// Gets the full-text search provider if supported by this database.
+    /// </summary>
+    IFullTextSearchProvider? FullTextSearchProvider { get; }
+
+    /// <summary>
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
