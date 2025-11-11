@@ -172,7 +172,7 @@ namespace Jellyfin.Server.Extensions
             if (config.KnownProxies.Length == 0)
             {
                 options.ForwardedHeaders = ForwardedHeaders.None;
-                options.KnownNetworks.Clear();
+                options.KnownIPNetworks.Clear();
                 options.KnownProxies.Clear();
             }
             else
@@ -182,7 +182,7 @@ namespace Jellyfin.Server.Extensions
             }
 
             // Only set forward limit if we have some known proxies or some known networks.
-            if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+            if (options.KnownProxies.Count != 0 || options.KnownIPNetworks.Count != 0)
             {
                 options.ForwardLimit = null;
             }
@@ -286,10 +286,7 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    if (subnet is not null)
-                    {
-                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
-                    }
+                    AddIPAddress(config, options, subnet.BaseAddress, subnet.PrefixLength);
                 }
                 else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
                 {
@@ -319,7 +316,7 @@ namespace Jellyfin.Server.Extensions
             }
             else
             {
-                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(addr, prefixLength));
+                options.KnownIPNetworks.Add(new System.Net.IPNetwork(addr, prefixLength));
             }
         }
 

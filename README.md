@@ -39,7 +39,7 @@
 
 ---
 
-Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support. 
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support.
 
 There are no strings attached, no premium licenses or features, and no hidden agendas: just a team that wants to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
@@ -133,7 +133,7 @@ A second option is to build the project and then run the resulting executable fi
 
 ```bash
 dotnet build                       # Build the project
-cd Jellyfin.Server/bin/Debug/net9.0 # Change into the build output directory
+cd Jellyfin.Server/bin/Debug/net10.0 # Change into the build output directory
 ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
