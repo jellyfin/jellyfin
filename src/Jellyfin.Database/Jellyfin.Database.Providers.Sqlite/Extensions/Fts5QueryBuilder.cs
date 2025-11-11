@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 
 namespace Jellyfin.Database.Providers.Sqlite.Extensions;
 
@@ -30,30 +29,43 @@ public static class Fts5QueryBuilder
             return string.Empty;
         }
 
-        var escapedWords = new List<string>();
+        var result = new StringBuilder(searchTerm.Length * 2);
+        var firstWord = true;
+
         foreach (var word in words)
         {
-            var cleanWord = new string(word.Where(c =>
-                char.IsLetterOrDigit(c) ||
-                c == '-' ||
-                c == '_' ||
-                c == '\'' ||
-                c == '.').ToArray());
+            var cleanWord = CleanWord(word);
 
             if (string.IsNullOrWhiteSpace(cleanWord))
             {
                 continue;
             }
 
+            if (!firstWord)
+            {
+                result.Append(' ');
+            }
+
             var escapedWord = cleanWord.Replace("\"", "\"\"", StringComparison.Ordinal);
-            escapedWords.Add($"{escapedWord}*");
+            result.Append(escapedWord).Append('*');
+            firstWord = false;
         }
 
-        if (escapedWords.Count == 0)
+        return result.Length > 0 ? result.ToString() : string.Empty;
+    }
+
+    private static string CleanWord(string word)
+    {
+        var cleaned = new StringBuilder(word.Length);
+
+        foreach (var c in word)
         {
-            return string.Empty;
+            if (char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '\'' || c == '.')
+            {
+                cleaned.Append(c);
+            }
         }
 
-        return string.Join(" ", escapedWords);
+        return cleaned.ToString();
     }
 }

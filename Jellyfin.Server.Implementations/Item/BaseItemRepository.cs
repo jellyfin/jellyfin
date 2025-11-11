@@ -984,6 +984,7 @@ public sealed partial class BaseItemRepository
                 context,
                 filter.SearchTerm,
                 filter.Limit,
+                _logger,
                 e => e.Name,
                 e => e.CleanName,
                 e => e.OriginalTitle);

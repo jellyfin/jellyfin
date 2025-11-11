@@ -10,13 +10,12 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Create FTS5 virtual table for BaseItems full-text search
             migrationBuilder.Sql(
                 """
                 CREATE VIRTUAL TABLE IF NOT EXISTS BaseItems_fts USING fts5(
                     Id UNINDEXED,
-                    Name,
                     CleanName,
+                    Name,
                     OriginalTitle,
                     content='BaseItems',
                     content_rowid='rowid',
@@ -24,38 +23,37 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                 );
                 """);
 
-            // Populate the FTS table with existing data
             migrationBuilder.Sql(
                 """
-                INSERT INTO BaseItems_fts(rowid, Id, Name, CleanName, OriginalTitle)
-                SELECT rowid, Id, Name, CleanName, OriginalTitle
+                INSERT INTO BaseItems_fts(rowid, Id, CleanName, Name, OriginalTitle)
+                SELECT rowid, Id, CleanName, Name, OriginalTitle
                 FROM BaseItems;
                 """);
 
-            // Create trigger to keep FTS table in sync on INSERT
             migrationBuilder.Sql(
                 """
                 CREATE TRIGGER IF NOT EXISTS BaseItems_fts_insert AFTER INSERT ON BaseItems
                 BEGIN
-                    INSERT INTO BaseItems_fts(rowid, Id, Name, CleanName, OriginalTitle)
-                    VALUES (new.rowid, new.Id, new.Name, new.CleanName, new.OriginalTitle);
+                    INSERT INTO BaseItems_fts(rowid, Id, CleanName, Name, OriginalTitle)
+                    VALUES (new.rowid, new.Id, new.CleanName, new.Name, new.OriginalTitle);
                 END;
                 """);
 
-            // Create trigger to keep FTS table in sync on UPDATE
             migrationBuilder.Sql(
                 """
                 CREATE TRIGGER IF NOT EXISTS BaseItems_fts_update AFTER UPDATE ON BaseItems
+                WHEN old.CleanName IS NOT new.CleanName
+                   OR old.Name IS NOT new.Name
+                   OR old.OriginalTitle IS NOT new.OriginalTitle
                 BEGIN
                     UPDATE BaseItems_fts
-                    SET Name = new.Name,
-                        CleanName = new.CleanName,
+                    SET CleanName = new.CleanName,
+                        Name = new.Name,
                         OriginalTitle = new.OriginalTitle
                     WHERE rowid = new.rowid;
                 END;
                 """);
 
-            // Create trigger to keep FTS table in sync on DELETE
             migrationBuilder.Sql(
                 """
                 CREATE TRIGGER IF NOT EXISTS BaseItems_fts_delete AFTER DELETE ON BaseItems
