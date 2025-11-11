@@ -30,6 +30,7 @@ public class BaseItemFtsEntity
     /// <summary>
     /// Gets or sets the FTS5 rank() for result ordering.
     /// Lower (more negative) values = better matches.
+    /// Can be customized with column weights using bm25() function.
     /// </summary>
     public double Rank { get; set; }
 

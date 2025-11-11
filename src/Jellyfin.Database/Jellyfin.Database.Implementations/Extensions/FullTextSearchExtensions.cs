@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Implementations.Extensions;
 
@@ -19,6 +20,7 @@ public static class FullTextSearchExtensions
     /// <param name="context">The database context.</param>
     /// <param name="searchTerm">The search term.</param>
     /// <param name="limit">The limit.</param>
+    /// <param name="logger">Optional logger for diagnostics.</param>
     /// <param name="searchableColumns">Column selectors to search in (e.g., e => e.Name, e => e.Tags).</param>
     /// <returns>An IQueryable filtered by the search term.</returns>
     public static IQueryable<TEntity> SearchFullText<TEntity>(
@@ -26,10 +28,11 @@ public static class FullTextSearchExtensions
         JellyfinDbContext context,
         string searchTerm,
         int? limit,
+        ILogger? logger,
         params Expression<Func<TEntity, string?>>[] searchableColumns)
         where TEntity : class
     {
-        return SearchFullText(query, context, searchTerm, limit, null, searchableColumns);
+        return SearchFullText(query, context, searchTerm, limit, null, logger, searchableColumns);
     }
 
     /// <summary>
@@ -43,6 +46,7 @@ public static class FullTextSearchExtensions
     /// <param name="searchTerm">The search term.</param>
     /// <param name="limit">The limit.</param>
     /// <param name="ftsOptions">Optional FTS-specific options for filtering.</param>
+    /// <param name="logger">Optional logger for diagnostics.</param>
     /// <param name="searchableColumns">Column selectors to search in (e.g., e => e.Name, e => e.Tags).</param>
     /// <returns>An IQueryable filtered by the search term.</returns>
     public static IQueryable<TEntity> SearchFullText<TEntity>(
@@ -51,6 +55,7 @@ public static class FullTextSearchExtensions
         string searchTerm,
         int? limit,
         FtsSearchOptions? ftsOptions,
+        ILogger? logger,
         params Expression<Func<TEntity, string?>>[] searchableColumns)
         where TEntity : class
     {
@@ -74,6 +79,12 @@ public static class FullTextSearchExtensions
             {
                 return ftsQuery;
             }
+
+            logger?.LogDebug("FTS provider returned null for search term '{SearchTerm}', falling back to LIKE", searchTerm);
+        }
+        else
+        {
+            logger?.LogDebug("No FTS provider available for database, using LIKE fallback for search term '{SearchTerm}'", searchTerm);
         }
 
         // Fallback: LIKE-based search on all specified columns
@@ -109,11 +120,9 @@ public static class FullTextSearchExtensions
 
         foreach (var columnSelector in columnSelectors)
         {
-            // Replace the parameter in the column selector with our parameter
             var columnExpression = new ParameterReplacer(columnSelector.Parameters[0], parameter)
                 .Visit(columnSelector.Body);
 
-            // Build: column != null && column.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase)
             var notNullCheck = Expression.NotEqual(columnExpression, Expression.Constant(null, typeof(string)));
 
             var containsMethod = typeof(string).GetMethod(
