@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace MediaBrowser.Common.Net;
 
@@ -196,7 +195,7 @@ public static partial class NetworkUtils
     /// <param name="result">An <see cref="IPNetwork"/>.</param>
     /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
     /// <returns><c>True</c> if parsing was successful.</returns>
-    public static bool TryParseToSubnet(ReadOnlySpan<char> value, [NotNullWhen(true)] out IPNetwork? result, bool negated = false)
+    public static bool TryParseToSubnet(ReadOnlySpan<char> value, out IPNetwork result, bool negated = false)
     {
         // If multiple IP addresses are in a comma-separated string, the individual addresses may contain leading and/or trailing whitespace
         value = value.Trim();
@@ -210,7 +209,7 @@ public static partial class NetworkUtils
 
         if (isAddressNegated != negated)
         {
-            result = null;
+            result = default;
             return false;
         }
 
@@ -235,7 +234,7 @@ public static partial class NetworkUtils
             }
         }
 
-        result = null;
+        result = default;
         return false;
     }
 
@@ -330,7 +329,7 @@ public static partial class NetworkUtils
     /// <returns>The broadcast address.</returns>
     public static IPAddress GetBroadcastAddress(IPNetwork network)
     {
-        var addressBytes = network.Prefix.GetAddressBytes();
+        var addressBytes = network.BaseAddress.GetAddressBytes();
         uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
         uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
         uint broadCastIPAddress = ipAddress | ~ipMaskV4;
@@ -347,7 +346,6 @@ public static partial class NetworkUtils
     public static bool SubnetContainsAddress(IPNetwork network, IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
-        ArgumentNullException.ThrowIfNull(network);
 
         if (address.IsIPv4MappedToIPv6)
         {
