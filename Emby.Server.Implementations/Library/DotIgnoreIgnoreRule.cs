@@ -93,7 +93,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         {
             // Mitigate the problem of the Ignore library not handling Windows paths correctly.
             // See https://github.com/jellyfin/jellyfin/issues/15484
-            return ignore.IsIgnored(fileInfo.FullName.Replace('\\', '/'));
+            return ignore.IsIgnored(fileInfo.FullName.NormalizePath('/'));
         }
 
         return ignore.IsIgnored(fileInfo.FullName);
