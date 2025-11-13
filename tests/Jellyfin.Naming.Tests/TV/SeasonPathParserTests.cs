@@ -69,6 +69,12 @@ public class SeasonPathParserTests
     [InlineData("/media/YouTube/Devyn Johnston/2024-01-24 4070 Ti SUPER in under 7 minutes", "/media/YouTube/Devyn Johnston", null, false)]
     [InlineData("/media/YouTube/Devyn Johnston/2025-01-28 5090 vs 2 SFF Cases", "/media/YouTube/Devyn Johnston", null, false)]
     [InlineData("/Drive/202401244070", "/Drive", null, false)]
+    [InlineData("/Drive/Drive.S01.2160p.WEB-DL.DDP5.1.H.265-XXXX", "/Drive", 1, true)]
+    [InlineData("The Wonder Years/The.Wonder.Years.S04.1080p.PDTV.x264-JCH", "/The Wonder Years", 4, true)]
+    [InlineData("The Wonder Years/[The.Wonder.Years.S04.1080p.PDTV.x264-JCH]", "/The Wonder Years", 4, true)]
+    [InlineData("The Wonder Years/The.Wonder.Years [S04][1080p.PDTV.x264-JCH]", "/The Wonder Years", 4, true)]
+    [InlineData("The Wonder Years/The Wonder Years Season 01 1080p", "/The Wonder Years", 1, true)]
+
     public void GetSeasonNumberFromPathTest(string path, string? parentPath, int? seasonNumber, bool isSeasonDirectory)
     {
         var result = SeasonPathParser.Parse(path, parentPath, true, true);
