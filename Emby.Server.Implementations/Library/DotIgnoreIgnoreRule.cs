@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
@@ -87,6 +88,13 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         var ignoreRules = ignoreFileString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var ignore = new Ignore.Ignore();
         ignore.Add(ignoreRules);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Mitigate the problem of the Ignore library not handling Windows paths correctly.
+            // See https://github.com/jellyfin/jellyfin/issues/15484
+            return ignore.IsIgnored(fileInfo.FullName.NormalizePath('/'));
+        }
 
         return ignore.IsIgnored(fileInfo.FullName);
     }
