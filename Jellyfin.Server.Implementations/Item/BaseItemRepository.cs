@@ -2420,39 +2420,34 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => !e.ItemValues!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags)
-                .Any(f => filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+            baseQuery = baseQuery.Where(e =>
+                !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                && (e.Type != _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode] || !e.SeriesId.HasValue ||
+                !context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue))));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
-            if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
+            // For seasons and episodes, we also need to check the parent series' tags.
+            if (includeTypes.Any(t => t == BaseItemKind.Episode || t == BaseItemKind.Season))
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        ||
-                        (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value && (w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags))
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                    || (e.SeriesId.HasValue && context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
             }
 
             // A playlist should be accessible to its owner regardless of allowed tags.
             else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                    || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
                 // d        ^^ this is stupid it hate this.
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
             }
         }
 
