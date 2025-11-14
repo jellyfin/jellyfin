@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
@@ -118,6 +119,20 @@ namespace Emby.Server.Implementations.Collections
         public Task<Folder?> GetCollectionsFolder(bool createIfNeeded)
         {
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BoxSet> GetCollectionsContainingItem(User user, Guid itemId)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            if (itemId.IsEmpty())
+            {
+                return Enumerable.Empty<BoxSet>();
+            }
+
+            return GetCollections(user)
+                .Where(collection => collection.ContainsLinkedChildByItemId(itemId));
         }
 
         private IEnumerable<BoxSet> GetCollections(User user)
