@@ -344,7 +344,10 @@ namespace MediaBrowser.Providers.Manager
                     item.DateModified = info.LastWriteTimeUtc;
                     if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
                     {
-                        item.DateCreated = info.CreationTimeUtc;
+                        if (info.CreationTimeUtc > DateTime.MinValue)
+                        {
+                            item.DateCreated = info.CreationTimeUtc;
+                        }
                     }
 
                     if (item is Video video)
