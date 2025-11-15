@@ -456,7 +456,7 @@ public class VideosController : BaseJellyfinApiController
         if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
+            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state.MediaPath, httpClient, HttpContext, false).ConfigureAwait(false);
         }
 
         if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
