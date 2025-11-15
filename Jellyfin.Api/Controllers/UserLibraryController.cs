@@ -13,6 +13,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -569,7 +570,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = i.Item2[0];
             var childCount = 0;
 
-            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum))
+            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum || i.Item1 is Series ))
             {
                 item = i.Item1;
                 childCount = i.Item2.Count;
