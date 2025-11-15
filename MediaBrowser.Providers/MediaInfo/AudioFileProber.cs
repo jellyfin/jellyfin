@@ -134,6 +134,58 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
 
+            // Log audiobook info for debugging
+            if (audio is AudioBook audioBook)
+            {
+                _logger.LogInformation(
+                    "Processing AudioBook: {Name}, IsStacked: {IsStacked}, AdditionalParts: {Count}",
+                    audioBook.Name,
+                    audioBook.IsStacked,
+                    audioBook.AdditionalParts.Length);
+            }
+
+            // If this is a multi-file audiobook, sum durations of all parts
+            if (audio is AudioBook audioBook2 && audioBook2.AdditionalParts.Length > 0)
+            {
+                var totalTicks = mediaInfo.RunTimeTicks ?? 0;
+
+                _logger.LogDebug("Probing {Count} additional parts for audiobook {Name}", audioBook2.AdditionalParts.Length, audioBook2.Name);
+
+                foreach (var partPath in audioBook2.AdditionalParts)
+                {
+                    try
+                    {
+                        var partResult = await _mediaEncoder.GetMediaInfo(
+                            new MediaInfoRequest
+                            {
+                                MediaType = DlnaProfileType.Audio,
+                                MediaSource = new MediaSourceInfo
+                                {
+                                    Path = partPath,
+                                    Protocol = MediaProtocol.File
+                                }
+                            },
+                            cancellationToken).ConfigureAwait(false);
+
+                        if (partResult.RunTimeTicks.HasValue)
+                        {
+                            totalTicks += partResult.RunTimeTicks.Value;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to probe additional part: {Path}", partPath);
+                    }
+                }
+
+                audio.RunTimeTicks = totalTicks;
+                _logger.LogInformation(
+                    "Total runtime for audiobook {Name}: {Runtime} ticks ({Hours:F2} hours)",
+                    audioBook2.Name,
+                    totalTicks,
+                    TimeSpan.FromTicks(totalTicks).TotalHours);
+            }
+
             // Add external lyrics first to prevent the lrc file get overwritten on first scan
             var mediaStreams = new List<MediaStream>(mediaInfo.MediaStreams);
             AddExternalLyrics(audio, mediaStreams, options);
