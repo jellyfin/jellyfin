@@ -32,6 +32,16 @@ public record FolderStorageDto
     /// </summary>
     public string? DeviceId { get; init; }
 
+    /// <summary>
+    /// Gets or sets the measured folder size in bytes (nullable if unknown).
+    /// </summary>
+    public long? FolderSizeBytes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total size of the drive containing this folder (nullable if unknown).
+    /// </summary>
+    public long? DriveTotalBytes { get; set; }
+
     internal static FolderStorageDto FromFolderStorageInfo(FolderStorageInfo model)
     {
         return new()
@@ -40,7 +50,9 @@ public record FolderStorageDto
             FreeSpace = model.FreeSpace,
             UsedSpace = model.UsedSpace,
             StorageType = model.StorageType,
-            DeviceId = model.DeviceId
+            DeviceId = model.DeviceId,
+            FolderSizeBytes = model.FolderSizeBytes,
+            DriveTotalBytes = model.DriveTotalBytes
         };
     }
 }
