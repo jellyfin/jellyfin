@@ -49,7 +49,7 @@ public class ClientLogController : BaseJellyfinApiController
     [RequestSizeLimit(MaxDocumentSize)]
     public async Task<ActionResult<ClientLogDocumentResponseDto>> LogFile()
     {
-        if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
+        if (!_serverConfigurationManager.ServerConfig.AllowClientLogUpload)
         {
             return Forbid();
         }

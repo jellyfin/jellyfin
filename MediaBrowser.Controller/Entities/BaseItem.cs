@@ -929,7 +929,7 @@ namespace MediaBrowser.Controller.Entities
 
             var sortable = Name.Trim().ToLowerInvariant();
 
-            foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
+            foreach (var search in ConfigurationManager.ServerConfig.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
                 if (sortable.StartsWith(search + " ", StringComparison.Ordinal))
@@ -947,12 +947,12 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            foreach (var removeChar in ConfigurationManager.ServerConfig.SortRemoveCharacters)
             {
                 sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
-            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            foreach (var replaceChar in ConfigurationManager.ServerConfig.SortReplaceCharacters)
             {
                 sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
@@ -1511,7 +1511,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(lang))
             {
-                lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+                lang = ConfigurationManager.ServerConfig.PreferredMetadataLanguage;
             }
 
             return lang;
@@ -1546,7 +1546,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(lang))
             {
-                lang = ConfigurationManager.Configuration.MetadataCountryCode;
+                lang = ConfigurationManager.ServerConfig.MetadataCountryCode;
             }
 
             return lang;

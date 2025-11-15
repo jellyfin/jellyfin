@@ -33,9 +33,9 @@ public class ReaddDefaultPluginRepository : IMigrationRoutine
     public void Perform()
     {
         // Only add if repository list is empty
-        if (_serverConfigurationManager.Configuration.PluginRepositories.Length == 0)
+        if (_serverConfigurationManager.ServerConfig.PluginRepositories.Length == 0)
         {
-            _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
+            _serverConfigurationManager.ServerConfig.PluginRepositories = new[] { _defaultRepositoryInfo };
             _serverConfigurationManager.SaveConfiguration();
         }
     }

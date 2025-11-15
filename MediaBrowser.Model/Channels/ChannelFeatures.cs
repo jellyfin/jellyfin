@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Channels
 {
@@ -38,13 +39,13 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the media types.
         /// </summary>
         /// <value>The media types.</value>
-        public ChannelMediaType[] MediaTypes { get; set; }
+        public IReadOnlyList<ChannelMediaType> MediaTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the content types.
         /// </summary>
         /// <value>The content types.</value>
-        public ChannelMediaContentType[] ContentTypes { get; set; }
+        public IReadOnlyList<ChannelMediaContentType> ContentTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of records the channel allows retrieving at a time.
@@ -61,7 +62,7 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the default sort orders.
         /// </summary>
         /// <value>The default sort orders.</value>
-        public ChannelItemSortField[] DefaultSortFields { get; set; }
+        public IReadOnlyList<ChannelItemSortField> DefaultSortFields { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether a sort ascending/descending toggle is supported.

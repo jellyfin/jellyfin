@@ -281,7 +281,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
                 || options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                if (_config.ServerConfig.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     chapters = CreateDummyChapters(video);
                 }
@@ -648,7 +648,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         TimeSpan.FromTicks(runtime).TotalMinutes));
             }
 
-            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
+            long dummyChapterDuration = TimeSpan.FromSeconds(_config.ServerConfig.DummyChapterDuration).Ticks;
             if (runtime <= dummyChapterDuration)
             {
                 return [];

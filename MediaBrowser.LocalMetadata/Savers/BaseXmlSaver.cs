@@ -140,7 +140,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (ConfigurationManager.Configuration.SaveMetadataHidden)
+            if (ConfigurationManager.ServerConfig.SaveMetadataHidden)
             {
                 SetHidden(path, true);
             }

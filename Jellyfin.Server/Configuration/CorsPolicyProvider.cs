@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Configuration
         /// <inheritdoc />
         public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
         {
-            var corsHosts = _serverConfigurationManager.Configuration.CorsHosts;
+            var corsHosts = _serverConfigurationManager.ServerConfig.CorsHosts;
             var builder = new CorsPolicyBuilder()
                 .AllowAnyMethod()
                 .AllowAnyHeader();

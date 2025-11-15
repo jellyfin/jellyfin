@@ -155,7 +155,9 @@ namespace Emby.Server.Implementations.Session
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
+#pragma warning disable CA1721 // Property name conflicts with method name but this is part of ISessionManager public interface
         public IEnumerable<SessionInfo> Sessions => _activeConnections.Values.OrderByDescending(c => c.LastActivityDate);
+#pragma warning restore CA1721
 
         private void OnDeviceManagerDeviceOptionsUpdated(object sender, GenericEventArgs<Tuple<string, DeviceOptions>> e)
         {
@@ -613,7 +615,7 @@ namespace Emby.Server.Implementations.Session
         {
             _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
-            if (_config.Configuration.InactiveSessionThreshold > 0)
+            if (_config.ServerConfig.InactiveSessionThreshold > 0)
             {
                 _inactiveTimer ??= new Timer(CheckForInactiveSteams, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             }
@@ -684,11 +686,11 @@ namespace Emby.Server.Implementations.Session
             var inactiveSessions = Sessions.Where(i =>
                     i.NowPlayingItem is not null
                     && i.PlayState.IsPaused
-                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold);
+                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.ServerConfig.InactiveSessionThreshold);
 
             foreach (var session in inactiveSessions)
             {
-                _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
+                _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.ServerConfig.InactiveSessionThreshold);
 
                 try
                 {
@@ -1935,7 +1937,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<SessionInfoDto> GetSessions(
+        public IReadOnlyList<SessionInfoDto> GetAllSessions(
             Guid userId,
             string deviceId,
             int? activeWithinSeconds,

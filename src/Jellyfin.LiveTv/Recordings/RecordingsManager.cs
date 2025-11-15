@@ -463,8 +463,8 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 ProviderIds = timer.SeriesProviderIds,
                 Name = timer.Name,
-                MetadataCountryCode = _config.Configuration.MetadataCountryCode,
-                MetadataLanguage = _config.Configuration.PreferredMetadataLanguage
+                MetadataCountryCode = _config.ServerConfig.MetadataCountryCode,
+                MetadataLanguage = _config.ServerConfig.PreferredMetadataLanguage
             }
         };
 

@@ -109,7 +109,7 @@ public class UserController : BaseJellyfinApiController
     public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
     {
         // If the startup wizard hasn't been completed then just return all users
-        if (!_config.Configuration.IsStartupWizardCompleted)
+        if (!_config.ServerConfig.IsStartupWizardCompleted)
         {
             return Ok(Get(false, false, false, false));
         }

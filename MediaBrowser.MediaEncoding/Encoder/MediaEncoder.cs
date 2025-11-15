@@ -127,7 +127,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
             // Although the type is not nullable, this might still be null during unit tests
-            var semaphoreCount = serverConfig.Configuration?.ParallelImageEncodingLimit ?? 0;
+            var semaphoreCount = serverConfig.ServerConfig?.ParallelImageEncodingLimit ?? 0;
             if (semaphoreCount < 1)
             {
                 semaphoreCount = Environment.ProcessorCount;
@@ -646,7 +646,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetImageResolutionParameter()
         {
-            var imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
+            var imageResolutionParameter = _serverConfig.ServerConfig.ChapterImageResolution switch
             {
                 ImageResolution.P144 => "256x144",
                 ImageResolution.P240 => "426x240",
@@ -798,7 +798,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     StartProcess(processWrapper);
 
-                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    var timeoutMs = _configurationManager.ServerConfig.ImageExtractionTimeoutMs;
                     if (timeoutMs <= 0)
                     {
                         timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
@@ -1052,7 +1052,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     bool isResponsive = true;
                     int lastCount = 0;
-                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    var timeoutMs = _configurationManager.ServerConfig.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
                     while (isResponsive && !cancellationToken.IsCancellationRequested)

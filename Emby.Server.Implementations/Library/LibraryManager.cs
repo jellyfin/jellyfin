@@ -153,7 +153,7 @@ namespace Emby.Server.Implementations.Library
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
 
-            _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
+            _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.ServerConfig.CacheSize);
 
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.Library
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
-            RecordConfigurationValues(_configurationManager.Configuration);
+            RecordConfigurationValues(_configurationManager.ServerConfig);
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void ConfigurationUpdated(object? sender, EventArgs e)
         {
-            var config = _configurationManager.Configuration;
+            var config = _configurationManager.ServerConfig;
 
             var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
@@ -641,7 +641,7 @@ namespace Emby.Server.Implementations.Library
                     .Replace('/', '\\');
             }
 
-            if (forceCaseInsensitive || !_configurationManager.Configuration.EnableCaseSensitiveItemIds)
+            if (forceCaseInsensitive || !_configurationManager.ServerConfig.EnableCaseSensitiveItemIds)
             {
                 key = key.ToLowerInvariant();
             }
@@ -1088,7 +1088,7 @@ namespace Emby.Server.Implementations.Library
         private Guid GetItemByNameId<T>(string path)
               where T : BaseItem, new()
         {
-            var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
+            var forceCaseInsensitiveId = _configurationManager.ServerConfig.EnableNormalizedItemByNameIds;
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
 
@@ -2344,7 +2344,7 @@ namespace Emby.Server.Implementations.Library
 
         private CollectionType? GetContentTypeOverride(string path, bool inherit)
         {
-            var nameValuePair = _configurationManager.Configuration.ContentTypes
+            var nameValuePair = _configurationManager.ServerConfig.ContentTypes
                                     .FirstOrDefault(i => _fileSystem.AreEqual(i.Name, path)
                                                          || (inherit && !string.IsNullOrEmpty(i.Name)
                                                                      && _fileSystem.ContainsSubPath(i.Name, path)));
@@ -2880,7 +2880,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem? ownerItem)
         {
-            foreach (var map in _configurationManager.Configuration.PathSubstitutions)
+            foreach (var map in _configurationManager.ServerConfig.PathSubstitutions)
             {
                 if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
                 {
@@ -3287,7 +3287,7 @@ namespace Emby.Server.Implementations.Library
 
             List<NameValuePair>? removeList = null;
 
-            foreach (var contentType in _configurationManager.Configuration.ContentTypes)
+            foreach (var contentType in _configurationManager.ServerConfig.ContentTypes)
             {
                 if (string.IsNullOrWhiteSpace(contentType.Name)
                     || _fileSystem.AreEqual(path, contentType.Name)
@@ -3299,7 +3299,7 @@ namespace Emby.Server.Implementations.Library
 
             if (removeList is not null)
             {
-                _configurationManager.Configuration.ContentTypes = _configurationManager.Configuration.ContentTypes
+                _configurationManager.ServerConfig.ContentTypes = _configurationManager.ServerConfig.ContentTypes
                     .Except(removeList)
                     .ToArray();
 

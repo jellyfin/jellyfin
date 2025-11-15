@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
@@ -16,6 +14,13 @@ namespace Emby.Server.Implementations.Images
     /// </summary>
     public class ArtistImageProvider : BaseDynamicImageProvider<MusicArtist>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public ArtistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
             : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {

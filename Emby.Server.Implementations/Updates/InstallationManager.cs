@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Updates
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
             var result = new List<PackageInfo>();
-            foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
+            foreach (RepositoryInfo repository in _config.ServerConfig.PluginRepositories)
             {
                 if (repository.Enabled && repository.Url is not null)
                 {
@@ -548,11 +548,9 @@ namespace Emby.Server.Implementations.Updates
                 {
                     Directory.Delete(targetDir, true);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
                 {
-                    // Ignore any exceptions.
+                    // Ignore any exceptions related to file system operations.
                 }
             }
 

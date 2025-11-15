@@ -19,6 +19,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="type">The type to get the <see cref="MetadataOptions" /> for.</param>
         /// <returns>The <see cref="MetadataOptions" /> for the specified type or <c>null</c>.</returns>
         public static MetadataOptions? GetMetadataOptionsForType(this IServerConfigurationManager config, string type)
-            => Array.Find(config.Configuration.MetadataOptions, i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
+            => Array.Find(config.ServerConfig.MetadataOptions, i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
     }
 }

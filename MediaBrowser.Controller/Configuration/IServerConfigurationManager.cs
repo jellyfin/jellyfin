@@ -18,6 +18,6 @@ namespace MediaBrowser.Controller.Configuration
         /// Gets the configuration.
         /// </summary>
         /// <value>The configuration.</value>
-        ServerConfiguration Configuration { get; }
+        ServerConfiguration ServerConfig { get; }
     }
 }

@@ -110,7 +110,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (_config.Configuration.EnableFolderView)
+            if (_config.ServerConfig.EnableFolderView)
             {
                 var name = _localizationManager.GetLocalizedString("Folders");
                 list.Add(_libraryManager.GetNamedView(name, CollectionType.folders, string.Empty));

@@ -54,7 +54,7 @@ namespace Jellyfin.LiveTv.Listings
                 return info.PreferredLanguage;
             }
 
-            return _config.Configuration.PreferredMetadataLanguage;
+            return _config.ServerConfig.PreferredMetadataLanguage;
         }
 
         private async Task<string> GetXml(ListingsProviderInfo info, CancellationToken cancellationToken)

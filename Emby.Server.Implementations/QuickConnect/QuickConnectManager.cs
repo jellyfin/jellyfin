@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc />
-        public bool IsEnabled => _config.Configuration.QuickConnectAvailable;
+        public bool IsEnabled => _config.ServerConfig.QuickConnectAvailable;
 
         /// <summary>
         /// Assert that quick connect is currently active and throws an exception if it is not.

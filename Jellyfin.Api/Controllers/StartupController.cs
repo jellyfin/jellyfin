@@ -42,7 +42,7 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult CompleteWizard()
     {
-        _config.Configuration.IsStartupWizardCompleted = true;
+        _config.ServerConfig.IsStartupWizardCompleted = true;
         _config.SaveConfiguration();
         return NoContent();
     }
@@ -58,10 +58,10 @@ public class StartupController : BaseJellyfinApiController
     {
         return new StartupConfigurationDto
         {
-            ServerName = _config.Configuration.ServerName,
-            UICulture = _config.Configuration.UICulture,
-            MetadataCountryCode = _config.Configuration.MetadataCountryCode,
-            PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
+            ServerName = _config.ServerConfig.ServerName,
+            UICulture = _config.ServerConfig.UICulture,
+            MetadataCountryCode = _config.ServerConfig.MetadataCountryCode,
+            PreferredMetadataLanguage = _config.ServerConfig.PreferredMetadataLanguage
         };
     }
 
@@ -75,10 +75,10 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
     {
-        _config.Configuration.ServerName = startupConfiguration.ServerName ?? string.Empty;
-        _config.Configuration.UICulture = startupConfiguration.UICulture ?? string.Empty;
-        _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
-        _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
+        _config.ServerConfig.ServerName = startupConfiguration.ServerName ?? string.Empty;
+        _config.ServerConfig.UICulture = startupConfiguration.UICulture ?? string.Empty;
+        _config.ServerConfig.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
+        _config.ServerConfig.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
         _config.SaveConfiguration();
         return NoContent();
     }

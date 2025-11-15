@@ -758,7 +758,7 @@ public class LibraryController : BaseJellyfinApiController
         if (isMovie.Value)
         {
             includeItemTypes.Add(BaseItemKind.Movie);
-            if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+            if (_serverConfigurationManager.ServerConfig.EnableExternalContentInSuggestions)
             {
                 includeItemTypes.Add(BaseItemKind.Trailer);
                 includeItemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -995,7 +995,7 @@ public class LibraryController : BaseJellyfinApiController
             return false;
         }
 
-        var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
+        var metadataOptions = _serverConfigurationManager.ServerConfig.MetadataOptions
             .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 

@@ -90,12 +90,12 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_configurationManager.ServerConfig.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_configurationManager.ServerConfig.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-MediaBrowser-Token"];
             }
@@ -105,7 +105,7 @@ namespace Jellyfin.Server.Implementations.Security
                 token = queryString["ApiKey"];
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_configurationManager.ServerConfig.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
             }
@@ -230,7 +230,7 @@ namespace Jellyfin.Server.Implementations.Security
         {
             var auth = httpReq.Headers[HeaderNames.Authorization];
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(auth))
+            if (_configurationManager.ServerConfig.EnableLegacyAuthorization && string.IsNullOrEmpty(auth))
             {
                 auth = httpReq.Headers["X-Emby-Authorization"];
             }
@@ -256,7 +256,7 @@ namespace Jellyfin.Server.Implementations.Security
             var name = authorizationHeader[..firstSpace];
 
             var validName = name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase);
-            validName = validName || (_configurationManager.Configuration.EnableLegacyAuthorization && name.Equals("Emby", StringComparison.OrdinalIgnoreCase));
+            validName = validName || (_configurationManager.ServerConfig.EnableLegacyAuthorization && name.Equals("Emby", StringComparison.OrdinalIgnoreCase));
 
             if (!validName)
             {

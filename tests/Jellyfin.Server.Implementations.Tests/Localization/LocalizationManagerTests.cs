@@ -236,7 +236,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         private LocalizationManager Setup(ServerConfiguration config)
         {
             var mockConfiguration = new Mock<IServerConfigurationManager>();
-            mockConfiguration.SetupGet(x => x.Configuration).Returns(config);
+            mockConfiguration.SetupGet(x => x.ServerConfig).Returns(config);
 
             return new LocalizationManager(mockConfiguration.Object, new NullLogger<LocalizationManager>());
         }

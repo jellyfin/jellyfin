@@ -264,7 +264,7 @@ namespace Emby.Server.Implementations.Localization
             // Fallback to server default if no country code is specified.
             if (string.IsNullOrEmpty(countryCode))
             {
-                countryCode = _configurationManager.Configuration.MetadataCountryCode;
+                countryCode = _configurationManager.ServerConfig.MetadataCountryCode;
             }
 
             if (_allParentalRatings.TryGetValue(countryCode, out var countryValue))
@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
-            return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
+            return GetLocalizedString(phrase, _configurationManager.ServerConfig.UICulture);
         }
 
         /// <inheritdoc />
@@ -368,7 +368,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                culture = _configurationManager.Configuration.UICulture;
+                culture = _configurationManager.ServerConfig.UICulture;
             }
 
             if (string.IsNullOrEmpty(culture))

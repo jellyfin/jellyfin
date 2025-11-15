@@ -182,7 +182,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 
         lock (_libraryChangedSyncLock)
         {
-            var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
+            var updateDuration = TimeSpan.FromSeconds(_configurationManager.ServerConfig.LibraryUpdateDuration);
 
             if (_libraryUpdateTimer is null)
             {

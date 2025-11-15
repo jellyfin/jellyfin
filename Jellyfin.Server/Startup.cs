@@ -216,7 +216,7 @@ namespace Jellyfin.Server
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
 
-                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                if (_serverConfigurationManager.ServerConfig.EnableMetrics)
                 {
                     // Must be registered after any middleware that could change HTTP response codes or the data will be bad
                     mainApp.UseHttpMetrics();
@@ -225,7 +225,7 @@ namespace Jellyfin.Server
                 mainApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    if (_serverConfigurationManager.Configuration.EnableMetrics)
+                    if (_serverConfigurationManager.ServerConfig.EnableMetrics)
                     {
                         endpoints.MapMetrics();
                     }

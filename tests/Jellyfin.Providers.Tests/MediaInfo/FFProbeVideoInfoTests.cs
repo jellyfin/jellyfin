@@ -21,7 +21,7 @@ public class FFProbeVideoInfoTests
             DummyChapterDuration = (int)TimeSpan.FromMinutes(5).TotalSeconds
         };
         var serverConfig = new Mock<IServerConfigurationManager>();
-        serverConfig.Setup(c => c.Configuration)
+        serverConfig.Setup(c => c.ServerConfig)
             .Returns(serverConfiguration);
 
         IFixture fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });

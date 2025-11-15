@@ -78,7 +78,7 @@ public class SystemManager : ISystemManager
             StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
             SupportsLibraryMonitor = true,
             PackageName = _startupOptions.PackageName,
-            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
+            CastReceiverApplications = _configurationManager.ServerConfig.CastReceiverApplications
         };
     }
 

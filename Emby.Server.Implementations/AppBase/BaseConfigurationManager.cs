@@ -64,10 +64,10 @@ namespace Emby.Server.Implementations.AppBase
         public event EventHandler<ConfigurationUpdateEventArgs>? NamedConfigurationUpdated;
 
         /// <summary>
-        /// Gets the type of the configuration.
+        /// Gets the type of the common configuration.
         /// </summary>
-        /// <value>The type of the configuration.</value>
-        protected abstract Type ConfigurationType { get; }
+        /// <value>The type of the common configuration.</value>
+        protected abstract Type CommonConfigurationType { get; }
 
         /// <summary>
         /// Gets the logger.
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.AppBase
                         return _configuration;
                     }
 
-                    return _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
+                    return _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(CommonConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
                 }
             }
 
