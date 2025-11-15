@@ -59,6 +59,8 @@ namespace Emby.Server.Implementations.Collections
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
+
+            _libraryManager.ItemRemoved += OnItemRemoved;
         }
 
         /// <inheritdoc />
@@ -108,6 +110,21 @@ namespace Emby.Server.Implementations.Collections
             _libraryManager.RootFolder.Children = null;
 
             return FindFolders(path).First();
+        }
+
+        private void OnItemRemoved(object? sender, ItemChangeEventArgs e)
+        {
+            if (e.Item is not BoxSet)
+            {
+                return;
+            }
+
+            var folder = GetCollectionsFolder(false).GetAwaiter().GetResult();
+            if (folder is not null)
+            {
+                // When a collection is deleted, force the shared folder to reload its children.
+                folder.Children = null;
+            }
         }
 
         internal string GetCollectionsFolderPath()
@@ -179,6 +196,8 @@ namespace Emby.Server.Implementations.Collections
                 };
 
                 parentFolder.AddChild(collection);
+                // Force the collections folder to reload so clients see the new collection immediately.
+                parentFolder.Children = null;
 
                 if (options.ItemIdList.Count > 0)
                 {
@@ -262,6 +281,13 @@ namespace Emby.Server.Implementations.Collections
 
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
+                var collectionsFolder = await GetCollectionsFolder(false).ConfigureAwait(false);
+                if (collectionsFolder is not null)
+                {
+                    // Force the collections folder to reload so clients see the new collection immediately.
+                    collectionsFolder.Children = null;
+                }
+
                 refreshOptions.ForceSave = true;
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
 
@@ -306,6 +332,12 @@ namespace Emby.Server.Implementations.Collections
             if (list.Count > 0)
             {
                 collection.LinkedChildren = collection.LinkedChildren.Except(list).ToArray();
+                var collectionsFolder = await GetCollectionsFolder(false).ConfigureAwait(false);
+                if (collectionsFolder is not null)
+                {
+                    // Clear the cache so clients see accurate results.
+                    collectionsFolder.Children = null;
+                }
             }
 
             await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
