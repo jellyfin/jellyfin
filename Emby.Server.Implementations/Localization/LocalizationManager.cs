@@ -242,13 +242,13 @@ namespace Emby.Server.Implementations.Localization
             // A lot of countries don't explicitly have a separate rating for adult content
             if (ratings.All(x => x.RatingScore?.Score != 1000))
             {
-                ratings.Add(new ParentalRating("XXX",  new(1000, null)));
+                ratings.Add(new ParentalRating("XXX", new(1000, null)));
             }
 
             // A lot of countries don't explicitly have a separate rating for banned content
             if (ratings.All(x => x.RatingScore?.Score != 1001))
             {
-                ratings.Add(new ParentalRating("Banned",  new(1001, null)));
+                ratings.Add(new ParentalRating("Banned", new(1001, null)));
             }
 
             return [.. ratings.OrderBy(r => r.RatingScore?.Score).ThenBy(r => r.RatingScore?.SubScore)];

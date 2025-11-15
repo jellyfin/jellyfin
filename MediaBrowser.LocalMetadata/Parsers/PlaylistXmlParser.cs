@@ -76,25 +76,25 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "PlaylistItem":
-                        {
-                            if (reader.IsEmptyElement)
                             {
-                                reader.Read();
-                                continue;
-                            }
-
-                            using (var subReader = reader.ReadSubtree())
-                            {
-                                var child = GetLinkedChild(subReader);
-
-                                if (child is not null)
+                                if (reader.IsEmptyElement)
                                 {
-                                    list.Add(child);
+                                    reader.Read();
+                                    continue;
                                 }
-                            }
 
-                            break;
-                        }
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    var child = GetLinkedChild(subReader);
+
+                                    if (child is not null)
+                                    {
+                                        list.Add(child);
+                                    }
+                                }
+
+                                break;
+                            }
 
                         default:
                             reader.Skip();

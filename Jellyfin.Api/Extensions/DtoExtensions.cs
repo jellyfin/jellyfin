@@ -41,7 +41,7 @@ public static class DtoExtensions
                 client.Contains("media center", StringComparison.OrdinalIgnoreCase) ||
                 client.Contains("classic", StringComparison.OrdinalIgnoreCase))
             {
-                dtoOptions.Fields = [..dtoOptions.Fields, ItemFields.RecursiveItemCount];
+                dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.RecursiveItemCount];
             }
         }
 
@@ -55,7 +55,7 @@ public static class DtoExtensions
                 client.Contains("samsung", StringComparison.OrdinalIgnoreCase) ||
                 client.Contains("androidtv", StringComparison.OrdinalIgnoreCase))
             {
-                dtoOptions.Fields = [..dtoOptions.Fields, ItemFields.ChildCount];
+                dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ChildCount];
             }
         }
 
