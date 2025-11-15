@@ -75,8 +75,8 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             var fileTime = _fileSystem.GetLastWriteTimeUtc(file);
 
-            // 5s tolerance to avoid detecting our own file writes
-            return (fileTime - item.DateLastSaved).TotalSeconds > 5;
+            // 1 minute tolerance to avoid detecting our own file writes
+            return (fileTime - item.DateLastSaved) > TimeSpan.FromMinutes(1);
         }
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
