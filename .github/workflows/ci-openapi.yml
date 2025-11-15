@@ -32,7 +32,7 @@ jobs:
           name: openapi-head
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net9.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-base:
     name: OpenAPI - BASE
@@ -66,7 +66,7 @@ jobs:
           name: openapi-base
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net9.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-diff:
     permissions:
