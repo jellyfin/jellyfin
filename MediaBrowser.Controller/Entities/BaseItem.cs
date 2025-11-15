@@ -2336,6 +2336,13 @@ namespace MediaBrowser.Controller.Entities
             return userItemData is not null && (userItemData.IsFavorite || (userItemData.Likes ?? false));
         }
 
+        public bool IsWatchlisted(User user, UserItemData userItemData)
+        {
+            userItemData ??= UserDataManager.GetUserData(user, this);
+
+            return userItemData is not null && userItemData.IsWatchlisted;
+        }
+
         public virtual bool IsUnplayed(User user, UserItemData userItemData)
         {
             ArgumentNullException.ThrowIfNull(user);

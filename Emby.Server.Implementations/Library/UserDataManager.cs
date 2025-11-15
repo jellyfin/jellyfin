@@ -116,6 +116,11 @@ namespace Emby.Server.Implementations.Library
                 userData.IsFavorite = userDataDto.IsFavorite.Value;
             }
 
+            if (userDataDto.IsWatchlisted.HasValue)
+            {
+                userData.IsWatchlisted = userDataDto.IsWatchlisted.Value;
+            }
+
             if (userDataDto.Likes.HasValue)
             {
                 userData.Likes = userDataDto.Likes.Value;
@@ -149,6 +154,7 @@ namespace Emby.Server.Implementations.Library
                 User = null,
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
+                IsWatchlisted = dto.IsWatchlisted,
                 LastPlayedDate = dto.LastPlayedDate,
                 Likes = dto.Likes,
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
@@ -167,6 +173,7 @@ namespace Emby.Server.Implementations.Library
                 Key = dto.CustomDataKey!,
                 AudioStreamIndex = dto.AudioStreamIndex,
                 IsFavorite = dto.IsFavorite,
+                IsWatchlisted = dto.IsWatchlisted,
                 LastPlayedDate = dto.LastPlayedDate,
                 Likes = dto.Likes,
                 PlaybackPositionTicks = dto.PlaybackPositionTicks,
@@ -277,6 +284,7 @@ namespace Emby.Server.Implementations.Library
             return new UserItemDataDto
             {
                 IsFavorite = data.IsFavorite,
+                IsWatchlisted = data.IsWatchlisted,
                 Likes = data.Likes,
                 PlaybackPositionTicks = data.PlaybackPositionTicks,
                 PlayCount = data.PlayCount,
@@ -361,6 +369,11 @@ namespace Emby.Server.Implementations.Library
             }
 
             data.PlaybackPositionTicks = positionTicks;
+
+            if (playedToCompletion)
+            {
+                data.IsWatchlisted = false;
+            }
 
             return playedToCompletion;
         }

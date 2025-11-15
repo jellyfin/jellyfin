@@ -1224,6 +1224,7 @@ public sealed class BaseItemRepository
             IsFavorite = filter.IsFavorite,
             IsFavoriteOrLiked = filter.IsFavoriteOrLiked,
             IsLiked = filter.IsLiked,
+            IsWatchlisted = filter.IsWatchlisted,
             IsLocked = filter.IsLocked,
             NameLessThan = filter.NameLessThan,
             NameStartsWith = filter.NameStartsWith,
@@ -1981,6 +1982,12 @@ public sealed class BaseItemRepository
         {
             baseQuery = baseQuery
                 .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
+        }
+
+        if (filter.IsWatchlisted.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsWatchlisted == filter.IsWatchlisted);
         }
 
         if (filter.IsPlayed.HasValue)
