@@ -340,12 +340,12 @@ public class NetworkManager : INetworkManager, IDisposable
             }
             else
             {
-                _lanSubnets = lanSubnets;
+                _lanSubnets = lanSubnets.Select(x => x.Subnet).ToArray();
             }
 
             _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
-                ? excludedSubnets
-                : new List<IPNetwork>();
+                ? excludedSubnets.Select(x => x.Subnet).ToArray()
+                : Array.Empty<IPNetwork>();
         }
     }
 
@@ -375,7 +375,7 @@ public class NetworkManager : INetworkManager, IDisposable
         if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]))
         {
             var bindAddresses = localNetworkAddresses.Select(p => NetworkUtils.TryParseToSubnet(p, out var network)
-                    ? network.BaseAddress
+                    ? network.Address
                     : (interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.Address)
                         .FirstOrDefault() ?? IPAddress.None))
@@ -444,7 +444,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 var remoteFilteredSubnets = remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (NetworkUtils.TryParseToSubnets(remoteFilteredSubnets, out var remoteAddressFilterResult, false))
                 {
-                    remoteAddressFilter = remoteAddressFilterResult.ToList();
+                    remoteAddressFilter = remoteAddressFilterResult.Select(x => x.Subnet).ToList();
                 }
 
                 // Parse everything else as an IP and construct subnet with a single IP
@@ -555,10 +555,9 @@ public class NetworkManager : INetworkManager, IDisposable
                 }
                 else if (NetworkUtils.TryParseToSubnet(identifier, out var result))
                 {
-                    var data = new IPData(result.BaseAddress, result);
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
-                            data,
+                            result,
                             replacement,
                             true,
                             true));
@@ -620,16 +619,12 @@ public class NetworkManager : INetworkManager, IDisposable
             foreach (var details in interfaceList)
             {
                 var parts = details.Split(',');
-                if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
+                if (NetworkUtils.TryParseToSubnet(parts[0], out var data))
                 {
-                    var address = subnet.BaseAddress;
-                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
-                    if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
+                    data.Index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                    if (data.AddressFamily == AddressFamily.InterNetwork || data.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        var data = new IPData(address, subnet, parts[2])
-                        {
-                            Index = index
-                        };
+                        data.Name = parts[2];
                         interfaces.Add(data);
                     }
                 }
@@ -919,7 +914,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (NetworkUtils.TryParseToSubnet(address, out var subnet))
         {
-            return IsInLocalNetwork(subnet.BaseAddress);
+            return IsInLocalNetwork(subnet.Address);
         }
 
         return NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled)

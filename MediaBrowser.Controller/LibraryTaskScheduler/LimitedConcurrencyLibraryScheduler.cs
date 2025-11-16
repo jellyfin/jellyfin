@@ -187,7 +187,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
             await item.Worker(item.Data).ConfigureAwait(true);
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error while performing a library operation");
         }
