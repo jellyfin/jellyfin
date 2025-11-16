@@ -58,7 +58,7 @@ public class CleanActivityLogTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var retentionDays = _serverConfigurationManager.Configuration.ActivityLogRetentionDays;
+        var retentionDays = _serverConfigurationManager.ServerConfig.ActivityLogRetentionDays;
         if (!retentionDays.HasValue || retentionDays < 0)
         {
             throw new InvalidOperationException($"Activity Log Retention days must be at least 0. Currently: {retentionDays}");

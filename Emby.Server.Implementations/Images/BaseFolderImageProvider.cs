@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
@@ -15,17 +13,30 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Images
 {
+    /// <summary>
+    /// Base class for folder image providers.
+    /// </summary>
+    /// <typeparam name="T">The folder type.</typeparam>
     public abstract class BaseFolderImageProvider<T> : BaseDynamicImageProvider<T>
         where T : Folder, new()
     {
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseFolderImageProvider{T}"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="libraryManager">The library manager.</param>
         protected BaseFolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager)
             : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _libraryManager = libraryManager;
         }
 
+        /// <inheritdoc />
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
@@ -43,16 +54,19 @@ namespace Emby.Server.Implementations.Images
             });
         }
 
+        /// <inheritdoc />
         protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }
 
+        /// <inheritdoc />
         protected override bool Supports(BaseItem item)
         {
             return item is T;
         }
 
+        /// <inheritdoc />
         protected override bool HasChangedByDate(BaseItem item, ItemImageInfo image)
         {
             if (item is MusicAlbum)

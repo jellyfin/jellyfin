@@ -144,7 +144,7 @@ public class PackageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
     {
-        return Ok(_serverConfigurationManager.Configuration.PluginRepositories.AsEnumerable());
+        return Ok(_serverConfigurationManager.ServerConfig.PluginRepositories.AsEnumerable());
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ public class PackageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult SetRepositories([FromBody, Required] RepositoryInfo[] repositoryInfos)
     {
-        _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
+        _serverConfigurationManager.ServerConfig.PluginRepositories = repositoryInfos;
         _serverConfigurationManager.SaveConfiguration();
         return NoContent();
     }

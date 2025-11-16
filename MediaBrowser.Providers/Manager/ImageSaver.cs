@@ -303,7 +303,7 @@ namespace MediaBrowser.Providers.Manager
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (_config.Configuration.SaveMetadataHidden)
+                if (_config.ServerConfig.SaveMetadataHidden)
                 {
                     SetHidden(path, true);
                 }
@@ -338,7 +338,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{System.String}.</returns>
         private string[] GetSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
-            if (!saveLocally || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy))
+            if (!saveLocally || (_config.ServerConfig.ImageSavingConvention == ImageSavingConvention.Legacy))
             {
                 return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
             }
@@ -504,7 +504,7 @@ namespace MediaBrowser.Providers.Manager
                 item is MusicArtist ||
                 item is PhotoAlbum ||
                 item is Person ||
-                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
+                (saveLocally && _config.ServerConfig.ImageSavingConvention == ImageSavingConvention.Legacy) ?
                 "folder" :
                 "poster";
 

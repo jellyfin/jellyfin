@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
@@ -25,6 +23,14 @@ namespace Emby.Server.Implementations.Images
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenreImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public GenreImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _libraryManager = libraryManager;

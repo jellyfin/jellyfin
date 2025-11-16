@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -12,6 +10,9 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Playlists
 {
+    /// <summary>
+    /// Represents a folder containing playlists.
+    /// </summary>
     [RequiresSourceSerialisation]
     public class PlaylistsFolder : BasePluginFolder
     {

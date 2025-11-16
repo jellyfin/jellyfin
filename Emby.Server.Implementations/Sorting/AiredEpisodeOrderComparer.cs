@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -9,6 +7,9 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Sorting
 {
+    /// <summary>
+    /// Compares episodes by their aired order.
+    /// </summary>
     public class AiredEpisodeOrderComparer : IBaseItemComparer
     {
         /// <summary>

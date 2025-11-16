@@ -58,7 +58,7 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] int? activeWithinSeconds)
     {
         Guid? controllableUserToCheck = controllableByUserId is null ? null : RequestHelpers.GetUserId(User, controllableByUserId);
-        var result = _sessionManager.GetSessions(
+        var result = _sessionManager.GetAllSessions(
             User.GetUserId(),
             deviceId,
             activeWithinSeconds,

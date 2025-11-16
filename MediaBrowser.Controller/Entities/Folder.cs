@@ -1092,8 +1092,8 @@ namespace MediaBrowser.Controller.Entities
             if (!param.HasValue)
             {
                 if (user is not null && query.IncludeItemTypes.Any(type =>
-                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
-                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
+                    (type == BaseItemKind.Movie && !configurationManager.ServerConfig.EnableGroupingMoviesIntoCollections) ||
+                    (type == BaseItemKind.Series && !configurationManager.ServerConfig.EnableGroupingShowsIntoCollections)))
                 {
                     return false;
                 }

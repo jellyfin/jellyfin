@@ -76,11 +76,11 @@ namespace Emby.Server.Implementations.IO
 
                 if (_timer is null)
                 {
-                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.ServerConfig.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _timer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer.Change(TimeSpan.FromSeconds(_configurationManager.ServerConfig.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }

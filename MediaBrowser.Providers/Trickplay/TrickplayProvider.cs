@@ -106,7 +106,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
             return ItemUpdateType.None;
         }
 
-        if (_config.Configuration.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
+        if (_config.ServerConfig.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
         {
             await _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
         }

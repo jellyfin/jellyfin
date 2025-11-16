@@ -38,10 +38,10 @@ namespace Emby.Server.Implementations.Configuration
         public event EventHandler<GenericEventArgs<ServerConfiguration>>? ConfigurationUpdating;
 
         /// <summary>
-        /// Gets the type of the configuration.
+        /// Gets the type of the common configuration.
         /// </summary>
-        /// <value>The type of the configuration.</value>
-        protected override Type ConfigurationType => typeof(ServerConfiguration);
+        /// <value>The type of the common configuration.</value>
+        protected override Type CommonConfigurationType => typeof(ServerConfiguration);
 
         /// <summary>
         /// Gets the application paths.
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Configuration
         /// Gets the configuration.
         /// </summary>
         /// <value>The configuration.</value>
-        public ServerConfiguration Configuration => (ServerConfiguration)CommonConfiguration;
+        public ServerConfiguration ServerConfig => (ServerConfiguration)CommonConfiguration;
 
         /// <summary>
         /// Called when [configuration updated].
@@ -73,9 +73,9 @@ namespace Emby.Server.Implementations.Configuration
         /// <exception cref="IOException">If the directory does not exist, and it also could not be created.</exception>
         private void UpdateMetadataPath()
         {
-            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(Configuration.MetadataPath)
+            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(ServerConfig.MetadataPath)
                 ? ApplicationPaths.DefaultInternalMetadataPath
-                : Configuration.MetadataPath;
+                : ServerConfig.MetadataPath;
             Directory.CreateDirectory(ApplicationPaths.InternalMetadataPath);
         }
 
@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.Configuration
             var newPath = newConfig.MetadataPath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
+                && !string.Equals(ServerConfig.MetadataPath, newPath, StringComparison.Ordinal))
             {
                 if (!Directory.Exists(newPath))
                 {

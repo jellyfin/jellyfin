@@ -363,7 +363,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
-            var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
+            var queryFromSeries = ConfigurationManager.ServerConfig.DisplaySpecialsWithinSeasons;
 
             // add optimization when this setting is not enabled
             var seriesKey = queryFromSeries ?
@@ -414,7 +414,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return GetSeasonEpisodes(parentSeason, user, options, shouldIncludeMissingEpisodes);
             }
 
-            var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons);
+            var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.ServerConfig.DisplaySpecialsWithinSeasons);
 
             var sortBy = (parentSeason.IndexNumber ?? -1) == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
 
