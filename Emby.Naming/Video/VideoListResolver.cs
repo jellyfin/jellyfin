@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -136,19 +137,27 @@ namespace Emby.Naming.Video
 
             if (videos.Count > 1)
             {
-                var groups = videos.GroupBy(x => ResolutionRegex().IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                var groups = videos
+                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
+                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
+                    .GroupBy(x => x.resolutionMatch.Success)
+                    .ToList();
+
                 videos.Clear();
+
+                StringComparer comparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
                 foreach (var group in groups)
                 {
                     if (group.Key)
                     {
                         videos.InsertRange(0, group
-                            .OrderByDescending(x => ResolutionRegex().Match(x.Files[0].FileNameWithoutExtension.ToString()).Value, new AlphanumericComparator())
-                            .ThenBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                            .OrderByDescending(x => x.resolutionMatch.Value, comparer)
+                            .ThenBy(x => x.filename, comparer)
+                            .Select(x => x.value));
                     }
                     else
                     {
-                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                        videos.AddRange(group.OrderBy(x => x.filename, comparer).Select(x => x.value));
                     }
                 }
             }
