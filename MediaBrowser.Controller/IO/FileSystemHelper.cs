@@ -92,6 +92,11 @@ public static class FileSystemHelper
             return null;
         }
 
+        if (!targetInfo.Exists)
+        {
+            return targetInfo;
+        }
+
         var currentPath = targetInfo.FullName;
         var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath, currentPath };
         while (File.ResolveLinkTarget(currentPath, returnFinalTarget: false) is FileInfo linkInfo)
