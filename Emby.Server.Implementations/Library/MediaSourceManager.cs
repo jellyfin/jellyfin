@@ -491,15 +491,6 @@ namespace Emby.Server.Implementations.Library
             .Where(i => i.Type != MediaSourceType.Placeholder);
         }
 
-        private IEnumerable<ILiveStream> GetCurrentLiveStreams()
-        {
-            using var streams = _openStreams.GetEnumerator();
-            while (streams.MoveNext())
-            {
-                yield return streams.Current.Value;
-            }
-        }
-
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
         {
             MediaSourceInfo mediaSource;
@@ -509,7 +500,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var (provider, keyId) = GetProvider(request.OpenToken);
 
-                var currentLiveStreams = GetCurrentLiveStreams().ToList();
+                var currentLiveStreams = _openStreams.Select(x => x.Value).ToList();
 
                 liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
 

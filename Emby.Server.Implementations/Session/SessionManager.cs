@@ -159,13 +159,10 @@ namespace Emby.Server.Implementations.Session
         {
             get
             {
-                using var enumerator = _activeConnections
+                return _activeConnections
                     .OrderByDescending(c => c.Value.LastActivityDate)
-                    .GetEnumerator();
-                while (enumerator.MoveNext())
-                {
-                    yield return enumerator.Current.Value;
-                }
+                    .Select(x => x.Value)
+                    .ToList();
             }
         }
 
