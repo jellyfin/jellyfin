@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
@@ -11,28 +12,24 @@ namespace Emby.Server.Implementations.Library;
 /// </summary>
 public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 {
+    private static readonly bool IsWindows = OperatingSystem.IsWindows();
+
     private static FileInfo? FindIgnoreFile(DirectoryInfo directory)
     {
-        var ignoreFile = new FileInfo(Path.Join(directory.FullName, ".ignore"));
-        if (ignoreFile.Exists)
+        for (var current = directory; current is not null; current = current.Parent)
         {
-            return ignoreFile;
+            var ignorePath = Path.Join(current.FullName, ".ignore");
+            if (File.Exists(ignorePath))
+            {
+                return new FileInfo(ignorePath);
+            }
         }
 
-        var parentDir = directory.Parent;
-        if (parentDir is null)
-        {
-            return null;
-        }
-
-        return FindIgnoreFile(parentDir);
+        return null;
     }
 
     /// <inheritdoc />
-    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent)
-    {
-        return IsIgnored(fileInfo, parent);
-    }
+    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnored(fileInfo, parent);
 
     /// <summary>
     /// Checks whether or not the file is ignored.
@@ -42,65 +39,58 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     /// <returns>True if the file should be ignored.</returns>
     public static bool IsIgnored(FileSystemMetadata fileInfo, BaseItem? parent)
     {
-        if (fileInfo.IsDirectory)
-        {
-            var dirIgnoreFile = FindIgnoreFile(new DirectoryInfo(fileInfo.FullName));
-            if (dirIgnoreFile is null)
-            {
-                return false;
-            }
+        var searchDirectory = fileInfo.IsDirectory
+            ? new DirectoryInfo(fileInfo.FullName)
+            : new DirectoryInfo(Path.GetDirectoryName(fileInfo.FullName) ?? string.Empty);
 
-            // Fast path in case the ignore files isn't a symlink and is empty
-            if (dirIgnoreFile.LinkTarget is null && dirIgnoreFile.Length == 0)
-            {
-                return true;
-            }
-
-            // ignore the directory only if the .ignore file is empty
-            // evaluate individual files otherwise
-            return string.IsNullOrWhiteSpace(GetFileContent(dirIgnoreFile));
-        }
-
-        var parentDirPath = Path.GetDirectoryName(fileInfo.FullName);
-        if (string.IsNullOrEmpty(parentDirPath))
+        if (string.IsNullOrEmpty(searchDirectory.FullName))
         {
             return false;
         }
 
-        var folder = new DirectoryInfo(parentDirPath);
-        var ignoreFile = FindIgnoreFile(folder);
+        var ignoreFile = FindIgnoreFile(searchDirectory);
         if (ignoreFile is null)
         {
             return false;
         }
 
-        string ignoreFileString = GetFileContent(ignoreFile);
-
-        if (string.IsNullOrWhiteSpace(ignoreFileString))
+        // Fast path in case the ignore files isn't a symlink and is empty
+        if (ignoreFile.LinkTarget is null && ignoreFile.Length == 0)
         {
             // Ignore directory if we just have the file
             return true;
         }
 
-        // If file has content, base ignoring off the content .gitignore-style rules
-        var ignoreRules = ignoreFileString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var ignore = new Ignore.Ignore();
-        ignore.Add(ignoreRules);
-
-        return ignore.IsIgnored(fileInfo.FullName);
+        var content = GetFileContent(ignoreFile);
+        return string.IsNullOrWhiteSpace(content)
+            || CheckIgnoreRules(fileInfo.FullName, content, fileInfo.IsDirectory);
     }
 
-    private static string GetFileContent(FileInfo dirIgnoreFile)
+    private static bool CheckIgnoreRules(string path, string ignoreFileContent, bool isDirectory)
     {
-        dirIgnoreFile = (FileInfo?)dirIgnoreFile.ResolveLinkTarget(returnFinalTarget: true) ?? dirIgnoreFile;
-        if (!dirIgnoreFile.Exists)
+        // If file has content, base ignoring off the content .gitignore-style rules
+        var rules = ignoreFileContent.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var ignore = new Ignore.Ignore();
+        ignore.Add(rules);
+
+         // Mitigate the problem of the Ignore library not handling Windows paths correctly.
+         // See https://github.com/jellyfin/jellyfin/issues/15484
+        var pathToCheck = IsWindows ? path.NormalizePath('/') : path;
+
+        // Add trailing slash for directories to match "folder/"
+        if (isDirectory)
         {
-            return string.Empty;
+            pathToCheck = string.Concat(pathToCheck.AsSpan().TrimEnd('/'), "/");
         }
 
-        using (var reader = dirIgnoreFile.OpenText())
-        {
-            return reader.ReadToEnd();
-        }
+        return ignore.IsIgnored(pathToCheck);
+    }
+
+    private static string GetFileContent(FileInfo ignoreFile)
+    {
+        ignoreFile = FileSystemHelper.ResolveLinkTarget(ignoreFile, returnFinalTarget: true) ?? ignoreFile;
+        return ignoreFile.Exists
+            ? File.ReadAllText(ignoreFile.FullName)
+            : string.Empty;
     }
 }

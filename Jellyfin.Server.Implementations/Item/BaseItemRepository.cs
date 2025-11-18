@@ -275,6 +275,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -294,6 +295,7 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -336,6 +338,8 @@ public sealed class BaseItemRepository
         mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
         mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
+
+        mainquery = ApplyNavigations(mainquery, filter);
 
         return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -399,9 +403,7 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Distinct();
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter);
-
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        dbQuery = ApplyOrder(dbQuery, filter, context);
 
         return dbQuery;
     }
@@ -446,6 +448,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
     }
 
@@ -1252,7 +1255,7 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
-        query = ApplyOrder(query, filter);
+        query = ApplyOrder(query, filter, context);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
@@ -1518,7 +1521,7 @@ public sealed class BaseItemRepository
             || query.IncludeItemTypes.Contains(BaseItemKind.Season);
     }
 
-    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
         var orderBy = filter.OrderBy;
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
@@ -1537,7 +1540,7 @@ public sealed class BaseItemRepository
         var firstOrdering = orderBy.FirstOrDefault();
         if (firstOrdering != default)
         {
-            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter);
+            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
             if (firstOrdering.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = query.OrderBy(expression);
@@ -1562,7 +1565,7 @@ public sealed class BaseItemRepository
 
         foreach (var item in orderBy.Skip(1))
         {
-            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter);
+            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
             if (item.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = orderedQuery!.ThenBy(expression);
@@ -1701,15 +1704,16 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var searchTerm = filter.SearchTerm.ToLower();
-            if (SearchWildcardTerms.Any(f => searchTerm.Contains(f)))
+            var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
+            var originalSearchTerm = filter.SearchTerm.ToLower();
+            if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
-                searchTerm = $"%{searchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!.ToLower(), searchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), searchTerm)));
+                cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), originalSearchTerm)));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.CleanName!.ToLower().Contains(searchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(originalSearchTerm)));
             }
         }
 
@@ -1944,19 +1948,20 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(filter.NameStartsWith));
+            var startsWithLower = filter.NameStartsWith.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(startsWithLower));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() > filter.NameStartsWithOrGreater[0] || e.Name!.FirstOrDefault() > filter.NameStartsWithOrGreater[0]);
+            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(startsOrGreaterLower) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() < filter.NameLessThan[0] || e.Name!.FirstOrDefault() < filter.NameLessThan[0]);
+            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
         }
 
         if (filter.ImageTypes.Length > 0)
@@ -2415,39 +2420,34 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => !e.ItemValues!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags)
-                .Any(f => filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+            baseQuery = baseQuery.Where(e =>
+                !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                && (e.Type != _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode] || !e.SeriesId.HasValue ||
+                !context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue))));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
-            if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
+            // For seasons and episodes, we also need to check the parent series' tags.
+            if (includeTypes.Any(t => t == BaseItemKind.Episode || t == BaseItemKind.Season))
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        ||
-                        (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value && (w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags))
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                    || (e.SeriesId.HasValue && context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
             }
 
             // A playlist should be accessible to its owner regardless of allowed tags.
             else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
+                    || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
                 // d        ^^ this is stupid it hate this.
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+                baseQuery = baseQuery.Where(e =>
+                    e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
             }
         }
 
