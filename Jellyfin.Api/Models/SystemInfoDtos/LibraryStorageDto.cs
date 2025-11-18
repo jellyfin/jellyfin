@@ -6,7 +6,7 @@ using MediaBrowser.Model.System;
 namespace Jellyfin.Api.Models.SystemInfoDtos;
 
 /// <summary>
-/// Contains informations about a libraries storage informations.
+/// Contains information about a libraries storage information.
 /// </summary>
 public record LibraryStorageDto
 {
@@ -21,7 +21,7 @@ public record LibraryStorageDto
     public required string Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the storage informations about the folders used in a library.
+    /// Gets or sets the storage information about the folders used in a library.
     /// </summary>
     public required IReadOnlyCollection<FolderStorageDto> Folders { get; set; }
 
