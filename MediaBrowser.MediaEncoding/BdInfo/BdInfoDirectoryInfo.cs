@@ -58,6 +58,9 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
         }
     }
 
+        // Helper: skip dotfiles/dotdirs (covers ._ AppleDouble, .DS_Store, etc.)
+    private static bool IsDotName(string name) => !string.IsNullOrEmpty(name) && name[0] == '.';
+
     /// <summary>
     /// Gets the directories.
     /// </summary>
@@ -65,6 +68,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IDirectoryInfo[] GetDirectories()
     {
         return _fileSystem.GetDirectories(_impl.FullName)
+            .Where(d => !IsDotName(d.Name))
             .Select(x => new BdInfoDirectoryInfo(_fileSystem, x))
             .ToArray();
     }
@@ -76,6 +80,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles()
     {
         return _fileSystem.GetFiles(_impl.FullName)
+            .Where(f => !IsDotName(f.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -88,6 +93,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles(string searchPattern)
     {
         return _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false)
+            .Where(f => !IsDotName(f.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -105,6 +111,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 new[] { searchPattern },
                 false,
                 searchOption == SearchOption.AllDirectories)
+            .Where(f => !IsDotName(f.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
