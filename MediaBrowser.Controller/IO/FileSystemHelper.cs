@@ -82,25 +82,41 @@ public static class FileSystemHelper
             return null;
         }
 
+        FileInfo? TryResolve(string path)
+        {
+            try
+            {
+                return File.ResolveLinkTarget(path, returnFinalTarget: false) as FileInfo;
+            }
+            catch (IOException)
+            {
+                // Filesystem doesn't support links (e.g., exFAT).
+                return null;
+            }
+        }
+
         if (!returnFinalTarget)
         {
-            return File.ResolveLinkTarget(linkPath, returnFinalTarget: false) as FileInfo;
+            return TryResolve(linkPath);
         }
 
-        if (File.ResolveLinkTarget(linkPath, returnFinalTarget: false) is not FileInfo targetInfo)
-        {
-            return null;
-        }
-
-        if (!targetInfo.Exists)
+        var targetInfo = TryResolve(linkPath);
+        if (targetInfo is null || !targetInfo.Exists)
         {
             return targetInfo;
         }
 
         var currentPath = targetInfo.FullName;
         var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath, currentPath };
-        while (File.ResolveLinkTarget(currentPath, returnFinalTarget: false) is FileInfo linkInfo)
+
+        while (true)
         {
+            var linkInfo = TryResolve(currentPath);
+            if (linkInfo is null)
+            {
+                break;
+            }
+
             var targetPath = linkInfo.FullName;
 
             // If an infinite loop is detected, return the file info for the
