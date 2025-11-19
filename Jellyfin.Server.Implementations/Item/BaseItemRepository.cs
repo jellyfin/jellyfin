@@ -618,10 +618,16 @@ public sealed class BaseItemRepository
             {
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                context.BaseItemMetadataFields.Where(e => e.ItemId == entity.Id).ExecuteDelete();
 
                 if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
+                }
+
+                if (entity.LockedFields is { Count: > 0 })
+                {
+                    context.BaseItemMetadataFields.AddRange(entity.LockedFields);
                 }
 
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
