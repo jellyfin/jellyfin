@@ -64,6 +64,29 @@ public static class FileSystemHelper
     }
 
     /// <summary>
+    /// Resolves a single link hop for the specified path.
+    /// </summary>
+    /// <remarks>
+    /// Returns <c>null</c> if the path is not a symbolic link or the filesystem does not support link resolution (e.g., exFAT).
+    /// </remarks>
+    /// <param name="path">The file path to resolve.</param>
+    /// <returns>
+    /// A <see cref="FileInfo"/> representing the next link target if the path is a link; otherwise, <c>null</c>.
+    /// </returns>
+    private static FileInfo? Resolve(string path)
+    {
+        try
+        {
+            return File.ResolveLinkTarget(path, returnFinalTarget: false) as FileInfo;
+        }
+        catch (IOException)
+        {
+            // Filesystem doesn't support links (e.g., exFAT).
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Gets the target of the specified file link.
     /// </summary>
     /// <remarks>
@@ -82,25 +105,12 @@ public static class FileSystemHelper
             return null;
         }
 
-        FileInfo? TryResolve(string path)
-        {
-            try
-            {
-                return File.ResolveLinkTarget(path, returnFinalTarget: false) as FileInfo;
-            }
-            catch (IOException)
-            {
-                // Filesystem doesn't support links (e.g., exFAT).
-                return null;
-            }
-        }
-
         if (!returnFinalTarget)
         {
-            return TryResolve(linkPath);
+            return Resolve(linkPath);
         }
 
-        var targetInfo = TryResolve(linkPath);
+        var targetInfo = Resolve(linkPath);
         if (targetInfo is null || !targetInfo.Exists)
         {
             return targetInfo;
@@ -111,7 +121,7 @@ public static class FileSystemHelper
 
         while (true)
         {
-            var linkInfo = TryResolve(currentPath);
+            var linkInfo = Resolve(currentPath);
             if (linkInfo is null)
             {
                 break;
