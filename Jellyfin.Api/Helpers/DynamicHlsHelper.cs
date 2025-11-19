@@ -491,12 +491,26 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
     {
-        if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
+        // Check if we have valid dimensions from probing
+        if (state.OutputWidth.HasValue && state.OutputHeight.HasValue
+            && state.OutputWidth.Value > 0 && state.OutputHeight.Value > 0)
         {
             builder.Append(",RESOLUTION=")
                 .Append(state.OutputWidth.GetValueOrDefault())
                 .Append('x')
                 .Append(state.OutputHeight.GetValueOrDefault());
+        }
+
+        else
+        {
+            // FIX: If probing failed (Stream #0 garbage data) -> dimensions are 0x0 or null.
+            // ExoPlayer fails if RESOLUTION tag is missing or 0x0.
+            // Force a dummy HD resolution so the player attempts to start the stream.
+            // The player will adjust once it reads the actual SPS/PPS from the TS stream.
+            if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+            {
+                 builder.Append(",RESOLUTION=1280x720");
+            }
         }
     }
 
@@ -671,13 +685,34 @@ public class DynamicHlsHelper
             }
         }
 
-        if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
+        // FIX UPDATE: Check for <= 0. The client requests "&level=0", which parses successfully
+        // but triggers "Invalid level" logic later, removing the video track.
+        if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel) && parsedLevel > 0)
         {
             return parsedLevel;
         }
 
+        // Fallback logic: If level is 0, invalid, or probing failed.
+        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                return 41; // Level 4.1
+            }
+            if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            {
+                return 120; // Level 4.0
+            }
+            if (string.Equals(state.ActualOutputVideoCodec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
+            {
+                return 4; // Main Profile/Main Level
+            }
+        }
+
         return null;
     }
+
 
     /// <summary>
     /// Get the profile of the output video stream.
