@@ -2378,6 +2378,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
 
+                // If SDR is the only supported range, we should not copy any of the HDR streams.
+                // All the following copy check assumes at least one HDR format is supported.
+                if (requestedRangeTypes.Length == 1 && requestHasSDR && videoStream.VideoRangeType != VideoRangeType.SDR)
+                {
+                    return false;
+                }
+
                 // If the client does not support DOVI and the video stream is DOVI without fallback, we should not copy it.
                 if (!requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVI)
                 {
