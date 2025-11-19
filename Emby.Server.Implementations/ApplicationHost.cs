@@ -918,7 +918,49 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
-            // With an empty source, the port will be null
+            // Check if Override is set
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
+            {
+                return PublishedServerUrl.Trim('/');
+            }
+
+            // Get Internal Config
+            var networkConfig = ConfigurationManager.GetNetworkConfiguration();
+            if (networkConfig.PublishedServerUriBySubnet != null)
+            {
+                string foundInternal = null;
+                string foundAll = null;
+
+                foreach (var entry in networkConfig.PublishedServerUriBySubnet)
+                {
+                    if (entry == null)
+                    {
+                        continue;
+                    }
+
+                    // Prio #1: If override for "internal" is set
+                    if (entry.StartsWith("internal=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        foundInternal = entry.Substring(9);
+                    }
+
+                    // Prio #2: If override for "all"
+                    else if (entry.StartsWith("all=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        foundAll = entry.Substring(4);
+                    }
+                }
+
+                // Decide which to use. Neccessarry for NAT (Docker, ...)
+                var bestMatch = foundInternal ?? foundAll;
+
+                if (!string.IsNullOrEmpty(bestMatch))
+                {
+                    return bestMatch.Trim('/');
+                }
+            }
+
+            // Fallback
             var smart = NetManager.GetBindAddress(ipAddress, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
