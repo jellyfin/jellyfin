@@ -491,12 +491,24 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
     {
-        if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
+        // Ensure we only write RESOLUTION if dimensions are valid (positive integers).
+        // Writing "RESOLUTION=0x0" (which can happen with probe failures on DVB streams)
+        // causes players like ExoPlayer to fail playback immediately.
+        if (state.OutputWidth.HasValue && state.OutputHeight.HasValue
+            && state.OutputWidth.Value > 0 && state.OutputHeight.Value > 0)
         {
             builder.Append(",RESOLUTION=")
                 .Append(state.OutputWidth.GetValueOrDefault())
                 .Append('x')
                 .Append(state.OutputHeight.GetValueOrDefault());
+        }
+        else if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            // Fallback: If probing failed (e.g., data track at index 0) but we are transcoding video,
+            // forcing a missing RESOLUTION tag might also cause player issues.
+            // We provide a safe default HD resolution to encourage the player to start the stream.
+            // The player will adjust to the actual resolution once it parses the TS segments.
+            builder.Append(",RESOLUTION=1280x720");
         }
     }
 
@@ -649,6 +661,7 @@ public class DynamicHlsHelper
         {
             levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture);
         }
+
         else
         {
             if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
@@ -671,13 +684,39 @@ public class DynamicHlsHelper
             }
         }
 
-        if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
+        // Some clients (e.g. AndroidTV/ExoPlayer) may request "&level=0" in the URL when the level is unknown.
+        // If valid parsing returns 0, we should treat it as invalid to trigger the fallback logic below,
+        // otherwise the video track might be omitted from the manifest entirely (audio-only fallback).
+        if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel) && parsedLevel > 0)
         {
             return parsedLevel;
         }
 
+        // Fallback logic for robustness:
+        // If probing failed (common with MPEG-TS streams having data tracks at index 0) or the client requested level 0,
+        // we explicitly return a safe default level for known codecs to ensure the video codec is listed in the manifest.
+        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                return 41; // Level 4.1
+            }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            {
+                return 120; // Level 4.0 (Main Tier)
+            }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
+            {
+                return 4; // Main Profile / Main Level
+            }
+        }
+
         return null;
     }
+
 
     /// <summary>
     /// Get the profile of the output video stream.
@@ -693,6 +732,7 @@ public class DynamicHlsHelper
         {
             profileString = state.VideoStream.Profile;
         }
+
         else if (!string.IsNullOrEmpty(codec))
         {
             profileString = state.GetRequestedProfiles(codec).FirstOrDefault() ?? string.Empty;
