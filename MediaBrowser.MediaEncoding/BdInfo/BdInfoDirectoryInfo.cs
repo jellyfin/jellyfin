@@ -58,8 +58,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
         }
     }
 
-        // Helper: skip dotfiles/dotdirs (covers ._ AppleDouble, .DS_Store, etc.)
-    private static bool IsDotName(string name) => !string.IsNullOrEmpty(name) && name[0] == '.';
+    private static bool IsHidden(ReadOnlySpan<char> name) => name.StartsWith('.');
 
     /// <summary>
     /// Gets the directories.
