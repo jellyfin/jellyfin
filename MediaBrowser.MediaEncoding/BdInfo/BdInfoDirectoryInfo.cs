@@ -92,7 +92,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles(string searchPattern)
     {
         return _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false)
-            .Where(f => !IsDotName(f.Name))
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
