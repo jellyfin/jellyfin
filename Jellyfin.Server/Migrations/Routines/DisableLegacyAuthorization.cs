@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -5,10 +7,8 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to disable legacy authorization in the system config.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
-[JellyfinMigration("2025-11-18T16:00:00", nameof(DisableLegacyAuthorization), "F020F843-E079-4061-99E0-F43D145F2557")]
-public class DisableLegacyAuthorization : IMigrationRoutine
-#pragma warning restore CS0618 // Type or member is obsolete
+[JellyfinMigration("2025-11-18T16:00:00", nameof(DisableLegacyAuthorization))]
+public class DisableLegacyAuthorization : IAsyncMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -22,9 +22,11 @@ public class DisableLegacyAuthorization : IMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
     {
         _serverConfigurationManager.Configuration.EnableLegacyAuthorization = false;
         _serverConfigurationManager.SaveConfiguration();
+
+        return Task.CompletedTask;
     }
 }
