@@ -110,7 +110,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 new[] { searchPattern },
                 false,
                 searchOption == SearchOption.AllDirectories)
-            .Where(f => !IsDotName(f.Name))
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
