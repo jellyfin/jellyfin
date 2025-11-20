@@ -79,7 +79,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles()
     {
         return _fileSystem.GetFiles(_impl.FullName)
-            .Where(f => !IsDotName(f.Name))
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
