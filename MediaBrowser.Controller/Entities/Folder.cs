@@ -1409,7 +1409,7 @@ namespace MediaBrowser.Controller.Entities
             if (this is BoxSet && (query.OrderBy is null || query.OrderBy.Count == 0))
             {
                 realChildren = realChildren
-                    .OrderBy(e => e.ProductionYear ?? int.MaxValue)
+                    .OrderBy(e => e.PremiereDate ?? DateTime.MaxValue)
                     .ToArray();
             }
 
