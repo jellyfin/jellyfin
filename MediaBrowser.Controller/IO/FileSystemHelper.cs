@@ -64,6 +64,29 @@ public static class FileSystemHelper
     }
 
     /// <summary>
+    /// Resolves a single link hop for the specified path.
+    /// </summary>
+    /// <remarks>
+    /// Returns <c>null</c> if the path is not a symbolic link or the filesystem does not support link resolution (e.g., exFAT).
+    /// </remarks>
+    /// <param name="path">The file path to resolve.</param>
+    /// <returns>
+    /// A <see cref="FileInfo"/> representing the next link target if the path is a link; otherwise, <c>null</c>.
+    /// </returns>
+    private static FileInfo? Resolve(string path)
+    {
+        try
+        {
+            return File.ResolveLinkTarget(path, returnFinalTarget: false) as FileInfo;
+        }
+        catch (IOException)
+        {
+            // Filesystem doesn't support links (e.g., exFAT).
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Gets the target of the specified file link.
     /// </summary>
     /// <remarks>
@@ -84,23 +107,26 @@ public static class FileSystemHelper
 
         if (!returnFinalTarget)
         {
-            return File.ResolveLinkTarget(linkPath, returnFinalTarget: false) as FileInfo;
+            return Resolve(linkPath);
         }
 
-        if (File.ResolveLinkTarget(linkPath, returnFinalTarget: false) is not FileInfo targetInfo)
-        {
-            return null;
-        }
-
-        if (!targetInfo.Exists)
+        var targetInfo = Resolve(linkPath);
+        if (targetInfo is null || !targetInfo.Exists)
         {
             return targetInfo;
         }
 
         var currentPath = targetInfo.FullName;
         var visited = new HashSet<string>(StringComparer.Ordinal) { linkPath, currentPath };
-        while (File.ResolveLinkTarget(currentPath, returnFinalTarget: false) is FileInfo linkInfo)
+
+        while (true)
         {
+            var linkInfo = Resolve(currentPath);
+            if (linkInfo is null)
+            {
+                break;
+            }
+
             var targetPath = linkInfo.FullName;
 
             // If an infinite loop is detected, return the file info for the
