@@ -44,7 +44,7 @@ public class ActivityLogQuery : PaginatedQuery
     /// <summary>
     /// Gets or sets the item filter.
     /// </summary>
-    public string? ItemId { get; set; }
+    public Guid? ItemId { get; set; }
 
     /// <summary>
     /// Gets or sets the user id filter.

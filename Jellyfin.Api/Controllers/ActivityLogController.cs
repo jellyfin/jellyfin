@@ -61,7 +61,7 @@ public class ActivityLogController : BaseJellyfinApiController
         [FromQuery] string? overview,
         [FromQuery] string? shortOverview,
         [FromQuery] string? type,
-        [FromQuery] string? itemId,
+        [FromQuery] Guid? itemId,
         [FromQuery] Guid? userId,
         [FromQuery] LogLevel? severity,
         [FromQuery] ActivityLogSortBy[]? sortBy,

@@ -86,9 +86,10 @@ public class ActivityManager : IActivityManager
                 entries = entries.Where(e => EF.Functions.Like(e.Type, $"%{query.Type}%"));
             }
 
-            if (!string.IsNullOrEmpty(query.ItemId))
+            if (!query.ItemId.IsNullOrEmpty())
             {
-                entries = entries.Where(e => e.ItemId == query.ItemId);
+                var itemId = query.ItemId.Value.ToString("N");
+                entries = entries.Where(e => e.ItemId == itemId);
             }
 
             if (!query.UserId.IsNullOrEmpty())
