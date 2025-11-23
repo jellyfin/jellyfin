@@ -147,7 +147,7 @@ public static class FullTextSearchExtensions
             parameter);
     }
 
-    private class ParameterReplacer : ExpressionVisitor
+    private sealed class ParameterReplacer : ExpressionVisitor
     {
         private readonly ParameterExpression _oldParameter;
         private readonly ParameterExpression _newParameter;

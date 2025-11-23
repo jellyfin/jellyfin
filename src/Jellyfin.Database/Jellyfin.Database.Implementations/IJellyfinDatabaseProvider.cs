@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.DbConfiguration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Database.Implementations;
 
@@ -85,4 +86,25 @@ public interface IJellyfinDatabaseProvider
     /// <param name="tableNames">The names of the tables to purge or null for all tables to be purged.</param>
     /// <returns>A Task.</returns>
     Task PurgeDatabase(JellyfinDbContext dbContext, IEnumerable<string>? tableNames);
+
+    /// <summary>
+    /// Allows the provider to register provider-specific DbContext factories during service registration.
+    /// This is called during service collection configuration, before the DI container is built.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="databaseConfiguration">The database configuration.</param>
+    void RegisterProviderSpecificDbContextFactories(IServiceCollection services, DbConfiguration.DatabaseConfigurationOptions databaseConfiguration)
+    {
+        // Default implementation does nothing - providers can override if needed
+    }
+
+    /// <summary>
+    /// Allows the provider to initialize any provider-specific services after DI container is built.
+    /// This is called after all services are registered and can be used to resolve dependencies.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider.</param>
+    void InitializeProviderSpecificServices(IServiceProvider serviceProvider)
+    {
+        // Default implementation does nothing - providers can override if needed
+    }
 }

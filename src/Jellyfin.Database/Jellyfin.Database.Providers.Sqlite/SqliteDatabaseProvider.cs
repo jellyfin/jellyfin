@@ -7,10 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Database.Implementations.Locking;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -24,13 +26,16 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     private const string BackupFolderName = "SQLiteBackups";
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<SqliteDatabaseProvider> _logger;
+    private IFullTextSearchProvider? _ftsProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseProvider"/> class.
     /// </summary>
     /// <param name="applicationPaths">Service to construct the fallback when the old data path configuration is used.</param>
     /// <param name="logger">A logger.</param>
-    public SqliteDatabaseProvider(IApplicationPaths applicationPaths, ILogger<SqliteDatabaseProvider> logger)
+    public SqliteDatabaseProvider(
+        IApplicationPaths applicationPaths,
+        ILogger<SqliteDatabaseProvider> logger)
     {
         _applicationPaths = applicationPaths;
         _logger = logger;
@@ -39,8 +44,24 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
+    /// <summary>
+    /// Gets or sets the SQLite-specific context factory for FTS operations.
+    /// </summary>
+    public IDbContextFactory<SqliteJellyfinDbContext>? SqliteContextFactory { get; set; }
+
     /// <inheritdoc/>
-    public IFullTextSearchProvider? FullTextSearchProvider { get; } = new SqliteFtsProvider();
+    public IFullTextSearchProvider? FullTextSearchProvider
+    {
+        get
+        {
+            if (_ftsProvider == null && SqliteContextFactory != null)
+            {
+                _ftsProvider = new SqliteFtsProvider(SqliteContextFactory);
+            }
+
+            return _ftsProvider;
+        }
+    }
 
     /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
@@ -115,7 +136,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
-        modelBuilder.ApplyConfiguration(new ModelConfiguration.BaseItemFtsEntityConfiguration());
+        // Note: BaseItemFtsEntity is configured in SqliteJellyfinDbContext.OnModelCreating
+        // to keep provider-specific entities out of the base context
     }
 
     /// <inheritdoc/>
@@ -140,6 +162,26 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+    }
+
+    /// <inheritdoc/>
+    public void RegisterProviderSpecificDbContextFactories(IServiceCollection services, DatabaseConfigurationOptions databaseConfiguration)
+    {
+        // Register SQLite-specific DbContext factory for FTS operations
+        services.AddPooledDbContextFactory<SqliteJellyfinDbContext>((serviceProvider, opt) =>
+        {
+            var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+            provider.Initialise(opt, databaseConfiguration);
+            var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
+            lockingBehavior.Initialise(opt);
+        });
+    }
+
+    /// <inheritdoc/>
+    public void InitializeProviderSpecificServices(IServiceProvider serviceProvider)
+    {
+        // Get the SQLite-specific context factory for FTS operations
+        SqliteContextFactory = serviceProvider.GetService<IDbContextFactory<SqliteJellyfinDbContext>>();
     }
 
     /// <inheritdoc />
