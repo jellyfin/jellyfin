@@ -136,9 +136,13 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
 
             if (genreNodes?.Count > 0)
             {
-                foreach (var node in genreNodes.Cast<XmlNode>().Where(node => !book.Genres.Contains(node.InnerText)))
+                foreach (var node in genreNodes.Cast<XmlNode>().Where(node => !string.IsNullOrEmpty(node.InnerText) && !book.Genres.Contains(node.InnerText)))
                 {
-                    book.AddGenre(node.InnerText);
+                    // specification has no rules about content and some books combine every genre into a single element
+                    foreach (var item in node.InnerText.Split(["/", "&", ",", ";", " - "], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        book.AddGenre(item);
+                    }
                 }
             }
 
