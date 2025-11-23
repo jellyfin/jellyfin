@@ -10,8 +10,6 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
     /// </summary>
     public static class EpubUtils
     {
-        private const string ContainerNamespace = "urn:oasis:names:tc:opendocument:xmlns:container";
-
         /// <summary>
         /// Attempt to read content from ZIP archive.
         /// </summary>
@@ -27,8 +25,9 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
 
             using var containerStream = container.Open();
 
+            XNamespace containerNamespace = "urn:oasis:names:tc:opendocument:xmlns:container";
             var containerDocument = XDocument.Load(containerStream);
-            var element = containerDocument.Descendants(ContainerNamespace + "rootfile").FirstOrDefault();
+            var element = containerDocument.Descendants(containerNamespace + "rootfile").FirstOrDefault();
 
             return element?.Attribute("full-path")?.Value;
         }
