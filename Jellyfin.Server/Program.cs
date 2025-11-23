@@ -365,6 +365,9 @@ namespace Jellyfin.Server
             var factory = services.GetRequiredService<IDbContextFactory<JellyfinDbContext>>();
             var provider = services.GetRequiredService<IJellyfinDatabaseProvider>();
             provider.DbContextFactory = factory;
+
+            // Allow provider to initialize any provider-specific services (e.g., SQLite FTS context factory)
+            provider.InitializeProviderSpecificServices(services);
         }
     }
 }

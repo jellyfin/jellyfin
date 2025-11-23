@@ -21,7 +21,7 @@ namespace Jellyfin.Database.Implementations;
 /// <param name="logger">Logger.</param>
 /// <param name="jellyfinDatabaseProvider">The provider for the database engine specific operations.</param>
 /// <param name="entityFrameworkCoreLocking">The locking behavior.</param>
-public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
+public class JellyfinDbContext(DbContextOptions options, ILogger<JellyfinDbContext> logger, IJellyfinDatabaseProvider jellyfinDatabaseProvider, IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking) : DbContext(options)
 {
     /// <summary>
     /// Gets the database provider for database-specific operations.
