@@ -13,6 +13,17 @@ namespace Jellyfin.Database.Providers.Sqlite;
 /// </summary>
 public class SqliteFtsProvider : IFullTextSearchProvider
 {
+    private readonly IDbContextFactory<SqliteJellyfinDbContext>? _sqliteContextFactory;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteFtsProvider"/> class.
+    /// </summary>
+    /// <param name="sqliteContextFactory">The SQLite-specific context factory.</param>
+    public SqliteFtsProvider(IDbContextFactory<SqliteJellyfinDbContext>? sqliteContextFactory = null)
+    {
+        _sqliteContextFactory = sqliteContextFactory;
+    }
+
     /// <inheritdoc />
     public IQueryable<TEntity>? ApplyFullTextSearch<TEntity>(
         IQueryable<TEntity> query,
@@ -39,14 +50,39 @@ public class SqliteFtsProvider : IFullTextSearchProvider
             return null;
         }
 
-        var ftsIds = context.Set<BaseItemFtsEntity>()
-            .AsNoTracking()
-            .Where(fts => fts.Match == ftsMatchQuery)
-            .OrderBy(fts => fts.Rank)
-            .Select(fts => fts.Id);
+        // Try to use the passed context if it's a SqliteJellyfinDbContext
+        // Otherwise fall back to creating a new context from the factory
+        IQueryable<BaseItemFtsEntity> ftsQuery;
+        SqliteJellyfinDbContext? ownedContext = null;
 
-        var result = query.Where(item => ftsIds.Contains(((BaseItemEntity)(object)item).Id));
+        if (context is SqliteJellyfinDbContext sqliteContext)
+        {
+            ftsQuery = sqliteContext.BaseItemFts;
+        }
+        else if (_sqliteContextFactory != null)
+        {
+            ownedContext = _sqliteContextFactory.CreateDbContext();
+            ftsQuery = ownedContext.BaseItemFts;
+        }
+        else
+        {
+            return null;
+        }
 
-        return result;
+        try
+        {
+            var ftsIds = ftsQuery
+                .AsNoTracking()
+                .Where(fts => fts.Match == ftsMatchQuery)
+                .OrderBy(fts => fts.Rank)
+                .Select(fts => fts.Id)
+                .ToList(); // Materialize the FTS query results
+
+            return query.Where(item => ftsIds.Contains(((BaseItemEntity)(object)item).Id));
+        }
+        finally
+        {
+            ownedContext?.Dispose();
+        }
     }
 }

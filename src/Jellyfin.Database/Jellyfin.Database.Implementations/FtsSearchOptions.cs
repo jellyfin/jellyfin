@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Jellyfin.Database.Implementations;
 
@@ -10,7 +11,7 @@ public class FtsSearchOptions
     /// <summary>
     /// Gets or sets the columns to search in.
     /// </summary>
-    public string[] SearchableColumns { get; set; } = [];
+    public IReadOnlyList<string> SearchableColumns { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether to use stemming (e.g., "running" matches "run").

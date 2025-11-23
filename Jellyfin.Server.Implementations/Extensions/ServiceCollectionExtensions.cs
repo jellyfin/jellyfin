@@ -121,8 +121,6 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
-
         switch (efCoreConfiguration.LockingBehavior)
         {
             case DatabaseLockingBehaviorTypes.NoLock:
@@ -135,6 +133,19 @@ public static class ServiceCollectionExtensions
                 serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
                 break;
         }
+
+        if (!serviceCollection.Any(d => d.ServiceType == typeof(IApplicationPaths)))
+        {
+            serviceCollection.AddSingleton<IApplicationPaths>(configurationManager.ApplicationPaths);
+        }
+
+        using (var tempServiceProvider = serviceCollection.BuildServiceProvider())
+        {
+            var tempProvider = providerFactory!(tempServiceProvider);
+            tempProvider.RegisterProviderSpecificDbContextFactories(serviceCollection, efCoreConfiguration);
+        }
+
+        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
