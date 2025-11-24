@@ -107,5 +107,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The sort order.</value>
         public SortOrder? SortOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel group identifiers.
+        /// </summary>
+        /// <value>The channel group identifiers.</value>
+        public Guid[] ChannelGroupIds { get; set; }
     }
 }

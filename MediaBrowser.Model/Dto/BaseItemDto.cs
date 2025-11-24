@@ -701,6 +701,12 @@ namespace MediaBrowser.Model.Dto
         public string ChannelPrimaryImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel groups.
+        /// </summary>
+        /// <value>The channel groups.</value>
+        public NameGuidPair[] ChannelGroups { get; set; }
+
+        /// <summary>
         /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime? StartDate { get; set; }

@@ -24,6 +24,7 @@ namespace MediaBrowser.Controller.Entities
             BlockUnratedItems = Array.Empty<UnratedItem>();
             BoxSetLibraryFolders = Array.Empty<Guid>();
             ChannelIds = Array.Empty<Guid>();
+            ChannelGroupIds = Array.Empty<Guid>();
             ContributingArtistIds = Array.Empty<Guid>();
             DtoOptions = new DtoOptions();
             EnableTotalRecordCount = true;
@@ -226,6 +227,8 @@ namespace MediaBrowser.Controller.Entities
         public double? MinCommunityRating { get; set; }
 
         public IReadOnlyList<Guid> ChannelIds { get; set; }
+
+        public IReadOnlyList<Guid> ChannelGroupIds { get; set; }
 
         public int? ParentIndexNumber { get; set; }
 

@@ -2,6 +2,9 @@
 
 #pragma warning disable CS1591
 
+using System;
+using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -48,10 +51,31 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
 
         /// <summary>
-        /// Gets or sets the group of the channel.
+        /// Gets or sets the groups the channel belongs to.
         /// </summary>
-        /// <value>The group of the channel.</value>
-        public string ChannelGroup { get; set; }
+        /// <value>The groups of the channel.</value>
+        public string[] ChannelGroups { get; set; } = Array.Empty<string>();
+
+        [JsonIgnore]
+        [Obsolete("Use ChannelGroups")]
+        public string ChannelGroup
+        {
+            get => ChannelGroups.FirstOrDefault();
+            set => ChannelGroups = string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : new[] { value };
+        }
+
+        [JsonPropertyName("ChannelGroup")]
+        public string LegacyChannelGroup
+        {
+            get => null;
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value) && (ChannelGroups is null || ChannelGroups.Length == 0))
+                {
+                    ChannelGroups = new[] { value };
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the image path if it can be accessed directly from the file system.
