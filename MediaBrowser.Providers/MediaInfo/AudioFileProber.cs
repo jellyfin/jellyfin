@@ -178,7 +178,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
             var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
             var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
-            
+
             // FIX: Handle vinyl track numbers (A1, B2, etc.) and other non-standard formats
             var trackTrackNumber = ParseTrackNumber(track, mediaInfo, audio.Path);
             var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
@@ -530,7 +530,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return track.TrackNumber;
             }
-        
+
             // Check for vinyl-style track numbers in additional metadata fields
             string? vinylTrackNumber = null;
             if (TryGetSanitizedAdditionalFields(track, "TRACKNAME/POSITION", out vinylTrackNumber)
@@ -543,11 +543,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     return parsedTrackNumber;
                 }
             }
-        
+
             // Final fallback to mediaInfo index number from ffprobe
             return mediaInfo.IndexNumber;
         }
-        
+
         /// <summary>
         /// Attempts to parse vinyl-style track numbers from string representations.
         /// Used for vinyl rips that have been split into individual track files with vinyl numbering.
@@ -558,14 +558,14 @@ namespace MediaBrowser.Providers.MediaInfo
             out int trackNumber)
         {
             trackNumber = 0;
-        
+
             if (string.IsNullOrWhiteSpace(vinylTrack))
             {
                 return false;
             }
-        
+
             string normalizedTrack = vinylTrack.Trim().ToUpperInvariant();
-        
+
             try
             {
                 // Handle standard vinyl formats: [Side Letter][Track Number]
@@ -573,7 +573,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (normalizedTrack.Length >= 2 && char.IsLetter(normalizedTrack[0]) && char.IsDigit(normalizedTrack[1]))
                 {
                     var numericPart = normalizedTrack.Substring(1);
-        
+
                     if (int.TryParse(numericPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out int trackOnSide))
                     {
                         // Extract just the track number within the side
@@ -581,20 +581,20 @@ namespace MediaBrowser.Providers.MediaInfo
                         return true;
                     }
                 }
-        
+
                 // Handle reverse vinyl formats: [Track Number][Side Letter]
                 // Examples: 1A, 2B, 01A, 02B
                 if (normalizedTrack.Length >= 2 && char.IsDigit(normalizedTrack[0]) && char.IsLetter(normalizedTrack[^1]))
                 {
                     var numericPart = normalizedTrack[..^1];
-        
+
                     if (int.TryParse(numericPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out int trackOnSide))
                     {
                         trackNumber = trackOnSide;
                         return true;
                     }
                 }
-        
+
                 // Final attempt: try parsing as plain numeric track number
                 if (int.TryParse(normalizedTrack, NumberStyles.Integer, CultureInfo.InvariantCulture, out trackNumber))
                 {
@@ -605,7 +605,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 _logger.LogDebug(ex, "Failed to parse vinyl track number '{VinylTrack}'", vinylTrack);
             }
-        
+
             return false;
         }
 
