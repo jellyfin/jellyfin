@@ -3,24 +3,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data;
+using Jellyfin.Data.Events;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Prometheus;
 
-namespace Jellyfin.Server.Implementations.Metrics
+namespace Jellyfin.Server.Implementations.Metrics.UserMetrics
 {
     /// <summary>
     /// Provides Prometheus metrics related to Jellyfin users.
     /// </summary>
-    public class UserMetrics
+    public class UserMetrics : IHostedService
     {
         private readonly ILogger<UserMetrics> _logger;
         private readonly IEnumerable<IAuthenticationProvider> _authenticationProviders;
+        private readonly IUserManager _userManager;
 
         // Prometheus Gauges for user metrics
         private static readonly Gauge _totalUserAccounts = Prometheus.Metrics
@@ -52,18 +56,28 @@ namespace Jellyfin.Server.Implementations.Metrics
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="authenticationProviders">The authentication providers.</param>
-        public UserMetrics(ILogger<UserMetrics> logger, IEnumerable<IAuthenticationProvider> authenticationProviders)
+        /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
+        public UserMetrics(ILogger<UserMetrics> logger, IEnumerable<IAuthenticationProvider> authenticationProviders, IUserManager userManager)
         {
             _authenticationProviders = authenticationProviders;
             _logger = logger;
+            _userManager = userManager;
+
+            _userManager.OnUserChanged += OnUserChanged;
+            _userManager.OnUserUpdated += OnUserChanged;
+        }
+
+        private void OnUserChanged(object? sender, GenericEventArgs<User> user)
+        {
+            UpdateMetrics();
         }
 
         /// <summary>
         /// Updates All User Metrics.
         /// </summary>
-        /// <param name="users">List of users to update in metrics.</param>
-        public void UpdateUserMetrics(IEnumerable<User> users)
+        public void UpdateMetrics()
         {
+            var users = _userManager.Users;
             try
             {
                 var userList = users.ToList();
@@ -82,8 +96,6 @@ namespace Jellyfin.Server.Implementations.Metrics
 
                 // Security-related metrics
                 UpdateSecurityMetrics(userList);
-
-                _logger.LogDebug("Updated user metrics for {UserCount} users", userList.Count);
             }
             catch (Exception ex)
             {
@@ -244,6 +256,26 @@ namespace Jellyfin.Server.Implementations.Metrics
                 ["external_auth_users"] = _usersWithExternalAuth.Value,
                 ["recently_active_users"] = _recentlyActiveUsers.Value
             };
+        }
+
+        /// <summary>
+        /// Update provider related metrics.
+        /// </summary>
+        /// <param name="cancellationToken">List of users to update in metrics.</param>
+        /// <returns>Task.</returns>
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Update provider related metrics.
+        /// </summary>
+        /// <param name="cancellationToken">List of users to update in metrics.</param>
+        /// <returns>Task.</returns>
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

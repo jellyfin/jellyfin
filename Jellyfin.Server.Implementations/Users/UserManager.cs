@@ -15,7 +15,6 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Implementations.Metrics;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -38,7 +37,6 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public partial class UserManager : IUserManager
     {
-        private readonly UserMetrics? _userMetrics;
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
         private readonly INetworkManager _networkManager;
@@ -66,7 +64,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="serverConfigurationManager">The system config manager.</param>
         /// <param name="passwordResetProviders">The password reset providers.</param>
         /// <param name="authenticationProviders">The authentication providers.</param>
-        /// <param name="userMetrics">User metrics processor.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
@@ -76,8 +73,7 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger,
             IServerConfigurationManager serverConfigurationManager,
             IEnumerable<IPasswordResetProvider> passwordResetProviders,
-            IEnumerable<IAuthenticationProvider> authenticationProviders,
-            UserMetrics? userMetrics = null)
+            IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -106,15 +102,13 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 _users.Add(user.Id, user);
             }
-
-            _userMetrics = userMetrics;
-            // Update metrics after initialization
-
-            _userMetrics?.UpdateUserMetrics(_users.Values);
         }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
+
+        /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<User>>? OnUserChanged;
 
         /// <inheritdoc/>
         public IEnumerable<User> Users => _users.Values;
@@ -218,7 +212,11 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
-            _userMetrics?.UpdateUserMetrics(_users.Values);
+
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== CreateUserInternalAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             return user;
         }
 
@@ -286,7 +284,10 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             _users.Remove(userId);
-            _userMetrics?.UpdateUserMetrics(_users.Values);
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== DeleteUserAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
@@ -509,7 +510,10 @@ namespace Jellyfin.Server.Implementations.Users
                     remoteEndPoint);
             }
 
-            _userMetrics?.UpdateUserMetrics(_users.Values);
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== AuthenticateUser === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             return success ? user : null;
         }
 
@@ -727,7 +731,10 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Update(user);
                 _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _userMetrics?.UpdateUserMetrics(_users.Values);
+                var eventArgs = new UserUpdatedEventArgs(user);
+                await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+                _logger.LogWarning("=== UpdatePolicyAsync === OnUserChanged EVENT TRIGGERED ===");
+                OnUserChanged?.Invoke(this, eventArgs);
             }
         }
 
@@ -902,7 +909,10 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            _userMetrics?.UpdateUserMetrics(_users.Values);
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== UpdateUserInternalAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
         }
     }
 }
