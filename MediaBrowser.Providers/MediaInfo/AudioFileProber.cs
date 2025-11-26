@@ -576,7 +576,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (int.TryParse(numericPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out int trackOnSide))
                     {
-                        // Extract just the track number within the side
+                        // Extract just the track number within the side.
                         trackNumber = trackOnSide;
                         return true;
                     }
