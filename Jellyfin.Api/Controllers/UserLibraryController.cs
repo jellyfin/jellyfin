@@ -94,7 +94,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
@@ -133,7 +133,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = _libraryManager.GetUserRootFolder();
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
 
@@ -180,7 +180,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
         return new QueryResult<BaseItemDto>(dtos);
@@ -422,7 +422,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         if (item is IHasTrailers hasTrailers)
         {
             var trailers = hasTrailers.LocalTrailers;
@@ -478,7 +478,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         return Ok(item
             .GetExtras()
@@ -549,7 +549,6 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var list = _userViewManager.GetLatestItems(

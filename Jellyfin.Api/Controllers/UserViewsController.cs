@@ -86,7 +86,7 @@ public class UserViewsController : BaseJellyfinApiController
 
         var folders = _userViewManager.GetUserViews(query);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         dtoOptions.Fields = [..dtoOptions.Fields, ItemFields.PrimaryImageAspectRatio, ItemFields.DisplayPreferencesId];
 
         var dtos = Array.ConvertAll(folders, i => _dtoService.GetBaseItemDto(i, dtoOptions, user));

@@ -548,7 +548,6 @@ public class PlaylistsController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
