@@ -44,7 +44,9 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
-                _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
+                var clientIpAddress = _networkManager.GetRemoteIp(context.Request);
+
+                _logger.LogInformation("WS {ClientIpAddress} request", clientIpAddress);
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
@@ -67,12 +69,12 @@ namespace Emby.Server.Implementations.HttpServer
                     await Task.WhenAll(tasks).ConfigureAwait(false);
 
                     await connection.ReceiveAsync().ConfigureAwait(false);
-                    _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
+                    _logger.LogInformation("WS {ClientIpAddress} closed", clientIpAddress);
                 }
             }
             catch (Exception ex) // Otherwise ASP.Net will ignore the exception
             {
-                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", context.Connection.RemoteIpAddress);
+                _logger.LogInformation("WS {ClientIpAddress} error", clientIpAddress);
                 if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 500;
