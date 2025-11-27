@@ -353,6 +353,12 @@ public static class StreamingHelpers
             return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
         }
 
+        // Fallback for video requests without known container (e.g. IPTV streams with no extension, TVHeadend)
+        if (state.IsVideoRequest)
+        {
+            return ".ts";
+        }
+
         throw new InvalidOperationException("Failed to find an appropriate file extension");
     }
 
