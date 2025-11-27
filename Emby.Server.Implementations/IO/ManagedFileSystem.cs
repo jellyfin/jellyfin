@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -260,7 +261,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         try
                         {
-                            var targetFileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true);
+                            var targetFileInfo = FileSystemHelper.ResolveLinkTarget(fileInfo, returnFinalTarget: true);
                             if (targetFileInfo is not null)
                             {
                                 result.Exists = targetFileInfo.Exists;

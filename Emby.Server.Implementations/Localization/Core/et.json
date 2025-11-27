@@ -137,5 +137,5 @@
     "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
     "TaskMoveTrickplayImages": "Muuda trickplay piltide asukoht",
     "CleanupUserDataTask": "Puhasta kasutajaandmed",
-    "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mis pole enam vähemalt 90 päeva saadaval olnud."
+    "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mida pole enam vähemalt 90 päeva saadaval olnud."
 }

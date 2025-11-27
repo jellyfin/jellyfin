@@ -154,11 +154,12 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             info.Name = tags.GetFirstNotNullNorWhiteSpaceValue("title", "title-eng");
             info.ForcedSortName = tags.GetFirstNotNullNorWhiteSpaceValue("sort_name", "title-sort", "titlesort");
-            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc");
+            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc", "comment");
 
-            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort");
             info.ParentIndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "season_number");
-            info.ShowName = tags.GetValueOrDefault("show_name");
+            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort") ??
+                               FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_id");
+            info.ShowName = tags.GetValueOrDefault("show_name", "show");
             info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retail/premiere date
