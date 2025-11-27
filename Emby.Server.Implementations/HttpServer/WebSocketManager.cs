@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
-            var clientIpAddress = _networkManager.GetRemoteIp(context.Request);
+            var clientIpAddress = context.Request.GetRemoteIp(_networkManager);
             var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
             if (!authorizationInfo.IsAuthenticated)
             {
