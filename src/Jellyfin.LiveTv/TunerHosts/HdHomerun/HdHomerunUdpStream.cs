@@ -18,6 +18,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
@@ -27,6 +28,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
         private const int RtpHeaderBytes = 12;
 
         private readonly IServerApplicationHost _appHost;
+        private readonly IServerAddressesFeature _serverAddresses;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
 
@@ -40,10 +42,12 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            IStreamHelper streamHelper)
+            IStreamHelper streamHelper,
+            IServerAddressesFeature serverAddresses)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _appHost = appHost;
+            _serverAddresses = serverAddresses;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
@@ -147,7 +151,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess(_serverAddresses) + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
