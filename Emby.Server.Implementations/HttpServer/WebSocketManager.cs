@@ -21,14 +21,14 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IAuthService _authService;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
 
         public WebSocketManager(
             IAuthService authService,
             IEnumerable<IWebSocketListener> webSocketListeners,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory,
-            NetworkManager networkManager)
+            INetworkManager networkManager)
         {
             _webSocketListeners = webSocketListeners.ToArray();
             _authService = authService;
