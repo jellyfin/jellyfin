@@ -17,25 +17,45 @@ namespace Emby.Server.Implementations.HttpServer
     public class WebSocketManager : IWebSocketManager
     {
         private readonly IWebSocketListener[] _webSocketListeners;
+        private readonly INetworkManager _networkManager;
         private readonly IAuthService _authService;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
         public WebSocketManager(
+            IWebSocketListener[] webSocketListeners,
+            INetworkManager networkManager,
             IAuthService authService,
-            IEnumerable<IWebSocketListener> webSocketListeners,
             ILogger<WebSocketManager> logger,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IOptions<ServerOptions> options)
         {
-            _webSocketListeners = webSocketListeners.ToArray();
-            _authService = authService;
-            _logger = logger;
-            _loggerFactory = loggerFactory;
+             _webSocketListeners = webSocketListeners;
+             _networkManager = networkManager;
+             _authService = authService;
+             _logger = logger;
+             _loggerFactory = loggerFactory;
+             _options = options.Value;
         }
 
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
+            // Determine client IP: prefer RemoteIPHeader if valid and not a known proxy,
+            // otherwise fallback to Connection.RemoteIpAddress.
+            IPAddress clientIpAddress;
+            var header = context.Request.Headers[_options.RemoteIPHeader].FirstOrDefault();
+            if (!string.IsNullOrEmpty(header) &&
+                IPAddress.TryParse(header, out var parsed) &&
+                !_networkManager.IsInKnownProxy(parsed))
+            {
+                clientIpAddress = parsed;
+            }
+            else
+            {
+                clientIpAddress = context.Connection.RemoteIpAddress;
+            }
+
             var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
             if (!authorizationInfo.IsAuthenticated)
             {
@@ -44,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
-                _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
+                _logger.LogInformation("WS {IP} request", clientIpAddress);
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
@@ -67,12 +87,12 @@ namespace Emby.Server.Implementations.HttpServer
                     await Task.WhenAll(tasks).ConfigureAwait(false);
 
                     await connection.ReceiveAsync().ConfigureAwait(false);
-                    _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
+                    _logger.LogInformation("WS {IP} closed", clientIpAddress);
                 }
             }
             catch (Exception ex) // Otherwise ASP.Net will ignore the exception
             {
-                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", context.Connection.RemoteIpAddress);
+                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", clientIpAddress);
                 if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 500;
