@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 using (target)
                 using (reader)
                 {
-                    string? line = await reader.ReadLineAsync().ConfigureAwait(false);
+                    string line = await reader.ReadLineAsync().ConfigureAwait(false);
                     while (line is not null && reader.BaseStream.CanRead)
                     {
                         ParseLogLine(line, state);
