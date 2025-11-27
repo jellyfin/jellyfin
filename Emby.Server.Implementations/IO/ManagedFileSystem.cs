@@ -257,34 +257,27 @@ namespace Emby.Server.Implementations.IO
                 {
                     result.CreationTimeUtc = GetCreationTimeUtc(info);
                     result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
-                    if (fileInfo.LinkTarget is not null)
+                    try
                     {
-                        try
+                        var targetFileInfo = FileSystemHelper.ResolveLinkTarget(fileInfo, returnFinalTarget: true);
+                        if (targetFileInfo is not null)
                         {
-                            var targetFileInfo = FileSystemHelper.ResolveLinkTarget(fileInfo, returnFinalTarget: true);
-                            if (targetFileInfo is not null)
+                            result.Exists = targetFileInfo.Exists;
+                            if (result.Exists)
                             {
-                                result.Exists = targetFileInfo.Exists;
-                                if (result.Exists)
-                                {
-                                    result.Length = targetFileInfo.Length;
-                                    result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
-                                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
-                                }
-                            }
-                            else
-                            {
-                                result.Exists = false;
+                                result.Length = targetFileInfo.Length;
+                                result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
+                                result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
                             }
                         }
-                        catch (UnauthorizedAccessException ex)
+                        else
                         {
-                            _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
+                            result.Length = fileInfo.Length;
                         }
                     }
-                    else
+                    catch (UnauthorizedAccessException ex)
                     {
-                        result.Length = fileInfo.Length;
+                        _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                     }
                 }
             }
