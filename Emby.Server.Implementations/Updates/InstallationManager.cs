@@ -557,7 +557,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            await ZipFile.ExtractToDirectoryAsync(stream, targetDir, true);
+            await ZipFile.ExtractToDirectoryAsync(stream, targetDir, true, cancellationToken);
 
             // Ensure we create one or populate existing ones with missing data.
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
