@@ -250,7 +250,7 @@ public sealed class BaseItemRepository
     public QueryResult<BaseItemDto> GetItems(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        if (!filter.EnableTotalRecordCount || (!filter.Limit.HasValue && (filter.StartIndex ?? 0) == 0))
+        if (!filter.EnableTotalRecordCount || ((filter.Limit ?? 0) == 0 && (filter.StartIndex ?? 0) == 0))
         {
             var returnList = GetItemList(filter);
             return new QueryResult<BaseItemDto>(
@@ -326,7 +326,7 @@ public sealed class BaseItemRepository
             .OrderByDescending(g => g.MaxDateCreated)
             .Select(g => g);
 
-        if (filter.Limit.HasValue)
+        if (filter.Limit.HasValue && filter.Limit.Value > 0)
         {
             subqueryGrouped = subqueryGrouped.Take(filter.Limit.Value);
         }
@@ -367,7 +367,7 @@ public sealed class BaseItemRepository
             .OrderByDescending(g => g.LastPlayedDate)
             .Select(g => g.Key!);
 
-        if (filter.Limit.HasValue)
+        if (filter.Limit.HasValue && filter.Limit.Value > 0)
         {
             query = query.Take(filter.Limit.Value);
         }
@@ -425,19 +425,14 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
         {
-            var offset = filter.StartIndex ?? 0;
+            dbQuery = dbQuery.Skip(filter.StartIndex.Value);
+        }
 
-            if (offset > 0)
-            {
-                dbQuery = dbQuery.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                dbQuery = dbQuery.Take(filter.Limit.Value);
-            }
+        if (filter.Limit.HasValue && filter.Limit.Value > 0)
+        {
+            dbQuery = dbQuery.Take(filter.Limit.Value);
         }
 
         return dbQuery;
@@ -1184,7 +1179,7 @@ public sealed class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (!filter.Limit.HasValue)
+        if (!(filter.Limit.HasValue && filter.Limit.Value > 0))
         {
             filter.EnableTotalRecordCount = false;
         }
@@ -1263,19 +1258,14 @@ public sealed class BaseItemRepository
             result.TotalRecordCount = query.Count();
         }
 
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
         {
-            var offset = filter.StartIndex ?? 0;
+            query = query.Skip(filter.StartIndex.Value);
+        }
 
-            if (offset > 0)
-            {
-                query = query.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                query = query.Take(filter.Limit.Value);
-            }
+        if (filter.Limit.HasValue && filter.Limit.Value > 0)
+        {
+            query = query.Take(filter.Limit.Value);
         }
 
         IQueryable<BaseItemEntity>? itemCountQuery = null;
@@ -1356,7 +1346,7 @@ public sealed class BaseItemRepository
 
     private static void PrepareFilterQuery(InternalItemsQuery query)
     {
-        if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
+        if (query.Limit.HasValue && query.Limit.Value > 0 && query.EnableGroupByMetadataKey)
         {
             query.Limit = query.Limit.Value + 4;
         }
