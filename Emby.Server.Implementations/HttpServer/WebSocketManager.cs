@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -20,14 +21,14 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IAuthService _authService;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         public WebSocketManager(
             IAuthService authService,
             IEnumerable<IWebSocketListener> webSocketListeners,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory,
-            INetworkManager networkManager)
+            NetworkManager networkManager)
         {
             _webSocketListeners = webSocketListeners.ToArray();
             _authService = authService;
