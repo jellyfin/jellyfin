@@ -20,22 +20,26 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IAuthService _authService;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly INetworkManager _networkManager;
 
         public WebSocketManager(
             IAuthService authService,
             IEnumerable<IWebSocketListener> webSocketListeners,
             ILogger<WebSocketManager> logger,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            INetworkManager networkManager)
         {
             _webSocketListeners = webSocketListeners.ToArray();
             _authService = authService;
             _logger = logger;
             _loggerFactory = loggerFactory;
+            _networkManager = networkManager;
         }
 
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
+            var clientIpAddress = _networkManager.GetRemoteIp(context.Request);
             var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
             if (!authorizationInfo.IsAuthenticated)
             {
@@ -44,8 +48,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
-                _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
-
+                _logger.LogInformation("WS {ClientIpAddress} request", clientIpAddress);
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
                 var connection = new WebSocketConnection(
@@ -67,12 +70,12 @@ namespace Emby.Server.Implementations.HttpServer
                     await Task.WhenAll(tasks).ConfigureAwait(false);
 
                     await connection.ReceiveAsync().ConfigureAwait(false);
-                    _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
+                    _logger.LogInformation("WS {ClientIpAddress} closed", clientIpAddress);
                 }
             }
             catch (Exception ex) // Otherwise ASP.Net will ignore the exception
             {
-                _logger.LogError(ex, "WS {IP} WebSocketRequestHandler error", context.Connection.RemoteIpAddress);
+                _logger.LogError(ex, "WS {ClientIpAddress} error", clientIpAddress);
                 if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 500;
