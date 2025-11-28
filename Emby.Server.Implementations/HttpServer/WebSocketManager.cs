@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
+using Jellyfin.Server.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -26,6 +27,7 @@ namespace Emby.Server.Implementations.HttpServer
         public WebSocketManager(
             IWebSocketListener[] webSocketListeners,
             INetworkManager networkManager,
+            IOptions<ServerOptions> serverOptions,
             IAuthService authService,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory,
