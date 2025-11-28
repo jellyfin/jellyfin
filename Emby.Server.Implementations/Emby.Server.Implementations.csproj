@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="prometheus-net.DotNetRuntime" />
     <PackageReference Include="DotNet.Glob" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
