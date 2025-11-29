@@ -1260,11 +1260,10 @@ public class StreamInfo
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 startPositionTicks.ToString(CultureInfo.InvariantCulture),
                 subtitleProfile.Format);
-            info.IsExternalUrl = false; // Default to API URL
+            info.IsExternalUrl = false;
 
             // Check conditions for potentially using the direct path
             if (stream.IsExternal // Must be external
-                && MediaSource?.Protocol != MediaProtocol.File // Main media must not be a local file
                 && string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) // Format must match (no conversion needed)
                 && !string.IsNullOrEmpty(stream.Path) // Path must exist
                 && Uri.TryCreate(stream.Path, UriKind.Absolute, out Uri? uriResult) // Path must be an absolute URI
