@@ -1264,6 +1264,7 @@ public class StreamInfo
 
             // Check conditions for potentially using the direct path
             if (stream.IsExternal // Must be external
+                && stream.SupportsExternalStream
                 && string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) // Format must match (no conversion needed)
                 && !string.IsNullOrEmpty(stream.Path) // Path must exist
                 && Uri.TryCreate(stream.Path, UriKind.Absolute, out Uri? uriResult) // Path must be an absolute URI
