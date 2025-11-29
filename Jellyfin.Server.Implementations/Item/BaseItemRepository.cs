@@ -410,10 +410,25 @@ public sealed class BaseItemRepository
 
     private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        dbQuery = dbQuery.Include(e => e.TrailerTypes)
-           .Include(e => e.Provider)
-           .Include(e => e.LockedFields)
-           .Include(e => e.UserData);
+        if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+        {
+            dbQuery = dbQuery.Include(e => e.TrailerTypes);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            dbQuery = dbQuery.Include(e => e.Provider);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            dbQuery = dbQuery.Include(e => e.LockedFields);
+        }
+
+        if (filter.DtoOptions.EnableUserData)
+        {
+            dbQuery = dbQuery.Include(e => e.UserData);
+        }
 
         if (filter.DtoOptions.EnableImages)
         {
