@@ -1651,6 +1651,7 @@ public sealed class BaseItemRepository
         {
             if (filter.IncludeItemTypes.Length == 0
                 || filter.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                || filter.IncludeItemTypes.Contains(BaseItemKind.LiveTvProgram)
                 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
             {
                 baseQuery = baseQuery.Where(e => e.IsMovie);
