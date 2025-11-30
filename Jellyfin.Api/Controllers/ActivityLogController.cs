@@ -44,7 +44,7 @@ public class ActivityLogController : BaseJellyfinApiController
     /// <param name="shortOverview">Filter by short overview.</param>
     /// <param name="type">Filter by type.</param>
     /// <param name="itemId">Filter by item id.</param>
-    /// <param name="userId">Filter by user id.</param>
+    /// <param name="username">Filter by username.</param>
     /// <param name="severity">Filter by log severity.</param>
     /// <param name="sortBy">Specify one or more sort orders. Format: SortBy=Name,Type.</param>
     /// <param name="sortOrder">Sort Order..</param>
@@ -62,7 +62,7 @@ public class ActivityLogController : BaseJellyfinApiController
         [FromQuery] string? shortOverview,
         [FromQuery] string? type,
         [FromQuery] Guid? itemId,
-        [FromQuery] Guid? userId,
+        [FromQuery] string? username,
         [FromQuery] LogLevel? severity,
         [FromQuery] ActivityLogSortBy[]? sortBy,
         [FromQuery] SortOrder[]? sortOrder)
@@ -78,7 +78,7 @@ public class ActivityLogController : BaseJellyfinApiController
             ShortOverview = shortOverview,
             Type = type,
             ItemId = itemId,
-            UserId = userId,
+            Username = username,
             Severity = severity,
             OrderBy = GetOrderBy(sortBy ?? [], sortOrder ?? []),
         };

@@ -51,55 +51,61 @@ public class ActivityManager : IActivityManager
     /// <inheritdoc/>
     public async Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query)
     {
+        // TODO allow sorting and filtering by item id. Currently not possible because ActivityLog stores the item id as a string.
+
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         await using (dbContext.ConfigureAwait(false))
         {
-            var entries = dbContext.ActivityLogs.AsQueryable();
+            // TODO switch to LeftJoin in .NET 10.
+            var entries = from a in dbContext.ActivityLogs
+                join u in dbContext.Users on a.UserId equals u.Id into ugj
+                from u in ugj.DefaultIfEmpty()
+                select new ExpandedActivityLog { ActivityLog = a, Username = u.Username };
 
             if (query.HasUserId is not null)
             {
-                entries = entries.Where(e => e.UserId.Equals(default) != query.HasUserId.Value);
+                entries = entries.Where(e => e.ActivityLog.UserId.Equals(default) != query.HasUserId.Value);
             }
 
             if (query.MinDate is not null)
             {
-                entries = entries.Where(e => e.DateCreated >= query.MinDate.Value);
+                entries = entries.Where(e => e.ActivityLog.DateCreated >= query.MinDate.Value);
             }
 
             if (!string.IsNullOrEmpty(query.Name))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.Name, $"%{query.Name}%"));
+                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Name, $"%{query.Name}%"));
             }
 
             if (!string.IsNullOrEmpty(query.Overview))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.Overview, $"%{query.Overview}%"));
+                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Overview, $"%{query.Overview}%"));
             }
 
             if (!string.IsNullOrEmpty(query.ShortOverview))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.ShortOverview, $"%{query.ShortOverview}%"));
+                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.ShortOverview, $"%{query.ShortOverview}%"));
             }
 
             if (!string.IsNullOrEmpty(query.Type))
             {
-                entries = entries.Where(e => EF.Functions.Like(e.Type, $"%{query.Type}%"));
+                entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Type, $"%{query.Type}%"));
             }
 
             if (!query.ItemId.IsNullOrEmpty())
             {
                 var itemId = query.ItemId.Value.ToString("N");
-                entries = entries.Where(e => e.ItemId == itemId);
+                entries = entries.Where(e => e.ActivityLog.ItemId == itemId);
             }
 
-            if (!query.UserId.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(query.Username))
             {
-                entries = entries.Where(e => e.UserId.Equals(query.UserId.Value));
+                entries = entries.Where(e => EF.Functions.Like(e.Username, $"%{query.Username}%"));
             }
 
             if (query.Severity is not null)
             {
-                entries = entries.Where(e => e.LogSeverity == query.Severity);
+                entries = entries.Where(e => e.ActivityLog.LogSeverity == query.Severity);
             }
 
             return new QueryResult<ActivityLogEntry>(
@@ -108,14 +114,14 @@ public class ActivityManager : IActivityManager
                 await ApplyOrdering(entries, query.OrderBy)
                     .Skip(query.Skip ?? 0)
                     .Take(query.Limit ?? 100)
-                    .Select(entity => new ActivityLogEntry(entity.Name, entity.Type, entity.UserId)
+                    .Select(entity => new ActivityLogEntry(entity.ActivityLog.Name, entity.ActivityLog.Type, entity.ActivityLog.UserId)
                     {
-                        Id = entity.Id,
-                        Overview = entity.Overview,
-                        ShortOverview = entity.ShortOverview,
-                        ItemId = entity.ItemId,
-                        Date = entity.DateCreated,
-                        Severity = entity.LogSeverity
+                        Id = entity.ActivityLog.Id,
+                        Overview = entity.ActivityLog.Overview,
+                        ShortOverview = entity.ActivityLog.ShortOverview,
+                        ItemId = entity.ActivityLog.ItemId,
+                        Date = entity.ActivityLog.DateCreated,
+                        Severity = entity.ActivityLog.LogSeverity
                     })
                     .ToListAsync()
                     .ConfigureAwait(false));
@@ -148,14 +154,14 @@ public class ActivityManager : IActivityManager
         };
     }
 
-    private IOrderedQueryable<ActivityLog> ApplyOrdering(IQueryable<ActivityLog> query, IReadOnlyCollection<(ActivityLogSortBy, SortOrder)>? sorting)
+    private IOrderedQueryable<ExpandedActivityLog> ApplyOrdering(IQueryable<ExpandedActivityLog> query, IReadOnlyCollection<(ActivityLogSortBy, SortOrder)>? sorting)
     {
         if (sorting is null || sorting.Count == 0)
         {
-            return query.OrderByDescending(e => e.DateCreated);
+            return query.OrderByDescending(e => e.ActivityLog.DateCreated);
         }
 
-        IOrderedQueryable<ActivityLog> ordered = null!;
+        IOrderedQueryable<ExpandedActivityLog> ordered = null!;
 
         foreach (var (sortBy, sortOrder) in sorting)
         {
@@ -168,19 +174,25 @@ public class ActivityManager : IActivityManager
         return ordered;
     }
 
-    private Expression<Func<ActivityLog, object?>> MapOrderBy(ActivityLogSortBy sortBy)
+    private Expression<Func<ExpandedActivityLog, object?>> MapOrderBy(ActivityLogSortBy sortBy)
     {
         return sortBy switch
         {
-            ActivityLogSortBy.Name => e => e.Name,
-            ActivityLogSortBy.Overiew => e => e.Overview,
-            ActivityLogSortBy.ShortOverview => e => e.ShortOverview,
-            ActivityLogSortBy.Type => e => e.Type,
-            ActivityLogSortBy.ItemId => e => e.ItemId,
-            ActivityLogSortBy.DateCreated => e => e.DateCreated,
-            ActivityLogSortBy.UserId => e => e.UserId,
-            ActivityLogSortBy.LogSeverity => e => e.LogSeverity,
+            ActivityLogSortBy.Name => e => e.ActivityLog.Name,
+            ActivityLogSortBy.Overiew => e => e.ActivityLog.Overview,
+            ActivityLogSortBy.ShortOverview => e => e.ActivityLog.ShortOverview,
+            ActivityLogSortBy.Type => e => e.ActivityLog.Type,
+            ActivityLogSortBy.DateCreated => e => e.ActivityLog.DateCreated,
+            ActivityLogSortBy.Username => e => e.Username,
+            ActivityLogSortBy.LogSeverity => e => e.ActivityLog.LogSeverity,
             _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, "Unhandled ActivityLogSortBy")
         };
+    }
+
+    private class ExpandedActivityLog
+    {
+        public ActivityLog ActivityLog { get; set; } = null!;
+
+        public string? Username { get; set; }
     }
 }

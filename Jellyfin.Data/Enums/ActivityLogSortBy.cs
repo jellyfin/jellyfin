@@ -25,10 +25,12 @@ public enum ActivityLogSortBy
     /// </summary>
     Type = 3,
 
+    /*
     /// <summary>
-    /// Sort by item id.
+    /// Sort by item name.
     /// </summary>
-    ItemId = 4,
+    Item = 4,
+    */
 
     /// <summary>
     /// Sort by date.
@@ -36,9 +38,9 @@ public enum ActivityLogSortBy
     DateCreated = 5,
 
     /// <summary>
-    /// Sort by user id.
+    /// Sort by username.
     /// </summary>
-    UserId = 6,
+    Username = 6,
 
     /// <summary>
     /// Sort by severity.
