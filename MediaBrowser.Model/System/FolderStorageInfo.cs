@@ -29,4 +29,14 @@ public record FolderStorageInfo
     /// Gets the Device Identifier.
     /// </summary>
     public string? DeviceId { get; init; }
+
+    /// <summary>
+    /// Gets or sets the measured folder size in bytes (nullable if unknown).
+    /// </summary>
+    public long? FolderSizeBytes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total size of the drive containing this folder (nullable if unknown).
+    /// </summary>
+    public long? DriveTotalBytes { get; set; }
 }
