@@ -21,25 +21,27 @@ public static class FileStreamResponseHelpers
     /// <summary>
     /// Returns a static file from a remote source.
     /// </summary>
-    /// <param name="state">The current <see cref="StreamState"/>.</param>
+    /// <param name="path">The path to the remote file.</param>
     /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
     /// <param name="httpContext">The current http context.</param>
+    /// <param name="includeFileName">If true, sets a download filename from the response or URL (adds a Content-Disposition header).</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
     public static async Task<ActionResult> GetStaticRemoteStreamResult(
-        StreamState state,
+        string path,
         HttpClient httpClient,
         HttpContext httpContext,
+        bool includeFileName = false,
         CancellationToken cancellationToken = default)
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(state.MediaPath));
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(path));
 
         // Forward User-Agent if provided
-        if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
+        if (httpContext.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var useragent))
         {
             // Clear default and add specific one if exists, otherwise HttpClient default might be used
             requestMessage.Headers.UserAgent.Clear();
-            requestMessage.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, useragent);
+            requestMessage.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, useragent.ToString());
         }
 
         // Forward Range header if present in the client request
@@ -91,9 +93,25 @@ public static class FileStreamResponseHelpers
         // Set the status code for the client response (e.g., 200 OK or 206 Partial Content)
         httpContext.Response.StatusCode = (int)response.StatusCode;
 
-        // Return the stream from the upstream server
         // IMPORTANT: Do not dispose the response stream here, FileStreamResult will handle it.
-        return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
+        var result = new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
+
+        if (includeFileName)
+        {
+          var fileDownloadName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+          if (string.IsNullOrWhiteSpace(fileDownloadName))
+          {
+              var uri = new Uri(path);
+              fileDownloadName = Path.GetFileName(uri.AbsolutePath);
+          }
+
+          if (!string.IsNullOrWhiteSpace(fileDownloadName))
+          {
+            result.FileDownloadName = fileDownloadName;
+          }
+        }
+
+        return result;
     }
 
     /// <summary>

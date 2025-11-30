@@ -180,7 +180,7 @@ namespace MediaBrowser.Providers.Subtitles
             LibraryOptions libraryOptions,
             SubtitleResponse response)
         {
-            var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
+            var saveInMediaFolder = video.IsFileProtocol ? libraryOptions.SaveSubtitlesWithMedia : false;
 
             var memoryStream = new MemoryStream();
             await using (memoryStream.ConfigureAwait(false))

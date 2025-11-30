@@ -116,7 +116,7 @@ public class AudioHelper
         if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
+            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state.MediaPath, httpClient, _httpContextAccessor.HttpContext, false).ConfigureAwait(false);
         }
 
         if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
