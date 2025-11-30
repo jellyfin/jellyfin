@@ -444,6 +444,13 @@ public class GuideManager : IGuideManager
 
         item.Name = channelInfo.Name;
 
+        var normalizedGroups = NormalizeGroups(channelInfo.ChannelGroups);
+        if (!ChannelGroupsEqual(item.ChannelGroups, normalizedGroups))
+        {
+            forceUpdate = true;
+            item.ChannelGroups = normalizedGroups;
+        }
+
         if (!item.HasImage(ImageType.Primary))
         {
             if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
@@ -468,6 +475,50 @@ public class GuideManager : IGuideManager
         }
 
         return item;
+    }
+
+    private static string[] NormalizeGroups(IReadOnlyCollection<string> groups)
+    {
+        if (groups is null || groups.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var normalized = new List<string>(groups.Count);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var group in groups)
+        {
+            if (string.IsNullOrWhiteSpace(group) || !seen.Add(group))
+            {
+                continue;
+            }
+
+            normalized.Add(group);
+        }
+
+        return normalized.Count == 0 ? Array.Empty<string>() : normalized.ToArray();
+    }
+
+    private static bool ChannelGroupsEqual(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        left ??= Array.Empty<string>();
+        right ??= Array.Empty<string>();
+
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Count; i++)
+        {
+            if (!string.Equals(left[i], right[i], StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private (LiveTvProgram Item, bool IsNew, bool IsUpdated) GetProgram(

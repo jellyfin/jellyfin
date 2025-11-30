@@ -19,6 +19,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -115,6 +116,28 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets available live tv channel groups.
+    /// </summary>
+    /// <param name="userId">Optional. Filter by user and attach user data.</param>
+    /// <response code="200">Available live tv channel groups returned.</response>
+    /// <returns>
+    /// An <see cref="OkResult"/> containing the available live tv channel groups.
+    /// </returns>
+    [HttpGet("ChannelGroups")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.LiveTvAccess)]
+    public ActionResult<QueryResult<LiveTvChannelGroupDto>> GetLiveTvChannelGroups(
+        [FromQuery] Guid? userId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+
+        return _liveTvManager.GetChannelGroups(new InternalItemsQuery(user), CancellationToken.None);
+    }
+
+    /// <summary>
     /// Gets available live tv channels.
     /// </summary>
     /// <param name="type">Optional. Filter by channel type.</param>
@@ -138,6 +161,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="sortOrder">Optional. Sort order.</param>
     /// <param name="enableFavoriteSorting">Optional. Incorporate favorite and like status into channel sorting.</param>
     /// <param name="addCurrentProgram">Optional. Adds current program info to each channel.</param>
+    /// <param name="channelGroupIds">Optional. Filter by channel group ids.</param>
     /// <response code="200">Available live tv channels returned.</response>
     /// <returns>
     /// An <see cref="OkResult"/> containing the resulting available live tv channels.
@@ -166,7 +190,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] SortOrder? sortOrder,
         [FromQuery] bool enableFavoriteSorting = false,
-        [FromQuery] bool addCurrentProgram = true)
+        [FromQuery] bool addCurrentProgram = true,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[]? channelGroupIds = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -191,7 +216,8 @@ public class LiveTvController : BaseJellyfinApiController
                 IsSports = isSports,
                 SortBy = sortBy,
                 SortOrder = sortOrder ?? SortOrder.Ascending,
-                AddCurrentProgram = addCurrentProgram
+                AddCurrentProgram = addCurrentProgram,
+                ChannelGroupIds = channelGroupIds ?? Array.Empty<Guid>()
             },
             dtoOptions,
             CancellationToken.None);
@@ -209,6 +235,20 @@ public class LiveTvController : BaseJellyfinApiController
         dtoOptions.AddCurrentProgram = addCurrentProgram;
 
         var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
+
+        var itemMap = channelResult.Items.OfType<LiveTvChannel>().ToDictionary(i => i.Id);
+        foreach (var dto in returnArray)
+        {
+            if (itemMap.TryGetValue(dto.Id, out var channel))
+            {
+                var channelGroups = CreateChannelGroupPairs(channel.ChannelGroups);
+                if (channelGroups is not null)
+                {
+                    dto.ChannelGroups = channelGroups;
+                }
+            }
+        }
+
         return new QueryResult<BaseItemDto>(
             startIndex,
             channelResult.TotalRecordCount,
@@ -244,7 +284,49 @@ public class LiveTvController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
-        return _dtoService.GetBaseItemDto(item, dtoOptions, user);
+        var dto = _dtoService.GetBaseItemDto(item, dtoOptions, user);
+
+        if (item is LiveTvChannel channel)
+        {
+            var channelGroups = CreateChannelGroupPairs(channel.ChannelGroups);
+            if (channelGroups is not null)
+            {
+                dto.ChannelGroups = channelGroups;
+            }
+        }
+
+        return dto;
+    }
+
+    private static NameGuidPair[]? CreateChannelGroupPairs(IReadOnlyCollection<string> groups)
+    {
+        if (groups is null || groups.Count == 0)
+        {
+            return null;
+        }
+
+        var list = new List<NameGuidPair>(groups.Count);
+        var seen = new HashSet<Guid>();
+
+        foreach (var group in groups)
+        {
+            if (string.IsNullOrWhiteSpace(group))
+            {
+                continue;
+            }
+
+            var id = group.GetMD5();
+            if (seen.Add(id))
+            {
+                list.Add(new NameGuidPair
+                {
+                    Name = group,
+                    Id = id
+                });
+            }
+        }
+
+        return list.Count == 0 ? null : list.ToArray();
     }
 
     /// <summary>
@@ -559,6 +641,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="librarySeriesId">Optional. Filter by library series id.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
     /// <param name="enableTotalRecordCount">Retrieve total record count.</param>
+    /// <param name="channelGroupIds">Optional. Filter by channel group ids.</param>
     /// <response code="200">Live tv epgs returned.</response>
     /// <returns>
     /// A <see cref="Task"/> containing a <see cref="OkResult"/> which contains the live tv epgs.
@@ -593,7 +676,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] string? seriesTimerId,
         [FromQuery] Guid? librarySeriesId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
-        [FromQuery] bool enableTotalRecordCount = true)
+        [FromQuery] bool enableTotalRecordCount = true,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[]? channelGroupIds = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -622,6 +706,11 @@ public class LiveTvController : BaseJellyfinApiController
             Genres = genres,
             GenreIds = genreIds
         };
+
+        if (channelGroupIds is { Length: > 0 })
+        {
+            query.ChannelGroupIds = channelGroupIds;
+        }
 
         if (!librarySeriesId.IsNullOrEmpty())
         {
@@ -675,7 +764,8 @@ public class LiveTvController : BaseJellyfinApiController
             IsSports = body.IsSports,
             SeriesTimerId = body.SeriesTimerId,
             Genres = body.Genres ?? [],
-            GenreIds = body.GenreIds ?? []
+            GenreIds = body.GenreIds ?? [],
+            ChannelGroupIds = body.ChannelGroupIds ?? []
         };
 
         if (!body.LibrarySeriesId.IsNullOrEmpty())

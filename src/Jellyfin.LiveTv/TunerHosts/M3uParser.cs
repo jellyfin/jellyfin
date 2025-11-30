@@ -72,6 +72,7 @@ namespace Jellyfin.LiveTv.TunerHosts
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<ChannelInfo>();
+            var channelsByStream = new Dictionary<string, ChannelInfo>(StringComparer.Ordinal);
             string extInf = string.Empty;
 
             await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
@@ -97,8 +98,18 @@ namespace Jellyfin.LiveTv.TunerHosts
                     channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     channel.Path = trimmedLine;
-                    channels.Add(channel);
-                    _logger.LogInformation("Parsed channel: {ChannelName}", channel.Name);
+
+                    if (channelsByStream.TryGetValue(trimmedLine, out var existingChannel))
+                    {
+                        MergeChannelInfo(existingChannel, channel);
+                    }
+                    else
+                    {
+                        channelsByStream[trimmedLine] = channel;
+                        channels.Add(channel);
+                        _logger.LogInformation("Parsed channel: {ChannelName}", channel.Name);
+                    }
+
                     extInf = string.Empty;
                 }
             }
@@ -127,10 +138,9 @@ namespace Jellyfin.LiveTv.TunerHosts
                 channel.ImageUrl = logo;
             }
 
-            if (attributes.TryGetValue("group-title", out string groupTitle))
-            {
-                channel.ChannelGroup = groupTitle;
-            }
+            channel.ChannelGroups = attributes.TryGetValue("group-title", out string groupTitle) && !string.IsNullOrWhiteSpace(groupTitle)
+                ? new[] { groupTitle }
+                : Array.Empty<string>();
 
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
@@ -158,6 +168,32 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
 
             return channel;
+        }
+
+        private static void MergeChannelInfo(ChannelInfo target, ChannelInfo source)
+        {
+            if (source.ChannelGroups is null || source.ChannelGroups.Length == 0)
+            {
+                return;
+            }
+
+            var existingGroups = target.ChannelGroups is { Length: > 0 } ? target.ChannelGroups : Array.Empty<string>();
+            var mergedGroups = new List<string>(existingGroups);
+            var seenGroups = new HashSet<string>(existingGroups, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var group in source.ChannelGroups)
+            {
+                if (string.IsNullOrWhiteSpace(group) || !seenGroups.Add(group))
+                {
+                    continue;
+                }
+
+                mergedGroups.Add(group);
+            }
+
+            target.ChannelGroups = mergedGroups.Count == existingGroups.Length
+                ? existingGroups
+                : mergedGroups.ToArray();
         }
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)

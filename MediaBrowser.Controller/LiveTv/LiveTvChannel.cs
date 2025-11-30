@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -87,6 +86,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The episode title.</value>
         [JsonIgnore]
         public string EpisodeTitle { get; set; }
+
+        public string[] ChannelGroups { get; set; } = Array.Empty<string>();
 
         public override List<string> GetUserDataKeys()
         {

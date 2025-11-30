@@ -150,7 +150,117 @@ namespace Jellyfin.LiveTv
 
             internalQuery.OrderBy = orderBy.ToArray();
 
+            if (query.ChannelGroupIds != null && query.ChannelGroupIds.Length > 0)
+            {
+                var channelIds = GetChannelIdsForGroups(query.ChannelGroupIds, user, cancellationToken);
+                if (channelIds.Count == 0)
+                {
+                    return new QueryResult<BaseItem>();
+                }
+
+                internalQuery.ItemIds = channelIds.ToArray();
+            }
+
             return _libraryManager.GetItemsResult(internalQuery);
+        }
+
+        public QueryResult<LiveTvChannelGroupDto> GetChannelGroups(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            var user = query.User;
+            var topFolder = GetInternalLiveTvFolder(cancellationToken);
+
+            var internalQuery = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                TopParentIds = [topFolder.Id],
+                DtoOptions = new DtoOptions(false)
+            };
+
+            var channels = _libraryManager.GetItemList(internalQuery).OfType<LiveTvChannel>();
+
+            var groupsByName = new Dictionary<string, HashSet<Guid>>(StringComparer.Ordinal);
+
+            foreach (var channel in channels)
+            {
+                if (channel.ChannelGroups is null || channel.ChannelGroups.Length == 0)
+                {
+                    continue;
+                }
+
+                foreach (var group in channel.ChannelGroups)
+                {
+                    if (string.IsNullOrWhiteSpace(group))
+                    {
+                        continue;
+                    }
+
+                    if (!groupsByName.TryGetValue(group, out var memberSet))
+                    {
+                        memberSet = new HashSet<Guid>();
+                        groupsByName[group] = memberSet;
+                    }
+
+                    memberSet.Add(channel.Id);
+                }
+            }
+
+            var groups = groupsByName
+                .Select(pair => new LiveTvChannelGroupDto
+                {
+                    Name = pair.Key,
+                    Id = pair.Key.GetMD5(),
+                    ChannelCount = pair.Value.Count
+                })
+                .OrderBy(g => g.Name)
+                .ToList();
+
+            return new QueryResult<LiveTvChannelGroupDto>(groups);
+        }
+
+        private IReadOnlyList<Guid> GetChannelIdsForGroups(IReadOnlyCollection<Guid> groupIds, User user, CancellationToken cancellationToken)
+        {
+            if (groupIds is null || groupIds.Count == 0)
+            {
+                return Array.Empty<Guid>();
+            }
+
+            var groupIdSet = new HashSet<Guid>(groupIds);
+            var topFolder = GetInternalLiveTvFolder(cancellationToken);
+            var internalQuery = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                TopParentIds = [topFolder.Id],
+                DtoOptions = new DtoOptions(false),
+                EnableTotalRecordCount = false
+            };
+
+            var channels = _libraryManager.GetItemList(internalQuery).OfType<LiveTvChannel>();
+
+            var matchingChannelIds = new HashSet<Guid>();
+
+            foreach (var channel in channels)
+            {
+                if (channel.ChannelGroups is null || channel.ChannelGroups.Length == 0)
+                {
+                    continue;
+                }
+
+                foreach (var group in channel.ChannelGroups)
+                {
+                    if (string.IsNullOrWhiteSpace(group))
+                    {
+                        continue;
+                    }
+
+                    if (groupIdSet.Contains(group.GetMD5()))
+                    {
+                        matchingChannelIds.Add(channel.Id);
+                        break;
+                    }
+                }
+            }
+
+            return matchingChannelIds.ToArray();
         }
 
         private ILiveTvService GetService(LiveTvChannel item)
@@ -179,6 +289,16 @@ namespace Jellyfin.LiveTv
             var program = _libraryManager.GetItemById(id);
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
+
+            if (program is LiveTvProgram liveTvProgram)
+            {
+                var channel = _libraryManager.GetItemById(liveTvProgram.ChannelId) as LiveTvChannel;
+                var channelGroups = CreateChannelGroupPairs(channel?.ChannelGroups);
+                if (channelGroups is not null)
+                {
+                    dto.ChannelGroups = channelGroups;
+                }
+            }
 
             var list = new List<(BaseItemDto ItemDto, string ExternalId, string ExternalSeriesId)>
             {
@@ -233,6 +353,24 @@ namespace Jellyfin.LiveTv
                 IsAiring = query.IsAiring
             };
 
+            if (query.ChannelGroupIds != null && query.ChannelGroupIds.Count > 0)
+            {
+                var channelIds = GetChannelIdsForGroups(query.ChannelGroupIds, user, cancellationToken);
+                if (channelIds.Count == 0)
+                {
+                    return new QueryResult<BaseItemDto>();
+                }
+
+                if (internalQuery.ChannelIds.Count > 0)
+                {
+                    internalQuery.ChannelIds = internalQuery.ChannelIds.Intersect(channelIds).ToArray();
+                }
+                else
+                {
+                    internalQuery.ChannelIds = channelIds.ToArray();
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
             {
                 var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
@@ -258,10 +396,74 @@ namespace Jellyfin.LiveTv
 
             var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user);
 
+            PopulateChannelGroups(returnArray, queryResult.Items);
+
             return new QueryResult<BaseItemDto>(
                 query.StartIndex,
                 queryResult.TotalRecordCount,
                 returnArray);
+        }
+
+        private void PopulateChannelGroups(IReadOnlyList<BaseItemDto> dtos, IReadOnlyList<BaseItem> items)
+        {
+            var programMap = items.OfType<LiveTvProgram>().ToDictionary(p => p.Id);
+            var channelIds = programMap.Values.Select(p => p.ChannelId).Distinct().ToArray();
+
+            if (channelIds.Length == 0)
+            {
+                return;
+            }
+
+            var channels = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [BaseItemKind.LiveTvChannel],
+                ItemIds = channelIds,
+                DtoOptions = new DtoOptions(false)
+            }).OfType<LiveTvChannel>().ToDictionary(c => c.Id);
+
+            foreach (var dto in dtos)
+            {
+                if (programMap.TryGetValue(dto.Id, out var program) &&
+                    channels.TryGetValue(program.ChannelId, out var channel))
+                {
+                    var channelGroups = CreateChannelGroupPairs(channel.ChannelGroups);
+                    if (channelGroups is not null)
+                    {
+                        dto.ChannelGroups = channelGroups;
+                    }
+                }
+            }
+        }
+
+        private static NameGuidPair[] CreateChannelGroupPairs(IReadOnlyCollection<string> groups)
+        {
+            if (groups is null || groups.Count == 0)
+            {
+                return null;
+            }
+
+            var list = new List<NameGuidPair>(groups.Count);
+            var seen = new HashSet<Guid>();
+
+            foreach (var group in groups)
+            {
+                if (string.IsNullOrWhiteSpace(group))
+                {
+                    continue;
+                }
+
+                var id = group.GetMD5();
+                if (seen.Add(id))
+                {
+                    list.Add(new NameGuidPair
+                    {
+                        Name = group,
+                        Id = id
+                    });
+                }
+            }
+
+            return list.Count == 0 ? null : list.ToArray();
         }
 
         public QueryResult<BaseItem> GetRecommendedProgramsInternal(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -284,8 +486,31 @@ namespace Jellyfin.LiveTv
                 OrderBy = [(ItemSortBy.StartDate, SortOrder.Ascending)],
                 TopParentIds = [topFolder.Id],
                 DtoOptions = options,
-                GenreIds = query.GenreIds
+                GenreIds = query.GenreIds,
+                ChannelIds = query.ChannelIds
             };
+
+            if (query.ChannelGroupIds is { Count: > 0 })
+            {
+                var groupChannelIds = GetChannelIdsForGroups(query.ChannelGroupIds, user, cancellationToken);
+                if (groupChannelIds.Count == 0)
+                {
+                    return new QueryResult<BaseItem>();
+                }
+
+                if (internalQuery.ChannelIds.Count > 0)
+                {
+                    internalQuery.ChannelIds = internalQuery.ChannelIds.Intersect(groupChannelIds).ToArray();
+                    if (internalQuery.ChannelIds.Count == 0)
+                    {
+                        return new QueryResult<BaseItem>();
+                    }
+                }
+                else
+                {
+                    internalQuery.ChannelIds = groupChannelIds.ToArray();
+                }
+            }
 
             if (query.Limit.HasValue)
             {
@@ -327,10 +552,13 @@ namespace Jellyfin.LiveTv
 
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
+            var dtos = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User);
+            PopulateChannelGroups(dtos, internalResult.Items);
+
             return Task.FromResult(new QueryResult<BaseItemDto>(
                 query.StartIndex,
                 internalResult.TotalRecordCount,
-                _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User)));
+                dtos));
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -534,11 +762,12 @@ namespace Jellyfin.LiveTv
 
         public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem Item, BaseItemDto ItemDto)> programs, IReadOnlyList<ItemFields> fields, User user = null)
         {
+            var programEntries = programs.ToList();
             var programTuples = new List<(BaseItemDto Dto, string ExternalId, string ExternalSeriesId)>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
             var hasChannelInfo = fields.Contains(ItemFields.ChannelInfo);
 
-            foreach (var (item, dto) in programs)
+            foreach (var (item, dto) in programEntries)
             {
                 var program = (LiveTvProgram)item;
 
@@ -572,6 +801,10 @@ namespace Jellyfin.LiveTv
 
                 programTuples.Add((dto, program.ExternalId, program.ExternalSeriesId));
             }
+
+            PopulateChannelGroups(
+                programEntries.Select(p => p.ItemDto).ToArray(),
+                programEntries.Select(p => p.Item).ToArray());
 
             return AddRecordingInfo(programTuples, CancellationToken.None);
         }
@@ -981,6 +1214,12 @@ namespace Jellyfin.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
+
+                var channelGroups = CreateChannelGroupPairs(channel.ChannelGroups);
+                if (channelGroups is not null)
+                {
+                    dto.ChannelGroups = channelGroups;
+                }
 
                 currentChannelsDict[dto.Id] = dto;
 

@@ -116,6 +116,12 @@ public class GetProgramsDto
     public IReadOnlyList<Guid>? GenreIds { get; set; }
 
     /// <summary>
+    /// Gets or sets the channel group ids to return guide information for.
+    /// </summary>
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
+    public IReadOnlyList<Guid>? ChannelGroupIds { get; set; }
+
+    /// <summary>
     /// Gets or sets include image information in output.
     /// </summary>
     public bool? EnableImages { get; set; }
