@@ -57,6 +57,7 @@ public class EncodingOptions
         AllowHevcEncoding = false;
         AllowAv1Encoding = false;
         EnableSubtitleExtraction = true;
+        SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
     }
@@ -285,6 +286,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether subtitle extraction is enabled.
     /// </summary>
     public bool EnableSubtitleExtraction { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timeout for subtitle extraction in minutes.
+    /// </summary>
+    public int SubtitleExtractionTimeoutMinutes { get; set; }
 
     /// <summary>
     /// Gets or sets the codecs hardware encoding is used for.

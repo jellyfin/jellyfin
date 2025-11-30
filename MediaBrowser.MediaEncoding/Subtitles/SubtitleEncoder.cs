@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -37,6 +39,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
         private readonly IPathManager _pathManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -54,7 +57,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
             ISubtitleParser subtitleParser,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -63,6 +67,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
             _pathManager = pathManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         private MemoryStream ConvertSubtitles(
@@ -394,7 +399,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -677,7 +683,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -828,7 +835,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
