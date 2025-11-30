@@ -267,203 +267,203 @@ namespace MediaBrowser.Model.Entities
                 switch (Type)
                 {
                     case MediaStreamType.Audio:
-                    {
-                        var attributes = new List<string>();
-
-                        // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
-                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
-                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
-                            CultureInfo match = null;
-                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                            var attributes = new List<string>();
 
-                                if (match is null)
+                            // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
+                            if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
+                                var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
+                                CultureInfo match = null;
+                                if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
                                     match = cultures.FirstOrDefault(r =>
-                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                        r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+
+                                    if (match is null)
+                                    {
+                                        string baseLang = Language.AsSpan().LeftPart('-').ToString();
+                                        match = cultures.FirstOrDefault(r =>
+                                            r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
-                            }
-
-                            string fullLanguage = match?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
-                        }
-
-                        if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
-                        {
-                            attributes.Add(Profile);
-                        }
-                        else if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(AudioCodec.GetFriendlyName(Codec));
-                        }
-
-                        if (!string.IsNullOrEmpty(ChannelLayout))
-                        {
-                            attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
-                        }
-                        else if (Channels.HasValue)
-                        {
-                            attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
-                        }
-
-                        if (IsDefault)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
-                        }
-
-                        if (IsExternal)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
-                            {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                else
                                 {
-                                    result.Append(" - ").Append(tag);
+                                    match = cultures.FirstOrDefault(r =>
+                                        r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
                                 }
+
+                                string fullLanguage = match?.DisplayName;
+                                attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                             }
 
-                            return result.ToString();
-                        }
+                            if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
+                            {
+                                attributes.Add(Profile);
+                            }
+                            else if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(AudioCodec.GetFriendlyName(Codec));
+                            }
 
-                        return string.Join(" - ", attributes);
-                    }
+                            if (!string.IsNullOrEmpty(ChannelLayout))
+                            {
+                                attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
+                            }
+                            else if (Channels.HasValue)
+                            {
+                                attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
+                            }
+
+                            if (IsDefault)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
+                            }
+
+                            if (IsExternal)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(" - ", attributes);
+                        }
 
                     case MediaStreamType.Video:
-                    {
-                        var attributes = new List<string>();
-
-                        var resolutionText = GetResolutionText();
-
-                        if (!string.IsNullOrEmpty(resolutionText))
                         {
-                            attributes.Add(resolutionText);
-                        }
+                            var attributes = new List<string>();
 
-                        if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(Codec.ToUpperInvariant());
-                        }
+                            var resolutionText = GetResolutionText();
 
-                        if (VideoDoViTitle is not null)
-                        {
-                            attributes.Add(VideoDoViTitle);
-                        }
-                        else if (VideoRange != VideoRange.Unknown)
-                        {
-                            attributes.Add(VideoRange.ToString());
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
+                            if (!string.IsNullOrEmpty(resolutionText))
                             {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    result.Append(" - ").Append(tag);
-                                }
+                                attributes.Add(resolutionText);
                             }
 
-                            return result.ToString();
+                            if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(Codec.ToUpperInvariant());
+                            }
+
+                            if (VideoDoViTitle is not null)
+                            {
+                                attributes.Add(VideoDoViTitle);
+                            }
+                            else if (VideoRange != VideoRange.Unknown)
+                            {
+                                attributes.Add(VideoRange.ToString());
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(' ', attributes);
                         }
 
-                        return string.Join(' ', attributes);
-                    }
-
                     case MediaStreamType.Subtitle:
-                    {
-                        var attributes = new List<string>();
-
-                        if (!string.IsNullOrEmpty(Language))
                         {
-                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
-                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
-                            CultureInfo match = null;
-                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                            var attributes = new List<string>();
 
-                                if (match is null)
+                            if (!string.IsNullOrEmpty(Language))
+                            {
+                                // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
+                                var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
+                                CultureInfo match = null;
+                                if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
                                     match = cultures.FirstOrDefault(r =>
-                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                        r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
+
+                                    if (match is null)
+                                    {
+                                        string baseLang = Language.AsSpan().LeftPart('-').ToString();
+                                        match = cultures.FirstOrDefault(r =>
+                                            r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
+                                    }
                                 }
+                                else
+                                {
+                                    match = cultures.FirstOrDefault(r =>
+                                        r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                                }
+
+                                string fullLanguage = match?.DisplayName;
+                                attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                             }
                             else
                             {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
+                                attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                             }
 
-                            string fullLanguage = match?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
-                        }
-                        else
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
-                        }
-
-                        if (IsHearingImpaired == true)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
-                        }
-
-                        if (IsDefault)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
-                        }
-
-                        if (IsForced)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
-                        }
-
-                        if (!string.IsNullOrEmpty(Codec))
-                        {
-                            attributes.Add(Codec.ToUpperInvariant());
-                        }
-
-                        if (IsExternal)
-                        {
-                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
-                        }
-
-                        if (!string.IsNullOrEmpty(Title))
-                        {
-                            var result = new StringBuilder(Title);
-                            foreach (var tag in attributes)
+                            if (IsHearingImpaired == true)
                             {
-                                // Keep Tags that are not already in Title.
-                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    result.Append(" - ").Append(tag);
-                                }
+                                attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
                             }
 
-                            return result.ToString();
-                        }
+                            if (IsDefault)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
+                            }
 
-                        return string.Join(" - ", attributes);
-                    }
+                            if (IsForced)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
+                            }
+
+                            if (!string.IsNullOrEmpty(Codec))
+                            {
+                                attributes.Add(Codec.ToUpperInvariant());
+                            }
+
+                            if (IsExternal)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
+                            }
+
+                            if (!string.IsNullOrEmpty(Title))
+                            {
+                                var result = new StringBuilder(Title);
+                                foreach (var tag in attributes)
+                                {
+                                    // Keep Tags that are not already in Title.
+                                    if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        result.Append(" - ").Append(tag);
+                                    }
+                                }
+
+                                return result.ToString();
+                            }
+
+                            return string.Join(" - ", attributes);
+                        }
 
                     default:
                         return null;

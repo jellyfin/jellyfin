@@ -37,9 +37,9 @@ public class FFProbeVideoInfoTests
     {
         Assert.Throws<ArgumentException>(
             () => _fFProbeVideoInfo.CreateDummyChapters(new Video()
-                {
-                    RunTimeTicks = runtime
-                }));
+            {
+                RunTimeTicks = runtime
+            }));
     }
 
     [Theory]
@@ -52,9 +52,9 @@ public class FFProbeVideoInfoTests
     public void CreateDummyChapters_ValidRuntime_CorrectChaptersCount(long? runtime, int chaptersCount)
     {
         var chapters = _fFProbeVideoInfo.CreateDummyChapters(new Video()
-                {
-                    RunTimeTicks = runtime
-                });
+        {
+            RunTimeTicks = runtime
+        });
 
         Assert.Equal(chaptersCount, chapters.Length);
     }

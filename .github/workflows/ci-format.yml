@@ -1,0 +1,25 @@
+name: Format
+on:
+  push:
+    branches:
+      - master
+  # Run formatter against the forked branch, but
+  # do not allow access to secrets
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflows-in-forked-repositories
+  pull_request:
+
+env:
+  SDK_VERSION: "9.0.x"
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
+        with:
+          dotnet-version: ${{ env.SDK_VERSION }}
+
+      - name: Run DotNet Format
+        run: dotnet format --verify-no-changes --verbosity minimal

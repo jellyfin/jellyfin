@@ -82,7 +82,7 @@ public class TunerHostManager : ITunerHostManager
         if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
         {
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            config.TunerHosts = [..list, info];
+            config.TunerHosts = [.. list, info];
         }
         else
         {

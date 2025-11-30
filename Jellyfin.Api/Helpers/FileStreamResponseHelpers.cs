@@ -62,12 +62,12 @@ public static class FileStreamResponseHelpers
         if (response.Headers.TryGetValues(HeaderNames.AcceptRanges, out var acceptRangesHeaders))
         {
             // Prefer upstream server's Accept-Ranges header if available
-             acceptRangesValue = string.Join(", ", acceptRangesHeaders);
-             upstreamSupportsRange |= acceptRangesValue.Contains("bytes", StringComparison.OrdinalIgnoreCase);
+            acceptRangesValue = string.Join(", ", acceptRangesHeaders);
+            upstreamSupportsRange |= acceptRangesValue.Contains("bytes", StringComparison.OrdinalIgnoreCase);
         }
         else if (upstreamSupportsRange) // If we got 206 but no Accept-Ranges header, assume bytes
         {
-             acceptRangesValue = "bytes";
+            acceptRangesValue = "bytes";
         }
 
         // Set Accept-Ranges header for the client based on upstream support
@@ -76,13 +76,13 @@ public static class FileStreamResponseHelpers
         // Set Content-Range header if upstream provided it (implies partial content)
         if (response.Content.Headers.ContentRange is not null)
         {
-             httpContext.Response.Headers[HeaderNames.ContentRange] = response.Content.Headers.ContentRange.ToString();
+            httpContext.Response.Headers[HeaderNames.ContentRange] = response.Content.Headers.ContentRange.ToString();
         }
 
         // Set Content-Length header. For partial content, this is the length of the partial segment.
         if (response.Content.Headers.ContentLength.HasValue)
         {
-             httpContext.Response.ContentLength = response.Content.Headers.ContentLength.Value;
+            httpContext.Response.ContentLength = response.Content.Headers.ContentLength.Value;
         }
 
         // Set Content-Type header
