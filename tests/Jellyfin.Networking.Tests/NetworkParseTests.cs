@@ -113,7 +113,7 @@ namespace Jellyfin.Networking.Tests
         public void IPv4SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
-            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Jellyfin.Networking.Tests
         public void IPv4SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
-            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
         public void IPv6SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
-            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -158,7 +158,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
         public void IPv6SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
-            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
