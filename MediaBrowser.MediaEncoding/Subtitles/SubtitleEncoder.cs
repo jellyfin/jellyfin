@@ -181,13 +181,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
-                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetAsync(new Uri(fileInfo.Path), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetStreamAsync(new Uri(fileInfo.Path), cancellationToken)
                         .ConfigureAwait(false);
 
-                    response.EnsureSuccessStatusCode();
-
-                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
                       using var reader = new StreamReader(stream, detected.Encoding);
