@@ -1930,8 +1930,15 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            var cleanName = GetCleanValue(filter.Name);
-            baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
+            if (filter.UseRawName == true)
+            {
+                baseQuery = baseQuery.Where(e => e.Name == filter.Name);
+            }
+            else
+            {
+                var cleanName = GetCleanValue(filter.Name);
+                baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
+            }
         }
 
         // These are the same, for now
