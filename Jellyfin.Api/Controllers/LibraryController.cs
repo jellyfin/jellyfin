@@ -698,6 +698,9 @@ public class LibraryController : BaseJellyfinApiController
             await LogDownloadAsync(item, user).ConfigureAwait(false);
         }
 
+        // Quotes are valid in linux. They'll possibly cause issues here.
+        var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+
         var filePath = item.Path;
         if (item.IsFileProtocol)
         {
@@ -708,9 +711,6 @@ public class LibraryController : BaseJellyfinApiController
                 filePath = resolved.FullName;
             }
         }
-
-        // Quotes are valid in linux. They'll possibly cause issues here.
-        var filename = Path.GetFileName(filePath)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
         return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
     }
