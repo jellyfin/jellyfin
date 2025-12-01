@@ -965,15 +965,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 case MediaProtocol.Http:
                 {
-                    using var resp = await _httpClientFactory
+                    using var stream = await _httpClientFactory
                       .CreateClient(NamedClient.Default)
-                      .GetAsync(new Uri(path), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                      .GetStreamAsync(new Uri(path), cancellationToken)
                       .ConfigureAwait(false);
 
-                    resp.EnsureSuccessStatusCode();
-
-                    using var s = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    return await CharsetDetector.DetectFromStreamAsync(s, cancellationToken).ConfigureAwait(false);
+                    return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
                 }
 
                 case MediaProtocol.File:
