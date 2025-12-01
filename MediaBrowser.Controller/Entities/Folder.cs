@@ -668,34 +668,22 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var result = GetItems(new InternalItemsQuery(user)
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = false,
-                Limit = 0,
-                Parent = this,
-                DtoOptions = new DtoOptions(false)
-                {
-                    EnableImages = false
-                }
+                Parent = this
             });
-
-            return result.TotalRecordCount;
         }
 
         public virtual int GetRecursiveChildCount(User user)
         {
-            return GetItems(new InternalItemsQuery(user)
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 Recursive = true,
+                Parent = this,
                 IsFolder = false,
-                IsVirtualItem = false,
-                EnableTotalRecordCount = true,
-                Limit = 0,
-                DtoOptions = new DtoOptions(false)
-                {
-                    EnableImages = false
-                }
-            }).TotalRecordCount;
+                IsVirtualItem = false
+            });
         }
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
