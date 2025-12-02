@@ -159,6 +159,12 @@ public static class StreamingHelpers
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
+        if (string.IsNullOrEmpty(containerInternal) && !string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
+        {
+             // Wenn keine Endung da ist UND es LiveTV ist -> Fallback auf .ts
+            containerInternal = ".ts";
+        }
+
         if (!string.IsNullOrEmpty(streamingRequest.Container))
         {
             containerInternal = streamingRequest.Container;
@@ -351,12 +357,6 @@ public static class StreamingHelpers
         {
             var idx = mediaSource.Container.IndexOf(',', StringComparison.OrdinalIgnoreCase);
             return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
-        }
-
-        // Fallback for video requests without known container (e.g. IPTV streams with no extension, TVHeadend)
-        if (state.IsVideoRequest)
-        {
-            return ".ts";
         }
 
         throw new InvalidOperationException("Failed to find an appropriate file extension");
