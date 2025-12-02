@@ -1126,7 +1126,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Empty;
                 }
 
-                args.Append(GetCudaDeviceArgs(0, CudaAlias))
+                args.Append(GetCudaDeviceArgs(options.CudaDevice, CudaAlias))
                      .Append(GetFilterHwDeviceArgs(CudaAlias));
             }
             else if (optHwaccelType == HardwareAccelerationType.amf)
