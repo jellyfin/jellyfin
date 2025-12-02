@@ -1,9 +1,10 @@
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Library;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Library
@@ -15,6 +16,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         public MediaSourceManagerTests()
         {
             IFixture fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            var networkManagerMock = new Mock<INetworkManager>();
+            fixture.Inject(networkManagerMock.Object);
             fixture.Inject<IFileSystem>(fixture.Create<ManagedFileSystem>());
             _mediaSourceManager = fixture.Create<MediaSourceManager>();
         }
