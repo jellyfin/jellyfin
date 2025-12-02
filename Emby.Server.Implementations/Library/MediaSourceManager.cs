@@ -210,7 +210,6 @@ namespace Emby.Server.Implementations.Library
                                     forceRemux = true;
                                 }
                             }
-
                             else if (!uri.Host.Contains('.', StringComparison.Ordinal))
                             {
                                 forceRemux = true;
