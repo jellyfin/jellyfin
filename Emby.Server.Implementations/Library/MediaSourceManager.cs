@@ -21,6 +21,7 @@ using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -51,6 +52,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ILogger<MediaSourceManager> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly INetworkManager _networkManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
         private readonly IDirectoryService _directoryService;
@@ -73,6 +75,7 @@ namespace Emby.Server.Implementations.Library
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IMediaEncoder mediaEncoder,
+            INetworkManager networkManager,
             IDirectoryService directoryService,
             IMediaStreamRepository mediaStreamRepository,
             IMediaAttachmentRepository mediaAttachmentRepository)
@@ -85,6 +88,7 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
             _mediaEncoder = mediaEncoder;
+            _networkManager = networkManager;
             _localizationManager = localizationManager;
             _appPaths = applicationPaths;
             _directoryService = directoryService;
@@ -186,6 +190,39 @@ namespace Emby.Server.Implementations.Library
                     cancellationToken).ConfigureAwait(false);
 
                 mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+            }
+
+            if (item.Path != null && item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var source in mediaSources)
+                {
+                    if (source.Protocol == MediaProtocol.Http)
+                    {
+                        bool forceRemux = false;
+
+                        if (Uri.TryCreate(source.Path, UriKind.Absolute, out var uri))
+                        {
+                            if (IPAddress.TryParse(uri.Host, out var ipAddress))
+                            {
+                                if (_networkManager.IsInLocalNetwork(ipAddress.ToString()))
+                                {
+                                    forceRemux = true;
+                                }
+                            }
+
+                            else if (!uri.Host.Contains('.', StringComparison.Ordinal))
+                            {
+                                forceRemux = true;
+                            }
+                        }
+
+                        if (forceRemux)
+                        {
+                            source.SupportsDirectPlay = false;
+                            source.SupportsDirectStream = true;
+                        }
+                    }
+                }
             }
 
             var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken).ConfigureAwait(false);
