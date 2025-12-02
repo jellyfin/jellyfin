@@ -159,7 +159,9 @@ public static class StreamingHelpers
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
-        if (string.IsNullOrEmpty(containerInternal) && !string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
+        if (string.IsNullOrEmpty(containerInternal)
+            && (!string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId)
+                || (mediaSource != null && mediaSource.IsInfiniteStream)))
         {
             containerInternal = ".ts";
         }
