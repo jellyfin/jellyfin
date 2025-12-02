@@ -161,7 +161,6 @@ public static class StreamingHelpers
 
         if (string.IsNullOrEmpty(containerInternal) && !string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
         {
-             // Wenn keine Endung da ist UND es LiveTV ist -> Fallback auf .ts
             containerInternal = ".ts";
         }
 
