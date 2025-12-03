@@ -80,6 +80,7 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
     /// <param name="officialRatings">Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimited.</param>
     /// <param name="tags">Optional. If specified, results will be filtered based on tag. This allows multiple, pipe delimited.</param>
+    /// <param name="allTags">Optional. If specified, results will be filtered based on all tags. This allows multiple, pipe delimited.</param>
     /// <param name="years">Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimited.</param>
     /// <param name="enableUserData">Optional, include user data.</param>
     /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
@@ -168,6 +169,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] officialRatings,
         [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] tags,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] allTags,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] int[] years,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
@@ -259,6 +261,7 @@ public class TrailersController : BaseJellyfinApiController
                 genres,
                 officialRatings,
                 tags,
+                allTags,
                 years,
                 enableUserData,
                 imageTypeLimit,
