@@ -151,9 +151,9 @@ namespace MediaBrowser.Providers.Manager
                 .ConfigureAwait(false);
             updateType |= beforeSaveResult;
 
-            if (!isFirstRefresh)
+            if (isFirstRefresh)
             {
-                updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
+                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
             // Next run metadata providers
