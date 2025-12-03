@@ -51,6 +51,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultHdrImageExtractionTimeout = 20000;
 
+        /// <summary>
+        /// The default media concatenation timeout in milliseconds.
+        /// </summary>
+        internal const int DefaultConcatTimeout = 60000;
+
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -1301,6 +1306,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return;
             }
 
+            GenerateConcatConfig(concatFilePath, files, videoType);
+        }
+
+        internal void GenerateConcatConfig(string concatFilePath, IEnumerable<string> files, VideoType? videoType)
+        {
             // Generate concat configuration entries for each file and write to file
             Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
             using var sw = new FormattingStreamWriter(concatFilePath, CultureInfo.InvariantCulture);
@@ -1326,6 +1336,69 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // Add duration stanza to concat configuration
                 sw.WriteLine("duration {0}", duration);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task ConcatenateMedia(IReadOnlyCollection<string> filePaths, string outputFile, CancellationToken cancellationToken)
+        {
+            if (filePaths.Count == 1)
+            {
+                string file = filePaths.First();
+                File.Move(file, outputFile, true);
+            }
+            else if (filePaths.Count > 1)
+            {
+                var tempDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDirectory);
+                var concatConfigFile = Path.Combine(tempDirectory, Guid.NewGuid() + ".concat");
+                GenerateConcatConfig(concatConfigFile, filePaths, VideoType.VideoFile);
+                var tempOutputFile = Path.Combine(tempDirectory, Guid.NewGuid() + Path.GetExtension(outputFile));
+                var processStartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _ffmpegPath,
+                    Arguments = "-f concat -safe 0 -i \"" + concatConfigFile + "\" -v quiet -c copy \"" + tempOutputFile + "\"",
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                };
+
+                var process = new Process
+                {
+                    StartInfo = processStartInfo,
+                    EnableRaisingEvents = true,
+                };
+
+                using (var processWrapper = new ProcessWrapper(process, this))
+                {
+                    StartProcess(processWrapper);
+                    try
+                    {
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(DefaultConcatTimeout)).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        process.Kill(true);
+                        throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg concatenation cancelled for {0}", tempOutputFile), ex);
+                    }
+
+                    var outputFileInfo = _fileSystem.GetFileInfo(tempOutputFile);
+                    if (processWrapper.ExitCode > 0 || !outputFileInfo.Exists || outputFileInfo.Length == 0)
+                    {
+                        throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg concatenation failed for {0}", tempOutputFile));
+                    }
+
+                    // Remove concatenated files, must be done before moving temp file
+                    foreach (var file in filePaths)
+                    {
+                        _fileSystem.DeleteFile(file);
+                    }
+
+                    // Move concatenated file
+                    File.Move(tempOutputFile, outputFile, true);
+                    _logger.LogInformation("Concatenation successful for {0}", outputFile);
+                }
             }
         }
 
