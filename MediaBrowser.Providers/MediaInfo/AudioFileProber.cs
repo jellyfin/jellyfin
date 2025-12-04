@@ -19,6 +19,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Parsers;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
 
@@ -532,7 +533,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrEmpty(track.TrackNumberStr))
             {
                 // Try to parse as vinyl format
-                if (TryParseVinylTrackNumber(track.TrackNumberStr, out int parsedTrackNumber, out int parsedSide))
+                if (VinylTrackNumberParser.TryParseVinylTrackNumber(track.TrackNumberStr, out int parsedTrackNumber, out int parsedSide))
                 {
                     // Only apply side mapping if no existing disc number
                     if (!hasExistingDiscNumber)
@@ -555,7 +556,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (TryGetSanitizedAdditionalFields(track, "TRACKNAME/POSITION", out vinylTrackNumber)
                 || TryGetSanitizedAdditionalFields(track, "TRACK", out vinylTrackNumber))
             {
-                if (TryParseVinylTrackNumber(vinylTrackNumber, out int parsedTrackNumber, out int parsedSide))
+                if (VinylTrackNumberParser.TryParseVinylTrackNumber(vinylTrackNumber, out int parsedTrackNumber, out int parsedSide))
                 {
                     // Only apply side mapping if no existing disc number
                     if (!hasExistingDiscNumber)
@@ -575,77 +576,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Final fallback to mediaInfo index number from ffprobe
             return (mediaInfo.IndexNumber, discNumber);
-        }
-
-        /// <summary>
-        /// Attempts to parse vinyl-style track numbers from string representations.
-        /// Returns both the track number and the side as a disc number.
-        /// Examples: "A1" → (1, 1), "B2" → (2, 2), "C15" → (15, 3).
-        /// </summary>
-        private bool TryParseVinylTrackNumber(
-            string? vinylTrack,
-            out int trackNumber,
-            out int sideNumber)
-        {
-            trackNumber = 0;
-            sideNumber = 1; // Default to side A
-
-            if (string.IsNullOrWhiteSpace(vinylTrack))
-            {
-                return false;
-            }
-
-            string normalizedTrack = vinylTrack.Trim().ToUpperInvariant();
-
-            try
-            {
-                // Handle standard vinyl formats: [Side Letter][Track Number]
-                // Examples: A1, B2, A01, B02, C15
-                if (normalizedTrack.Length >= 2 && char.IsLetter(normalizedTrack[0]) && char.IsDigit(normalizedTrack[1]))
-                {
-                    // Extract side letter and convert to number (A=1, B=2, C=3, etc.)
-                    char sideLetter = normalizedTrack[0];
-                    sideNumber = char.ToUpper(sideLetter, CultureInfo.InvariantCulture) - 'A' + 1;
-
-                    var numericPart = normalizedTrack.Substring(1);
-
-                    if (int.TryParse(numericPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out int trackOnSide))
-                    {
-                        // Extract just the track number within the side
-                        trackNumber = trackOnSide;
-                        return true;
-                    }
-                }
-
-                // Handle reverse vinyl formats: [Track Number][Side Letter]
-                // Examples: 1A, 2B, 01A, 02B
-                if (normalizedTrack.Length >= 2 && char.IsDigit(normalizedTrack[0]) && char.IsLetter(normalizedTrack[^1]))
-                {
-                    // Extract side letter and convert to number
-                    char sideLetter = normalizedTrack[^1];
-                    sideNumber = char.ToUpper(sideLetter, CultureInfo.InvariantCulture) - 'A' + 1;
-
-                    var numericPart = normalizedTrack[..^1];
-
-                    if (int.TryParse(numericPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out int trackOnSide))
-                    {
-                        trackNumber = trackOnSide;
-                        return true;
-                    }
-                }
-
-                // Final attempt: try parsing as plain numeric track number
-                if (int.TryParse(normalizedTrack, NumberStyles.Integer, CultureInfo.InvariantCulture, out trackNumber))
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Failed to parse vinyl track number '{VinylTrack}'", vinylTrack);
-            }
-
-            return false;
         }
 
         private string? GetSanitizedStringTag(string? tag, string filePath)
