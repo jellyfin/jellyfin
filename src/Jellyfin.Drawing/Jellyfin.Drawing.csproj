@@ -21,8 +21,4 @@
     <Compile Include="..\..\SharedVersion.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AsyncKeyedLock" />
-  </ItemGroup>
-
 </Project>
