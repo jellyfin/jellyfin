@@ -58,7 +58,7 @@ public class SyncPlayController : BaseJellyfinApiController
         [FromBody, Required] NewGroupRequestDto requestData)
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
+        var syncPlayRequest = new NewGroupRequest(requestData.GroupName, requestData.StartingPlaybackRate);
         return Ok(_syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None));
     }
 
@@ -284,6 +284,26 @@ public class SyncPlayController : BaseJellyfinApiController
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var syncPlayRequest = new SeekGroupRequest(requestData.PositionTicks);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Request to set the playback rate in SyncPlay group.
+    /// </summary>
+    /// <param name="requestData">The new playback rate.</param>
+    /// <response code="204">Seek update sent to all group members with the new playback rate.</response>
+    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    [HttpPost("SetPlaybackRate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(Policy = Policies.SyncPlayIsInGroup)]
+    public async Task<ActionResult> SyncPlaySetPlaybackRate(
+        [FromBody, Required] SetPlaybackRateRequestDto requestData)
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+
+        var syncPlayRequest = new SetPlaybackRateRequest(requestData.PlaybackRate);
+        _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
+
         return NoContent();
     }
 
