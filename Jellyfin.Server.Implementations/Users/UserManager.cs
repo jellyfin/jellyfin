@@ -108,6 +108,9 @@ namespace Jellyfin.Server.Implementations.Users
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
+        public event EventHandler<GenericEventArgs<User>>? OnUserChanged;
+
+        /// <inheritdoc/>
         public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
@@ -210,6 +213,10 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== CreateUserInternalAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             return user;
         }
 
@@ -238,7 +245,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
-
             return newUser;
         }
 
@@ -278,7 +284,10 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             _users.Remove(userId);
-
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== DeleteUserAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
@@ -498,6 +507,10 @@ namespace Jellyfin.Server.Implementations.Users
                     remoteEndPoint);
             }
 
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== AuthenticateUser === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
             return success ? user : null;
         }
 
@@ -715,6 +728,10 @@ namespace Jellyfin.Server.Implementations.Users
                 dbContext.Update(user);
                 _users[user.Id] = user;
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                var eventArgs = new UserUpdatedEventArgs(user);
+                await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+                _logger.LogWarning("=== UpdatePolicyAsync === OnUserChanged EVENT TRIGGERED ===");
+                OnUserChanged?.Invoke(this, eventArgs);
             }
         }
 
@@ -889,6 +906,10 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            _logger.LogWarning("=== UpdateUserInternalAsync === OnUserChanged EVENT TRIGGERED ===");
+            OnUserChanged?.Invoke(this, eventArgs);
         }
     }
 }
