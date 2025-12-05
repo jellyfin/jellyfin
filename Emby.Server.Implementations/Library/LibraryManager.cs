@@ -2143,7 +2143,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            _itemRepository.SaveImages(item);
+            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
 
             RegisterItem(item);
         }
