@@ -468,7 +468,7 @@ namespace MediaBrowser.Controller.Entities
                             Logger.LogDebug("Removed item: {Path}", item.Path);
 
                             item.SetParent(null);
-                            LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                            await LibraryManager.DeleteItemAsync(item, new DeleteOptions { DeleteFileLocation = false }, this, false, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }

@@ -334,14 +334,20 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">Item to delete.</param>
         /// <param name="options">Options to use for deletion.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task DeleteItemAsync(BaseItem item, DeleteOptions options, CancellationToken cancellationToken = default);
+
         void DeleteItem(BaseItem item, DeleteOptions options);
 
         /// <summary>
         /// Deletes items that are not having any children like Actors.
         /// </summary>
         /// <param name="items">Items to delete.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
-        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items);
+        /// <returns>The async task.</returns>
+        public Task DeleteItemsUnsafeFastAsync(IEnumerable<BaseItem> items, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes the item.
@@ -349,6 +355,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">Item to delete.</param>
         /// <param name="options">Options to use for deletion.</param>
         /// <param name="notifyParentItem">Notify parent of deletion.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task DeleteItemAsync(BaseItem item, DeleteOptions options, bool notifyParentItem, CancellationToken cancellationToken = default);
+
         void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem);
 
         /// <summary>
@@ -358,6 +368,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="options">Options to use for deletion.</param>
         /// <param name="parent">Parent of item.</param>
         /// <param name="notifyParentItem">Notify parent of deletion.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task DeleteItemAsync(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem, CancellationToken cancellationToken = default);
+
         void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem);
 
         /// <summary>
