@@ -1373,14 +1373,54 @@ public sealed class BaseItemRepository
         }
     }
 
-    private string GetCleanValue(string value)
+    /// <summary>
+    /// Gets the clean value for search and sorting purposes.
+    /// </summary>
+    /// <param name="value">The value to clean.</param>
+    /// <returns>The cleaned value.</returns>
+    public static string GetCleanValue(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
             return value;
         }
 
-        return value.RemoveDiacritics().ToLowerInvariant();
+        var noDiacritics = value.RemoveDiacritics();
+
+        // Build a string where any punctuation or symbol is treated as a separator (space).
+        var sb = new StringBuilder(noDiacritics.Length);
+        var previousWasSpace = false;
+        foreach (var ch in noDiacritics)
+        {
+            char outCh;
+            if (char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch))
+            {
+                outCh = ch;
+            }
+            else
+            {
+                outCh = ' ';
+            }
+
+            // normalize any whitespace character to a single ASCII space.
+            if (char.IsWhiteSpace(outCh))
+            {
+                if (!previousWasSpace)
+                {
+                    sb.Append(' ');
+                    previousWasSpace = true;
+                }
+            }
+            else
+            {
+                sb.Append(outCh);
+                previousWasSpace = false;
+            }
+        }
+
+        // trim leading/trailing spaces that may have been added.
+        var collapsed = sb.ToString().Trim();
+        return collapsed.ToLowerInvariant();
     }
 
     private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
