@@ -711,13 +711,13 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 try
                 {
-                    _libraryManager.DeleteItem(
+                    await _libraryManager.DeleteItemAsync(
                         item,
                         new DeleteOptions
                         {
                             DeleteFileLocation = true
                         },
-                        true);
+                        true).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
