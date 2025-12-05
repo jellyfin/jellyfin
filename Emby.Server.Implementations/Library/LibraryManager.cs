@@ -1185,7 +1185,7 @@ namespace Emby.Server.Implementations.Library
 
             if (toDelete.Count > 0)
             {
-                _itemRepository.DeleteItem(toDelete.ToArray());
+                await _itemRepository.DeleteItemsAsync(toDelete.ToArray()).ConfigureAwait(false);
             }
         }
 

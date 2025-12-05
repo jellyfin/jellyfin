@@ -102,13 +102,21 @@ public sealed class BaseItemRepository
     /// <inheritdoc />
     public void DeleteItem(params IReadOnlyList<Guid> ids)
     {
+        DeleteItemsAsync(ids).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteItemsAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
         if (ids is null || ids.Count == 0 || ids.Any(f => f.Equals(PlaceholderId)))
         {
             throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(ids));
         }
 
-        using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 
         var date = (DateTime?)DateTime.UtcNow;
 
@@ -118,43 +126,61 @@ public sealed class BaseItemRepository
         // being detached from the item being deleted. This is necessary because, during an update,
         // UserData may be reattached to a new entry, but some entries can be left behind.
         // Ensures there are no duplicate UserId/CustomDataKey combinations for the placeholder.
-        context.UserData
+        await context.UserData
             .Join(
                 context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId),
                 placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
                 userData => new { userData.UserId, userData.CustomDataKey },
                 (placeholder, userData) => placeholder)
             .Where(e => e.ItemId == PlaceholderId)
-            .ExecuteDelete();
+            .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         // Detach all user watch data
-        context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId)
-            .ExecuteUpdate(e => e
-                .SetProperty(f => f.RetentionDate, date)
-                .SetProperty(f => f.ItemId, PlaceholderId));
+        await context.UserData
+            .WhereOneOrMany(relatedItems, e => e.ItemId)
+            .ExecuteUpdateAsync(
+                e => e
+                    .SetProperty(f => f.RetentionDate, date)
+                    .SetProperty(f => f.ItemId, PlaceholderId),
+                cancellationToken).ConfigureAwait(false);
 
-        context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ParentItemId).ExecuteDelete();
-        context.AttachmentStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItemImageInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
-        context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
-        context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        var query = context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).Select(f => f.PeopleId).Distinct().ToArray();
-        context.PeopleBaseItemMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.Peoples.WhereOneOrMany(query, e => e.Id).Where(e => e.BaseItems!.Count == 0).ExecuteDelete();
-        context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.SaveChanges();
-        transaction.Commit();
+        await context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ParentItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.AttachmentStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.BaseItemImageInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        var peopleIds = await context.PeopleBaseItemMap
+            .WhereOneOrMany(relatedItems, e => e.ItemId)
+            .Select(f => f.PeopleId)
+            .Distinct()
+            .ToArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        await context.PeopleBaseItemMap
+            .WhereOneOrMany(relatedItems, e => e.ItemId)
+            .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        await context.Peoples
+            .WhereOneOrMany(peopleIds, e => e.Id)
+            .Where(e => e.BaseItems!.Count == 0)
+            .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        await context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
