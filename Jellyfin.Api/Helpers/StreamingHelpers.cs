@@ -319,17 +319,13 @@ public static class StreamingHelpers
 
             switch (audioCodec)
             {
-                case "aac":
-                    return ".aac";
-
-                case "mp3":
-                    return ".mp3";
-
                 case "vorbis":
                     return ".ogg";
 
+                case "aac":
+                case "mp3":
                 case "wma":
-                    return ".wma";
+                    return $".{audioCodec}";
             }
         }
 
