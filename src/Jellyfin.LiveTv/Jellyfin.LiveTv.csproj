@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="Jellyfin.XmlTv" />
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
