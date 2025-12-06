@@ -258,7 +258,7 @@ public static class StreamingHelpers
     /// <returns>A <see cref="Dictionary{String,String}"/> containing the stream options.</returns>
     private static Dictionary<string, string?> ParseStreamOptions(IQueryCollection queryString)
     {
-        Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
+        Dictionary<string, string?> streamOptions = [];
         foreach (var param in queryString)
         {
             if (char.IsLower(param.Key[0]))
@@ -287,62 +287,49 @@ public static class StreamingHelpers
             return ext;
         }
 
-        // Try to infer based on the desired video codec
         if (state.IsVideoRequest)
         {
-            var videoCodec = state.Request.VideoCodec;
+            // Try to infer based on the desired video codec
+            var videoCodec = state.Request.VideoCodec.ToLowerInvariant();
 
-            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            switch (videoCodec)
             {
-                return ".ts";
-            }
+                case "h264":
+                    return ".ts";
 
-            if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".mp4";
-            }
+                case "hevc":
+                case "av1":
+                    return ".mp4";
 
-            if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".ogv";
-            }
+                case "theora":
+                    return ".ogv";
 
-            if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".webm";
-            }
-
-            if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return ".asf";
+                case "vp8":
+                case "vp9":
+                case "vpx":
+                    return ".webm";
+                case "wmv":
+                    return ".asf";
             }
         }
         else
         {
             // Try to infer based on the desired audio codec
-            var audioCodec = state.Request.AudioCodec;
+            var audioCodec = state.Request.AudioCodec.ToLowerInvariant();
 
-            if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
+            switch (audioCodec)
             {
-                return ".aac";
-            }
+                case "aac":
+                    return ".aac";
 
-            if (string.Equals("mp3", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".mp3";
-            }
+                case "mp3":
+                    return ".mp3";
 
-            if (string.Equals("vorbis", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".ogg";
-            }
+                case "vorbis":
+                    return ".ogg";
 
-            if (string.Equals("wma", audioCodec, StringComparison.OrdinalIgnoreCase))
-            {
-                return ".wma";
+                case "wma":
+                    return ".wma";
             }
         }
 

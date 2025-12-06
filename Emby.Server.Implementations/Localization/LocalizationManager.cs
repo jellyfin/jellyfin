@@ -104,66 +104,61 @@ namespace Emby.Server.Implementations.Localization
         private async Task LoadCultures()
         {
             List<CultureDto> list = [];
-            Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
+            Dictionary<string, string> iso6392BtoTdict = [];
 
-            using var stream = _assembly.GetManifestResourceStream(CulturesPath);
-            if (stream is null)
+            using var stream = _assembly.GetManifestResourceStream(CulturesPath)
+                ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
+
+            using var reader = new StreamReader(stream);
+            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
             {
-                throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
-            }
-            else
-            {
-                using var reader = new StreamReader(stream);
-                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    var parts = line.Split('|');
-                    if (parts.Length != 5)
-                    {
-                        throw new InvalidDataException($"Invalid culture data found at: '{line}'");
-                    }
-
-                    string name = parts[3];
-                    string displayname = parts[3];
-                    if (string.IsNullOrWhiteSpace(displayname))
-                    {
-                        continue;
-                    }
-
-                    string twoCharName = parts[2];
-                    if (string.IsNullOrWhiteSpace(twoCharName))
-                    {
-                        continue;
-                    }
-                    else if (twoCharName.Contains('-', StringComparison.OrdinalIgnoreCase))
-                    {
-                        name = twoCharName;
-                    }
-
-                    string[] threeLetterNames;
-                    if (string.IsNullOrWhiteSpace(parts[1]))
-                    {
-                        threeLetterNames = [parts[0]];
-                    }
-                    else
-                    {
-                        threeLetterNames = [parts[0], parts[1]];
-
-                        // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
-                        // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
-                        iso6392BtoTdict.TryAdd(parts[1], parts[0]);
-                    }
-
-                    list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
+                    continue;
                 }
 
-                _cultures = list;
-                _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+                var parts = line.Split('|');
+                if (parts.Length != 5)
+                {
+                    throw new InvalidDataException($"Invalid culture data found at: '{line}'");
+                }
+
+                string name = parts[3];
+                string displayname = parts[3];
+                if (string.IsNullOrWhiteSpace(displayname))
+                {
+                    continue;
+                }
+
+                string twoCharName = parts[2];
+                if (string.IsNullOrWhiteSpace(twoCharName))
+                {
+                    continue;
+                }
+                else if (twoCharName.Contains('-', StringComparison.OrdinalIgnoreCase))
+                {
+                    name = twoCharName;
+                }
+
+                string[] threeLetterNames;
+                if (string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    threeLetterNames = [parts[0]];
+                }
+                else
+                {
+                    threeLetterNames = [parts[0], parts[1]];
+
+                    // In cases where there are two TLN the first one is ISO 639-2/T and the second one is ISO 639-2/B
+                    // We need ISO 639-2/T for the .NET cultures so we cultivate a dictionary for the translation B->T
+                    iso6392BtoTdict.TryAdd(parts[1], parts[0]);
+                }
+
+                list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
             }
+
+            _cultures = list;
+            _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -242,13 +237,13 @@ namespace Emby.Server.Implementations.Localization
             // A lot of countries don't explicitly have a separate rating for adult content
             if (ratings.All(x => x.RatingScore?.Score != 1000))
             {
-                ratings.Add(new ParentalRating("XXX",  new(1000, null)));
+                ratings.Add(new ParentalRating("XXX", new(1000, null)));
             }
 
             // A lot of countries don't explicitly have a separate rating for banned content
             if (ratings.All(x => x.RatingScore?.Score != 1001))
             {
-                ratings.Add(new ParentalRating("Banned",  new(1001, null)));
+                ratings.Add(new ParentalRating("Banned", new(1001, null)));
             }
 
             return [.. ratings.OrderBy(r => r.RatingScore?.Score).ThenBy(r => r.RatingScore?.SubScore)];
