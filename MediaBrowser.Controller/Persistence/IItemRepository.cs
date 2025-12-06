@@ -33,7 +33,7 @@ public interface IItemRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
 
-    void SaveImages(BaseItem item);
+    Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the item.
