@@ -221,7 +221,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 EnableMpegtsM2TsMode = false,
                 TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static,
-                StreamOptions = new Dictionary<string, string>(),
+                StreamOptions = [],
                 EnableAdaptiveBitrateStreaming = false,
                 EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
