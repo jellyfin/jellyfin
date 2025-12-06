@@ -1,5 +1,5 @@
 using System;
-using System.Threading;
+using AsyncKeyedLock;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -17,7 +17,7 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
     private const string CacheKey = "openapi.json";
 
     private static readonly MemoryCacheEntryOptions _cacheOptions = new() { SlidingExpiration = TimeSpan.FromMinutes(5) };
-    private static readonly SemaphoreSlim _lock = new(1, 1);
+    private static readonly AsyncNonKeyedLocker _lock = new(1);
     private static readonly TimeSpan _lockTimeout = TimeSpan.FromSeconds(1);
 
     private readonly IMemoryCache _memoryCache;
@@ -50,30 +50,20 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
             return AdjustDocument(openApiDocument, host, basePath);
         }
 
-        var acquired = _lock.Wait(_lockTimeout);
-        try
+        using var acquired = _lock.LockOrNull(_lockTimeout);
+        if (_memoryCache.TryGetValue(CacheKey, out openApiDocument) && openApiDocument is not null)
         {
-            if (_memoryCache.TryGetValue(CacheKey, out openApiDocument) && openApiDocument is not null)
-            {
-                return AdjustDocument(openApiDocument, host, basePath);
-            }
-
-            if (!acquired)
-            {
-                throw new InvalidOperationException("OpenApi document is generating");
-            }
-
-            openApiDocument = _swaggerGenerator.GetSwagger(documentName);
-            _memoryCache.Set(CacheKey, openApiDocument, _cacheOptions);
             return AdjustDocument(openApiDocument, host, basePath);
         }
-        finally
+
+        if (acquired is null)
         {
-            if (acquired)
-            {
-                _lock.Release();
-            }
+            throw new InvalidOperationException("OpenApi document is generating");
         }
+
+        openApiDocument = _swaggerGenerator.GetSwagger(documentName);
+        _memoryCache.Set(CacheKey, openApiDocument, _cacheOptions);
+        return AdjustDocument(openApiDocument, host, basePath);
     }
 
     private OpenApiDocument AdjustDocument(OpenApiDocument document, string? host, string? basePath)
