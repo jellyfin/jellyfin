@@ -35,7 +35,7 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        await CleanDeadItems(cancellationToken, progress).ConfigureAwait(false);
+        await CleanDeadItems(cancellationToken, progress);
     }
 
     private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
@@ -101,17 +101,13 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
         }
 
         subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
-        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        await using (var context = await _dbProvider.CreateDbContextAsync(cancellationToken))
         {
-            var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-            await using (transaction.ConfigureAwait(false))
-            {
-                await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-                subProgress.Report(50);
-                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                subProgress.Report(100);
-            }
+            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+            await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken);
+            subProgress.Report(50);
+            await transaction.CommitAsync(cancellationToken);
+            subProgress.Report(100);
         }
 
         progress.Report(100);

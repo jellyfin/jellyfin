@@ -40,6 +40,6 @@ public class RobotsRedirectionMiddleware
             return;
         }
 
-        await _next(httpContext).ConfigureAwait(false);
+        await _next(httpContext);
     }
 }

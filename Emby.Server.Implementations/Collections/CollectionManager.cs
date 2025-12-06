@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Collections
 
             var name = _localizationManager.GetLocalizedString("Collections");
 
-            await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true).ConfigureAwait(false);
+            await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.boxsets, libraryOptions, true);
 
             _libraryManager.RootFolder.Children = null;
 
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.Collections
             // This could cause it to get re-resolved as a plain folder
             var folderName = _fileSystem.GetValidFilename(name) + " [boxset]";
 
-            var parentFolder = await GetCollectionsFolder(true).ConfigureAwait(false);
+            var parentFolder = await GetCollectionsFolder(true);
 
             if (parentFolder is null)
             {
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Collections
                             // The initial adding of items is going to create a local metadata file
                             // This will cause internet metadata to be skipped as a result
                             MetadataRefreshMode = MetadataRefreshMode.FullRefresh
-                        }).ConfigureAwait(false);
+                        });
                 }
                 else
                 {
@@ -245,7 +245,7 @@ namespace Emby.Server.Implementations.Collections
                 collection.LinkedChildren = newChildren;
                 collection.UpdateRatingToItems(linkedChildrenList);
 
-                await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
                 refreshOptions.ForceSave = true;
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.Collections
                 collection.LinkedChildren = collection.LinkedChildren.Except(list).ToArray();
             }
 
-            await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
             _providerManager.QueueRefresh(
                 collection.Id,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem))

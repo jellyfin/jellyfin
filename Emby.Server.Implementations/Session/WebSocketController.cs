@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Session
                 _socketsLock.ExitWriteLock();
             }
 
-            await _sessionManager.CloseIfNeededAsync(_session).ConfigureAwait(false);
+            await _sessionManager.CloseIfNeededAsync(_session);
         }
 
         /// <inheritdoc />
@@ -169,7 +169,7 @@ namespace Emby.Server.Implementations.Session
                 foreach (var socket in _sockets)
                 {
                     socket.Closed -= OnConnectionClosed;
-                    await socket.DisposeAsync().ConfigureAwait(false);
+                    await socket.DisposeAsync();
                 }
 
                 _sockets.Clear();

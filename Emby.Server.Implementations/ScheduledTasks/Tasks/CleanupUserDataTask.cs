@@ -53,8 +53,8 @@ public class CleanupUserDataTask : IScheduledTask
     {
         const int LimitDays = 90;
         var userDataDate = DateTime.UtcNow.AddDays(LimitDays * -1);
-        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
             var detachedUserData = dbContext.UserData.Where(e => e.ItemId == BaseItemRepository.PlaceholderId);
             _logger.LogInformation("There are {NoDetached} detached UserData entries.", detachedUserData.Count());
@@ -63,7 +63,7 @@ public class CleanupUserDataTask : IScheduledTask
 
             _logger.LogInformation("{NoDetached} are older then {Limit} days.", detachedUserData.Count(), LimitDays);
 
-            await detachedUserData.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await detachedUserData.ExecuteDeleteAsync(cancellationToken);
         }
 
         progress.Report(100);

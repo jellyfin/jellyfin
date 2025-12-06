@@ -44,7 +44,7 @@ public class BackupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BackupManifestDto>> CreateBackup([FromBody] BackupOptionsDto backupOptions)
     {
-        return Ok(await _backupService.CreateBackupAsync(backupOptions ?? new()).ConfigureAwait(false));
+        return Ok(await _backupService.CreateBackupAsync(backupOptions ?? new()));
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class BackupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BackupManifestDto[]>> ListBackups()
     {
-        return Ok(await _backupService.EnumerateBackups().ConfigureAwait(false));
+        return Ok(await _backupService.EnumerateBackups());
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public class BackupController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var manifest = await _backupService.GetBackupManifest(backupPath).ConfigureAwait(false);
+        var manifest = await _backupService.GetBackupManifest(backupPath);
         if (manifest is null)
         {
             return NoContent();

@@ -88,7 +88,7 @@ public class LibraryStructureController : BaseJellyfinApiController
             libraryOptions.PathInfos = Array.ConvertAll(paths, i => new MediaPathInfo(i));
         }
 
-        await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
+        await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary);
 
         return NoContent();
     }
@@ -108,7 +108,7 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromQuery] bool refreshLibrary = false)
     {
         // TODO: refactor! this relies on an FileNotFound exception to return NotFound when attempting to remove a library that does not exist.
-        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary);
 
         return NoContent();
     }
@@ -183,27 +183,27 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+                    await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true);
                     var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
                     if (newLib is CollectionFolder folder)
                     {
                         foreach (var child in folder.GetPhysicalFolders())
                         {
-                            await child.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
-                            await child.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                            await child.RefreshMetadata(CancellationToken.None);
+                            await child.ValidateChildren(new Progress<double>(), CancellationToken.None);
                         }
                     }
                     else
                     {
                         // We don't know if this one can be validated individually, trigger a new validation
-                        await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                        await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
                     }
                 }
                 else
                 {
                     // Need to add a delay here or directory watchers may still pick up the changes
                     // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000);
                     _libraryMonitor.Start();
                 }
             });
@@ -241,13 +241,13 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
                 }
                 else
                 {
                     // Need to add a delay here or directory watchers may still pick up the changes
                     // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000);
                     _libraryMonitor.Start();
                 }
             });
@@ -308,13 +308,13 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
                 }
                 else
                 {
                     // Need to add a delay here or directory watchers may still pick up the changes
                     // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000);
                     _libraryMonitor.Start();
                 }
             });

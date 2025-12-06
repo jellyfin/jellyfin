@@ -55,7 +55,7 @@ public class MusicGenresValidator
             {
                 var item = _libraryManager.GetMusicGenre(name);
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(cancellationToken);
             }
             catch (OperationCanceledException)
             {

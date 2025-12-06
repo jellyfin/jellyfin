@@ -55,13 +55,13 @@ public class KeyframeRepository : IKeyframeRepository
     public async Task SaveKeyframeDataAsync(Guid itemId, MediaEncoding.Keyframes.KeyframeData data, CancellationToken cancellationToken)
     {
         using var context = _dbProvider.CreateDbContext();
-        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        await using (transaction.ConfigureAwait(false))
+        var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await using (transaction)
         {
-            await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-            await context.KeyframeData.AddAsync(Map(data, itemId), cancellationToken).ConfigureAwait(false);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken);
+            await context.KeyframeData.AddAsync(Map(data, itemId), cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
     }
 
@@ -69,7 +69,7 @@ public class KeyframeRepository : IKeyframeRepository
     public async Task DeleteKeyframeDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
         using var context = _dbProvider.CreateDbContext();
-        await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.KeyframeData.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

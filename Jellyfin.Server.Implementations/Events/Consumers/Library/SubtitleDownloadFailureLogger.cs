@@ -45,7 +45,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Library
             {
                 ItemId = eventArgs.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = eventArgs.Exception.Message
-            }).ConfigureAwait(false);
+            });
         }
 
         private static string GetItemName(BaseItem item)

@@ -125,14 +125,14 @@ public class CollectionPostScanTask : ILibraryPostScanTask
                         boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
                         {
                             Name = collectionName,
-                        }).ConfigureAwait(false);
+                        });
 
-                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds).ConfigureAwait(false);
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
                     }
                 }
                 else
                 {
-                    await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds).ConfigureAwait(false);
+                    await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
                 }
 
                 numComplete++;

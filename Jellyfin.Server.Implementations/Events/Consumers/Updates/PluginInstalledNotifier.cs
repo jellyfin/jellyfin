@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         /// <inheritdoc />
         public async Task OnEvent(PluginInstalledEventArgs eventArgs)
         {
-            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationCompleted, eventArgs.Argument, CancellationToken.None).ConfigureAwait(false);
+            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationCompleted, eventArgs.Argument, CancellationToken.None);
         }
     }
 }

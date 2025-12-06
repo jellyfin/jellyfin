@@ -68,8 +68,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var series = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, null, cancellationToken)
-                .ConfigureAwait(false);
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, null, cancellationToken);
 
             if (series?.Images is null)
             {

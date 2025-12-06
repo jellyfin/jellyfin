@@ -52,7 +52,7 @@ public class ExceptionMiddleware
     {
         try
         {
-            await _next(context).ConfigureAwait(false);
+            await _next(context);
         }
         catch (Exception ex)
         {
@@ -96,7 +96,7 @@ public class ExceptionMiddleware
             var errorContent = _hostEnvironment.IsDevelopment()
                     ? NormalizeExceptionMessage(ex.Message)
                     : "Error processing request.";
-            await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
+            await context.Response.WriteAsync(errorContent);
         }
     }
 

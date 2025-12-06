@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     imageStreams.FirstOrDefault();
                 var imageStreamIndex = imageStream?.Index;
 
-                var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
+                var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken);
 
                 File.Copy(tempFile, path, true);
 

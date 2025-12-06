@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
@@ -37,6 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ConfigureAwait.Fody" PrivateAssets="All" />
+    <PackageReference Include="Fody">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="MimeTypes">
       <PrivateAssets>all</PrivateAssets>
@@ -48,6 +53,8 @@
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
+    <None Include="..\FodyWeavers.xml" />
+    <None Include="..\FodyWeavers.xsd" />
   </ItemGroup>
 
   <!-- Code Analyzers -->

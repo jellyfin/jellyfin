@@ -62,7 +62,7 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
             _disposed = true;
         }
 
-        await base.DisposeAsyncCore().ConfigureAwait(false);
+        await base.DisposeAsyncCore();
     }
 
     /// <summary>

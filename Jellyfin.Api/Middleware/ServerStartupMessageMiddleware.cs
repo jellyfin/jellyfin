@@ -38,13 +38,13 @@ public class ServerStartupMessageMiddleware
         if (serverApplicationHost.CoreStartupHasCompleted
             || httpContext.Request.Path.Equals("/system/ping", StringComparison.OrdinalIgnoreCase))
         {
-            await _next(httpContext).ConfigureAwait(false);
+            await _next(httpContext);
             return;
         }
 
         var message = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         httpContext.Response.ContentType = MediaTypeNames.Text.Html;
-        await httpContext.Response.WriteAsync(message, httpContext.RequestAborted).ConfigureAwait(false);
+        await httpContext.Response.WriteAsync(message, httpContext.RequestAborted);
     }
 }

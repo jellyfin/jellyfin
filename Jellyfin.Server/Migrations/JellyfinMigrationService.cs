@@ -103,20 +103,20 @@ internal class JellyfinMigrationService
             logger.LogInformation("System initialisation detected. Seed data.");
             var flatApplyMigrations = Migrations.SelectMany(e => e.Where(f => !f.Metadata.RunMigrationOnSetup)).ToArray();
 
-            var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await using (dbContext)
             {
                 var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator
                     ?? throw new InvalidOperationException("Jellyfin does only support relational databases.");
-                if (!await databaseCreator.ExistsAsync().ConfigureAwait(false))
+                if (!await databaseCreator.ExistsAsync())
                 {
-                    await databaseCreator.CreateAsync().ConfigureAwait(false);
+                    await databaseCreator.CreateAsync();
                 }
 
                 var historyRepository = dbContext.GetService<IHistoryRepository>();
 
-                await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
-                var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                await historyRepository.CreateIfNotExistsAsync();
+                var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
                 var startupScripts = flatApplyMigrations
                     .Where(e => !appliedMigrations.Any(f => f != e.BuildCodeMigrationId()))
                     .Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))))
@@ -124,7 +124,7 @@ internal class JellyfinMigrationService
                 foreach (var item in startupScripts)
                 {
                     logger.LogInformation("Seed migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                    await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                    await dbContext.Database.ExecuteSqlRawAsync(item.Script);
                 }
             }
 
@@ -142,11 +142,11 @@ internal class JellyfinMigrationService
                 logger.LogInformation("Old migration style migration.xml detected. Migrate now.");
                 try
                 {
-                    var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-                    await using (dbContext.ConfigureAwait(false))
+                    var dbContext = await _dbContextFactory.CreateDbContextAsync();
+                    await using (dbContext)
                     {
                         var historyRepository = dbContext.GetService<IHistoryRepository>();
-                        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
                         var lastOldAppliedMigration = Migrations
                             .SelectMany(e => e.Where(e => e.Metadata.Key is not null)) // only consider migrations that have the key set as its the reference marker for legacy migrations.
                             .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
@@ -167,7 +167,7 @@ internal class JellyfinMigrationService
                         foreach (var item in startupScripts)
                         {
                             logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                            await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                            await dbContext.Database.ExecuteSqlRawAsync(item.Script);
                         }
 
                         logger.LogInformation("Rename old migration.xml to migration.xml.backup");
@@ -188,12 +188,12 @@ internal class JellyfinMigrationService
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migrate stage {stage}.");
         ICollection<CodeMigration> migrationStage = (Migrations.FirstOrDefault(e => e.Stage == stage) as ICollection<CodeMigration>) ?? [];
 
-        var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        await using (dbContext)
         {
             var historyRepository = dbContext.GetService<IHistoryRepository>();
             var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-            var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+            var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync();
             var pendingCodeMigrations = migrationStage
                 .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
                 .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
@@ -217,7 +217,7 @@ internal class JellyfinMigrationService
                 try
                 {
                     migrationLogger.LogInformation("Perform migration {Name}", item.Key);
-                    await item.Migration.PerformAsync(migrationLogger).ConfigureAwait(false);
+                    await item.Migration.PerformAsync(migrationLogger);
                     migrationLogger.LogInformation("Migration {Name} was successfully applied", item.Key);
                 }
                 catch (Exception ex)
@@ -246,7 +246,7 @@ internal class JellyfinMigrationService
                             migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
                             try
                             {
-                                await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
+                                await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None);
                             }
                             catch (Exception inner)
                             {
@@ -259,7 +259,7 @@ internal class JellyfinMigrationService
                             migrationLogger.LogInformation("Attempt to rollback from backup.");
                             try
                             {
-                                await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path).ConfigureAwait(false);
+                                await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path);
                             }
                             catch (Exception inner)
                             {
@@ -301,7 +301,7 @@ internal class JellyfinMigrationService
                 logger.LogInformation("Attempt to cleanup JellyfinDb backup.");
                 try
                 {
-                    await _jellyfinDatabaseProvider.DeleteBackup(_backupKey.JellyfinDb).ConfigureAwait(false);
+                    await _jellyfinDatabaseProvider.DeleteBackup(_backupKey.JellyfinDb);
                 }
                 catch (Exception inner)
                 {
@@ -329,12 +329,12 @@ internal class JellyfinMigrationService
         logger.LogInformation("Prepare system for possible migrations");
         JellyfinMigrationBackupAttribute backupInstruction;
         IReadOnlyList<HistoryRow> appliedMigrations;
-        var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        await using (dbContext)
         {
             var historyRepository = dbContext.GetService<IHistoryRepository>();
             var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-            appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+            appliedMigrations = await historyRepository.GetAppliedMigrationsAsync();
             backupInstruction = new JellyfinMigrationBackupAttribute()
             {
                 JellyfinDb = migrationsAssembly.Migrations.Any(f => appliedMigrations.All(e => e.MigrationId != f.Key))
@@ -386,7 +386,7 @@ internal class JellyfinMigrationService
         if (backupInstruction.JellyfinDb && _jellyfinDatabaseProvider is not null)
         {
             logger.LogInformation("A migration will attempt to modify the jellyfin.db, will attempt to backup the file now.");
-            _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None).ConfigureAwait(false), _backupKey.FullBackup);
+            _backupKey = (_backupKey.LibraryDb, await _jellyfinDatabaseProvider.MigrationBackupFast(CancellationToken.None), _backupKey.FullBackup);
             logger.LogInformation("Jellyfin database has been backed up as {BackupPath}", _backupKey.JellyfinDb);
         }
 
@@ -399,7 +399,7 @@ internal class JellyfinMigrationService
                 Subtitles = backupInstruction.Subtitles,
                 Trickplay = backupInstruction.Trickplay,
                 Database = false // database backups are explicitly handled by the provider itself as the backup service requires parity with the current model
-            }).ConfigureAwait(false));
+            }));
             logger.LogInformation("Pre-Migration backup successfully created as {BackupKey}", _backupKey.FullBackup.Path);
         }
     }
@@ -431,11 +431,11 @@ internal class JellyfinMigrationService
 
         public async Task PerformAsync(IStartupLogger logger)
         {
-            await _codeMigration.Perform(_serviceProvider, logger, CancellationToken.None).ConfigureAwait(false);
+            await _codeMigration.Perform(_serviceProvider, logger, CancellationToken.None);
 
             var historyRepository = _dbContext.GetService<IHistoryRepository>();
             var createScript = historyRepository.GetInsertScript(new HistoryRow(_codeMigration.BuildCodeMigrationId(), GetJellyfinVersion()));
-            await _dbContext.Database.ExecuteSqlRawAsync(createScript).ConfigureAwait(false);
+            await _dbContext.Database.ExecuteSqlRawAsync(createScript);
         }
     }
 
@@ -453,7 +453,7 @@ internal class JellyfinMigrationService
         public async Task PerformAsync(IStartupLogger logger)
         {
             var migrator = _jellyfinDbContext.GetService<IMigrator>();
-            await migrator.MigrateAsync(_databaseMigrationInfo.Key).ConfigureAwait(false);
+            await migrator.MigrateAsync(_databaseMigrationInfo.Key);
         }
     }
 }

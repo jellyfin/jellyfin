@@ -316,7 +316,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (refreshOptions.RefreshItem(item))
                 {
-                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    await item.RefreshMetadata(refreshOptions, cancellationToken);
                 }
 
                 numComplete++;
@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     if (refreshOptions.RefreshItem(item))
                     {
-                        await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                        await item.RefreshMetadata(refreshOptions, cancellationToken);
                     }
                 }
 
@@ -358,7 +358,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
-            await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken);
         }
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options, bool shouldIncludeMissingEpisodes)

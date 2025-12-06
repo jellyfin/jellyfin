@@ -37,7 +37,7 @@ public class ApiKeyController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<AuthenticationInfo>>> GetKeys()
     {
-        var keys = await _authenticationManager.GetApiKeys().ConfigureAwait(false);
+        var keys = await _authenticationManager.GetApiKeys();
 
         return new QueryResult<AuthenticationInfo>(keys);
     }
@@ -53,7 +53,7 @@ public class ApiKeyController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CreateKey([FromQuery, Required] string app)
     {
-        await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
+        await _authenticationManager.CreateApiKey(app);
 
         return NoContent();
     }
@@ -69,7 +69,7 @@ public class ApiKeyController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> RevokeKey([FromRoute, Required] string key)
     {
-        await _authenticationManager.DeleteApiKey(key).ConfigureAwait(false);
+        await _authenticationManager.DeleteApiKey(key);
 
         return NoContent();
     }

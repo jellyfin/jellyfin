@@ -77,7 +77,7 @@ namespace Jellyfin.LiveTv
 
         public async Task RefreshSeriesTimers(CancellationToken cancellationToken)
         {
-            var seriesTimers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+            var seriesTimers = await GetSeriesTimersAsync(cancellationToken);
 
             foreach (var timer in seriesTimers)
             {
@@ -87,7 +87,7 @@ namespace Jellyfin.LiveTv
 
         public async Task RefreshTimers(CancellationToken cancellationToken)
         {
-            var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
+            var timers = await GetTimersAsync(cancellationToken);
 
             var tempChannelCache = new Dictionary<Guid, LiveTvChannel>();
 
@@ -124,7 +124,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var tunerChannels = await hostInstance.GetChannels(enableCache, cancellationToken).ConfigureAwait(false);
+                    var tunerChannels = await hostInstance.GetChannels(enableCache, cancellationToken);
 
                     channels.AddRange(tunerChannels);
                 }
@@ -134,7 +134,7 @@ namespace Jellyfin.LiveTv
                 }
             }
 
-            await _listingsManager.AddProviderMetadata(channels, enableCache, cancellationToken).ConfigureAwait(false);
+            await _listingsManager.AddProviderMetadata(channels, enableCache, cancellationToken);
 
             return channels;
         }
@@ -277,7 +277,7 @@ namespace Jellyfin.LiveTv
             }
 
             // If any timers have already been manually created, make sure they don't get cancelled
-            var existingTimers = (await GetTimersAsync(CancellationToken.None).ConfigureAwait(false))
+            var existingTimers = (await GetTimersAsync(CancellationToken.None))
                 .Where(i =>
                 {
                     if (string.Equals(i.ProgramId, info.ProgramId, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(info.ProgramId))
@@ -447,11 +447,10 @@ namespace Jellyfin.LiveTv
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
+            var channels = await GetChannelsAsync(true, cancellationToken);
             var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
-            return await _listingsManager.GetProgramsAsync(channel, startDateUtc, endDateUtc, cancellationToken)
-                .ConfigureAwait(false);
+            return await _listingsManager.GetProgramsAsync(channel, startDateUtc, endDateUtc, cancellationToken);
         }
 
         public Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
@@ -480,7 +479,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    result = await hostInstance.GetChannelStream(channelId, streamId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                    result = await hostInstance.GetChannelStream(channelId, streamId, currentLiveStreams, cancellationToken);
 
                     var openedMediaSource = result.MediaSource;
 
@@ -512,7 +511,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var sources = await hostInstance.GetChannelStreamMediaSources(channelId, cancellationToken).ConfigureAwait(false);
+                    var sources = await hostInstance.GetChannelStreamMediaSources(channelId, cancellationToken);
 
                     if (sources.Count > 0)
                     {
@@ -583,8 +582,7 @@ namespace Jellyfin.LiveTv
                     CopyProgramInfoToTimerInfo(programInfo, timer);
                 }
 
-                await _recordingsManager.RecordStream(activeRecordingInfo, GetLiveTvChannel(timer), recordingEndDate)
-                    .ConfigureAwait(false);
+                await _recordingsManager.RecordStream(activeRecordingInfo, GetLiveTvChannel(timer), recordingEndDate);
             }
             catch (OperationCanceledException)
             {

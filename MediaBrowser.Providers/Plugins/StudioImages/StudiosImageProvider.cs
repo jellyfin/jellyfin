@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         {
             var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 
-            await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
+            await EnsureThumbsList(thumbsPath, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         {
             string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
 
-            await EnsureList(url, file, _fileSystem, cancellationToken).ConfigureAwait(false);
+            await EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -132,13 +132,13 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
-                var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
-                await using (response.ConfigureAwait(false))
+                var response = await httpClient.GetStreamAsync(url, cancellationToken);
+                await using (response)
                 {
                     var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                    await using (fileStream.ConfigureAwait(false))
+                    await using (fileStream)
                     {
-                        await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                        await response.CopyToAsync(fileStream, cancellationToken);
                     }
                 }
             }

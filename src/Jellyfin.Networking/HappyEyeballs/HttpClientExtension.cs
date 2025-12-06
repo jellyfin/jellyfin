@@ -54,7 +54,7 @@ public static class HttpClientExtension
     {
         if (!UseIPv6)
         {
-            return await AttemptConnection(AddressFamily.InterNetwork, context, cancellationToken).ConfigureAwait(false);
+            return await AttemptConnection(AddressFamily.InterNetwork, context, cancellationToken);
         }
 
         using var cancelIPv6 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -63,20 +63,20 @@ public static class HttpClientExtension
         // GetAwaiter().GetResult() is used instead of .Result as this results in improved exception handling.
         // The tasks have already been completed.
         // See https://github.com/dotnet/corefx/pull/29792/files#r189415885 for more details.
-        if (await Task.WhenAny(tryConnectAsyncIPv6, Task.Delay(200, cancelIPv6.Token)).ConfigureAwait(false) == tryConnectAsyncIPv6 && tryConnectAsyncIPv6.IsCompletedSuccessfully)
+        if (await Task.WhenAny(tryConnectAsyncIPv6, Task.Delay(200, cancelIPv6.Token)) == tryConnectAsyncIPv6 && tryConnectAsyncIPv6.IsCompletedSuccessfully)
         {
-            await cancelIPv6.CancelAsync().ConfigureAwait(false);
+            await cancelIPv6.CancelAsync();
             return tryConnectAsyncIPv6.GetAwaiter().GetResult();
         }
 
         using var cancelIPv4 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var tryConnectAsyncIPv4 = AttemptConnection(AddressFamily.InterNetwork, context, cancelIPv4.Token);
 
-        if (await Task.WhenAny(tryConnectAsyncIPv6, tryConnectAsyncIPv4).ConfigureAwait(false) == tryConnectAsyncIPv6)
+        if (await Task.WhenAny(tryConnectAsyncIPv6, tryConnectAsyncIPv4) == tryConnectAsyncIPv6)
         {
             if (tryConnectAsyncIPv6.IsCompletedSuccessfully)
             {
-                await cancelIPv4.CancelAsync().ConfigureAwait(false);
+                await cancelIPv4.CancelAsync();
                 return tryConnectAsyncIPv6.GetAwaiter().GetResult();
             }
 
@@ -86,7 +86,7 @@ public static class HttpClientExtension
         {
             if (tryConnectAsyncIPv4.IsCompletedSuccessfully)
             {
-                await cancelIPv6.CancelAsync().ConfigureAwait(false);
+                await cancelIPv6.CancelAsync();
                 return tryConnectAsyncIPv4.GetAwaiter().GetResult();
             }
 
@@ -105,7 +105,7 @@ public static class HttpClientExtension
 
         try
         {
-            await socket.ConnectAsync(context.DnsEndPoint, cancellationToken).ConfigureAwait(false);
+            await socket.ConnectAsync(context.DnsEndPoint, cancellationToken);
             // The stream should take the ownership of the underlying socket,
             // closing it when it's disposed.
             return new NetworkStream(socket, ownsSocket: true);

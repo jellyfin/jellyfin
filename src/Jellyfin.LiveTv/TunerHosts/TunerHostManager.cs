@@ -71,7 +71,7 @@ public class TunerHostManager : ITunerHostManager
 
         if (provider is IConfigurableTunerHost configurable)
         {
-            await configurable.Validate(info).ConfigureAwait(false);
+            await configurable.Validate(info);
         }
 
         var config = _config.GetLiveTvConfiguration();
@@ -109,7 +109,7 @@ public class TunerHostManager : ITunerHostManager
 
         foreach (var host in _tunerHosts)
         {
-            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, CancellationToken.None).ConfigureAwait(false);
+            var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, CancellationToken.None);
             foreach (var tuner in discoveredDevices)
             {
                 if (!newDevicesOnly || !configuredDeviceIds.Contains(tuner.DeviceId, StringComparer.OrdinalIgnoreCase))
@@ -125,13 +125,13 @@ public class TunerHostManager : ITunerHostManager
     {
         foreach (var host in _tunerHosts)
         {
-            await ScanForTunerDeviceChanges(host, cancellationToken).ConfigureAwait(false);
+            await ScanForTunerDeviceChanges(host, cancellationToken);
         }
     }
 
     private async Task ScanForTunerDeviceChanges(ITunerHost host, CancellationToken cancellationToken)
     {
-        var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
+        var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken);
 
         var configuredDevices = _config.GetLiveTvConfiguration().TunerHosts
             .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
@@ -146,7 +146,7 @@ public class TunerHostManager : ITunerHostManager
                 _logger.LogInformation("Tuner url has changed from {PreviousUrl} to {NewUrl}", configuredDevice.Url, device.Url);
 
                 configuredDevice.Url = device.Url;
-                await SaveTunerHost(configuredDevice).ConfigureAwait(false);
+                await SaveTunerHost(configuredDevice);
             }
         }
     }
@@ -155,7 +155,7 @@ public class TunerHostManager : ITunerHostManager
     {
         try
         {
-            var discoveredDevices = await host.DiscoverDevices(discoveryDurationMs, cancellationToken).ConfigureAwait(false);
+            var discoveredDevices = await host.DiscoverDevices(discoveryDurationMs, cancellationToken);
 
             foreach (var device in discoveredDevices)
             {

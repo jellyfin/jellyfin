@@ -36,6 +36,6 @@ public class NoLockBehavior : IEntityFrameworkCoreLockingBehavior
     /// <inheritdoc/>
     public async Task OnSaveChangesAsync(JellyfinDbContext context, Func<Task> saveChanges)
     {
-        await saveChanges().ConfigureAwait(false);
+        await saveChanges();
     }
 }

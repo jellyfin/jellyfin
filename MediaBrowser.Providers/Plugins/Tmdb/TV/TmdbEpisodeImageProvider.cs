@@ -75,8 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, series.DisplayOrder, null, null, null, cancellationToken)
-                .ConfigureAwait(false);
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, series.DisplayOrder, null, null, null, cancellationToken);
 
             var stills = episodeResult?.Images?.Stills;
             if (stills is null)

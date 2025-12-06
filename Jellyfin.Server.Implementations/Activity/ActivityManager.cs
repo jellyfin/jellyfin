@@ -33,11 +33,11 @@ namespace Jellyfin.Server.Implementations.Activity
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
         {
-            var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _provider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.ActivityLogs.Add(entry);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
 
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
@@ -46,8 +46,8 @@ namespace Jellyfin.Server.Implementations.Activity
         /// <inheritdoc/>
         public async Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query)
         {
-            var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _provider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 var entries = dbContext.ActivityLogs
                     .OrderByDescending(entry => entry.DateCreated)
@@ -56,7 +56,7 @@ namespace Jellyfin.Server.Implementations.Activity
 
                 return new QueryResult<ActivityLogEntry>(
                     query.Skip,
-                    await entries.CountAsync().ConfigureAwait(false),
+                    await entries.CountAsync(),
                     await entries
                         .Skip(query.Skip ?? 0)
                         .Take(query.Limit ?? 100)
@@ -69,21 +69,19 @@ namespace Jellyfin.Server.Implementations.Activity
                             Date = entity.DateCreated,
                             Severity = entity.LogSeverity
                         })
-                        .ToListAsync()
-                        .ConfigureAwait(false));
+                        .ToListAsync());
             }
         }
 
         /// <inheritdoc />
         public async Task CleanAsync(DateTime startDate)
         {
-            var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _provider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 await dbContext.ActivityLogs
                     .Where(entry => entry.DateCreated <= startDate)
-                    .ExecuteDeleteAsync()
-                    .ConfigureAwait(false);
+                    .ExecuteDeleteAsync();
             }
         }
 

@@ -137,9 +137,9 @@ namespace MediaBrowser.Providers.Manager
             if (paths.Length > 1 && !source.CanSeek)
             {
                 var memoryStream = new MemoryStream();
-                await using (source.ConfigureAwait(false))
+                await using (source)
                 {
-                    await source.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(memoryStream, cancellationToken);
                 }
 
                 source = memoryStream;
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Manager
 
             var savedPaths = new List<string>();
 
-            await using (source.ConfigureAwait(false))
+            await using (source)
             {
                 for (int i = 0; i < paths.Length; i++)
                 {
@@ -166,7 +166,7 @@ namespace MediaBrowser.Providers.Manager
                         retryPath = retryPaths[i];
                     }
 
-                    var savedPath = await SaveImageToLocation(source, paths[i], retryPath, cancellationToken).ConfigureAwait(false);
+                    var savedPath = await SaveImageToLocation(source, paths[i], retryPath, cancellationToken);
                     savedPaths.Add(savedPath);
                 }
             }
@@ -224,14 +224,14 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task SaveImage(Stream source, string path)
         {
-            await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
+            await SaveImageToLocation(source, path, path, CancellationToken.None);
         }
 
         private async Task<string> SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
         {
             try
             {
-                await SaveImageToLocation(source, path, cancellationToken).ConfigureAwait(false);
+                await SaveImageToLocation(source, path, cancellationToken);
                 return path;
             }
             catch (UnauthorizedAccessException)
@@ -263,7 +263,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
+            await SaveImageToLocation(source, retryPath, cancellationToken);
             return retryPath;
         }
 
@@ -298,9 +298,9 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 var fs = new FileStream(path, fileStreamOptions);
-                await using (fs.ConfigureAwait(false))
+                await using (fs)
                 {
-                    await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(fs, cancellationToken);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)

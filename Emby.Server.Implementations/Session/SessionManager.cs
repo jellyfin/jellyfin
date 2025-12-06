@@ -218,7 +218,7 @@ namespace Emby.Server.Implementations.Session
 
             _eventManager.Publish(new SessionEndedEventArgs(info));
 
-            await info.DisposeAsync().ConfigureAwait(false);
+            await info.DisposeAsync();
         }
 
         /// <inheritdoc />
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.Session
                     try
                     {
                         user.LastActivityDate = activityDate;
-                        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+                        await _userManager.UpdateUserAsync(user);
                     }
                     catch (DbUpdateConcurrencyException e)
                     {
@@ -314,10 +314,10 @@ namespace Emby.Server.Implementations.Session
                 _activeConnections.TryRemove(key, out _);
                 if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
                 {
-                    await CloseLiveStreamIfNeededAsync(session.PlayState.LiveStreamId, session.Id).ConfigureAwait(false);
+                    await CloseLiveStreamIfNeededAsync(session.PlayState.LiveStreamId, session.Id);
                 }
 
-                await OnSessionEnded(session).ConfigureAwait(false);
+                await OnSessionEnded(session);
             }
         }
 
@@ -348,7 +348,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(liveStreamId);
                 }
                 catch (Exception ex)
                 {
@@ -369,7 +369,7 @@ namespace Emby.Server.Implementations.Session
 
                 _activeConnections.TryRemove(key, out _);
 
-                await OnSessionEnded(session).ConfigureAwait(false);
+                await OnSessionEnded(session);
             }
         }
 
@@ -405,7 +405,7 @@ namespace Emby.Server.Implementations.Session
                     MediaSourceInfo mediaSource = null;
                     if (libraryItem is IHasMediaSources)
                     {
-                        mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
+                        mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId);
 
                         if (mediaSource is not null)
                         {
@@ -665,7 +665,7 @@ namespace Emby.Server.Implementations.Session
                             SessionId = session.Id,
                             MediaSourceId = session.PlayState?.MediaSourceId,
                             PositionTicks = session.PlayState?.PositionTicks
-                        }).ConfigureAwait(false);
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -755,7 +755,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, true);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -793,7 +793,7 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
             };
 
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            await _eventManager.PublishAsync(eventArgs);
 
             // Nothing to save here
             // Fire events to inform plugins
@@ -884,7 +884,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
+            await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -923,7 +923,7 @@ namespace Emby.Server.Implementations.Session
                 Session = session
             };
 
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            await _eventManager.PublishAsync(eventArgs);
 
             PlaybackProgress?.Invoke(this, eventArgs);
 
@@ -1044,7 +1044,7 @@ namespace Emby.Server.Implementations.Session
 
                     if (libraryItem is IHasMediaSources)
                     {
-                        mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
+                        mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId);
                     }
 
                     info.Item = GetItemInfo(libraryItem, mediaSource);
@@ -1089,7 +1089,7 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id);
             }
 
             var eventArgs = new PlaybackStopEventArgs
@@ -1107,7 +1107,7 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
             };
 
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            await _eventManager.PublishAsync(eventArgs);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
         }
@@ -1255,7 +1255,7 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var controller in controllers)
             {
-                await controller.SendMessage(name, messageId, data, cancellationToken).ConfigureAwait(false);
+                await controller.SendMessage(name, messageId, data, cancellationToken);
             }
         }
 
@@ -1360,7 +1360,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            await SendMessageToSession(session, SessionMessageType.Play, command, cancellationToken).ConfigureAwait(false);
+            await SendMessageToSession(session, SessionMessageType.Play, command, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -1368,7 +1368,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
             var session = GetSession(sessionId);
-            await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken).ConfigureAwait(false);
+            await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -1376,7 +1376,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
             var session = GetSession(sessionId);
-            await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken).ConfigureAwait(false);
+            await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken);
         }
 
         private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)
@@ -1604,12 +1604,12 @@ namespace Emby.Server.Implementations.Session
                     request.Username,
                     request.Password,
                     request.RemoteEndPoint,
-                    true).ConfigureAwait(false);
+                    true);
             }
 
             if (user is null)
             {
-                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request));
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -1627,7 +1627,7 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("User is at their maximum number of sessions.");
             }
 
-            var token = await GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
+            var token = await GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);
 
             var session = await LogSessionActivity(
                 request.App,
@@ -1635,7 +1635,7 @@ namespace Emby.Server.Implementations.Session
                 request.DeviceId,
                 request.DeviceName,
                 request.RemoteEndPoint,
-                user).ConfigureAwait(false);
+                user);
 
             var returnResult = new AuthenticationResult
             {
@@ -1645,7 +1645,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult));
             return returnResult;
         }
 
@@ -1666,7 +1666,7 @@ namespace Emby.Server.Implementations.Session
                 try
                 {
                     // Logout any existing sessions for the user on this device
-                    await Logout(auth).ConfigureAwait(false);
+                    await Logout(auth);
                 }
                 catch (Exception ex)
                 {
@@ -1675,7 +1675,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             _logger.LogInformation("Creating new access token for user {0}", user.Id);
-            var device = await _deviceManager.CreateDevice(new Device(user.Id, app, appVersion, deviceName, deviceId)).ConfigureAwait(false);
+            var device = await _deviceManager.CreateDevice(new Device(user.Id, app, appVersion, deviceName, deviceId));
 
             return device.AccessToken;
         }
@@ -1696,7 +1696,7 @@ namespace Emby.Server.Implementations.Session
 
             if (existing.Count > 0)
             {
-                await Logout(existing[0]).ConfigureAwait(false);
+                await Logout(existing[0]);
             }
         }
 
@@ -1707,7 +1707,7 @@ namespace Emby.Server.Implementations.Session
 
             _logger.LogInformation("Logging out access token {0}", device.AccessToken);
 
-            await _deviceManager.DeleteDevice(device).ConfigureAwait(false);
+            await _deviceManager.DeleteDevice(device);
 
             var sessions = Sessions
                 .Where(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase))
@@ -1717,7 +1717,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    await ReportSessionEnded(session.Id).ConfigureAwait(false);
+                    await ReportSessionEnded(session.Id);
                 }
                 catch (Exception ex)
                 {
@@ -1740,7 +1740,7 @@ namespace Emby.Server.Implementations.Session
             {
                 if (!string.Equals(currentAccessToken, info.AccessToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    await Logout(info).ConfigureAwait(false);
+                    await Logout(info);
                 }
             }
         }
@@ -1931,7 +1931,7 @@ namespace Emby.Server.Implementations.Session
                 return null;
             }
 
-            return await GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null).ConfigureAwait(false);
+            return await GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null);
         }
 
         /// <inheritdoc/>
@@ -2094,22 +2094,22 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var session in _activeConnections.Values)
             {
-                await session.DisposeAsync().ConfigureAwait(false);
+                await session.DisposeAsync();
             }
 
             if (_idleTimer is not null)
             {
-                await _idleTimer.DisposeAsync().ConfigureAwait(false);
+                await _idleTimer.DisposeAsync();
                 _idleTimer = null;
             }
 
             if (_inactiveTimer is not null)
             {
-                await _inactiveTimer.DisposeAsync().ConfigureAwait(false);
+                await _inactiveTimer.DisposeAsync();
                 _inactiveTimer = null;
             }
 
-            await _shutdownCallback.DisposeAsync().ConfigureAwait(false);
+            await _shutdownCallback.DisposeAsync();
 
             _deviceManager.DeviceOptionsUpdated -= OnDeviceManagerDeviceOptionsUpdated;
             _disposed = true;
@@ -2122,7 +2122,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var messageType = _appHost.ShouldRestart ? SessionMessageType.ServerRestarting : SessionMessageType.ServerShuttingDown;
 
-                await SendMessageToSessions(Sessions, messageType, string.Empty, CancellationToken.None).ConfigureAwait(false);
+                await SendMessageToSessions(Sessions, messageType, string.Empty, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -2132,7 +2132,7 @@ namespace Emby.Server.Implementations.Session
             // Close open websockets to allow Kestrel to shut down cleanly
             foreach (var session in _activeConnections.Values)
             {
-                await session.DisposeAsync().ConfigureAwait(false);
+                await session.DisposeAsync();
             }
 
             _activeConnections.Clear();

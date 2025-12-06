@@ -45,7 +45,7 @@ public class LyricDownloadFailureLogger : IEventConsumer<LyricDownloadFailureEve
         {
             ItemId = eventArgs.Item.Id.ToString("N", CultureInfo.InvariantCulture),
             ShortOverview = eventArgs.Exception.Message
-        }).ConfigureAwait(false);
+        });
     }
 
     private static string GetItemName(BaseItem item)

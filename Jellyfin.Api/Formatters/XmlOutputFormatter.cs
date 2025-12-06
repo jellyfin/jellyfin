@@ -37,6 +37,6 @@ public sealed class XmlOutputFormatter : TextOutputFormatter
         }
 
         var response = context.HttpContext.Response;
-        await response.WriteAsync(valueAsString, selectedEncoding).ConfigureAwait(false);
+        await response.WriteAsync(valueAsString, selectedEncoding);
     }
 }

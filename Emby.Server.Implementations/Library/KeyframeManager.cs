@@ -33,12 +33,12 @@ public class KeyframeManager : IKeyframeManager
     /// <inheritdoc />
     public async Task SaveKeyframeDataAsync(Guid itemId, KeyframeData data, CancellationToken cancellationToken)
     {
-        await _repository.SaveKeyframeDataAsync(itemId, data, cancellationToken).ConfigureAwait(false);
+        await _repository.SaveKeyframeDataAsync(itemId, data, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task DeleteKeyframeDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        await _repository.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
+        await _repository.DeleteKeyframeDataAsync(itemId, cancellationToken);
     }
 }

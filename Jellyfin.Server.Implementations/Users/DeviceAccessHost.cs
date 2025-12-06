@@ -55,7 +55,7 @@ public sealed class DeviceAccessHost : IHostedService
         var user = e.Argument;
         if (!user.HasPermission(PermissionKind.EnableAllDevices))
         {
-            await UpdateDeviceAccess(user).ConfigureAwait(false);
+            await UpdateDeviceAccess(user);
         }
     }
 
@@ -70,7 +70,7 @@ public sealed class DeviceAccessHost : IHostedService
         {
             if (!string.IsNullOrEmpty(device.DeviceId) && !_deviceManager.CanAccessDevice(user, device.DeviceId))
             {
-                await _sessionManager.Logout(device).ConfigureAwait(false);
+                await _sessionManager.Logout(device);
             }
         }
     }

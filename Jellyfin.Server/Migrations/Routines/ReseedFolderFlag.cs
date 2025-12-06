@@ -53,8 +53,8 @@ internal class ReseedFolderFlag : IAsyncMigrationRoutine
             return;
         }
 
-        var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _provider.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
             using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
             var queryResult = connection.Query(
@@ -67,7 +67,7 @@ internal class ReseedFolderFlag : IAsyncMigrationRoutine
             _logger.LogInformation("Migrating the IsFolder flag for {Count} items.", queryResult.Count);
             foreach (var id in queryResult)
             {
-                await dbContext.BaseItems.Where(e => e.Id == id).ExecuteUpdateAsync(e => e.SetProperty(f => f.IsFolder, true), cancellationToken).ConfigureAwait(false);
+                await dbContext.BaseItems.Where(e => e.Id == id).ExecuteUpdateAsync(e => e.SetProperty(f => f.IsFolder, true), cancellationToken);
             }
         }
     }

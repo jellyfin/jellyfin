@@ -96,7 +96,7 @@ public class PlaylistsController : BaseJellyfinApiController
             MediaType = mediaType ?? createPlaylistRequest?.MediaType,
             Users = createPlaylistRequest?.Users.ToArray() ?? [],
             Public = createPlaylistRequest?.IsPublic
-        }).ConfigureAwait(false);
+        });
 
         return result;
     }
@@ -145,7 +145,7 @@ public class PlaylistsController : BaseJellyfinApiController
             Ids = updatePlaylistRequest.Ids,
             Users = updatePlaylistRequest.Users,
             Public = updatePlaylistRequest.IsPublic
-        }).ConfigureAwait(false);
+        });
 
         return NoContent();
     }
@@ -302,7 +302,7 @@ public class PlaylistsController : BaseJellyfinApiController
             Id = playlistId,
             UserId = userId,
             CanEdit = updatePlaylistUserRequest.CanEdit
-        }).ConfigureAwait(false);
+        });
 
         return NoContent();
     }
@@ -349,7 +349,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return NotFound("User permissions not found");
         }
 
-        await _playlistManager.RemoveUserFromShares(playlistId, callingUserId, share).ConfigureAwait(false);
+        await _playlistManager.RemoveUserFromShares(playlistId, callingUserId, share);
 
         return NoContent();
     }
@@ -388,7 +388,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.AddItemToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
+        await _playlistManager.AddItemToPlaylistAsync(playlistId, ids, userId.Value);
         return NoContent();
     }
 
@@ -427,7 +427,7 @@ public class PlaylistsController : BaseJellyfinApiController
             return Forbid();
         }
 
-        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex, callingUserId).ConfigureAwait(false);
+        await _playlistManager.MoveItemAsync(playlistId, itemId, newIndex, callingUserId);
         return NoContent();
     }
 
@@ -478,7 +478,7 @@ public class PlaylistsController : BaseJellyfinApiController
 
         try
         {
-            await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds).ConfigureAwait(false);
+            await _playlistManager.RemoveItemFromPlaylistAsync(playlistId, entryIds);
             return NoContent();
         }
         catch (ArgumentException)

@@ -590,7 +590,7 @@ namespace Emby.Server.Implementations
         public async Task InitializeServices(IConfiguration startupConfig)
         {
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
-            await localizationManager.LoadAll().ConfigureAwait(false);
+            await localizationManager.LoadAll();
 
             SetStaticProperties();
 

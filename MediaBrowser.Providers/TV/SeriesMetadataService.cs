@@ -64,22 +64,22 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
                 var hasUpdate = refreshOptions is not null && season.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata);
                 if (hasUpdate)
                 {
-                    await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
                 }
             }
         }
 
-        return await base.RefreshMetadata(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+        return await base.RefreshMetadata(item, refreshOptions, cancellationToken);
     }
 
     /// <inheritdoc />
     protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
     {
-        await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+        await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
 
         RemoveObsoleteEpisodes(item);
         RemoveObsoleteSeasons(item);
-        await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
+        await CreateSeasonsAsync(item, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -225,7 +225,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             if (existingSeason is null)
             {
                 var seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
-                await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
+                await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken);
             }
             else if (existingSeason.IsVirtualItem)
             {
@@ -233,7 +233,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
                 if (episodeCount > 0)
                 {
                     existingSeason.IsVirtualItem = false;
-                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
                 }
             }
         }
@@ -269,7 +269,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         };
 
         series.AddChild(season);
-        await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
+        await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
     }
 
     private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)

@@ -84,7 +84,7 @@ public class MediaInfoController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return await _mediaInfoHelper.GetPlaybackInfo(item, user).ConfigureAwait(false);
+        return await _mediaInfoHelper.GetPlaybackInfo(item, user);
     }
 
     /// <summary>
@@ -178,8 +178,7 @@ public class MediaInfoController : BaseJellyfinApiController
                 item,
                 user,
                 mediaSourceId,
-                liveStreamId)
-            .ConfigureAwait(false);
+                liveStreamId);
 
         if (info.ErrorCode is not null)
         {
@@ -239,7 +238,7 @@ public class MediaInfoController : BaseJellyfinApiController
                         UserId = userId ?? Guid.Empty,
                         OpenToken = mediaSource.OpenToken,
                         AlwaysBurnInSubtitleWhenTranscoding = playbackInfoDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
-                    }).ConfigureAwait(false);
+                    });
 
                 info.MediaSources = new[] { openStreamResult.MediaSource };
             }
@@ -302,7 +301,7 @@ public class MediaInfoController : BaseJellyfinApiController
             DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http },
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding ?? openLiveStreamDto?.AlwaysBurnInSubtitleWhenTranscoding ?? false
         };
-        return await _mediaInfoHelper.OpenMediaSource(HttpContext, request).ConfigureAwait(false);
+        return await _mediaInfoHelper.OpenMediaSource(HttpContext, request);
     }
 
     /// <summary>
@@ -315,7 +314,7 @@ public class MediaInfoController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string liveStreamId)
     {
-        await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+        await _mediaSourceManager.CloseLiveStream(liveStreamId);
         return NoContent();
     }
 

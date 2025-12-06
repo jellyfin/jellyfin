@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,74 +8,72 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Jellyfin.CodeAnalysis;
 
 /// <summary>
-/// Analyzer to detect sync disposal of async-created IAsyncDisposable objects.
+/// Analyzer to detect ConfigureAwait(false) usage.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class AsyncDisposalPatternAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    /// Diagnostic descriptor for sync disposal of async-created IAsyncDisposable objects.
+    /// Diagnostic descriptor for ConfigureAwait(false) usage.
     /// </summary>
-    public static readonly DiagnosticDescriptor AsyncDisposableSyncDisposal = new(
+    public static readonly DiagnosticDescriptor ConfigureAwaitFalseRule = new(
         id: "JF0001",
-        title: "Async-created IAsyncDisposable objects should use 'await using'",
-        messageFormat: "Using 'using' with async-created IAsyncDisposable object '{0}'. Use 'await using' instead to prevent resource leaks.",
+        title: "Avoid ConfigureAwait(false)",
+        messageFormat: "Avoid using ConfigureAwait(false) here since it is configured as default",
         category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Error,
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Objects that implement IAsyncDisposable and are created using 'await' should be disposed using 'await using' to prevent resource leaks.");
+        description: "ConfigureAwait(false) should be omited as it is configured as false by default.");
 
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [AsyncDisposableSyncDisposal];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+        => [ConfigureAwaitFalseRule];
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeUsingStatement, SyntaxKind.UsingStatement);
+
+        // We only care about invocations, e.g. something.ConfigureAwait(false)
+        context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
     }
 
-    private static void AnalyzeUsingStatement(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        var usingStatement = (UsingStatementSyntax)context.Node;
+        var invocation = (InvocationExpressionSyntax)context.Node;
 
-        // Skip 'await using' statements
-        if (usingStatement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
+        // We want something like: <expression>.ConfigureAwait(false)
+        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
         {
             return;
         }
 
-        // Check if there's a variable declaration
-        if (usingStatement.Declaration?.Variables is null)
+        // Method name must be "ConfigureAwait"
+        if (!string.Equals(memberAccess.Name.Identifier.Text, "ConfigureAwait", StringComparison.Ordinal))
         {
             return;
         }
 
-        foreach (var variable in usingStatement.Declaration.Variables)
+        // Must have exactly one argument
+        var arguments = invocation.ArgumentList.Arguments;
+        if (arguments.Count != 1)
         {
-            if (variable.Initializer?.Value is AwaitExpressionSyntax awaitExpression)
-            {
-                var typeInfo = context.SemanticModel.GetTypeInfo(awaitExpression);
-                var type = typeInfo.Type;
-
-                if (type is not null && ImplementsIAsyncDisposable(type))
-                {
-                    var diagnostic = Diagnostic.Create(
-                        AsyncDisposableSyncDisposal,
-                        usingStatement.GetLocation(),
-                        type.Name);
-
-                    context.ReportDiagnostic(diagnostic);
-                }
-            }
+            return;
         }
-    }
 
-    private static bool ImplementsIAsyncDisposable(ITypeSymbol type)
-    {
-        return type.AllInterfaces.Any(i =>
-            string.Equals(i.Name, "IAsyncDisposable", StringComparison.Ordinal)
-            && string.Equals(i.ContainingNamespace?.ToDisplayString(), "System", StringComparison.Ordinal));
+        // Argument must be the literal 'false'
+        if (arguments[0].Expression is not LiteralExpressionSyntax literal ||
+            !literal.IsKind(SyntaxKind.FalseLiteralExpression))
+        {
+            return;
+        }
+
+        // At this point we have .ConfigureAwait(false) – report a warning.
+        var diagnostic = Diagnostic.Create(
+            ConfigureAwaitFalseRule,
+            invocation.GetLocation());
+
+        context.ReportDiagnostic(diagnostic);
     }
 }

@@ -56,7 +56,7 @@ public class MediaSegmentsController : BaseJellyfinApiController
         }
 
         var libraryOptions = _libraryManager.GetLibraryOptions(item);
-        var items = await _mediaSegmentManager.GetSegmentsAsync(item, includeSegmentTypes, libraryOptions).ConfigureAwait(false);
+        var items = await _mediaSegmentManager.GetSegmentsAsync(item, includeSegmentTypes, libraryOptions);
         return Ok(new QueryResult<MediaSegmentDto>(items.ToArray()));
     }
 }

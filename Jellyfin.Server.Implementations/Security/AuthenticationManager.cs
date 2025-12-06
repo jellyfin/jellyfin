@@ -25,20 +25,20 @@ namespace Jellyfin.Server.Implementations.Security
         /// <inheritdoc />
         public async Task CreateApiKey(string name)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.ApiKeys.Add(new ApiKey(name));
 
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
         }
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<AuthenticationInfo>> GetApiKeys()
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 return await dbContext.ApiKeys
                     .Select(key => new AuthenticationInfo
@@ -49,20 +49,19 @@ namespace Jellyfin.Server.Implementations.Security
                         DeviceId = string.Empty,
                         DeviceName = string.Empty,
                         AppVersion = string.Empty
-                    }).ToListAsync().ConfigureAwait(false);
+                    }).ToListAsync();
             }
         }
 
         /// <inheritdoc />
         public async Task DeleteApiKey(string accessToken)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 await dbContext.ApiKeys
                     .Where(apiKey => apiKey.AccessToken == accessToken)
-                    .ExecuteDeleteAsync()
-                    .ConfigureAwait(false);
+                    .ExecuteDeleteAsync();
             }
         }
     }

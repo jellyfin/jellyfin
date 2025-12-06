@@ -39,9 +39,9 @@ namespace Jellyfin.LiveTv.TunerHosts
         public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
+            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken)))
             {
-                return await GetChannelsAsync(reader, channelIdPrefix, info.Id).ConfigureAwait(false);
+                return await GetChannelsAsync(reader, channelIdPrefix, info.Id);
             }
         }
 
@@ -62,11 +62,10 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             // Set HttpCompletionOption.ResponseHeadersRead to prevent timeouts on larger files
             var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
+                .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            return await response.Content.ReadAsStreamAsync(cancellationToken);
         }
 
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
@@ -74,7 +73,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             var channels = new List<ChannelInfo>();
             string extInf = string.Empty;
 
-            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+            await foreach (var line in reader.ReadAllLinesAsync())
             {
                 var trimmedLine = line.Trim();
                 if (string.IsNullOrWhiteSpace(trimmedLine))

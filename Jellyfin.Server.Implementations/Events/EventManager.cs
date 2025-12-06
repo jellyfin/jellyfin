@@ -37,7 +37,7 @@ namespace Jellyfin.Server.Implementations.Events
         public async Task PublishAsync<T>(T eventArgs)
             where T : EventArgs
         {
-            await PublishInternal(eventArgs).ConfigureAwait(false);
+            await PublishInternal(eventArgs);
         }
 
         private async Task PublishInternal<T>(T eventArgs)
@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Implementations.Events
             {
                 try
                 {
-                    await service.OnEvent(eventArgs).ConfigureAwait(false);
+                    await service.OnEvent(eventArgs);
                 }
                 catch (Exception e)
                 {

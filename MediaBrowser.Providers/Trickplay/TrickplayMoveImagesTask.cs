@@ -83,7 +83,7 @@ public class TrickplayMoveImagesTask : IScheduledTask
 
         do
         {
-            var trickplayInfos = await _trickplayManager.GetTrickplayItemsAsync(Limit, offset).ConfigureAwait(false);
+            var trickplayInfos = await _trickplayManager.GetTrickplayItemsAsync(Limit, offset);
             previousCount = trickplayInfos.Count;
             offset += Limit;
 
@@ -103,7 +103,7 @@ public class TrickplayMoveImagesTask : IScheduledTask
                 try
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                    await _trickplayManager.MoveGeneratedTrickplayDataAsync(video, libraryOptions, cancellationToken).ConfigureAwait(false);
+                    await _trickplayManager.MoveGeneratedTrickplayDataAsync(video, libraryOptions, cancellationToken);
                 }
                 catch (Exception ex)
                 {

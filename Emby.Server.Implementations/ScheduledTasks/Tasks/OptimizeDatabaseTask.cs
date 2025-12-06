@@ -72,7 +72,7 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
 
         try
         {
-            await _jellyfinDatabaseProvider.RunScheduledOptimisation(cancellationToken).ConfigureAwait(false);
+            await _jellyfinDatabaseProvider.RunScheduledOptimisation(cancellationToken);
         }
         catch (Exception e)
         {

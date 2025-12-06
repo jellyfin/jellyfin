@@ -162,12 +162,12 @@ public class VideosController : BaseJellyfinApiController
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
 
-            await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
 
         item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
         item.SetPrimaryVersionId(null);
-        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
         return NoContent();
     }
@@ -220,7 +220,7 @@ public class VideosController : BaseJellyfinApiController
         {
             item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
 
-            await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
             if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
             {
@@ -242,12 +242,12 @@ public class VideosController : BaseJellyfinApiController
             if (item.LinkedAlternateVersions.Length > 0)
             {
                 item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
         }
 
         primaryVersion.LinkedAlternateVersions = alternateVersionsOfPrimary.ToArray();
-        await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        await primaryVersion.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
         return NoContent();
     }
 
@@ -435,8 +435,7 @@ public class VideosController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 _transcodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+                cancellationTokenSource.Token);
 
         if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
         {
@@ -455,7 +454,7 @@ public class VideosController : BaseJellyfinApiController
         if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
+            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext);
         }
 
         if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -489,7 +488,7 @@ public class VideosController : BaseJellyfinApiController
             _transcodeManager,
             ffmpegCommandLineArguments,
             _transcodingJobType,
-            cancellationTokenSource).ConfigureAwait(false);
+            cancellationTokenSource);
     }
 
     /// <summary>

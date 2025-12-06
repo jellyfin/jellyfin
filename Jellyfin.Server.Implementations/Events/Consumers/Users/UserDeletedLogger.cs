@@ -37,8 +37,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                         _localizationManager.GetLocalizedString("UserDeletedWithName"),
                         eventArgs.Argument.Username),
                     "UserDeleted",
-                    Guid.Empty))
-                .ConfigureAwait(false);
+                    Guid.Empty));
         }
     }
 }

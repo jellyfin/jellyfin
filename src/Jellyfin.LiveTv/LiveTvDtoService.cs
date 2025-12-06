@@ -452,7 +452,7 @@ namespace Jellyfin.LiveTv
             // Convert internal server id's to external tv provider id's
             if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
             {
-                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
+                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken);
 
                 info.Id = timer.ExternalId;
             }
@@ -479,7 +479,7 @@ namespace Jellyfin.LiveTv
 
             if (!string.IsNullOrEmpty(dto.SeriesTimerId) && string.IsNullOrEmpty(info.SeriesTimerId))
             {
-                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken).ConfigureAwait(false);
+                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken);
 
                 if (timer is not null)
                 {
@@ -518,7 +518,7 @@ namespace Jellyfin.LiveTv
             // Convert internal server id's to external tv provider id's
             if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
             {
-                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
+                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken);
 
                 info.Id = timer.ExternalId;
             }

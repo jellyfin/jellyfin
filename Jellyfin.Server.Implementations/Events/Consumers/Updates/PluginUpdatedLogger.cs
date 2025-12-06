@@ -45,7 +45,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
                     _localizationManager.GetLocalizedString("VersionNumber"),
                     eventArgs.Argument.Version),
                 Overview = eventArgs.Argument.Changelog
-            }).ConfigureAwait(false);
+            });
         }
     }
 }

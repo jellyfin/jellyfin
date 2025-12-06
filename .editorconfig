@@ -415,6 +415,9 @@ dotnet_diagnostic.CA3006.severity = suggestion
 ###############
 ### DISABLED  #
 ###############
+# disable warning CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = none
+
 # disable warning SA1009: Closing parenthesis should be followed by a space.
 dotnet_diagnostic.SA1009.severity = none
 
@@ -521,9 +524,6 @@ dotnet_diagnostic.SA0001.severity = none
 
 # disable warning CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
-
-# disable warning CA2007: Consider calling ConfigureAwait on the awaited task
-dotnet_diagnostic.CA2007.severity = none
 
 # disable warning CA2234: Pass system uri objects instead of strings
 dotnet_diagnostic.CA2234.severity = suggestion

@@ -41,16 +41,16 @@ public class FixDates : IAsyncMigrationRoutine
     {
         if (!TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
         {
-            var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await using (context.ConfigureAwait(false))
+            var context = await _dbProvider.CreateDbContextAsync(cancellationToken);
+            await using (context)
             {
                 var sw = Stopwatch.StartNew();
 
-                await FixBaseItemsAsync(context, sw, cancellationToken).ConfigureAwait(false);
+                await FixBaseItemsAsync(context, sw, cancellationToken);
                 sw.Reset();
-                await FixChaptersAsync(context, sw, cancellationToken).ConfigureAwait(false);
+                await FixChaptersAsync(context, sw, cancellationToken);
                 sw.Reset();
-                await FixBaseItemImageInfos(context, sw, cancellationToken).ConfigureAwait(false);
+                await FixBaseItemImageInfos(context, sw, cancellationToken);
             }
         }
     }
@@ -75,7 +75,7 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
-                        .ConfigureAwait(false))
+                        )
         {
             result.DateCreated = ToUniversalTime(result.DateCreated);
             result.DateLastMediaAdded = ToUniversalTime(result.DateLastMediaAdded);
@@ -85,7 +85,7 @@ public class FixDates : IAsyncMigrationRoutine
             itemCount++;
         }
 
-        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        var saveCount = await context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("BaseItems: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 
@@ -109,13 +109,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
-                        .ConfigureAwait(false))
+                        )
         {
             result.ImageDateModified = ToUniversalTime(result.ImageDateModified, true);
             itemCount++;
         }
 
-        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        var saveCount = await context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Chapters: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 
@@ -139,13 +139,13 @@ public class FixDates : IAsyncMigrationRoutine
                                     sw.Elapsed))
                         .PartitionEagerAsync(PageSize, cancellationToken)
                         .WithCancellation(cancellationToken)
-                        .ConfigureAwait(false))
+                        )
         {
             result.DateModified = ToUniversalTime(result.DateModified);
             itemCount++;
         }
 
-        var saveCount = await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        var saveCount = await context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("BaseItemImageInfos: Processed {ItemCount} items, saved {SaveCount} changes in {ElapsedTime}", itemCount, saveCount, sw.Elapsed);
     }
 

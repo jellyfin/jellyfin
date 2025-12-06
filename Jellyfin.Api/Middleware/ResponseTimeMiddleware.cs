@@ -63,6 +63,6 @@ public class ResponseTimeMiddleware
         });
 
         // Call the next delegate/middleware in the pipeline
-        await this._next(context).ConfigureAwait(false);
+        await this._next(context);
     }
 }

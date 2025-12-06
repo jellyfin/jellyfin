@@ -60,6 +60,6 @@ public class RefreshMediaLibraryTask : IScheduledTask
 
         progress.Report(0);
 
-        await ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken).ConfigureAwait(false);
+        await ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
     }
 }

@@ -96,9 +96,9 @@ public class GuideManager : IGuideManager
     {
         ArgumentNullException.ThrowIfNull(progress);
 
-        await _recordingsManager.CreateRecordingFolders().ConfigureAwait(false);
+        await _recordingsManager.CreateRecordingFolders();
 
-        await _tunerHostManager.ScanForTunerDeviceChanges(cancellationToken).ConfigureAwait(false);
+        await _tunerHostManager.ScanForTunerDeviceChanges(cancellationToken);
 
         var numComplete = 0;
         double progressPerService = _liveTvManager.Services.Count == 0
@@ -120,7 +120,7 @@ public class GuideManager : IGuideManager
             {
                 var innerProgress = new Progress<double>(p => progress.Report(p * progressPerService));
 
-                var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
+                var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken);
 
                 newChannelIdList.AddRange(idList.Item1);
                 newProgramIdList.AddRange(idList.Item2);
@@ -151,8 +151,8 @@ public class GuideManager : IGuideManager
         var coreService = _liveTvManager.Services.OfType<DefaultLiveTvService>().FirstOrDefault();
         if (coreService is not null)
         {
-            await coreService.RefreshSeriesTimers(cancellationToken).ConfigureAwait(false);
-            await coreService.RefreshTimers(cancellationToken).ConfigureAwait(false);
+            await coreService.RefreshSeriesTimers(cancellationToken);
+            await coreService.RefreshTimers(cancellationToken);
         }
 
         progress.Report(100);
@@ -171,7 +171,7 @@ public class GuideManager : IGuideManager
     {
         progress.Report(10);
 
-        var allChannelsList = (await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false))
+        var allChannelsList = (await service.GetChannelsAsync(cancellationToken))
             .Select(i => new Tuple<string, ChannelInfo>(service.Name, i))
             .ToList();
 
@@ -186,7 +186,7 @@ public class GuideManager : IGuideManager
 
             try
             {
-                var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
+                var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken);
 
                 list.Add(item);
             }
@@ -233,7 +233,7 @@ public class GuideManager : IGuideManager
                 var isKids = false;
                 var isSeries = false;
 
-                var channelPrograms = (await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false)).ToList();
+                var channelPrograms = (await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken)).ToList();
 
                 var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                 {
@@ -277,7 +277,7 @@ public class GuideManager : IGuideManager
                 {
                     _libraryManager.CreateItems(newPrograms, currentChannel, cancellationToken);
 
-                    await PreCacheImages(newPrograms, maxCacheDate).ConfigureAwait(false);
+                    await PreCacheImages(newPrograms, maxCacheDate);
                 }
 
                 if (updatedPrograms.Count > 0)
@@ -286,9 +286,9 @@ public class GuideManager : IGuideManager
                         updatedPrograms,
                         currentChannel,
                         ItemUpdateType.MetadataImport,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
 
-                    await PreCacheImages(updatedPrograms, maxCacheDate).ConfigureAwait(false);
+                    await PreCacheImages(updatedPrograms, maxCacheDate);
                 }
 
                 currentChannel.IsMovie = isMovie;
@@ -301,13 +301,13 @@ public class GuideManager : IGuideManager
                     currentChannel.AddTag("Kids");
                 }
 
-                await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken);
                 await currentChannel.RefreshMetadata(
                     new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
                         ForceSave = true
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -464,7 +464,7 @@ public class GuideManager : IGuideManager
         }
         else if (forceUpdate)
         {
-            await _libraryManager.UpdateItemAsync(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            await _libraryManager.UpdateItemAsync(item, parentFolder, ItemUpdateType.MetadataImport, cancellationToken);
         }
 
         return item;
@@ -747,8 +747,7 @@ public class GuideManager : IGuideManager
                                     program,
                                     imageInfo,
                                     imageIndex: 0,
-                                    removeOnFailure: false)
-                                .ConfigureAwait(false);
+                                    removeOnFailure: false);
                         }
                         catch (Exception ex)
                         {
@@ -756,6 +755,6 @@ public class GuideManager : IGuideManager
                         }
                     }
                 }
-            }).ConfigureAwait(false);
+            });
     }
 }

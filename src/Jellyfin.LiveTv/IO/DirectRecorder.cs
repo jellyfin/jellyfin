@@ -54,7 +54,7 @@ namespace Jellyfin.LiveTv.IO
                 IODefaults.FileStreamBufferSize,
                 FileOptions.Asynchronous);
 
-            await using (output.ConfigureAwait(false))
+            await using (output)
             {
                 onStarted();
 
@@ -65,14 +65,14 @@ namespace Jellyfin.LiveTv.IO
                 using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
                 var linkedCancellationToken = cancellationTokenSource.Token;
                 var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream());
-                await using (fileStream.ConfigureAwait(false))
+                await using (fileStream)
                 {
                     await _streamHelper.CopyToAsync(
                         fileStream,
                         output,
                         IODefaults.CopyToBufferSize,
                         1000,
-                        linkedCancellationToken).ConfigureAwait(false);
+                        linkedCancellationToken);
                 }
             }
 
@@ -82,14 +82,14 @@ namespace Jellyfin.LiveTv.IO
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                .GetAsync(mediaSource.Path, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             _logger.LogInformation("Opened recording stream from tuner provider");
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
             var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
-            await using (output.ConfigureAwait(false))
+            await using (output)
             {
                 onStarted();
 
@@ -101,10 +101,10 @@ namespace Jellyfin.LiveTv.IO
                 cancellationToken = linkedCancellationToken.Token;
 
                 await _streamHelper.CopyUntilCancelled(
-                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
+                    await response.Content.ReadAsStreamAsync(cancellationToken),
                     output,
                     IODefaults.CopyToBufferSize,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 _logger.LogInformation("Recording completed to file {0}", targetFile);
             }

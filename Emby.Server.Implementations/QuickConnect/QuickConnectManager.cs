@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 DeviceName = result.DeviceName,
                 App = result.AppName,
                 AppVersion = result.AppVersion
-            }).ConfigureAwait(false);
+            });
 
             _authorizedSecrets[result.Secret] = (DateTime.UtcNow, authenticationResult);
             result.Authenticated = true;

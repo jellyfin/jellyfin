@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Entities
             // {
             //    if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             //    {
-            //        return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
+            //        return await FindPlaylists(queryParent, user, query);
             //    }
             // }
 

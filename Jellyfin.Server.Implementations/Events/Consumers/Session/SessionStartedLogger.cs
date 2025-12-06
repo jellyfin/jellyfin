@@ -48,7 +48,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
                     eventArgs.Argument.RemoteEndPoint)
-            }).ConfigureAwait(false);
+            });
         }
     }
 }

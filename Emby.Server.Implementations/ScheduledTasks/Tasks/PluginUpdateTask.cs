@@ -77,7 +77,7 @@ public class PluginUpdateTask : IScheduledTask, IConfigurableScheduledTask
         progress.Report(0);
 
         var packageFetchTask = _installationManager.GetAvailablePluginUpdates(cancellationToken);
-        var packagesToInstall = (await packageFetchTask.ConfigureAwait(false)).ToList();
+        var packagesToInstall = (await packageFetchTask).ToList();
 
         progress.Report(10);
 
@@ -89,7 +89,7 @@ public class PluginUpdateTask : IScheduledTask, IConfigurableScheduledTask
 
             try
             {
-                await _installationManager.InstallPackage(package, cancellationToken).ConfigureAwait(false);
+                await _installationManager.InstallPackage(package, cancellationToken);
             }
             catch (OperationCanceledException)
             {

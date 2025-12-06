@@ -74,7 +74,7 @@ public class BackupService : IBackupService
         _applicationHost.NotifyPendingRestart();
         _ = Task.Run(async () =>
         {
-            await Task.Delay(500).ConfigureAwait(false);
+            await Task.Delay(500);
             _hostApplicationLifetime.StopApplication();
         });
     }
@@ -91,7 +91,7 @@ public class BackupService : IBackupService
         StorageHelper.TestCommonPathsForStorageCapacity(_applicationPaths, _logger);
 
         var fileStream = File.OpenRead(archivePath);
-        await using (fileStream.ConfigureAwait(false))
+        await using (fileStream)
         {
             using var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read, false);
             var zipArchiveEntry = zipArchive.GetEntry(ManifestEntryName);
@@ -103,9 +103,9 @@ public class BackupService : IBackupService
 
             BackupManifest? manifest;
             var manifestStream = zipArchiveEntry.Open();
-            await using (manifestStream.ConfigureAwait(false))
+            await using (manifestStream)
             {
-                manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings);
             }
 
             if (manifest!.ServerVersion > _applicationHost.ApplicationVersion) // newer versions of Jellyfin should be able to load older versions as we have migrations.
@@ -148,8 +148,8 @@ public class BackupService : IBackupService
             if (manifest.Options.Database)
             {
                 _logger.LogInformation("Begin restoring Database");
-                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-                await using (dbContext.ConfigureAwait(false))
+                var dbContext = await _dbProvider.CreateDbContextAsync();
+                await using (dbContext)
                 {
                     // restore migration history manually
                     var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
@@ -161,25 +161,25 @@ public class BackupService : IBackupService
 
                     HistoryRow[] historyEntries;
                     var historyArchive = historyEntry.Open();
-                    await using (historyArchive.ConfigureAwait(false))
+                    await using (historyArchive)
                     {
-                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive).ConfigureAwait(false) ??
+                        historyEntries = await JsonSerializer.DeserializeAsync<HistoryRow[]>(historyArchive) ??
                             throw new InvalidOperationException("Cannot restore backup that has no History data.");
                     }
 
                     var historyRepository = dbContext.GetService<IHistoryRepository>();
-                    await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+                    await historyRepository.CreateIfNotExistsAsync();
 
-                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None))
                     {
                         var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
-                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                        await dbContext.Database.ExecuteSqlRawAsync(insertScript);
                     }
 
                     foreach (var item in historyEntries)
                     {
                         var insertScript = historyRepository.GetInsertScript(item);
-                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                        await dbContext.Database.ExecuteSqlRawAsync(insertScript);
                     }
 
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -190,7 +190,7 @@ public class BackupService : IBackupService
 
                     var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
                     _logger.LogInformation("Begin purging database");
-                    await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
+                    await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames);
                     _logger.LogInformation("Database Purged");
 
                     foreach (var entityType in entityTypes)
@@ -205,11 +205,11 @@ public class BackupService : IBackupService
                         }
 
                         var zipEntryStream = zipEntry.Open();
-                        await using (zipEntryStream.ConfigureAwait(false))
+                        await using (zipEntryStream)
                         {
                             _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
-                            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
+                            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings))
                             {
                                 var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
                                 if (entity is null)
@@ -233,7 +233,7 @@ public class BackupService : IBackupService
                     }
 
                     _logger.LogInformation("Try restore Database");
-                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    await dbContext.SaveChangesAsync();
                     _logger.LogInformation("Restored database");
                 }
             }
@@ -266,7 +266,7 @@ public class BackupService : IBackupService
 
         _logger.LogInformation("Running database optimization before backup");
 
-        await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
+        await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None);
 
         var backupFolder = Path.Combine(_applicationPaths.BackupPath);
 
@@ -289,12 +289,12 @@ public class BackupService : IBackupService
         {
             _logger.LogInformation("Attempting to create a new backup at {BackupPath}", backupPath);
             var fileStream = File.OpenWrite(backupPath);
-            await using (fileStream.ConfigureAwait(false))
+            await using (fileStream)
             using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
             {
                 _logger.LogInformation("Starting backup process");
-                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-                await using (dbContext.ConfigureAwait(false))
+                var dbContext = await _dbProvider.CreateDbContextAsync();
+                await using (dbContext)
                 {
                     dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -307,7 +307,7 @@ public class BackupService : IBackupService
 
                     // include the migration history as well
                     var historyRepository = dbContext.GetService<IHistoryRepository>();
-                    var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                    var migrations = await historyRepository.GetAppliedMigrationsAsync();
 
                     ICollection<(Type Type, string SourceName, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes =
                     [
@@ -318,9 +318,9 @@ public class BackupService : IBackupService
                         (Type: typeof(HistoryRow), SourceName: nameof(HistoryRow), ValueFactory: () => migrations.ToAsyncEnumerable())
                     ];
                     manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
-                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    var transaction = await dbContext.Database.BeginTransactionAsync();
 
-                    await using (transaction.ConfigureAwait(false))
+                    await using (transaction)
                     {
                         _logger.LogInformation("Begin Database backup");
 
@@ -330,15 +330,15 @@ public class BackupService : IBackupService
                             var zipEntry = zipArchive.CreateEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.SourceName}.json")));
                             var entities = 0;
                             var zipEntryStream = zipEntry.Open();
-                            await using (zipEntryStream.ConfigureAwait(false))
+                            await using (zipEntryStream)
                             {
                                 var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
-                                await using (jsonSerializer.ConfigureAwait(false))
+                                await using (jsonSerializer)
                                 {
                                     jsonSerializer.WriteStartArray();
 
-                                    var set = entityType.ValueFactory().ConfigureAwait(false);
-                                    await foreach (var item in set.ConfigureAwait(false))
+                                    var set = entityType.ValueFactory();
+                                    await foreach (var item in set)
                                     {
                                         entities++;
                                         try
@@ -406,9 +406,9 @@ public class BackupService : IBackupService
                 }
 
                 var manifestStream = zipArchive.CreateEntry(ManifestEntryName).Open();
-                await using (manifestStream.ConfigureAwait(false))
+                await using (manifestStream)
                 {
-                    await JsonSerializer.SerializeAsync(manifestStream, manifest).ConfigureAwait(false);
+                    await JsonSerializer.SerializeAsync(manifestStream, manifest);
                 }
             }
 
@@ -445,7 +445,7 @@ public class BackupService : IBackupService
         BackupManifest? manifest;
         try
         {
-            manifest = await GetManifest(archivePath).ConfigureAwait(false);
+            manifest = await GetManifest(archivePath);
         }
         catch (Exception ex)
         {
@@ -475,7 +475,7 @@ public class BackupService : IBackupService
         {
             try
             {
-                var manifest = await GetManifest(item).ConfigureAwait(false);
+                var manifest = await GetManifest(item);
 
                 if (manifest is null)
                 {
@@ -496,7 +496,7 @@ public class BackupService : IBackupService
     private static async ValueTask<BackupManifest?> GetManifest(string archivePath)
     {
         var archiveStream = File.OpenRead(archivePath);
-        await using (archiveStream.ConfigureAwait(false))
+        await using (archiveStream)
         {
             using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
             var manifestEntry = zipStream.GetEntry(ManifestEntryName);
@@ -506,9 +506,9 @@ public class BackupService : IBackupService
             }
 
             var manifestStream = manifestEntry.Open();
-            await using (manifestStream.ConfigureAwait(false))
+            await using (manifestStream)
             {
-                return await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                return await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings);
             }
         }
     }

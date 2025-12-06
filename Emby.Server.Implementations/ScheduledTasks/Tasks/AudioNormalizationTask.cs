@@ -111,13 +111,13 @@ public partial class AudioNormalizationTask : IScheduledTask
                         Directory.CreateDirectory(tempDir);
                         var tempFile = Path.Join(tempDir, a.Id + ".concat");
                         var inputLines = albumTracks.Select(x => string.Format(CultureInfo.InvariantCulture, "file '{0}'", x.Path.Replace("'", @"'\''", StringComparison.Ordinal)));
-                        await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken).ConfigureAwait(false);
+                        await File.WriteAllLinesAsync(tempFile, inputLines, cancellationToken);
                         try
                         {
                             a.LUFS = await CalculateLUFSAsync(
                                 string.Format(CultureInfo.InvariantCulture, "-f concat -safe 0 -i \"{0}\"", tempFile),
                                 OperatingSystem.IsWindows(), // Wait for process to exit on Windows before we try deleting the concat file
-                                cancellationToken).ConfigureAwait(false);
+                                cancellationToken);
                             toSaveDbItems.Add(a);
                         }
                         finally
@@ -175,7 +175,7 @@ public partial class AudioNormalizationTask : IScheduledTask
                     t.LUFS = await CalculateLUFSAsync(
                         string.Format(CultureInfo.InvariantCulture, "-i \"{0}\"", t.Path.Replace("\"", "\\\"", StringComparison.Ordinal)),
                         false,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
                     toSaveDbItems.Add(t);
                 }
 
@@ -262,7 +262,7 @@ public partial class AudioNormalizationTask : IScheduledTask
             using var reader = process.StandardError;
             float? lufs = null;
             var foundLufs = false;
-            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var line in reader.ReadAllLinesAsync(cancellationToken))
             {
                 if (foundLufs)
                 {
@@ -286,7 +286,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
             if (waitForExit)
             {
-                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                await process.WaitForExitAsync(cancellationToken);
             }
 
             return lufs;

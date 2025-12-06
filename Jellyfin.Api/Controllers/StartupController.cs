@@ -110,7 +110,7 @@ public class StartupController : BaseJellyfinApiController
     public async Task<StartupUserDto> GetFirstUser()
     {
         // TODO: Remove this method when startup wizard no longer requires an existing user.
-        await _userManager.InitializeAsync().ConfigureAwait(false);
+        await _userManager.InitializeAsync();
         var user = _userManager.Users.First();
         return new StartupUserDto
         {
@@ -142,11 +142,11 @@ public class StartupController : BaseJellyfinApiController
             user.Username = startupUserDto.Name;
         }
 
-        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+        await _userManager.UpdateUserAsync(user);
 
         if (!string.IsNullOrEmpty(startupUserDto.Password))
         {
-            await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
+            await _userManager.ChangePassword(user, startupUserDto.Password);
         }
 
         return NoContent();

@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return movie;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
             if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 TmdbUtils.NormalizeLanguage(language, countryCode),
                 imageLanguages,
                 extraMethods,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (movie is not null)
             {
@@ -102,14 +102,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return collection;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             collection = await _tmDbClient.GetCollectionAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
                 imageLanguages,
                 CollectionMethods.Images,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (collection is not null)
             {
@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return series;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
             if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
                 includeImageLanguage: imageLanguages,
                 extraMethods: extraMethods,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (series is not null)
             {
@@ -192,9 +192,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return group;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
-            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
+            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, countryCode, cancellationToken);
             var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
 
             if (episodeGroupId is null)
@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             group = await _tmDbClient.GetTvEpisodeGroupsAsync(
                 episodeGroupId,
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (group is not null)
             {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return season;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             season = await _tmDbClient.GetTvSeasonAsync(
                 tvShowId,
@@ -241,7 +241,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
                 includeImageLanguage: imageLanguages,
                 extraMethods: TvSeasonMethods.Credits | TvSeasonMethods.Images | TvSeasonMethods.ExternalIds | TvSeasonMethods.Videos,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (season is not null)
             {
@@ -271,9 +271,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return episode;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
+            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, cancellationToken);
             if (group is not null)
             {
                 var season = group.Groups.Find(s => s.Order == seasonNumber);
@@ -293,7 +293,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
                 includeImageLanguage: imageLanguages,
                 extraMethods: TvEpisodeMethods.Credits | TvEpisodeMethods.Images | TvEpisodeMethods.ExternalIds | TvEpisodeMethods.Videos,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (episode is not null)
             {
@@ -319,13 +319,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return person;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
                 PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (person is not null)
             {
@@ -357,13 +357,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return result;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             result = await _tmDbClient.FindAsync(
                 source,
                 externalId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (result is not null)
             {
@@ -390,11 +390,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return series.Results;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var searchResults = await _tmDbClient
-                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), includeAdult: Plugin.Instance.Configuration.IncludeAdult, firstAirDateYear: year, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), includeAdult: Plugin.Instance.Configuration.IncludeAdult, firstAirDateYear: year, cancellationToken: cancellationToken);
 
             if (searchResults.Results.Count > 0)
             {
@@ -418,11 +417,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return person.Results;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var searchResults = await _tmDbClient
-                .SearchPersonAsync(name, includeAdult: Plugin.Instance.Configuration.IncludeAdult, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                .SearchPersonAsync(name, includeAdult: Plugin.Instance.Configuration.IncludeAdult, cancellationToken: cancellationToken);
 
             if (searchResults.Results.Count > 0)
             {
@@ -461,11 +459,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return movies.Results;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var searchResults = await _tmDbClient
-                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), includeAdult: Plugin.Instance.Configuration.IncludeAdult, year: year, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), includeAdult: Plugin.Instance.Configuration.IncludeAdult, year: year, cancellationToken: cancellationToken);
 
             if (searchResults.Results.Count > 0)
             {
@@ -491,11 +488,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return collections.Results;
             }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             var searchResults = await _tmDbClient
-                .SearchCollectionAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                .SearchCollectionAsync(name, TmdbUtils.NormalizeLanguage(language, countryCode), cancellationToken: cancellationToken);
 
             if (searchResults.Results.Count > 0)
             {
@@ -631,7 +627,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         {
             if (!_tmDbClient.HasConfig)
             {
-                var config = await _tmDbClient.GetConfigAsync().ConfigureAwait(false);
+                var config = await _tmDbClient.GetConfigAsync();
                 ValidatePreferences(config);
             }
         }
@@ -674,7 +670,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The configuration.</returns>
         public async Task<TMDbConfig> GetClientConfiguration()
         {
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            await EnsureClientConfigAsync();
 
             return _tmDbClient.Config;
         }

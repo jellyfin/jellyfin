@@ -196,8 +196,7 @@ public class PluginsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var configuration = (BasePluginConfiguration?)await JsonSerializer.DeserializeAsync(Request.Body, configPlugin.ConfigurationType, _serializerOptions)
-            .ConfigureAwait(false);
+        var configuration = (BasePluginConfiguration?)await JsonSerializer.DeserializeAsync(Request.Body, configPlugin.ConfigurationType, _serializerOptions);
 
         if (configuration is not null)
         {

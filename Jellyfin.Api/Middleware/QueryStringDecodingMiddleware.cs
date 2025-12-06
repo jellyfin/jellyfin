@@ -33,6 +33,6 @@ public class QueryStringDecodingMiddleware
             httpContext.Features.Set<IQueryFeature>(new UrlDecodeQueryFeature(feature));
         }
 
-        await _next(httpContext).ConfigureAwait(false);
+        await _next(httpContext);
     }
 }

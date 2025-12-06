@@ -187,7 +187,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         _logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
-        await KillTranscodingJob(job, true, path => true).ConfigureAwait(false);
+        await KillTranscodingJob(job, true, path => true);
     }
 
     /// <inheritdoc />
@@ -237,12 +237,12 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         if (delete(job.Path!))
         {
-            await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
+            await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500);
         }
 
         if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
         {
-            await _sessionManager.CloseLiveStreamIfNeededAsync(job.LiveStreamId, job.PlaySessionId).ConfigureAwait(false);
+            await _sessionManager.CloseLiveStreamIfNeededAsync(job.LiveStreamId, job.PlaySessionId);
         }
     }
 
@@ -255,7 +255,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         _logger.LogInformation("Deleting partial stream file(s) {Path}", path);
 
-        await Task.Delay(delayMs).ConfigureAwait(false);
+        await Task.Delay(delayMs);
 
         try
         {
@@ -272,7 +272,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
-            await DeletePartialStreamFiles(path, jobType, retryCount + 1, 500).ConfigureAwait(false);
+            await DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
         }
         catch (Exception ex)
         {
@@ -380,7 +380,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
         Directory.CreateDirectory(directory);
 
-        await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
+        await AcquireResources(state, cancellationTokenSource);
 
         if (state.VideoRequest is not null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
         {
@@ -401,16 +401,16 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
                 var concatPath = Path.Join(_appPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
-                await _attachmentExtractor.ExtractAllAttachments(concatPath, state.MediaSource, cancellationTokenSource.Token).ConfigureAwait(false);
+                await _attachmentExtractor.ExtractAllAttachments(concatPath, state.MediaSource, cancellationTokenSource.Token);
             }
             else
             {
-                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, cancellationTokenSource.Token).ConfigureAwait(false);
+                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, cancellationTokenSource.Token);
             }
 
             if (state.SubtitleStream.IsExternal && Path.GetExtension(state.SubtitleStream.Path.AsSpan()).Equals(".mks", StringComparison.OrdinalIgnoreCase))
             {
-                await _attachmentExtractor.ExtractAllAttachments(state.SubtitleStream.Path, state.MediaSource, cancellationTokenSource.Token).ConfigureAwait(false);
+                await _attachmentExtractor.ExtractAllAttachments(state.SubtitleStream.Path, state.MediaSource, cancellationTokenSource.Token);
             }
         }
 
@@ -474,7 +474,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             IODefaults.FileStreamBufferSize,
             FileOptions.Asynchronous);
 
-        await JsonSerializer.SerializeAsync(logStream, state.MediaSource, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(logStream, state.MediaSource, cancellationToken: cancellationTokenSource.Token);
         var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
             Environment.NewLine
             + Environment.NewLine
@@ -482,7 +482,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             + Environment.NewLine
             + Environment.NewLine);
 
-        await logStream.WriteAsync(commandLineLogMessageBytes, cancellationTokenSource.Token).ConfigureAwait(false);
+        await logStream.WriteAsync(commandLineLogMessageBytes, cancellationTokenSource.Token);
 
         process.Exited += (_, _) => OnFfMpegProcessExited(process, transcodingJob, state);
 
@@ -509,18 +509,18 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _logger.LogDebug("Waiting for the creation of {0}", ffmpegTargetFile);
         while (!File.Exists(ffmpegTargetFile) && !transcodingJob.HasExited)
         {
-            await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
+            await Task.Delay(100, cancellationTokenSource.Token);
         }
 
         _logger.LogDebug("File {0} created or transcoding has finished", ffmpegTargetFile);
 
         if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
         {
-            await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+            await Task.Delay(1000, cancellationTokenSource.Token);
 
             if (state.ReadInputAtNativeFramerate && !transcodingJob.HasExited)
             {
-                await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
+                await Task.Delay(1500, cancellationTokenSource.Token);
             }
         }
 
@@ -665,8 +665,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
-                    cancellationTokenSource.Token)
-                .ConfigureAwait(false);
+                    cancellationTokenSource.Token);
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
             _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
@@ -679,7 +678,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         if (state.MediaSource.BufferMs.HasValue)
         {
-            await Task.Delay(state.MediaSource.BufferMs.Value, cancellationTokenSource.Token).ConfigureAwait(false);
+            await Task.Delay(state.MediaSource.BufferMs.Value, cancellationTokenSource.Token);
         }
     }
 

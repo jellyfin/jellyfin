@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public async Task<AuthorizationInfo> Authenticate(HttpRequest request)
         {
-            var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
+            var auth = await _authorizationContext.GetAuthorizationInfo(request);
 
             if (!auth.HasToken)
             {

@@ -104,22 +104,22 @@ public class RecordingsMetadataManager
                 {
                     ArgumentNullException.ThrowIfNull(seriesPath);
 
-                    await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
-                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    await SaveSeriesNfoAsync(timer, seriesPath);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false);
                 }
                 else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
                 {
-                    await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, true);
                 }
                 else
                 {
-                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false);
                 }
             }
 
             if (config.SaveRecordingImages)
             {
-                await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
+                await SaveRecordingImages(recordingPath, program);
             }
         }
         catch (Exception ex)
@@ -138,7 +138,7 @@ public class RecordingsMetadataManager
         }
 
         var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             var settings = new XmlWriterSettings
             {
@@ -148,47 +148,47 @@ public class RecordingsMetadataManager
             };
 
             var writer = XmlWriter.Create(stream, settings);
-            await using (writer.ConfigureAwait(false))
+            await using (writer)
             {
-                await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
-                await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
+                await writer.WriteStartDocumentAsync(true);
+                await writer.WriteStartElementAsync(null, "tvshow", null);
                 if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var id))
                 {
-                    await writer.WriteElementStringAsync(null, "id", null, id).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "id", null, id);
                 }
 
                 if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out id))
                 {
-                    await writer.WriteElementStringAsync(null, "imdb_id", null, id).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "imdb_id", null, id);
                 }
 
                 if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out id))
                 {
-                    await writer.WriteElementStringAsync(null, "tmdbid", null, id).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "tmdbid", null, id);
                 }
 
                 if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out id))
                 {
-                    await writer.WriteElementStringAsync(null, "zap2itid", null, id).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "zap2itid", null, id);
                 }
 
                 if (!string.IsNullOrWhiteSpace(timer.Name))
                 {
-                    await writer.WriteElementStringAsync(null, "title", null, timer.Name).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "title", null, timer.Name);
                 }
 
                 if (!string.IsNullOrWhiteSpace(timer.OfficialRating))
                 {
-                    await writer.WriteElementStringAsync(null, "mpaa", null, timer.OfficialRating).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "mpaa", null, timer.OfficialRating);
                 }
 
                 foreach (var genre in timer.Genres)
                 {
-                    await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "genre", null, genre);
                 }
 
-                await writer.WriteEndElementAsync().ConfigureAwait(false);
-                await writer.WriteEndDocumentAsync().ConfigureAwait(false);
+                await writer.WriteEndElementAsync();
+                await writer.WriteEndDocumentAsync();
             }
         }
     }
@@ -203,7 +203,7 @@ public class RecordingsMetadataManager
         }
 
         var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             var settings = new XmlWriterSettings
             {
@@ -217,17 +217,17 @@ public class RecordingsMetadataManager
             var isSeriesEpisode = timer.IsProgramSeries;
 
             var writer = XmlWriter.Create(stream, settings);
-            await using (writer.ConfigureAwait(false))
+            await using (writer)
             {
-                await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
+                await writer.WriteStartDocumentAsync(true);
 
                 if (isSeriesEpisode)
                 {
-                    await writer.WriteStartElementAsync(null, "episodedetails", null).ConfigureAwait(false);
+                    await writer.WriteStartElementAsync(null, "episodedetails", null);
 
                     if (!string.IsNullOrWhiteSpace(timer.EpisodeTitle))
                     {
-                        await writer.WriteElementStringAsync(null, "title", null, timer.EpisodeTitle).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "title", null, timer.EpisodeTitle);
                     }
 
                     var premiereDate = item.PremiereDate ?? (!timer.IsRepeat ? DateTime.UtcNow : null);
@@ -240,31 +240,31 @@ public class RecordingsMetadataManager
                             null,
                             "aired",
                             null,
-                            premiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                            premiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
                     }
 
                     if (item.IndexNumber.HasValue)
                     {
-                        await writer.WriteElementStringAsync(null, "episode", null, item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "episode", null, item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
                     if (item.ParentIndexNumber.HasValue)
                     {
-                        await writer.WriteElementStringAsync(null, "season", null, item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "season", null, item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture));
                     }
                 }
                 else
                 {
-                    await writer.WriteStartElementAsync(null, "movie", null).ConfigureAwait(false);
+                    await writer.WriteStartElementAsync(null, "movie", null);
 
                     if (!string.IsNullOrWhiteSpace(item.Name))
                     {
-                        await writer.WriteElementStringAsync(null, "title", null, item.Name).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "title", null, item.Name);
                     }
 
                     if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
                     {
-                        await writer.WriteElementStringAsync(null, "originaltitle", null, item.OriginalTitle).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "originaltitle", null, item.OriginalTitle);
                     }
 
                     if (item.PremiereDate.HasValue)
@@ -275,12 +275,12 @@ public class RecordingsMetadataManager
                             null,
                             "premiered",
                             null,
-                            item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                            item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
                         await writer.WriteElementStringAsync(
                             null,
                             "releasedate",
                             null,
-                            item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                            item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
                     }
                 }
 
@@ -288,32 +288,32 @@ public class RecordingsMetadataManager
                     null,
                     "dateadded",
                     null,
-                    DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture));
 
                 if (item.ProductionYear.HasValue)
                 {
-                    await writer.WriteElementStringAsync(null, "year", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "year", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (!string.IsNullOrEmpty(item.OfficialRating))
                 {
-                    await writer.WriteElementStringAsync(null, "mpaa", null, item.OfficialRating).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "mpaa", null, item.OfficialRating);
                 }
 
                 var overview = (item.Overview ?? string.Empty)
                     .StripHtml()
                     .Replace("&quot;", "'", StringComparison.Ordinal);
 
-                await writer.WriteElementStringAsync(null, "plot", null, overview).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(null, "plot", null, overview);
 
                 if (item.CommunityRating.HasValue)
                 {
-                    await writer.WriteElementStringAsync(null, "rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 foreach (var genre in item.Genres)
                 {
-                    await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "genre", null, genre);
                 }
 
                 var people = item.Id.IsEmpty() ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
@@ -325,7 +325,7 @@ public class RecordingsMetadataManager
 
                 foreach (var person in directors)
                 {
-                    await writer.WriteElementStringAsync(null, "director", null, person).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "director", null, person);
                 }
 
                 var writers = people
@@ -336,27 +336,27 @@ public class RecordingsMetadataManager
 
                 foreach (var person in writers)
                 {
-                    await writer.WriteElementStringAsync(null, "writer", null, person).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "writer", null, person);
                 }
 
                 foreach (var person in writers)
                 {
-                    await writer.WriteElementStringAsync(null, "credits", null, person).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "credits", null, person);
                 }
 
                 if (item.TryGetProviderId(MetadataProvider.TmdbCollection, out var tmdbCollection))
                 {
-                    await writer.WriteElementStringAsync(null, "collectionnumber", null, tmdbCollection).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "collectionnumber", null, tmdbCollection);
                 }
 
                 if (item.TryGetProviderId(MetadataProvider.Imdb, out var imdb))
                 {
                     if (!isSeriesEpisode)
                     {
-                        await writer.WriteElementStringAsync(null, "id", null, imdb).ConfigureAwait(false);
+                        await writer.WriteElementStringAsync(null, "id", null, imdb);
                     }
 
-                    await writer.WriteElementStringAsync(null, "imdbid", null, imdb).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "imdbid", null, imdb);
 
                     // No need to lock if we have identified the content already
                     lockData = false;
@@ -364,7 +364,7 @@ public class RecordingsMetadataManager
 
                 if (item.TryGetProviderId(MetadataProvider.Tvdb, out var tvdb))
                 {
-                    await writer.WriteElementStringAsync(null, "tvdbid", null, tvdb).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "tvdbid", null, tvdb);
 
                     // No need to lock if we have identified the content already
                     lockData = false;
@@ -372,7 +372,7 @@ public class RecordingsMetadataManager
 
                 if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdb))
                 {
-                    await writer.WriteElementStringAsync(null, "tmdbid", null, tmdb).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "tmdbid", null, tmdb);
 
                     // No need to lock if we have identified the content already
                     lockData = false;
@@ -380,26 +380,26 @@ public class RecordingsMetadataManager
 
                 if (lockData)
                 {
-                    await writer.WriteElementStringAsync(null, "lockdata", null, "true").ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "lockdata", null, "true");
                 }
 
                 if (item.CriticRating.HasValue)
                 {
-                    await writer.WriteElementStringAsync(null, "criticrating", null, item.CriticRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "criticrating", null, item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (!string.IsNullOrWhiteSpace(item.Tagline))
                 {
-                    await writer.WriteElementStringAsync(null, "tagline", null, item.Tagline).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "tagline", null, item.Tagline);
                 }
 
                 foreach (var studio in item.Studios)
                 {
-                    await writer.WriteElementStringAsync(null, "studio", null, studio).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "studio", null, studio);
                 }
 
-                await writer.WriteEndElementAsync().ConfigureAwait(false);
-                await writer.WriteEndDocumentAsync().ConfigureAwait(false);
+                await writer.WriteEndElementAsync();
+                await writer.WriteEndDocumentAsync();
             }
         }
     }
@@ -414,7 +414,7 @@ public class RecordingsMetadataManager
         {
             try
             {
-                await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                await SaveRecordingImage(recordingPath, program, image);
             }
             catch (Exception ex)
             {
@@ -429,7 +429,7 @@ public class RecordingsMetadataManager
             {
                 try
                 {
-                    await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    await SaveRecordingImage(recordingPath, program, image);
                 }
                 catch (Exception ex)
                 {
@@ -442,7 +442,7 @@ public class RecordingsMetadataManager
             {
                 try
                 {
-                    await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    await SaveRecordingImage(recordingPath, program, image);
                 }
                 catch (Exception ex)
                 {
@@ -455,7 +455,7 @@ public class RecordingsMetadataManager
             {
                 try
                 {
-                    await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    await SaveRecordingImage(recordingPath, program, image);
                 }
                 catch (Exception ex)
                 {
@@ -469,7 +469,7 @@ public class RecordingsMetadataManager
     {
         if (!image.IsLocalFile)
         {
-            image = await _libraryManager.ConvertImageToLocal(program, image, 0).ConfigureAwait(false);
+            image = await _libraryManager.ConvertImageToLocal(program, image, 0);
         }
 
         var imageSaveFilenameWithoutExtension = image.Type switch

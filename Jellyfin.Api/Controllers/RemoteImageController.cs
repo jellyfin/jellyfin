@@ -85,8 +85,7 @@ public class RemoteImageController : BaseJellyfinApiController
                     IncludeDisabledProviders = true,
                     ImageType = type
                 },
-                CancellationToken.None)
-            .ConfigureAwait(false);
+                CancellationToken.None);
 
         var imageArray = images.ToArray();
         var allProviders = _providerManager.GetRemoteImageProviderInfo(item);
@@ -163,10 +162,9 @@ public class RemoteImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
-            .ConfigureAwait(false);
+        await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None);
 
-        await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         return NoContent();
     }
 

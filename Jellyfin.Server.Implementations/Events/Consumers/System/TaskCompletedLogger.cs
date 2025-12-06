@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
                     LogSeverity = LogLevel.Error,
                     Overview = string.Join(Environment.NewLine, vals),
                     ShortOverview = runningTime
-                }).ConfigureAwait(false);
+                });
             }
         }
 

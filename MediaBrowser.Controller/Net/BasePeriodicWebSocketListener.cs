@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller.Net
 
         private async Task HandleMessages()
         {
-            while (await _channel.Reader.WaitToReadAsync().ConfigureAwait(false))
+            while (await _channel.Reader.WaitToReadAsync())
             {
                 while (_channel.Reader.TryRead(out var force))
                 {
@@ -192,7 +192,7 @@ namespace MediaBrowser.Controller.Net
                             }
                         }
 
-                        await Task.WhenAll(GetTasks()).ConfigureAwait(false);
+                        await Task.WhenAll(GetTasks());
                     }
                     catch (Exception ex)
                     {
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Net
                 var (connection, cts, state) = tuple;
                 var cancellationToken = cts.Token;
 
-                var data = await GetDataToSendForConnection(connection).ConfigureAwait(false);
+                var data = await GetDataToSendForConnection(connection);
                 if (data is null)
                 {
                     return;
@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Net
 
                 await connection.SendAsync(
                     new OutboundWebSocketMessage<TReturnDataType> { MessageType = Type, Data = data },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 state.DateLastSendUtc = DateTime.UtcNow;
             }
@@ -290,7 +290,7 @@ namespace MediaBrowser.Controller.Net
             try
             {
                 _channel.Writer.TryComplete();
-                await _messageConsumerTask.ConfigureAwait(false);
+                await _messageConsumerTask;
             }
             catch (Exception ex)
             {
@@ -309,7 +309,7 @@ namespace MediaBrowser.Controller.Net
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            await DisposeAsyncCore().ConfigureAwait(false);
+            await DisposeAsyncCore();
             GC.SuppressFinalize(this);
         }
     }

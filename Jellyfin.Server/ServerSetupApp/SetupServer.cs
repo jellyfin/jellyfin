@@ -87,7 +87,7 @@ public sealed class SetupServer : IDisposable
     /// <returns>A Task.</returns>
     public async Task RunAsync()
     {
-        var fileTemplate = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "ServerSetupApp", "index.mstemplate.html")).ConfigureAwait(false);
+        var fileTemplate = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "ServerSetupApp", "index.mstemplate.html"));
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
@@ -136,7 +136,7 @@ public sealed class SetupServer : IDisposable
                 },
                 "ToString")
             .BuildAndParseAsync()
-            .ConfigureAwait(false))
+            )
             .CreateCompiledRenderer();
 
         ThrowIfDisposed();
@@ -196,7 +196,7 @@ public sealed class SetupServer : IDisposable
                                                 ?.FullName;
                                             if (logFilePath is not null)
                                             {
-                                                await context.Response.SendFileAsync(logFilePath, CancellationToken.None).ConfigureAwait(false);
+                                                await context.Response.SendFileAsync(logFilePath, CancellationToken.None);
                                             }
                                         });
                                     });
@@ -210,7 +210,7 @@ public sealed class SetupServer : IDisposable
                                             var retryCounter = 0;
                                             while (jfApplicationHost is null && retryCounter < 5)
                                             {
-                                                await Task.Delay(500).ConfigureAwait(false);
+                                                await Task.Delay(500);
                                                 jfApplicationHost = _serverFactory();
                                                 retryCounter++;
                                             }
@@ -232,7 +232,7 @@ public sealed class SetupServer : IDisposable
                                                 StartupWizardCompleted = false
                                             };
 
-                                            await context.Response.WriteAsJsonAsync(sysInfo).ConfigureAwait(false);
+                                            await context.Response.WriteAsJsonAsync(sysInfo);
                                         });
                                     });
 
@@ -254,13 +254,12 @@ public sealed class SetupServer : IDisposable
                                                 { "networkManagerReady", networkManager is not null },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
-                                            new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
-                                            .ConfigureAwait(false);
+                                            new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions));
                                     });
                                 });
                     })
                     .Build();
-        await _startupServer.StartAsync().ConfigureAwait(false);
+        await _startupServer.StartAsync();
         IsAlive = true;
     }
 
@@ -276,7 +275,7 @@ public sealed class SetupServer : IDisposable
             throw new InvalidOperationException("Tried to stop a non existing startup server");
         }
 
-        await _startupServer.StopAsync().ConfigureAwait(false);
+        await _startupServer.StopAsync();
         IsAlive = false;
     }
 

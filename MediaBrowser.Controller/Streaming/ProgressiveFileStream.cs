@@ -101,7 +101,7 @@ public class ProgressiveFileStream : Stream
 
     /// <inheritdoc />
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+        => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
     /// <inheritdoc />
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
@@ -111,13 +111,13 @@ public class ProgressiveFileStream : Stream
 
         while (true)
         {
-            totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken);
             if (StopReading(totalBytesRead, stopwatch.ElapsedMilliseconds))
             {
                 break;
             }
 
-            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(50, cancellationToken);
         }
 
         UpdateBytesWritten(totalBytesRead);

@@ -64,12 +64,12 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
         {
             if (serviceProvider is null)
             {
-                await ((IAsyncMigrationRoutine)Activator.CreateInstance(MigrationType)!).PerformAsync(cancellationToken).ConfigureAwait(false);
+                await ((IAsyncMigrationRoutine)Activator.CreateInstance(MigrationType)!).PerformAsync(cancellationToken);
             }
             else
             {
                 using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
-                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
+                await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).PerformAsync(cancellationToken);
             }
         }
         else

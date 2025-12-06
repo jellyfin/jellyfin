@@ -90,7 +90,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort, openCancellationToken).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort, openCancellationToken);
                     localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
                     tcpClient.Close();
                 }
@@ -118,7 +118,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     localPort,
                     _channelCommands,
                     _numTuners,
-                    openCancellationToken).ConfigureAwait(false);
+                    openCancellationToken);
             }
             catch (Exception ex)
             {
@@ -153,8 +153,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.SupportsDirectStream = true;
             // OpenedMediaSource.SupportsTranscoding = true;
 
-            // await Task.Delay(5000).ConfigureAwait(false);
-            await taskCompletionSource.Task.ConfigureAwait(false);
+            // await Task.Delay(5000);
+            await taskCompletionSource.Task;
         }
 
         private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -164,7 +164,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             {
                 try
                 {
-                    await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
+                    await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken);
                 }
                 catch (Exception ex) when (ex is OperationCanceledException || ex is TimeoutException)
                 {
@@ -180,7 +180,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 EnableStreamSharing = false;
             }
 
-            await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
+            await DeleteTempFiles(TempFilePath);
         }
 
         private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -188,22 +188,21 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             var resolved = false;
 
             var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
-            await using (fileStream.ConfigureAwait(false))
+            await using (fileStream)
             {
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var res = await udpClient.ReceiveAsync(cancellationToken)
                         .AsTask()
-                        .WaitAsync(TimeSpan.FromMilliseconds(30000), CancellationToken.None)
-                        .ConfigureAwait(false);
+                        .WaitAsync(TimeSpan.FromMilliseconds(30000), CancellationToken.None);
                     var buffer = res.Buffer;
 
                     var read = buffer.Length - RtpHeaderBytes;
 
                     if (read > 0)
                     {
-                        await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), cancellationToken).ConfigureAwait(false);
+                        await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), cancellationToken);
                     }
 
                     if (!resolved)

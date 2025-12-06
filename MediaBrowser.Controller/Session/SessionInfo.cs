@@ -430,7 +430,7 @@ namespace MediaBrowser.Controller.Session
 
             try
             {
-                await _sessionManager.OnPlaybackProgress(progressInfo, true).ConfigureAwait(false);
+                await _sessionManager.OnPlaybackProgress(progressInfo, true);
             }
             catch (Exception ex)
             {
@@ -473,7 +473,7 @@ namespace MediaBrowser.Controller.Session
                 if (controller is IAsyncDisposable disposableAsync)
                 {
                     _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
-                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                    await disposableAsync.DisposeAsync();
                 }
                 else if (controller is IDisposable disposable)
                 {

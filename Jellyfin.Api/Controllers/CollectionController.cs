@@ -63,7 +63,7 @@ public class CollectionController : BaseJellyfinApiController
             ParentId = parentId,
             ItemIdList = ids,
             UserIds = new[] { userId }
-        }).ConfigureAwait(false);
+        });
 
         var dtoOptions = new DtoOptions();
 
@@ -105,7 +105,7 @@ public class CollectionController : BaseJellyfinApiController
         [FromRoute, Required] Guid collectionId,
         [FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids)
     {
-        await _collectionManager.RemoveFromCollectionAsync(collectionId, ids).ConfigureAwait(false);
+        await _collectionManager.RemoveFromCollectionAsync(collectionId, ids);
         return NoContent();
     }
 }

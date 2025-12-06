@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
@@ -15,11 +15,18 @@
 
   <ItemGroup>
     <Compile Include="..\..\SharedVersion.cs" />
+    <None Include="..\..\FodyWeavers.xml" />
+    <None Include="..\..\FodyWeavers.xsd" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" />
+    <PackageReference Include="ConfigureAwait.Fody" PrivateAssets="All" />
+    <PackageReference Include="Fody">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />

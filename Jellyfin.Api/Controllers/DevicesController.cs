@@ -106,7 +106,7 @@ public class DevicesController : BaseJellyfinApiController
         [FromQuery, Required] string id,
         [FromBody, Required] DeviceOptionsDto deviceOptions)
     {
-        await _deviceManager.UpdateDeviceOptions(id, deviceOptions.CustomName).ConfigureAwait(false);
+        await _deviceManager.UpdateDeviceOptions(id, deviceOptions.CustomName);
         return NoContent();
     }
 
@@ -132,7 +132,7 @@ public class DevicesController : BaseJellyfinApiController
 
         foreach (var session in sessions.Items)
         {
-            await _sessionManager.Logout(session).ConfigureAwait(false);
+            await _sessionManager.Logout(session);
         }
 
         return NoContent();

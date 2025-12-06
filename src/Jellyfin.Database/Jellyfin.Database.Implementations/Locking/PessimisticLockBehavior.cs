@@ -56,7 +56,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
     {
         using (DbLock.EnterWrite(_logger))
         {
-            await saveChanges().ConfigureAwait(false);
+            await saveChanges();
         }
     }
 
@@ -150,7 +150,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         {
             using (DbLock.EnterWrite(_logger, command))
             {
-                return InterceptionResult<int>.SuppressWithResult(await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false));
+                return InterceptionResult<int>.SuppressWithResult(await command.ExecuteNonQueryAsync(cancellationToken));
             }
         }
 
@@ -166,7 +166,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         {
             using (DbLock.EnterRead(_logger))
             {
-                return InterceptionResult<object>.SuppressWithResult((await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!);
+                return InterceptionResult<object>.SuppressWithResult((await command.ExecuteScalarAsync(cancellationToken))!);
             }
         }
 
@@ -182,7 +182,7 @@ public class PessimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
         {
             using (DbLock.EnterRead(_logger))
             {
-                return InterceptionResult<DbDataReader>.SuppressWithResult(await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false));
+                return InterceptionResult<DbDataReader>.SuppressWithResult(await command.ExecuteReaderAsync(cancellationToken));
             }
         }
     }

@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.Updates
             try
             {
                 PackageInfo[]? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetFromJsonAsync<PackageInfo[]>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                        .GetFromJsonAsync<PackageInfo[]>(new Uri(manifest), _jsonSerializerOptions, cancellationToken);
 
                 if (packages is null)
                 {
@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.Updates
                             var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin is not null)
                             {
-                                await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
+                                await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status);
                             }
 
                             // Remove versions with a target ABI greater than the current application version.
@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task<IEnumerable<InstallationInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default)
         {
-            var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
+            var catalog = await GetAvailablePackages(cancellationToken);
             return GetAvailablePluginUpdates(catalog);
         }
 
@@ -309,11 +309,11 @@ namespace Emby.Server.Implementations.Updates
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token);
             var linkedToken = linkedTokenSource.Token;
 
-            await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new PluginInstallingEventArgs(package));
 
             try
             {
-                var isUpdate = await InstallPackageInternal(package, linkedToken).ConfigureAwait(false);
+                var isUpdate = await InstallPackageInternal(package, linkedToken);
 
                 lock (_currentInstallationsLock)
                 {
@@ -324,11 +324,11 @@ namespace Emby.Server.Implementations.Updates
 
                 if (isUpdate)
                 {
-                    await _eventManager.PublishAsync(new PluginUpdatedEventArgs(package)).ConfigureAwait(false);
+                    await _eventManager.PublishAsync(new PluginUpdatedEventArgs(package));
                 }
                 else
                 {
-                    await _eventManager.PublishAsync(new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+                    await _eventManager.PublishAsync(new PluginInstalledEventArgs(package));
                 }
 
                 _applicationHost.NotifyPendingRestart();
@@ -342,7 +342,7 @@ namespace Emby.Server.Implementations.Updates
 
                 _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
-                await _eventManager.PublishAsync(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new PluginInstallationCancelledEventArgs(package));
 
                 throw;
             }
@@ -359,7 +359,7 @@ namespace Emby.Server.Implementations.Updates
                 {
                     InstallationInfo = package,
                     Exception = ex
-                }).ConfigureAwait(false);
+                });
 
                 throw;
             }
@@ -520,15 +520,15 @@ namespace Emby.Server.Implementations.Updates
             string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
+                .GetAsync(new Uri(package.SourceUrl), cancellationToken);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
+            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken));
             if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
@@ -560,7 +560,7 @@ namespace Emby.Server.Implementations.Updates
             ZipFile.ExtractToDirectory(stream, targetDir, true);
 
             // Ensure we create one or populate existing ones with missing data.
-            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
+            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status);
 
             _pluginManager.ImportPluginFrom(targetDir);
         }
@@ -570,7 +570,7 @@ namespace Emby.Server.Implementations.Updates
             LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Id) && p.Version.Equals(package.Version))
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
-            await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
+            await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken);
             _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin is null ? "installed" : "updated", package.Name, package.Version);
 
             return plugin is not null;

@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Auth
         {
             try
             {
-                var authorizationInfo = await _authService.Authenticate(Request).ConfigureAwait(false);
+                var authorizationInfo = await _authService.Authenticate(Request);
                 if (!authorizationInfo.HasToken)
                 {
                     return AuthenticateResult.NoResult();

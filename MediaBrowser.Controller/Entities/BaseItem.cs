@@ -1306,10 +1306,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (IsFileProtocol)
                     {
-                        requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService), cancellationToken).ConfigureAwait(false);
+                        requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService), cancellationToken);
                     }
 
-                    await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
+                    await LibraryManager.UpdateImagesAsync(this); // ensure all image properties in DB are fresh
                 }
                 catch (Exception ex)
                 {
@@ -1324,7 +1324,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 : options;
 
-            return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+            return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken);
         }
 
         protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
@@ -1383,7 +1383,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return await RefreshExtras(this, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            return await RefreshExtras(this, options, fileSystemChildren, cancellationToken);
         }
 
         protected virtual FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
@@ -1434,7 +1434,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks);
 
             item.ExtraIds = newExtraIds;
 
@@ -2027,7 +2027,7 @@ namespace MediaBrowser.Controller.Entities
             // Remove from item
             RemoveImage(info);
 
-            await UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            await UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
         public void RemoveImage(ItemImageInfo image)
@@ -2046,7 +2046,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public virtual async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
-         => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
+         => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken);
 
         /// <summary>
         /// Validates that images within the item are still on the filesystem.
@@ -2492,7 +2492,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            await ownedItem.RefreshMetadata(newOptions, cancellationToken).ConfigureAwait(false);
+            await ownedItem.RefreshMetadata(newOptions, cancellationToken);
         }
 
         protected async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
@@ -2522,7 +2522,7 @@ namespace MediaBrowser.Controller.Entities
                 video.OwnerId = Id;
             }
 
-            await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
+            await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);
         }
 
         public string GetEtag(User user)

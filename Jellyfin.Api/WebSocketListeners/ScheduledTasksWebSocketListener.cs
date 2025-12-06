@@ -67,7 +67,7 @@ public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEn
             _disposed = true;
         }
 
-        await base.DisposeAsyncCore().ConfigureAwait(false);
+        await base.DisposeAsyncCore();
     }
 
     private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)

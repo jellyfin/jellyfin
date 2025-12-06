@@ -61,8 +61,7 @@ public class ClientLogController : BaseJellyfinApiController
         }
 
         var (clientName, clientVersion) = GetRequestInformation();
-        var fileName = await _clientEventLogger.WriteDocumentAsync(clientName, clientVersion, Request.Body)
-            .ConfigureAwait(false);
+        var fileName = await _clientEventLogger.WriteDocumentAsync(clientName, clientVersion, Request.Body);
         return Ok(new ClientLogDocumentResponseDto(fileName));
     }
 

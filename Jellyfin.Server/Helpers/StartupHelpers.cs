@@ -238,13 +238,13 @@ public static class StartupHelpers
         const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
         Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                           ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
-        await using (resource.ConfigureAwait(false))
+        await using (resource)
         {
             Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await using (dst.ConfigureAwait(false))
+            await using (dst)
             {
                 // Copy the resource contents to the expected file path for the config file
-                await resource.CopyToAsync(dst).ConfigureAwait(false);
+                await resource.CopyToAsync(dst);
             }
         }
     }

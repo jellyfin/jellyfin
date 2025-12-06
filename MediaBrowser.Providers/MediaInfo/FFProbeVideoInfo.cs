@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             Path = vobs[0]
                         },
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
 
                     // Sum up the runtime of all .vob files skipping the first .vob
                     for (var i = 1; i < vobs.Count; i++)
@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.MediaInfo
                             {
                                 Path = vobs[i]
                             },
-                            cancellationToken).ConfigureAwait(false);
+                            cancellationToken);
 
                         mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
                     }
@@ -140,17 +140,17 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             Path = blurayDiscInfo.Files[0]
                         },
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
                 }
                 else
                 {
-                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
+            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options);
 
             return ItemUpdateType.MetadataImport;
         }
@@ -198,9 +198,9 @@ namespace MediaBrowser.Providers.MediaInfo
             ChapterInfo[] chapters;
 
             // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken);
 
-            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken);
 
             var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
 
@@ -294,7 +294,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
 
-                await _chapterManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
+                await _chapterManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken);
 
                 _chapterManager.SaveChapters(video, chapters);
             }
@@ -544,7 +544,7 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
+            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -593,12 +593,12 @@ namespace MediaBrowser.Providers.MediaInfo
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
                         true,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
 
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken).ConfigureAwait(false);
+                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken);
                 }
             }
 
@@ -621,7 +621,7 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
+            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 

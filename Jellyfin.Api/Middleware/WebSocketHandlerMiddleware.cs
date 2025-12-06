@@ -30,10 +30,10 @@ public class WebSocketHandlerMiddleware
     {
         if (!httpContext.WebSockets.IsWebSocketRequest)
         {
-            await _next(httpContext).ConfigureAwait(false);
+            await _next(httpContext);
             return;
         }
 
-        await webSocketManager.WebSocketRequestHandler(httpContext).ConfigureAwait(false);
+        await webSocketManager.WebSocketRequestHandler(httpContext);
     }
 }

@@ -36,8 +36,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                         _localizationManager.GetLocalizedString("UserPasswordChangedWithName"),
                         eventArgs.Argument.Username),
                     "UserPasswordChanged",
-                    eventArgs.Argument.Id))
-                .ConfigureAwait(false);
+                    eventArgs.Argument.Id));
         }
     }
 }

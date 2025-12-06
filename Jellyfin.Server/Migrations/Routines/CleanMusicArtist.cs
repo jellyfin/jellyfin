@@ -33,15 +33,14 @@ public class CleanMusicArtist : IAsyncMigrationRoutine
     /// <inheritdoc/>
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using (context)
         {
             var peoples = context.Peoples.Where(e => e.PersonType == nameof(PersonKind.Artist) || e.PersonType == nameof(PersonKind.AlbumArtist));
-            _startupLogger.LogInformation("Delete {Number} Artist and Album Artist person types from db", await peoples.CountAsync(cancellationToken).ConfigureAwait(false));
+            _startupLogger.LogInformation("Delete {Number} Artist and Album Artist person types from db", await peoples.CountAsync(cancellationToken));
 
             await peoples
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .ExecuteDeleteAsync(cancellationToken);
         }
     }
 }

@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var rootObject = await _omdbProvider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
+            var rootObject = await _omdbProvider.GetRootObject(imdbId, cancellationToken);
 
             if (string.IsNullOrEmpty(rootObject.Poster))
             {

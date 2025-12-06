@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
@@ -23,7 +23,12 @@
 
   <ItemGroup>
     <PackageReference Include="BitFaster.Caching" />
+    <PackageReference Include="ConfigureAwait.Fody" PrivateAssets="All" />
     <PackageReference Include="DiscUtils.Udf" />
+    <PackageReference Include="Fody">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
@@ -36,6 +41,8 @@
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
+    <None Include="..\FodyWeavers.xml" />
+    <None Include="..\FodyWeavers.xsd" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -121,7 +121,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return;
             }
 
-            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken);
         }
 
         public override List<string> GetUserDataKeys()

@@ -91,7 +91,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             Logger.LogInformation("Closing {Type}", GetType().Name);
 
-            await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
+            await LiveStreamCancellationTokenSource.CancelAsync();
         }
 
         public Stream GetStream()
@@ -144,8 +144,8 @@ namespace Jellyfin.LiveTv.TunerHosts
                 Logger.LogError(ex, "Error deleting file {FilePath}", path);
                 if (retryCount <= 40)
                 {
-                    await Task.Delay(500).ConfigureAwait(false);
-                    await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
+                    await Task.Delay(500);
+                    await DeleteTempFiles(path, retryCount + 1);
                 }
             }
         }

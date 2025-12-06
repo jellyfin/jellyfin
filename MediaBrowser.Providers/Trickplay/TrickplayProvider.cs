@@ -108,11 +108,11 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
 
         if (_config.Configuration.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
         {
-            await _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
+            await _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken);
         }
         else
         {
-            _ = _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
+            _ = _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken);
         }
 
         // The core doesn't need to trigger any save operations over this

@@ -48,13 +48,9 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
-
-                    await using (jsonStream.ConfigureAwait(false))
-                    {
-                        mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                        // _logger.LogDebug("Found cached media info");
-                    }
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken);
+                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (IOException ex)
                 {
@@ -73,7 +69,7 @@ namespace Emby.Server.Implementations.Library
                     var delayMs = mediaSource.AnalyzeDurationMs ?? 0;
                     delayMs = Math.Max(3000, delayMs);
                     _logger.LogInformation("Waiting {0}ms before probing the live stream", delayMs);
-                    await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(delayMs, cancellationToken);
                 }
 
                 mediaSource.AnalyzeDurationMs = 3000;
@@ -85,16 +81,13 @@ namespace Emby.Server.Implementations.Library
                         MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                         ExtractChapters = false
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
-                    FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
-                    await using (createStream.ConfigureAwait(false))
-                    {
-                        await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    }
+                    await using FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken);
 
                     _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }

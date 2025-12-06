@@ -72,12 +72,11 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
         if (!string.IsNullOrWhiteSpace(artistId))
         {
-            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
+            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken);
             return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
         }
 
-        var artistSearchResults = await _musicBrainzQuery.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
-            .ConfigureAwait(false);
+        var artistSearchResults = await _musicBrainzQuery.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken);
         if (artistSearchResults.Results.Count > 0)
         {
             return GetResultsFromResponse(artistSearchResults.Results);
@@ -86,8 +85,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         if (searchInfo.Name.HasDiacritics())
         {
             // Try again using the search with an accented characters query
-            var artistAccentsSearchResults = await _musicBrainzQuery.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken)
-                .ConfigureAwait(false);
+            var artistAccentsSearchResults = await _musicBrainzQuery.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken);
             if (artistAccentsSearchResults.Results.Count > 0)
             {
                 return GetResultsFromResponse(artistAccentsSearchResults.Results);
@@ -134,7 +132,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
         if (string.IsNullOrWhiteSpace(musicBrainzId))
         {
-            var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
+            var searchResults = await GetSearchResults(info, cancellationToken);
 
             var singleResult = searchResults.FirstOrDefault();
 

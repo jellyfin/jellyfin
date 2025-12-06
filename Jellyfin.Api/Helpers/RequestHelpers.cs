@@ -135,7 +135,7 @@ public static class RequestHelpers
             httpContext.User.GetDeviceId(),
             httpContext.User.GetDevice(),
             httpContext.GetNormalizedRemoteIP().ToString(),
-            user).ConfigureAwait(false);
+            user);
 
         if (session is null)
         {
@@ -147,7 +147,7 @@ public static class RequestHelpers
 
     internal static async Task<string> GetSessionId(ISessionManager sessionManager, IUserManager userManager, HttpContext httpContext)
     {
-        var session = await GetSession(sessionManager, userManager, httpContext).ConfigureAwait(false);
+        var session = await GetSession(sessionManager, userManager, httpContext);
 
         return session.Id;
     }

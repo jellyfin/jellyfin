@@ -57,7 +57,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult<GroupInfoDto>> SyncPlayCreateGroup(
         [FromBody, Required] NewGroupRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
         return Ok(_syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None));
     }
@@ -74,7 +74,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayJoinGroup(
         [FromBody, Required] JoinGroupRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new JoinGroupRequest(requestData.GroupId);
         _syncPlayManager.JoinGroup(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -90,7 +90,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayLeaveGroup()
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new LeaveGroupRequest();
         _syncPlayManager.LeaveGroup(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -106,7 +106,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayJoinGroup)]
     public async Task<ActionResult<IEnumerable<GroupInfoDto>>> SyncPlayGetGroups()
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new ListGroupsRequest();
         return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest).AsEnumerable());
     }
@@ -123,7 +123,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayJoinGroup)]
     public async Task<ActionResult<GroupInfoDto>> SyncPlayGetGroup([FromRoute] Guid id)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var group = _syncPlayManager.GetGroup(currentSession, id);
         return group is null ? NotFound() : Ok(group);
     }
@@ -140,7 +140,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySetNewQueue(
         [FromBody, Required] PlayRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new PlayGroupRequest(
             requestData.PlayingQueue,
             requestData.PlayingItemPosition,
@@ -161,7 +161,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySetPlaylistItem(
         [FromBody, Required] SetPlaylistItemRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new SetPlaylistItemGroupRequest(requestData.PlaylistItemId);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -179,7 +179,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayRemoveFromPlaylist(
         [FromBody, Required] RemoveFromPlaylistRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new RemoveFromPlaylistGroupRequest(requestData.PlaylistItemIds, requestData.ClearPlaylist, requestData.ClearPlayingItem);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -197,7 +197,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayMovePlaylistItem(
         [FromBody, Required] MovePlaylistItemRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new MovePlaylistItemGroupRequest(requestData.PlaylistItemId, requestData.NewIndex);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -215,7 +215,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayQueue(
         [FromBody, Required] QueueRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new QueueGroupRequest(requestData.ItemIds, requestData.Mode);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -231,7 +231,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayUnpause()
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new UnpauseGroupRequest();
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -247,7 +247,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayPause()
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new PauseGroupRequest();
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -263,7 +263,7 @@ public class SyncPlayController : BaseJellyfinApiController
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayStop()
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new StopGroupRequest();
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -281,7 +281,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySeek(
         [FromBody, Required] SeekRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new SeekGroupRequest(requestData.PositionTicks);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -299,7 +299,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayBuffering(
         [FromBody, Required] BufferRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new BufferGroupRequest(
             requestData.When,
             requestData.PositionTicks,
@@ -321,7 +321,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayReady(
         [FromBody, Required] ReadyRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new ReadyGroupRequest(
             requestData.When,
             requestData.PositionTicks,
@@ -343,7 +343,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySetIgnoreWait(
         [FromBody, Required] IgnoreWaitRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new IgnoreWaitGroupRequest(requestData.IgnoreWait);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -361,7 +361,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayNextItem(
         [FromBody, Required] NextItemRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new NextItemGroupRequest(requestData.PlaylistItemId);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -379,7 +379,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayPreviousItem(
         [FromBody, Required] PreviousItemRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new PreviousItemGroupRequest(requestData.PlaylistItemId);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -397,7 +397,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySetRepeatMode(
         [FromBody, Required] SetRepeatModeRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new SetRepeatModeGroupRequest(requestData.Mode);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -415,7 +415,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlaySetShuffleMode(
         [FromBody, Required] SetShuffleModeRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new SetShuffleModeGroupRequest(requestData.Mode);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();
@@ -432,7 +432,7 @@ public class SyncPlayController : BaseJellyfinApiController
     public async Task<ActionResult> SyncPlayPing(
         [FromBody, Required] PingRequestDto requestData)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var syncPlayRequest = new PingGroupRequest(requestData.Ping);
         _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         return NoContent();

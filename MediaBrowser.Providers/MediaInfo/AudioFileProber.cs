@@ -105,11 +105,11 @@ namespace MediaBrowser.Providers.MediaInfo
                             Protocol = protocol
                         }
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await FetchAsync(item, result, options, cancellationToken).ConfigureAwait(false);
+                await FetchAsync(item, result, options, cancellationToken);
             }
 
             return ItemUpdateType.MetadataImport;
@@ -141,7 +141,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.IsLocked)
             {
-                await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
+                await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics);
                 if (tryExtractEmbeddedLyrics)
                 {
                     AddExternalLyrics(audio, mediaStreams, options);
@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrWhiteSpace(lyrics)
                 && tryExtractEmbeddedLyrics)
             {
-                await _lyricManager.SaveLyricAsync(audio, "lrc", lyrics).ConfigureAwait(false);
+                await _lyricManager.SaveLyricAsync(audio, "lrc", lyrics);
             }
         }
 

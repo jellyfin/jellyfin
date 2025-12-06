@@ -132,7 +132,7 @@ public class SystemManager : ISystemManager
     {
         Task.Run(async () =>
         {
-            await Task.Delay(100).ConfigureAwait(false);
+            await Task.Delay(100);
             _applicationHost.ShouldRestart = restart;
             _applicationLifetime.StopApplication();
         });

@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Api
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ConfigImageTypes> TmdbClientConfiguration()
         {
-            return (await _tmdbClientManager.GetClientConfiguration().ConfigureAwait(false)).Images;
+            return (await _tmdbClientManager.GetClientConfiguration()).Images;
         }
     }
 }

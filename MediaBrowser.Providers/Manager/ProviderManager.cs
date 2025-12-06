@@ -168,14 +168,14 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            using (await _imageSaveLock.LockAsync(url, cancellationToken).ConfigureAwait(false))
+            using (await _imageSaveLock.LockAsync(url, cancellationToken))
             {
                 if (_memoryCache.TryGetValue(url, out (string ContentType, byte[] ImageContents)? cachedValue)
                     && cachedValue is not null)
                 {
                     var imageContents = cachedValue.Value.ImageContents;
                     var cacheStream = new MemoryStream(imageContents, 0, imageContents.Length, false);
-                    await using (cacheStream.ConfigureAwait(false))
+                    await using (cacheStream)
                     {
                         await SaveImage(
                             item,
@@ -183,13 +183,13 @@ namespace MediaBrowser.Providers.Manager
                             cachedValue.Value.ContentType,
                             type,
                             imageIndex,
-                            cancellationToken).ConfigureAwait(false);
+                            cancellationToken);
                         return;
                     }
                 }
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                using var response = await httpClient.GetAsync(url, cancellationToken);
 
                 response.EnsureSuccessStatusCode();
 
@@ -218,9 +218,9 @@ namespace MediaBrowser.Providers.Manager
                     throw new HttpRequestException($"Request returned '{contentType}' instead of an image type", null, HttpStatusCode.NotFound);
                 }
 
-                var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
                 var stream = new MemoryStream(responseBytes, 0, responseBytes.Length, false);
-                await using (stream.ConfigureAwait(false))
+                await using (stream)
                 {
                     _memoryCache.Set(url, (contentType, responseBytes), TimeSpan.FromSeconds(10));
 
@@ -230,7 +230,7 @@ namespace MediaBrowser.Providers.Manager
                         contentType,
                         type,
                         imageIndex,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
                 }
             }
         }
@@ -253,8 +253,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var fileStream = AsyncFile.OpenRead(source);
                 await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
-                    .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken)
-                    .ConfigureAwait(false);
+                    .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
             }
             finally
             {
@@ -297,7 +296,7 @@ namespace MediaBrowser.Providers.Manager
 
             var tasks = providers.Select(i => GetImages(item, i, preferredLanguage, query.IncludeAllLanguages, cancellationToken, query.ImageType));
 
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
 
             return results.SelectMany(i => i);
         }
@@ -324,7 +323,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                var result = await provider.GetImages(item, cancellationToken).ConfigureAwait(false);
+                var result = await provider.GetImages(item, cancellationToken);
 
                 if (type.HasValue)
                 {
@@ -696,7 +695,7 @@ namespace MediaBrowser.Providers.Manager
                     try
                     {
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
-                        await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        await saver.SaveAsync(item, CancellationToken.None);
                         item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
@@ -712,7 +711,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     try
                     {
-                        await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
+                        await saver.SaveAsync(item, CancellationToken.None);
                         item.DateLastSaved = DateTime.UtcNow;
                     }
                     catch (Exception ex)
@@ -851,7 +850,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 try
                 {
-                    var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+                    var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken);
 
                     foreach (var result in results)
                     {
@@ -1056,7 +1055,7 @@ namespace MediaBrowser.Providers.Manager
                         ? RefreshArtist(artist, refreshItem.RefreshOptions, cancellationToken)
                         : RefreshItem(item, refreshItem.RefreshOptions, cancellationToken);
 
-                    await task.ConfigureAwait(false);
+                    await task;
                 }
                 catch (OperationCanceledException)
                 {
@@ -1076,16 +1075,16 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+            await item.RefreshMetadata(options, cancellationToken);
 
             // Collection folders don't validate their children so we'll have to simulate that here
             switch (item)
             {
                 case CollectionFolder collectionFolder:
-                    await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
+                    await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await folder.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken);
                     break;
             }
         }
@@ -1094,9 +1093,9 @@ namespace MediaBrowser.Providers.Manager
         {
             foreach (var child in collectionFolder.GetPhysicalFolders())
             {
-                await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                await child.RefreshMetadata(options, cancellationToken);
 
-                await child.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await child.ValidateChildren(new Progress<double>(), options, cancellationToken: cancellationToken);
             }
         }
 
@@ -1121,11 +1120,11 @@ namespace MediaBrowser.Providers.Manager
 
             var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, false, cancellationToken));
 
-            await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
+            await Task.WhenAll(musicArtistRefreshTasks);
 
             try
             {
-                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(options, cancellationToken);
             }
             catch (Exception ex)
             {

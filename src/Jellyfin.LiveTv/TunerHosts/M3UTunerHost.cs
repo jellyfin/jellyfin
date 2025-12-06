@@ -71,8 +71,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             var channelIdPrefix = GetFullChannelIdPrefix(tuner);
 
             return await new M3uParser(Logger, _httpClientFactory)
-                .Parse(tuner, channelIdPrefix, cancellationToken)
-                .ConfigureAwait(false);
+                .Parse(tuner, channelIdPrefix, cancellationToken);
         }
 
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, IList<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
@@ -90,7 +89,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
             }
 
-            var sources = await GetChannelStreamMediaSources(tunerHost, channel, cancellationToken).ConfigureAwait(false);
+            var sources = await GetChannelStreamMediaSources(tunerHost, channel, cancellationToken);
 
             var mediaSource = sources[0];
 
@@ -104,8 +103,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                     {
                         using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
                         using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                            .SendAsync(message, cancellationToken)
-                            .ConfigureAwait(false);
+                            .SendAsync(message, cancellationToken);
 
                         if (response.IsSuccessStatusCode)
                         {
@@ -131,7 +129,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
+            using (await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None))
             {
             }
         }
