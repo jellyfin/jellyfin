@@ -72,11 +72,11 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
-        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
+        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken);
 
         subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
-        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using (context)
         {
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
@@ -97,8 +97,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                     await foreach (var item in dupQuery
                         .Take(PartitionSize)
                         .AsAsyncEnumerable()
-                        .WithCancellation(cancellationToken)
-                        .ConfigureAwait(false))
+                        .WithCancellation(cancellationToken))
                     {
                         buffer[itemCounter++] = item;
                     }
@@ -109,9 +108,8 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                         var reference = item[0];
                         var dups = item[1..];
                         await context.PeopleBaseItemMap.WhereOneOrMany(dups, e => e.PeopleId)
-                            .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken)
-                            .ConfigureAwait(false);
-                        await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                            .ExecuteUpdateAsync(e => e.SetProperty(f => f.PeopleId, reference), cancellationToken);
+                        await context.Peoples.Where(e => dups.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken);
                         subProgress.Report(100f / total * ((iterator * PartitionSize) + i));
                     }
 

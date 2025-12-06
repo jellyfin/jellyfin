@@ -106,7 +106,7 @@ public class DynamicHlsHelper
             isHeadRequest,
             enableAdaptiveBitrateStreaming,
             transcodingJobType,
-            cancellationTokenSource).ConfigureAwait(false);
+            cancellationTokenSource);
     }
 
     private async Task<ActionResult> GetMasterPlaylistInternal(
@@ -132,8 +132,7 @@ public class DynamicHlsHelper
                 _encodingHelper,
                 _transcodeManager,
                 transcodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+                cancellationTokenSource.Token);
 
         _httpContextAccessor.HttpContext.Response.Headers.Append(HeaderNames.Expires, "0");
         if (isHeadRequest)
@@ -285,7 +284,7 @@ public class DynamicHlsHelper
         if (!isLiveStream && (state.VideoRequest?.EnableTrickplay ?? false))
         {
             var sourceId = Guid.Parse(state.Request.MediaSourceId);
-            var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
+            var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId);
             AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 

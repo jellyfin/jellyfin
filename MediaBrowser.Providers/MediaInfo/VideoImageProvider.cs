@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return new DynamicImageResponse { HasImage = false };
             }
 
-            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken);
 
             return new DynamicImageResponse
             {

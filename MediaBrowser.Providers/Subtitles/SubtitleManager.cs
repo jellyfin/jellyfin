@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     try
                     {
-                        var searchResults = await provider.Search(request, cancellationToken).ConfigureAwait(false);
+                        var searchResults = await provider.Search(request, cancellationToken);
 
                         var list = searchResults.ToArray();
 
@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.Subtitles
             {
                 try
                 {
-                    var searchResults = await i.Search(request, cancellationToken).ConfigureAwait(false);
+                    var searchResults = await i.Search(request, cancellationToken);
 
                     var list = searchResults.ToArray();
                     Normalize(list);
@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
             });
 
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
 
             return results.SelectMany(i => i).ToArray();
         }
@@ -147,9 +147,9 @@ namespace MediaBrowser.Providers.Subtitles
 
             try
             {
-                var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
+                var response = await GetRemoteSubtitles(subtitleId, cancellationToken);
 
-                await TrySaveSubtitle(video, libraryOptions, response).ConfigureAwait(false);
+                await TrySaveSubtitle(video, libraryOptions, response);
             }
             catch (RateLimitExceededException)
             {
@@ -183,12 +183,12 @@ namespace MediaBrowser.Providers.Subtitles
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
             var memoryStream = new MemoryStream();
-            await using (memoryStream.ConfigureAwait(false))
+            await using (memoryStream)
             {
                 var stream = response.Stream;
-                await using (stream.ConfigureAwait(false))
+                await using (stream)
                 {
-                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    await stream.CopyToAsync(memoryStream);
                     memoryStream.Position = 0;
                 }
 
@@ -215,7 +215,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 savePaths.Add(internalPath);
 
-                await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant()).ConfigureAwait(false);
+                await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant());
             }
         }
 
@@ -250,9 +250,9 @@ namespace MediaBrowser.Providers.Subtitles
                         fileOptions.Mode = FileMode.CreateNew;
                         fileOptions.PreallocationSize = stream.Length;
                         var fs = new FileStream(path, fileOptions);
-                        await using (fs.ConfigureAwait(false))
+                        await using (fs)
                         {
-                            await stream.CopyToAsync(fs).ConfigureAwait(false);
+                            await stream.CopyToAsync(fs);
                         }
 
                         return;

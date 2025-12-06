@@ -96,7 +96,7 @@ public class MediaInfoHelper
         if (string.IsNullOrWhiteSpace(liveStreamId))
         {
             // TODO (moved from MediaBrowser.Api) handle supportedLiveMediaTypes?
-            var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
+            var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None);
 
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
@@ -111,7 +111,7 @@ public class MediaInfoHelper
         }
         else
         {
-            var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
+            var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None);
 
             mediaSources = new[] { mediaSource };
         }
@@ -404,7 +404,7 @@ public class MediaInfoHelper
     /// <returns>A <see cref="Task"/> containing the <see cref="LiveStreamResponse"/>.</returns>
     public async Task<LiveStreamResponse> OpenMediaSource(HttpContext httpContext, LiveStreamRequest request)
     {
-        var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
+        var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None);
 
         var profile = request.DeviceProfile;
         if (profile is null)

@@ -56,7 +56,7 @@ public class QuickConnectController : BaseJellyfinApiController
     {
         try
         {
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+            var auth = await _authContext.GetAuthorizationInfo(Request);
             return _quickConnect.TryConnect(auth);
         }
         catch (AuthenticationException)
@@ -119,7 +119,7 @@ public class QuickConnectController : BaseJellyfinApiController
 
         try
         {
-            return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
+            return await _quickConnect.AuthorizeRequest(userId.Value, code);
         }
         catch (AuthenticationException)
         {

@@ -294,15 +294,14 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken);
 
         TranscodingJob? job = null;
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
         if (!System.IO.File.Exists(playlistPath))
         {
-            using (await _transcodeManager.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
+            using (await _transcodeManager.LockAsync(playlistPath, cancellationToken))
             {
                 if (!System.IO.File.Exists(playlistPath))
                 {
@@ -315,8 +314,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                                 GetCommandLineArguments(playlistPath, state, true, 0),
                                 Request.HttpContext.User.GetUserId(),
                                 TranscodingJobType,
-                                cancellationTokenSource)
-                            .ConfigureAwait(false);
+                                cancellationTokenSource);
                         job.IsLiveOutput = true;
                     }
                     catch
@@ -328,7 +326,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                     minSegments = state.MinSegments;
                     if (minSegments > 0)
                     {
-                        await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationToken).ConfigureAwait(false);
+                        await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationToken);
                     }
                 }
             }
@@ -522,7 +520,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming);
     }
 
     /// <summary>
@@ -692,7 +690,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
-        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming);
     }
 
     /// <summary>
@@ -865,8 +863,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
-            .ConfigureAwait(false);
+        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource);
     }
 
     /// <summary>
@@ -1033,8 +1030,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
-        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
-            .ConfigureAwait(false);
+        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource);
     }
 
     /// <summary>
@@ -1220,8 +1216,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        return await GetDynamicSegment(streamingRequest, segmentId)
-            .ConfigureAwait(false);
+        return await GetDynamicSegment(streamingRequest, segmentId);
     }
 
     /// <summary>
@@ -1401,8 +1396,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = false
         };
 
-        return await GetDynamicSegment(streamingRequest, segmentId)
-            .ConfigureAwait(false);
+        return await GetDynamicSegment(streamingRequest, segmentId);
     }
 
     private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
@@ -1418,8 +1412,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+                cancellationTokenSource.Token);
         var mediaSourceId = state.BaseRequest.MediaSourceId;
         var request = new CreateMainPlaylistRequest(
             mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
@@ -1457,8 +1450,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken);
 
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
@@ -1472,17 +1464,17 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken);
         }
 
-        using (await _transcodeManager.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
+        using (await _transcodeManager.LockAsync(playlistPath, cancellationToken))
         {
             var startTranscoding = false;
             if (System.IO.File.Exists(segmentPath))
             {
                 job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
-                return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+                return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken);
             }
 
             var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
@@ -1515,12 +1507,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                 // If the playlist doesn't already exist, startup ffmpeg
                 try
                 {
-                    await _transcodeManager.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
-                        .ConfigureAwait(false);
+                    await _transcodeManager.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false);
 
                     if (currentTranscodingIndex.HasValue)
                     {
-                        await DeleteLastFile(playlistPath, segmentExtension, 0).ConfigureAwait(false);
+                        await DeleteLastFile(playlistPath, segmentExtension, 0);
                     }
 
                     streamingRequest.StartTimeTicks = streamingRequest.CurrentRuntimeTicks;
@@ -1532,7 +1523,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                         GetCommandLineArguments(playlistPath, state, false, segmentId),
                         Request.HttpContext.User.GetUserId(),
                         TranscodingJobType,
-                        cancellationTokenSource).ConfigureAwait(false);
+                        cancellationTokenSource);
                 }
                 catch
                 {
@@ -1540,21 +1531,21 @@ public class DynamicHlsController : BaseJellyfinApiController
                     throw;
                 }
 
-                // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token);
             }
             else
             {
                 job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 if (job?.TranscodingThrottler is not null)
                 {
-                    await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
+                    await job.TranscodingThrottler.UnpauseTranscoding();
                 }
             }
         }
 
         _logger.LogDebug("returning {0} [general case]", segmentPath);
         job ??= _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-        return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+        return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken);
     }
 
     private static double[] GetSegmentLengths(StreamState state)
@@ -1984,7 +1975,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                     }
                 }
 
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(100, cancellationToken);
             }
 
             if (!System.IO.File.Exists(segmentPath))
@@ -2075,7 +2066,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return;
         }
 
-        await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
+        await DeleteFile(file.FullName, retryCount);
     }
 
     private async Task DeleteFile(string path, int retryCount)
@@ -2095,8 +2086,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
-            await Task.Delay(100).ConfigureAwait(false);
-            await DeleteFile(path, retryCount + 1).ConfigureAwait(false);
+            await Task.Delay(100);
+            await DeleteFile(path, retryCount + 1);
         }
         catch (Exception ex)
         {

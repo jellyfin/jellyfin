@@ -61,8 +61,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                         searchInfo.MetadataLanguage,
                         TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode),
                         searchInfo.MetadataCountryCode,
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                        cancellationToken);
 
                 if (movie is not null)
                 {
@@ -96,7 +95,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     FindExternalSource.Imdb,
                     TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode),
                     searchInfo.MetadataCountryCode,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
                 movieResults = result?.MovieResults;
             }
 
@@ -107,15 +106,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     FindExternalSource.TvDb,
                     TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode),
                     searchInfo.MetadataCountryCode,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
                 movieResults = result?.MovieResults;
             }
 
             if (movieResults is null)
             {
                 movieResults = await _tmdbClientManager
-                    .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
-                    .ConfigureAwait(false);
+                    .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken);
             }
 
             var len = movieResults.Count;
@@ -156,7 +154,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
 
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken);
 
                 if (searchResults.Count > 0)
                 {
@@ -166,7 +164,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
             {
-                var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken);
                 if (movieResultFromImdbId?.MovieResults.Count > 0)
                 {
                     tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
@@ -179,8 +177,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             }
 
             var movieResult = await _tmdbClientManager
-                .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
-                .ConfigureAwait(false);
+                .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken);
 
             if (movieResult is null)
             {

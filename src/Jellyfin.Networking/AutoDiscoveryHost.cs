@@ -57,7 +57,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
             return;
         }
 
-        await ListenForAutoDiscoveryMessage(IPAddress.Any, stoppingToken).ConfigureAwait(false);
+        await ListenForAutoDiscoveryMessage(IPAddress.Any, stoppingToken);
     }
 
     private async Task ListenForAutoDiscoveryMessage(IPAddress listenAddress, CancellationToken cancellationToken)
@@ -71,11 +71,11 @@ public sealed class AutoDiscoveryHost : BackgroundService
             {
                 try
                 {
-                    var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    var result = await udpClient.ReceiveAsync(cancellationToken);
                     var text = Encoding.UTF8.GetString(result.Buffer);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(result.RemoteEndPoint, udpClient, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(result.RemoteEndPoint, udpClient, cancellationToken);
                     }
                 }
                 catch (SocketException ex)
@@ -109,8 +109,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
         {
             _logger.LogDebug("Sending AutoDiscovery response");
             await broadCastUdpClient
-                .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken)
-                .ConfigureAwait(false);
+                .SendAsync(JsonSerializer.SerializeToUtf8Bytes(response).AsMemory(), endpoint, cancellationToken);
         }
         catch (SocketException ex)
         {

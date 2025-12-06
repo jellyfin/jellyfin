@@ -68,7 +68,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         async Task RunCleanupTask()
         {
             _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", CleanupGracePeriod);
-            await Task.Delay(TimeSpan.FromSeconds(CleanupGracePeriod)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(CleanupGracePeriod));
             if (_disposed)
             {
                 _logger.LogDebug("Abort cleaning up, already disposed.");
@@ -90,7 +90,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             _logger.LogDebug("Cleanup runners.");
             foreach (var item in _taskRunners.ToArray())
             {
-                await item.Key.CancelAsync().ConfigureAwait(false);
+                await item.Key.CancelAsync();
                 _taskRunners.Remove(item.Key);
             }
         }
@@ -152,7 +152,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                     var newWorkerLimit = Interlocked.Increment(ref _workCounter) > 0;
                     Debug.Assert(newWorkerLimit, "_workCounter > 0");
                     _logger.LogDebug("Process new item '{Data}'.", item.Data);
-                    await ProcessItem(item).ConfigureAwait(false);
+                    await ProcessItem(item);
                 }
                 finally
                 {
@@ -249,7 +249,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             {
                 foreach (var item in workItems)
                 {
-                    await ProcessItem(item).ConfigureAwait(false);
+                    await ProcessItem(item);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -275,7 +275,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
                 // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
                 while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 200, _deadlockDetector.Value.Token))
                 {
-                    await ProcessItem(item).ConfigureAwait(false);
+                    await ProcessItem(item);
                 }
             }
             catch (OperationCanceledException) when (_deadlockDetector.Value.IsCancellationRequested)
@@ -289,7 +289,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         {
             Worker();
             _logger.LogDebug("Wait for {NoWorkers} to complete.", workItems.Length);
-            await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]).ConfigureAwait(false);
+            await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]);
             _logger.LogDebug("{NoWorkers} completed.", workItems.Length);
             ScheduleTaskCleanup();
         }
@@ -307,13 +307,13 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         _tasks.CompleteAdding();
         foreach (var item in _taskRunners)
         {
-            await item.Key.CancelAsync().ConfigureAwait(false);
+            await item.Key.CancelAsync();
         }
 
         _tasks.Dispose();
         if (_cleanupTask is not null)
         {
-            await _cleanupTask.ConfigureAwait(false);
+            await _cleanupTask;
             _cleanupTask?.Dispose();
         }
     }

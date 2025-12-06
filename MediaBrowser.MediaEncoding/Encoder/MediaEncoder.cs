@@ -540,12 +540,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger.LogDebug("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
 
             var memoryStream = new MemoryStream();
-            await using (memoryStream.ConfigureAwait(false))
+            await using (memoryStream)
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 StartProcess(processWrapper);
                 using var reader = process.StandardOutput;
-                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
@@ -553,7 +553,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
                                         memoryStream,
                                         _jsonSerializerOptions,
-                                        cancellationToken).ConfigureAwait(false);
+                                        cancellationToken);
                 }
                 catch
                 {
@@ -629,7 +629,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken);
                 }
                 catch (ArgumentException)
                 {
@@ -641,7 +641,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken);
         }
 
         private string GetImageResolutionParameter()
@@ -794,7 +794,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken))
                 {
                     StartProcess(processWrapper);
 
@@ -806,7 +806,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     try
                     {
-                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs));
                     }
                     catch (OperationCanceledException ex)
                     {
@@ -933,7 +933,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     threads,
                     qualityScale,
                     priority,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
             }
             catch (FfmpegException ex)
             {
@@ -945,7 +945,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogWarning(ex, "I-frame trickplay extraction failed, will attempt standard way. Input: {InputFile}", inputFile);
             }
 
-            return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken).ConfigureAwait(false);
+            return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -1029,7 +1029,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 bool ranToCompletion = false;
 
-                using (await _thumbnailResourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+                using (await _thumbnailResourcePool.LockAsync(cancellationToken))
                 {
                     StartProcess(processWrapper);
 
@@ -1059,7 +1059,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         try
                         {
-                            await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                            await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs));
 
                             ranToCompletion = true;
                             break;

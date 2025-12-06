@@ -83,20 +83,20 @@ namespace Jellyfin.LiveTv.Listings
             {
                 _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken);
                 var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                await using (stream.ConfigureAwait(false))
+                var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                await using (stream)
                 {
-                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken);
                 }
             }
             else
             {
                 var stream = AsyncFile.OpenRead(info.Path);
-                await using (stream.ConfigureAwait(false))
+                await using (stream)
                 {
-                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken);
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace Jellyfin.LiveTv.Listings
                 IODefaults.FileStreamBufferSize,
                 FileOptions.Asynchronous);
 
-            await using (fileStream.ConfigureAwait(false))
+            await using (fileStream)
             {
                 if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase) ||
                     Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gzip", StringComparison.OrdinalIgnoreCase))
@@ -119,7 +119,7 @@ namespace Jellyfin.LiveTv.Listings
                     try
                     {
                         using var reader = new GZipStream(stream, CompressionMode.Decompress);
-                        await reader.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                        await reader.CopyToAsync(fileStream, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -128,7 +128,7 @@ namespace Jellyfin.LiveTv.Listings
                 }
                 else
                 {
-                    await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                    await stream.CopyToAsync(fileStream, cancellationToken);
                 }
 
                 return file;
@@ -144,7 +144,7 @@ namespace Jellyfin.LiveTv.Listings
 
             _logger.LogDebug("Getting xmltv programs for channel {Id}", channelId);
 
-            string path = await GetXml(info, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info, cancellationToken);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
@@ -239,7 +239,7 @@ namespace Jellyfin.LiveTv.Listings
         public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
-            string path = await GetXml(info, CancellationToken.None).ConfigureAwait(false);
+            string path = await GetXml(info, CancellationToken.None);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             IEnumerable<XmlTvChannel> results = reader.GetChannels();
@@ -251,7 +251,7 @@ namespace Jellyfin.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             // In theory this should never be called because there is always only one lineup
-            string path = await GetXml(info, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info, cancellationToken);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();

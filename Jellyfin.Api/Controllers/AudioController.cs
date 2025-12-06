@@ -195,7 +195,7 @@ public class AudioController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
-        return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
+        return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest);
     }
 
     /// <summary>
@@ -362,6 +362,6 @@ public class AudioController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
-        return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
+        return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest);
     }
 }

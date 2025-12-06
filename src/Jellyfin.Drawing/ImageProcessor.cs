@@ -135,7 +135,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return (originalImagePath, mimeType, dateModified);
         }
 
-        var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
+        var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified);
         originalImagePath = supportedImageInfo.Path;
 
         // Original file doesn't exist, or original file is gif.
@@ -200,7 +200,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
                 string resultPath;
 
                 // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
-                using (await _parallelEncodingLimit.LockAsync().ConfigureAwait(false))
+                using (await _parallelEncodingLimit.LockAsync())
                 {
                     resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
                 }

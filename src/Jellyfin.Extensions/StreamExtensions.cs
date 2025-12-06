@@ -55,7 +55,7 @@ namespace Jellyfin.Extensions
         public static async IAsyncEnumerable<string> ReadAllLinesAsync(this TextReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             string? line;
-            while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is not null)
+            while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
             {
                 yield return line;
             }

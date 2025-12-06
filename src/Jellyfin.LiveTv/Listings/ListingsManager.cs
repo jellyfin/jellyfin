@@ -56,7 +56,7 @@ public class ListingsManager : IListingsManager
         ArgumentNullException.ThrowIfNull(info);
 
         var provider = GetProvider(info.Type);
-        await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
+        await provider.Validate(info, validateLogin, validateListings);
 
         var config = _config.GetLiveTvConfiguration();
 
@@ -134,7 +134,7 @@ public class ListingsManager : IListingsManager
                 provider.Name,
                 providerInfo.ListingsId ?? string.Empty);
 
-            var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken).ConfigureAwait(false);
+            var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken);
 
             var epgChannel = GetEpgChannelFromTunerChannel(providerInfo.ChannelMappings, channel, epgChannels);
             if (epgChannel is null)
@@ -144,7 +144,7 @@ public class ListingsManager : IListingsManager
             }
 
             var programs = (await provider
-                .GetProgramsAsync(providerInfo, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false))
+                .GetProgramsAsync(providerInfo, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken))
                 .ToList();
 
             // Replace the value that came from the provider with a normalized value
@@ -181,7 +181,7 @@ public class ListingsManager : IListingsManager
 
             try
             {
-                await AddMetadata(provider, providerInfo, enabledChannels, enableCache, cancellationToken).ConfigureAwait(false);
+                await AddMetadata(provider, providerInfo, enabledChannels, enableCache, cancellationToken);
             }
             catch (NotSupportedException)
             {
@@ -201,11 +201,9 @@ public class ListingsManager : IListingsManager
 
         var provider = GetProvider(listingsProviderInfo.Type);
 
-        var tunerChannels = await GetChannelsForListingsProvider(listingsProviderInfo, CancellationToken.None)
-            .ConfigureAwait(false);
+        var tunerChannels = await GetChannelsForListingsProvider(listingsProviderInfo, CancellationToken.None);
 
-        var providerChannels = await provider.GetChannels(listingsProviderInfo, default)
-            .ConfigureAwait(false);
+        var providerChannels = await provider.GetChannels(listingsProviderInfo, default);
 
         var mappings = listingsProviderInfo.ChannelMappings;
 
@@ -250,11 +248,9 @@ public class ListingsManager : IListingsManager
 
         _config.SaveConfiguration("livetv", config);
 
-        var tunerChannels = await GetChannelsForListingsProvider(listingsProviderInfo, CancellationToken.None)
-            .ConfigureAwait(false);
+        var tunerChannels = await GetChannelsForListingsProvider(listingsProviderInfo, CancellationToken.None);
 
-        var providerChannels = await GetProvider(listingsProviderInfo.Type).GetChannels(listingsProviderInfo, default)
-            .ConfigureAwait(false);
+        var providerChannels = await GetProvider(listingsProviderInfo.Type).GetChannels(listingsProviderInfo, default);
 
         var tunerChannelMappings = tunerChannels
             .Select(i => GetTunerChannelMapping(i, listingsProviderInfo.ChannelMappings, providerChannels)).ToList();
@@ -280,7 +276,7 @@ public class ListingsManager : IListingsManager
         bool enableCache,
         CancellationToken cancellationToken)
     {
-        var epgChannels = await GetEpgChannels(provider, info, enableCache, cancellationToken).ConfigureAwait(false);
+        var epgChannels = await GetEpgChannels(provider, info, enableCache, cancellationToken);
 
         foreach (var tunerChannel in tunerChannels)
         {
@@ -333,7 +329,7 @@ public class ListingsManager : IListingsManager
             return result;
         }
 
-        var channels = await provider.GetChannels(info, cancellationToken).ConfigureAwait(false);
+        var channels = await provider.GetChannels(info, cancellationToken);
         foreach (var channel in channels)
         {
             _logger.LogInformation("Found epg channel in {0} {1} {2} {3}", provider.Name, info.ListingsId, channel.Name, channel.Id);
@@ -445,7 +441,7 @@ public class ListingsManager : IListingsManager
         {
             try
             {
-                var tunerChannels = await hostInstance.GetChannels(false, cancellationToken).ConfigureAwait(false);
+                var tunerChannels = await hostInstance.GetChannels(false, cancellationToken);
 
                 channels.AddRange(tunerChannels.Where(channel => IsListingProviderEnabledForTuner(info, channel.TunerHostId)));
             }

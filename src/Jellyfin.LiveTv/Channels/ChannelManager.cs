@@ -157,8 +157,7 @@ namespace Jellyfin.LiveTv.Channels
 
             var channels = await GetAllChannelEntitiesAsync()
                 .OrderBy(i => i.SortName)
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .ToListAsync();
 
             if (query.IsRecordingsFolder.HasValue)
             {
@@ -251,7 +250,7 @@ namespace Jellyfin.LiveTv.Channels
             {
                 foreach (var item in all)
                 {
-                    await RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).ConfigureAwait(false);
+                    await RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None);
                 }
             }
 
@@ -268,7 +267,7 @@ namespace Jellyfin.LiveTv.Channels
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = await GetChannelsInternalAsync(query).ConfigureAwait(false);
+            var internalResult = await GetChannelsInternalAsync(query);
 
             var dtoOptions = new DtoOptions();
 
@@ -301,7 +300,7 @@ namespace Jellyfin.LiveTv.Channels
 
                 try
                 {
-                    await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
+                    await GetChannel(channelInfo, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -324,7 +323,7 @@ namespace Jellyfin.LiveTv.Channels
         {
             foreach (IChannel channel in GetAllChannels())
             {
-                yield return GetChannel(GetInternalChannelId(channel.Name)) ?? await GetChannel(channel, CancellationToken.None).ConfigureAwait(false);
+                yield return GetChannel(GetInternalChannelId(channel.Name)) ?? await GetChannel(channel, CancellationToken.None);
             }
         }
 
@@ -364,9 +363,9 @@ namespace Jellyfin.LiveTv.Channels
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             FileStream createStream = AsyncFile.Create(path);
-            await using (createStream.ConfigureAwait(false))
+            await using (createStream)
             {
-                await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions);
             }
         }
 
@@ -395,8 +394,7 @@ namespace Jellyfin.LiveTv.Channels
 
             if (channelPlugin is IRequiresMediaInfoCallback requiresCallback)
             {
-                results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken)
-                    .ConfigureAwait(false);
+                results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken);
             }
             else
             {
@@ -415,8 +413,7 @@ namespace Jellyfin.LiveTv.Channels
                 return cachedInfo;
             }
 
-            var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken)
-                   .ConfigureAwait(false);
+            var mediaInfo = await channel.GetChannelItemMediaInfo(id, cancellationToken);
             var list = mediaInfo.ToList();
             _memoryCache.Set(id, list, DateTimeOffset.UtcNow.AddMinutes(5));
 
@@ -497,7 +494,7 @@ namespace Jellyfin.LiveTv.Channels
                 {
                     ForceSave = !isNew && forceUpdate
                 },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             return item;
         }
@@ -593,7 +590,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken);
 
             var items = internalResult.Items;
             var totalRecordCount = internalResult.TotalRecordCount;
@@ -629,7 +626,7 @@ namespace Jellyfin.LiveTv.Channels
 
             foreach (var channel in channels)
             {
-                await RefreshLatestChannelItems(channel, cancellationToken).ConfigureAwait(false);
+                await RefreshLatestChannelItems(channel, cancellationToken);
             }
 
             query.IsFolder = false;
@@ -659,7 +656,7 @@ namespace Jellyfin.LiveTv.Channels
 
         private async Task RefreshLatestChannelItems(IChannel channel, CancellationToken cancellationToken)
         {
-            var internalChannel = await GetChannel(channel, cancellationToken).ConfigureAwait(false);
+            var internalChannel = await GetChannel(channel, cancellationToken);
 
             var query = new InternalItemsQuery
             {
@@ -668,7 +665,7 @@ namespace Jellyfin.LiveTv.Channels
                 ChannelIds = new Guid[] { internalChannel.Id }
             };
 
-            var result = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            var result = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken);
 
             foreach (var item in result.Items)
             {
@@ -682,7 +679,7 @@ namespace Jellyfin.LiveTv.Channels
                             ChannelIds = new Guid[] { internalChannel.Id }
                         },
                         new Progress<double>(),
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
                 }
             }
         }
@@ -706,8 +703,7 @@ namespace Jellyfin.LiveTv.Channels
                 parentItem is Channel ? null : parentItem.ExternalId,
                 null,
                 false,
-                cancellationToken)
-                .ConfigureAwait(false);
+                cancellationToken);
 
             if (query.ParentId.IsEmpty())
             {
@@ -732,7 +728,7 @@ namespace Jellyfin.LiveTv.Channels
                         channelProvider,
                         channel.Id,
                         parentItem,
-                        cancellationToken).ConfigureAwait(false)).Id;
+                        cancellationToken)).Id;
                 }
 
                 var existingIds = _libraryManager.GetItemIds(query);
@@ -763,7 +759,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
-            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken);
 
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
@@ -793,11 +789,10 @@ namespace Jellyfin.LiveTv.Channels
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
                     var jsonStream = AsyncFile.OpenRead(cachePath);
-                    await using (jsonStream.ConfigureAwait(false))
+                    await using (jsonStream)
                     {
                         var cachedResult = await JsonSerializer
-                            .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken)
-                            .ConfigureAwait(false);
+                            .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken);
                         if (cachedResult is not null)
                         {
                             return null;
@@ -812,18 +807,17 @@ namespace Jellyfin.LiveTv.Channels
             {
             }
 
-            using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+            using (await _resourcePool.LockAsync(cancellationToken))
             {
                 try
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
                         var jsonStream = AsyncFile.OpenRead(cachePath);
-                        await using (jsonStream.ConfigureAwait(false))
+                        await using (jsonStream)
                         {
                             var cachedResult = await JsonSerializer
-                                .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken)
-                                .ConfigureAwait(false);
+                                .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken);
                             if (cachedResult is not null)
                             {
                                 return null;
@@ -848,14 +842,14 @@ namespace Jellyfin.LiveTv.Channels
 
                 query.FolderId = externalFolderId;
 
-                var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+                var result = await channel.GetChannelItems(query, cancellationToken);
 
                 if (result is null)
                 {
                     throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 }
 
-                await CacheResponse(result, cachePath).ConfigureAwait(false);
+                await CacheResponse(result, cachePath);
 
                 return result;
             }
@@ -868,9 +862,9 @@ namespace Jellyfin.LiveTv.Channels
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 var createStream = AsyncFile.Create(path);
-                await using (createStream.ConfigureAwait(false))
+                await using (createStream)
                 {
-                    await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
+                    await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions);
                 }
             }
             catch (Exception ex)
@@ -1146,23 +1140,23 @@ namespace Jellyfin.LiveTv.Channels
 
                 if (info.People is not null && info.People.Count > 0)
                 {
-                    await _libraryManager.UpdatePeopleAsync(item, info.People, cancellationToken).ConfigureAwait(false);
+                    await _libraryManager.UpdatePeopleAsync(item, info.People, cancellationToken);
                 }
             }
             else if (forceUpdate)
             {
-                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.None, cancellationToken);
             }
 
             if ((isNew || forceUpdate) && info.Type == ChannelItemType.Media)
             {
                 if (enableMediaProbe && !info.IsLiveStream && item.HasPathProtocol)
                 {
-                    await SaveMediaSources(item, new List<MediaSourceInfo>()).ConfigureAwait(false);
+                    await SaveMediaSources(item, new List<MediaSourceInfo>());
                 }
                 else
                 {
-                    await SaveMediaSources(item, info.MediaSources).ConfigureAwait(false);
+                    await SaveMediaSources(item, info.MediaSources);
                 }
             }
 

@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     [userId],
                     SessionMessageType.UserDataChanged,
                     () => GetUserDataChangeInfo(userId, changedItems),
-                    default).ConfigureAwait(false);
+                    default);
             }
         }
 

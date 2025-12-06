@@ -185,7 +185,7 @@ namespace Jellyfin.LiveTv
                 (dto, program.ExternalId, program.ExternalSeriesId)
             };
 
-            await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
+            await AddRecordingInfo(list, cancellationToken);
 
             return dto;
         }
@@ -235,7 +235,7 @@ namespace Jellyfin.LiveTv
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
             {
-                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
+                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken);
                 var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.Id).ToString("N", CultureInfo.InvariantCulture), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
                 if (seriesTimer is not null)
                 {
@@ -385,7 +385,7 @@ namespace Jellyfin.LiveTv
                 var externalProgramId = programTuple.ExternalId;
                 string externalSeriesId = programTuple.ExternalSeriesId;
 
-                timerList ??= (await GetTimersInternal(new TimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
+                timerList ??= (await GetTimersInternal(new TimerQuery(), cancellationToken)).Items;
 
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
                 var foundSeriesTimer = false;
@@ -413,7 +413,7 @@ namespace Jellyfin.LiveTv
                     continue;
                 }
 
-                seriesTimerList ??= (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
+                seriesTimerList ??= (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken)).Items;
 
                 var seriesTimer = seriesTimerList.FirstOrDefault(i => string.Equals(i.SeriesId, externalSeriesId, StringComparison.OrdinalIgnoreCase));
 
@@ -432,7 +432,7 @@ namespace Jellyfin.LiveTv
                 return new QueryResult<BaseItem>();
             }
 
-            var folders = await GetRecordingFoldersAsync(user, true).ConfigureAwait(false);
+            var folders = await GetRecordingFoldersAsync(user, true);
             var folderIds = Array.ConvertAll(folders, x => x.Id);
 
             var excludeItemTypes = new List<BaseItemKind>();
@@ -643,7 +643,7 @@ namespace Jellyfin.LiveTv
 
             RemoveFields(options);
 
-            var internalResult = await GetEmbyRecordingsAsync(query, options, user).ConfigureAwait(false);
+            var internalResult = await GetEmbyRecordingsAsync(query, options, user);
 
             var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
@@ -659,7 +659,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var recs = await i.GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                    var recs = await i.GetTimersAsync(cancellationToken);
                     return recs.Select(r => new Tuple<TimerInfo, ILiveTvService>(r, i));
                 }
                 catch (Exception ex)
@@ -668,7 +668,7 @@ namespace Jellyfin.LiveTv
                     return new List<Tuple<TimerInfo, ILiveTvService>>();
                 }
             });
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
             var timers = results.SelectMany(i => i.ToList());
 
             if (query.IsActive.HasValue)
@@ -729,7 +729,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var recs = await i.GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                    var recs = await i.GetTimersAsync(cancellationToken);
                     return recs.Select(r => new Tuple<TimerInfo, ILiveTvService>(r, i));
                 }
                 catch (Exception ex)
@@ -738,7 +738,7 @@ namespace Jellyfin.LiveTv
                     return new List<Tuple<TimerInfo, ILiveTvService>>();
                 }
             });
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
             var timers = results.SelectMany(i => i.ToList());
 
             if (query.IsActive.HasValue)
@@ -807,7 +807,7 @@ namespace Jellyfin.LiveTv
 
         public async Task CancelTimer(string id)
         {
-            var timer = await GetTimer(id, CancellationToken.None).ConfigureAwait(false);
+            var timer = await GetTimer(id, CancellationToken.None);
 
             if (timer is null)
             {
@@ -816,7 +816,7 @@ namespace Jellyfin.LiveTv
 
             var service = GetService(timer.ServiceName);
 
-            await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
+            await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None);
 
             if (service is not DefaultLiveTvService)
             {
@@ -826,7 +826,7 @@ namespace Jellyfin.LiveTv
 
         public async Task CancelSeriesTimer(string id)
         {
-            var timer = await GetSeriesTimer(id, CancellationToken.None).ConfigureAwait(false);
+            var timer = await GetSeriesTimer(id, CancellationToken.None);
 
             if (timer is null)
             {
@@ -835,7 +835,7 @@ namespace Jellyfin.LiveTv
 
             var service = GetService(timer.ServiceName);
 
-            await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
+            await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None);
 
             SeriesTimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
         }
@@ -847,14 +847,14 @@ namespace Jellyfin.LiveTv
                 {
                     Id = id
                 },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<SeriesTimerInfoDto> GetSeriesTimer(string id, CancellationToken cancellationToken)
         {
-            var results = await GetSeriesTimers(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
+            var results = await GetSeriesTimers(new SeriesTimerQuery(), cancellationToken);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
@@ -865,7 +865,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var recs = await i.GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+                    var recs = await i.GetSeriesTimersAsync(cancellationToken);
                     return recs.Select(r =>
                     {
                         r.ServiceName = i.Name;
@@ -878,7 +878,7 @@ namespace Jellyfin.LiveTv
                     return new List<Tuple<SeriesTimerInfo, ILiveTvService>>();
                 }
             });
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
             var timers = results.SelectMany(i => i.ToList());
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
@@ -907,7 +907,7 @@ namespace Jellyfin.LiveTv
             {
                 try
                 {
-                    var recs = await i.GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+                    var recs = await i.GetSeriesTimersAsync(cancellationToken);
                     return recs.Select(r => new Tuple<SeriesTimerInfo, ILiveTvService>(r, i));
                 }
                 catch (Exception ex)
@@ -916,7 +916,7 @@ namespace Jellyfin.LiveTv
                     return new List<Tuple<SeriesTimerInfo, ILiveTvService>>();
                 }
             });
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
             var timers = results.SelectMany(i => i.ToList());
 
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
@@ -1049,7 +1049,7 @@ namespace Jellyfin.LiveTv
 
             service ??= _services[0];
 
-            var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
+            var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo);
 
             info.RecordAnyTime = true;
             info.Days = new List<DayOfWeek>
@@ -1070,7 +1070,7 @@ namespace Jellyfin.LiveTv
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
         {
-            var info = await GetNewTimerDefaultsInternal(cancellationToken).ConfigureAwait(false);
+            var info = await GetNewTimerDefaultsInternal(cancellationToken);
 
             return _tvDtoService.GetSeriesTimerInfoDto(info.Item1, info.Item2, null);
         }
@@ -1078,9 +1078,9 @@ namespace Jellyfin.LiveTv
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken)
         {
             var program = (LiveTvProgram)_libraryManager.GetItemById(programId);
-            var programDto = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
+            var programDto = await GetProgram(programId, cancellationToken);
 
-            var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
+            var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program);
             var info = _tvDtoService.GetSeriesTimerInfoDto(defaults.Item1, defaults.Item2, null);
 
             info.Days = defaults.Item1.Days.ToArray();
@@ -1108,21 +1108,21 @@ namespace Jellyfin.LiveTv
         {
             var service = GetService(timer.ServiceName);
 
-            var info = await _tvDtoService.GetTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+            var info = await _tvDtoService.GetTimerInfo(timer, true, this, cancellationToken);
 
             // Set priority from default values
-            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
+            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken);
             info.Priority = defaultValues.Priority;
 
             string newTimerId = null;
             if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
-                newTimerId = await supportsNewTimerIds.CreateTimer(info, cancellationToken).ConfigureAwait(false);
+                newTimerId = await supportsNewTimerIds.CreateTimer(info, cancellationToken);
                 newTimerId = _tvDtoService.GetInternalTimerId(newTimerId);
             }
             else
             {
-                await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+                await service.CreateTimerAsync(info, cancellationToken);
             }
 
             _logger.LogInformation("New recording scheduled");
@@ -1141,21 +1141,21 @@ namespace Jellyfin.LiveTv
         {
             var service = GetService(timer.ServiceName);
 
-            var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+            var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken);
 
             // Set priority from default values
-            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
+            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken);
             info.Priority = defaultValues.Priority;
 
             string newTimerId = null;
             if (service is ISupportsNewTimerIds supportsNewTimerIds)
             {
-                newTimerId = await supportsNewTimerIds.CreateSeriesTimer(info, cancellationToken).ConfigureAwait(false);
+                newTimerId = await supportsNewTimerIds.CreateSeriesTimer(info, cancellationToken);
                 newTimerId = _tvDtoService.GetInternalSeriesTimerId(newTimerId).ToString("N", CultureInfo.InvariantCulture);
             }
             else
             {
-                await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+                await service.CreateSeriesTimerAsync(info, cancellationToken);
             }
 
             SeriesTimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
@@ -1167,20 +1167,20 @@ namespace Jellyfin.LiveTv
 
         public async Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
         {
-            var info = await _tvDtoService.GetTimerInfo(timer, false, this, cancellationToken).ConfigureAwait(false);
+            var info = await _tvDtoService.GetTimerInfo(timer, false, this, cancellationToken);
 
             var service = GetService(timer.ServiceName);
 
-            await service.UpdateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            await service.UpdateTimerAsync(info, cancellationToken);
         }
 
         public async Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
         {
-            var info = await _tvDtoService.GetSeriesTimerInfo(timer, false, this, cancellationToken).ConfigureAwait(false);
+            var info = await _tvDtoService.GetSeriesTimerInfo(timer, false, this, cancellationToken);
 
             var service = GetService(timer.ServiceName);
 
-            await service.UpdateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            await service.UpdateSeriesTimerAsync(info, cancellationToken);
         }
 
         private LiveTvServiceInfo[] GetServiceInfos()
@@ -1282,7 +1282,7 @@ namespace Jellyfin.LiveTv
                 UserId = user.Id,
                 IsRecordingsFolder = true,
                 RefreshLatestChannelItems = refreshChannels
-            }).ConfigureAwait(false);
+            });
 
             folders.AddRange(channels.Items);
 

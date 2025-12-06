@@ -24,9 +24,9 @@ namespace MediaBrowser.Controller.ClientEvent
             var fileName = $"upload_{clientName}_{clientVersion}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}.log";
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
             var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-            await using (fileStream.ConfigureAwait(false))
+            await using (fileStream)
             {
-                await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
+                await fileContents.CopyToAsync(fileStream);
                 return fileName;
             }
         }

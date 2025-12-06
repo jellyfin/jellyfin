@@ -183,12 +183,12 @@ namespace Emby.Server.Implementations.Library
                         EnableRemoteContentProbe = true,
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
             }
 
-            var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken).ConfigureAwait(false);
+            var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken);
 
             var list = new List<MediaSourceInfo>();
 
@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations.Library
         private async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             var tasks = _providers.Select(i => GetDynamicMediaSources(item, i, cancellationToken));
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(tasks);
 
             return results.SelectMany(i => i);
         }
@@ -299,7 +299,7 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-                var sources = await provider.GetMediaSources(item, cancellationToken).ConfigureAwait(false);
+                var sources = await provider.GetMediaSources(item, cancellationToken);
                 var list = sources.ToList();
 
                 foreach (var mediaSource in list)
@@ -337,10 +337,10 @@ namespace Emby.Server.Implementations.Library
         {
             if (!string.IsNullOrEmpty(liveStreamId))
             {
-                return await GetLiveStream(liveStreamId, cancellationToken).ConfigureAwait(false);
+                return await GetLiveStream(liveStreamId, cancellationToken);
             }
 
-            var sources = await GetPlaybackMediaSources(item, null, false, enablePathSubstitution, cancellationToken).ConfigureAwait(false);
+            var sources = await GetPlaybackMediaSources(item, null, false, enablePathSubstitution, cancellationToken);
 
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
@@ -501,13 +501,13 @@ namespace Emby.Server.Implementations.Library
             MediaSourceInfo mediaSource;
             ILiveStream liveStream;
 
-            using (await _liveStreamLocker.LockAsync(cancellationToken).ConfigureAwait(false))
+            using (await _liveStreamLocker.LockAsync(cancellationToken))
             {
                 var (provider, keyId) = GetProvider(request.OpenToken);
 
                 var currentLiveStreams = _openStreams.Values.ToList();
 
-                liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken);
 
                 mediaSource = liveStream.MediaSource;
 
@@ -534,8 +534,7 @@ namespace Emby.Server.Implementations.Library
                     string cacheKey = request.OpenToken;
 
                     await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
-                        .AddMediaInfoWithProbe(mediaSource, false, cacheKey, true, cancellationToken)
-                        .ConfigureAwait(false);
+                        .AddMediaInfoWithProbe(mediaSource, false, cacheKey, true, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -614,7 +613,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
-            var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
+            var result = await OpenLiveStreamInternal(request, cancellationToken);
             return result.Item1;
         }
 
@@ -634,7 +633,7 @@ namespace Emby.Server.Implementations.Library
                         ExtractChapters = false,
                         MediaType = DlnaProfileType.Video
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 mediaSource.MediaStreams = info.MediaStreams;
                 mediaSource.Container = info.Container;
@@ -658,7 +657,7 @@ namespace Emby.Server.Implementations.Library
                 FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                 try
                 {
-                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -666,7 +665,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 finally
                 {
-                    await jsonStream.DisposeAsync().ConfigureAwait(false);
+                    await jsonStream.DisposeAsync();
                 }
             }
 
@@ -676,7 +675,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var delayMs = mediaSource.AnalyzeDurationMs ?? 0;
                     delayMs = Math.Max(3000, delayMs);
-                    await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(delayMs, cancellationToken);
                 }
 
                 if (isLiveStream)
@@ -691,16 +690,13 @@ namespace Emby.Server.Implementations.Library
                         MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                         ExtractChapters = false
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    FileStream createStream = AsyncFile.Create(cacheFilePath);
-                    await using (createStream.ConfigureAwait(false))
-                    {
-                        await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    }
+                    await using FileStream createStream = AsyncFile.Create(cacheFilePath);
+                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken);
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
@@ -828,7 +824,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
         {
-            var result = await GetLiveStreamWithDirectStreamProvider(id, cancellationToken).ConfigureAwait(false);
+            var result = await GetLiveStreamWithDirectStreamProvider(id, cancellationToken);
             return result.Item1;
         }
 
@@ -853,7 +849,7 @@ namespace Emby.Server.Implementations.Library
             };
 
             await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
-                .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
+                .AddMediaInfoWithProbe(stream, false, false, cancellationToken);
 
             return [stream];
         }
@@ -862,7 +858,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentException.ThrowIfNullOrEmpty(id);
 
-            using (await _liveStreamLocker.LockAsync().ConfigureAwait(false))
+            using (await _liveStreamLocker.LockAsync())
             {
                 if (_openStreams.TryGetValue(id, out ILiveStream liveStream))
                 {
@@ -876,7 +872,7 @@ namespace Emby.Server.Implementations.Library
 
                         _logger.LogInformation("Closing live stream {0}", id);
 
-                        await liveStream.Close().ConfigureAwait(false);
+                        await liveStream.Close();
                         _logger.LogInformation("Live stream {0} closed successfully", id);
                     }
                 }

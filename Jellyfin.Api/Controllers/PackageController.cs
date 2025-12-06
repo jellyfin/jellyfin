@@ -48,7 +48,7 @@ public class PackageController : BaseJellyfinApiController
         [FromRoute, Required] string name,
         [FromQuery] Guid? assemblyGuid)
     {
-        var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+        var packages = await _installationManager.GetAvailablePackages();
         var result = _installationManager.FilterPackages(
                 packages,
                 name,
@@ -72,7 +72,7 @@ public class PackageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IEnumerable<PackageInfo>> GetPackages()
     {
-        IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+        IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages();
 
         return packages;
     }
@@ -96,7 +96,7 @@ public class PackageController : BaseJellyfinApiController
         [FromQuery] string? version,
         [FromQuery] string? repositoryUrl)
     {
-        var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+        var packages = await _installationManager.GetAvailablePackages();
         if (!string.IsNullOrEmpty(repositoryUrl))
         {
             packages = packages.Where(p => p.Versions.Any(q => q.RepositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)))
@@ -115,7 +115,7 @@ public class PackageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _installationManager.InstallPackage(package).ConfigureAwait(false);
+        await _installationManager.InstallPackage(package);
 
         return NoContent();
     }

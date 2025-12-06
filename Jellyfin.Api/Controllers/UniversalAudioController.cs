@@ -134,8 +134,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         var info = await _mediaInfoHelper.GetPlaybackInfo(
                 item,
                 user,
-                mediaSourceId)
-            .ConfigureAwait(false);
+                mediaSourceId);
 
         // set device specific data
         foreach (var sourceInfo in info.MediaSources)
@@ -226,8 +225,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 EnableAudioVbrEncoding = enableAudioVbrEncoding
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)
-                .ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true);
         }
 
         var audioStreamingDto = new StreamingRequestDto
@@ -255,7 +253,7 @@ public class UniversalAudioController : BaseJellyfinApiController
             Context = EncodingContext.Static
         };
 
-        return await _audioHelper.GetAudioStream(TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);
+        return await _audioHelper.GetAudioStream(TranscodingJobType.Progressive, audioStreamingDto);
     }
 
     private DeviceProfile GetDeviceProfile(

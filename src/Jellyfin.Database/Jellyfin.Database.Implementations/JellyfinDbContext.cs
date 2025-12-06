@@ -264,8 +264,8 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
             var result = -1;
             await entityFrameworkCoreLocking.OnSaveChangesAsync(this, async () =>
             {
-                result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
-            }).ConfigureAwait(false);
+                result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            });
             return result;
         }
         catch (Exception e)

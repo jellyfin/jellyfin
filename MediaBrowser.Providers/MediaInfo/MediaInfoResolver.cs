@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     try
                     {
-                        var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
+                        var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken);
 
                         if (mediaInfo.MediaStreams.Count == 1)
                         {

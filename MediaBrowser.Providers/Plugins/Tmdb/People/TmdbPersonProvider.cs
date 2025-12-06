@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken);
 
                 if (personResult is not null)
                 {
@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 }
             }
 
-            var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
+            var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken);
 
             var remoteSearchResults = new RemoteSearchResult[personSearchResult.Count];
             for (var i = 0; i < personSearchResult.Count; i++)
@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             // We don't already have an Id, need to fetch it
             if (personTmdbId <= 0)
             {
-                var personSearchResults = await _tmdbClientManager.SearchPersonAsync(info.Name, cancellationToken).ConfigureAwait(false);
+                var personSearchResults = await _tmdbClientManager.SearchPersonAsync(info.Name, cancellationToken);
                 if (personSearchResults.Count > 0)
                 {
                     personTmdbId = personSearchResults[0].Id;
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken);
                 if (person is null)
                 {
                     return result;

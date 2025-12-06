@@ -107,7 +107,7 @@ public class ChapterImagesTask : IScheduledTask
         {
             try
             {
-                previouslyFailedImages = (await File.ReadAllTextAsync(failHistoryPath, cancellationToken).ConfigureAwait(false))
+                previouslyFailedImages = (await File.ReadAllTextAsync(failHistoryPath, cancellationToken))
                     .Split('|', StringSplitOptions.RemoveEmptyEntries)
                     .ToList();
             }
@@ -135,7 +135,7 @@ public class ChapterImagesTask : IScheduledTask
             {
                 var chapters = _chapterManager.GetChapters(video.Id);
 
-                var success = await _chapterManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken).ConfigureAwait(false);
+                var success = await _chapterManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken);
 
                 if (!success)
                 {
@@ -148,7 +148,7 @@ public class ChapterImagesTask : IScheduledTask
                     }
 
                     string text = string.Join('|', previouslyFailedImages);
-                    await File.WriteAllTextAsync(failHistoryPath, text, cancellationToken).ConfigureAwait(false);
+                    await File.WriteAllTextAsync(failHistoryPath, text, cancellationToken);
                 }
 
                 numComplete++;

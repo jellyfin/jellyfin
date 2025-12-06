@@ -197,7 +197,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
+                await SaveToFileAsync(memoryStream, path);
             }
         }
 
@@ -219,9 +219,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             };
 
             var filestream = new FileStream(path, fileStreamOptions);
-            await using (filestream.ConfigureAwait(false))
+            await using (filestream)
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await stream.CopyToAsync(filestream);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)

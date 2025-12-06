@@ -121,22 +121,21 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var stream = GetFromBase64Stream(Request.Body);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage is not null)
             {
-                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+                await _userManager.ClearProfileImageAsync(user);
             }
 
             user.ProfileImage = new Database.Implementations.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
-                .SaveImage(stream, mimeType, user.ProfileImage.Path)
-                .ConfigureAwait(false);
-            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+                .SaveImage(stream, mimeType, user.ProfileImage.Path);
+            await _userManager.UpdateUserAsync(user);
 
             return NoContent();
         }
@@ -229,7 +228,7 @@ public class ImageController : BaseJellyfinApiController
             _logger.LogError(e, "Error deleting user profile image:");
         }
 
-        await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+        await _userManager.ClearProfileImageAsync(user);
         return NoContent();
     }
 
@@ -303,7 +302,7 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await item.DeleteImageAsync(imageType, imageIndex ?? 0).ConfigureAwait(false);
+        await item.DeleteImageAsync(imageType, imageIndex ?? 0);
         return NoContent();
     }
 
@@ -331,7 +330,7 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await item.DeleteImageAsync(imageType, imageIndex).ConfigureAwait(false);
+        await item.DeleteImageAsync(imageType, imageIndex);
         return NoContent();
     }
 
@@ -366,12 +365,12 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var stream = GetFromBase64Stream(Request.Body);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
 
             return NoContent();
         }
@@ -410,12 +409,12 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var stream = GetFromBase64Stream(Request.Body);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None);
+            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
 
             return NoContent();
         }
@@ -447,7 +446,7 @@ public class ImageController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await item.SwapImagesAsync(imageType, imageIndex, newIndex).ConfigureAwait(false);
+        await item.SwapImagesAsync(imageType, imageIndex, newIndex);
         return NoContent();
     }
 
@@ -479,7 +478,7 @@ public class ImageController : BaseJellyfinApiController
             return list;
         }
 
-        await _libraryManager.UpdateImagesAsync(item).ConfigureAwait(false); // this makes sure dimensions and hashes are correct
+        await _libraryManager.UpdateImagesAsync(item); // this makes sure dimensions and hashes are correct
 
         foreach (var image in itemImages)
         {
@@ -591,8 +590,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -669,8 +667,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -747,8 +744,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -825,8 +821,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -903,8 +898,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -981,8 +975,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1059,8 +1052,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1137,8 +1129,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1215,8 +1206,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1293,8 +1283,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1371,8 +1360,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1449,8 +1437,7 @@ public class ImageController : BaseJellyfinApiController
                 blur,
                 backgroundColor,
                 foregroundLayer,
-                item)
-            .ConfigureAwait(false);
+                item);
     }
 
     /// <summary>
@@ -1515,8 +1502,7 @@ public class ImageController : BaseJellyfinApiController
                 null,
                 null,
                 null,
-                info)
-            .ConfigureAwait(false);
+                info);
     }
 
     /// <summary>
@@ -1698,8 +1684,7 @@ public class ImageController : BaseJellyfinApiController
         return await GetImageResult(
                 options,
                 cacheDuration,
-                ImmutableDictionary<string, string>.Empty)
-            .ConfigureAwait(false);
+                ImmutableDictionary<string, string>.Empty);
     }
 
     /// <summary>
@@ -1725,7 +1710,7 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var stream = GetFromBase64Stream(Request.Body);
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
@@ -1733,9 +1718,9 @@ public class ImageController : BaseJellyfinApiController
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
 
             var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await using (fs.ConfigureAwait(false))
+            await using (fs)
             {
-                await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                await stream.CopyToAsync(fs, CancellationToken.None);
             }
 
             return NoContent();
@@ -1886,7 +1871,7 @@ public class ImageController : BaseJellyfinApiController
 
         if (!imageInfo.IsLocalFile && item is not null)
         {
-            imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0);
         }
 
         var options = new ImageProcessingOptions
@@ -1913,7 +1898,7 @@ public class ImageController : BaseJellyfinApiController
         return await GetImageResult(
             options,
             cacheDuration,
-            responseHeaders).ConfigureAwait(false);
+            responseHeaders);
     }
 
     private ImageFormat[] GetOutputFormats(ImageFormat? format)
@@ -1994,7 +1979,7 @@ public class ImageController : BaseJellyfinApiController
         TimeSpan? cacheDuration,
         IDictionary<string, string> headers)
     {
-        var (imagePath, imageContentType, dateImageModified) = await _imageProcessor.ProcessImage(imageProcessingOptions).ConfigureAwait(false);
+        var (imagePath, imageContentType, dateImageModified) = await _imageProcessor.ProcessImage(imageProcessingOptions);
 
         var disableCaching = Request.Headers[HeaderNames.CacheControl].Contains("no-cache");
         var parsingSuccessful = DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);

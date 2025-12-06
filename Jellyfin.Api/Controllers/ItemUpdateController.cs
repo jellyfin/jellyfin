@@ -102,11 +102,11 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }).ToList());
         }
 
-        await UpdateItem(request, item).ConfigureAwait(false);
+        await UpdateItem(request, item);
 
         item.OnMetadataChanged();
 
-        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
         if (isLockedChanged && item.IsFolder)
         {
@@ -115,7 +115,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             foreach (var child in folder.GetRecursiveChildren())
             {
                 child.IsLocked = newLockData;
-                await child.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await child.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
         }
 
@@ -306,7 +306,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }
 
                 season.OnMetadataChanged();
-                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
                 foreach (var ep in season.Children.OfType<Episode>())
                 {
@@ -323,7 +323,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                     }
 
                     ep.OnMetadataChanged();
-                    await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                    await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
                 }
             }
         }
@@ -344,7 +344,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }
 
                 ep.OnMetadataChanged();
-                await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
         }
         else if (item is MusicAlbum album)
@@ -364,7 +364,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }
 
                 track.OnMetadataChanged();
-                await track.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await track.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
             }
         }
 

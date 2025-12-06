@@ -65,15 +65,15 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// <inheritdoc/>
     public override async Task ConnectionOpenedAsync(DbConnection connection, ConnectionEndEventData eventData, CancellationToken cancellationToken = default)
     {
-        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken).ConfigureAwait(false);
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken);
 
         var command = connection.CreateCommand();
-        await using (command.ConfigureAwait(false))
+        await using (command)
         {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = InitialCommand;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }
 

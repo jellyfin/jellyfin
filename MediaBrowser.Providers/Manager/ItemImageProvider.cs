@@ -156,13 +156,13 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, downloadedImages, result, cancellationToken);
                     continue;
                 }
 
                 if (provider is IDynamicImageProvider dynamicImageProvider)
                 {
-                    await RefreshFromProvider(item, dynamicImageProvider, refreshOptions, typeOptions, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, dynamicImageProvider, refreshOptions, typeOptions, downloadedImages, result, cancellationToken);
                 }
             }
 
@@ -202,7 +202,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         _logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, item.Path ?? item.Name);
 
-                        var response = await provider.GetImage(item, imageType, cancellationToken).ConfigureAwait(false);
+                        var response = await provider.GetImage(item, imageType, cancellationToken);
 
                         if (response.HasImage)
                         {
@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 var mimeType = response.Format.GetMimeType();
 
-                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken);
                             }
                             else
                             {
@@ -230,7 +230,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken).ConfigureAwait(false);
+                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken);
                                 }
                             }
 
@@ -296,7 +296,7 @@ namespace MediaBrowser.Providers.Manager
                         IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 var list = images.ToList();
                 int minWidth;
@@ -311,7 +311,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
-                        var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
+                        var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken);
 
                         if (downloaded)
                         {
@@ -322,7 +322,7 @@ namespace MediaBrowser.Providers.Manager
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
                 var listWithNoLangFirst = list.OrderByDescending(i => string.IsNullOrEmpty(i.Language));
-                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, listWithNoLangFirst, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, listWithNoLangFirst, minWidth, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -538,7 +538,7 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    using var response = await provider.GetImageResponse(url, cancellationToken);
 
                     // Sometimes providers send back bad urls. Just move to the next image
                     if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
@@ -553,8 +553,8 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    await using (stream.ConfigureAwait(false))
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                    await using (stream)
                     {
                         var mimetype = response.Content.Headers.ContentType?.MediaType;
                         if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
@@ -568,7 +568,7 @@ namespace MediaBrowser.Providers.Manager
                             mimetype,
                             type,
                             null,
-                            cancellationToken).ConfigureAwait(false);
+                            cancellationToken);
                     }
 
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -653,7 +653,7 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    using var response = await provider.GetImageResponse(url, cancellationToken);
 
                     // Sometimes providers send back bad urls. Just move to the next image
                     if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
@@ -685,8 +685,8 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
-                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    await using (stream.ConfigureAwait(false))
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                    await using (stream)
                     {
                         var mimetype = response.Content.Headers.ContentType?.MediaType;
                         if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
@@ -700,7 +700,7 @@ namespace MediaBrowser.Providers.Manager
                             mimetype,
                             imageType,
                             null,
-                            cancellationToken).ConfigureAwait(false);
+                            cancellationToken);
                     }
 
                     result.UpdateType |= ItemUpdateType.ImageUpdate;

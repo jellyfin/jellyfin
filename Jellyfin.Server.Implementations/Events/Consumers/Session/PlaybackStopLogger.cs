@@ -75,10 +75,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                         eventArgs.DeviceName),
                     notificationType,
                     user.Id)
-                {
-                    ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
-                })
-                .ConfigureAwait(false);
+            {
+                ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
+            });
         }
 
         private static string GetItemName(BaseItemDto item)

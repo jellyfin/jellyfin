@@ -48,6 +48,6 @@ public class LegacyEmbyRouteRewriteMiddleware
             _logger.LogDebug("Removing {MediabrowserPath} from route.", MediabrowserPath);
         }
 
-        await _next(httpContext).ConfigureAwait(false);
+        await _next(httpContext);
     }
 }

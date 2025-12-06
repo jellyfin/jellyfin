@@ -334,7 +334,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         try
         {
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -694,7 +694,7 @@ public class LibraryController : BaseJellyfinApiController
 
         if (user is not null)
         {
-            await LogDownloadAsync(item, user).ConfigureAwait(false);
+            await LogDownloadAsync(item, user);
         }
 
         // Quotes are valid in linux. They'll possibly cause issues here.
@@ -962,7 +962,7 @@ public class LibraryController : BaseJellyfinApiController
             {
                 ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
                 ItemId = item.Id.ToString("N", CultureInfo.InvariantCulture)
-            }).ConfigureAwait(false);
+            });
         }
         catch
         {

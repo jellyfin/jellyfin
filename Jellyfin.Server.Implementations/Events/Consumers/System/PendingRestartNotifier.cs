@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         /// <inheritdoc />
         public async Task OnEvent(PendingRestartEventArgs eventArgs)
         {
-            await _sessionManager.SendRestartRequiredNotification(CancellationToken.None).ConfigureAwait(false);
+            await _sessionManager.SendRestartRequiredNotification(CancellationToken.None);
         }
     }
 }

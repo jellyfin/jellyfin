@@ -52,6 +52,6 @@ public class ActivityLogController : BaseJellyfinApiController
             Limit = limit,
             MinDate = minDate,
             HasUserId = hasUserId
-        }).ConfigureAwait(false);
+        });
     }
 }

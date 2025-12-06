@@ -87,8 +87,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Movie")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMovieRemoteSearchResults([FromBody, Required] RemoteSearchQuery<MovieInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -104,8 +103,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Trailer")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetTrailerRemoteSearchResults([FromBody, Required] RemoteSearchQuery<TrailerInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -121,8 +119,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicVideo")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicVideoRemoteSearchResults([FromBody, Required] RemoteSearchQuery<MusicVideoInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicVideo, MusicVideoInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<MusicVideo, MusicVideoInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -138,8 +135,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Series")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetSeriesRemoteSearchResults([FromBody, Required] RemoteSearchQuery<SeriesInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -155,8 +151,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/BoxSet")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBoxSetRemoteSearchResults([FromBody, Required] RemoteSearchQuery<BoxSetInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -172,8 +167,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicArtist")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicArtistRemoteSearchResults([FromBody, Required] RemoteSearchQuery<ArtistInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -189,8 +183,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/MusicAlbum")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicAlbumRemoteSearchResults([FromBody, Required] RemoteSearchQuery<AlbumInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -207,8 +200,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetPersonRemoteSearchResults([FromBody, Required] RemoteSearchQuery<PersonLookupInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -224,8 +216,7 @@ public class ItemLookupController : BaseJellyfinApiController
     [HttpPost("Items/RemoteSearch/Book")]
     public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBookRemoteSearchResults([FromBody, Required] RemoteSearchQuery<BookInfo> query)
     {
-        var results = await _providerManager.GetRemoteSearchResults<Book, BookInfo>(query, CancellationToken.None)
-            .ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Book, BookInfo>(query, CancellationToken.None);
         return Ok(results);
     }
 
@@ -275,7 +266,7 @@ public class ItemLookupController : BaseJellyfinApiController
                 SearchResult = searchResult,
                 RemoveOldMetadata = true
             },
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }

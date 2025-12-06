@@ -56,8 +56,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             // Response stream is disposed manually.
             var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
-                .ConfigureAwait(false);
+                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None);
 
             var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -66,7 +65,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
-            var res = await taskCompletionSource.Task.ConfigureAwait(false);
+            var res = await taskCompletionSource.Task;
             if (!res)
             {
                 Logger.LogWarning("Zero bytes copied from stream {StreamType} to {FilePath} but no exception raised", GetType().Name, TempFilePath);
@@ -84,8 +83,8 @@ namespace Jellyfin.LiveTv.TunerHosts
                         Logger.LogInformation("Beginning {StreamType} stream to {FilePath}", GetType().Name, TempFilePath);
                         using (response)
                         {
-                            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                            await using (stream.ConfigureAwait(false))
+                            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                            await using (stream)
                             {
                                 var fileStream = new FileStream(
                                     TempFilePath,
@@ -95,14 +94,14 @@ namespace Jellyfin.LiveTv.TunerHosts
                                     IODefaults.FileStreamBufferSize,
                                     FileOptions.Asynchronous);
 
-                                await using (fileStream.ConfigureAwait(false))
+                                await using (fileStream)
                                 {
                                     await StreamHelper.CopyToAsync(
                                         stream,
                                         fileStream,
                                         IODefaults.CopyToBufferSize,
                                         () => Resolve(openTaskCompletionSource),
-                                        cancellationToken).ConfigureAwait(false);
+                                        cancellationToken);
                                 }
                             }
                         }
@@ -121,7 +120,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                     openTaskCompletionSource.TrySetResult(false);
 
                     EnableStreamSharing = false;
-                    await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
+                    await DeleteTempFiles(TempFilePath);
                 },
                 CancellationToken.None);
         }

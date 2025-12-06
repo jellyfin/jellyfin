@@ -38,8 +38,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
                         _localizationManager.GetLocalizedString("PluginUninstalledWithName"),
                         eventArgs.Argument.Name),
                     NotificationType.PluginUninstalled.ToString(),
-                    Guid.Empty))
-                .ConfigureAwait(false);
+                    Guid.Empty));
         }
     }
 }

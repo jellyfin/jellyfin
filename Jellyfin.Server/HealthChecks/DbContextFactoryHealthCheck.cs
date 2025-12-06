@@ -29,10 +29,10 @@ public class DbContextFactoryHealthCheck<TContext> : IHealthCheck
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
-            if (await dbContext.Database.CanConnectAsync(cancellationToken).ConfigureAwait(false))
+            if (await dbContext.Database.CanConnectAsync(cancellationToken))
             {
                 return HealthCheckResult.Healthy();
             }

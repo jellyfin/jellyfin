@@ -147,13 +147,12 @@ namespace MediaBrowser.Providers.Manager
                 Item = itemOfType
             };
 
-            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType)
-                .ConfigureAwait(false);
+            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType);
             updateType |= beforeSaveResult;
 
             if (isFirstRefresh)
             {
-                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken);
             }
 
             // Next run metadata providers
@@ -182,7 +181,7 @@ namespace MediaBrowser.Providers.Manager
                     id.IsAutomated = refreshOptions.IsAutomated;
 
                     var hasMetadataSavers = ProviderManager.GetMetadataSavers(item, libraryOptions).Any();
-                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, hasMetadataSavers, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, hasMetadataSavers, cancellationToken);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -199,7 +198,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var result = await ImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
+                    var result = await ImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -215,9 +214,9 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= item.OnMetadataChanged();
             }
 
-            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
+            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken);
 
-            await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+            await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken);
 
             return updateType;
 
@@ -247,7 +246,7 @@ namespace MediaBrowser.Providers.Manager
                     }
 
                     // Save to database
-                    await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
+                    await SaveItemAsync(metadataResult, updateType, cancellationToken);
                 }
 
                 return updateType;
@@ -277,12 +276,12 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
+            await result.Item.UpdateToRepositoryAsync(reason, cancellationToken);
             if (result.Item.SupportsPeople && result.People is not null)
             {
                 var baseItem = result.Item;
 
-                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken);
             }
         }
 
@@ -307,7 +306,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (updateType == ItemUpdateType.None)
             {
-                if (!await ItemRepository.ItemExistsAsync(item.Id).ConfigureAwait(false))
+                if (!await ItemRepository.ItemExistsAsync(item.Id))
                 {
                     return ItemUpdateType.MetadataImport;
                 }
@@ -733,7 +732,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in customProviders.Where(i => i is IPreRefreshProvider))
             {
-                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken);
             }
 
             if (item.IsLocked)
@@ -765,7 +764,7 @@ namespace MediaBrowser.Providers.Manager
 
                     try
                     {
-                        var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+                        var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken);
 
                         if (localItem.HasMetadata)
                         {
@@ -779,7 +778,7 @@ namespace MediaBrowser.Providers.Manager
                                         continue;
                                     }
 
-                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
+                                    await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken);
                                     refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
 
                                     // remember imagetype that has just been downloaded
@@ -826,8 +825,7 @@ namespace MediaBrowser.Providers.Manager
             var isLocalLocked = temp.Item.IsLocked;
             if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
-                    .ConfigureAwait(false);
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken);
 
                 refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
@@ -860,7 +858,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
-                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken);
             }
 
             return refreshResult;
@@ -872,7 +870,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                refreshResult.UpdateType |= await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType |= await provider.FetchAsync(item, options, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -906,7 +904,7 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var result = await provider.GetMetadata(id, cancellationToken).ConfigureAwait(false);
+                    var result = await provider.GetMetadata(id, cancellationToken);
 
                     if (result.HasMetadata)
                     {

@@ -86,7 +86,7 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
-        var existingTrickplayResolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
+        var existingTrickplayResolutions = await GetTrickplayResolutions(video.Id);
         foreach (var resolution in existingTrickplayResolutions)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -144,8 +144,8 @@ public class TrickplayManager : ITrickplayManager
             return;
         }
 
-        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
             var saveWithMedia = libraryOptions.SaveTrickplayWithMedia;
             var trickplayDirectory = _pathManager.GetTrickplayDirectory(video, saveWithMedia);
@@ -166,8 +166,7 @@ public class TrickplayManager : ITrickplayManager
 
                 await dbContext.TrickplayInfos
                         .Where(i => i.ItemId.Equals(video.Id))
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
+                        .ExecuteDeleteAsync(cancellationToken);
 
                 if (!replace)
                 {
@@ -192,7 +191,7 @@ public class TrickplayManager : ITrickplayManager
                     width,
                     options,
                     saveWithMedia,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
             }
 
             // Cleanup old trickplay files
@@ -202,8 +201,7 @@ public class TrickplayManager : ITrickplayManager
                 var trickplayInfos = await dbContext.TrickplayInfos
                         .AsNoTracking()
                         .Where(i => i.ItemId.Equals(video.Id))
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
+                        .ToListAsync(cancellationToken);
                 var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
                 var foldersToRemove = existingFolders.Except(expectedFolders);
                 foreach (var folder in foldersToRemove)
@@ -232,7 +230,7 @@ public class TrickplayManager : ITrickplayManager
     {
         var imgTempDir = string.Empty;
 
-        using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+        using (await _resourcePool.LockAsync(cancellationToken))
         {
             try
             {
@@ -281,7 +279,7 @@ public class TrickplayManager : ITrickplayManager
                     var existingFiles = outputDir.GetFiles();
                     if (existingFiles.Length > 0)
                     {
-                        var hasTrickplayResolution = await HasTrickplayResolutionAsync(video.Id, actualWidth).ConfigureAwait(false);
+                        var hasTrickplayResolution = await HasTrickplayResolutionAsync(video.Id, actualWidth);
                         if (hasTrickplayResolution)
                         {
                             _logger.LogDebug("Found existing trickplay files for {ItemId}.", video.Id);
@@ -309,7 +307,7 @@ public class TrickplayManager : ITrickplayManager
                             localTrickplayInfo.Bandwidth = Math.Max(localTrickplayInfo.Bandwidth, bitrate);
                         }
 
-                        await SaveTrickplayInfo(localTrickplayInfo).ConfigureAwait(false);
+                        await SaveTrickplayInfo(localTrickplayInfo);
 
                         _logger.LogDebug("Imported existing trickplay files for {ItemId}.", video.Id);
                         return;
@@ -335,7 +333,7 @@ public class TrickplayManager : ITrickplayManager
                     options.ProcessPriority,
                     options.EnableKeyFrameOnlyExtraction,
                     _encodingHelper,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 if (string.IsNullOrEmpty(imgTempDir) || !Directory.Exists(imgTempDir))
                 {
@@ -356,7 +354,7 @@ public class TrickplayManager : ITrickplayManager
                     if (trickplayInfo is not null)
                     {
                         trickplayInfo.ItemId = video.Id;
-                        await SaveTrickplayInfo(trickplayInfo).ConfigureAwait(false);
+                        await SaveTrickplayInfo(trickplayInfo);
 
                         _logger.LogInformation("Finished creation of trickplay files for {0}", mediaPath);
                     }
@@ -496,14 +494,13 @@ public class TrickplayManager : ITrickplayManager
     {
         var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
 
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync();
+        await using (dbContext)
         {
             var trickplayInfos = await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .Where(i => i.ItemId.Equals(itemId))
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .ToListAsync();
 
             foreach (var info in trickplayInfos)
             {
@@ -519,16 +516,15 @@ public class TrickplayManager : ITrickplayManager
     {
         IReadOnlyList<TrickplayInfo> trickplayItems;
 
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync();
+        await using (dbContext)
         {
             trickplayItems = await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .OrderBy(i => i.ItemId)
                 .Skip(offset)
                 .Take(limit)
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .ToListAsync();
         }
 
         return trickplayItems;
@@ -537,10 +533,10 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task SaveTrickplayInfo(TrickplayInfo info)
     {
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync();
+        await using (dbContext)
         {
-            var oldInfo = await dbContext.TrickplayInfos.FindAsync(info.ItemId, info.Width).ConfigureAwait(false);
+            var oldInfo = await dbContext.TrickplayInfos.FindAsync(info.ItemId, info.Width);
             if (oldInfo is not null)
             {
                 dbContext.TrickplayInfos.Remove(oldInfo);
@@ -548,15 +544,15 @@ public class TrickplayManager : ITrickplayManager
 
             dbContext.Add(info);
 
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            await dbContext.SaveChangesAsync();
         }
     }
 
     /// <inheritdoc />
     public async Task DeleteTrickplayDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await dbContext.TrickplayInfos.Where(i => i.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await dbContext.TrickplayInfos.Where(i => i.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -570,7 +566,7 @@ public class TrickplayManager : ITrickplayManager
                 continue;
             }
 
-            var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
+            var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId);
 
             if (trickplayResolutions.Count > 0)
             {
@@ -584,7 +580,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task<string> GetTrickplayTilePathAsync(BaseItem item, int width, int index, bool saveWithMedia)
     {
-        var trickplayResolutions = await GetTrickplayResolutions(item.Id).ConfigureAwait(false);
+        var trickplayResolutions = await GetTrickplayResolutions(item.Id);
         if (trickplayResolutions is not null && trickplayResolutions.TryGetValue(width, out var trickplayInfo))
         {
             return Path.Combine(GetTrickplayDirectory(item, trickplayInfo.TileWidth, trickplayInfo.TileHeight, width, saveWithMedia), index + ".jpg");
@@ -596,7 +592,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task<string?> GetHlsPlaylist(Guid itemId, int width, string? apiKey)
     {
-        var trickplayResolutions = await GetTrickplayResolutions(itemId).ConfigureAwait(false);
+        var trickplayResolutions = await GetTrickplayResolutions(itemId);
         if (trickplayResolutions is not null && trickplayResolutions.TryGetValue(width, out var trickplayInfo))
         {
             var builder = new StringBuilder(128);
@@ -682,14 +678,13 @@ public class TrickplayManager : ITrickplayManager
 
     private async Task<bool> HasTrickplayResolutionAsync(Guid itemId, int width)
     {
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync();
+        await using (dbContext)
         {
             return await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .Where(i => i.ItemId.Equals(itemId))
-                .AnyAsync(i => i.Width == width)
-                .ConfigureAwait(false);
+                .AnyAsync(i => i.Width == width);
         }
     }
 }

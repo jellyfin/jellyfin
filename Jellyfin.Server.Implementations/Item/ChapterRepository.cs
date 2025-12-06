@@ -86,11 +86,11 @@ public class ChapterRepository : IChapterRepository
     /// <inheritdoc />
     public async Task DeleteChaptersAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
-            await dbContext.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.Chapters.Where(c => c.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 

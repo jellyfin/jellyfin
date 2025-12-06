@@ -59,7 +59,7 @@ public class TranscodingThrottler : IDisposable
             try
             {
                 var resumeKey = _mediaEncoder.IsPkeyPauseSupported ? "u" : Environment.NewLine;
-                await _job.Process!.StandardInput.WriteAsync(resumeKey).ConfigureAwait(false);
+                await _job.Process!.StandardInput.WriteAsync(resumeKey);
                 _isPaused = false;
             }
             catch (Exception ex)
@@ -76,7 +76,7 @@ public class TranscodingThrottler : IDisposable
     public async Task Stop()
     {
         DisposeTimer();
-        await UnpauseTranscoding().ConfigureAwait(false);
+        await UnpauseTranscoding();
     }
 
     /// <summary>
@@ -117,11 +117,11 @@ public class TranscodingThrottler : IDisposable
 
         if (options.EnableThrottling && IsThrottleAllowed(_job, Math.Max(options.ThrottleDelaySeconds, 60)))
         {
-            await PauseTranscoding().ConfigureAwait(false);
+            await PauseTranscoding();
         }
         else
         {
-            await UnpauseTranscoding().ConfigureAwait(false);
+            await UnpauseTranscoding();
         }
     }
 
@@ -135,7 +135,7 @@ public class TranscodingThrottler : IDisposable
 
             try
             {
-                await _job.Process!.StandardInput.WriteAsync(pauseKey).ConfigureAwait(false);
+                await _job.Process!.StandardInput.WriteAsync(pauseKey);
                 _isPaused = true;
             }
             catch (Exception ex)

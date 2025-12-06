@@ -92,7 +92,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
+        await RefreshItemOnDemandIfNeeded(item);
 
         var dtoOptions = new DtoOptions();
 
@@ -179,7 +179,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
+        var items = await _libraryManager.GetIntros(item, user);
         var dtoOptions = new DtoOptions();
         var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
@@ -645,7 +645,7 @@ public class UserLibraryController : BaseJellyfinApiController
                     ForceSave = performFullRefresh
                 };
 
-                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+                await item.RefreshMetadata(options, CancellationToken.None);
             }
         }
     }

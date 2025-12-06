@@ -92,7 +92,7 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
                           .WithPartitionProgress((partition) => _logger.LogInformation("Checked: {Count} - Moved: {Items} - Time: {Time}", partition * Limit, itemCount, sw.Elapsed))
                           .PartitionEagerAsync(Limit, cancellationToken)
                           .WithCancellation(cancellationToken)
-                          .ConfigureAwait(false))
+                          )
         {
             if (MoveSubtitleAndAttachmentFiles(result.Id, result.Path, result.MediaStreams, context))
             {

@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             if (tmdbId > 0)
             {
-                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, searchInfo.MetadataCountryCode), searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, searchInfo.MetadataCountryCode), searchInfo.MetadataCountryCode, cancellationToken);
 
                 if (collection is null)
                 {
@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 return new[] { result };
             }
 
-            var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, searchInfo.MetadataCountryCode, cancellationToken);
 
             var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)
@@ -103,7 +103,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, info.MetadataCountryCode, cancellationToken);
 
                 if (searchResults is not null && searchResults.Count > 0)
                 {
@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             if (tmdbId > 0)
             {
-                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken);
 
                 if (collection is not null)
                 {

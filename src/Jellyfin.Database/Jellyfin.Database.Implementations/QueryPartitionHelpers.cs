@@ -86,7 +86,7 @@ public static class QueryPartitionHelpers
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionAsync<TEntity>(this ProgressablePartitionReporting<TEntity> partitionInfo, int partitionSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var item in partitionInfo.Source.PartitionAsync(partitionSize, partitionInfo, cancellationToken).ConfigureAwait(false))
+        await foreach (var item in partitionInfo.Source.PartitionAsync(partitionSize, partitionInfo, cancellationToken))
         {
             yield return item;
         }
@@ -102,7 +102,7 @@ public static class QueryPartitionHelpers
     /// <returns>A enumerable representing the whole of the query.</returns>
     public static async IAsyncEnumerable<TEntity> PartitionEagerAsync<TEntity>(this ProgressablePartitionReporting<TEntity> partitionInfo, int partitionSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var item in partitionInfo.Source.PartitionEagerAsync(partitionSize, partitionInfo, cancellationToken).ConfigureAwait(false))
+        await foreach (var item in partitionInfo.Source.PartitionEagerAsync(partitionSize, partitionInfo, cancellationToken))
         {
             yield return item;
         }
@@ -134,7 +134,7 @@ public static class QueryPartitionHelpers
                 .Take(partitionSize)
                 .AsAsyncEnumerable()
                 .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
+                )
             {
                 progressablePartition?.BeginItem(item, iterator, itemCounter);
                 yield return item;
@@ -176,7 +176,7 @@ public static class QueryPartitionHelpers
                     .Take(partitionSize)
                     .AsAsyncEnumerable()
                     .WithCancellation(cancellationToken)
-                    .ConfigureAwait(false))
+                    )
                 {
                     items[itemCounter++] = item;
                 }
@@ -207,7 +207,7 @@ public static class QueryPartitionHelpers
     public static async IAsyncEnumerable<(TEntity Item, int Index)> WithIndex<TEntity>(this IAsyncEnumerable<TEntity> query)
     {
         var index = 0;
-        await foreach (var item in query.ConfigureAwait(false))
+        await foreach (var item in query)
         {
             yield return (item, index++);
         }

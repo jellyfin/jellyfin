@@ -6,6 +6,7 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -49,10 +50,10 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIP, int tuner, CancellationToken cancellationToken)
         {
             using var client = new TcpClient();
-            await client.ConnectAsync(remoteIP, HdHomeRunPort, cancellationToken).ConfigureAwait(false);
+            await client.ConnectAsync(remoteIP, HdHomeRunPort, cancellationToken);
 
             using var stream = client.GetStream();
-            return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
+            return await CheckTunerAvailability(stream, tuner, cancellationToken);
         }
 
         private static async Task<bool> CheckTunerAvailability(NetworkStream stream, int tuner, CancellationToken cancellationToken)
@@ -61,9 +62,9 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             try
             {
                 var msgLen = WriteGetMessage(buffer, tuner, "lockkey");
-                await stream.WriteAsync(buffer.AsMemory(0, msgLen), cancellationToken).ConfigureAwait(false);
+                await stream.WriteAsync(buffer.AsMemory(0, msgLen), cancellationToken);
 
-                int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                int receivedBytes = await stream.ReadAsync(buffer, cancellationToken);
 
                 return VerifyReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), "none");
             }
@@ -78,7 +79,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             _remoteEndPoint = new IPEndPoint(remoteIP, HdHomeRunPort);
 
             _tcpClient = new TcpClient();
-            await _tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
+            await _tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken);
 
             if (!_lockkey.HasValue)
             {
@@ -93,7 +94,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             {
                 for (int i = 0; i < numTuners; ++i)
                 {
-                    if (!await CheckTunerAvailability(stream, i, cancellationToken).ConfigureAwait(false))
+                    if (!await CheckTunerAvailability(stream, i, cancellationToken))
                     {
                         continue;
                     }
@@ -101,8 +102,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     _activeTuner = i;
                     var lockKeyString = string.Format(CultureInfo.InvariantCulture, "{0:d}", lockKeyValue);
                     var lockkeyMsgLen = WriteSetMessage(buffer, i, "lockkey", lockKeyString, null);
-                    await stream.WriteAsync(buffer.AsMemory(0, lockkeyMsgLen), cancellationToken).ConfigureAwait(false);
-                    int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    await stream.WriteAsync(buffer.AsMemory(0, lockkeyMsgLen), cancellationToken);
+                    int receivedBytes = await stream.ReadAsync(buffer, cancellationToken);
 
                     // parse response to make sure it worked
                     if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
@@ -113,26 +114,26 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     foreach (var command in commands.GetCommands())
                     {
                         var channelMsgLen = WriteSetMessage(buffer, i, command.CommandName, command.CommandValue, lockKeyValue);
-                        await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
-                        receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                        await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken);
+                        receivedBytes = await stream.ReadAsync(buffer, cancellationToken);
 
                         // parse response to make sure it worked
                         if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                         {
-                            await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
+                            await ReleaseLockkey(_tcpClient, lockKeyValue);
                         }
                     }
 
                     var targetValue = string.Format(CultureInfo.InvariantCulture, "rtp://{0}:{1}", localIP, localPort);
                     var targetMsgLen = WriteSetMessage(buffer, i, "target", targetValue, lockKeyValue);
 
-                    await stream.WriteAsync(buffer.AsMemory(0, targetMsgLen), cancellationToken).ConfigureAwait(false);
-                    receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    await stream.WriteAsync(buffer.AsMemory(0, targetMsgLen), cancellationToken);
+                    receivedBytes = await stream.ReadAsync(buffer, cancellationToken);
 
                     // parse response to make sure it worked
                     if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                     {
-                        await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
+                        await ReleaseLockkey(_tcpClient, lockKeyValue);
                         continue;
                     }
 
@@ -156,7 +157,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             }
 
             using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
+            await tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken);
 
             using var stream = tcpClient.GetStream();
             var commandList = commands.GetCommands();
@@ -166,8 +167,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 foreach (var command in commandList)
                 {
                     var channelMsgLen = WriteSetMessage(buffer, _activeTuner, command.CommandName, command.CommandValue, _lockkey);
-                    await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
-                    int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken);
+                    int receivedBytes = await stream.ReadAsync(buffer, cancellationToken);
 
                     // parse response to make sure it worked
                     if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
@@ -202,13 +203,23 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             try
             {
                 var releaseTargetLen = WriteSetMessage(buffer, _activeTuner, "target", "none", lockKeyValue);
-                await stream.WriteAsync(buffer.AsMemory(0, releaseTargetLen)).ConfigureAwait(false);
+                await stream.WriteAsync(buffer.AsMemory(0, releaseTargetLen));
 
-                await stream.ReadAsync(buffer).ConfigureAwait(false);
+                var bytesRead = await stream.ReadAsync(buffer);
+                if (bytesRead == 0)
+                {
+                    throw new IOException("Unexpected end of stream while waiting for target release response.");
+                }
+
                 var releaseKeyMsgLen = WriteSetMessage(buffer, _activeTuner, "lockkey", "none", lockKeyValue);
                 _lockkey = null;
-                await stream.WriteAsync(buffer.AsMemory(0, releaseKeyMsgLen)).ConfigureAwait(false);
-                await stream.ReadAsync(buffer).ConfigureAwait(false);
+                await stream.WriteAsync(buffer.AsMemory(0, releaseKeyMsgLen));
+
+                bytesRead = await stream.ReadAsync(buffer);
+                if (bytesRead == 0)
+                {
+                    throw new IOException("Unexpected end of stream while waiting for lockkey release response.");
+                }
             }
             finally
             {

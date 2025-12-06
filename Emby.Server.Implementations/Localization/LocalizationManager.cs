@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Localization
                 using var stream = _assembly.GetManifestResourceStream(resource);
                 if (stream is not null)
                 {
-                    var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions).ConfigureAwait(false)
+                    var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions)
                                 ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
 
                     var dict = new Dictionary<string, ParentalRatingScore?>();
@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            await LoadCultures().ConfigureAwait(false);
+            await LoadCultures();
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Localization
             else
             {
                 using var reader = new StreamReader(stream);
-                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+                await foreach (var line in reader.ReadAllLinesAsync())
                 {
                     if (string.IsNullOrWhiteSpace(line))
                     {
@@ -406,8 +406,8 @@ namespace Emby.Server.Implementations.Localization
 
             var namespaceName = GetType().Namespace + "." + prefix;
 
-            await CopyInto(dictionary, namespaceName + "." + baseFilename).ConfigureAwait(false);
-            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture)).ConfigureAwait(false);
+            await CopyInto(dictionary, namespaceName + "." + baseFilename);
+            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture));
 
             return dictionary;
         }
@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.Localization
                 return;
             }
 
-            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false) ?? throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
+            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions) ?? throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
             foreach (var key in dict.Keys)
             {
                 dictionary[key] = dict[key];

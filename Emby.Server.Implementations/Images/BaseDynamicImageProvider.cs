@@ -63,13 +63,13 @@ namespace Emby.Server.Implementations.Images
 
             if (SupportedImages.Contains(ImageType.Primary))
             {
-                var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
+                var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken);
                 updateType |= primaryResult;
             }
 
             if (SupportedImages.Contains(ImageType.Thumb))
             {
-                var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
+                var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken);
                 updateType |= thumbResult;
             }
 
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.Images
                 mimeType = MediaTypeNames.Image.Png;
             }
 
-            await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken);
 
             return ItemUpdateType.ImageUpdate;
         }

@@ -241,7 +241,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
             _foldersRemovedFrom.Clear();
         }
 
-        await SendChangeNotifications(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, CancellationToken.None).ConfigureAwait(false);
+        await SendChangeNotifications(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
     }
 
     private async Task SendChangeNotifications(
@@ -283,8 +283,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
                         new List<Guid> { userId },
                         SessionMessageType.LibraryChanged,
                         info,
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                        cancellationToken);
             }
             catch (Exception ex)
             {

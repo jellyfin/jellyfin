@@ -75,10 +75,10 @@ namespace Jellyfin.Server.Implementations.Devices
         public async Task UpdateDeviceOptions(string deviceId, string? deviceName)
         {
             DeviceOptions? deviceOptions;
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
-                deviceOptions = await dbContext.DeviceOptions.FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
+                deviceOptions = await dbContext.DeviceOptions.FirstOrDefaultAsync(dev => dev.DeviceId == deviceId);
                 if (deviceOptions is null)
                 {
                     deviceOptions = new DeviceOptions(deviceId);
@@ -86,7 +86,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 }
 
                 deviceOptions.CustomName = deviceName;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
 
             _deviceOptions[deviceId] = deviceOptions;
@@ -97,11 +97,11 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<Device> CreateDevice(Device device)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.Devices.Add(device);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
                 _devices.TryAdd(device.Id, device);
             }
 
@@ -210,22 +210,22 @@ namespace Jellyfin.Server.Implementations.Devices
         public async Task DeleteDevice(Device device)
         {
             _devices.TryRemove(device.Id, out _);
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.Devices.Remove(device);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
         }
 
         /// <inheritdoc />
         public async Task UpdateDevice(Device device)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.Devices.Update(device);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
 
             _devices[device.Id] = device;

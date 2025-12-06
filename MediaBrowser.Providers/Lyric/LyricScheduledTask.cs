@@ -124,8 +124,7 @@ public class LyricScheduledTask : IScheduledTask
                                         DisabledLyricFetchers = libraryOptions.DisabledLyricFetchers,
                                         LyricFetcherOrder = libraryOptions.LyricFetcherOrder
                                     },
-                                    cancellationToken)
-                                .ConfigureAwait(false);
+                                    cancellationToken);
 
                             if (lyricResults.Count != 0)
                             {
@@ -134,8 +133,7 @@ public class LyricScheduledTask : IScheduledTask
                                         audioItem,
                                         libraryOptions,
                                         lyricResults[0].Id,
-                                        cancellationToken)
-                                    .ConfigureAwait(false);
+                                        cancellationToken);
                             }
                         }
                     }

@@ -65,7 +65,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var collectionsFolder = await _collectionManager.GetCollectionsFolder(false).ConfigureAwait(false);
+        var collectionsFolder = await _collectionManager.GetCollectionsFolder(false);
         if (collectionsFolder is null)
         {
             _logger.LogDebug("There is no collections folder to be found");
@@ -80,7 +80,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                 var collection = collections[index];
                 _logger.LogDebug("Checking boxset {CollectionName}", collection.Name);
 
-                await CleanupLinkedChildrenAsync(collection, cancellationToken).ConfigureAwait(false);
+                await CleanupLinkedChildrenAsync(collection, cancellationToken);
                 progress.Report(50D / collections.Length * (index + 1));
             }
         }
@@ -100,7 +100,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             var playlist = playlists[index];
             _logger.LogDebug("Checking playlist {PlaylistName}", playlist.Name);
 
-            await CleanupLinkedChildrenAsync(playlist, cancellationToken).ConfigureAwait(false);
+            await CleanupLinkedChildrenAsync(playlist, cancellationToken);
             progress.Report(50D / playlists.Length * (index + 1));
         }
     }
@@ -123,8 +123,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
-            await _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
-            await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            await _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit);
+            await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken);
         }
     }
 

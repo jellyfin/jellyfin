@@ -67,8 +67,7 @@ public class VideoAttachmentsController : BaseJellyfinApiController
                     item,
                     mediaSourceId,
                     index,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+                    CancellationToken.None);
 
             var contentType = string.IsNullOrWhiteSpace(attachment.MimeType)
                 ? MediaTypeNames.Application.Octet

@@ -270,7 +270,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
 
         _taskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
 
-        await Task.Delay(1000).ConfigureAwait(false);
+        await Task.Delay(1000);
 
         trigger.Start(LastExecutionResult, _logger, Name, false);
     }
@@ -283,13 +283,13 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
     /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
     public async Task Execute(TaskOptions options)
     {
-        var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
+        var task = Task.Run(async () => await ExecuteInternal(options));
 
         _currentTask = task;
 
         try
         {
-            await task.ConfigureAwait(false);
+            await task;
         }
         finally
         {
@@ -328,7 +328,7 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
                 CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
             }
 
-            await ScheduledTask.ExecuteAsync(progress, CurrentCancellationTokenSource.Token).ConfigureAwait(false);
+            await ScheduledTask.ExecuteAsync(progress, CurrentCancellationTokenSource.Token);
 
             status = TaskCompletionStatus.Completed;
         }

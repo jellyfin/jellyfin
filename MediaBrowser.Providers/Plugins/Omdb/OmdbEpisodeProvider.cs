@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seriesImdbId,
                     info.MetadataLanguage,
                     info.MetadataCountryCode,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
             }
 
             return result;

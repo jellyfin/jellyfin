@@ -78,7 +78,7 @@ public class PeopleValidator
                     MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
                 };
 
-                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(options, cancellationToken);
             }
             catch (OperationCanceledException)
             {

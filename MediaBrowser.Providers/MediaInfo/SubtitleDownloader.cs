@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     disabledSubtitleFetchers,
                     subtitleFetcherOrder,
                     isAutomated,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
                 if (downloaded)
                 {
@@ -188,13 +188,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                var searchResults = await _subtitleManager.SearchSubtitles(request, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _subtitleManager.SearchSubtitles(request, cancellationToken);
 
                 var result = searchResults.FirstOrDefault();
 
                 if (result is not null)
                 {
-                    await _subtitleManager.DownloadSubtitles(video, result.Id, cancellationToken).ConfigureAwait(false);
+                    await _subtitleManager.DownloadSubtitles(video, result.Id, cancellationToken);
 
                     return true;
                 }

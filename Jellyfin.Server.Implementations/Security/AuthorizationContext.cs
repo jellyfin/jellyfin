@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Implementations.Security
         public async Task<AuthorizationInfo> GetAuthorizationInfo(HttpRequest requestContext)
         {
             var auth = GetAuthorizationDictionary(requestContext);
-            var authInfo = await GetAuthorizationInfoFromDictionary(auth, requestContext.Headers, requestContext.Query).ConfigureAwait(false);
+            var authInfo = await GetAuthorizationInfoFromDictionary(auth, requestContext.Headers, requestContext.Query);
             return authInfo;
         }
 
@@ -64,7 +64,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private async Task<AuthorizationInfo> GetAuthorization(HttpContext httpContext)
         {
-            var authInfo = await GetAuthorizationInfo(httpContext.Request).ConfigureAwait(false);
+            var authInfo = await GetAuthorizationInfo(httpContext.Request);
 
             httpContext.Request.HttpContext.Items["AuthorizationInfo"] = authInfo;
             return authInfo;
@@ -126,8 +126,8 @@ namespace Jellyfin.Server.Implementations.Security
                 return authInfo;
             }
 
-            var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _jellyfinDbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 var device = _deviceManager.GetDevices(
                     new DeviceQuery { AccessToken = token }).Items.FirstOrDefault();
@@ -187,12 +187,12 @@ namespace Jellyfin.Server.Implementations.Security
 
                     if (updateToken)
                     {
-                        await _deviceManager.UpdateDevice(device).ConfigureAwait(false);
+                        await _deviceManager.UpdateDevice(device);
                     }
                 }
                 else
                 {
-                    var key = await dbContext.ApiKeys.FirstOrDefaultAsync(apiKey => apiKey.AccessToken == token).ConfigureAwait(false);
+                    var key = await dbContext.ApiKeys.FirstOrDefaultAsync(apiKey => apiKey.AccessToken == token);
                     if (key is not null)
                     {
                         authInfo.IsAuthenticated = true;

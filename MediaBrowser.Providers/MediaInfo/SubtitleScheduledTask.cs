@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 try
                 {
-                    await DownloadSubtitles(video as Video, options, cancellationToken).ConfigureAwait(false);
+                    await DownloadSubtitles(video as Video, options, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -198,12 +198,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     libraryOptions.DisabledSubtitleFetchers,
                     libraryOptions.SubtitleFetcherOrder,
                     true,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
 
             // Rescan
             if (downloadedLanguages.Count > 0)
             {
-                await video.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                await video.RefreshMetadata(cancellationToken);
                 return false;
             }
 

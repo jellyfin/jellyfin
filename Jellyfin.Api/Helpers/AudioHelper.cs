@@ -96,8 +96,7 @@ public class AudioHelper
                 _encodingHelper,
                 _transcodeManager,
                 transcodingJobType,
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+                cancellationTokenSource.Token);
 
         if (streamingRequest.Static && state.DirectStreamProvider is not null)
         {
@@ -116,7 +115,7 @@ public class AudioHelper
         if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
+            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext);
         }
 
         if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
@@ -152,6 +151,6 @@ public class AudioHelper
             _transcodeManager,
             ffmpegCommandLineArguments,
             transcodingJobType,
-            cancellationTokenSource).ConfigureAwait(false);
+            cancellationTokenSource);
     }
 }

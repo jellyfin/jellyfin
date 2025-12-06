@@ -2539,10 +2539,10 @@ public sealed class BaseItemRepository
     /// <inheritdoc/>
     public async Task<bool> ItemExistsAsync(Guid id)
     {
-        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _dbProvider.CreateDbContextAsync();
+        await using (dbContext)
         {
-            return await dbContext.BaseItems.AnyAsync(f => f.Id == id).ConfigureAwait(false);
+            return await dbContext.BaseItems.AnyAsync(f => f.Id == id);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -92,7 +92,7 @@ public class MediaSegmentExtractionTask : IScheduledTask
                 if (item.IsFileProtocol && File.Exists(item.Path))
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(item);
-                    await _mediaSegmentManager.RunSegmentPluginProviders(item, libraryOptions, false, cancellationToken).ConfigureAwait(false);
+                    await _mediaSegmentManager.RunSegmentPluginProviders(item, libraryOptions, false, cancellationToken);
                 }
 
                 // Update progress

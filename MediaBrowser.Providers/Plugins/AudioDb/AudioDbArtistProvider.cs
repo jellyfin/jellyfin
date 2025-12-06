@@ -63,14 +63,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrWhiteSpace(id))
             {
-                await EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
+                await EnsureArtistInfo(id, cancellationToken);
 
                 var path = GetArtistInfoPath(_config.ApplicationPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
-                await using (jsonStream.ConfigureAwait(false))
+                await using (jsonStream)
                 {
-                    var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken);
 
                     if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
                     {
@@ -143,7 +143,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 return;
             }
 
-            await DownloadArtistInfo(musicBrainzId, cancellationToken).ConfigureAwait(false);
+            await DownloadArtistInfo(musicBrainzId, cancellationToken);
         }
 
         internal async Task DownloadArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var url = BaseUrl + "/artist-mb.php?i=" + musicBrainzId;
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -160,9 +160,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             var fileStreamOptions = AsyncFile.WriteOptions;
             fileStreamOptions.Mode = FileMode.Create;
             var xmlFileStream = new FileStream(path, fileStreamOptions);
-            await using (xmlFileStream.ConfigureAwait(false))
+            await using (xmlFileStream)
             {
-                await response.Content.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+                await response.Content.CopyToAsync(xmlFileStream, cancellationToken);
             }
         }
 

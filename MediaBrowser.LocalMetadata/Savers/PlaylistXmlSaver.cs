@@ -54,7 +54,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return;
             }
 
-            await writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType.ToString()).ConfigureAwait(false);
+            await writer.WriteElementStringAsync(null, "PlaylistMediaType", null, game.PlaylistMediaType.ToString());
         }
 
         /// <inheritdoc />

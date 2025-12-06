@@ -50,10 +50,10 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
             return;
         }
 
-        var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (dbContext.ConfigureAwait(false))
+        var dbContext = await _provider.CreateDbContextAsync(cancellationToken);
+        await using (dbContext)
         {
-            if (!await dbContext.BaseItems.AnyAsync(e => e.Id == BaseItemRepository.PlaceholderId, cancellationToken).ConfigureAwait(false))
+            if (!await dbContext.BaseItems.AnyAsync(e => e.Id == BaseItemRepository.PlaceholderId, cancellationToken))
             {
                 // the placeholder baseitem has been deleted by the librarydb migration so we need to readd it.
                 await dbContext.BaseItems.AddAsync(
@@ -63,9 +63,8 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
                         Type = "PLACEHOLDER",
                         Name = "This is a placeholder item for UserData that has been detacted from its original item"
                     },
-                    cancellationToken)
-                    .ConfigureAwait(false);
-                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
 
             var users = dbContext.Users.AsNoTracking().ToArray();
@@ -112,12 +111,12 @@ internal class MigrateLibraryUserData : IAsyncMigrationRoutine
 
             foreach (var item in importedUserData)
             {
-                await dbContext.UserData.Where(e => e.ItemId == item.Key).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                await dbContext.UserData.Where(e => e.ItemId == item.Key).ExecuteDeleteAsync(cancellationToken);
                 dbContext.UserData.AddRange(item.Value.DistinctBy(e => e.CustomDataKey)); // old userdata can have fucked up duplicates
             }
 
             _logger.LogInformation("Try saving {NewSaved} UserData entries.", dbContext.UserData.Local.Count);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

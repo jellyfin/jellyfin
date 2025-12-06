@@ -56,7 +56,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 return cache;
             }
 
-            var list = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
+            var list = await GetChannelsInternal(tuner, cancellationToken);
             // logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
             if (!string.IsNullOrEmpty(key) && list.Count > 0)
@@ -86,7 +86,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                 try
                 {
-                    var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
+                    var channels = await GetChannels(host, enableCache, cancellationToken);
                     var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
 
                     list.AddRange(newChannels);
@@ -97,9 +97,9 @@ namespace Jellyfin.LiveTv.TunerHosts
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
                             var writeStream = AsyncFile.OpenWrite(channelCacheFile);
-                            await using (writeStream.ConfigureAwait(false))
+                            await using (writeStream)
                             {
-                                await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
+                                await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken);
                             }
                         }
                         catch (IOException)
@@ -116,11 +116,10 @@ namespace Jellyfin.LiveTv.TunerHosts
                         try
                         {
                             var readStream = AsyncFile.OpenRead(channelCacheFile);
-                            await using (readStream.ConfigureAwait(false))
+                            await using (readStream)
                             {
                                 var channels = await JsonSerializer
-                                    .DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
-                                    .ConfigureAwait(false);
+                                    .DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken);
                                 list.AddRange(channels);
                             }
                         }
@@ -148,12 +147,12 @@ namespace Jellyfin.LiveTv.TunerHosts
                 {
                     try
                     {
-                        var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
+                        var channels = await GetChannels(host, true, cancellationToken);
                         var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
                         if (channelInfo is not null)
                         {
-                            return await GetChannelStreamMediaSources(host, channelInfo, cancellationToken).ConfigureAwait(false);
+                            return await GetChannelStreamMediaSources(host, channelInfo, cancellationToken);
                         }
                     }
                     catch (Exception ex)
@@ -185,7 +184,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             {
                 try
                 {
-                    var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
+                    var channels = await GetChannels(host, true, cancellationToken);
                     var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
                     if (channelInfo is not null)
@@ -206,9 +205,9 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                 try
                 {
-                    var liveStream = await GetChannelStream(host, channelInfo, streamId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                    var liveStream = await GetChannelStream(host, channelInfo, streamId, currentLiveStreams, cancellationToken);
                     var startTime = DateTime.UtcNow;
-                    await liveStream.Open(cancellationToken).ConfigureAwait(false);
+                    await liveStream.Open(cancellationToken);
                     var endTime = DateTime.UtcNow;
                     Logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
                     return liveStream;

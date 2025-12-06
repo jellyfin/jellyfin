@@ -87,7 +87,7 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
             _disposed = true;
         }
 
-        await base.DisposeAsyncCore().ConfigureAwait(false);
+        await base.DisposeAsyncCore();
     }
 
     /// <summary>

@@ -56,7 +56,7 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int width,
         [FromQuery] Guid? mediaSourceId)
     {
-        string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken()).ConfigureAwait(false);
+        string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken());
 
         if (string.IsNullOrEmpty(playlist))
         {
@@ -93,7 +93,7 @@ public class TrickplayController : BaseJellyfinApiController
         }
 
         var saveWithMedia = _libraryManager.GetLibraryOptions(item).SaveTrickplayWithMedia;
-        var path = await _trickplayManager.GetTrickplayTilePathAsync(item, width, index, saveWithMedia).ConfigureAwait(false);
+        var path = await _trickplayManager.GetTrickplayTilePathAsync(item, width, index, saveWithMedia);
         if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
         {
             Response.Headers.ContentDisposition = "attachment";

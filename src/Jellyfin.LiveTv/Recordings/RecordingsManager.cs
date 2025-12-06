@@ -210,8 +210,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 try
                 {
                     await _libraryManager
-                        .AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, libraryOptions, true)
-                        .ConfigureAwait(false);
+                        .AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, libraryOptions, true);
                 }
                 catch (Exception ex)
                 {
@@ -236,7 +235,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
             foreach (var path in pathsToRemove)
             {
-                await RemovePathFromLibraryAsync(path).ConfigureAwait(false);
+                await RemovePathFromLibraryAsync(path);
             }
         }
         catch (Exception ex)
@@ -263,7 +262,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 try
                 {
-                    await _libraryManager.RemoveVirtualFolder(virtualFolder.Name, true).ConfigureAwait(false);
+                    await _libraryManager.RemoveVirtualFolder(virtualFolder.Name, true);
                 }
                 catch (Exception ex)
                 {
@@ -286,7 +285,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         if (requiresRefresh)
         {
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
     }
 
@@ -307,7 +306,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         ArgumentNullException.ThrowIfNull(channel);
 
         var timer = recordingInfo.Timer;
-        var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None).ConfigureAwait(false);
+        var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None);
         var recordingPath = GetRecordingPath(timer, remoteMetadata, out var seriesPath);
 
         string? liveStreamId = null;
@@ -315,7 +314,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         try
         {
             var allMediaSources = await _mediaSourceManager
-                .GetPlaybackMediaSources(channel, null, true, false, CancellationToken.None).ConfigureAwait(false);
+                .GetPlaybackMediaSources(channel, null, true, false, CancellationToken.None);
 
             var mediaStreamInfo = allMediaSources[0];
             IDirectStreamProvider? directStreamProvider = null;
@@ -327,7 +326,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                         ItemId = channel.Id,
                         OpenToken = mediaStreamInfo.OpenToken
                     },
-                    CancellationToken.None).ConfigureAwait(false);
+                    CancellationToken.None);
 
                 mediaStreamInfo = liveStreamResponse.Item1.MediaSource;
                 liveStreamId = mediaStreamInfo.LiveStreamId;
@@ -354,11 +353,11 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 timer.Status = RecordingStatus.InProgress;
                 _timerManager.AddOrUpdate(timer, false);
 
-                await _recordingsMetadataManager.SaveRecordingMetadata(timer, recordingPath, seriesPath).ConfigureAwait(false);
-                await CreateRecordingFolders().ConfigureAwait(false);
+                await _recordingsMetadataManager.SaveRecordingMetadata(timer, recordingPath, seriesPath);
+                await CreateRecordingFolders();
 
                 TriggerRefresh(recordingPath);
-                await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
+                await EnforceKeepUpTo(timer, seriesPath);
             }
 
             await recorder.Record(
@@ -367,7 +366,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 recordingPath,
                 duration,
                 OnStarted,
-                recordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
+                recordingInfo.CancellationTokenSource.Token);
 
             recordingStatus = RecordingStatus.Completed;
             _logger.LogInformation("Recording completed: {RecordPath}", recordingPath);
@@ -387,7 +386,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         {
             try
             {
-                await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+                await _mediaSourceManager.CloseLiveStream(liveStreamId);
             }
             catch (Exception ex)
             {
@@ -416,7 +415,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             timer.RecordingPath = recordingPath;
             timer.Status = RecordingStatus.Completed;
             _timerManager.AddOrUpdate(timer, false);
-            await PostProcessRecording(recordingPath).ConfigureAwait(false);
+            await PostProcessRecording(recordingPath);
         }
         else
         {
@@ -446,7 +445,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     {
         if (string.Equals(e.Key, "livetv", StringComparison.OrdinalIgnoreCase))
         {
-            await CreateRecordingFolders().ConfigureAwait(false);
+            await CreateRecordingFolders();
         }
     }
 
@@ -468,7 +467,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
         };
 
-        var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, cancellationToken).ConfigureAwait(false);
+        var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, cancellationToken);
 
         return results.FirstOrDefault();
     }
@@ -672,7 +671,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             return;
         }
 
-        using (await _recordingDeleteSemaphore.LockAsync().ConfigureAwait(false))
+        using (await _recordingDeleteSemaphore.LockAsync())
         {
             if (_disposed)
             {
@@ -826,7 +825,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             process.Start();
-            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            await process.WaitForExitAsync(CancellationToken.None);
 
             _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
         }

@@ -1134,7 +1134,7 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
+                await PerformLibraryValidation(progress, cancellationToken);
             }
             finally
             {
@@ -1146,7 +1146,7 @@ namespace Emby.Server.Implementations.Library
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
             RootFolder.Children = null;
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await RootFolder.RefreshMetadata(cancellationToken);
 
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
@@ -1154,19 +1154,19 @@ namespace Emby.Server.Implementations.Library
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 allowRemoveRoot: removeRoot,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             var rootFolder = GetUserRootFolder();
             rootFolder.Children = null;
 
-            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await rootFolder.RefreshMetadata(cancellationToken);
 
             await rootFolder.ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 allowRemoveRoot: removeRoot,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             // Quickly scan CollectionFolders for changes
             var toDelete = new List<Guid>();
@@ -1179,7 +1179,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    await child.RefreshMetadata(cancellationToken);
                 }
             }
 
@@ -1193,18 +1193,18 @@ namespace Emby.Server.Implementations.Library
         {
             _logger.LogInformation("Validating media library");
 
-            await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
+            await ValidateTopLibraryFolders(cancellationToken);
 
             var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken);
 
             progress.Report(96);
 
             innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
 
-            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
+            await RunPostScanTasks(innerProgress, cancellationToken);
 
             progress.Report(100);
         }
@@ -1243,7 +1243,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
+                    await task.Run(innerProgress, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1801,7 +1801,7 @@ namespace Emby.Server.Implementations.Library
             var tasks = IntroProviders
                 .Select(i => GetIntros(i, item, user));
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = await Task.WhenAll(tasks);
 
             return items
                 .SelectMany(i => i)
@@ -1820,7 +1820,7 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-                return await provider.GetIntros(item, user).ConfigureAwait(false);
+                return await provider.GetIntros(item, user);
             }
             catch (Exception ex)
             {
@@ -2079,7 +2079,7 @@ namespace Emby.Server.Implementations.Library
                     try
                     {
                         var index = item.GetImageIndex(img);
-                        image = await ConvertImageToLocal(item, img, index, true).ConfigureAwait(false);
+                        image = await ConvertImageToLocal(item, img, index, true);
                     }
                     catch (ArgumentException)
                     {
@@ -2154,7 +2154,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var item in items)
             {
                 item.DateLastSaved = DateTime.UtcNow;
-                await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+                await RunMetadataSavers(item, updateReason);
 
                 // Modify again, so saved value is after write time of externally saved metadata
                 item.DateLastSaved = DateTime.UtcNow;
@@ -2205,10 +2205,10 @@ namespace Emby.Server.Implementations.Library
         {
             if (item.IsFileProtocol)
             {
-                await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
+                await ProviderManager.SaveMetadataAsync(item, updateReason);
             }
 
-            await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+            await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
         }
 
         /// <summary>
@@ -2974,7 +2974,7 @@ namespace Emby.Server.Implementations.Library
             {
                 people = people.Where(e => e is not null).ToArray();
                 _peopleRepository.UpdatePeople(item.Id, people);
-                await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+                await SavePeopleMetadataAsync(people, cancellationToken);
             }
         }
 
@@ -2986,9 +2986,9 @@ namespace Emby.Server.Implementations.Library
                 {
                     _logger.LogDebug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
 
-                    await ProviderManager.SaveImage(item, url, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
+                    await ProviderManager.SaveImage(item, url, image.Type, imageIndex, CancellationToken.None);
 
-                    await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+                    await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
 
                     return item.GetImageInfo(image.Type, imageIndex);
                 }
@@ -3009,7 +3009,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // Remove this image to prevent it from retrying over and over
                 item.RemoveImage(image);
-                await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
             }
 
             throw new InvalidOperationException("Unable to convert any images to local");
@@ -3071,7 +3071,7 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
-                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+                await ValidateTopLibraryFolders(CancellationToken.None);
 
                 if (refreshLibrary)
                 {
@@ -3080,7 +3080,7 @@ namespace Emby.Server.Implementations.Library
                 else
                 {
                     // Need to add a delay here or directory watchers may still pick up the changes
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000);
                     LibraryMonitor.Start();
                 }
             }
@@ -3153,7 +3153,7 @@ namespace Emby.Server.Implementations.Library
                         CreateItems([personEntity], null, CancellationToken.None);
                     }
 
-                    await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                    await RunMetadataSavers(personEntity, itemUpdateType);
                     personEntity.DateLastSaved = DateTime.UtcNow;
 
                     CreateItems([personEntity], null, CancellationToken.None);
@@ -3283,14 +3283,14 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+                    await ValidateTopLibraryFolders(CancellationToken.None, true);
 
                     StartScanInBackground();
                 }
                 else
                 {
                     // Need to add a delay here or directory watchers may still pick up the changes
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000);
                     LibraryMonitor.Start();
                 }
             }

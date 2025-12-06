@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\SharedVersion.cs" />
+    <None Include="..\..\..\FodyWeavers.xml" />
+    <None Include="..\..\..\FodyWeavers.xsd" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -24,6 +26,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ConfigureAwait.Fody" PrivateAssets="All" />
+    <PackageReference Include="Fody">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Polly" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">

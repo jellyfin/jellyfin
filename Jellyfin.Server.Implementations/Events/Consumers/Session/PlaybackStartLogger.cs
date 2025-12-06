@@ -69,8 +69,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 user.Id)
             {
                 ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
-            })
-            .ConfigureAwait(false);
+            });
         }
 
         private static string GetItemName(BaseItemDto item)

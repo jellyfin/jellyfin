@@ -51,14 +51,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             if (item.TryGetProviderId(MetadataProvider.MusicBrainzReleaseGroup, out var id))
             {
-                await AudioDbAlbumProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
+                await AudioDbAlbumProvider.Current.EnsureInfo(id, cancellationToken);
 
                 var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
-                await using (jsonStream.ConfigureAwait(false))
+                await using (jsonStream)
                 {
-                    var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken);
 
                     if (obj is not null && obj.album is not null && obj.album.Count > 0)
                     {

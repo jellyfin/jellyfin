@@ -44,9 +44,9 @@ public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
         }
 
         using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await connection.OpenAsync(cancellationToken);
         CheckMigratableVersion(connection);
-        await connection.CloseAsync().ConfigureAwait(false);
+        await connection.CloseAsync();
     }
 
     private static void CheckMigratableVersion(SqliteConnection connection)

@@ -434,14 +434,14 @@ namespace MediaBrowser.Controller.Entities
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken);
 
             if (IsStacked)
             {
                 var tasks = AdditionalParts
                     .Select(i => RefreshMetadataForOwnedVideo(options, true, i, cancellationToken));
 
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                await Task.WhenAll(tasks);
             }
 
             // Must have a parent to have additional parts or alternate versions
@@ -456,7 +456,7 @@ namespace MediaBrowser.Controller.Entities
                     var tasks = LocalAlternateVersions
                         .Select(i => RefreshMetadataForOwnedVideo(options, false, i, cancellationToken));
 
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    await Task.WhenAll(tasks);
                 }
             }
 
@@ -478,7 +478,7 @@ namespace MediaBrowser.Controller.Entities
         /// <inheritdoc />
         public override async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
+            await base.UpdateToRepositoryAsync(updateReason, cancellationToken);
 
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(i => LibraryManager.GetItemById(i))
@@ -495,7 +495,7 @@ namespace MediaBrowser.Controller.Entities
                 item.Genres = Genres;
                 item.ProviderIds = ProviderIds;
 
-                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataDownload, cancellationToken);
             }
         }
 

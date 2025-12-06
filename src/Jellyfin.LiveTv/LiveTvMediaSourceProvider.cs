@@ -75,13 +75,11 @@ namespace Jellyfin.LiveTv
             {
                 if (activeRecordingInfo is not null)
                 {
-                    sources = await _mediaSourceManager.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
-                        .ConfigureAwait(false);
+                    sources = await _mediaSourceManager.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken);
                 }
                 else
                 {
-                    sources = await GetChannelMediaSources(item, cancellationToken)
-                        .ConfigureAwait(false);
+                    sources = await GetChannelMediaSources(item, cancellationToken);
                 }
             }
             catch (NotImplementedException)
@@ -133,7 +131,7 @@ namespace Jellyfin.LiveTv
             var keys = openToken.Split(StreamIdDelimiter, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
 
-            var info = await GetChannelStream(keys[1], mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+            var info = await GetChannelStream(keys[1], mediaSourceId, currentLiveStreams, cancellationToken);
             var liveStream = info.Item2;
 
             return liveStream;
@@ -279,19 +277,19 @@ namespace Jellyfin.LiveTv
 #pragma warning restore CA1859
             if (service is ISupportsDirectStreamProvider supportsManagedStream)
             {
-                liveStream = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                liveStream = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, currentLiveStreams, cancellationToken);
                 info = liveStream.MediaSource;
             }
             else
             {
-                info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
+                info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken);
                 var openedId = info.Id;
                 Func<Task> closeFn = () => service.CloseLiveStream(openedId, CancellationToken.None);
 
                 liveStream = new ExclusiveLiveStream(info, closeFn);
 
                 var startTime = DateTime.UtcNow;
-                await liveStream.Open(cancellationToken).ConfigureAwait(false);
+                await liveStream.Open(cancellationToken);
                 var endTime = DateTime.UtcNow;
                 _logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
             }
@@ -312,7 +310,7 @@ namespace Jellyfin.LiveTv
             var baseItem = (LiveTvChannel)item;
             var service = GetService(baseItem.ServiceName);
 
-            var sources = await service.GetChannelStreamMediaSources(baseItem.ExternalId, cancellationToken).ConfigureAwait(false);
+            var sources = await service.GetChannelStreamMediaSources(baseItem.ExternalId, cancellationToken);
             if (sources.Count == 0)
             {
                 throw new NotImplementedException();

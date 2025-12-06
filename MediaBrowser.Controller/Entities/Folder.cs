@@ -342,7 +342,7 @@ namespace MediaBrowser.Controller.Entities
                     throw new InvalidOperationException("Recursive datastructure detected abort processing this item.");
                 }
 
-                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken);
             }
             finally
             {
@@ -432,12 +432,12 @@ namespace MediaBrowser.Controller.Entities
 
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
-                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken);
                         }
                         else
                         {
                             // metadata is up-to-date; make sure DB has correct images dimensions and hash
-                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
+                            await LibraryManager.UpdateImagesAsync(currentChild);
                         }
 
                         continue;
@@ -510,7 +510,7 @@ namespace MediaBrowser.Controller.Entities
                     validChildrenNeedGeneration = false;
                 }
 
-                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
+                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken);
             }
 
             if (refreshChildMetadata)
@@ -539,7 +539,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (container is not null)
                 {
-                    await RefreshAllMetadataForContainer(container, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                    await RefreshAllMetadataForContainer(container, refreshOptions, innerProgress, cancellationToken);
                 }
                 else
                 {
@@ -549,7 +549,7 @@ namespace MediaBrowser.Controller.Entities
                         validChildren = Children.ToList();
                     }
 
-                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
+                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
                 }
             }
         }
@@ -560,36 +560,36 @@ namespace MediaBrowser.Controller.Entities
                 (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
                 children,
                 progress,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
         }
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (container is Series series)
             {
-                await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                await series.RefreshMetadata(refreshOptions, cancellationToken);
             }
 
-            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken);
         }
 
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (child is IMetadataContainer container)
             {
-                await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+                await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken);
             }
             else
             {
                 if (refreshOptions.RefreshItem(child))
                 {
-                    await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    await child.RefreshMetadata(refreshOptions, cancellationToken);
                 }
 
                 if (recursive && child is Folder folder)
                 {
                     folder.Children = null; // invalidate cached children.
-                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken);
                 }
             }
         }
@@ -608,7 +608,7 @@ namespace MediaBrowser.Controller.Entities
                 (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, false, null, directoryService, cancellationToken),
                 children,
                 progress,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
         }
 
         /// <summary>
@@ -626,8 +626,7 @@ namespace MediaBrowser.Controller.Entities
                     children.ToArray(),
                     task,
                     progress,
-                    cancellationToken)
-                .ConfigureAwait(false);
+                    cancellationToken);
         }
 
         /// <summary>
@@ -1645,7 +1644,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var baseHasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+            var baseHasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken);
 
             return baseHasChanges || changesFound;
         }

@@ -66,7 +66,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken);
             var mediaSource = mediaSources
                 .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
             if (mediaSource is null)
@@ -86,8 +86,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ResourceNotFoundException($"Attachment with stream index {attachmentStreamIndex} can't be extracted for MediaSource {mediaSourceId}");
             }
 
-            var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken)
-                    .ConfigureAwait(false);
+            var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken);
 
             return (mediaAttachment, attachmentStream);
         }
@@ -106,7 +105,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     if (!string.Equals(attachment.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                     {
-                        await ExtractAttachment(inputFile, mediaSource, attachment, cancellationToken).ConfigureAwait(false);
+                        await ExtractAttachment(inputFile, mediaSource, attachment, cancellationToken);
                     }
                 }
             }
@@ -116,7 +115,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     inputFile,
                     mediaSource,
                     false,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken);
             }
         }
 
@@ -131,7 +130,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
             var outputFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
-            using (await _semaphoreLocks.LockAsync(outputFolder, cancellationToken).ConfigureAwait(false))
+            using (await _semaphoreLocks.LockAsync(outputFolder, cancellationToken))
             {
                 var directory = Directory.CreateDirectory(outputFolder);
                 var fileNames = directory.GetFiles("*", SearchOption.TopDirectoryOnly).Select(f => f.Name).ToHashSet();
@@ -171,7 +170,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                     try
                     {
-                        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                        await process.WaitForExitAsync(cancellationToken);
                         exitCode = process.ExitCode;
                     }
                     catch (OperationCanceledException)
@@ -227,8 +226,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaAttachment mediaAttachment,
             CancellationToken cancellationToken)
         {
-            var attachmentPath = await ExtractAttachment(mediaSource.Path, mediaSource, mediaAttachment, cancellationToken)
-                .ConfigureAwait(false);
+            var attachmentPath = await ExtractAttachment(mediaSource.Path, mediaSource, mediaAttachment, cancellationToken);
             return AsyncFile.OpenRead(attachmentPath);
         }
 
@@ -239,7 +237,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             CancellationToken cancellationToken)
         {
             var attachmentFolderPath = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
-            using (await _semaphoreLocks.LockAsync(attachmentFolderPath, cancellationToken).ConfigureAwait(false))
+            using (await _semaphoreLocks.LockAsync(attachmentFolderPath, cancellationToken))
             {
                 var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? mediaAttachment.Index.ToString(CultureInfo.InvariantCulture));
                 if (!File.Exists(attachmentPath))
@@ -248,7 +246,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         mediaAttachment.Index,
                         attachmentPath,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken);
                 }
 
                 return attachmentPath;
@@ -296,7 +294,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 try
                 {
-                    await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                    await process.WaitForExitAsync(cancellationToken);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)

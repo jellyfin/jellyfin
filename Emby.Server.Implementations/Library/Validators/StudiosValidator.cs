@@ -59,7 +59,7 @@ public class StudiosValidator
             {
                 var item = _libraryManager.GetStudio(name);
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(cancellationToken);
             }
             catch (OperationCanceledException)
             {

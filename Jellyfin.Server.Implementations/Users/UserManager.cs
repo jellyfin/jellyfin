@@ -154,15 +154,15 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 #pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
                 if (await dbContext.Users
                         .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && !u.Id.Equals(user.Id))
-                        .ConfigureAwait(false))
+                        )
                 {
                     throw new ArgumentException(string.Format(
                         CultureInfo.InvariantCulture,
@@ -174,29 +174,29 @@ namespace Jellyfin.Server.Implementations.Users
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                 user.Username = newName;
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                await UpdateUserInternalAsync(dbContext, user);
             }
 
             var eventArgs = new UserUpdatedEventArgs(user);
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            await _eventManager.PublishAsync(eventArgs);
             OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                await UpdateUserInternalAsync(dbContext, user);
             }
         }
 
         internal async Task<User> CreateUserInternalAsync(string name, JellyfinDbContext dbContext)
         {
             // TODO: Remove after user item data is migrated.
-            var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
-                ? await dbContext.Users.AsQueryable().Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
+            var max = await dbContext.Users.AsQueryable().AnyAsync()
+                ? await dbContext.Users.AsQueryable().Select(u => u.InternalId).MaxAsync()
                 : 0;
 
             var user = new User(
@@ -227,17 +227,17 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             User newUser;
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
-                newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
+                newUser = await CreateUserInternalAsync(name, dbContext);
 
                 dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
                 _users.Add(newUser.Id, newUser);
             }
 
-            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser));
 
             return newUser;
         }
@@ -269,17 +269,17 @@ namespace Jellyfin.Server.Implementations.Users
                     nameof(userId));
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.Users.Attach(user);
                 dbContext.Users.Remove(user);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
 
             _users.Remove(userId);
 
-            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new UserDeletedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -297,10 +297,10 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
             }
 
-            await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
+            await GetAuthenticationProvider(user).ChangePassword(user, newPassword);
+            await UpdateUserAsync(user);
 
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user));
         }
 
         /// <inheritdoc/>
@@ -401,8 +401,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            var authResult = await AuthenticateLocalUser(username, password, user)
-                .ConfigureAwait(false);
+            var authResult = await AuthenticateLocalUser(username, password, user);
             var authenticationProvider = authResult.AuthenticationProvider;
             var success = authResult.Success;
 
@@ -423,7 +422,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
                     {
-                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
+                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy());
                     }
                 }
             }
@@ -435,7 +434,7 @@ namespace Jellyfin.Server.Implementations.Users
                 if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
-                    await UpdateUserAsync(user).ConfigureAwait(false);
+                    await UpdateUserAsync(user);
                 }
             }
 
@@ -486,12 +485,12 @@ namespace Jellyfin.Server.Implementations.Users
                 }
 
                 user.InvalidLoginAttemptCount = 0;
-                await UpdateUserAsync(user).ConfigureAwait(false);
+                await UpdateUserAsync(user);
                 _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
             }
             else
             {
-                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
+                await IncrementInvalidLoginAttemptCount(user);
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
                     user.Username,
@@ -508,12 +507,11 @@ namespace Jellyfin.Server.Implementations.Users
             var passwordResetProvider = GetPasswordResetProvider(user);
 
             var result = await passwordResetProvider
-                .StartForgotPasswordProcess(user, enteredUsername, isInNetwork)
-                .ConfigureAwait(false);
+                .StartForgotPasswordProcess(user, enteredUsername, isInNetwork);
 
             if (user is not null && isInNetwork)
             {
-                await UpdateUserAsync(user).ConfigureAwait(false);
+                await UpdateUserAsync(user);
             }
 
             return result;
@@ -524,7 +522,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             foreach (var provider in _passwordResetProviders)
             {
-                var result = await provider.RedeemPasswordResetPin(pin).ConfigureAwait(false);
+                var result = await provider.RedeemPasswordResetPin(pin);
 
                 if (result.Success)
                 {
@@ -552,16 +550,16 @@ namespace Jellyfin.Server.Implementations.Users
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
-                var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
+                var newUser = await CreateUserInternalAsync(defaultName, dbContext);
                 newUser.SetPermission(PermissionKind.IsAdministrator, true);
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
                 newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
                 dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
                 _users.Add(newUser.Id, newUser);
             }
         }
@@ -599,8 +597,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
@@ -636,15 +634,15 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Update(user);
                 _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
         }
 
         /// <inheritdoc/>
         public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 var user = dbContext.Users
                                .Include(u => u.Permissions)
@@ -714,7 +712,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Update(user);
                 _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
         }
 
@@ -726,11 +724,11 @@ namespace Jellyfin.Server.Implementations.Users
                 return;
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            var dbContext = await _dbProvider.CreateDbContextAsync();
+            await using (dbContext)
             {
                 dbContext.Remove(user.ProfileImage);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.SaveChangesAsync();
             }
 
             user.ProfileImage = null;
@@ -823,7 +821,7 @@ namespace Jellyfin.Server.Implementations.Users
             foreach (var provider in GetAuthenticationProviders(user))
             {
                 var providerAuthResult =
-                    await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
+                    await AuthenticateWithProvider(provider, username, password, user);
                 var updatedUsername = providerAuthResult.Username;
                 success = providerAuthResult.Success;
 
@@ -847,8 +845,8 @@ namespace Jellyfin.Server.Implementations.Users
             try
             {
                 var authenticationResult = provider is IRequiresResolvedUser requiresResolvedUser
-                    ? await requiresResolvedUser.Authenticate(username, password, resolvedUser).ConfigureAwait(false)
-                    : await provider.Authenticate(username, password).ConfigureAwait(false);
+                    ? await requiresResolvedUser.Authenticate(username, password, resolvedUser)
+                    : await provider.Authenticate(username, password);
 
                 if (authenticationResult.Username != username)
                 {
@@ -873,14 +871,14 @@ namespace Jellyfin.Server.Implementations.Users
             if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user));
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,
                     user.InvalidLoginAttemptCount);
             }
 
-            await UpdateUserAsync(user).ConfigureAwait(false);
+            await UpdateUserAsync(user);
         }
 
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
@@ -888,7 +886,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Attach(user);
             dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

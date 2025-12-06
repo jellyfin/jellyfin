@@ -76,13 +76,13 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (!string.IsNullOrEmpty(releaseId))
         {
-            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
+            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.Artists | Include.ReleaseGroups, cancellationToken);
             return GetReleaseResult(releaseResult).SingleItemAsEnumerable();
         }
 
         if (!string.IsNullOrEmpty(releaseGroupId))
         {
-            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken).ConfigureAwait(false);
+            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken);
             return GetReleaseGroupResult(releaseGroupResult.Releases);
         }
 
@@ -90,8 +90,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
         {
-            var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{searchInfo.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken)
-                .ConfigureAwait(false);
+            var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{searchInfo.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken);
 
             if (releaseSearchResults.Results.Count > 0)
             {
@@ -103,8 +102,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             // I'm sure there is a better way but for now it resolves search for 12" Mixes
             var queryName = searchInfo.Name.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-            var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{queryName}\" AND artist:\"{searchInfo.GetAlbumArtist()}\"c", null, null, false, cancellationToken)
-                .ConfigureAwait(false);
+            var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{queryName}\" AND artist:\"{searchInfo.GetAlbumArtist()}\"c", null, null, false, cancellationToken);
 
             if (releaseSearchResults.Results.Count > 0)
             {
@@ -204,7 +202,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
         {
             // TODO: Actually try to match the release. Simply taking the first result is stupid.
-            var releaseGroup = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
+            var releaseGroup = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken);
             var release = releaseGroup.Releases?.Count > 0 ? releaseGroup.Releases[0] : null;
             if (release is not null)
             {
@@ -221,14 +219,12 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{info.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken)
-                    .ConfigureAwait(false);
+                var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{info.Name}\" AND arid:{artistMusicBrainzId}", null, null, false, cancellationToken);
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
             else if (!string.IsNullOrEmpty(info.GetAlbumArtist()))
             {
-                var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{info.Name}\" AND artist:{info.GetAlbumArtist()}", null, null, false, cancellationToken)
-                    .ConfigureAwait(false);
+                var releaseSearchResults = await _musicBrainzQuery.FindReleasesAsync($"\"{info.Name}\" AND artist:{info.GetAlbumArtist()}", null, null, false, cancellationToken);
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
 
@@ -250,7 +246,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         // If we have a release ID but not a release group ID, lookup the release group
         if (!string.IsNullOrWhiteSpace(releaseId) && string.IsNullOrWhiteSpace(releaseGroupId))
         {
-            var release = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
+            var release = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken);
             releaseGroupId = release.ReleaseGroup?.Id.ToString();
             result.HasMetadata = true;
         }

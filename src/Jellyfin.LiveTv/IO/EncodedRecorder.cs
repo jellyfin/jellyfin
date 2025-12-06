@@ -64,7 +64,7 @@ namespace Jellyfin.LiveTv.IO
             using var durationToken = new CancellationTokenSource(duration);
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token);
 
             _logger.LogInformation("Recording completed to file {Path}", targetFile);
         }
@@ -101,8 +101,8 @@ namespace Jellyfin.LiveTv.IO
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             _logFileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
-            await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + processStartInfo.FileName + " " + processStartInfo.Arguments + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + processStartInfo.FileName + " " + processStartInfo.Arguments + Environment.NewLine + Environment.NewLine), cancellationToken);
 
             _process = new Process
             {
@@ -123,7 +123,7 @@ namespace Jellyfin.LiveTv.IO
             _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
 
             // Block until ffmpeg exits
-            await _taskCompletionSource.Task.ConfigureAwait(false);
+            await _taskCompletionSource.Task;
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
@@ -290,12 +290,12 @@ namespace Jellyfin.LiveTv.IO
             {
                 using (var reader = new StreamReader(source))
                 {
-                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+                    await foreach (var line in reader.ReadAllLinesAsync())
                     {
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
-                        await target.FlushAsync().ConfigureAwait(false);
+                        await target.WriteAsync(bytes.AsMemory());
+                        await target.FlushAsync();
                     }
                 }
             }

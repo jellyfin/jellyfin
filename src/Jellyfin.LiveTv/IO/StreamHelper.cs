@@ -17,11 +17,11 @@ namespace Jellyfin.LiveTv.IO
             try
             {
                 int read;
-                while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+                while ((read = await source.ReadAsync(buffer, cancellationToken)) != 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                    await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
 
                     if (onStarted is not null)
                     {
@@ -44,11 +44,11 @@ namespace Jellyfin.LiveTv.IO
                 if (emptyReadLimit <= 0)
                 {
                     int read;
-                    while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+                    while ((read = await source.ReadAsync(buffer, cancellationToken)) != 0)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     }
 
                     return;
@@ -60,18 +60,18 @@ namespace Jellyfin.LiveTv.IO
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    var bytesRead = await source.ReadAsync(buffer, cancellationToken);
 
                     if (bytesRead == 0)
                     {
                         eofCount++;
-                        await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                        await Task.Delay(50, cancellationToken);
                     }
                     else
                     {
                         eofCount = 0;
 
-                        await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
                     }
                 }
             }
@@ -88,11 +88,11 @@ namespace Jellyfin.LiveTv.IO
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken).ConfigureAwait(false);
+                    var bytesRead = await CopyToAsyncInternal(source, target, buffer, cancellationToken);
 
                     if (bytesRead == 0)
                     {
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                        await Task.Delay(100, cancellationToken);
                     }
                 }
             }
@@ -107,9 +107,9 @@ namespace Jellyfin.LiveTv.IO
             int bytesRead;
             int totalBytesRead = 0;
 
-            while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await source.ReadAsync(buffer, cancellationToken)) != 0)
             {
-                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
 
                 totalBytesRead += bytesRead;
             }

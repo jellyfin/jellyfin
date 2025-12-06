@@ -68,20 +68,20 @@ public class MediaSegmentManager : IMediaSegmentManager
             return;
         }
 
-        var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (db.ConfigureAwait(false))
+        var db = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await using (db)
         {
             _logger.LogDebug("Start media segment extraction for {MediaPath} with {CountProviders} providers enabled", baseItem.Path, providers.Count);
 
             if (forceOverwrite)
             {
                 // delete all existing media segments if forceOverwrite is set.
-                await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                await db.MediaSegments.Where(e => e.ItemId.Equals(baseItem.Id)).ExecuteDeleteAsync(cancellationToken);
             }
 
             foreach (var provider in providers)
             {
-                if (!await provider.Supports(baseItem).ConfigureAwait(false))
+                if (!await provider.Supports(baseItem))
                 {
                     _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
                     continue;
@@ -105,8 +105,7 @@ public class MediaSegmentManager : IMediaSegmentManager
 
                 try
                 {
-                    var segments = await provider.GetMediaSegments(requestItem, cancellationToken)
-                        .ConfigureAwait(false);
+                    var segments = await provider.GetMediaSegments(requestItem, cancellationToken);
 
                     if (!forceOverwrite)
                     {
@@ -124,7 +123,7 @@ public class MediaSegmentManager : IMediaSegmentManager
                         }
 
                         // delete existing media segments that were re-generated.
-                        await existingSegments.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                        await existingSegments.ExecuteDeleteAsync(cancellationToken);
                     }
 
                     if (segments.Count == 0 && !requestItem.ExistingSegments.Any())
@@ -143,7 +142,7 @@ public class MediaSegmentManager : IMediaSegmentManager
                     foreach (var segment in segments)
                     {
                         segment.ItemId = baseItem.Id;
-                        await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
+                        await CreateSegmentAsync(segment, providerId);
                     }
                 }
                 catch (Exception ex)
@@ -159,11 +158,11 @@ public class MediaSegmentManager : IMediaSegmentManager
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(mediaSegment.EndTicks, mediaSegment.StartTicks);
 
-        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (db.ConfigureAwait(false))
+        var db = await _dbProvider.CreateDbContextAsync();
+        await using (db)
         {
             db.MediaSegments.Add(Map(mediaSegment, segmentProviderId));
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.SaveChangesAsync();
         }
 
         return mediaSegment;
@@ -172,20 +171,20 @@ public class MediaSegmentManager : IMediaSegmentManager
     /// <inheritdoc />
     public async Task DeleteSegmentAsync(Guid segmentId)
     {
-        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (db.ConfigureAwait(false))
+        var db = await _dbProvider.CreateDbContextAsync();
+        await using (db)
         {
-            await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync().ConfigureAwait(false);
+            await db.MediaSegments.Where(e => e.Id.Equals(segmentId)).ExecuteDeleteAsync();
         }
     }
 
     /// <inheritdoc />
     public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (db.ConfigureAwait(false))
+        var db = await _dbProvider.CreateDbContextAsync(cancellationToken);
+        await using (db)
         {
-            await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            await db.MediaSegments.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync(cancellationToken);
         }
     }
 
@@ -198,8 +197,8 @@ public class MediaSegmentManager : IMediaSegmentManager
             return [];
         }
 
-        var db = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-        await using (db.ConfigureAwait(false))
+        var db = await _dbProvider.CreateDbContextAsync();
+        await using (db)
         {
             var query = db.MediaSegments
                 .Where(e => e.ItemId.Equals(item.Id));

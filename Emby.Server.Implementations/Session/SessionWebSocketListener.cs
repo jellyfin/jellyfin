@@ -113,9 +113,9 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
-            var session = await RequestHelpers.GetSession(_sessionManager, _userManager, httpContext).ConfigureAwait(false);
+            var session = await RequestHelpers.GetSession(_sessionManager, _userManager, httpContext);
             EnsureController(session, connection);
-            await KeepAliveWebSocket(connection).ConfigureAwait(false);
+            await KeepAliveWebSocket(connection);
         }
 
         private void EnsureController(SessionInfo session, IWebSocketConnection connection)
@@ -169,7 +169,7 @@ namespace Emby.Server.Implementations.Session
             // Notify WebSocket about timeout
             try
             {
-                await SendForceKeepAlive(webSocket).ConfigureAwait(false);
+                await SendForceKeepAlive(webSocket);
             }
             catch (WebSocketException exception)
             {
@@ -230,7 +230,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    await SendForceKeepAlive(webSocket).ConfigureAwait(false);
+                    await SendForceKeepAlive(webSocket);
                 }
                 catch (WebSocketException exception)
                 {
@@ -262,7 +262,7 @@ namespace Emby.Server.Implementations.Session
         {
             await webSocket.SendAsync(
                 new ForceKeepAliveMessage(WebSocketLostTimeout),
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
         }
     }
 }

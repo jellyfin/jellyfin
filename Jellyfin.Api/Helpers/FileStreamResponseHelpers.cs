@@ -54,7 +54,7 @@ public static class FileStreamResponseHelpers
 
         // Send the request to the upstream server
         // Use ResponseHeadersRead to avoid downloading the whole content immediately
-        var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         // Check if the upstream server supports range requests and acted upon our Range header
         bool upstreamSupportsRange = response.StatusCode == System.Net.HttpStatusCode.PartialContent;
@@ -93,7 +93,7 @@ public static class FileStreamResponseHelpers
 
         // Return the stream from the upstream server
         // IMPORTANT: Do not dispose the response stream here, FileStreamResult will handle it.
-        return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
+        return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken), contentType);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public static class FileStreamResponseHelpers
             return new OkResult();
         }
 
-        using (await transcodeManager.LockAsync(outputPath, cancellationTokenSource.Token).ConfigureAwait(false))
+        using (await transcodeManager.LockAsync(outputPath, cancellationTokenSource.Token))
         {
             TranscodingJob? job;
             if (!File.Exists(outputPath))
@@ -154,7 +154,7 @@ public static class FileStreamResponseHelpers
                     ffmpegCommandLineArguments,
                     httpContext.User.GetUserId(),
                     transcodingJobType,
-                    cancellationTokenSource).ConfigureAwait(false);
+                    cancellationTokenSource);
             }
             else
             {

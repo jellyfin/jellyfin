@@ -76,8 +76,7 @@ public sealed class NfoUserDataSaver : IHostedService
 
         try
         {
-            await _providerManager.SaveMetadataAsync(item, ItemUpdateType.MetadataDownload, [BaseNfoSaver.SaverName])
-                .ConfigureAwait(false);
+            await _providerManager.SaveMetadataAsync(item, ItemUpdateType.MetadataDownload, [BaseNfoSaver.SaverName]);
         }
         catch (Exception ex)
         {

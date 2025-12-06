@@ -76,7 +76,7 @@ public class LyricsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var result = await _lyricManager.GetLyricsAsync(item, CancellationToken.None).ConfigureAwait(false);
+        var result = await _lyricManager.GetLyricsAsync(item, CancellationToken.None);
         if (result is not null)
         {
             return Ok(result);
@@ -123,14 +123,13 @@ public class LyricsController : BaseJellyfinApiController
         }
 
         var stream = new MemoryStream();
-        await using (stream.ConfigureAwait(false))
+        await using (stream)
         {
-            await Request.Body.CopyToAsync(stream).ConfigureAwait(false);
+            await Request.Body.CopyToAsync(stream);
             var uploadedLyric = await _lyricManager.SaveLyricAsync(
                     item,
                     format,
-                    stream)
-                .ConfigureAwait(false);
+                    stream);
 
             if (uploadedLyric is null)
             {
@@ -162,7 +161,7 @@ public class LyricsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _lyricManager.DeleteLyricsAsync(item).ConfigureAwait(false);
+        await _lyricManager.DeleteLyricsAsync(item);
         return NoContent();
     }
 
@@ -185,7 +184,7 @@ public class LyricsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var results = await _lyricManager.SearchLyricsAsync(item, false, CancellationToken.None).ConfigureAwait(false);
+        var results = await _lyricManager.SearchLyricsAsync(item, false, CancellationToken.None);
         return Ok(results);
     }
 
@@ -211,7 +210,7 @@ public class LyricsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var downloadedLyrics = await _lyricManager.DownloadLyricsAsync(item, lyricId, CancellationToken.None).ConfigureAwait(false);
+        var downloadedLyrics = await _lyricManager.DownloadLyricsAsync(item, lyricId, CancellationToken.None);
         if (downloadedLyrics is null)
         {
             return NotFound();
@@ -234,7 +233,7 @@ public class LyricsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LyricDto>> GetRemoteLyrics([FromRoute, Required] string lyricId)
     {
-        var result = await _lyricManager.GetRemoteLyricsAsync(lyricId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _lyricManager.GetRemoteLyricsAsync(lyricId, CancellationToken.None);
         if (result is null)
         {
             return NotFound();

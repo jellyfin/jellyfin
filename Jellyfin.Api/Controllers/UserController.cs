@@ -160,9 +160,9 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
-        await _playlistManager.RemovePlaylistsAsync(userId).ConfigureAwait(false);
-        await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
+        await _sessionManager.RevokeUserTokens(user.Id, null);
+        await _playlistManager.RemovePlaylistsAsync(userId);
+        await _userManager.DeleteUserAsync(userId);
         return NoContent();
     }
 
@@ -197,7 +197,7 @@ public class UserController : BaseJellyfinApiController
             Username = user.Username,
             Pw = pw
         };
-        return await AuthenticateUserByName(request).ConfigureAwait(false);
+        return await AuthenticateUserByName(request);
     }
 
     /// <summary>
@@ -210,7 +210,7 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
-        var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+        var auth = await _authContext.GetAuthorizationInfo(Request);
 
         try
         {
@@ -223,7 +223,7 @@ public class UserController : BaseJellyfinApiController
                 Password = request.Pw,
                 RemoteEndPoint = HttpContext.GetNormalizedRemoteIP().ToString(),
                 Username = request.Username
-            }).ConfigureAwait(false);
+            });
 
             return result;
         }
@@ -288,7 +288,7 @@ public class UserController : BaseJellyfinApiController
 
         if (request.ResetPassword)
         {
-            await _userManager.ResetPassword(user).ConfigureAwait(false);
+            await _userManager.ResetPassword(user);
         }
         else
         {
@@ -298,7 +298,7 @@ public class UserController : BaseJellyfinApiController
                     user.Username,
                     request.CurrentPw ?? string.Empty,
                     HttpContext.GetNormalizedRemoteIP().ToString(),
-                    false).ConfigureAwait(false);
+                    false);
 
                 if (success is null)
                 {
@@ -306,11 +306,11 @@ public class UserController : BaseJellyfinApiController
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
+            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty);
 
             var currentToken = User.GetToken();
 
-            await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
+            await _sessionManager.RevokeUserTokens(user.Id, currentToken);
         }
 
         return NoContent();
@@ -392,10 +392,10 @@ public class UserController : BaseJellyfinApiController
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
-            await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
+            await _userManager.RenameUser(user, updateUser.Name);
         }
 
-        await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
+        await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration);
 
         return NoContent();
     }
@@ -469,10 +469,10 @@ public class UserController : BaseJellyfinApiController
             }
 
             var currentToken = User.GetToken();
-            await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
+            await _sessionManager.RevokeUserTokens(user.Id, currentToken);
         }
 
-        await _userManager.UpdatePolicyAsync(userId, newPolicy).ConfigureAwait(false);
+        await _userManager.UpdatePolicyAsync(userId, newPolicy);
 
         return NoContent();
     }
@@ -505,7 +505,7 @@ public class UserController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
         }
 
-        await _userManager.UpdateConfigurationAsync(requestUserId, userConfig).ConfigureAwait(false);
+        await _userManager.UpdateConfigurationAsync(requestUserId, userConfig);
 
         return NoContent();
     }
@@ -540,12 +540,12 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<UserDto>> CreateUserByName([FromBody, Required] CreateUserByName request)
     {
-        var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
+        var newUser = await _userManager.CreateUserAsync(request.Name);
 
         // no need to authenticate password for new user
         if (request.Password is not null)
         {
-            await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+            await _userManager.ChangePassword(newUser, request.Password);
         }
 
         var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIP().ToString());
@@ -572,7 +572,7 @@ public class UserController : BaseJellyfinApiController
             _logger.LogWarning("Password reset process initiated from outside the local network with IP: {IP}", ip);
         }
 
-        var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername, isLocal).ConfigureAwait(false);
+        var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername, isLocal);
 
         return result;
     }
@@ -587,7 +587,7 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody, Required] ForgotPasswordPinDto forgotPasswordPinRequest)
     {
-        var result = await _userManager.RedeemPasswordResetPin(forgotPasswordPinRequest.Pin).ConfigureAwait(false);
+        var result = await _userManager.RedeemPasswordResetPin(forgotPasswordPinRequest.Pin);
         return result;
     }
 

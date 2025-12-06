@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
-            var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
+            var authorizationInfo = await _authService.Authenticate(context.Request);
             if (!authorizationInfo.IsAuthenticated)
             {
                 throw new SecurityException("Token is required");
@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
 
-                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     OnReceive = ProcessWebSocketMessageReceived
                 };
-                await using (connection.ConfigureAwait(false))
+                await using (connection)
                 {
                     var tasks = new Task[_webSocketListeners.Length];
                     for (var i = 0; i < _webSocketListeners.Length; ++i)
@@ -64,9 +64,9 @@ namespace Emby.Server.Implementations.HttpServer
                         tasks[i] = _webSocketListeners[i].ProcessWebSocketConnectedAsync(connection, context);
                     }
 
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    await Task.WhenAll(tasks);
 
-                    await connection.ReceiveAsync().ConfigureAwait(false);
+                    await connection.ReceiveAsync();
                     _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
                 }
             }
@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.HttpServer
                 tasks[i] = _webSocketListeners[i].ProcessMessageAsync(result);
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks);
         }
     }
 }

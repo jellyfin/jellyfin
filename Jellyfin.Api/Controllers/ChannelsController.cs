@@ -71,7 +71,7 @@ public class ChannelsController : BaseJellyfinApiController
             SupportsLatestItems = supportsLatestItems,
             SupportsMediaDeletion = supportsMediaDeletion,
             IsFavorite = isFavorite
-        }).ConfigureAwait(false);
+        });
     }
 
     /// <summary>
@@ -176,7 +176,7 @@ public class ChannelsController : BaseJellyfinApiController
             }
         }
 
-        return await _channelManager.GetChannelItems(query, CancellationToken.None).ConfigureAwait(false);
+        return await _channelManager.GetChannelItems(query, CancellationToken.None);
     }
 
     /// <summary>
@@ -249,6 +249,6 @@ public class ChannelsController : BaseJellyfinApiController
             }
         }
 
-        return await _channelManager.GetLatestChannelItems(query, CancellationToken.None).ConfigureAwait(false);
+        return await _channelManager.GetLatestChannelItems(query, CancellationToken.None);
     }
 }

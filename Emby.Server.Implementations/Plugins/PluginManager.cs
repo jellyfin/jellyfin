@@ -393,10 +393,9 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     downloadStream = await HttpClientFactory
                         .CreateClient(NamedClient.Default)
-                        .GetStreamAsync(url)
-                        .ConfigureAwait(false);
+                        .GetStreamAsync(url);
 
-                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    await downloadStream.CopyToAsync(fileStream);
                 }
                 catch (HttpRequestException ex)
                 {
@@ -405,10 +404,10 @@ namespace Emby.Server.Implementations.Plugins
                 }
                 finally
                 {
-                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    await fileStream.DisposeAsync();
                     if (downloadStream is not null)
                     {
-                        await downloadStream.DisposeAsync().ConfigureAwait(false);
+                        await downloadStream.DisposeAsync();
                     }
                 }
             }
@@ -430,7 +429,7 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
-            if (!await ReconcileManifest(manifest, path).ConfigureAwait(false))
+            if (!await ReconcileManifest(manifest, path))
             {
                 // An error occurred during reconciliation and saving could be undesirable.
                 return false;
@@ -467,7 +466,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
 
                 using var metaStream = File.OpenRead(metafile);
-                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions).ConfigureAwait(false);
+                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions);
                 localManifest ??= new PluginManifest();
 
                 if (!Equals(localManifest.Id, manifest.Id))

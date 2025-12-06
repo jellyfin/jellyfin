@@ -178,7 +178,7 @@ public class ChapterManager : IChapterManager
                         };
 
                         _logger.LogInformation("Extracting chapter image for {Name} at {Path}", video.Name, inputPath);
-                        var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                        var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken);
                         File.Copy(tempFile, path, true);
 
                         try
@@ -254,7 +254,7 @@ public class ChapterManager : IChapterManager
     /// <inheritdoc />
     public async Task DeleteChapterDataAsync(Guid itemId, CancellationToken cancellationToken)
     {
-        await _chapterRepository.DeleteChaptersAsync(itemId, cancellationToken).ConfigureAwait(false);
+        await _chapterRepository.DeleteChaptersAsync(itemId, cancellationToken);
     }
 
     private IReadOnlyList<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)

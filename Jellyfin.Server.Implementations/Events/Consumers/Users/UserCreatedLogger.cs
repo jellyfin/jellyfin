@@ -36,8 +36,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                         _localizationManager.GetLocalizedString("UserCreatedWithName"),
                         eventArgs.Argument.Username),
                     "UserCreated",
-                    eventArgs.Argument.Id))
-                .ConfigureAwait(false);
+                    eventArgs.Argument.Id));
         }
     }
 }

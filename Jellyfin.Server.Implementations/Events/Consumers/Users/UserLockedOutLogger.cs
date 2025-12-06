@@ -41,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                 eventArgs.Argument.Id)
             {
                 LogSeverity = LogLevel.Error
-            }).ConfigureAwait(false);
+            });
         }
     }
 }

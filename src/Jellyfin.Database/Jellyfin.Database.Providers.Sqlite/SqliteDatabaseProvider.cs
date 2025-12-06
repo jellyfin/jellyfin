@@ -98,13 +98,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
-        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken);
+        await using (context)
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken).ConfigureAwait(false);
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken);
+            await context.Database.ExecuteSqlRawAsync("VACUUM", cancellationToken);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken);
             _logger.LogInformation("jellyfin.db optimized successfully!");
         }
     }
@@ -124,10 +124,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         }
 
         // Run before disposing the application
-        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await using (context.ConfigureAwait(false))
+        var context = await DbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using (context)
         {
-            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken).ConfigureAwait(false);
+            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize", cancellationToken);
         }
 
         SqliteConnection.ClearAllPools();
@@ -203,6 +203,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         PRAGMA foreign_keys = ON;
         """;
 
-        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery).ConfigureAwait(false);
+        await dbContext.Database.ExecuteSqlRawAsync(deleteAllQuery);
     }
 }

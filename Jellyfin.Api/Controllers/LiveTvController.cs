@@ -318,7 +318,7 @@ public class LiveTvController : BaseJellyfinApiController
                 ImageTypeLimit = imageTypeLimit,
                 EnableImages = enableImages
             },
-            dtoOptions).ConfigureAwait(false);
+            dtoOptions);
     }
 
     /// <summary>
@@ -408,7 +408,7 @@ public class LiveTvController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var folders = await _liveTvManager.GetRecordingFoldersAsync(user).ConfigureAwait(false);
+        var folders = await _liveTvManager.GetRecordingFoldersAsync(user);
 
         var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
@@ -457,7 +457,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvManagement)]
     public async Task<ActionResult> ResetTuner([FromRoute, Required] string tunerId)
     {
-        await _liveTvManager.ResetTuner(tunerId, CancellationToken.None).ConfigureAwait(false);
+        await _liveTvManager.ResetTuner(tunerId, CancellationToken.None);
         return NoContent();
     }
 
@@ -474,7 +474,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] string timerId)
     {
-        return await _liveTvManager.GetTimer(timerId, CancellationToken.None).ConfigureAwait(false);
+        return await _liveTvManager.GetTimer(timerId, CancellationToken.None);
     }
 
     /// <summary>
@@ -491,8 +491,8 @@ public class LiveTvController : BaseJellyfinApiController
     public async Task<ActionResult<SeriesTimerInfoDto>> GetDefaultTimer([FromQuery] string? programId)
     {
         return string.IsNullOrEmpty(programId)
-            ? await _liveTvManager.GetNewTimerDefaults(CancellationToken.None).ConfigureAwait(false)
-            : await _liveTvManager.GetNewTimerDefaults(programId, CancellationToken.None).ConfigureAwait(false);
+            ? await _liveTvManager.GetNewTimerDefaults(CancellationToken.None)
+            : await _liveTvManager.GetNewTimerDefaults(programId, CancellationToken.None);
     }
 
     /// <summary>
@@ -522,7 +522,7 @@ public class LiveTvController : BaseJellyfinApiController
                 IsActive = isActive,
                 IsScheduled = isScheduled
             },
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
     }
 
     /// <summary>
@@ -632,7 +632,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
+        return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None);
     }
 
     /// <summary>
@@ -686,7 +686,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions { Fields = body.Fields ?? [] }
             .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes ?? []);
-        return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
+        return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None);
     }
 
     /// <summary>
@@ -755,7 +755,7 @@ public class LiveTvController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
+        return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None);
     }
 
     /// <summary>
@@ -777,7 +777,7 @@ public class LiveTvController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
+        return await _liveTvManager.GetProgram(programId, CancellationToken.None, user);
     }
 
     /// <summary>
@@ -818,7 +818,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CancelTimer([FromRoute, Required] string timerId)
     {
-        await _liveTvManager.CancelTimer(timerId).ConfigureAwait(false);
+        await _liveTvManager.CancelTimer(timerId);
         return NoContent();
     }
 
@@ -835,7 +835,7 @@ public class LiveTvController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> UpdateTimer([FromRoute, Required] string timerId, [FromBody] TimerInfoDto timerInfo)
     {
-        await _liveTvManager.UpdateTimer(timerInfo, CancellationToken.None).ConfigureAwait(false);
+        await _liveTvManager.UpdateTimer(timerInfo, CancellationToken.None);
         return NoContent();
     }
 
@@ -850,7 +850,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CreateTimer([FromBody] TimerInfoDto timerInfo)
     {
-        await _liveTvManager.CreateTimer(timerInfo, CancellationToken.None).ConfigureAwait(false);
+        await _liveTvManager.CreateTimer(timerInfo, CancellationToken.None);
         return NoContent();
     }
 
@@ -867,7 +867,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] string timerId)
     {
-        var timer = await _liveTvManager.GetSeriesTimer(timerId, CancellationToken.None).ConfigureAwait(false);
+        var timer = await _liveTvManager.GetSeriesTimer(timerId, CancellationToken.None);
         if (timer is null)
         {
             return NotFound();
@@ -894,7 +894,7 @@ public class LiveTvController : BaseJellyfinApiController
                 SortOrder = sortOrder ?? SortOrder.Ascending,
                 SortBy = sortBy
             },
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
     }
 
     /// <summary>
@@ -908,7 +908,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] string timerId)
     {
-        await _liveTvManager.CancelSeriesTimer(timerId).ConfigureAwait(false);
+        await _liveTvManager.CancelSeriesTimer(timerId);
         return NoContent();
     }
 
@@ -925,7 +925,7 @@ public class LiveTvController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> UpdateSeriesTimer([FromRoute, Required] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
     {
-        await _liveTvManager.UpdateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
+        await _liveTvManager.UpdateSeriesTimer(seriesTimerInfo, CancellationToken.None);
         return NoContent();
     }
 
@@ -940,7 +940,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CreateSeriesTimer([FromBody] SeriesTimerInfoDto seriesTimerInfo)
     {
-        await _liveTvManager.CreateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
+        await _liveTvManager.CreateSeriesTimer(seriesTimerInfo, CancellationToken.None);
         return NoContent();
     }
 
@@ -979,7 +979,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerHostInfo>> AddTunerHost([FromBody] TunerHostInfo tunerHostInfo)
-        => await _tunerHostManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
+        => await _tunerHostManager.SaveTunerHost(tunerHostInfo);
 
     /// <summary>
     /// Deletes a tuner host.
@@ -1037,7 +1037,7 @@ public class LiveTvController : BaseJellyfinApiController
             listingsProviderInfo.Password = Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(pw))).ToLowerInvariant();
         }
 
-        return await _listingsManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings).ConfigureAwait(false);
+        return await _listingsManager.SaveListingProvider(listingsProviderInfo, validateLogin, validateListings);
     }
 
     /// <summary>
@@ -1072,7 +1072,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] string? type,
         [FromQuery] string? location,
         [FromQuery] string? country)
-        => await _listingsManager.GetLineups(type, id, country, location).ConfigureAwait(false);
+        => await _listingsManager.GetLineups(type, id, country, location);
 
     /// <summary>
     /// Gets available countries.
@@ -1088,10 +1088,9 @@ public class LiveTvController : BaseJellyfinApiController
         var client = _httpClientFactory.CreateClient(NamedClient.Default);
         // https://json.schedulesdirect.org/20141201/available/countries
         // Can't dispose the response as it's required up the call chain.
-        var response = await client.GetAsync(new Uri("https://json.schedulesdirect.org/20141201/available/countries"))
-            .ConfigureAwait(false);
+        var response = await client.GetAsync(new Uri("https://json.schedulesdirect.org/20141201/available/countries"));
 
-        return File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), MediaTypeNames.Application.Json);
+        return File(await response.Content.ReadAsStreamAsync(), MediaTypeNames.Application.Json);
     }
 
     /// <summary>

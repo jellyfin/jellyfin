@@ -102,7 +102,7 @@ public class SubtitleController : BaseJellyfinApiController
             return NotFound();
         }
 
-        await _subtitleManager.DeleteSubtitles(item, index).ConfigureAwait(false);
+        await _subtitleManager.DeleteSubtitles(item, index);
         return NoContent();
     }
 
@@ -130,7 +130,7 @@ public class SubtitleController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return await _subtitleManager.SearchSubtitles(item, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
+        return await _subtitleManager.SearchSubtitles(item, language, isPerfectMatch, false, CancellationToken.None);
     }
 
     /// <summary>
@@ -157,8 +157,7 @@ public class SubtitleController : BaseJellyfinApiController
 
         try
         {
-            await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None)
-                .ConfigureAwait(false);
+            await _subtitleManager.DownloadSubtitles(item, subtitleId, CancellationToken.None);
 
             _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
         }
@@ -183,7 +182,7 @@ public class SubtitleController : BaseJellyfinApiController
     [ProducesFile("text/*")]
     public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string subtitleId)
     {
-        var result = await _subtitleManager.GetRemoteSubtitles(subtitleId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _subtitleManager.GetRemoteSubtitles(subtitleId, CancellationToken.None);
 
         return File(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
     }
@@ -249,12 +248,12 @@ public class SubtitleController : BaseJellyfinApiController
 
         if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
         {
-            Stream stream = await EncodeSubtitles(itemId.Value, mediaSourceId, index.Value, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
+            Stream stream = await EncodeSubtitles(itemId.Value, mediaSourceId, index.Value, format, startPositionTicks, endPositionTicks, copyTimestamps);
+            await using (stream)
             {
                 using var reader = new StreamReader(stream);
 
-                var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                var text = await reader.ReadToEndAsync();
 
                 text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000", StringComparison.Ordinal);
 
@@ -270,7 +269,7 @@ public class SubtitleController : BaseJellyfinApiController
                 format,
                 startPositionTicks,
                 endPositionTicks,
-                copyTimestamps).ConfigureAwait(false),
+                copyTimestamps),
             MimeTypes.GetMimeType("file." + format));
     }
 
@@ -353,7 +352,7 @@ public class SubtitleController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
+        var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None);
 
         var runtime = mediaSource.RunTimeTicks ?? -1;
 
@@ -433,11 +432,11 @@ public class SubtitleController : BaseJellyfinApiController
 
         var bytes = Encoding.UTF8.GetBytes(body.Data);
         var memoryStream = new MemoryStream(bytes, 0, bytes.Length, false, true);
-        await using (memoryStream.ConfigureAwait(false))
+        await using (memoryStream)
         {
             using var transform = new FromBase64Transform();
             var stream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
-            await using (stream.ConfigureAwait(false))
+            await using (stream)
             {
                 await _subtitleManager.UploadSubtitle(
                     item,
@@ -448,7 +447,7 @@ public class SubtitleController : BaseJellyfinApiController
                         IsForced = body.IsForced,
                         IsHearingImpaired = body.IsHearingImpaired,
                         Stream = stream
-                    }).ConfigureAwait(false);
+                    });
                 _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
                 return NoContent();

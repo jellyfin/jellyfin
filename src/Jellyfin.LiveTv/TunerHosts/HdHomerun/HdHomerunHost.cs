@@ -72,10 +72,10 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
         internal async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
+            var model = await GetModelInfo(info, false, cancellationToken);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL ?? model.BaseURL + "/lineup.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            var lineup = await response.Content.ReadFromJsonAsync<IEnumerable<Channels>>(_jsonOptions, cancellationToken).ConfigureAwait(false) ?? Enumerable.Empty<Channels>();
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL ?? model.BaseURL + "/lineup.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var lineup = await response.Content.ReadFromJsonAsync<IEnumerable<Channels>>(_jsonOptions, cancellationToken) ?? Enumerable.Empty<Channels>();
             if (info.ImportFavoritesOnly)
             {
                 lineup = lineup.Where(i => i.Favorite);
@@ -86,7 +86,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
-            var lineup = await GetLineup(tuner, cancellationToken).ConfigureAwait(false);
+            var lineup = await GetLineup(tuner, cancellationToken);
 
             return lineup.Select(i => new HdHomerunChannelInfo
             {
@@ -122,10 +122,9 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             try
             {
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .GetAsync(GetApiUrl(info) + "/discover.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                    .ConfigureAwait(false);
+                    .GetAsync(GetApiUrl(info) + "/discover.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                var discoverResponse = await response.Content.ReadFromJsonAsync<DiscoverResponse>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                var discoverResponse = await response.Content.ReadFromJsonAsync<DiscoverResponse>(_jsonOptions, cancellationToken);
 
                 if (!string.IsNullOrEmpty(cacheKey))
                 {
@@ -355,7 +354,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             }
             else
             {
-                var modelInfo = await GetModelInfo(tuner, false, cancellationToken).ConfigureAwait(false);
+                var modelInfo = await GetModelInfo(tuner, false, cancellationToken);
 
                 if (modelInfo is not null && modelInfo.SupportsTranscoding)
                 {
@@ -405,7 +404,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 
             var hdhomerunChannel = channel as HdHomerunChannelInfo;
 
-            var modelInfo = await GetModelInfo(tunerHost, false, cancellationToken).ConfigureAwait(false);
+            var modelInfo = await GetModelInfo(tunerHost, false, cancellationToken);
 
             if (!modelInfo.SupportsTranscoding)
             {
@@ -463,7 +462,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             try
             {
                 // Test it by pulling down the lineup
-                var modelInfo = await GetModelInfo(info, true, CancellationToken.None).ConfigureAwait(false);
+                var modelInfo = await GetModelInfo(info, true, CancellationToken.None);
                 info.DeviceId = modelInfo.DeviceID;
             }
             catch (HttpRequestException ex)
@@ -497,12 +496,12 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, new IPEndPoint(IPAddress.Broadcast, 65001), cancellationToken).ConfigureAwait(false);
+                    await udpClient.SendToAsync(discBytes, new IPEndPoint(IPAddress.Broadcast, 65001), cancellationToken);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var response = await udpClient.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, 0), cancellationToken).ConfigureAwait(false);
+                        var response = await udpClient.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, 0), cancellationToken);
                         var deviceIP = ((IPEndPoint)response.RemoteEndPoint).Address.ToString();
 
                         // Check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
@@ -510,7 +509,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                         {
                             var deviceAddress = "http://" + deviceIP;
 
-                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken);
 
                             if (info is not null)
                             {
@@ -540,7 +539,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 Url = url
             };
 
-            var modelInfo = await GetModelInfo(hostInfo, false, cancellationToken).ConfigureAwait(false);
+            var modelInfo = await GetModelInfo(hostInfo, false, cancellationToken);
 
             hostInfo.DeviceId = modelInfo.DeviceID;
             hostInfo.FriendlyName = modelInfo.FriendlyName;

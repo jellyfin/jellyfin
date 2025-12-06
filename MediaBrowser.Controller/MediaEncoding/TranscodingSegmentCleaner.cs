@@ -108,7 +108,7 @@ public class TranscodingSegmentCleaner : IDisposable
 
                 if (idxMaxToDelete > 0)
                 {
-                    await DeleteSegmentFiles(_job, 0, idxMaxToDelete, 1500).ConfigureAwait(false);
+                    await DeleteSegmentFiles(_job, 0, idxMaxToDelete, 1500);
                 }
             }
         }
@@ -120,7 +120,7 @@ public class TranscodingSegmentCleaner : IDisposable
 
         _logger.LogDebug("Deleting segment file(s) index {Min} to {Max} from {Path}", idxMin, idxMax, path);
 
-        await Task.Delay(delayMs).ConfigureAwait(false);
+        await Task.Delay(delayMs);
 
         try
         {

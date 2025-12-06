@@ -56,14 +56,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             if (item.TryGetProviderId(MetadataProvider.MusicBrainzArtist, out var id))
             {
-                await AudioDbArtistProvider.Current.EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
+                await AudioDbArtistProvider.Current.EnsureArtistInfo(id, cancellationToken);
 
                 var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
-                await using (jsonStream.ConfigureAwait(false))
+                await using (jsonStream)
                 {
-                    var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken);
 
                     if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
                     {

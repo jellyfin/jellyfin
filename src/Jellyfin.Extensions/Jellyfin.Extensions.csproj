@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -26,11 +26,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../SharedVersion.cs" />
+    <Compile Include="..\..\SharedVersion.cs" />
+    <None Include="..\..\FodyWeavers.xml" />
+    <None Include="..\..\FodyWeavers.xsd" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ConfigureAwait.Fody" PrivateAssets="All" />
     <PackageReference Include="Diacritics" />
+    <PackageReference Include="Fody">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="ICU4N.Transliterator" />
   </ItemGroup>
 

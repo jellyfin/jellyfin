@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                 new List<Guid> { eventArgs.Argument.Id },
                 SessionMessageType.UserDeleted,
                 eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
         }
     }
 }

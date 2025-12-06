@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
                 new List<Guid> { eventArgs.Argument.Id },
                 SessionMessageType.UserUpdated,
                 _userManager.GetUserDto(eventArgs.Argument),
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
         }
     }
 }

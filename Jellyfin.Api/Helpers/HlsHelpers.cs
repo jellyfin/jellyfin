@@ -40,14 +40,14 @@ public static class HlsHelpers
                     FileShare.ReadWrite,
                     IODefaults.FileStreamBufferSize,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
-                await using (fileStream.ConfigureAwait(false))
+                await using (fileStream)
                 {
                     using var reader = new StreamReader(fileStream);
                     var count = 0;
 
                     while (!reader.EndOfStream)
                     {
-                        var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                        var line = await reader.ReadLineAsync(cancellationToken);
                         if (line is null)
                         {
                             // Nothing currently in buffer.
@@ -66,14 +66,14 @@ public static class HlsHelpers
                     }
                 }
 
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(100, cancellationToken);
             }
             catch (IOException)
             {
                 // May get an error if the file is locked
             }
 
-            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(50, cancellationToken);
         }
     }
 

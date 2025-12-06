@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken);
                 childUpdateType = childUpdateType | updateType;
 
                 numComplete++;
@@ -195,11 +195,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             // Refresh current item
-            await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
+            await RefreshMetadata(parentRefreshOptions, cancellationToken);
 
             if (!refreshOptions.IsAutomated)
             {
-                await RefreshArtists(refreshOptions, cancellationToken).ConfigureAwait(false);
+                await RefreshArtists(refreshOptions, cancellationToken);
             }
         }
 
@@ -220,7 +220,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     continue;
                 }
 
-                await artist.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                await artist.RefreshMetadata(refreshOptions, cancellationToken);
             }
         }
     }

@@ -38,7 +38,7 @@ public class IPBasedAccessValidationMiddleware
         if (httpContext.IsLocal())
         {
             // Accessing from the same machine as the server.
-            await _next(httpContext).ConfigureAwait(false);
+            await _next(httpContext);
             return;
         }
 
@@ -58,6 +58,6 @@ public class IPBasedAccessValidationMiddleware
             return;
         }
 
-        await _next(httpContext).ConfigureAwait(false);
+        await _next(httpContext);
     }
 }

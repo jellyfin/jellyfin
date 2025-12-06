@@ -32,7 +32,7 @@ public sealed class StartupTrigger : ITaskTrigger
     {
         if (isApplicationStartup)
         {
-            await Task.Delay(DelayMs).ConfigureAwait(false);
+            await Task.Delay(DelayMs);
 
             OnTriggered();
         }

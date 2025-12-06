@@ -60,7 +60,7 @@ public class ArtistsValidator
             {
                 var item = _libraryManager.GetArtist(name);
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                await item.RefreshMetadata(cancellationToken);
             }
             catch (OperationCanceledException)
             {

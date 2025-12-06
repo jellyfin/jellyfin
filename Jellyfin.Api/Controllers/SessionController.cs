@@ -94,11 +94,10 @@ public class SessionController : BaseJellyfinApiController
         };
 
         await _sessionManager.SendBrowseCommand(
-            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext),
             sessionId,
             command,
-            CancellationToken.None)
-            .ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }
@@ -141,11 +140,10 @@ public class SessionController : BaseJellyfinApiController
         };
 
         await _sessionManager.SendPlayCommand(
-            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext),
             sessionId,
             playRequest,
-            CancellationToken.None)
-            .ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }
@@ -169,7 +167,7 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] string? controllingUserId)
     {
         await _sessionManager.SendPlaystateCommand(
-            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext),
             sessionId,
             new PlaystateRequest()
             {
@@ -177,8 +175,7 @@ public class SessionController : BaseJellyfinApiController
                 ControllingUserId = controllingUserId,
                 SeekPositionTicks = seekPositionTicks,
             },
-            CancellationToken.None)
-            .ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }
@@ -197,14 +194,14 @@ public class SessionController : BaseJellyfinApiController
         [FromRoute, Required] string sessionId,
         [FromRoute, Required] GeneralCommandType command)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
         var generalCommand = new GeneralCommand
         {
             Name = command,
             ControllingUserId = currentSession.UserId
         };
 
-        await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None).ConfigureAwait(false);
+        await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
 
         return NoContent();
     }
@@ -223,7 +220,7 @@ public class SessionController : BaseJellyfinApiController
         [FromRoute, Required] string sessionId,
         [FromRoute, Required] GeneralCommandType command)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
 
         var generalCommand = new GeneralCommand
         {
@@ -231,8 +228,7 @@ public class SessionController : BaseJellyfinApiController
             ControllingUserId = currentSession.UserId
         };
 
-        await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None)
-            .ConfigureAwait(false);
+        await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
 
         return NoContent();
     }
@@ -251,7 +247,7 @@ public class SessionController : BaseJellyfinApiController
         [FromRoute, Required] string sessionId,
         [FromBody, Required] GeneralCommand command)
     {
-        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext);
 
         ArgumentNullException.ThrowIfNull(command);
 
@@ -261,8 +257,7 @@ public class SessionController : BaseJellyfinApiController
             currentSession.Id,
             sessionId,
             command,
-            CancellationToken.None)
-            .ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }
@@ -287,11 +282,10 @@ public class SessionController : BaseJellyfinApiController
         }
 
         await _sessionManager.SendMessageCommand(
-            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+            await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext),
             sessionId,
             command,
-            CancellationToken.None)
-            .ConfigureAwait(false);
+            CancellationToken.None);
 
         return NoContent();
     }
@@ -354,7 +348,7 @@ public class SessionController : BaseJellyfinApiController
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext);
         }
 
         _sessionManager.ReportCapabilities(id, new ClientCapabilities
@@ -383,7 +377,7 @@ public class SessionController : BaseJellyfinApiController
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+            id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext);
         }
 
         _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
@@ -405,7 +399,7 @@ public class SessionController : BaseJellyfinApiController
         [FromQuery] string? sessionId,
         [FromQuery, Required] string? itemId)
     {
-        string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext);
 
         _sessionManager.ReportNowViewingItem(session, itemId);
         return NoContent();
@@ -421,7 +415,7 @@ public class SessionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ReportSessionEnded()
     {
-        await _sessionManager.Logout(User.GetToken()).ConfigureAwait(false);
+        await _sessionManager.Logout(User.GetToken());
         return NoContent();
     }
 

@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     while (!reader.EndOfStream && reader.BaseStream.CanRead)
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                        var line = await reader.ReadLineAsync();
 
                         ParseLogLine(line, state);
 
@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                         }
 
-                        await target.WriteAsync(bytes).ConfigureAwait(false);
+                        await target.WriteAsync(bytes);
 
                         // Check again, the stream could have been closed
                         if (!target.CanWrite)
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                         }
 
-                        await target.FlushAsync().ConfigureAwait(false);
+                        await target.FlushAsync();
                     }
                 }
             }
