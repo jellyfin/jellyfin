@@ -93,4 +93,18 @@ public class UserData
     /// Gets or Sets the User.
     /// </summary>
     public required User? User { get; set; }
+
+    /// <summary>
+    /// Gets or sets the generic progress state for complex media types.
+    /// </summary>
+    /// <remarks>
+    /// This field stores position information that cannot be represented as simple ticks.
+    /// Examples include:
+    /// <list type="bullet">
+    ///   <item><description>EPUB CFI (Canonical Fragment Identifier) strings for precise ebook locations</description></item>
+    /// </list>
+    /// This field is null for standard video/audio content where <see cref="PlaybackPositionTicks"/> is sufficient.
+    /// </remarks>
+    /// <value>The progress state string, or null if not applicable.</value>
+    public string? ProgressState { get; set; }
 }
