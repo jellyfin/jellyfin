@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
@@ -71,7 +72,27 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         // If file has content, base ignoring off the content .gitignore-style rules
         var rules = ignoreFileContent.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var ignore = new Ignore.Ignore();
-        ignore.Add(rules);
+
+        // Add each rule individually to catch and skip invalid patterns
+        var validRulesAdded = 0;
+        foreach (var rule in rules)
+        {
+            try
+            {
+                ignore.Add(rule);
+                validRulesAdded++;
+            }
+            catch (RegexParseException)
+            {
+                // Ignore invalid patterns
+            }
+        }
+
+        // If no valid rules were added, fall back to ignoring everything (like an empty .ignore file)
+        if (validRulesAdded == 0)
+        {
+            ignore.Add("*");
+        }
 
          // Mitigate the problem of the Ignore library not handling Windows paths correctly.
          // See https://github.com/jellyfin/jellyfin/issues/15484
