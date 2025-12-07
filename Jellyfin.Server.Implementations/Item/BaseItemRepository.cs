@@ -115,20 +115,20 @@ public sealed class BaseItemRepository
             throw new ArgumentException("Guid can't be empty or the placeholder id.", nameof(ids));
         }
 
-        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 
         var date = (DateTime?)DateTime.UtcNow;
 
-        var relatedItems = ids.SelectMany(f => TraverseHirachyDown(f, context)).ToArray();
+        var relatedItems = ids.SelectMany(f => TraverseHirachyDown(f, dbContext)).ToArray();
 
         // Remove any UserData entries for the placeholder item that would conflict with the UserData
         // being detached from the item being deleted. This is necessary because, during an update,
         // UserData may be reattached to a new entry, but some entries can be left behind.
         // Ensures there are no duplicate UserId/CustomDataKey combinations for the placeholder.
-        await context.UserData
+        await dbContext.UserData
             .Join(
-                context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId),
+                dbContext.UserData.WhereOneOrMany(relatedItems, e => e.ItemId),
                 placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
                 userData => new { userData.UserId, userData.CustomDataKey },
                 (placeholder, userData) => placeholder)
@@ -136,7 +136,7 @@ public sealed class BaseItemRepository
             .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         // Detach all user watch data
-        await context.UserData
+        await dbContext.UserData
             .WhereOneOrMany(relatedItems, e => e.ItemId)
             .ExecuteUpdateAsync(
                 e => e
@@ -144,41 +144,41 @@ public sealed class BaseItemRepository
                     .SetProperty(f => f.ItemId, PlaceholderId),
                 cancellationToken).ConfigureAwait(false);
 
-        await context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.AncestorIds.WhereOneOrMany(relatedItems, e => e.ParentItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.AttachmentStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.BaseItemImageInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        await context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.AncestorIds.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.AncestorIds.WhereOneOrMany(relatedItems, e => e.ParentItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.AttachmentStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.BaseItemImageInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-        var peopleIds = await context.PeopleBaseItemMap
+        var peopleIds = await dbContext.PeopleBaseItemMap
             .WhereOneOrMany(relatedItems, e => e.ItemId)
             .Select(f => f.PeopleId)
             .Distinct()
             .ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
-        await context.PeopleBaseItemMap
+        await dbContext.PeopleBaseItemMap
             .WhereOneOrMany(relatedItems, e => e.ItemId)
             .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-        await context.Peoples
+        await dbContext.Peoples
             .WhereOneOrMany(peopleIds, e => e.Id)
             .Where(e => e.BaseItems!.Count == 0)
             .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-        await context.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.TrickplayInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
