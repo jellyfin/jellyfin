@@ -1,118 +1,81 @@
-using System.Text.RegularExpressions;
+using Emby.Server.Implementations.Library;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public class DotIgnoreIgnoreRuleTest
 {
-    [Fact]
-    public void Test()
-    {
-        var ignore = new Ignore.Ignore();
-        ignore.Add("SPs");
-        Assert.True(ignore.IsIgnored("f:/cd/sps/ffffff.mkv"));
-        Assert.True(ignore.IsIgnored("cd/sps/ffffff.mkv"));
-        Assert.True(ignore.IsIgnored("/cd/sps/ffffff.mkv"));
-    }
+    private static readonly string[] _rule1 = ["SPs"];
+    private static readonly string[] _rule2 = ["SPs", "!thebestshot.mkv"];
+    private static readonly string[] _rule3 = ["*.txt", @"{\colortbl;\red255\green255\blue255;}", "videos/", @"\invalid\escape\sequence", "*.mkv"];
+    private static readonly string[] _rule4 = [@"{\colortbl;\red255\green255\blue255;}", @"\invalid\escape\sequence"];
 
-    [Fact]
-    public void TestNegatePattern()
-    {
-        var ignore = new Ignore.Ignore();
-        ignore.Add("SPs");
-        ignore.Add("!thebestshot.mkv");
-        Assert.True(ignore.IsIgnored("f:/cd/sps/ffffff.mkv"));
-        Assert.True(ignore.IsIgnored("cd/sps/ffffff.mkv"));
-        Assert.True(ignore.IsIgnored("/cd/sps/ffffff.mkv"));
-        Assert.False(ignore.IsIgnored("f:/cd/sps/thebestshot.mkv"));
-        Assert.False(ignore.IsIgnored("cd/sps/thebestshot.mkv"));
-        Assert.False(ignore.IsIgnored("/cd/sps/thebestshot.mkv"));
-    }
-
-    [Fact]
-    public void TestInvalidPatternThrowsRegexParseException()
-    {
-        // This test verifies that invalid patterns throw RegexParseException,
-        // which is the exception we catch in DotIgnoreIgnoreRule.CheckIgnoreRules
-        var ignore = new Ignore.Ignore();
-
-        // Pattern with invalid regex escape sequence (like RTF content)
-        var invalidPattern = @"{\colortbl;\red255\green255\blue255;}";
-
-        Assert.Throws<RegexParseException>(() => ignore.Add(invalidPattern));
-    }
-
-    [Fact]
-    public void TestValidPatternsWorkAfterSkippingInvalid()
-    {
-        // Simulates the behavior in CheckIgnoreRules where we skip invalid patterns
-        var ignore = new Ignore.Ignore();
-        var patterns = new[]
+    public static TheoryData<string[], string, bool, bool> CheckIgnoreRulesTestData =>
+        new()
         {
-            "*.txt",
-            @"{\colortbl;\red255\green255\blue255;}", // Invalid - RTF content
-            "videos/",
-            @"\invalid\escape\sequence", // Invalid
-            "*.mkv"
+            // Basic pattern matching
+            { _rule1, "f:/cd/sps/ffffff.mkv", false, true },
+            { _rule1, "cd/sps/ffffff.mkv", false, true },
+            { _rule1, "/cd/sps/ffffff.mkv", false, true },
+
+            // Negate pattern
+            { _rule2, "f:/cd/sps/ffffff.mkv", false, true },
+            { _rule2, "cd/sps/ffffff.mkv", false, true },
+            { _rule2, "/cd/sps/ffffff.mkv", false, true },
+            { _rule2, "f:/cd/sps/thebestshot.mkv", false, false },
+            { _rule2, "cd/sps/thebestshot.mkv", false, false },
+            { _rule2, "/cd/sps/thebestshot.mkv", false, false },
+
+            // Mixed valid and invalid patterns - skips invalid, applies valid
+            { _rule3, "test.txt", false, true },
+            { _rule3, "videos/movie.mp4", false, true },
+            { _rule3, "movie.mkv", false, true },
+            { _rule3, "test.mp3", false, false },
+
+            // Only invalid patterns - falls back to ignore all
+            { _rule4, "any-file.txt", false, true },
+            { _rule4, "any/path/to/file.mkv", false, true },
         };
 
-        foreach (var pattern in patterns)
+    public static TheoryData<string[], string, bool, bool> WindowsPathNormalizationTestData =>
+        new()
         {
-            try
-            {
-                ignore.Add(pattern);
-            }
-            catch (RegexParseException)
-            {
-                // Skip invalid patterns (as we do in the actual implementation)
-            }
-        }
+            // Windows paths with backslashes - should match when normalizePath is true
+            { _rule1, @"C:\cd\sps\ffffff.mkv", false, true },
+            { _rule1, @"D:\media\sps\movie.mkv", false, true },
+            { _rule1, @"\\server\share\sps\file.mkv", false, true },
 
-        // Valid patterns should still work
-        Assert.True(ignore.IsIgnored("test.txt"));
-        Assert.True(ignore.IsIgnored("videos/movie.mp4"));
-        Assert.True(ignore.IsIgnored("movie.mkv"));
+            // Negate pattern with Windows paths
+            { _rule2, @"C:\cd\sps\ffffff.mkv", false, true },
+            { _rule2, @"C:\cd\sps\thebestshot.mkv", false, false },
 
-        // Non-matching paths should not be ignored
-        Assert.False(ignore.IsIgnored("test.mp3"));
-    }
-
-    [Fact]
-    public void TestFallbackToIgnoreAllWhenNoValidPatterns()
-    {
-        // When all patterns are invalid, we should fall back to ignoring everything
-        var ignore = new Ignore.Ignore();
-        var invalidPatterns = new[]
-        {
-            @"{\colortbl;\red255\green255\blue255;}",
-            @"\invalid\escape\sequence"
+            // Directory matching with Windows paths
+            { _rule3, @"C:\videos\movie.mp4", false, true },
+            { _rule3, @"D:\documents\test.txt", false, true },
+            { _rule3, @"E:\music\song.mp3", false, false },
         };
 
-        var validRulesAdded = 0;
-        foreach (var pattern in invalidPatterns)
-        {
-            try
-            {
-                ignore.Add(pattern);
-                validRulesAdded++;
-            }
-            catch (RegexParseException)
-            {
-                // Skip invalid patterns
-            }
-        }
+    [Theory]
+    [MemberData(nameof(CheckIgnoreRulesTestData))]
+    public void CheckIgnoreRules_ReturnsExpectedResult(string[] rules, string path, bool isDirectory, bool expectedIgnored)
+    {
+        Assert.Equal(expectedIgnored, DotIgnoreIgnoreRule.CheckIgnoreRules(path, rules, isDirectory));
+    }
 
-        // No valid rules were added
-        Assert.Equal(0, validRulesAdded);
+    [Theory]
+    [MemberData(nameof(WindowsPathNormalizationTestData))]
+    public void CheckIgnoreRules_WithWindowsPaths_NormalizesBackslashes(string[] rules, string path, bool isDirectory, bool expectedIgnored)
+    {
+        // With normalizePath=true, backslashes should be converted to forward slashes
+        Assert.Equal(expectedIgnored, DotIgnoreIgnoreRule.CheckIgnoreRules(path, rules, isDirectory, normalizePath: true));
+    }
 
-        // Fall back to ignoring everything
-        if (validRulesAdded == 0)
-        {
-            ignore.Add("*");
-        }
-
-        // Now everything should be ignored
-        Assert.True(ignore.IsIgnored("any-file.txt"));
-        Assert.True(ignore.IsIgnored("any/path/to/file.mkv"));
+    [Theory]
+    [InlineData(@"C:\cd\sps\ffffff.mkv")]
+    [InlineData(@"D:\media\sps\movie.mkv")]
+    public void CheckIgnoreRules_WithWindowsPaths_WithoutNormalization_DoesNotMatch(string path)
+    {
+        // Without normalization, Windows paths with backslashes won't match patterns expecting forward slashes
+        Assert.False(DotIgnoreIgnoreRule.CheckIgnoreRules(path, _rule1, isDirectory: false, normalizePath: false));
     }
 }
