@@ -205,12 +205,19 @@ public class UserController : BaseJellyfinApiController
     /// </summary>
     /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
     /// <response code="200">User authenticated.</response>
+    /// <response code="401">Invalid authorization cookie.</response>
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateByName")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+
+        if (auth.Client == null || auth.Version == null || auth.DeviceId == null || auth.Device == null)
+        {
+            return Unauthorized("Invalid Authorization Cookie");
+        }
 
         try
         {
@@ -240,6 +247,7 @@ public class UserController : BaseJellyfinApiController
     /// <param name="request">The <see cref="QuickConnectDto"/> request.</param>
     /// <response code="200">User authenticated.</response>
     /// <response code="400">Missing token.</response>
+    /// <response code="404">Quick Connect code not found.</response>
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateWithQuickConnect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
