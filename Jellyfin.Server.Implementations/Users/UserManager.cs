@@ -149,7 +149,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             ThrowIfInvalidUsername(newName);
 
-            if (user.Username.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
