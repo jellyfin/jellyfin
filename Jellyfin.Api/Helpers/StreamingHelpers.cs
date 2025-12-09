@@ -330,7 +330,7 @@ public static class StreamingHelpers
                     return ".mp3";
 
                 case "WMA":
-                    return $".wma";
+                    return ".wma";
             }
         }
 
