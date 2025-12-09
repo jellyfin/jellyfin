@@ -290,25 +290,26 @@ public static class StreamingHelpers
         if (state.IsVideoRequest)
         {
             // Try to infer based on the desired video codec
-            var videoCodec = state.Request.VideoCodec.ToLowerInvariant();
+            var videoCodec = state.Request.VideoCodec.ToUpperInvariant();
 
             switch (videoCodec)
             {
-                case "h264":
+                case "H264":
                     return ".ts";
 
-                case "hevc":
-                case "av1":
+                case "HEVC":
+                case "AV1":
                     return ".mp4";
 
-                case "theora":
+                case "THEORA":
                     return ".ogv";
 
-                case "vp8":
-                case "vp9":
-                case "vpx":
+                case "VP8":
+                case "VP9":
+                case "VPX":
                     return ".webm";
-                case "wmv":
+
+                case "WMV":
                     return ".asf";
             }
         }
@@ -319,13 +320,17 @@ public static class StreamingHelpers
 
             switch (audioCodec)
             {
-                case "vorbis":
+                case "VORBIS":
                     return ".ogg";
 
-                case "aac":
-                case "mp3":
-                case "wma":
-                    return $".{audioCodec}";
+                case "AAC":
+                    return ".aac";
+
+                case "MP3":
+                    return ".mp3";
+
+                case "WMA":
+                    return $".wma";
             }
         }
 
