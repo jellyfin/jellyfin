@@ -100,12 +100,6 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
-    public void DeleteItem(params IReadOnlyList<Guid> ids)
-    {
-        DeleteItemsAsync(ids).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc />
     public async Task DeleteItemsAsync(
         IReadOnlyList<Guid> ids,
         CancellationToken cancellationToken = default)

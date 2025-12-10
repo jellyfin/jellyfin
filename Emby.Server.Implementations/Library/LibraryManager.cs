@@ -327,18 +327,6 @@ namespace Emby.Server.Implementations.Library
             await DeleteItemAsync(item, options, parent, notifyParentItem, cancellationToken).ConfigureAwait(false);
         }
 
-        // Legacy sync wrappers:
-        public void DeleteItem(BaseItem item, DeleteOptions options)
-            => DeleteItem(item, options, false);
-
-        public void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem)
-            => DeleteItemAsync(item, options, notifyParentItem, CancellationToken.None)
-                .GetAwaiter().GetResult();
-
-        public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
-            => DeleteItemAsync(item, options, parent, notifyParentItem, CancellationToken.None)
-                .GetAwaiter().GetResult();
-
         public async Task DeleteItemsUnsafeFastAsync(IEnumerable<BaseItem> items, CancellationToken cancellationToken = default)
         {
             var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();

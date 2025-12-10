@@ -338,14 +338,12 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The async task.</returns>
         Task DeleteItemAsync(BaseItem item, DeleteOptions options, CancellationToken cancellationToken = default);
 
-        void DeleteItem(BaseItem item, DeleteOptions options);
-
         /// <summary>
         /// Deletes items that are not having any children like Actors.
         /// </summary>
         /// <param name="items">Items to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
+        /// <remarks>In comparison to <see cref="DeleteItemAsync(BaseItem, DeleteOptions, bool, CancellationToken)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
         /// <returns>The async task.</returns>
         public Task DeleteItemsUnsafeFastAsync(IEnumerable<BaseItem> items, CancellationToken cancellationToken = default);
 
@@ -359,8 +357,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The async task.</returns>
         Task DeleteItemAsync(BaseItem item, DeleteOptions options, bool notifyParentItem, CancellationToken cancellationToken = default);
 
-        void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem);
-
         /// <summary>
         /// Deletes the item.
         /// </summary>
@@ -371,8 +367,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
         Task DeleteItemAsync(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem, CancellationToken cancellationToken = default);
-
-        void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem);
 
         /// <summary>
         /// Gets the named view.

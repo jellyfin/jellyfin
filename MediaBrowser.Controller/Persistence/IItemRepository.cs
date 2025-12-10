@@ -24,8 +24,8 @@ public interface IItemRepository
     /// Deletes the item.
     /// </summary>
     /// <param name="ids">The identifier to delete.</param>
-    void DeleteItem(IReadOnlyList<Guid> ids);
-
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
     Task DeleteItemsAsync(IReadOnlyList<Guid> ids, CancellationToken cancellationToken = default);
 
     /// <summary>
