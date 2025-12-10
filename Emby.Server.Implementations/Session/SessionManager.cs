@@ -822,7 +822,7 @@ namespace Emby.Server.Implementations.Session
             {
                 data.Played = true;
             }
-            else
+            else if (!data.Played)
             {
                 data.Played = false;
             }
