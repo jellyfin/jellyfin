@@ -799,10 +799,10 @@ public class LiveTvController : BaseJellyfinApiController
             return NotFound();
         }
 
-        _libraryManager.DeleteItem(item, new DeleteOptions
+        _libraryManager.DeleteItemAsync(item, new DeleteOptions
         {
             DeleteFileLocation = false
-        });
+        }).GetAwaiter().GetResult();
 
         return NoContent();
     }

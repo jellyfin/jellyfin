@@ -752,13 +752,13 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         var libraryItem = _libraryManager.FindByPath(timer.RecordingPath, false);
         if (libraryItem is not null)
         {
-            _libraryManager.DeleteItem(
+            _libraryManager.DeleteItemAsync(
                 libraryItem,
                 new DeleteOptions
                 {
                     DeleteFileLocation = true
                 },
-                true);
+                true).GetAwaiter().GetResult();
         }
         else if (File.Exists(timer.RecordingPath))
         {
