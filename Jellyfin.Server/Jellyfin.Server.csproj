@@ -41,6 +41,9 @@
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Remove="Resources/Configuration/appsettings.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" />

@@ -166,8 +166,6 @@ public sealed class SetupServer : IDisposable
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,
-                                        null,
-                                        null,
                                         _startupConfiguration,
                                         _applicationPaths,
                                         _loggerFactory.CreateLogger<SetupServer>(),
