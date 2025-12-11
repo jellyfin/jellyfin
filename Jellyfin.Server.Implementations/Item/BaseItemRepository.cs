@@ -1572,13 +1572,19 @@ public sealed class BaseItemRepository
         foreach (var item in orderBy.Skip(1))
         {
             var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
+
+            if (expression is null || orderedQuery is null)
+            {
+                continue;
+            }
+
             if (item.SortOrder == SortOrder.Ascending)
             {
-                orderedQuery = orderedQuery!.ThenBy(expression);
+                orderedQuery = orderedQuery.ThenBy(expression);
             }
             else
             {
-                orderedQuery = orderedQuery!.ThenByDescending(expression);
+                orderedQuery = orderedQuery.ThenByDescending(expression);
             }
         }
 
