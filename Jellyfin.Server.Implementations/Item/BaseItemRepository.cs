@@ -1569,15 +1569,14 @@ public sealed class BaseItemRepository
             }
         }
 
+        if (orderedQuery is null)
+        {
+            return query.OrderBy(e => e.SortName);
+        }
+
         foreach (var item in orderBy.Skip(1))
         {
             var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
-
-            if (expression is null || orderedQuery is null)
-            {
-                continue;
-            }
-
             if (item.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = orderedQuery.ThenBy(expression);
@@ -1588,7 +1587,7 @@ public sealed class BaseItemRepository
             }
         }
 
-        return orderedQuery ?? query;
+        return orderedQuery;
     }
 
     private IQueryable<BaseItemEntity> TranslateQuery(
