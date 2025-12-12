@@ -206,6 +206,14 @@ namespace MediaBrowser.Controller.Library
             where T : BaseItem;
 
         /// <summary>
+        /// Gets multiple items by their ids, utilizing the internal cache for efficiency.
+        /// Items not in the cache will be fetched from the database in a single batch query.
+        /// </summary>
+        /// <param name="ids">The item ids to retrieve.</param>
+        /// <returns>The items found, in the same order as the input ids. Missing items are excluded.</returns>
+        IReadOnlyList<BaseItem> GetItemsByIds(IReadOnlyList<Guid> ids);
+
+        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>

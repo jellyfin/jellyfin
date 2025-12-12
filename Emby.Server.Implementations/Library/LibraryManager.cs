@@ -1404,6 +1404,55 @@ namespace Emby.Server.Implementations.Library
             return ItemIsVisible(item, user) ? item : null;
         }
 
+        /// <inheritdoc />
+        public IReadOnlyList<BaseItem> GetItemsByIds(IReadOnlyList<Guid> ids)
+        {
+            if (ids.Count == 0)
+            {
+                return Array.Empty<BaseItem>();
+            }
+
+            var result = new List<BaseItem>(ids.Count);
+            var cacheMisses = new List<Guid>();
+
+            // First pass: get items from cache
+            foreach (var id in ids)
+            {
+                if (id.IsEmpty())
+                {
+                    continue;
+                }
+
+                if (_cache.TryGet(id, out var item))
+                {
+                    result.Add(item);
+                }
+                else
+                {
+                    cacheMisses.Add(id);
+                }
+            }
+
+            // Batch fetch cache misses from the database
+            if (cacheMisses.Count > 0)
+            {
+                var fetchedItems = _itemRepository.GetItemList(new InternalItemsQuery
+                {
+                    ItemIds = cacheMisses.ToArray(),
+                    GroupByPresentationUniqueKey = false,
+                    DtoOptions = new DtoOptions(true)
+                });
+
+                foreach (var item in fetchedItems)
+                {
+                    RegisterItem(item);
+                    result.Add(item);
+                }
+            }
+
+            return result;
+        }
+
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
             if (query.Recursive && !query.ParentId.IsEmpty())
