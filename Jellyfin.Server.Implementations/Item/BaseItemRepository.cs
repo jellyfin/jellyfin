@@ -1529,14 +1529,14 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
-        var orderBy = filter.OrderBy;
+        var orderBy = filter.OrderBy.Where(e => e.OrderBy != ItemSortBy.Default).ToArray();
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
 
         if (hasSearch)
         {
-            orderBy = filter.OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
+            orderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
         }
-        else if (orderBy.Count == 0)
+        else if (orderBy.Length == 0)
         {
             return query.OrderBy(e => e.SortName);
         }
@@ -1569,25 +1569,20 @@ public sealed class BaseItemRepository
             }
         }
 
-        if (orderedQuery is null)
-        {
-            return query.OrderBy(e => e.SortName);
-        }
-
         foreach (var item in orderBy.Skip(1))
         {
             var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
             if (item.SortOrder == SortOrder.Ascending)
             {
-                orderedQuery = orderedQuery.ThenBy(expression);
+                orderedQuery = orderedQuery!.ThenBy(expression);
             }
             else
             {
-                orderedQuery = orderedQuery.ThenByDescending(expression);
+                orderedQuery = orderedQuery!.ThenByDescending(expression);
             }
         }
 
-        return orderedQuery;
+        return orderedQuery ?? query;
     }
 
     private IQueryable<BaseItemEntity> TranslateQuery(
