@@ -211,7 +211,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="ids">The item ids to retrieve.</param>
         /// <returns>The items found, in the same order as the input ids. Missing items are excluded.</returns>
-        IReadOnlyList<BaseItem> GetItemsByIds(IReadOnlyList<Guid> ids);
+        IReadOnlyList<BaseItem> GetItemsByIds(IReadOnlyList<Guid> ids)
+            => throw new NotImplementedException();
 
         /// <summary>
         /// Gets the intros.
