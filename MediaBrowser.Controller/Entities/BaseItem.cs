@@ -1620,12 +1620,17 @@ namespace MediaBrowser.Controller.Entities
                 return isAllowed;
             }
 
-            if (maxAllowedSubRating is not null)
+            if (!maxAllowedRating.HasValue)
             {
-                return (ratingScore.SubScore ?? 0) <= maxAllowedSubRating && ratingScore.Score <= maxAllowedRating.Value;
+                return true;
             }
 
-            return !maxAllowedRating.HasValue || ratingScore.Score <= maxAllowedRating.Value;
+            if (ratingScore.Score != maxAllowedRating.Value)
+            {
+                return ratingScore.Score < maxAllowedRating.Value;
+            }
+
+            return !maxAllowedSubRating.HasValue || (ratingScore.SubScore ?? 0) <= maxAllowedSubRating.Value;
         }
 
         public ParentalRatingScore GetParentalRatingScore()
