@@ -1529,14 +1529,14 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
-        var orderBy = filter.OrderBy;
+        var orderBy = filter.OrderBy.Where(e => e.OrderBy != ItemSortBy.Default).ToArray();
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
 
         if (hasSearch)
         {
-            orderBy = filter.OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
+            orderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
         }
-        else if (orderBy.Count == 0)
+        else if (orderBy.Length == 0)
         {
             return query.OrderBy(e => e.SortName);
         }
