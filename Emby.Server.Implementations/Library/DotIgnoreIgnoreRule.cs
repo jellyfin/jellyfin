@@ -114,7 +114,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         // If no valid rules were added, fall back to ignoring everything (like an empty .ignore file)
         if (validRulesAdded == 0)
         {
-            ignore.Add("*");
+            return true;
         }
 
          // Mitigate the problem of the Ignore library not handling Windows paths correctly.
