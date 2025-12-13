@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.SyncPlay;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -48,5 +49,12 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <returns>The item dto.</returns>
         BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem>? taggedItems, User? user = null);
+
+        /// <summary>
+        /// Gets the sync play queue item dto.
+        /// </summary>
+        /// <param name="syncPlayQueueItem">The item.</param>
+        /// <returns>SyncPlayQueueItemDto.</returns>
+        SyncPlayQueueItemDto GetSyncPlayQueueItemDto(SyncPlayQueueItem syncPlayQueueItem);
     }
 }
