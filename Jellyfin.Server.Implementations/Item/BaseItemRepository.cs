@@ -547,22 +547,34 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
-    public void SaveImages(BaseItemDto item)
+    public async Task SaveImagesAsync(BaseItemDto item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var images = item.ImageInfos.Select(e => Map(item.Id, e));
-        using var context = _dbProvider.CreateDbContext();
+        var images = item.ImageInfos.Select(e => Map(item.Id, e)).ToArray();
 
-        if (!context.BaseItems.Any(bi => bi.Id == item.Id))
+        var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
         {
-            _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
-            return;
-        }
+            if (!await context.BaseItems
+                .AnyAsync(bi => bi.Id == item.Id, cancellationToken)
+                .ConfigureAwait(false))
+            {
+                _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
+                return;
+            }
 
-        context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(images);
-        context.SaveChanges();
+            await context.BaseItemImageInfos
+                .Where(e => e.ItemId == item.Id)
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            await context.BaseItemImageInfos
+                .AddRangeAsync(images, cancellationToken)
+                .ConfigureAwait(false);
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc  />
