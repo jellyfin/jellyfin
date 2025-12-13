@@ -118,9 +118,11 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 
         _lastProgressMessageTimes.AddOrUpdate(item.Id, _ => DateTime.UtcNow, (_, _) => DateTime.UtcNow);
 
-        var dict = new Dictionary<string, string>();
-        dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
-        dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
+        var dict = new Dictionary<string, string>
+        {
+            ["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture),
+            ["Progress"] = progress.ToString(CultureInfo.InvariantCulture)
+        };
 
         try
         {
