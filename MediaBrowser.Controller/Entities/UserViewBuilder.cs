@@ -24,6 +24,10 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserViewBuilder
     {
+        private const int HDWidth = 1200;
+        private const int UHDWidth = 3800;
+        private const int UHDHeight = 2100;
+
         private readonly IUserViewManager _userViewManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<BaseItem> _logger;
@@ -565,29 +569,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            // Filter by Video3DFormat
-            if (query.Is3D.HasValue)
-            {
-                var val = query.Is3D.Value;
-                var video = item as Video;
-
-                if (video is null || val != video.Video3DFormat.HasValue)
-                {
-                    return false;
-                }
-            }
-
-            /*
-             * fuck - fix this
-            if (query.IsHD.HasValue)
-            {
-                if (item.IsHD != query.IsHD.Value)
-                {
-                    return false;
-                }
-            }
-            */
-
             if (query.IsLocked.HasValue)
             {
                 var val = query.IsLocked.Value;
@@ -695,18 +676,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.HasSubtitles.HasValue)
-            {
-                var val = query.HasSubtitles.Value;
-
-                var video = item as Video;
-
-                if (video is null || val != video.HasSubtitles)
-                {
-                    return false;
-                }
-            }
-
             if (query.HasParentalRating.HasValue)
             {
                 var val = query.HasParentalRating.Value;
@@ -782,16 +751,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.Genres.Count > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
-            }
-
-            // Filter by VideoType
-            if (query.VideoTypes.Length > 0)
-            {
-                var video = item as Video;
-                if (video is null || !query.VideoTypes.Contains(video.VideoType))
-                {
-                    return false;
-                }
             }
 
             if (query.ImageTypes.Length > 0 && !query.ImageTypes.Any(item.HasImage))
@@ -941,7 +900,191 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (RequiresFilteringByLinkedItems(query))
+            {
+                return FilterByLinkedItems(item, query);
+            }
+
             return true;
+        }
+
+        private static bool FilterByLinkedItems(BaseItem item, InternalItemsQuery query)
+        {
+            // for now only filter values for Videos are handled here
+            var linkedItems = GetLinkedItems([item]).Where(item => item is Video);
+
+            var includeSD = false;
+            var includeHD = false;
+            var include4K = false;
+
+            if (query.IsHD.HasValue)
+            {
+                includeSD = !query.IsHD.Value;
+                includeHD = query.IsHD.Value;
+            }
+
+            if (query.Is4K.HasValue && query.Is4K.Value)
+            {
+                include4K = true;
+            }
+
+            return linkedItems.Any(
+                item =>
+                {
+                    // filter by Video3DFormat
+                    if (query.Is3D.HasValue)
+                    {
+                        var is3D = ((Video)item).Video3DFormat.HasValue;
+
+                        if (is3D != query.Is3D.HasValue)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by resolution type (SD or HD, 4k)
+                    if (query.IsHD.HasValue || query.Is4K.HasValue)
+                    {
+                        var sizeMatches = (includeSD && item.Width < HDWidth)
+                            || (includeHD && item.Width >= HDWidth && !(item.Width >= UHDWidth || item.Height >= UHDHeight))
+                            || (include4K && (item.Width >= UHDWidth || item.Height >= UHDHeight));
+
+                        if (!sizeMatches)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by resolution
+                    if (query.MinWidth.HasValue || query.MaxWidth.HasValue || query.MinHeight.HasValue || query.MaxHeight.HasValue)
+                    {
+                        var sizeMatches = (!query.MinWidth.HasValue || item.Width >= query.MinWidth.Value)
+                            && (!query.MaxWidth.HasValue || item.Width <= query.MaxWidth.Value)
+                            && (!query.MinHeight.HasValue || item.Height >= query.MinHeight.Value)
+                            && (!query.MaxHeight.HasValue || item.Height <= query.MaxHeight.Value);
+
+                        if (!sizeMatches)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by video type
+                    if (query.VideoTypes.Length > 0)
+                    {
+                        var typeExists = query.VideoTypes.Contains(((Video)item).VideoType);
+
+                        if (!typeExists)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // filter by mediastreams metadata
+                    if (query.AudioLanguage.Length > 0 || query.SubtitleLanguage.Length > 0)
+                    {
+                        var mediaStreams = GetMediaStreams([item]).ToList();
+
+                        // filter by subtitle language
+                        if (query.SubtitleLanguage.Length > 0)
+                        {
+                            var languageMatches = mediaStreams
+                                .Where(stream => stream.Type == MediaStreamType.Subtitle)
+                                .Any(stream => query.SubtitleLanguage.Contains(stream.Language));
+
+                            if (!languageMatches)
+                            {
+                                return false;
+                            }
+                        }
+
+                        // filter by audio language
+                        if (query.AudioLanguage.Length > 0)
+                        {
+                            var languageMatches = mediaStreams
+                                .Where(stream => stream.Type == MediaStreamType.Audio)
+                                .Any(stream => query.AudioLanguage.Contains(stream.Language));
+
+                            if (!languageMatches)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                });
+        }
+
+        /// <summary>
+        /// Determines if filterimg by linked items (alternative versions) is necessary.
+        /// </summary>
+        private static bool RequiresFilteringByLinkedItems(InternalItemsQuery query)
+        {
+            return query.IsHD.HasValue
+                || query.Is4K.HasValue
+                || query.Is3D.HasValue
+                || query.MinWidth.HasValue
+                || query.MaxWidth.HasValue
+                || query.MinHeight.HasValue
+                || query.MaxHeight.HasValue
+                || query.VideoTypes.Length > 0
+                || query.AudioLanguage.Length > 0
+                || query.SubtitleLanguage.Length > 0;
+        }
+
+        /// <summary>
+        /// Gets all BaseItems that are lnked toi the given items.
+        /// For Folders, all children down to the to the leaf nodes are included.
+        /// Also includes all axisting alternative versions for Videos.
+        /// </summary>
+        /// <param name="itemList">The list of items for which the MediaStreams should be xtracted.</param>
+        /// <returns>A list of all MediaStreams which are linked to the provided items.</returns>
+        private static IEnumerable<BaseItem> GetLinkedItems(IEnumerable<BaseItem> itemList)
+        {
+            return itemList
+                .SelectMany(item =>
+                {
+                    if (item.IsFolder)
+                    {
+                        return GetLinkedItems(((Folder)item).Children);
+                    }
+                    else if (item is Video)
+                    {
+                        return ((Video)item).GetAllLinkedItems();
+                    }
+                    else
+                    {
+                        return [item];
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Extracts the MediaStreams for all BaseItems in the given list.
+        /// If an item is a Folder, MediaStreams are searched in the list of it's child items.
+        /// Includes all axisting alternative versions for Videos.
+        /// </summary>
+        /// <param name="itemList">The list of items for which the MediaStreams should be extracted.</param>
+        /// <returns>A list of all MediaStreams which are linked to the provided items.</returns>
+        private static IEnumerable<MediaStream> GetMediaStreams(IEnumerable<BaseItem> itemList)
+        {
+            return itemList
+                .SelectMany(item =>
+                {
+                    if (item.IsFolder)
+                    {
+                        return GetMediaStreams(((Folder)item).Children);
+                    }
+                    else if (item is Video)
+                    {
+                        return ((Video)item).GetAllLinkedMediaStreams();
+                    }
+                    else
+                    {
+                        return item.GetMediaStreams();
+                    }
+                });
         }
 
         private IEnumerable<BaseItem> GetMediaFolders(User user)
