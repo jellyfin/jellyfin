@@ -275,9 +275,8 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        result.Items = GetEntities(dbQuery, context, filter).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -295,9 +294,8 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return GetEntities(dbQuery, context, filter).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc/>
@@ -339,9 +337,7 @@ public sealed class BaseItemRepository
         mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
-        mainquery = ApplyNavigations(mainquery, filter);
-
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return GetEntities(mainquery, context, filter).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
 
     /// <inheritdoc />
@@ -408,36 +404,6 @@ public sealed class BaseItemRepository
         return dbQuery;
     }
 
-    private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
-    {
-        if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
-        {
-            dbQuery = dbQuery.Include(e => e.TrailerTypes);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
-        {
-            dbQuery = dbQuery.Include(e => e.Provider);
-        }
-
-        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
-        {
-            dbQuery = dbQuery.Include(e => e.LockedFields);
-        }
-
-        if (filter.DtoOptions.EnableUserData)
-        {
-            dbQuery = dbQuery.Include(e => e.UserData);
-        }
-
-        if (filter.DtoOptions.EnableImages)
-        {
-            dbQuery = dbQuery.Include(e => e.Images);
-        }
-
-        return dbQuery;
-    }
-
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
         if (filter.Limit.HasValue || filter.StartIndex.HasValue)
@@ -463,16 +429,48 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
     }
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking();
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems;
         dbQuery = dbQuery.AsSingleQuery();
 
         return dbQuery;
+    }
+
+    private IReadOnlyList<BaseItemEntity> GetEntities(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
+    {
+        var items = dbQuery.AsEnumerable().Where(e => e is not null).ToArray();
+        var itemIds = items.Select(e => e.Id).ToArray();
+
+        if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+        {
+            context.BaseItemTrailerTypes.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            context.BaseItemProviders.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            context.BaseItemMetadataFields.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+        }
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            context.BaseItemImageInfos.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+        }
+
+        if (filter.DtoOptions.EnableUserData)
+        {
+            context.UserData.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+        }
+
+        return items;
     }
 
     /// <inheritdoc/>
