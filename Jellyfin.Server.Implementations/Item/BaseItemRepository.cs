@@ -442,12 +442,17 @@ public sealed class BaseItemRepository
 
     private IReadOnlyList<BaseItemEntity> GetEntities(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
-        var items = dbQuery.AsEnumerable().Where(e => e is not null).ToDictionary(e => e.Id, e => e);
+        var items = dbQuery.Where(e => e != null).ToDictionary(e => e.Id, e => e);
         var itemIds = items.Keys.ToArray();
+
+        if (itemIds.Length == 0)
+        {
+            return [];
+        }
 
         if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
         {
-            var values = context.BaseItemTrailerTypes.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            var values = context.BaseItemTrailerTypes.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId).ToArray();
             foreach (var value in values)
             {
                 if (items.TryGetValue(value.Key, out var item))
@@ -459,7 +464,7 @@ public sealed class BaseItemRepository
 
         if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
         {
-            var values = context.BaseItemProviders.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            var values = context.BaseItemProviders.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId).ToArray();
             foreach (var value in values)
             {
                 if (items.TryGetValue(value.Key, out var item))
@@ -471,7 +476,7 @@ public sealed class BaseItemRepository
 
         if (filter.DtoOptions.ContainsField(ItemFields.Settings))
         {
-            var values = context.BaseItemMetadataFields.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            var values = context.BaseItemMetadataFields.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId).ToArray();
             foreach (var value in values)
             {
                 if (items.TryGetValue(value.Key, out var item))
@@ -483,7 +488,7 @@ public sealed class BaseItemRepository
 
         if (filter.DtoOptions.EnableImages)
         {
-            var values = context.BaseItemImageInfos.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            var values = context.BaseItemImageInfos.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId).ToArray();
             foreach (var value in values)
             {
                 if (items.TryGetValue(value.Key, out var item))
@@ -495,7 +500,7 @@ public sealed class BaseItemRepository
 
         if (filter.DtoOptions.EnableUserData)
         {
-            var values = context.UserData.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            var values = context.UserData.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId).ToArray();
             foreach (var value in values)
             {
                 if (items.TryGetValue(value.Key, out var item))
