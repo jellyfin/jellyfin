@@ -434,7 +434,7 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
-        IQueryable<BaseItemEntity> dbQuery = context.BaseItems;
+        IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking();
         dbQuery = dbQuery.AsSingleQuery();
 
         return dbQuery;
@@ -442,35 +442,70 @@ public sealed class BaseItemRepository
 
     private IReadOnlyList<BaseItemEntity> GetEntities(IQueryable<BaseItemEntity> dbQuery, JellyfinDbContext context, InternalItemsQuery filter)
     {
-        var items = dbQuery.AsEnumerable().Where(e => e is not null).ToArray();
-        var itemIds = items.Select(e => e.Id).ToArray();
+        var items = dbQuery.AsEnumerable().Where(e => e is not null).ToDictionary(e => e.Id, e => e);
+        var itemIds = items.Keys.ToArray();
 
         if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
         {
-            context.BaseItemTrailerTypes.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+            var values = context.BaseItemTrailerTypes.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            foreach (var value in values)
+            {
+                if (items.TryGetValue(value.Key, out var item))
+                {
+                    item.TrailerTypes = value.ToArray();
+                }
+            }
         }
 
         if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
         {
-            context.BaseItemProviders.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+            var values = context.BaseItemProviders.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            foreach (var value in values)
+            {
+                if (items.TryGetValue(value.Key, out var item))
+                {
+                    item.Provider = value.ToArray();
+                }
+            }
         }
 
         if (filter.DtoOptions.ContainsField(ItemFields.Settings))
         {
-            context.BaseItemMetadataFields.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+            var values = context.BaseItemMetadataFields.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            foreach (var value in values)
+            {
+                if (items.TryGetValue(value.Key, out var item))
+                {
+                    item.LockedFields = value.ToArray();
+                }
+            }
         }
 
         if (filter.DtoOptions.EnableImages)
         {
-            context.BaseItemImageInfos.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+            var values = context.BaseItemImageInfos.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            foreach (var value in values)
+            {
+                if (items.TryGetValue(value.Key, out var item))
+                {
+                    item.Images = value.ToArray();
+                }
+            }
         }
 
         if (filter.DtoOptions.EnableUserData)
         {
-            context.UserData.WhereOneOrMany(itemIds, e => e.ItemId).Load();
+            var values = context.UserData.WhereOneOrMany(itemIds, e => e.ItemId).GroupBy(x => x.ItemId);
+            foreach (var value in values)
+            {
+                if (items.TryGetValue(value.Key, out var item))
+                {
+                    item.UserData = value.ToArray();
+                }
+            }
         }
 
-        return items;
+        return items.Values.ToArray();
     }
 
     /// <inheritdoc/>
