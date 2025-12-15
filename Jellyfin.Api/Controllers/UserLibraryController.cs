@@ -564,7 +564,8 @@ public class UserLibraryController : BaseJellyfinApiController
             },
             dtoOptions);
 
-        var dtos = list.Select(i =>
+        // Collect all items and their metadata for batch processing
+        var itemsWithMetadata = list.Select(i =>
         {
             var item = i.Item2[0];
             var childCount = 0;
@@ -575,14 +576,20 @@ public class UserLibraryController : BaseJellyfinApiController
                 childCount = i.Item2.Count;
             }
 
-            var dto = _dtoService.GetBaseItemDto(item, dtoOptions, user);
+            return (item, childCount);
+        }).ToList();
 
-            dto.ChildCount = childCount;
+        // Batch convert items to DTOs
+        var items = itemsWithMetadata.Select(x => x.item).ToList();
+        var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions, user);
 
-            return dto;
-        });
+        // Apply child counts
+        for (int i = 0; i < dtos.Count; i++)
+        {
+            dtos[i].ChildCount = itemsWithMetadata[i].childCount;
+        }
 
-        return Ok(dtos);
+        return Ok(dtos.AsEnumerable());
     }
 
     /// <summary>
