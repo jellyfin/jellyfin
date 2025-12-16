@@ -1,0 +1,76 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Packages.props" />
+    <File Path="SharedVersion.cs" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Jellyfin.CodeAnalysis/Jellyfin.CodeAnalysis.csproj" />
+    <Project Path="src/Jellyfin.Drawing.Skia/Jellyfin.Drawing.Skia.csproj" />
+    <Project Path="src/Jellyfin.Drawing/Jellyfin.Drawing.csproj" />
+    <Project Path="src/Jellyfin.Extensions/Jellyfin.Extensions.csproj" />
+    <Project Path="src/Jellyfin.LiveTv/Jellyfin.LiveTv.csproj" />
+    <Project Path="src/Jellyfin.MediaEncoding.Hls/Jellyfin.MediaEncoding.Hls.csproj">
+      <BuildType Project="Debug" />
+    </Project>
+    <Project Path="src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj">
+      <BuildType Project="Debug" />
+    </Project>
+    <Project Path="src/Jellyfin.Networking/Jellyfin.Networking.csproj" />
+  </Folder>
+  <Folder Name="/src/Jellyfin.Database/">
+    <File Path="src/Jellyfin.Database/readme.md" />
+    <Project Path="src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj" />
+    <Project Path="src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Controller.Tests/Jellyfin.Controller.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Extensions.Tests/Jellyfin.Extensions.Tests.csproj" />
+    <Project Path="tests/Jellyfin.LiveTv.Tests/Jellyfin.LiveTv.Tests.csproj" />
+    <Project Path="tests/Jellyfin.MediaEncoding.Hls.Tests/Jellyfin.MediaEncoding.Hls.Tests.csproj" />
+    <Project Path="tests/Jellyfin.MediaEncoding.Keyframes.Tests/Jellyfin.MediaEncoding.Keyframes.Tests.csproj" />
+    <Project Path="tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Model.Tests/Jellyfin.Model.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Naming.Tests/Jellyfin.Naming.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Networking.Tests/Jellyfin.Networking.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Providers.Tests/Jellyfin.Providers.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Server.Implementations.Tests/Jellyfin.Server.Implementations.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj" />
+    <Project Path="tests/Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj" />
+    <Project Path="tests/Jellyfin.XbmcMetadata.Tests/Jellyfin.XbmcMetadata.Tests.csproj" />
+  </Folder>
+  <Project Path="Emby.Naming/Emby.Naming.csproj" />
+  <Project Path="Emby.Photos/Emby.Photos.csproj" />
+  <Project Path="Emby.Server.Implementations/Emby.Server.Implementations.csproj" />
+  <Project Path="Jellyfin.Api/Jellyfin.Api.csproj" />
+  <Project Path="Jellyfin.Data/Jellyfin.Data.csproj" />
+  <Project Path="Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
+  <Project Path="Jellyfin.Server/Jellyfin.Server.csproj" />
+  <Project Path="MediaBrowser.Common/MediaBrowser.Common.csproj" />
+  <Project Path="MediaBrowser.Controller/MediaBrowser.Controller.csproj" />
+  <Project Path="MediaBrowser.LocalMetadata/MediaBrowser.LocalMetadata.csproj" />
+  <Project Path="MediaBrowser.MediaEncoding/MediaBrowser.MediaEncoding.csproj" />
+  <Project Path="MediaBrowser.Model/MediaBrowser.Model.csproj" />
+  <Project Path="MediaBrowser.Providers/MediaBrowser.Providers.csproj" />
+  <Project Path="MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj" />
+  <Properties Name="AutomaticVersions" Scope="PostLoad">
+    <Property Name="AssemblyFileVersionSettings" Value="None.None.None.None" />
+    <Property Name="AssemblyInfoVersionSettings" Value="None.None.None.None" />
+    <Property Name="AssemblyInfoVersionType" Value="SettingsVersion" />
+    <Property Name="AssemblyVersionSettings" Value="None.None.None.None" />
+    <Property Name="InheritWinAppVersionFrom" Value="None" />
+    <Property Name="UpdateAssemblyFileVersion" Value="True" />
+    <Property Name="UpdateAssemblyInfoVersion" Value="True" />
+    <Property Name="UpdateAssemblyVersion" Value="True" />
+    <Property Name="UpdatePackageVersion" Value="False" />
+  </Properties>
+  <Properties Name="MonoDevelopProperties">
+    <Property Name="$0.DotNetNamingPolicy" Value="$2" />
+    <Property Name="$0.StandardHeader" Value="$1" />
+    <Property Name="$1.IncludeInNewFiles" Value="False" />
+    <Property Name="$2.DirectoryNamespaceAssociation" Value="PrefixedHierarchical" />
+    <Property Name="Policies" Value="$0" />
+  </Properties>
+</Solution>
