@@ -43,10 +43,10 @@ namespace Emby.Naming.ExternalFiles
                 return null;
             }
 
-            var extension = Path.GetExtension(path.AsSpan());
-            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
+            var extension = Path.GetExtension(path);
+            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension))
+                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension))
+                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension)))
             {
                 return null;
             }

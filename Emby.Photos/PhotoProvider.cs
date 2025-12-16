@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,7 +28,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
     private readonly IImageProcessor _imageProcessor;
 
     // Other extensions might cause taglib to hang
-    private readonly string[] _includeExtensions = [".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif"];
+    private readonly FrozenSet<string> _includeExtensions = new[] { ".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PhotoProvider" /> class.
@@ -61,7 +62,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
         item.SetImagePath(ImageType.Primary, item.Path);
 
         // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-        if (_includeExtensions.Contains(Path.GetExtension(item.Path.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        if (_includeExtensions.Contains(Path.GetExtension(item.Path)))
         {
             try
             {

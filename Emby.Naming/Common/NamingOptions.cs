@@ -1,6 +1,7 @@
 #pragma warning disable CA1819
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -21,8 +22,8 @@ namespace Emby.Naming.Common
         /// </summary>
         public NamingOptions()
         {
-            VideoFileExtensions =
-            [
+            VideoFileExtensions = new[]
+            {
                 ".001",
                 ".3g2",
                 ".3gp",
@@ -77,7 +78,7 @@ namespace Emby.Naming.Common
                 ".wmv",
                 ".wtv",
                 ".xvid"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             VideoFlagDelimiters =
             [
@@ -90,10 +91,10 @@ namespace Emby.Naming.Common
                 ']'
             ];
 
-            StubFileExtensions =
-            [
+            StubFileExtensions = new[]
+            {
                 ".disc"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             StubTypes =
             [
@@ -160,8 +161,8 @@ namespace Emby.Naming.Common
                 @"^\s*(?<cleaned>.+?)(([-._ ](trailer|sample))|-(scene|clip|behindthescenes|deleted|deletedscene|featurette|short|interview|other|extra))$"
             ];
 
-            SubtitleFileExtensions =
-            [
+            SubtitleFileExtensions = new[]
+            {
                 ".ass",
                 ".mks",
                 ".sami",
@@ -171,14 +172,14 @@ namespace Emby.Naming.Common
                 ".sub",
                 ".sup",
                 ".vtt",
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-            LyricFileExtensions =
-            [
+            LyricFileExtensions = new[]
+            {
                 ".lrc",
                 ".elrc",
                 ".txt"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             AlbumStackingPrefixes =
             [
@@ -210,8 +211,8 @@ namespace Emby.Naming.Common
                 "streets"
             ];
 
-            AudioFileExtensions =
-            [
+            AudioFileExtensions = new[]
+            {
                 ".669",
                 ".3gp",
                 ".aa",
@@ -292,7 +293,7 @@ namespace Emby.Naming.Common
                 ".xm",
                 ".xsp",
                 ".ymf"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             MediaFlagDelimiters =
             [
@@ -779,7 +780,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of audio file extensions.
         /// </summary>
-        public string[] AudioFileExtensions { get; set; }
+        public FrozenSet<string> AudioFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of external media flag delimiters.
@@ -814,12 +815,12 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of subtitle file extensions.
         /// </summary>
-        public string[] SubtitleFileExtensions { get; set; }
+        public FrozenSet<string> SubtitleFileExtensions { get; set; }
 
         /// <summary>
         /// Gets the list of lyric file extensions.
         /// </summary>
-        public string[] LyricFileExtensions { get; }
+        public FrozenSet<string> LyricFileExtensions { get; }
 
         /// <summary>
         /// Gets or sets list of episode regular expressions.
@@ -829,12 +830,12 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of video file extensions.
         /// </summary>
-        public string[] VideoFileExtensions { get; set; }
+        public FrozenSet<string> VideoFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of video stub file extensions.
         /// </summary>
-        public string[] StubFileExtensions { get; set; }
+        public FrozenSet<string> StubFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of raw audiobook parts regular expressions strings.
