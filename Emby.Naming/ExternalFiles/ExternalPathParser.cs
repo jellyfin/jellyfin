@@ -44,9 +44,9 @@ namespace Emby.Naming.ExternalFiles
             }
 
             var extension = Path.GetExtension(path);
-            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension))
+            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension))
-                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension)))
+                && !(_type == DlnaProfileType.Lyric && _namingOptions.LyricFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {
                 return null;
             }

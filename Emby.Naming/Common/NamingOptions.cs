@@ -161,8 +161,8 @@ namespace Emby.Naming.Common
                 @"^\s*(?<cleaned>.+?)(([-._ ](trailer|sample))|-(scene|clip|behindthescenes|deleted|deletedscene|featurette|short|interview|other|extra))$"
             ];
 
-            SubtitleFileExtensions = new[]
-            {
+            SubtitleFileExtensions =
+            [
                 ".ass",
                 ".mks",
                 ".sami",
@@ -171,8 +171,8 @@ namespace Emby.Naming.Common
                 ".ssa",
                 ".sub",
                 ".sup",
-                ".vtt",
-            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+                ".vtt"
+            ];
 
             LyricFileExtensions =
             [
@@ -815,12 +815,12 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of subtitle file extensions.
         /// </summary>
-        public FrozenSet<string> SubtitleFileExtensions { get; set; }
+        public string[] SubtitleFileExtensions { get; set; }
 
         /// <summary>
         /// Gets the list of lyric file extensions.
         /// </summary>
-        public FrozenSet<string> LyricFileExtensions { get; }
+        public string[] LyricFileExtensions { get; }
 
         /// <summary>
         /// Gets or sets list of episode regular expressions.
