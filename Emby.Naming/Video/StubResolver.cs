@@ -27,6 +27,7 @@ namespace Emby.Naming.Video
             }
 
             var extension = Path.GetExtension(path.AsSpan());
+
             if (!options.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
