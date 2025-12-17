@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Frozen;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Book;
@@ -57,8 +56,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var extension = Path.GetExtension(f.FullName.AsSpan());
-                return _validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
+                var fileExtension = Path.GetExtension(f.FullName.AsSpan());
+
+                return _validExtensions.Contains(
+                    fileExtension,
+                    StringComparison.OrdinalIgnoreCase);
             }).Take(2).ToList();
 
             // directory is only considered a book when it contains exactly one supported file
@@ -78,6 +80,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 ProductionYear = result.Year,
                 SeriesName = result.SeriesName ?? string.Empty,
             };
-}
+        }
     }
 }
