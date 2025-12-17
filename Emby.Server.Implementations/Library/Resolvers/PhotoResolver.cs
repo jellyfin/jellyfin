@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
