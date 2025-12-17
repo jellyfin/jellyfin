@@ -17,7 +17,6 @@ namespace Emby.Naming.Audio
         /// <returns>True if file at path is audio file.</returns>
         public static bool IsAudioFile(string path, NamingOptions options)
         {
-            var extension = Path.GetExtension(path.AsSpan());
             return options.AudioFileExtensions.Contains(Path.GetExtension(path));
         }
     }
