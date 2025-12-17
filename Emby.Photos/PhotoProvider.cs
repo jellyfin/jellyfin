@@ -61,8 +61,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
         item.SetImagePath(ImageType.Primary, item.Path);
 
         // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-        var extension = Path.GetExtension(item.Path.AsSpan());
-        if (_includeExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+        if (_includeExtensions.Contains(Path.GetExtension(item.Path.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
             try
             {
