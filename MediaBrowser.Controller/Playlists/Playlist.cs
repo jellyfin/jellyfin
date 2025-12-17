@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly string[] SupportedExtensions =
+        public static readonly IReadOnlyList<string> SupportedExtensions =
         [
             ".m3u",
             ".m3u8",
