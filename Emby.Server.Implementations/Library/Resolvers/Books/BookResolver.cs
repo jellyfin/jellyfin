@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Book;
@@ -16,7 +17,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
     public class BookResolver : ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
+        private readonly FrozenSet<string> _validExtensions = new[] { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         protected override Book Resolve(ItemResolveArgs args)
         {
@@ -33,9 +34,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 return GetBook(args);
             }
 
-            var extension = Path.GetExtension(args.Path.AsSpan());
-
-            if (!_validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            if (!_validExtensions.Contains(Path.GetExtension(args.Path)))
             {
                 return null;
             }
@@ -56,13 +55,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         private Book GetBook(ItemResolveArgs args)
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
-            {
-                var fileExtension = Path.GetExtension(f.FullName.AsSpan());
-
-                return _validExtensions.Contains(
-                    fileExtension,
-                    StringComparison.OrdinalIgnoreCase);
-            }).ToList();
+                _validExtensions.Contains(Path.GetExtension(f.FullName))).Take(2).ToList();
 
             // directory is only considered a book when it contains exactly one supported file
             // other library structures with multiple books to a directory will get picked up as individual files

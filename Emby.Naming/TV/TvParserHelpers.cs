@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Frozen;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.TV;
@@ -9,8 +9,8 @@ namespace Emby.Naming.TV;
 /// </summary>
 public static class TvParserHelpers
 {
-    private static readonly string[] _continuingState = ["Pilot", "Returning Series", "Returning"];
-    private static readonly string[] _endedState = ["Cancelled", "Canceled"];
+    private static readonly FrozenSet<string> _continuingState = new[] { "Pilot", "Returning Series", "Returning" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly FrozenSet<string> _endedState = new[] { "Cancelled", "Canceled" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Tries to parse a string into <see cref="SeriesStatus"/>.
@@ -26,13 +26,13 @@ public static class TvParserHelpers
             return true;
         }
 
-        if (_continuingState.Contains(status, StringComparer.OrdinalIgnoreCase))
+        if (_continuingState.Contains(status))
         {
             enumValue = SeriesStatus.Continuing;
             return true;
         }
 
-        if (_endedState.Contains(status, StringComparer.OrdinalIgnoreCase))
+        if (_endedState.Contains(status))
         {
             enumValue = SeriesStatus.Ended;
             return true;

@@ -15,7 +15,7 @@ namespace Emby.Naming.Video
         /// <param name="name">The stack name.</param>
         /// <param name="isDirectory">Whether the stack files are directories.</param>
         /// <param name="files">The stack files.</param>
-        public FileStack(string name, bool isDirectory, IReadOnlyList<string> files)
+        public FileStack(string name, bool isDirectory, ISet<string> files)
         {
             Name = name;
             IsDirectoryStack = isDirectory;
@@ -30,7 +30,7 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Gets the list of paths in stack.
         /// </summary>
-        public IReadOnlyList<string> Files { get; }
+        public ISet<string> Files { get; }
 
         /// <summary>
         /// Gets a value indicating whether stack is directory stack.
@@ -50,7 +50,7 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            return IsDirectoryStack == isDirectory && Files.Contains(file, StringComparison.OrdinalIgnoreCase);
+            return IsDirectoryStack == isDirectory && Files.Contains(file);
         }
     }
 }

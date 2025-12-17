@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -78,7 +79,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> SupportedInputFormats =>
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        new[]
         {
             "tiff",
             "tif",
@@ -106,7 +107,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             "pkm",
             "wbmp",
             "avif"
-        };
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
     public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;

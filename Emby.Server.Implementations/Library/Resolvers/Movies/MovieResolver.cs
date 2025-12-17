@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,14 +30,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     {
         private readonly IImageProcessor _imageProcessor;
 
-        private static readonly CollectionType[] _validCollectionTypes = new[]
+        private static readonly FrozenSet<CollectionType> _validCollectionTypes = new[]
         {
             CollectionType.movies,
             CollectionType.homevideos,
             CollectionType.musicvideos,
             CollectionType.tvshows,
             CollectionType.photos
-        };
+        }.ToFrozenSet();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.

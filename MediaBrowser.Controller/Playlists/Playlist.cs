@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,14 +24,15 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly IReadOnlyList<string> SupportedExtensions =
-        [
+        public static readonly FrozenSet<string> SupportedExtensions =
+        new[]
+        {
             ".m3u",
             ".m3u8",
             ".pls",
             ".wpl",
             ".zpl"
-        ];
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         public Playlist()
         {
