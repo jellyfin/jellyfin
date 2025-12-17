@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.TV;
@@ -27,13 +26,13 @@ public static class TvParserHelpers
             return true;
         }
 
-        if (_continuingState.Contains(status, StringComparison.OrdinalIgnoreCase))
+        if (_continuingState.Contains(status, StringComparer.OrdinalIgnoreCase))
         {
             enumValue = SeriesStatus.Continuing;
             return true;
         }
 
-        if (_endedState.Contains(status, StringComparison.OrdinalIgnoreCase))
+        if (_endedState.Contains(status, StringComparer.OrdinalIgnoreCase))
         {
             enumValue = SeriesStatus.Ended;
             return true;
