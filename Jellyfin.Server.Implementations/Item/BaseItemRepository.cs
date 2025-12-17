@@ -2629,6 +2629,12 @@ public sealed class BaseItemRepository
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 
-        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+        var lookup = artists
+            .GroupBy(e => e.Name!)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+
+        return artistNames.Where(lookup.ContainsKey).ToDictionary(name => name, name => lookup[name]);
     }
 }
