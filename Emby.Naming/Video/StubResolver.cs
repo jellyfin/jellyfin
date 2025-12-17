@@ -26,7 +26,8 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            if (!options.StubFileExtensions.Contains(Path.GetExtension(path)))
+            var extension = Path.GetExtension(path.AsSpan());
+            if (!options.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

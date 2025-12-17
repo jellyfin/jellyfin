@@ -91,10 +91,10 @@ namespace Emby.Naming.Common
                 ']'
             ];
 
-            StubFileExtensions = new[]
-            {
+            StubFileExtensions =
+            [
                 ".disc"
-            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+            ];
 
             StubTypes =
             [
@@ -174,12 +174,12 @@ namespace Emby.Naming.Common
                 ".vtt",
             }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-            LyricFileExtensions = new[]
-            {
+            LyricFileExtensions =
+            [
                 ".lrc",
                 ".elrc",
                 ".txt"
-            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+            ];
 
             AlbumStackingPrefixes =
             [
@@ -835,7 +835,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of video stub file extensions.
         /// </summary>
-        public FrozenSet<string> StubFileExtensions { get; set; }
+        public string[] StubFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of raw audiobook parts regular expressions strings.

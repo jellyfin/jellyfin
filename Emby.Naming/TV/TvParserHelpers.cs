@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Frozen;
+using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.TV;
@@ -9,8 +10,8 @@ namespace Emby.Naming.TV;
 /// </summary>
 public static class TvParserHelpers
 {
-    private static readonly FrozenSet<string> _continuingState = new[] { "Pilot", "Returning Series", "Returning" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
-    private static readonly FrozenSet<string> _endedState = new[] { "Cancelled", "Canceled" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly string[] _continuingState = ["Pilot", "Returning Series", "Returning"];
+    private static readonly string[] _endedState = ["Cancelled", "Canceled"];
 
     /// <summary>
     /// Tries to parse a string into <see cref="SeriesStatus"/>.
@@ -26,13 +27,13 @@ public static class TvParserHelpers
             return true;
         }
 
-        if (_continuingState.Contains(status))
+        if (_continuingState.Contains(status, StringComparison.OrdinalIgnoreCase))
         {
             enumValue = SeriesStatus.Continuing;
             return true;
         }
 
-        if (_endedState.Contains(status))
+        if (_endedState.Contains(status, StringComparison.OrdinalIgnoreCase))
         {
             enumValue = SeriesStatus.Ended;
             return true;

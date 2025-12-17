@@ -62,7 +62,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
             // It should have the correct collection type and a supported file extension
             else if (_musicPlaylistCollectionTypes.Contains(args.CollectionType))
             {
-                if (Playlist.SupportedExtensions.Contains(Path.GetExtension(args.Path)))
+                var extension = Path.GetExtension(args.Path.AsSpan());
+                if (Playlist.SupportedExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Playlist
                     {

@@ -24,15 +24,14 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly FrozenSet<string> SupportedExtensions =
-        new[]
-        {
+        public static readonly string[] SupportedExtensions =
+        [
             ".m3u",
             ".m3u8",
             ".pls",
             ".wpl",
             ".zpl"
-        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+        ];
 
         public Playlist()
         {
