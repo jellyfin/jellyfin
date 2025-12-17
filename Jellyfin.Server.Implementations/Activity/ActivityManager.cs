@@ -72,6 +72,11 @@ public class ActivityManager : IActivityManager
                 entries = entries.Where(e => e.ActivityLog.DateCreated >= query.MinDate.Value);
             }
 
+            if (query.MaxDate is not null)
+            {
+                entries = entries.Where(e => e.ActivityLog.DateCreated <= query.MaxDate.Value);
+            }
+
             if (!string.IsNullOrEmpty(query.Name))
             {
                 entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Name, $"%{query.Name}%"));
