@@ -166,9 +166,19 @@ public class ActivityManager : IActivityManager
         foreach (var (sortBy, sortOrder) in sorting)
         {
             var orderBy = MapOrderBy(sortBy);
+
+            if (ordered == null)
+            {
             ordered = sortOrder == SortOrder.Ascending
                 ? (ordered ?? query).OrderBy(orderBy)
                 : (ordered ?? query).OrderByDescending(orderBy);
+            }
+            else
+            {
+                ordered = sortOrder == SortOrder.Ascending
+                ? ordered.ThenBy(orderBy)
+                : ordered.ThenByDescending(orderBy);
+            }
         }
 
         return ordered;
