@@ -41,6 +41,7 @@ namespace Emby.Server.Implementations.Localization
         private List<CultureDto> _cultures = [];
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
+        private ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -169,20 +170,31 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public CultureDto? FindLanguageInfo(string language)
         {
-            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
-            for (var i = 0; i < _cultures.Count; i++)
+            if (string.IsNullOrEmpty(language))
             {
-                var culture = _cultures[i];
-                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
-                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return culture;
-                }
+                return null;
             }
 
-            return default;
+            return _cultureCache.GetOrAdd(
+                language,
+                static (lang, cultures) =>
+                {
+                    // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+                    for (var i = 0; i < cultures.Count; i++)
+                    {
+                        var culture = cultures[i];
+                        if (lang.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                            || culture.ThreeLetterISOLanguageNames.Contains(lang, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return culture;
+                        }
+                    }
+
+                    return null;
+                },
+                _cultures);
         }
 
         /// <inheritdoc />
