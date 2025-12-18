@@ -174,15 +174,15 @@ public class ActivityManager : IActivityManager
 
             if (ordered == null)
             {
-            ordered = sortOrder == SortOrder.Ascending
-                ? (ordered ?? query).OrderBy(orderBy)
-                : (ordered ?? query).OrderByDescending(orderBy);
+                ordered = sortOrder == SortOrder.Ascending
+                    ? query.OrderBy(orderBy)
+                    : query.OrderByDescending(orderBy);
             }
             else
             {
                 ordered = sortOrder == SortOrder.Ascending
-                ? ordered.ThenBy(orderBy)
-                : ordered.ThenByDescending(orderBy);
+                    ? ordered.ThenBy(orderBy)
+                    : ordered.ThenByDescending(orderBy);
             }
         }
 
