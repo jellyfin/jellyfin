@@ -38,10 +38,10 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
+        private readonly ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
         private List<CultureDto> _cultures = [];
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
-        private ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -162,6 +162,7 @@ namespace Emby.Server.Implementations.Localization
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
+                _cultureCache.Clear();
                 _cultures = list;
                 _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
