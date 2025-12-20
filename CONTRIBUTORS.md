@@ -13,6 +13,7 @@
  - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
+ - [Blueacid](https://github.com/blueacid)
  - [BnMcG](https://github.com/BnMcG)
  - [Bond-009](https://github.com/Bond-009)
  - [brianjmurrell](https://github.com/brianjmurrell)
