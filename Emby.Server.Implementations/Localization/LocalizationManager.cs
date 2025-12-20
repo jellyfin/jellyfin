@@ -324,15 +324,19 @@ namespace Emby.Server.Implementations.Localization
             else
             {
                 // Fall back to server default language for ratings check
-                // If it has no ratings, use the US ratings
-                var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
+                var ratingsDictionary = GetParentalRatingsDictionary();
                 if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRatingScore? value))
                 {
                     return value;
                 }
             }
 
-            // If we don't find anything, check all ratings systems
+            // If we don't find anything, check all ratings systems, starting with US
+            if (_allParentalRatings.TryGetValue("us", out var usRatings) && usRatings.TryGetValue(rating, out var usValue))
+            {
+                return usValue;
+            }
+
             foreach (var dictionary in _allParentalRatings.Values)
             {
                 if (dictionary.TryGetValue(rating, out var value))
