@@ -205,6 +205,7 @@
  - [theshoeshiner](https://github.com/theshoeshiner)
  - [TokerX](https://github.com/TokerX)
  - [GeneMarks](https://github.com/GeneMarks)
+ - [bjorntp](https://github.com/bjorntp)
 
 # Emby Contributors
 
