@@ -7039,8 +7039,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
-                    var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
-                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                    // There is an issue with AV1 RKMPP decoding, where AV1 HW decoding fails if the video
+                    // has a width which isn't  a multiple of 64.
+                    // Upstream issue: https://github.com/rockchip-linux/mpp/issues/935
+                    if (inW % 64 == 0)
+                        {
+                            var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                            return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                        }
+                        else
+                        {
+                            return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                        }
                 }
             }
 
