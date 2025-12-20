@@ -779,6 +779,9 @@ public class NetworkManager : INetworkManager, IDisposable
             return knownInterfaces;
         }
 
+        // TODO: remove when upgrade to dotnet 11 is done
+        readIpv6 &= Socket.OSSupportsIPv6;
+
         // No bind address and no exclusions, so listen on all interfaces.
         var result = new List<IPData>();
         if (readIpv4 && readIpv6)
