@@ -5,27 +5,31 @@ namespace MediaBrowser.Providers.Parsers
 {
     /// <summary>
     /// Parser for vinyl-style track number formats.
+    /// Extracts track number and optionally infers disc number when DISCNUMBER is missing.
+    /// WARNING: Side letter information is discarded due to schema limitations.
     /// </summary>
     public static class VinylTrackNumberParser
     {
+        private const int SidesPerDisc = 2;
         private static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
 
         /// <summary>
-        /// Attempts to parse vinyl-style track numbers from string representations.
-        /// Returns both the track number and the side as a disc number.
-        /// Examples: "A1" → (1, 1), "B2" → (2, 2), "C15" → (15, 3).
+        /// Parses vinyl-style track numbers, extracting track number and inferring disc number when needed.
+        /// Side letter information is parsed but discarded due to lack of storage field.
         /// </summary>
-        /// <param name="vinylTrack">The vinyl track number string to parse.</param>
-        /// <param name="trackNumber">The parsed track number.</param>
-        /// <param name="sideNumber">The parsed side number (A=1, B=2, C=3, etc.).</param>
+        /// <param name="vinylTrack">The track string to parse (e.g., "C3").</param>
+        /// <param name="existingDiscNumber">Optional disc number from DISCNUMBER tag.</param>
+        /// <param name="trackNumber">The parsed track number within the side.</param>
+        /// <param name="finalDiscNumber">The disc number to use (existing tag or inferred).</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise, <c>false</c>.</returns>
-        public static bool TryParseVinylTrackNumber(
+        public static bool TryParseVinylTrack(
             string? vinylTrack,
+            int? existingDiscNumber,
             out int trackNumber,
-            out int sideNumber)
+            out int finalDiscNumber)
         {
             trackNumber = 0;
-            sideNumber = 1; // Default to side A
+            finalDiscNumber = existingDiscNumber ?? 1;
 
             if (string.IsNullOrWhiteSpace(vinylTrack))
             {
@@ -36,42 +40,39 @@ namespace MediaBrowser.Providers.Parsers
 
             try
             {
-                // Handle standard vinyl formats: [Side Letter][Track Number]
-                // Examples: A1, B2, A01, B02, C15
+                char? sideLetter = null;
+                int? sideNumber = null;
+
+                // Parse and extract side information (then discard it)
                 if (normalizedTrack.Length >= 2 && char.IsLetter(normalizedTrack[0]) && char.IsDigit(normalizedTrack[1]))
                 {
-                    // Extract side letter and convert to number (A=1, B=2, C=3, etc.)
-                    char sideLetter = normalizedTrack[0];
-                    sideNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
+                    sideLetter = normalizedTrack[0];
+                    sideNumber = char.ToUpper(sideLetter.Value, InvariantCulture) - 'A' + 1;
 
                     var numericPart = normalizedTrack.Substring(1);
-
-                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out int trackOnSide))
+                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
                     {
-                        // Extract just the track number within the side
-                        trackNumber = trackOnSide;
+                        // SIDE LETTER 'C' IS PARSED HERE BUT THEN DISCARDED
+                        ApplyDiscNumberLogic(ref finalDiscNumber, existingDiscNumber, sideNumber);
                         return true;
                     }
                 }
 
-                // Handle reverse vinyl formats: [Track Number][Side Letter]
-                // Examples: 1A, 2B, 01A, 02B
                 if (normalizedTrack.Length >= 2 && char.IsDigit(normalizedTrack[0]) && char.IsLetter(normalizedTrack[^1]))
                 {
-                    // Extract side letter and convert to number
-                    char sideLetter = normalizedTrack[^1];
-                    sideNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
+                    sideLetter = normalizedTrack[^1];
+                    sideNumber = char.ToUpper(sideLetter.Value, InvariantCulture) - 'A' + 1;
 
                     var numericPart = normalizedTrack[..^1];
-
-                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out int trackOnSide))
+                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
                     {
-                        trackNumber = trackOnSide;
+                        // SIDE LETTER 'C' IS PARSED HERE BUT NOT USED
+                        ApplyDiscNumberLogic(ref finalDiscNumber, existingDiscNumber, sideNumber);
                         return true;
                     }
                 }
 
-                // Final attempt: try parsing as plain numeric track number
+                // Plain numeric track
                 if (int.TryParse(normalizedTrack, NumberStyles.Integer, InvariantCulture, out trackNumber))
                 {
                     return true;
@@ -79,11 +80,28 @@ namespace MediaBrowser.Providers.Parsers
             }
             catch (Exception)
             {
-                // Parsing failed
                 return false;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Backward-compatible method (discouraged).
+        /// WARNING: Always infers disc number, which may override existing DISCNUMBER tags.
+        /// Use TryParseVinylTrack instead for proper DISCNUMBER handling.
+        /// </summary>
+        /// <param name="vinylTrack">The vinyl track number string to parse.</param>
+        /// <param name="trackNumber">The parsed track number.</param>
+        /// <param name="inferredDiscNumber">The disc number inferred from the side letter.</param>
+        /// <returns><c>true</c> if parsing succeeded; otherwise, <c>false</c>.</returns>
+        public static bool TryParseVinylTrackNumber(
+            string? vinylTrack,
+            out int trackNumber,
+            out int inferredDiscNumber)
+        {
+            // Always infers disc number (legacy behavior)
+            return TryParseVinylTrack(vinylTrack, null, out trackNumber, out inferredDiscNumber);
         }
 
         /// <summary>
@@ -113,6 +131,39 @@ namespace MediaBrowser.Providers.Parsers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Creates display string showing what information was lost.
+        /// Example: "Track 3 (Side C information lost due to schema limitations)".
+        /// </summary>
+        /// <param name="original">The original track string.</param>
+        /// <param name="trackNum">The parsed track number.</param>
+        /// <param name="discNum">The disc number used.</param>
+        /// <returns>A display string acknowledging information loss.</returns>
+        public static string GetLossAwareDisplayString(string? original, int trackNum, int discNum)
+        {
+            if (IsVinylFormat(original))
+            {
+                return $"Track {trackNum} (Disc {discNum}) - Side information from '{original}' was lost";
+            }
+
+            return $"Track {trackNum} (Disc {discNum})";
+        }
+
+        /// <summary>
+        /// Applies disc number logic: uses existing tag if available, otherwise infers from side.
+        /// </summary>
+        /// <param name="finalDiscNumber">The disc number to modify.</param>
+        /// <param name="existingDiscNumber">Optional disc number from DISCNUMBER tag.</param>
+        /// <param name="sideNumber">The side number if available (A=1, B=2, etc.).</param>
+        private static void ApplyDiscNumberLogic(ref int finalDiscNumber, int? existingDiscNumber, int? sideNumber)
+        {
+            // If no existing disc number AND we have side info, infer from side
+            if (!existingDiscNumber.HasValue && sideNumber.HasValue)
+            {
+                finalDiscNumber = ((sideNumber.Value - 1) / SidesPerDisc) + 1;
+            }
         }
     }
 }
