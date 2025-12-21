@@ -5,31 +5,29 @@ namespace MediaBrowser.Providers.Parsers
 {
     /// <summary>
     /// Parser for vinyl-style track number formats.
-    /// Extracts track number and optionally infers disc number when DISCNUMBER is missing.
-    /// WARNING: Side letter information is discarded due to schema limitations.
+    /// Treats each side as a separate "disc" to avoid collisions (C=disc 3, D=disc 4, etc.).
+    /// This matches what Plex and other players do for vinyl compatibility.
     /// </summary>
     public static class VinylTrackNumberParser
     {
-        private const int SidesPerDisc = 2;
         private static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
 
         /// <summary>
-        /// Parses vinyl-style track numbers, extracting track number and inferring disc number when needed.
-        /// Side letter information is parsed but discarded due to lack of storage field.
+        /// Parses vinyl-style track numbers and treats each side as a separate disc.
+        /// Side letters become disc numbers: A=1, B=2, C=3, D=4, etc.
+        /// Examples: "A1" → (1, 1), "B2" → (2, 2), "C15" → (15, 3).
         /// </summary>
-        /// <param name="vinylTrack">The track string to parse (e.g., "C3").</param>
-        /// <param name="existingDiscNumber">Optional disc number from DISCNUMBER tag.</param>
-        /// <param name="trackNumber">The parsed track number within the side.</param>
-        /// <param name="finalDiscNumber">The disc number to use (existing tag or inferred).</param>
+        /// <param name="vinylTrack">The vinyl track number string to parse.</param>
+        /// <param name="trackNumber">The parsed track number.</param>
+        /// <param name="sideAsDiscNumber">The side letter treated as disc number.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise, <c>false</c>.</returns>
-        public static bool TryParseVinylTrack(
+        public static bool TryParseVinylTrackNumber(
             string? vinylTrack,
-            int? existingDiscNumber,
             out int trackNumber,
-            out int finalDiscNumber)
+            out int sideAsDiscNumber)
         {
             trackNumber = 0;
-            finalDiscNumber = existingDiscNumber ?? 1;
+            sideAsDiscNumber = 1; // Default
 
             if (string.IsNullOrWhiteSpace(vinylTrack))
             {
@@ -40,34 +38,30 @@ namespace MediaBrowser.Providers.Parsers
 
             try
             {
-                char? sideLetter = null;
-                int? sideNumber = null;
-
-                // Parse and extract side information (then discard it)
+                // Handle standard vinyl formats: [Side Letter][Track Number]
                 if (normalizedTrack.Length >= 2 && char.IsLetter(normalizedTrack[0]) && char.IsDigit(normalizedTrack[1]))
                 {
-                    sideLetter = normalizedTrack[0];
-                    sideNumber = char.ToUpper(sideLetter.Value, InvariantCulture) - 'A' + 1;
+                    char sideLetter = normalizedTrack[0];
+                    sideAsDiscNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
 
                     var numericPart = normalizedTrack.Substring(1);
+
                     if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
                     {
-                        // SIDE LETTER 'C' IS PARSED HERE BUT THEN DISCARDED
-                        ApplyDiscNumberLogic(ref finalDiscNumber, existingDiscNumber, sideNumber);
                         return true;
                     }
                 }
 
+                // Handle reverse vinyl formats: [Track Number][Side Letter]
                 if (normalizedTrack.Length >= 2 && char.IsDigit(normalizedTrack[0]) && char.IsLetter(normalizedTrack[^1]))
                 {
-                    sideLetter = normalizedTrack[^1];
-                    sideNumber = char.ToUpper(sideLetter.Value, InvariantCulture) - 'A' + 1;
+                    char sideLetter = normalizedTrack[^1];
+                    sideAsDiscNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
 
                     var numericPart = normalizedTrack[..^1];
+
                     if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
                     {
-                        // SIDE LETTER 'C' IS PARSED HERE BUT NOT USED
-                        ApplyDiscNumberLogic(ref finalDiscNumber, existingDiscNumber, sideNumber);
                         return true;
                     }
                 }
@@ -75,6 +69,7 @@ namespace MediaBrowser.Providers.Parsers
                 // Plain numeric track
                 if (int.TryParse(normalizedTrack, NumberStyles.Integer, InvariantCulture, out trackNumber))
                 {
+                    // For numeric tracks, disc number remains default (1)
                     return true;
                 }
             }
@@ -87,21 +82,66 @@ namespace MediaBrowser.Providers.Parsers
         }
 
         /// <summary>
-        /// Backward-compatible method (discouraged).
-        /// WARNING: Always infers disc number, which may override existing DISCNUMBER tags.
-        /// Use TryParseVinylTrack instead for proper DISCNUMBER handling.
+        /// Parses vinyl-style track numbers and extracts all components.
         /// </summary>
-        /// <param name="vinylTrack">The vinyl track number string to parse.</param>
+        /// <param name="vinylTrack">The track string to parse.</param>
         /// <param name="trackNumber">The parsed track number.</param>
-        /// <param name="inferredDiscNumber">The disc number inferred from the side letter.</param>
+        /// <param name="sideAsDiscNumber">The side as disc number.</param>
+        /// <param name="sideLetter">The side letter.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise, <c>false</c>.</returns>
-        public static bool TryParseVinylTrackNumber(
+        public static bool TryParseVinylTrack(
             string? vinylTrack,
             out int trackNumber,
-            out int inferredDiscNumber)
+            out int sideAsDiscNumber,
+            out char sideLetter)
         {
-            // Always infers disc number (legacy behavior)
-            return TryParseVinylTrack(vinylTrack, null, out trackNumber, out inferredDiscNumber);
+            trackNumber = 0;
+            sideAsDiscNumber = 1;
+            sideLetter = 'A';
+
+            if (string.IsNullOrWhiteSpace(vinylTrack))
+            {
+                return false;
+            }
+
+            string normalizedTrack = vinylTrack.Trim().ToUpperInvariant();
+
+            try
+            {
+                // Handle standard vinyl formats: [Side Letter][Track Number]
+                if (normalizedTrack.Length >= 2 && char.IsLetter(normalizedTrack[0]) && char.IsDigit(normalizedTrack[1]))
+                {
+                    sideLetter = normalizedTrack[0];
+                    sideAsDiscNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
+
+                    var numericPart = normalizedTrack.Substring(1);
+
+                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
+                    {
+                        return true;
+                    }
+                }
+
+                // Handle reverse vinyl formats: [Track Number][Side Letter]
+                if (normalizedTrack.Length >= 2 && char.IsDigit(normalizedTrack[0]) && char.IsLetter(normalizedTrack[^1]))
+                {
+                    sideLetter = normalizedTrack[^1];
+                    sideAsDiscNumber = char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
+
+                    var numericPart = normalizedTrack[..^1];
+
+                    if (int.TryParse(numericPart, NumberStyles.Integer, InvariantCulture, out trackNumber))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -118,52 +158,33 @@ namespace MediaBrowser.Providers.Parsers
 
             string normalized = trackNumber.Trim().ToUpperInvariant();
 
-            // Check for standard format: A1, B2, C15
-            if (normalized.Length >= 2 && char.IsLetter(normalized[0]) && char.IsDigit(normalized[1]))
-            {
-                return true;
-            }
-
-            // Check for reverse format: 1A, 2B, 01A
-            if (normalized.Length >= 2 && char.IsDigit(normalized[0]) && char.IsLetter(normalized[^1]))
-            {
-                return true;
-            }
-
-            return false;
+            return (normalized.Length >= 2 && char.IsLetter(normalized[0]) && char.IsDigit(normalized[1]))
+                || (normalized.Length >= 2 && char.IsDigit(normalized[0]) && char.IsLetter(normalized[^1]));
         }
 
         /// <summary>
-        /// Creates display string showing what information was lost.
-        /// Example: "Track 3 (Side C information lost due to schema limitations)".
+        /// Converts side letter to disc number (A=1, B=2, C=3, etc.).
         /// </summary>
-        /// <param name="original">The original track string.</param>
-        /// <param name="trackNum">The parsed track number.</param>
-        /// <param name="discNum">The disc number used.</param>
-        /// <returns>A display string acknowledging information loss.</returns>
-        public static string GetLossAwareDisplayString(string? original, int trackNum, int discNum)
+        /// <param name="sideLetter">The side letter.</param>
+        /// <returns>The disc number for that side.</returns>
+        public static int SideLetterToDiscNumber(char sideLetter)
         {
-            if (IsVinylFormat(original))
-            {
-                return $"Track {trackNum} (Disc {discNum}) - Side information from '{original}' was lost";
-            }
-
-            return $"Track {trackNum} (Disc {discNum})";
+            return char.ToUpper(sideLetter, InvariantCulture) - 'A' + 1;
         }
 
         /// <summary>
-        /// Applies disc number logic: uses existing tag if available, otherwise infers from side.
+        /// Creates a display-friendly string showing side as disc.
+        /// Example: "Disc C • Track 3" or "Side C • Track 3".
         /// </summary>
-        /// <param name="finalDiscNumber">The disc number to modify.</param>
-        /// <param name="existingDiscNumber">Optional disc number from DISCNUMBER tag.</param>
-        /// <param name="sideNumber">The side number if available (A=1, B=2, etc.).</param>
-        private static void ApplyDiscNumberLogic(ref int finalDiscNumber, int? existingDiscNumber, int? sideNumber)
+        /// <param name="sideLetter">The side letter.</param>
+        /// <param name="trackNumber">The track number.</param>
+        /// <param name="showAsSide">If true, shows "Side X", otherwise "Disc X".</param>
+        /// <returns>A display string.</returns>
+        public static string GetDisplayString(char sideLetter, int trackNumber, bool showAsSide = true)
         {
-            // If no existing disc number AND we have side info, infer from side
-            if (!existingDiscNumber.HasValue && sideNumber.HasValue)
-            {
-                finalDiscNumber = ((sideNumber.Value - 1) / SidesPerDisc) + 1;
-            }
+            return showAsSide
+                ? $"Side {sideLetter} • Track {trackNumber}"
+                : $"Disc {sideLetter} • Track {trackNumber}";
         }
     }
 }
