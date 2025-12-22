@@ -1,29 +1,35 @@
 {
     "name": "Development Jellyfin Server",
-    "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
-    "service": "app",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "JELLYFIN_WEB_BUILD_CONFIG": "development",
+            "JELLYFIN_WEB_GIT_BRANCH": "master"
+        }
+    },
+    "containerUser": "vscode",
+    "mounts": [
+        "type=bind,src=${localEnv:JELLYFIN_MEDIA_PATH},dst=/media"
+    ],
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
-    "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
-    // reads the extensions list and installs them
-    "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
-    "features": {
-        "ghcr.io/devcontainers/features/dotnet:2": {
-            "version": "none",
-            "dotnetRuntimeVersions": "9.0",
-            "aspNetCoreRuntimeVersions": "9.0"
-        },
-        "ghcr.io/devcontainers-extra/features/apt-packages:1": {
-            "preserve_apt_list": false,
-            "packages": [
-                "libfontconfig1"
+    "postStartCommand": "dotnet restore && dotnet workload update && dotnet dev-certs https --trust;",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "editorconfig.editorconfig",
+                "github.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csdevkit",
+                "alexcvzz.vscode-sqlite"
             ]
-        },
+        }
+    },
+    "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {
             "dockerDashComposeVersion": "v2"
         },
-        "ghcr.io/devcontainers/features/github-cli:1": {},
-        "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "hostRequirements": {
         "memory": "8gb",
