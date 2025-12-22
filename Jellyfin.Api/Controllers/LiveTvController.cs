@@ -144,7 +144,6 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Channels")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<QueryResult<BaseItemDto>> GetLiveTvChannels(
         [FromQuery] ChannelType? type,
         [FromQuery] Guid? userId,
@@ -168,6 +167,15 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableFavoriteSorting = false,
         [FromQuery] bool addCurrentProgram = true)
     {
+        // Check if authenticated user has Live TV access
+        var authenticatedUserId = User.GetUserId();
+        var authenticatedUser = _userManager.GetUserById(authenticatedUserId);
+        if (authenticatedUser == null || !authenticatedUser.HasPermission(PermissionKind.EnableLiveTvAccess))
+        {
+            // Return empty result instead of 403 to prevent metadata manager failures
+            return new QueryResult<BaseItemDto>();
+        }
+        
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -271,7 +279,6 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the live tv recordings.</returns>
     [HttpGet("Recordings")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecordings(
         [FromQuery] string? channelId,
         [FromQuery] Guid? userId,
@@ -293,6 +300,15 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? isLibraryItem,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        // Check if authenticated user has Live TV access
+        var authenticatedUserId = User.GetUserId();
+        var authenticatedUser = _userManager.GetUserById(authenticatedUserId);
+        if (authenticatedUser == null || !authenticatedUser.HasPermission(PermissionKind.EnableLiveTvAccess))
+        {
+            // Return empty result instead of 403 to prevent metadata manager failures
+            return new QueryResult<BaseItemDto>();
+        }
+        
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
