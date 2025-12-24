@@ -72,6 +72,11 @@ public class ActivityManager : IActivityManager
                 entries = entries.Where(e => e.ActivityLog.DateCreated >= query.MinDate.Value);
             }
 
+            if (query.MaxDate is not null)
+            {
+                entries = entries.Where(e => e.ActivityLog.DateCreated <= query.MaxDate.Value);
+            }
+
             if (!string.IsNullOrEmpty(query.Name))
             {
                 entries = entries.Where(e => EF.Functions.Like(e.ActivityLog.Name, $"%{query.Name}%"));
@@ -166,9 +171,19 @@ public class ActivityManager : IActivityManager
         foreach (var (sortBy, sortOrder) in sorting)
         {
             var orderBy = MapOrderBy(sortBy);
-            ordered = sortOrder == SortOrder.Ascending
-                ? (ordered ?? query).OrderBy(orderBy)
-                : (ordered ?? query).OrderByDescending(orderBy);
+
+            if (ordered == null)
+            {
+                ordered = sortOrder == SortOrder.Ascending
+                    ? query.OrderBy(orderBy)
+                    : query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                ordered = sortOrder == SortOrder.Ascending
+                    ? ordered.ThenBy(orderBy)
+                    : ordered.ThenByDescending(orderBy);
+            }
         }
 
         return ordered;
