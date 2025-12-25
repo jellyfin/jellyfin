@@ -390,6 +390,12 @@
         "TwoLetterISORegionName": "KE"
     },
     {
+        "DisplayName": "Tanzania",
+        "Name": "TZ",
+        "ThreeLetterISORegionName": "TZA",
+        "TwoLetterISORegionName": "TZ"
+    },
+    {
         "DisplayName": "Korea",
         "Name": "KR",
         "ThreeLetterISORegionName": "KOR",
