@@ -89,11 +89,6 @@ namespace MediaBrowser.Providers.MediaInfo
             bool clearCache,
             CancellationToken cancellationToken)
         {
-            if (!video.IsFileProtocol)
-            {
-                return Array.Empty<MediaStream>();
-            }
-
             var pathInfos = GetExternalFiles(video, directoryService, clearCache);
 
             if (!pathInfos.Any())
@@ -166,11 +161,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IDirectoryService directoryService,
             bool clearCache)
         {
-            if (!audio.IsFileProtocol)
-            {
-                return Array.Empty<MediaStream>();
-            }
-
             var pathInfos = GetExternalFiles(audio, directoryService, clearCache);
 
             if (pathInfos.Count == 0)
@@ -206,20 +196,16 @@ namespace MediaBrowser.Providers.MediaInfo
             IDirectoryService directoryService,
             bool clearCache)
         {
-            if (!video.IsFileProtocol)
-            {
-                return Array.Empty<ExternalPathParserResult>();
-            }
-
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
-            if (!_fileSystem.DirectoryExists(folder))
+            List<string> files = new List<string>();
+
+            if (_fileSystem.DirectoryExists(folder))
             {
-                return Array.Empty<ExternalPathParserResult>();
+                files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
+                files.Remove(video.Path);
             }
 
-            var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
-            files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
@@ -264,11 +250,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IDirectoryService directoryService,
             bool clearCache)
         {
-            if (!audio.IsFileProtocol)
-            {
-                return Array.Empty<ExternalPathParserResult>();
-            }
-
             string folder = audio.ContainingFolderPath;
             var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
             files.Remove(audio.Path);
