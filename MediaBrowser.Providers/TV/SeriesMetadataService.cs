@@ -132,14 +132,14 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             {
                 Logger.LogInformation("Removing virtual season {SeasonNumber} in series {SeriesName}", virtualSeason.IndexNumber, series.Name);
 
-                LibraryManager.DeleteItem(
+                LibraryManager.DeleteItemAsync(
                     virtualSeason,
                     new DeleteOptions
                     {
                         // Internal metadata paths are removed regardless of this.
                         DeleteFileLocation = false
                     },
-                    false);
+                    false).GetAwaiter().GetResult();
             }
         }
     }
@@ -191,14 +191,14 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             episode.IndexNumber,
             episode.SeriesName);
 
-        LibraryManager.DeleteItem(
+        LibraryManager.DeleteItemAsync(
             episode,
             new DeleteOptions
             {
                 // Internal metadata paths are removed regardless of this.
                 DeleteFileLocation = false
             },
-            false);
+            false).GetAwaiter().GetResult();
     }
 
     /// <summary>
