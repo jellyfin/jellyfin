@@ -26,6 +26,7 @@ namespace MediaBrowser.Model.Configuration
             AllowEmbeddedSubtitles = EmbeddedSubtitleOptions.AllowAll;
 
             AutomaticallyAddToCollection = false;
+            MinCollectionSize = 2;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
@@ -132,6 +133,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] DelimiterWhitelist { get; set; }
 
         public bool AutomaticallyAddToCollection { get; set; }
+
+        public int MinCollectionSize { get; set; }
 
         public EmbeddedSubtitleOptions AllowEmbeddedSubtitles { get; set; }
 
