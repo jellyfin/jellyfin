@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
+    <Compile Include="$(SolutionDir)SharedVersion.cs" />
   </ItemGroup>
 
   <ItemGroup>
