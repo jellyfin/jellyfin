@@ -179,12 +179,19 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            var tempPath = path + $".tmp-{Guid.NewGuid():N}";
             var fileStreamOptions = AsyncFile.WriteOptions;
             fileStreamOptions.Mode = FileMode.Create;
-            var fs = new FileStream(path, fileStreamOptions);
+            var fs = new FileStream(tempPath, fileStreamOptions);
             await using (fs.ConfigureAwait(false))
             {
                 await response.Content.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Atomically move the file to avoid race with concurrent reader oder writer.
+            if (!_fileSystem.MoveFile(tempPath, path, true))
+            {
+                _fileSystem.DeleteFile(tempPath);
             }
         }
 
