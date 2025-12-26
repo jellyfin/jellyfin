@@ -645,17 +645,23 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get our children from the repo - stubbed for now.
+        /// Get our children from the repo, utilizing the library cache for efficiency.
+        /// First retrieves child IDs (lightweight query), then resolves items through the cache.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IReadOnlyList<BaseItem> GetCachedChildren()
         {
-            return ItemRepository.GetItemList(new InternalItemsQuery
+            // Get just the IDs first - this is a lightweight query
+            var childIds = ItemRepository.GetItemIdsList(new InternalItemsQuery
             {
                 Parent = this,
                 GroupByPresentationUniqueKey = false,
-                DtoOptions = new DtoOptions(true)
+                DtoOptions = new DtoOptions(false) // We only need IDs
             });
+
+            // Resolve items through the cache - cache hits avoid DB entirely,
+            // cache misses are batched into a single query
+            return LibraryManager.GetItemsByIds(childIds);
         }
 
         public virtual int GetChildCount(User user)
