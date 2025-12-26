@@ -327,6 +327,45 @@ namespace Emby.Server.Implementations.Library
             DeleteItem(item, options, parent, notifyParentItem);
         }
 
+        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items)
+        {
+            var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();
+
+            foreach (var (item, internalPaths, pathsToDelete) in pathMaps)
+            {
+                foreach (var metadataPath in internalPaths)
+                {
+                    if (!Directory.Exists(metadataPath))
+                    {
+                        continue;
+                    }
+
+                    _logger.LogDebug(
+                        "Deleting metadata path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        metadataPath,
+                        item.Id);
+
+                    try
+                    {
+                        Directory.Delete(metadataPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error deleting {MetadataPath}", metadataPath);
+                    }
+                }
+
+                foreach (var fileSystemInfo in pathsToDelete)
+                {
+                    DeleteItemPath(item, false, fileSystemInfo);
+                }
+            }
+
+            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+        }
+
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
         {
             ArgumentNullException.ThrowIfNull(item);
@@ -403,59 +442,7 @@ namespace Emby.Server.Implementations.Library
 
                 foreach (var fileSystemInfo in item.GetDeletePaths())
                 {
-                    if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
-                    {
-                        try
-                        {
-                            _logger.LogInformation(
-                                "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-
-                            if (fileSystemInfo.IsDirectory)
-                            {
-                                Directory.Delete(fileSystemInfo.FullName, true);
-                            }
-                            else
-                            {
-                                File.Delete(fileSystemInfo.FullName);
-                            }
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
-                            _logger.LogInformation(
-                                "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            _logger.LogInformation(
-                                "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-                        }
-                        catch (IOException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                    }
+                    DeleteItemPath(item, isRequiredForDelete, fileSystemInfo);
 
                     isRequiredForDelete = false;
                 }
@@ -463,15 +450,77 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            _itemRepository.DeleteItem(item.Id);
+            _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
-                _itemRepository.DeleteItem(child.Id);
                 _cache.TryRemove(child.Id, out _);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             ReportItemRemoved(item, parent);
+        }
+
+        private void DeleteItemPath(BaseItem item, bool isRequiredForDelete, FileSystemMetadata fileSystemInfo)
+        {
+            if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
+            {
+                try
+                {
+                    _logger.LogInformation(
+                        "Deleting item path, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+
+                    if (fileSystemInfo.IsDirectory)
+                    {
+                        Directory.Delete(fileSystemInfo.FullName, true);
+                    }
+                    else
+                    {
+                        File.Delete(fileSystemInfo.FullName);
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    _logger.LogInformation(
+                        "Directory not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+                }
+                catch (FileNotFoundException)
+                {
+                    _logger.LogInformation(
+                        "File not found, only removing from database, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                        item.GetType().Name,
+                        item.Name ?? "Unknown name",
+                        fileSystemInfo.FullName,
+                        item.Id);
+                }
+                catch (IOException)
+                {
+                    if (isRequiredForDelete)
+                    {
+                        throw;
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    if (isRequiredForDelete)
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         private bool IsInternalItem(BaseItem item)
@@ -485,7 +534,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Genre => _configurationManager.ApplicationPaths.GenrePath,
                 MusicArtist => _configurationManager.ApplicationPaths.ArtistsPath,
-                MusicGenre => _configurationManager.ApplicationPaths.GenrePath,
+                MusicGenre => _configurationManager.ApplicationPaths.MusicGenrePath,
                 Person => _configurationManager.ApplicationPaths.PeoplePath,
                 Studio => _configurationManager.ApplicationPaths.StudioPath,
                 Year => _configurationManager.ApplicationPaths.YearPath,
@@ -826,6 +875,7 @@ namespace Emby.Server.Implementations.Library
 
             if (!folder.ParentId.Equals(rootFolder.Id))
             {
+                rootFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
                 folder.ParentId = rootFolder.Id;
                 folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
             }
@@ -989,6 +1039,11 @@ namespace Emby.Server.Implementations.Library
             return GetArtist(name, new DtoOptions(true));
         }
 
+        public IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names)
+        {
+            return _itemRepository.FindArtists(names);
+        }
+
         public MusicArtist GetArtist(string name, DtoOptions options)
         {
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
@@ -1090,6 +1145,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
+            RootFolder.Children = null;
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
@@ -1100,9 +1156,12 @@ namespace Emby.Server.Implementations.Library
                 allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            var rootFolder = GetUserRootFolder();
+            rootFolder.Children = null;
 
-            await GetUserRootFolder().ValidateChildren(
+            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+
+            await rootFolder.ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
@@ -1110,17 +1169,23 @@ namespace Emby.Server.Implementations.Library
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
-            foreach (var child in GetUserRootFolder().Children.OfType<Folder>())
+            var toDelete = new List<Guid>();
+            foreach (var child in rootFolder.Children!.OfType<Folder>())
             {
                 // If the user has somehow deleted the collection directory, remove the metadata from the database.
                 if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
                 {
-                    _itemRepository.DeleteItem(collectionFolder.Id);
+                    toDelete.Add(collectionFolder.Id);
                 }
                 else
                 {
                     await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
+            }
+
+            if (toDelete.Count > 0)
+            {
+                _itemRepository.DeleteItem(toDelete.ToArray());
             }
         }
 
@@ -1387,6 +1452,25 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _itemRepository.GetCount(query);
+        }
+
+        public ItemCounts GetItemCounts(InternalItemsQuery query)
+        {
+            if (query.Recursive && !query.ParentId.IsEmpty())
+            {
+                var parent = GetItemById(query.ParentId);
+                if (parent is not null)
+                {
+                    SetTopParentIdsOrAncestors(query, [parent]);
+                }
+            }
+
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            return _itemRepository.GetItemCounts(query);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
@@ -1915,6 +1999,12 @@ namespace Emby.Server.Implementations.Library
                 RegisterItem(item);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             if (ItemAdded is not null)
             {
                 foreach (var item in items)
@@ -1954,7 +2044,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                    return image.DateModified.Subtract(_fileSystem.GetLastWriteTimeUtc(image.Path)).Duration().TotalSeconds > 1;
                 }
                 catch (Exception ex)
                 {
@@ -2008,6 +2098,12 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
+                if (!File.Exists(image.Path))
+                {
+                    _logger.LogWarning("Image not found at {ImagePath}", image.Path);
+                    continue;
+                }
+
                 ImageDimensions size;
                 try
                 {
@@ -2025,7 +2121,8 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    var blurhash = _imageProcessor.GetImageBlurHash(image.Path, size);
+                    image.BlurHash = blurhash;
                 }
                 catch (Exception ex)
                 {
@@ -2035,7 +2132,8 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    var modifiedDate = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    image.DateModified = modifiedDate;
                 }
                 catch (Exception ex)
                 {
@@ -2043,18 +2141,31 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.SaveImages(item);
+            item.ValidateImages();
+
+            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
+
             RegisterItem(item);
         }
 
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
             foreach (var item in items)
             {
+                item.DateLastSaved = DateTime.UtcNow;
                 await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+
+                // Modify again, so saved value is after write time of externally saved metadata
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+
+            _itemRepository.SaveItems(items, cancellationToken);
+
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
             }
 
             if (ItemUpdated is not null)
@@ -2096,8 +2207,6 @@ namespace Emby.Server.Implementations.Library
             {
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
-
-            item.DateLastSaved = DateTime.UtcNow;
 
             await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
@@ -2384,12 +2493,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2447,12 +2557,13 @@ namespace Emby.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2522,12 +2633,13 @@ namespace Emby.Server.Implementations.Library
                 item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
             }
 
-            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
+            var lastRefreshedUtc = item.DateLastRefreshed;
+            var refresh = isNew || DateTime.UtcNow - lastRefreshedUtc >= _viewRefreshInterval;
 
             if (!refresh && !item.DisplayParentId.IsEmpty())
             {
                 var displayParent = GetItemById(item.DisplayParentId);
-                refresh = displayParent is not null && displayParent.DateLastSaved > item.DateLastRefreshed;
+                refresh = displayParent is not null && displayParent.DateLastSaved > lastRefreshedUtc;
             }
 
             if (refresh)
@@ -2959,10 +3071,10 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
-
                     StartScanInBackground();
                 }
                 else
@@ -2987,21 +3099,28 @@ namespace Emby.Server.Implementations.Library
 
                 if (personEntity is null)
                 {
-                    var path = Person.GetPath(person.Name);
-                    var info = Directory.CreateDirectory(path);
-                    var lastWriteTime = info.LastWriteTimeUtc;
-                    personEntity = new Person()
+                    try
                     {
-                        Name = person.Name,
-                        Id = GetItemByNameId<Person>(path),
-                        DateCreated = info.CreationTimeUtc,
-                        DateModified = lastWriteTime,
-                        Path = path
-                    };
+                        var path = Person.GetPath(person.Name);
+                        var info = Directory.CreateDirectory(path);
+                        personEntity = new Person()
+                        {
+                            Name = person.Name,
+                            Id = GetItemByNameId<Person>(path),
+                            DateCreated = info.CreationTimeUtc,
+                            DateModified = info.LastWriteTimeUtc,
+                            Path = path
+                        };
 
-                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
-                    saveEntity = true;
-                    createEntity = true;
+                        personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                        saveEntity = true;
+                        createEntity = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
+                        continue;
+                    }
                 }
 
                 foreach (var id in person.ProviderIds)
@@ -3035,6 +3154,8 @@ namespace Emby.Server.Implementations.Library
                     }
 
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                    personEntity.DateLastSaved = DateTime.UtcNow;
+
                     CreateItems([personEntity], null, CancellationToken.None);
                 }
             }

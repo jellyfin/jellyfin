@@ -192,7 +192,20 @@ namespace MediaBrowser.Providers.MediaInfo
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
-                var albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                string[]? albumArtists = null;
+                if (libraryOptions.PreferNonstandardArtistsTag)
+                {
+                    TryGetSanitizedAdditionalFields(track, "ALBUMARTISTS", out var albumArtistsTagString);
+                    if (albumArtistsTagString is not null)
+                    {
+                        albumArtists = albumArtistsTagString.Split(InternalValueSeparator);
+                    }
+                }
+
+                if (albumArtists is null || albumArtists.Length == 0)
+                {
+                    albumArtists = string.IsNullOrEmpty(trackAlbumArtist) ? [] : trackAlbumArtist.Split(InternalValueSeparator);
+                }
 
                 if (libraryOptions.UseCustomTagDelimiters)
                 {
@@ -205,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = albumArtist.Trim(),
+                            Name = albumArtist,
                             Type = PersonKind.AlbumArtist
                         });
                     }
@@ -237,7 +250,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
-                            Name = performer.Trim(),
+                            Name = performer,
                             Type = PersonKind.Artist
                         });
                     }
@@ -251,7 +264,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = composer.Trim(),
+                                Name = composer,
                                 Type = PersonKind.Composer
                             });
                         }
@@ -340,9 +353,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-                audio.Genres = options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0
-                    ? genres
-                    : audio.Genres;
+                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                {
+                    audio.Genres = genres;
+                }
             }
 
             TryGetSanitizedAdditionalFields(track, "REPLAYGAIN_TRACK_GAIN", out var trackGainTag);
@@ -423,19 +437,23 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, recordingMbId);
                 }
-                else if (TryGetSanitizedAdditionalFields(track, "UFID", out var ufIdValue) && !string.IsNullOrEmpty(ufIdValue))
+                else if (TryGetSanitizedUFIDFields(track, out var owner, out var identifier) && !string.IsNullOrEmpty(owner) && !string.IsNullOrEmpty(identifier))
                 {
                     // If tagged with MB Picard, the format is 'http://musicbrainz.org\0<recording MBID>'
-                    if (ufIdValue.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
+                    if (owner.Contains("musicbrainz.org", StringComparison.OrdinalIgnoreCase))
                     {
-                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, ufIdValue.AsSpan().RightPart('\0').ToString());
+                        audio.TrySetProviderId(MetadataProvider.MusicBrainzRecording, identifier);
                     }
                 }
             }
 
             // Save extracted lyrics if they exist,
             // and if the audio doesn't yet have lyrics.
-            var lyrics = track.Lyrics.SynchronizedLyrics.Count > 0 ? track.Lyrics.FormatSynchToLRC() : track.Lyrics.UnsynchronizedLyrics;
+            // ATL supports both SRT and LRC formats as synchronized lyrics, but we only want to save LRC format.
+            var supportedLyrics = track.Lyrics.Where(l => l.Format != LyricsInfo.LyricsFormat.SRT).ToList();
+            var candidateSynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is not LyricsInfo.LyricsFormat.UNSYNCHRONIZED and not LyricsInfo.LyricsFormat.OTHER && l.SynchronizedLyrics is not null);
+            var candidateUnsynchronizedLyric = supportedLyrics.FirstOrDefault(l => l.Format is LyricsInfo.LyricsFormat.UNSYNCHRONIZED or LyricsInfo.LyricsFormat.OTHER && l.UnsynchronizedLyrics is not null);
+            var lyrics = candidateSynchronizedLyric is not null ? candidateSynchronizedLyric.FormatSynch() : candidateUnsynchronizedLyric?.UnsynchronizedLyrics;
             if (!string.IsNullOrWhiteSpace(lyrics)
                 && tryExtractEmbeddedLyrics)
             {
@@ -515,9 +533,60 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private bool TryGetSanitizedAdditionalFields(Track track, string field, out string? value)
         {
-            var hasField = track.AdditionalFields.TryGetValue(field, out value);
+            var hasField = TryGetAdditionalFieldWithFallback(track, field, out value);
             value = GetSanitizedStringTag(value, track.Path);
             return hasField;
+        }
+
+        private bool TryGetSanitizedUFIDFields(Track track, out string? owner, out string? identifier)
+        {
+            var hasField = TryGetAdditionalFieldWithFallback(track, "UFID", out string? value);
+            if (hasField && !string.IsNullOrEmpty(value))
+            {
+                string[] parts = value.Split('\0');
+                if (parts.Length == 2)
+                {
+                    owner = GetSanitizedStringTag(parts[0], track.Path);
+                    identifier = GetSanitizedStringTag(parts[1], track.Path);
+                    return true;
+                }
+            }
+
+            owner = null;
+            identifier = null;
+            return false;
+        }
+
+        // Build the explicit mka-style fallback key (e.g., ARTISTS -> track.artists, "MusicBrainz Artist Id" -> track.musicbrainz_artist_id)
+        private static string GetMkaFallbackKey(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return key;
+            }
+
+            var normalized = key.Trim().Replace(' ', '_').ToLowerInvariant();
+            return "track." + normalized;
+        }
+
+        // First try the normal key exactly; if missing, try the mka-style fallback key.
+        private bool TryGetAdditionalFieldWithFallback(Track track, string key, out string? value)
+        {
+            // Prefer the normal key (as-is, case-sensitive)
+            if (track.AdditionalFields.TryGetValue(key, out value))
+            {
+                return true;
+            }
+
+            // Fallback to mka-style: "track." + lower-case(original key)
+            var fallbackKey = GetMkaFallbackKey(key);
+            if (track.AdditionalFields.TryGetValue(fallbackKey, out value))
+            {
+                return true;
+            }
+
+            value = null;
+            return false;
         }
     }
 }

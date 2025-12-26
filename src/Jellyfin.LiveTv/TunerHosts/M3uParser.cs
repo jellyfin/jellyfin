@@ -200,8 +200,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         var numberIndex = nameInExtInf.IndexOf(' ');
                         if (numberIndex > 0)
                         {
-                            var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
-
+                            var numberPart = nameInExtInf[..numberIndex].Trim(stackalloc[] { ' ', '.' });
                             if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                             {
                                 numberString = numberPart.ToString();
@@ -273,12 +272,12 @@ namespace Jellyfin.LiveTv.TunerHosts
                 var numberIndex = nameInExtInf.IndexOf(' ', StringComparison.Ordinal);
                 if (numberIndex > 0)
                 {
-                    var numberPart = nameInExtInf.AsSpan(0, numberIndex).Trim(new[] { ' ', '.' });
+                    var numberPart = nameInExtInf.AsSpan(0, numberIndex).Trim(stackalloc[] { ' ', '.' });
 
                     if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
-                        nameInExtInf = nameInExtInf.AsSpan(numberIndex + 1).Trim(new[] { ' ', '-' }).ToString();
+                        nameInExtInf = nameInExtInf.AsSpan(numberIndex + 1).Trim(stackalloc[] { ' ', '-' }).ToString();
                     }
                 }
             }

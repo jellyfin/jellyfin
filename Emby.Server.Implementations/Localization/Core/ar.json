@@ -2,13 +2,13 @@
     "Albums": "ألبومات",
     "AppDeviceValues": "تطبيق: {0}, جهاز: {1}",
     "Application": "تطبيق",
-    "Artists": "الفنانون",
+    "Artists": "فنانون",
     "AuthenticationSucceededWithUserName": "نجحت عملية التوثيق بـ {0}",
     "Books": "الكتب",
     "CameraImageUploadedFrom": "رُفعت صورة الكاميرا الجديدة من {0}",
     "Channels": "القنوات",
     "ChapterNameValue": "الفصل {0}",
-    "Collections": "المجموعات",
+    "Collections": "مجموعات",
     "DeviceOfflineWithName": "قُطِع الاتصال ب{0}",
     "DeviceOnlineWithName": "{0} متصل",
     "FailedLoginAttemptWithUserName": "محاولة تسجيل الدخول فاشلة من {0}",
@@ -16,7 +16,7 @@
     "Folders": "المجلدات",
     "Genres": "التصنيفات",
     "HeaderAlbumArtists": "فناني الألبوم",
-    "HeaderContinueWatching": "إستئناف المشاهدة",
+    "HeaderContinueWatching": "متابعة المشاهدة",
     "HeaderFavoriteAlbums": "الألبومات المفضلة",
     "HeaderFavoriteArtists": "الفنانون المفضلون",
     "HeaderFavoriteEpisodes": "الحلقات المفضلة",
@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "فحص مقاطع الوسائط",
     "TaskExtractMediaSegmentsDescription": "يستخرج مقاطع وسائط من إضافات MediaSegment المُفعّلة.",
     "TaskMoveTrickplayImages": "تغيير مكان صور المعاينة السريعة",
-    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة."
+    "TaskMoveTrickplayImagesDescription": "تُنقل ملفات التشغيل السريع الحالية بناءً على إعدادات المكتبة.",
+    "CleanupUserDataTask": "مهمة تنظيف بيانات المستخدم",
+    "CleanupUserDataTaskDescription": "مسح جميع بيانات المستخدم (حالة المشاهدة، والحالة المفضلة وما إلى ذلك) من الوسائط التي لم تعد موجودة لمدة 90 يومًا على الأقل."
 }

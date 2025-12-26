@@ -126,5 +126,16 @@
     "HearingImpaired": "ослабљен слух",
     "TaskAudioNormalization": "Нормализација звука",
     "TaskCleanCollectionsAndPlaylists": "Очистите колекције и плејлисте",
-    "TaskAudioNormalizationDescription": "Скенира датотеке за податке о нормализацији звука."
+    "TaskAudioNormalizationDescription": "Скенира датотеке за податке о нормализацији звука.",
+    "TaskRefreshTrickplayImages": "Направи сличице за визуелно премотавање",
+    "TaskRefreshTrickplayImagesDescription": "Прављење сличица које помажу код визуелног премотавања видео-снимака.",
+    "TaskDownloadMissingLyrics": "Преузми стихове који недостају",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Уклања ставке које више не постоје из колекција и плејлиста.",
+    "TaskExtractMediaSegments": "Скенирај сегменте медија",
+    "TaskExtractMediaSegmentsDescription": "Извлачи или добавља сегменте медија у додацима који раде са MediaSegment-ом.",
+    "TaskMoveTrickplayImagesDescription": "Премешта постојеће сличице за визуелно премотавање сходно подешавањима библиотеке.",
+    "CleanupUserDataTask": "Задатак чишћења корисничких података",
+    "CleanupUserDataTaskDescription": "Чисти све корисничке податке (напредак гледања, ознаке за омиљено...) медија који нису доступни 90 дана или дуже.",
+    "TaskMoveTrickplayImages": "Промени локацију сличица за визуелно премотавање",
+    "TaskDownloadMissingLyricsDescription": "Преузми стихове песама"
 }

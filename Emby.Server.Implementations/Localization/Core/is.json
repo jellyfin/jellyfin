@@ -131,5 +131,8 @@
     "TaskCleanCollectionsAndPlaylists": "Hreinsa söfn og spilunarlista",
     "TaskCleanCollectionsAndPlaylistsDescription": "Fjarlægir hluti úr söfnum og spilalistum sem eru ekki lengur til.",
     "TaskDownloadMissingLyricsDescription": "Sækja söngtexta fyrir lög",
-    "TaskDownloadMissingLyrics": "Sækja söngtexta sem vantar"
+    "TaskDownloadMissingLyrics": "Sækja söngtexta sem vantar",
+    "TaskExtractMediaSegments": "Skönnun efnishluta",
+    "CleanupUserDataTask": "Hreinsun notendagagna",
+    "CleanupUserDataTaskDescription": "Hreinsar öll notendagögn (spilunarstöðu, uppáhöld o.s.frv.) um gögn sem hafa ekki verið til staðar í að lámarki 90 daga."
 }

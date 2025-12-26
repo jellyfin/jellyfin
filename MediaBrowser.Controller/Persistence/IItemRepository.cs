@@ -5,8 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
@@ -20,8 +23,8 @@ public interface IItemRepository
     /// <summary>
     /// Deletes the item.
     /// </summary>
-    /// <param name="id">The identifier.</param>
-    void DeleteItem(Guid id);
+    /// <param name="ids">The identifier to delete.</param>
+    void DeleteItem(params IReadOnlyList<Guid> ids);
 
     /// <summary>
     /// Saves the items.
@@ -30,7 +33,7 @@ public interface IItemRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
 
-    void SaveImages(BaseItem item);
+    Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the item.
@@ -83,6 +86,8 @@ public interface IItemRepository
 
     int GetCount(InternalItemsQuery filter);
 
+    ItemCounts GetItemCounts(InternalItemsQuery filter);
+
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
 
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
@@ -102,4 +107,27 @@ public interface IItemRepository
     IReadOnlyList<string> GetGenreNames();
 
     IReadOnlyList<string> GetAllArtistNames();
+
+    /// <summary>
+    /// Checks if an item has been persisted to the database.
+    /// </summary>
+    /// <param name="id">The id to check.</param>
+    /// <returns>True if the item exists, otherwise false.</returns>
+    Task<bool> ItemExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets a value indicating wherever all children of the requested Id has been played.
+    /// </summary>
+    /// <param name="user">The userdata to check against.</param>
+    /// <param name="id">The Top id to check.</param>
+    /// <param name="recursive">Whever the check should be done recursive. Warning expensive operation.</param>
+    /// <returns>A value indicating whever all children has been played.</returns>
+    bool GetIsPlayed(User user, Guid id, bool recursive);
+
+    /// <summary>
+    /// Gets all artist matches from the db.
+    /// </summary>
+    /// <param name="artistNames">The names of the artists.</param>
+    /// <returns>A map of the artist name and the potential matches.</returns>
+    IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames);
 }

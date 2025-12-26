@@ -18,10 +18,16 @@ namespace MediaBrowser.MediaEncoding.Configuration
 
         public void Validate(object oldConfig, object newConfig)
         {
-            var newPath = ((EncodingOptions)newConfig).TranscodingTempPath;
+            var oldEncodingOptions = (EncodingOptions)oldConfig;
+            var newEncodingOptions = (EncodingOptions)newConfig;
+
+            ArgumentNullException.ThrowIfNull(oldEncodingOptions, nameof(oldConfig));
+            ArgumentNullException.ThrowIfNull(newEncodingOptions, nameof(newConfig));
+
+            var newPath = newEncodingOptions.TranscodingTempPath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(((EncodingOptions)oldConfig).TranscodingTempPath, newPath, StringComparison.Ordinal))
+                && !string.Equals(oldEncodingOptions.TranscodingTempPath, newPath, StringComparison.Ordinal))
             {
                 // Validate
                 if (!Directory.Exists(newPath))
@@ -32,6 +38,12 @@ namespace MediaBrowser.MediaEncoding.Configuration
                             "{0} does not exist.",
                             newPath));
                 }
+            }
+
+            if (!string.IsNullOrWhiteSpace(newEncodingOptions.EncoderAppPath)
+                && !string.Equals(oldEncodingOptions.EncoderAppPath, newEncodingOptions.EncoderAppPath, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Unable to update encoder app path.");
             }
         }
     }

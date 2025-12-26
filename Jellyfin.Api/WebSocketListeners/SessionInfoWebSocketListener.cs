@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Enums;
@@ -57,6 +58,21 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     }
 
     /// <inheritdoc />
+    protected override Task<IEnumerable<SessionInfo>> GetDataToSendForConnection(IWebSocketConnection connection)
+    {
+        // For non-admin users, filter the sessions to only include their own sessions
+        if (connection.AuthorizationInfo?.User is not null &&
+            !connection.AuthorizationInfo.IsApiKey &&
+            !connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        {
+            var userId = connection.AuthorizationInfo.User.Id;
+            return Task.FromResult(_sessionManager.Sessions.Where(s => s.UserId.Equals(userId) || s.ContainsUser(userId)));
+        }
+
+        return Task.FromResult(_sessionManager.Sessions);
+    }
+
+    /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
         if (!_disposed)
@@ -80,11 +96,10 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <param name="message">The message.</param>
     protected override void Start(WebSocketMessageInfo message)
     {
-        if (!message.Connection.AuthorizationInfo.IsApiKey
-            && (message.Connection.AuthorizationInfo.User is null
-                || !message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator)))
+        // Allow all authenticated users to subscribe to session information
+        if (message.Connection.AuthorizationInfo.User is null && !message.Connection.AuthorizationInfo.IsApiKey)
         {
-            throw new AuthenticationException("Only admin users can subscribe to session information.");
+            throw new AuthenticationException("User must be authenticated to subscribe to session Information.");
         }
 
         base.Start(message);

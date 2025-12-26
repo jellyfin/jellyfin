@@ -214,7 +214,7 @@ namespace MediaBrowser.Controller.Entities.TV
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
             query.IncludeItemTypes = new[] { BaseItemKind.Season };
-            query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
+            query.OrderBy = new[] { (ItemSortBy.IndexNumber, SortOrder.Ascending) };
 
             if (user is not null && !user.DisplayMissingEpisodes)
             {
@@ -247,10 +247,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 query.AncestorWithPresentationUniqueKey = null;
                 query.SeriesPresentationUniqueKey = seriesKey;
-                if (query.OrderBy.Count == 0)
-                {
-                    query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
-                }
 
                 if (query.IncludeItemTypes.Length == 0)
                 {
@@ -301,6 +297,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            Children = null; // invalidate cached children.
             // Refresh bottom up, seasons and episodes first, then the series
             var items = GetRecursiveChildren();
 

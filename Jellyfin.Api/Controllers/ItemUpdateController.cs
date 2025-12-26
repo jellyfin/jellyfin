@@ -158,7 +158,10 @@ public class ItemUpdateController : BaseJellyfinApiController
             ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
             ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
             Countries = _localizationManager.GetCountries().ToArray(),
-            Cultures = _localizationManager.GetCultures().ToArray()
+            Cultures = _localizationManager.GetCultures()
+                .DistinctBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(c => c.DisplayName)
+                .ToArray()
         };
 
         if (!item.IsVirtualItem
@@ -177,11 +180,14 @@ public class ItemUpdateController : BaseJellyfinApiController
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (inheritedContentType is null || inheritedContentType == CollectionType.tvshows)
+                if (inheritedContentType is null
+                    || inheritedContentType == CollectionType.tvshows
+                    || inheritedContentType == CollectionType.movies)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
-                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase))
+                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(i.Value, "Movies", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
             }

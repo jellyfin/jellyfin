@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -33,7 +34,8 @@ namespace MediaBrowser.Providers.Manager
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
-            IExternalDataManager externalDataManager)
+            IExternalDataManager externalDataManager,
+            IItemRepository itemRepository)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -41,6 +43,7 @@ namespace MediaBrowser.Providers.Manager
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
             ExternalDataManager = externalDataManager;
+            ItemRepository = itemRepository;
             ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
 
@@ -58,6 +61,8 @@ namespace MediaBrowser.Providers.Manager
 
         protected IExternalDataManager ExternalDataManager { get; }
 
+        protected IItemRepository ItemRepository { get; }
+
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
         protected virtual bool EnableUpdatingGenresFromChildren => false;
@@ -68,11 +73,11 @@ namespace MediaBrowser.Providers.Manager
 
         public virtual int Order => 0;
 
-        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
+        private FileSystemMetadata TryGetFileSystemMetadata(string path, IDirectoryService directoryService)
         {
             try
             {
-                return directoryService.GetFile(path);
+                return directoryService.GetFileSystemEntry(path);
             }
             catch (Exception ex)
             {
@@ -85,8 +90,9 @@ namespace MediaBrowser.Providers.Manager
         {
             var itemOfType = (TItemType)item;
             var updateType = ItemUpdateType.None;
+
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
-            var isFirstRefresh = item.DateLastRefreshed.Date == DateTime.MinValue.Date;
+            var isFirstRefresh = item.DateLastRefreshed == DateTime.MinValue;
             var hasRefreshedMetadata = true;
             var hasRefreshedImages = true;
 
@@ -141,10 +147,14 @@ namespace MediaBrowser.Providers.Manager
                 Item = itemOfType
             };
 
-            var beforeSaveResult = BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType);
+            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType)
+                .ConfigureAwait(false);
             updateType |= beforeSaveResult;
 
-            updateType = await SaveInternal(item, refreshOptions, updateType, isFirstRefresh, requiresRefresh, metadataResult, cancellationToken).ConfigureAwait(false);
+            if (isFirstRefresh)
+            {
+                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
@@ -218,10 +228,15 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (item.IsFileProtocol)
                     {
-                        var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
+                        var file = TryGetFileSystemMetadata(item.Path, refreshOptions.DirectoryService);
                         if (file is not null)
                         {
                             item.DateModified = file.LastWriteTimeUtc;
+
+                            if (!file.IsDirectory)
+                            {
+                                item.Size = file.Length;
+                            }
                         }
                     }
 
@@ -262,14 +277,13 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
+            await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
             if (result.Item.SupportsPeople && result.People is not null)
             {
                 var baseItem = result.Item;
 
                 await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
             }
-
-            await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -285,11 +299,19 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
         /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        private ItemUpdateType BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        private async Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
 
             updateType |= item.OnMetadataChanged();
+
+            if (updateType == ItemUpdateType.None)
+            {
+                if (!await ItemRepository.ItemExistsAsync(item.Id).ConfigureAwait(false))
+                {
+                    return ItemUpdateType.MetadataImport;
+                }
+            }
 
             return updateType;
         }
@@ -298,12 +320,8 @@ namespace MediaBrowser.Providers.Manager
         {
             if (EnableUpdateMetadataFromChildren(item, isFullRefresh, updateType))
             {
-                if (isFullRefresh || updateType > ItemUpdateType.None)
-                {
-                    var children = GetChildrenForMetadataUpdates(item);
-
-                    updateType = UpdateMetadataFromChildren(item, children, isFullRefresh, updateType);
-                }
+                var children = GetChildrenForMetadataUpdates(item);
+                updateType = UpdateMetadataFromChildren(item, children, isFullRefresh, updateType);
             }
 
             var presentationUniqueKey = item.CreatePresentationUniqueKey();
@@ -318,16 +336,17 @@ namespace MediaBrowser.Providers.Manager
             if (!string.IsNullOrEmpty(itemPath))
             {
                 var info = FileSystem.GetFileSystemInfo(itemPath);
-                var modificationDate = info.LastWriteTimeUtc;
-                var itemLastModifiedFileSystem = item.DateModified;
-                if (info.Exists && itemLastModifiedFileSystem != modificationDate)
+                if (info.Exists && item.HasChanged(info.LastWriteTimeUtc))
                 {
-                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", itemLastModifiedFileSystem, modificationDate, itemPath);
+                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
 
-                    item.DateModified = modificationDate;
+                    item.DateModified = info.LastWriteTimeUtc;
                     if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
                     {
-                        item.DateCreated = info.CreationTimeUtc;
+                        if (info.CreationTimeUtc > DateTime.MinValue)
+                        {
+                            item.DateCreated = info.CreationTimeUtc;
+                        }
                     }
 
                     if (item is Video video)
@@ -345,16 +364,24 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool EnableUpdateMetadataFromChildren(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            if (item is Folder folder)
             {
-                if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingStudiosFromChildren || EnableUpdatingOfficialRatingFromChildren)
+                if (!isFullRefresh && currentUpdateType == ItemUpdateType.None)
                 {
-                    return true;
+                    return folder.SupportsDateLastMediaAdded;
                 }
 
-                if (item is Folder folder)
+                if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
                 {
-                    return folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks;
+                    if (EnableUpdatingPremiereDateFromChildren || EnableUpdatingGenresFromChildren || EnableUpdatingStudiosFromChildren || EnableUpdatingOfficialRatingFromChildren)
+                    {
+                        return true;
+                    }
+
+                    if (folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks)
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -375,36 +402,42 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            if (item is Folder folder)
             {
-                updateType |= UpdateCumulativeRunTimeTicks(item, children);
-                updateType |= UpdateDateLastMediaAdded(item, children);
-
-                // don't update user-changeable metadata for locked items
-                if (item.IsLocked)
+                if (folder.SupportsDateLastMediaAdded)
                 {
-                    return updateType;
+                    updateType |= UpdateDateLastMediaAdded(item, children);
                 }
 
-                if (EnableUpdatingPremiereDateFromChildren)
+                if ((isFullRefresh || currentUpdateType > ItemUpdateType.None) && folder.SupportsCumulativeRunTimeTicks)
                 {
-                    updateType |= UpdatePremiereDate(item, children);
+                    updateType |= UpdateCumulativeRunTimeTicks(item, children);
                 }
+            }
 
-                if (EnableUpdatingGenresFromChildren)
-                {
-                    updateType |= UpdateGenres(item, children);
-                }
+            if (!(isFullRefresh || currentUpdateType > ItemUpdateType.None) || item.IsLocked)
+            {
+                return updateType;
+            }
 
-                if (EnableUpdatingStudiosFromChildren)
-                {
-                    updateType |= UpdateStudios(item, children);
-                }
+            if (EnableUpdatingPremiereDateFromChildren)
+            {
+                updateType |= UpdatePremiereDate(item, children);
+            }
 
-                if (EnableUpdatingOfficialRatingFromChildren)
-                {
-                    updateType |= UpdateOfficialRating(item, children);
-                }
+            if (EnableUpdatingGenresFromChildren)
+            {
+                updateType |= UpdateGenres(item, children);
+            }
+
+            if (EnableUpdatingStudiosFromChildren)
+            {
+                updateType |= UpdateStudios(item, children);
+            }
+
+            if (EnableUpdatingOfficialRatingFromChildren)
+            {
+                updateType |= UpdateOfficialRating(item, children);
             }
 
             return updateType;
@@ -817,7 +850,9 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        var shouldReplace = options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly || options.ReplaceAllMetadata;
+                        var shouldReplace = (options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly && options.ReplaceAllMetadata)
+                            // Case for Scan for new and updated files
+                            || (options.MetadataRefreshMode == MetadataRefreshMode.Default && !options.ReplaceAllMetadata);
                         MergeData(temp, metadata, item.LockedFields, shouldReplace, true);
                     }
                 }
@@ -1164,12 +1199,12 @@ namespace MediaBrowser.Providers.Manager
                     target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
                 }
 
-                if (source.DateCreated != default)
+                if (source.DateCreated != DateTime.MinValue)
                 {
                     target.DateCreated = source.DateCreated;
                 }
 
-                if (replaceData || source.DateModified != default)
+                if (replaceData || source.DateModified != DateTime.MinValue)
                 {
                     target.DateModified = source.DateModified;
                 }
@@ -1265,7 +1300,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (source is Video sourceCast && target is Video targetCast)
             {
-                if (replaceData || !targetCast.Video3DFormat.HasValue)
+                if (sourceCast.Video3DFormat.HasValue && (replaceData || !targetCast.Video3DFormat.HasValue))
                 {
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }

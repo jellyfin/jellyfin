@@ -30,7 +30,7 @@
     "ItemAddedWithName": "{0} fue agregado a la biblioteca",
     "ItemRemovedWithName": "{0} fue removido de la biblioteca",
     "LabelIpAddressValue": "Dirección IP: {0}",
-    "LabelRunningTimeValue": "Tiempo de reproducción: {0}",
+    "LabelRunningTimeValue": "Tiempo corriendo: {0}",
     "Latest": "Recientes",
     "MessageApplicationUpdated": "El servidor Jellyfin ha sido actualizado",
     "MessageApplicationUpdatedTo": "El servidor Jellyfin ha sido actualizado a {0}",
@@ -136,5 +136,7 @@
     "TaskExtractMediaSegments": "Escaneo de segmentos de medios",
     "TaskExtractMediaSegmentsDescription": "Extrae u obtiene segmentos de medios de plugins habilitados para MediaSegment.",
     "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Mueve archivos de trickplay existentes según la configuración de la biblioteca."
+    "TaskMoveTrickplayImagesDescription": "Mueve archivos de trickplay existentes según la configuración de la biblioteca.",
+    "CleanupUserDataTask": "Tarea de limpieza de los datos del usuario",
+    "CleanupUserDataTaskDescription": "Limpia toda la información de usuario (Estado de última vez visto, favoritos, etc) del archivo media que no está presente por los últimos 90 días."
 }

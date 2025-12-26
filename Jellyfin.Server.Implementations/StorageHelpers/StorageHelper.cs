@@ -13,8 +13,7 @@ namespace Jellyfin.Server.Implementations.StorageHelpers;
 public static class StorageHelper
 {
     private const long TwoGigabyte = 2_147_483_647L;
-    private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
-    private static readonly string[] _byteHumanizedSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+    private static readonly string[] _byteHumanizedSuffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
 
     /// <summary>
     /// Tests the available storage capacity on the jellyfin paths with estimated minimum values.
@@ -24,10 +23,8 @@ public static class StorageHelper
     public static void TestCommonPathsForStorageCapacity(IApplicationPaths applicationPaths, ILogger logger)
     {
         TestDataDirectorySize(applicationPaths.DataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.LogDirectoryPath, logger, FiveHundredAndTwelveMegaByte);
         TestDataDirectorySize(applicationPaths.CachePath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.ProgramDataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.TempDirectory, logger, TwoGigabyte);
     }
 
     /// <summary>
@@ -77,7 +74,7 @@ public static class StorageHelper
         var drive = new DriveInfo(path);
         if (threshold != -1 && drive.AvailableFreeSpace < threshold)
         {
-            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Required: at least {HumanizeStorageSize(threshold)}.");
+            throw new InvalidOperationException($"The path `{path}` has insufficient free space. Available: {HumanizeStorageSize(drive.AvailableFreeSpace)}, Required: {HumanizeStorageSize(threshold)}.");
         }
 
         logger.LogInformation(

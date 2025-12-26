@@ -294,6 +294,9 @@ dotnet_diagnostic.CA1854.severity = error
 # error on CA1860: Avoid using 'Enumerable.Any()' extension method
 dotnet_diagnostic.CA1860.severity = error
 
+# error on CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = error
+
 # error on CA1862: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 dotnet_diagnostic.CA1862.severity = error
 

@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            var result = GetChildren(user, true).Count;
+            var result = GetChildren(user, true, null).Count;
 
             return result;
         }
@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var items = GetEpisodes(user, query.DtoOptions, true).Where(filter);
 
-            return PostFilterAndSort(items, query, false);
+            return PostFilterAndSort(items, query);
         }
 
         /// <summary>

@@ -244,6 +244,7 @@ namespace Emby.Server.Implementations.Playlists
 
             // Update the playlist in the repository
             playlist.LinkedChildren = [.. playlist.LinkedChildren, .. childrenToAdd];
+            playlist.DateLastMediaAdded = DateTime.UtcNow;
 
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
@@ -314,7 +315,7 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            var newPriorItemIndex = newIndex > oldIndexAccessible ? newIndex : newIndex - 1 < 0 ? 0 : newIndex - 1;
+            var newPriorItemIndex = Math.Max(newIndex - 1, 0);
             var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
             var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
             var adjustedNewIndex = DetermineAdjustedIndex(newPriorItemIndexOnAllChildren, newIndex);

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -27,6 +28,8 @@ using Microsoft.Extensions.Primitives;
 using Morestachio;
 using Morestachio.Framework.IO.SingleStream;
 using Morestachio.Rendering;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.ServerSetupApp;
 
@@ -71,7 +74,7 @@ public sealed class SetupServer : IDisposable
         _configurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
     }
 
-    internal static ConcurrentQueue<StartupLogEntry>? LogQueue { get; set; } = new();
+    internal static ConcurrentQueue<StartupLogTopic>? LogQueue { get; set; } = new();
 
     /// <summary>
     /// Gets a value indicating whether Startup server is currently running.
@@ -88,14 +91,14 @@ public sealed class SetupServer : IDisposable
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
-                (StartupLogEntry logEntry, IEnumerable<StartupLogEntry> children) =>
+                (StartupLogTopic logEntry, IEnumerable<StartupLogTopic> children) =>
                 {
                     if (children.Any())
                     {
                         var maxLevel = logEntry.LogLevel;
-                        var stack = new Stack<StartupLogEntry>(children);
+                        var stack = new Stack<StartupLogTopic>(children);
 
-                        while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) != null) // error is the highest inherted error level.
+                        while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) is not null) // error is the highest inherted error level.
                         {
                             maxLevel = maxLevel < logEntry.LogLevel ? logEntry.LogLevel : maxLevel;
                             foreach (var child in logEntry.Children)
@@ -138,19 +141,25 @@ public sealed class SetupServer : IDisposable
 
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
-        _startupServer = Host.CreateDefaultBuilder()
+        var config = _configurationManager.GetNetworkConfiguration()!;
+        _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
+            .UseSerilog()
             .ConfigureServices(serv =>
             {
+                serv.AddSingleton(this);
                 serv.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
+                serv.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
+                });
             })
             .ConfigureWebHostDefaults(webHostBuilder =>
                     {
                         webHostBuilder
                                 .UseKestrel((builderContext, options) =>
                                 {
-                                    var config = _configurationManager.GetNetworkConfiguration()!;
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
                                     var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
@@ -168,7 +177,7 @@ public sealed class SetupServer : IDisposable
                                 .Configure(app =>
                                 {
                                     app.UseHealthChecks("/health");
-
+                                    app.UseForwardedHeaders();
                                     app.Map("/startup/logger", loggerRoute =>
                                     {
                                         loggerRoute.Run(async context =>
@@ -240,7 +249,9 @@ public sealed class SetupServer : IDisposable
                                             {
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
+                                                { "version", typeof(Emby.Server.Implementations.ApplicationHost).Assembly.GetName().Version! },
                                                 { "logs", startupLogEntries },
+                                                { "networkManagerReady", networkManager is not null },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
                                             },
                                             new ByteCounterStream(context.Response.BodyWriter.AsStream(), IODefaults.FileStreamBufferSize, true, _startupUiRenderer.ParserOptions))
@@ -361,16 +372,5 @@ public sealed class SetupServer : IDisposable
                 DateOfCreation = DateTimeOffset.Now
             });
         }
-    }
-
-    internal class StartupLogEntry
-    {
-        public LogLevel LogLevel { get; set; }
-
-        public string? Content { get; set; }
-
-        public DateTimeOffset DateOfCreation { get; set; }
-
-        public List<StartupLogEntry> Children { get; set; } = [];
     }
 }

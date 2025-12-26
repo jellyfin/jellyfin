@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -55,6 +55,8 @@ public class PeopleValidator
 
         var numPeople = people.Count;
 
+        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+
         _logger.LogDebug("Will refresh {Amount} people", numPeople);
 
         foreach (var person in people)
@@ -92,7 +94,7 @@ public class PeopleValidator
             double percent = numComplete;
             percent /= numPeople;
 
-            progress.Report(100 * percent);
+            subProgress.Report(100 * percent);
         }
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
@@ -102,17 +104,13 @@ public class PeopleValidator
             IsLocked = false
         });
 
-        foreach (var item in deadEntities)
-        {
-            _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
+        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
 
-            _libraryManager.DeleteItem(
-                item,
-                new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                },
-                false);
+        var i = 0;
+        foreach (var item in deadEntities.Chunk(500))
+        {
+            _libraryManager.DeleteItemsUnsafeFast(item);
+            subProgress.Report(100f / deadEntities.Count * (i++ * 100));
         }
 
         progress.Report(100);

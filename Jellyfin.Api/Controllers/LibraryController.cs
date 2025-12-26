@@ -187,7 +187,7 @@ public class LibraryController : BaseJellyfinApiController
             item = parent;
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var items = themeItems
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
             .ToArray();
@@ -260,7 +260,7 @@ public class LibraryController : BaseJellyfinApiController
             item = parent;
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var items = themeItems
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
             .ToArray();
@@ -496,7 +496,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         BaseItem? parent = item.GetParent();
 
         while (parent is not null)
@@ -556,7 +556,7 @@ public class LibraryController : BaseJellyfinApiController
             items = items.Where(i => i.IsHidden == val).ToList();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var resultArray = _dtoService.GetBaseItemDtos(items, dtoOptions);
         return new QueryResult<BaseItemDto>(resultArray);
     }
@@ -747,8 +747,7 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions { Fields = fields };
 
         var program = item as IHasProgramAttributes;
         bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
@@ -779,11 +778,14 @@ public class LibraryController : BaseJellyfinApiController
         var query = new InternalItemsQuery(user)
         {
             Genres = item.Genres,
+            Tags = item.Tags,
             Limit = limit,
             IncludeItemTypes = includeItemTypes.ToArray(),
             DtoOptions = dtoOptions,
             EnableTotalRecordCount = !isMovie ?? true,
             EnableGroupByMetadataKey = isMovie ?? false,
+            ExcludeItemIds = [itemId],
+            OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
         };
 
         // ExcludeArtistIds

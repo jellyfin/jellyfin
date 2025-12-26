@@ -48,7 +48,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>
     public MigrateLibraryDb(
-        IStartupLogger startupLogger,
+        IStartupLogger<MigrateLibraryDb> startupLogger,
         IDbContextFactory<JellyfinDbContext> provider,
         IServerApplicationPaths paths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider)
@@ -90,12 +90,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             operation.JellyfinDbContext.AncestorIds.ExecuteDelete();
         }
 
+        // notify the other migration to just silently abort because the fix has been applied here already.
+        ReseedFolderFlag.RerunGuardFlag = true;
+
         var legacyBaseItemWithUserKeys = new Dictionary<string, BaseItemEntity>();
         connection.Open();
 
         var baseItemIds = new HashSet<Guid>();
-        using (var operation = GetPreparedDbContext("moving TypedBaseItem"))
+        using (var operation = GetPreparedDbContext("Moving TypedBaseItem"))
         {
+            IDictionary<Guid, (BaseItemEntity BaseItem, string[] Keys)> allItemsLookup = new Dictionary<Guid, (BaseItemEntity BaseItem, string[] Keys)>();
             const string typedBaseItemsQuery =
             """
             SELECT guid, type, data, StartDate, EndDate, ChannelId, IsMovie,
@@ -105,29 +109,68 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             Audio, ExternalServiceId, IsInMixedFolder, DateLastSaved, LockedFields, Studios, Tags, TrailerTypes, OriginalTitle, PrimaryVersionId,
             DateLastMediaAdded, Album, LUFS, NormalizationGain, CriticRating, IsVirtualItem, SeriesName, UserDataKey, SeasonName, SeasonId, SeriesId,
             PresentationUniqueKey, InheritedParentalRatingValue, ExternalSeriesId, Tagline, ProviderIds, Images, ProductionLocations, ExtraIds, TotalBitrate,
-            ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType FROM TypedBaseItems
+            ExtraType, Artists, AlbumArtists, ExternalId, SeriesPresentationUniqueKey, ShowId, OwnerId, MediaType, SortName, CleanName, UnratedType, IsFolder FROM TypedBaseItems
             """;
             using (new TrackedMigrationStep("Loading TypedBaseItems", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(typedBaseItemsQuery))
                 {
                     var baseItem = GetItem(dto);
-                    operation.JellyfinDbContext.BaseItems.Add(baseItem.BaseItem);
-                    baseItemIds.Add(baseItem.BaseItem.Id);
-                    foreach (var dataKey in baseItem.LegacyUserDataKey)
-                    {
-                        legacyBaseItemWithUserKeys[dataKey] = baseItem.BaseItem;
-                    }
+                    allItemsLookup.Add(baseItem.BaseItem.Id, baseItem);
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.BaseItems.Local.Count} BaseItem entries", _logger))
+            bool DoesResolve(Guid? parentId, HashSet<(BaseItemEntity BaseItem, string[] Keys)> checkStack)
+            {
+                if (parentId is null)
+                {
+                    return true;
+                }
+
+                if (!allItemsLookup.TryGetValue(parentId.Value, out var parent))
+                {
+                    return false; // item is detached and has no root anymore.
+                }
+
+                if (!checkStack.Add(parent))
+                {
+                    return false; // recursive structure. Abort.
+                }
+
+                return DoesResolve(parent.BaseItem.ParentId, checkStack);
+            }
+
+            using (new TrackedMigrationStep("Clean TypedBaseItems hierarchy", _logger))
+            {
+                var checkStack = new HashSet<(BaseItemEntity BaseItem, string[] Keys)>();
+
+                foreach (var item in allItemsLookup)
+                {
+                    var cachedItem = item.Value;
+                    if (DoesResolve(cachedItem.BaseItem.ParentId, checkStack))
+                    {
+                        checkStack.Add(cachedItem);
+                        operation.JellyfinDbContext.BaseItems.Add(cachedItem.BaseItem);
+                        baseItemIds.Add(cachedItem.BaseItem.Id);
+                        foreach (var dataKey in cachedItem.Keys)
+                        {
+                            legacyBaseItemWithUserKeys[dataKey] = cachedItem.BaseItem;
+                        }
+                    }
+
+                    checkStack.Clear();
+                }
+            }
+
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.BaseItems.Local.Count} BaseItem entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
+
+            allItemsLookup.Clear();
         }
 
-        using (var operation = GetPreparedDbContext("moving ItemValues"))
+        using (var operation = GetPreparedDbContext("Moving ItemValues"))
         {
             // do not migrate inherited types as they are now properly mapped in search and lookup.
             const string itemValueQuery =
@@ -138,11 +181,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
             // EFCores local lookup sucks. We cannot use context.ItemValues.Local here because its just super slow.
             var localItems = new Dictionary<(int Type, string Value), (Database.Implementations.Entities.ItemValue ItemValue, List<Guid> ItemIds)>();
-            using (new TrackedMigrationStep("loading ItemValues", _logger))
+            using (new TrackedMigrationStep("Loading ItemValues", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(itemValueQuery))
                 {
                     var itemId = dto.GetGuid(0);
+                    if (!baseItemIds.Contains(itemId))
+                    {
+                        continue;
+                    }
+
                     var entity = GetItemValue(dto);
                     var key = ((int)entity.Type, entity.Value);
                     if (!localItems.TryGetValue(key, out var existing))
@@ -166,13 +214,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.ItemValues.Local.Count} ItemValues entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.ItemValues.Local.Count} ItemValues entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving UserData"))
+        using (var operation = GetPreparedDbContext("Moving UserData"))
         {
             var queryResult = connection.Query(
             """
@@ -181,14 +229,14 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
             """);
 
-            using (new TrackedMigrationStep("loading UserData", _logger))
+            using (new TrackedMigrationStep("Loading UserData", _logger))
             {
-                var users = operation.JellyfinDbContext.Users.AsNoTracking().ToImmutableArray();
+                var users = operation.JellyfinDbContext.Users.AsNoTracking().ToArray();
                 var userIdBlacklist = new HashSet<int>();
 
                 foreach (var entity in queryResult)
                 {
-                    var userData = GetUserData(users, entity, userIdBlacklist);
+                    var userData = GetUserData(users, entity, userIdBlacklist, _logger);
                     if (userData is null)
                     {
                         var userDataId = entity.GetString(0);
@@ -209,22 +257,25 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         continue;
                     }
 
+                    if (!baseItemIds.Contains(refItem.Id))
+                    {
+                        continue;
+                    }
+
                     userData.ItemId = refItem.Id;
                     operation.JellyfinDbContext.UserData.Add(userData);
                 }
-
-                users.Clear();
             }
 
             legacyBaseItemWithUserKeys.Clear();
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.UserData.Local.Count} UserData entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.UserData.Local.Count} UserData entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving MediaStreamInfos"))
+        using (var operation = GetPreparedDbContext("Moving MediaStreamInfos"))
         {
             const string mediaStreamQuery =
             """
@@ -237,21 +288,27 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
             """;
 
-            using (new TrackedMigrationStep("loading MediaStreamInfos", _logger))
+            using (new TrackedMigrationStep("Loading MediaStreamInfos", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
                 {
-                    operation.JellyfinDbContext.MediaStreamInfos.Add(GetMediaStream(dto));
+                    var entity = GetMediaStream(dto);
+                    if (!baseItemIds.Contains(entity.ItemId))
+                    {
+                        continue;
+                    }
+
+                    operation.JellyfinDbContext.MediaStreamInfos.Add(entity);
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.MediaStreamInfos.Local.Count} MediaStreamInfos entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.MediaStreamInfos.Local.Count} MediaStreamInfos entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving AttachmentStreamInfos"))
+        using (var operation = GetPreparedDbContext("Moving AttachmentStreamInfos"))
         {
             const string mediaAttachmentQuery =
             """
@@ -260,45 +317,51 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = mediaattachments.ItemId)
             """;
 
-            using (new TrackedMigrationStep("loading AttachmentStreamInfos", _logger))
+            using (new TrackedMigrationStep("Loading AttachmentStreamInfos", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(mediaAttachmentQuery))
                 {
-                    operation.JellyfinDbContext.AttachmentStreamInfos.Add(GetMediaAttachment(dto));
+                    var entity = GetMediaAttachment(dto);
+                    if (!baseItemIds.Contains(entity.ItemId))
+                    {
+                        continue;
+                    }
+
+                    operation.JellyfinDbContext.AttachmentStreamInfos.Add(entity);
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.AttachmentStreamInfos.Local.Count} AttachmentStreamInfos entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.AttachmentStreamInfos.Local.Count} AttachmentStreamInfos entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving People"))
+        using (var operation = GetPreparedDbContext("Moving People"))
         {
             const string personsQuery =
             """
-            SELECT ItemId, Name, Role, PersonType, SortOrder FROM People
+            SELECT ItemId, Name, Role, PersonType, SortOrder, ListOrder FROM People
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = People.ItemId)
             """;
 
             var peopleCache = new Dictionary<string, (People Person, List<PeopleBaseItemMap> Items)>();
 
-            using (new TrackedMigrationStep("loading People", _logger))
+            using (new TrackedMigrationStep("Loading People", _logger))
             {
                 foreach (SqliteDataReader reader in connection.Query(personsQuery))
                 {
                     var itemId = reader.GetGuid(0);
                     if (!baseItemIds.Contains(itemId))
                     {
-                        _logger.LogError("Dont save person {0} because its not in use by any BaseItem", reader.GetString(1));
+                        _logger.LogError("Not saving person {0} because it's not in use by any BaseItem", reader.GetString(1));
                         continue;
                     }
 
                     var entity = GetPerson(reader);
-                    if (!peopleCache.TryGetValue(entity.Name, out var personCache))
+                    if (!peopleCache.TryGetValue(entity.Name + "|" + entity.PersonType, out var personCache))
                     {
-                        peopleCache[entity.Name] = personCache = (entity, []);
+                        peopleCache[entity.Name + "|" + entity.PersonType] = personCache = (entity, []);
                     }
 
                     if (reader.TryGetString(2, out var role))
@@ -306,6 +369,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
+                    int? listOrder = reader.IsDBNull(5) ? null : reader.GetInt32(5);
 
                     personCache.Items.Add(new PeopleBaseItemMap()
                     {
@@ -313,13 +377,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         ItemId = itemId,
                         People = null!,
                         PeopleId = personCache.Person.Id,
-                        ListOrder = sortOrder,
+                        ListOrder = listOrder,
                         SortOrder = sortOrder,
                         Role = role
                     });
                 }
-
-                baseItemIds.Clear();
 
                 foreach (var item in peopleCache)
                 {
@@ -330,13 +392,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 peopleCache.Clear();
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Peoples.Local.Count} People entries and {operation.JellyfinDbContext.PeopleBaseItemMap.Local.Count} maps", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.Peoples.Local.Count} People entries and {operation.JellyfinDbContext.PeopleBaseItemMap.Local.Count} maps", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving Chapters"))
+        using (var operation = GetPreparedDbContext("Moving Chapters"))
         {
             const string chapterQuery =
             """
@@ -344,22 +406,27 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
             """;
 
-            using (new TrackedMigrationStep("loading Chapters", _logger))
+            using (new TrackedMigrationStep("Loading Chapters", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(chapterQuery))
                 {
                     var chapter = GetChapter(dto);
+                    if (!baseItemIds.Contains(chapter.ItemId))
+                    {
+                        continue;
+                    }
+
                     operation.JellyfinDbContext.Chapters.Add(chapter);
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.Chapters.Local.Count} Chapters entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.Chapters.Local.Count} Chapters entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
         }
 
-        using (var operation = GetPreparedDbContext("moving AncestorIds"))
+        using (var operation = GetPreparedDbContext("Moving AncestorIds"))
         {
             const string ancestorIdsQuery =
             """
@@ -370,16 +437,21 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
             """;
 
-            using (new TrackedMigrationStep("loading AncestorIds", _logger))
+            using (new TrackedMigrationStep("Loading AncestorIds", _logger))
             {
                 foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
                 {
                     var ancestorId = GetAncestorId(dto);
+                    if (!baseItemIds.Contains(ancestorId.ItemId) || !baseItemIds.Contains(ancestorId.ParentItemId))
+                    {
+                        continue;
+                    }
+
                     operation.JellyfinDbContext.AncestorIds.Add(ancestorId);
                 }
             }
 
-            using (new TrackedMigrationStep($"saving {operation.JellyfinDbContext.AncestorIds.Local.Count} AncestorId entries", _logger))
+            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.AncestorIds.Local.Count} AncestorId entries", _logger))
             {
                 operation.JellyfinDbContext.SaveChanges();
             }
@@ -404,19 +476,20 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         return new DatabaseMigrationStep(dbContext, operationName, _logger);
     }
 
-    private UserData? GetUserData(ImmutableArray<User> users, SqliteDataReader dto, HashSet<int> userIdBlacklist)
+    internal static UserData? GetUserData(User[] users, SqliteDataReader dto, HashSet<int> userIdBlacklist, ILogger logger)
     {
         var internalUserId = dto.GetInt32(1);
-        var user = users.FirstOrDefault(e => e.InternalId == internalUserId);
+        if (userIdBlacklist.Contains(internalUserId))
+        {
+            return null;
+        }
 
+        var user = users.FirstOrDefault(e => e.InternalId == internalUserId);
         if (user is null)
         {
-            if (userIdBlacklist.Contains(internalUserId))
-            {
-                return null;
-            }
+            userIdBlacklist.Add(internalUserId);
 
-            _logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
+            logger.LogError("Tried to find user with index '{Idx}' but there are only '{MaxIdx}' users.", internalUserId, users.Length);
             return null;
         }
 
@@ -1084,12 +1157,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         if (reader.TryGetString(index++, out var providerIds))
         {
-            entity.Provider = providerIds.Split('|').Select(e => e.Split("="))
+            entity.Provider = providerIds.Split('|').Select(e => e.Split("=")).Where(e => e.Length >= 2)
             .Select(e => new BaseItemProvider()
             {
                 Item = null!,
                 ProviderId = e[0],
-                ProviderValue = e[1]
+                ProviderValue = string.Join('|', e.Skip(1))
             }).ToArray();
         }
 
@@ -1168,7 +1241,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.UnratedType = unratedType;
         }
 
-        var baseItem = BaseItemRepository.DeserialiseBaseItem(entity, _logger, null, false);
+        if (reader.TryGetBoolean(index++, out var isFolder))
+        {
+            entity.IsFolder = isFolder;
+        }
+
+        var baseItem = BaseItemRepository.DeserializeBaseItem(entity, _logger, null, false);
         var dataKeys = baseItem.GetUserDataKeys();
         userDataKeys.AddRange(dataKeys);
 
@@ -1182,7 +1260,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             ItemId = baseItemId,
             Id = Guid.NewGuid(),
             Path = e.Path,
-            Blurhash = e.BlurHash != null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
+            Blurhash = e.BlurHash is not null ? Encoding.UTF8.GetBytes(e.BlurHash) : null,
             DateModified = e.DateModified,
             Height = e.Height,
             Width = e.Width,

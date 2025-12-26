@@ -60,7 +60,7 @@ namespace Jellyfin.Server
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
-        private static IStartupLogger? _migrationLogger;
+        private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
         private static string? _restoreFromBackup;
 
         /// <summary>
@@ -103,6 +103,7 @@ namespace Jellyfin.Server
             _setupServer = new SetupServer(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost, _loggerFactory, startupConfig);
             await _setupServer.RunAsync().ConfigureAwait(false);
             _logger = _loggerFactory.CreateLogger("Main");
+            StartupLogger.Logger = new StartupLogger(_logger);
 
             // Use the logging framework for uncaught exceptions instead of std error
             AppDomain.CurrentDomain.UnhandledException += (_, e)
@@ -178,8 +179,16 @@ namespace Jellyfin.Server
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
-                    .ConfigureServices(e => e.AddTransient<IStartupLogger, StartupLogger>().AddSingleton<IServiceCollection>(e))
+                    .ConfigureServices(e => e
+                        .RegisterStartupLogger()
+                        .AddSingleton<IServiceCollection>(e))
                     .Build();
+
+                /*
+                 * Initialize the transcode path marker so we avoid starting Jellyfin in a broken state.
+                 * This should really be a part of IApplicationPaths but this path is configured differently.
+                 */
+                _ = appHost.ConfigurationManager.GetTranscodePath();
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
@@ -268,7 +277,7 @@ namespace Jellyfin.Server
         /// <returns>A task.</returns>
         public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
         {
-            _migrationLogger = StartupLogger.Logger.BeginGroup($"Migration Service");
+            _migrationLogger = StartupLogger.Logger.BeginGroup<JellyfinMigrationService>($"Migration Service");
             var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
             startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
             var migrationStartupServiceProvider = new ServiceCollection()
@@ -276,7 +285,7 @@ namespace Jellyfin.Server
                 .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths)
-                .AddSingleton<IStartupLogger>(_migrationLogger);
+                .RegisterStartupLogger();
 
             migrationStartupServiceProvider.AddSingleton(migrationStartupServiceProvider);
             var startupService = migrationStartupServiceProvider.BuildServiceProvider();

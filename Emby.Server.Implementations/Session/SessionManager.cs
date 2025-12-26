@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.Session
 
             var nowPlayingQueue = info.NowPlayingQueue;
 
-            if (nowPlayingQueue?.Length > 0)
+            if (nowPlayingQueue?.Length > 0 && !nowPlayingQueue.SequenceEqual(session.NowPlayingQueue))
             {
                 session.NowPlayingQueue = nowPlayingQueue;
 
@@ -474,6 +474,7 @@ namespace Emby.Server.Implementations.Session
         private void RemoveNowPlayingItem(SessionInfo session)
         {
             session.NowPlayingItem = null;
+            session.FullNowPlayingItem = null;
             session.PlayState = new PlayerStateInfo();
 
             if (!string.IsNullOrEmpty(session.DeviceId))

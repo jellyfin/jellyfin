@@ -230,10 +230,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
 
-                // Only Intel has VA-API MJPEG encoder
+                // Only enable VA-API MJPEG encoder on Intel iHD driver.
+                // Legacy platforms supported ONLY by i965 do not support MJPEG encoder.
                 if (hwType == HardwareAccelerationType.vaapi
-                    && !(_mediaEncoder.IsVaapiDeviceInteliHD
-                         || _mediaEncoder.IsVaapiDeviceInteli965))
+                    && !_mediaEncoder.IsVaapiDeviceInteliHD)
                 {
                     return _defaultMjpegEncoder;
                 }
@@ -2376,6 +2376,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+
+                // If SDR is the only supported range, we should not copy any of the HDR streams.
+                // All the following copy check assumes at least one HDR format is supported.
+                if (requestedRangeTypes.Length == 1 && requestHasSDR && videoStream.VideoRangeType != VideoRangeType.SDR)
+                {
+                    return false;
+                }
+
+                // If the client does not support DOVI and the video stream is DOVI without fallback, we should not copy it.
+                if (!requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVI)
+                {
+                    return false;
+                }
 
                 if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
                      && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
@@ -2383,6 +2397,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
                             || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
+                    // If the video stream is in HDR10+ or a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
+                    if (videoStream.VideoRangeType is VideoRangeType.HDR10Plus or VideoRangeType.HDR10 or VideoRangeType.HLG)
+                    {
+                        return false;
+                    }
+
                     // Check complicated cases where we need to remove dynamic metadata
                     // Conservatively refuse to copy if the encoder can't remove dynamic metadata,
                     // but a removal is required for compatability reasons.
@@ -4435,6 +4455,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var swapOutputWandH = doVppTranspose && swapWAndH;
                 var hwScaleFilter = GetHwScaleFilter("vpp", "qsv", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
+                // d3d11va doesn't support dynamic pool size, use vpp filter ctx to relay
+                // to prevent encoder async and bframes from exhausting the decoder pool.
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isD3d11vaDecoder)
+                {
+                    hwScaleFilter += ":passthrough=0";
+                }
+
                 if (!string.IsNullOrEmpty(hwScaleFilter) && doVppTranspose)
                 {
                     hwScaleFilter += $":transpose={transposeDir}";
@@ -5922,25 +5949,34 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
-                var outFormat = doOclTonemap ? "p010" : (isMjpegEncoder ? "bgra" : "nv12"); // RGA only support full range in rgb fmts
+                var outFormat = doOclTonemap ? "p010" : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("vpp", "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
-                var doScaling = GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var doScaling = !string.IsNullOrEmpty(GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH));
 
                 if (!hasSubs
                      || doRkVppTranspose
                      || !isFullAfbcPipeline
-                     || !string.IsNullOrEmpty(doScaling))
+                     || doScaling)
                 {
+                    var isScaleRatioSupported = IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f);
+
                     // RGA3 hardware only support (1/8 ~ 8) scaling in each blit operation,
                     // but in Trickplay there's a case: (3840/320 == 12), enable 2pass for it
-                    if (!string.IsNullOrEmpty(doScaling)
-                        && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
+                    if (doScaling && !isScaleRatioSupported)
                     {
                         // Vendor provided BSP kernel has an RGA driver bug that causes the output to be corrupted for P010 format.
                         // Use NV15 instead of P010 to avoid the issue.
                         // SDR inputs are using BGRA formats already which is not affected.
-                        var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
+                        var intermediateFormat = doOclTonemap ? "nv15" : (isMjpegEncoder ? "bgra" : outFormat);
                         var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_original_aspect_ratio=increase:force_divisible_by=4:afbc=1";
+                        mainFilters.Add(hwScaleFilterFirstPass);
+                    }
+
+                    // The RKMPP MJPEG encoder on some newer chip models no longer supports RGB input.
+                    // Use 2pass here to enable RGA output of full-range YUV in the 2nd pass.
+                    if (isMjpegEncoder && !doOclTonemap && ((doScaling && isScaleRatioSupported) || !doScaling))
+                    {
+                        var hwScaleFilterFirstPass = "vpp_rkrga=format=bgra:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -6532,7 +6568,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (isD3d11Supported && isCodecAvailable)
                 {
                     return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11 -noautorotate" + stripRotationDataArgs : string.Empty)
-                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 2" + (isAv1 ? " -c:v av1" : string.Empty);
                 }
             }
 
@@ -7131,7 +7167,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -async " + state.InputAudioSync;
             }
 
-            if (!string.IsNullOrEmpty(state.InputVideoSync))
+            // The -fps_mode option cannot be applied to input
+            if (!string.IsNullOrEmpty(state.InputVideoSync) && _mediaEncoder.EncoderVersion < new Version(5, 1))
             {
                 inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }

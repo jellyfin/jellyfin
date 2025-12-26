@@ -98,7 +98,10 @@ namespace Jellyfin.Server.Integration.Tests
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
                 })
-                .ConfigureServices(e => e.AddSingleton<IStartupLogger, NullStartupLogger>().AddSingleton(e));
+                .ConfigureServices(e => e
+                    .AddSingleton<IStartupLogger, NullStartupLogger<object>>()
+                    .AddTransient(typeof(IStartupLogger<>), typeof(NullStartupLogger<>))
+                    .AddSingleton(e));
         }
 
         /// <inheritdoc/>
@@ -132,11 +135,18 @@ namespace Jellyfin.Server.Integration.Tests
             base.Dispose(disposing);
         }
 
-        private sealed class NullStartupLogger : IStartupLogger
+        private sealed class NullStartupLogger<TCategory> : IStartupLogger<TCategory>
         {
+            public StartupLogTopic? Topic => throw new NotImplementedException();
+
             public IStartupLogger BeginGroup(FormattableString logEntry)
             {
                 return this;
+            }
+
+            public IStartupLogger<TCategory1> BeginGroup<TCategory1>(FormattableString logEntry)
+            {
+                return new NullStartupLogger<TCategory1>();
             }
 
             public IDisposable? BeginScope<TState>(TState state)
@@ -160,7 +170,22 @@ namespace Jellyfin.Server.Integration.Tests
                 return this;
             }
 
+            public IStartupLogger<TCategory1> With<TCategory1>(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return new NullStartupLogger<TCategory1>();
+            }
+
+            IStartupLogger<TCategory> IStartupLogger<TCategory>.BeginGroup(FormattableString logEntry)
+            {
+                return new NullStartupLogger<TCategory>();
+            }
+
             IStartupLogger IStartupLogger.With(Microsoft.Extensions.Logging.ILogger logger)
+            {
+                return this;
+            }
+
+            IStartupLogger<TCategory> IStartupLogger<TCategory>.With(Microsoft.Extensions.Logging.ILogger logger)
             {
                 return this;
             }

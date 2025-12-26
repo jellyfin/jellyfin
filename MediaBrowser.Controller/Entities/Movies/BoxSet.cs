@@ -136,9 +136,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return Sort(children, user).ToArray();
         }
 
-        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
-            var children = base.GetRecursiveChildren(user, query);
+            var children = base.GetRecursiveChildren(user, query, out totalCount);
             return Sort(children, user).ToArray();
         }
 

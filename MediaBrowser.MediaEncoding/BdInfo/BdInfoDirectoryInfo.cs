@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using BDInfo.IO;
@@ -58,6 +59,8 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
         }
     }
 
+    private static bool IsHidden(ReadOnlySpan<char> name) => name.StartsWith('.');
+
     /// <summary>
     /// Gets the directories.
     /// </summary>
@@ -65,6 +68,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IDirectoryInfo[] GetDirectories()
     {
         return _fileSystem.GetDirectories(_impl.FullName)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoDirectoryInfo(_fileSystem, x))
             .ToArray();
     }
@@ -76,6 +80,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles()
     {
         return _fileSystem.GetFiles(_impl.FullName)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -88,6 +93,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles(string searchPattern)
     {
         return _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -105,6 +111,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 new[] { searchPattern },
                 false,
                 searchOption == SearchOption.AllDirectories)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }

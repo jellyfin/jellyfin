@@ -111,7 +111,6 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        dtoOptions = dtoOptions.AddClientFields(User);
 
         BaseItemDto[] items;
         if (item is Video video)

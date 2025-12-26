@@ -110,5 +110,6 @@
     "TaskCleanCache": "Kesh katalogini tozalash",
     "TaskRefreshChapterImages": "Sahnadan tasvirini chiqarish",
     "TaskRefreshChapterImagesDescription": "Sahnalarni o'z ichiga olgan videolar uchun eskizlarni yaratadi.",
-    "TaskRefreshLibrary": "Media kutubxonangizni skanerlash"
+    "TaskRefreshLibrary": "Media kutubxonangizni skanerlash",
+    "TaskCleanLogsDescription": "{0} kundan eski log fayllarni o'chiradi."
 }
