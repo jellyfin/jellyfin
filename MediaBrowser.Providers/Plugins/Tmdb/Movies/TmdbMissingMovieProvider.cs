@@ -200,7 +200,7 @@ namespace Jellyfin.Plugin.Tmdb.Movies.Providers
                 DeleteFileLocation = false
             };
 
-            // Remove the virtual season/episode that matches the newly updated item
+            // Remove the virtual movie that matches the newly updated item
             for (var i = 0; i < existingVirtualItems.Count; i++)
             {
                 var currentItem = existingVirtualItems[i];
@@ -335,6 +335,7 @@ namespace Jellyfin.Plugin.Tmdb.Movies.Providers
                     tmdbId,
                     acceptedLanguage,
                     TmdbUtils.GetImageLanguagesParam(acceptedLanguage),
+                    null,
                     CancellationToken.None).ConfigureAwait(false);
 
                 var allMovies = collectionInfo?.Parts;
