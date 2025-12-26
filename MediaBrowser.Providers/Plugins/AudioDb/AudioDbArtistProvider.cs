@@ -157,12 +157,19 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
+            var tempPath = path + $".tmp-{Guid.NewGuid():N}";
             var fileStreamOptions = AsyncFile.WriteOptions;
             fileStreamOptions.Mode = FileMode.Create;
-            var xmlFileStream = new FileStream(path, fileStreamOptions);
+            var xmlFileStream = new FileStream(tempPath, fileStreamOptions);
             await using (xmlFileStream.ConfigureAwait(false))
             {
                 await response.Content.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Atomically move the file to avoid race with concurrent reader oder writer.
+            if (!_fileSystem.MoveFile(tempPath, path, true))
+            {
+                _fileSystem.DeleteFile(tempPath);
             }
         }
 
