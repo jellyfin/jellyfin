@@ -1,0 +1,31 @@
+{
+    "name": "Development Jellyfin Headless Server",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "containerUser": "vscode",
+    "mounts": [
+        "type=bind,src=${localEnv:JELLYFIN_MEDIA_PATH},dst=/media"
+    ],
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "postStartCommand": "dotnet restore && dotnet workload update && dotnet dev-certs https --trust;",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "editorconfig.editorconfig",
+                "github.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csdevkit",
+                "alexcvzz.vscode-sqlite"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "hostRequirements": {
+        "memory": "8gb",
+        "cpus": 4
+    }
+}
