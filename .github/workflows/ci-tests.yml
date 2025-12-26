@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  SDK_VERSION: "9.0.x"
+  SDK_VERSION: "10.0.x"
 
 jobs:
   run-tests:

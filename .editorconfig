@@ -379,6 +379,9 @@ dotnet_diagnostic.CA1720.severity = suggestion
 # disable warning CA1724: Type names should not match namespaces
 dotnet_diagnostic.CA1724.severity = suggestion
 
+# disable warning CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.CA1873.severity = suggestion
+
 # disable warning CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = suggestion
 
@@ -399,6 +402,10 @@ dotnet_diagnostic.CA1861.severity = suggestion
 
 # disable warning CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = suggestion
+
+# TODO: Reevaluate when false positives are fixed: https://github.com/dotnet/roslyn-analyzers/issues/7699
+# disable warning CA2025: Do not pass 'IDisposable' instances into unawaited tasks
+dotnet_diagnostic.CA2025.severity = suggestion
 
 # disable warning CA2253: Named placeholders should not be numeric values
 dotnet_diagnostic.CA2253.severity = suggestion
