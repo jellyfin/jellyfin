@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Enums;
@@ -22,8 +21,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
+        private static readonly char[] _separators = ['|', ','];
 
         private TranscodeReason? _transcodeReasons = null;
 
@@ -35,6 +33,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedVideoCodecs = Array.Empty<string>();
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
+
+        public int? OutputAudioBitrate { get; set; }
+
+        public int? OutputAudioChannels { get; set; }
 
         public TranscodeReason TranscodeReasons
         {
@@ -586,7 +588,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (!string.IsNullOrEmpty(BaseRequest.Profile))
             {
-                return BaseRequest.Profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                return BaseRequest.Profile.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
             }
 
             if (!string.IsNullOrEmpty(codec))
@@ -595,7 +597,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(profile))
                 {
-                    return profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    return profile.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 
@@ -606,7 +608,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (!string.IsNullOrEmpty(BaseRequest.VideoRangeType))
             {
-                return BaseRequest.VideoRangeType.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                return BaseRequest.VideoRangeType.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
             }
 
             if (!string.IsNullOrEmpty(codec))
@@ -615,7 +617,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(rangetype))
                 {
-                    return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    return rangetype.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 
@@ -626,7 +628,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             if (!string.IsNullOrEmpty(BaseRequest.CodecTag))
             {
-                return BaseRequest.CodecTag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                return BaseRequest.CodecTag.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
             }
 
             if (!string.IsNullOrEmpty(codec))
@@ -635,7 +637,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(codectag))
                 {
-                    return codectag.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    return codectag.Split(_separators, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 

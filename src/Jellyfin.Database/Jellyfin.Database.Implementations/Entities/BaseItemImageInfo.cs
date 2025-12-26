@@ -22,7 +22,7 @@ public class BaseItemImageInfo
     /// <summary>
     /// Gets or Sets the time the image was last modified.
     /// </summary>
-    public DateTime DateModified { get; set; }
+    public DateTime? DateModified { get; set; }
 
     /// <summary>
     /// Gets or Sets the imagetype.

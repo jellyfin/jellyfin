@@ -39,7 +39,7 @@ public class BackupService : IBackupService
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
     };
 
-    private readonly Version _backupEngineVersion = Version.Parse("0.1.0");
+    private readonly Version _backupEngineVersion = new Version(0, 2, 0);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupService"/> class.
@@ -120,26 +120,30 @@ public class BackupService : IBackupService
 
             void CopyDirectory(string source, string target)
             {
-                source = Path.GetFullPath(source);
-                Directory.CreateDirectory(source);
-
+                var fullSourcePath = NormalizePathSeparator(Path.GetFullPath(source) + Path.DirectorySeparatorChar);
+                var fullTargetRoot = Path.GetFullPath(target) + Path.DirectorySeparatorChar;
                 foreach (var item in zipArchive.Entries)
                 {
-                    var sanitizedSourcePath = Path.GetFullPath(item.FullName.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar);
-                    if (!sanitizedSourcePath.StartsWith(target, StringComparison.Ordinal))
+                    var sourcePath = NormalizePathSeparator(Path.GetFullPath(item.FullName));
+                    var targetPath = Path.GetFullPath(Path.Combine(target, Path.GetRelativePath(source, item.FullName)));
+
+                    if (!sourcePath.StartsWith(fullSourcePath, StringComparison.Ordinal)
+                        || !targetPath.StartsWith(fullTargetRoot, StringComparison.Ordinal)
+                        || Path.EndsInDirectorySeparator(item.FullName))
                     {
                         continue;
                     }
 
-                    var targetPath = Path.Combine(source, sanitizedSourcePath[target.Length..].Trim('/'));
                     _logger.LogInformation("Restore and override {File}", targetPath);
-                    item.ExtractToFile(targetPath);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                    item.ExtractToFile(targetPath, overwrite: true);
                 }
             }
 
-            CopyDirectory(_applicationPaths.ConfigurationDirectoryPath, "Config/");
-            CopyDirectory(_applicationPaths.DataPath, "Data/");
-            CopyDirectory(_applicationPaths.RootFolderPath, "Root/");
+            CopyDirectory("Config", _applicationPaths.ConfigurationDirectoryPath);
+            CopyDirectory("Data", _applicationPaths.DataPath);
+            CopyDirectory("Root", _applicationPaths.RootFolderPath);
 
             if (manifest.Options.Database)
             {
@@ -148,7 +152,7 @@ public class BackupService : IBackupService
                 await using (dbContext.ConfigureAwait(false))
                 {
                     // restore migration history manually
-                    var historyEntry = zipArchive.GetEntry($"Database\\{nameof(HistoryRow)}.json");
+                    var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
                     if (historyEntry is null)
                     {
                         _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
@@ -165,6 +169,13 @@ public class BackupService : IBackupService
 
                     var historyRepository = dbContext.GetService<IHistoryRepository>();
                     await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
+
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var insertScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
+                    }
+
                     foreach (var item in historyEntries)
                     {
                         var insertScript = historyRepository.GetInsertScript(item);
@@ -186,10 +197,10 @@ public class BackupService : IBackupService
                     {
                         _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
 
-                        var zipEntry = zipArchive.GetEntry($"Database\\{entityType.Type.Name}.json");
+                        var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
-                            _logger.LogInformation("No backup of expected table {Table} is present in backup. Continue anyway.", entityType.Type.Name);
+                            _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
                             continue;
                         }
 
@@ -198,7 +209,7 @@ public class BackupService : IBackupService
                         {
                             _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
-                            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false)!)
+                            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
                             {
                                 var entity = item.Deserialize(entityType.Type.PropertyType.GetGenericArguments()[0]);
                                 if (entity is null)
@@ -213,7 +224,7 @@ public class BackupService : IBackupService
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.LogError(ex, "Could not store entity {Entity} continue anyway.", item);
+                                    _logger.LogError(ex, "Could not store entity {Entity}, continuing anyway", item);
                                 }
                             }
 
@@ -223,11 +234,11 @@ public class BackupService : IBackupService
 
                     _logger.LogInformation("Try restore Database");
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                    _logger.LogInformation("Restored database.");
+                    _logger.LogInformation("Restored database");
                 }
             }
 
-            _logger.LogInformation("Restored Jellyfin system from {Date}.", manifest.DateCreated);
+            _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
     }
 
@@ -253,6 +264,8 @@ public class BackupService : IBackupService
             Options = Map(backupOptions)
         };
 
+        _logger.LogInformation("Running database optimization before backup");
+
         await _jellyfinDatabaseProvider.RunScheduledOptimisation(CancellationToken.None).ConfigureAwait(false);
 
         var backupFolder = Path.Combine(_applicationPaths.BackupPath);
@@ -271,130 +284,154 @@ public class BackupService : IBackupService
         }
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
-        _logger.LogInformation("Attempt to create a new backup at {BackupPath}", backupPath);
-        var fileStream = File.OpenWrite(backupPath);
-        await using (fileStream.ConfigureAwait(false))
-        using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
+
+        try
         {
-            _logger.LogInformation("Start backup process.");
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            _logger.LogInformation("Attempting to create a new backup at {BackupPath}", backupPath);
+            var fileStream = File.OpenWrite(backupPath);
+            await using (fileStream.ConfigureAwait(false))
+            using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
             {
-                dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                static IAsyncEnumerable<object> GetValues(IQueryable dbSet, Type type)
+                _logger.LogInformation("Starting backup process");
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
-                    var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
-                    var enumerable = method.Invoke(dbSet, null)!;
-                    return (IAsyncEnumerable<object>)enumerable;
-                }
+                    dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                // include the migration history as well
-                var historyRepository = dbContext.GetService<IHistoryRepository>();
-                var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
-
-                ICollection<(Type Type, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes = [
-                    .. typeof(JellyfinDbContext)
-                    .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                    .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
-                    .Select(e => (Type: e.PropertyType, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!, e.PropertyType)))),
-                    (Type: typeof(HistoryRow), ValueFactory: new Func<IAsyncEnumerable<object>>(() => migrations.ToAsyncEnumerable()))
-                ];
-                manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
-                var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
-
-                await using (transaction.ConfigureAwait(false))
-                {
-                    _logger.LogInformation("Begin Database backup");
-
-                    foreach (var entityType in entityTypes)
+                    static IAsyncEnumerable<object> GetValues(IQueryable dbSet)
                     {
-                        _logger.LogInformation("Begin backup of entity {Table}", entityType.Type.Name);
-                        var zipEntry = zipArchive.CreateEntry($"Database\\{entityType.Type.Name}.json");
-                        var entities = 0;
-                        var zipEntryStream = zipEntry.Open();
-                        await using (zipEntryStream.ConfigureAwait(false))
+                        var method = dbSet.GetType().GetMethod(nameof(DbSet<object>.AsAsyncEnumerable))!;
+                        var enumerable = method.Invoke(dbSet, null)!;
+                        return (IAsyncEnumerable<object>)enumerable;
+                    }
+
+                    // include the migration history as well
+                    var historyRepository = dbContext.GetService<IHistoryRepository>();
+                    var migrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+
+                    ICollection<(Type Type, string SourceName, Func<IAsyncEnumerable<object>> ValueFactory)> entityTypes =
+                    [
+                        .. typeof(JellyfinDbContext)
+                            .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                            .Where(e => e.PropertyType.IsAssignableTo(typeof(IQueryable)))
+                            .Select(e => (Type: e.PropertyType, dbContext.Model.FindEntityType(e.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!, ValueFactory: new Func<IAsyncEnumerable<object>>(() => GetValues((IQueryable)e.GetValue(dbContext)!)))),
+                        (Type: typeof(HistoryRow), SourceName: nameof(HistoryRow), ValueFactory: () => migrations.ToAsyncEnumerable())
+                    ];
+                    manifest.DatabaseTables = entityTypes.Select(e => e.Type.Name).ToArray();
+                    var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+
+                    await using (transaction.ConfigureAwait(false))
+                    {
+                        _logger.LogInformation("Begin Database backup");
+
+                        foreach (var entityType in entityTypes)
                         {
-                            var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
-                            await using (jsonSerializer.ConfigureAwait(false))
+                            _logger.LogInformation("Begin backup of entity {Table}", entityType.SourceName);
+                            var zipEntry = zipArchive.CreateEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.SourceName}.json")));
+                            var entities = 0;
+                            var zipEntryStream = zipEntry.Open();
+                            await using (zipEntryStream.ConfigureAwait(false))
                             {
-                                jsonSerializer.WriteStartArray();
-
-                                var set = entityType.ValueFactory().ConfigureAwait(false);
-                                await foreach (var item in set.ConfigureAwait(false))
+                                var jsonSerializer = new Utf8JsonWriter(zipEntryStream);
+                                await using (jsonSerializer.ConfigureAwait(false))
                                 {
-                                    entities++;
-                                    try
+                                    jsonSerializer.WriteStartArray();
+
+                                    var set = entityType.ValueFactory().ConfigureAwait(false);
+                                    await foreach (var item in set.ConfigureAwait(false))
                                     {
-                                        JsonSerializer.SerializeToDocument(item, _serializerSettings).WriteTo(jsonSerializer);
+                                        entities++;
+                                        try
+                                        {
+                                            using var document = JsonSerializer.SerializeToDocument(item, _serializerSettings);
+                                            document.WriteTo(jsonSerializer);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogError(ex, "Could not load entity {Entity}", item);
+                                            throw;
+                                        }
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, "Could not load entity {Entity}", item);
-                                        throw;
-                                    }
+
+                                    jsonSerializer.WriteEndArray();
                                 }
-
-                                jsonSerializer.WriteEndArray();
                             }
-                        }
 
-                        _logger.LogInformation("backup of entity {Table} with {Number} created", entityType.Type.Name, entities);
+                            _logger.LogInformation("Backup of entity {Table} with {Number} created", entityType.SourceName, entities);
+                        }
                     }
                 }
-            }
 
-            _logger.LogInformation("Backup of folder {Table}", _applicationPaths.ConfigurationDirectoryPath);
-            foreach (var item in Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.xml", SearchOption.TopDirectoryOnly)
-              .Union(Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.json", SearchOption.TopDirectoryOnly)))
-            {
-                zipArchive.CreateEntryFromFile(item, Path.Combine("Config", Path.GetFileName(item)));
-            }
-
-            void CopyDirectory(string source, string target, string filter = "*")
-            {
-                if (!Directory.Exists(source))
+                _logger.LogInformation("Backup of folder {Table}", _applicationPaths.ConfigurationDirectoryPath);
+                foreach (var item in Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.xml", SearchOption.TopDirectoryOnly)
+                             .Union(Directory.EnumerateFiles(_applicationPaths.ConfigurationDirectoryPath, "*.json", SearchOption.TopDirectoryOnly)))
                 {
-                    return;
+                    zipArchive.CreateEntryFromFile(item, NormalizePathSeparator(Path.Combine("Config", Path.GetFileName(item))));
                 }
 
-                _logger.LogInformation("Backup of folder {Table}", source);
-
-                foreach (var item in Directory.EnumerateFiles(source, filter, SearchOption.AllDirectories))
+                void CopyDirectory(string source, string target, string filter = "*")
                 {
-                    zipArchive.CreateEntryFromFile(item, Path.Combine(target, item[..source.Length].Trim('\\')));
+                    if (!Directory.Exists(source))
+                    {
+                        return;
+                    }
+
+                    _logger.LogInformation("Backup of folder {Table}", source);
+
+                    foreach (var item in Directory.EnumerateFiles(source, filter, SearchOption.AllDirectories))
+                    {
+                        zipArchive.CreateEntryFromFile(item, NormalizePathSeparator(Path.Combine(target, Path.GetRelativePath(source, item))));
+                    }
+                }
+
+                CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "users"), Path.Combine("Config", "users"));
+                CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"), Path.Combine("Config", "ScheduledTasks"));
+                CopyDirectory(Path.Combine(_applicationPaths.RootFolderPath), "Root");
+                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "collections"), Path.Combine("Data", "collections"));
+                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "playlists"), Path.Combine("Data", "playlists"));
+                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "ScheduledTasks"), Path.Combine("Data", "ScheduledTasks"));
+                if (backupOptions.Subtitles)
+                {
+                    CopyDirectory(Path.Combine(_applicationPaths.DataPath, "subtitles"), Path.Combine("Data", "subtitles"));
+                }
+
+                if (backupOptions.Trickplay)
+                {
+                    CopyDirectory(Path.Combine(_applicationPaths.DataPath, "trickplay"), Path.Combine("Data", "trickplay"));
+                }
+
+                if (backupOptions.Metadata)
+                {
+                    CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
+                }
+
+                var manifestStream = zipArchive.CreateEntry(ManifestEntryName).Open();
+                await using (manifestStream.ConfigureAwait(false))
+                {
+                    await JsonSerializer.SerializeAsync(manifestStream, manifest).ConfigureAwait(false);
                 }
             }
 
-            CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "users"), Path.Combine("Config", "users"));
-            CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"), Path.Combine("Config", "ScheduledTasks"));
-            CopyDirectory(Path.Combine(_applicationPaths.RootFolderPath), "Root");
-            CopyDirectory(Path.Combine(_applicationPaths.DataPath, "collections"), Path.Combine("Data", "collections"));
-            CopyDirectory(Path.Combine(_applicationPaths.DataPath, "playlists"), Path.Combine("Data", "playlists"));
-            CopyDirectory(Path.Combine(_applicationPaths.DataPath, "ScheduledTasks"), Path.Combine("Data", "ScheduledTasks"));
-            if (backupOptions.Subtitles)
-            {
-                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "subtitles"), Path.Combine("Data", "subtitles"));
-            }
-
-            if (backupOptions.Trickplay)
-            {
-                CopyDirectory(Path.Combine(_applicationPaths.DataPath, "trickplay"), Path.Combine("Data", "trickplay"));
-            }
-
-            if (backupOptions.Metadata)
-            {
-                CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
-            }
-
-            var manifestStream = zipArchive.CreateEntry(ManifestEntryName).Open();
-            await using (manifestStream.ConfigureAwait(false))
-            {
-                await JsonSerializer.SerializeAsync(manifestStream, manifest).ConfigureAwait(false);
-            }
+            _logger.LogInformation("Backup created");
+            return Map(manifest, backupPath);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create backup, removing {BackupPath}", backupPath);
+            try
+            {
+                if (File.Exists(backupPath))
+                {
+                    File.Delete(backupPath);
+                }
+            }
+            catch (Exception innerEx)
+            {
+                _logger.LogWarning(innerEx, "Unable to remove failed backup");
+            }
 
-        _logger.LogInformation("Backup created");
-        return Map(manifest, backupPath);
+            throw;
+        }
     }
 
     /// <inheritdoc/>
@@ -412,7 +449,7 @@ public class BackupService : IBackupService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Tried to load archive from {Path} but failed.", archivePath);
+            _logger.LogWarning(ex, "Tried to load manifest from archive {Path} but failed", archivePath);
             return null;
         }
 
@@ -449,7 +486,7 @@ public class BackupService : IBackupService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Could not load {BackupArchive} path.", item);
+                _logger.LogWarning(ex, "Tried to load manifest from archive {Path} but failed", item);
             }
         }
 
@@ -509,4 +546,14 @@ public class BackupService : IBackupService
             Database = options.Database
         };
     }
+
+    /// <summary>
+    /// Windows is able to handle '/' as a path seperator in zip files
+    /// but linux isn't able to handle '\' as a path seperator in zip files,
+    /// So normalize to '/'.
+    /// </summary>
+    /// <param name="path">The path to normalize.</param>
+    /// <returns>The normalized path. </returns>
+    private static string NormalizePathSeparator(string path)
+        => path.Replace('\\', '/');
 }

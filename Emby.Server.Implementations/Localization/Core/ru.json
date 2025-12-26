@@ -70,7 +70,7 @@
     "ScheduledTaskFailedWithName": "{0} - неудачна",
     "ScheduledTaskStartedWithName": "{0} - запущена",
     "ServerNameNeedsToBeRestarted": "Необходим перезапуск {0}",
-    "Shows": "Телешоу",
+    "Shows": "Сериалы",
     "Songs": "Композиции",
     "StartupEmbyServerIsLoading": "Jellyfin Server загружается. Повторите попытку в ближайшее время.",
     "SubtitleDownloadFailureForItem": "Субтитры к {0} не удалось загрузить",
@@ -136,5 +136,7 @@
     "TaskMoveTrickplayImages": "Перенесение местоположения изображений Trickplay",
     "TaskExtractMediaSegments": "Сканирование медиасегментов",
     "TaskExtractMediaSegmentsDescription": "Извлекает или получает медиасегменты из плагинов MediaSegment.",
-    "TaskMoveTrickplayImagesDescription": "Перемещает существующие файлы trickplay в соответствии с настройками медиатеки."
+    "TaskMoveTrickplayImagesDescription": "Перемещает существующие файлы trickplay в соответствии с настройками медиатеки.",
+    "CleanupUserDataTask": "Задача очистки пользовательских данных",
+    "CleanupUserDataTaskDescription": "Очищает все пользовательские данные (состояние просмотра, статус избранного и т.д.) с медиа, отсутствующих по меньшей мере в течение 90 дней."
 }

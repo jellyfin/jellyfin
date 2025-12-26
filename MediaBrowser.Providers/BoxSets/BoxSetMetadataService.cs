@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -27,14 +28,16 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public BoxSetMetadataService(
         IServerConfigurationManager serverConfigurationManager,
         ILogger<BoxSetMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
-        IExternalDataManager externalDataManager)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager)
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
     }
 
@@ -66,14 +69,8 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
 
         if (mergeMetadataSettings)
         {
-            if (replaceData || targetItem.LinkedChildren.Length == 0)
-            {
-                targetItem.LinkedChildren = sourceItem.LinkedChildren;
-            }
-            else
-            {
-                targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).Distinct().ToArray();
-            }
+            // TODO: Change to only replace when currently empty or requested. This is currently not done because the metadata service is not handling attaching collection items based on the provider responses
+            targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.Path).ToArray();
         }
     }
 

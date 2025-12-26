@@ -50,6 +50,8 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 
         _logger.LogDebug("Cleaning {Number} items with dead parents", numItems);
 
+        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+
         foreach (var itemId in itemIds)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -95,9 +97,10 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
             numComplete++;
             double percent = numComplete;
             percent /= numItems;
-            progress.Report(percent * 100);
+            subProgress.Report(percent * 100);
         }
 
+        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
         var context = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
@@ -105,7 +108,9 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
             await using (transaction.ConfigureAwait(false))
             {
                 await context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+                subProgress.Report(50);
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                subProgress.Report(100);
             }
         }
 

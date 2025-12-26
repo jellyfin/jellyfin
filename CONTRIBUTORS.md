@@ -31,6 +31,7 @@
  - [DaveChild](https://github.com/DaveChild)
  - [DavidFair](https://github.com/DavidFair)
  - [Delgan](https://github.com/Delgan)
+ - [Derpipose](https://github.com/Derpipose)
  - [dcrdev](https://github.com/dcrdev)
  - [dhartung](https://github.com/dhartung)
  - [dinki](https://github.com/dinki)
@@ -61,6 +62,7 @@
  - [ikomhoog](https://github.com/ikomhoog)
  - [iwalton3](https://github.com/iwalton3)
  - [jftuga](https://github.com/jftuga)
+ - [jkhsjdhjs](https://github.com/jkhsjdhjs)
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
  - [joshuaboniface](https://github.com/joshuaboniface)
@@ -139,6 +141,7 @@
  - [ThibaultNocchi](https://github.com/ThibaultNocchi)
  - [thornbill](https://github.com/thornbill)
  - [ThreeFive-O](https://github.com/ThreeFive-O)
+ - [tjwalkr3](https://github.com/tjwalkr3)
  - [TrisMcC](https://github.com/TrisMcC)
  - [trumblejoe](https://github.com/trumblejoe)
  - [TtheCreator](https://github.com/TtheCreator)
@@ -197,6 +200,13 @@
  - [benedikt257](https://github.com/benedikt257)
  - [revam](https://github.com/revam)
  - [allesmi](https://github.com/allesmi)
+ - [ThunderClapLP](https://github.com/ThunderClapLP)
+ - [Shoham Peller](https://github.com/spellr)
+ - [theshoeshiner](https://github.com/theshoeshiner)
+ - [TokerX](https://github.com/TokerX)
+ - [GeneMarks](https://github.com/GeneMarks)
+ - [Kirill Nikiforov](https://github.com/allmazz)
+ - [bjorntp](https://github.com/bjorntp)
 
 # Emby Contributors
 

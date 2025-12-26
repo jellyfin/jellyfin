@@ -33,9 +33,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
 
@@ -116,26 +118,7 @@ namespace Jellyfin.Server.Extensions
                 .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
-                    // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
-                    // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
-
-                    if (config.KnownProxies.Length == 0)
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.None;
-                        options.KnownNetworks.Clear();
-                        options.KnownProxies.Clear();
-                    }
-                    else
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-                        AddProxyAddresses(config, config.KnownProxies, options);
-                    }
-
-                    // Only set forward limit if we have some known proxies or some known networks.
-                    if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
-                    {
-                        options.ForwardLimit = null;
-                    }
+                    ConfigureForwardHeaders(config, options);
                 })
                 .AddMvc(opts =>
                 {
@@ -181,6 +164,30 @@ namespace Jellyfin.Server.Extensions
             }
 
             return mvcBuilder.AddControllersAsServices();
+        }
+
+        internal static void ConfigureForwardHeaders(NetworkConfiguration config, ForwardedHeadersOptions options)
+        {
+            // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
+            // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
+
+            if (config.KnownProxies.Length == 0)
+            {
+                options.ForwardedHeaders = ForwardedHeaders.None;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            }
+            else
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+                AddProxyAddresses(config, config.KnownProxies, options);
+            }
+
+            // Only set forward limit if we have some known proxies or some known networks.
+            if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+            {
+                options.ForwardLimit = null;
+            }
         }
 
         /// <summary>
@@ -248,13 +255,14 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
-                c.OperationFilter<RetryOnTemporarlyUnavailableFilter>();
+                c.OperationFilter<RetryOnTemporarilyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
-            });
+            })
+            .Replace(ServiceDescriptor.Transient<ISwaggerProvider, CachingOpenApiProvider>());
         }
 
         private static void AddPolicy(this AuthorizationOptions authorizationOptions, string policyName, IAuthorizationRequirement authorizationRequirement)

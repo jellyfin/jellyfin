@@ -55,9 +55,25 @@ namespace Jellyfin.Server.Migrations.Routines
             };
 
             var dataPath = _paths.DataPath;
-            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
+            var activityLogPath = Path.Combine(dataPath, DbFilename);
+            if (!File.Exists(activityLogPath))
+            {
+                _logger.LogWarning("{ActivityLogDb} doesn't exist, nothing to migrate", activityLogPath);
+                return;
+            }
+
+            using (var connection = new SqliteConnection($"Filename={activityLogPath}"))
             {
                 connection.Open();
+                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='ActivityLog';");
+                foreach (var row in tableQuery)
+                {
+                    if (row.GetInt32(0) == 0)
+                    {
+                        _logger.LogWarning("Table 'ActivityLog' doesn't exist in {ActivityLogPath}, nothing to migrate", activityLogPath);
+                        return;
+                    }
+                }
 
                 using var userDbConnection = new SqliteConnection($"Filename={Path.Combine(dataPath, "users.db")}");
                 userDbConnection.Open();

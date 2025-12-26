@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -107,7 +108,14 @@ namespace MediaBrowser.Controller.Entities
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
             ExtraIds = Array.Empty<Guid>();
+            UserData = [];
         }
+
+        /// <summary>
+        /// Gets or Sets the user data collection as cached from the last Db query.
+        /// </summary>
+        [JsonIgnore]
+        public ICollection<UserData> UserData { get; set; }
 
         [JsonIgnore]
         public string PreferredMetadataCountryCode { get; set; }
@@ -701,19 +709,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                var customRating = CustomRating;
-                if (!string.IsNullOrEmpty(customRating))
-                {
-                    return customRating;
-                }
-
-                var parent = DisplayParent;
-                if (parent is not null)
-                {
-                    return parent.CustomRatingForComparison;
-                }
-
-                return null;
+                return GetCustomRatingForComparision();
             }
         }
 
@@ -790,6 +786,26 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
+
+        private string GetCustomRatingForComparision(HashSet<Guid> callstack = null)
+        {
+            callstack ??= new();
+            var customRating = CustomRating;
+            if (!string.IsNullOrEmpty(customRating))
+            {
+                return customRating;
+            }
+
+            callstack.Add(Id);
+
+            var parent = DisplayParent;
+            if (parent is not null && !callstack.Contains(parent.Id))
+            {
+                return parent.GetCustomRatingForComparision(callstack);
+            }
+
+            return null;
+        }
 
         public virtual double GetDefaultPrimaryImageAspectRatio()
         {
@@ -1112,6 +1128,15 @@ namespace MediaBrowser.Controller.Entities
 
             var protocol = item.PathProtocol;
 
+            // Resolve the item path so everywhere we use the media source it will always point to
+            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
+            // path will return null, so it's safe to check for all paths.
+            var itemPath = item.Path;
+            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
+            {
+                itemPath = linkInfo.FullName;
+            }
+
             var info = new MediaSourceInfo
             {
                 Id = item.Id.ToString("N", CultureInfo.InvariantCulture),
@@ -1119,7 +1144,7 @@ namespace MediaBrowser.Controller.Entities
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
                 Name = GetMediaSourceName(item),
-                Path = enablePathSubstitution ? GetMappedPath(item, item.Path, protocol) : item.Path,
+                Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
                 Size = item.Size,
@@ -1423,23 +1448,14 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool RequiresRefresh()
         {
-            if (string.IsNullOrEmpty(Path) || DateModified == default)
+            if (string.IsNullOrEmpty(Path) || DateModified == DateTime.MinValue)
             {
                 return false;
             }
 
             var info = FileSystem.GetFileSystemInfo(Path);
-            if (info.Exists)
-            {
-                if (info.IsDirectory)
-                {
-                    return info.LastWriteTimeUtc != DateModified;
-                }
 
-                return info.LastWriteTimeUtc != DateModified;
-            }
-
-            return false;
+            return info.Exists && this.HasChanged(info.LastWriteTimeUtc);
         }
 
         public virtual List<string> GetUserDataKeys()
@@ -2002,9 +2018,10 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove from file system
-            if (info.IsLocalFile)
+            var path = info.Path;
+            if (info.IsLocalFile && !string.IsNullOrWhiteSpace(path))
             {
-                FileSystem.DeleteFile(info.Path);
+                FileSystem.DeleteFile(path);
             }
 
             // Remove from item
@@ -2315,27 +2332,27 @@ namespace MediaBrowser.Controller.Entities
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public virtual bool IsPlayed(User user)
+        public virtual bool IsPlayed(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && userdata.Played;
+            return userItemData is not null && userItemData.Played;
         }
 
-        public bool IsFavoriteOrLiked(User user)
+        public bool IsFavoriteOrLiked(User user, UserItemData userItemData)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is not null && (userdata.IsFavorite || (userdata.Likes ?? false));
+            return userItemData is not null && (userItemData.IsFavorite || (userItemData.Likes ?? false));
         }
 
-        public virtual bool IsUnplayed(User user)
+        public virtual bool IsUnplayed(User user, UserItemData userItemData)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var userdata = UserDataManager.GetUserData(user, this);
+            userItemData ??= UserDataManager.GetUserData(user, this);
 
-            return userdata is null || !userdata.Played;
+            return userItemData is null || !userItemData.Played;
         }
 
         ItemLookupInfo IHasLookupInfo<ItemLookupInfo>.GetLookupInfo()

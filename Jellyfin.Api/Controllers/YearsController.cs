@@ -89,7 +89,6 @@ public class YearsController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         User? user = userId.IsNullOrEmpty()
@@ -108,6 +107,7 @@ public class YearsController : BaseJellyfinApiController
         bool Filter(BaseItem i) => FilterItem(i, excludeItemTypes, includeItemTypes, mediaTypes);
 
         IReadOnlyList<BaseItem> items;
+        int totalCount = -1;
         if (parentItem.IsFolder)
         {
             var folder = (Folder)parentItem;
@@ -118,7 +118,7 @@ public class YearsController : BaseJellyfinApiController
             }
             else
             {
-                items = recursive ? folder.GetRecursiveChildren(user, query) : folder.GetChildren(user, true).Where(Filter).ToArray();
+                items = recursive ? folder.GetRecursiveChildren(user, query, out totalCount) : folder.GetChildren(user, true).Where(Filter).ToArray();
             }
         }
         else
@@ -153,7 +153,7 @@ public class YearsController : BaseJellyfinApiController
 
         var result = new QueryResult<BaseItemDto>(
             startIndex,
-            ibnItemsArray.Count,
+            totalCount == -1 ? ibnItemsArray.Count : totalCount,
             dtos.Where(i => i is not null).ToArray());
         return result;
     }
@@ -181,8 +181,7 @@ public class YearsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions()
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         if (!userId.IsNullOrEmpty())
         {

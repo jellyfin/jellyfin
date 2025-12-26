@@ -25,8 +25,16 @@ public class MediaAttachmentRepository(IDbContextFactory<JellyfinDbContext> dbPr
     {
         using var context = dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+
+        // Users may replace a media with a version that includes attachments to one without them.
+        // So when saving attachments is triggered by a library scan, we always unconditionally
+        // clear the old ones, and then add the new ones if given.
         context.AttachmentStreamInfos.Where(e => e.ItemId.Equals(id)).ExecuteDelete();
-        context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
+        if (attachments.Any())
+        {
+            context.AttachmentStreamInfos.AddRange(attachments.Select(e => Map(e, id)));
+        }
+
         context.SaveChanges();
         transaction.Commit();
     }
