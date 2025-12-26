@@ -7177,6 +7177,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
             }
 
+            if (state.InputProtocol == MediaProtocol.Http && !state.MediaSource.IsInfiniteStream)
+            {
+                inputModifier += " -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 30";
+            }
+
             if (!string.IsNullOrEmpty(state.InputAudioSync))
             {
                 inputModifier += " -async " + state.InputAudioSync;
