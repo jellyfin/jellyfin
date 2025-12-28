@@ -7039,8 +7039,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
-                    var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
-                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                    // there's an issue about AV1 AFBC on RK3588, disable it for now until it's fixed upstream
+                    return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
                 }
             }
 
