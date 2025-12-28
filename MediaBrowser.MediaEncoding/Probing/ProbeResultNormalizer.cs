@@ -857,7 +857,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(streamInfo.SampleAspectRatio)
+                    && string.IsNullOrEmpty(streamInfo.DisplayAspectRatio))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
                 {
                     stream.IsAnamorphic = false;
                 }
