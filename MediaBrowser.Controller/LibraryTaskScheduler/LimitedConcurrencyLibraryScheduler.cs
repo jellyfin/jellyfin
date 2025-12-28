@@ -243,7 +243,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             };
         }).ToArray();
 
-        if (ShouldForceSequentialOperation())
+        if (ShouldForceSequentialOperation() || _deadlockDetector.Value is not null)
         {
             _logger.LogDebug("Process sequentially.");
             try
@@ -268,32 +268,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
             await _tasks.Writer.WriteAsync(item, CancellationToken.None).ConfigureAwait(false);
         }
 
-        if (_deadlockDetector.Value is not null)
-        {
-            _logger.LogDebug("Nested invocation detected, process in-place.");
-            try
-            {
-                // we are in a nested loop. There is no reason to spawn a task here as that would just lead to deadlocks and no additional concurrency is achieved
-                while (workItems.Any(e => !e.Done.Task.IsCompleted) && _tasks.TryTake(out var item, 200, _deadlockDetector.Value.Token))
-                {
-                    await ProcessItem(item).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) when (_deadlockDetector.Value.IsCancellationRequested)
-            {
-                // operation is cancelled. Do nothing.
-            }
-
-            _logger.LogDebug("process in-place done.");
-        }
-        else
-        {
-            Worker();
-            _logger.LogDebug("Wait for {NoWorkers} to complete.", workItems.Length);
-            await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]).ConfigureAwait(false);
-            _logger.LogDebug("{NoWorkers} completed.", workItems.Length);
-            ScheduleTaskCleanup();
-        }
+        Worker();
+        _logger.LogDebug("Wait for {NoWorkers} to complete.", workItems.Length);
+        await Task.WhenAll([.. workItems.Select(f => f.Done.Task)]).ConfigureAwait(false);
+        _logger.LogDebug("{NoWorkers} completed.", workItems.Length);
+        ScheduleTaskCleanup();
     }
 
     /// <inheritdoc/>
