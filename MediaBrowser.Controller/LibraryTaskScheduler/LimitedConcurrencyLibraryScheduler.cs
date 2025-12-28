@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -29,7 +30,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     /// </summary>
     private readonly Lock _taskLock = new();
 
-    private readonly BlockingCollection<TaskQueueItem> _tasks = new();
+    private readonly Channel<TaskQueueItem> _tasks = Channel.CreateUnbounded<TaskQueueItem>();
 
     private volatile int _workCounter;
     private Task? _cleanupTask;
@@ -77,7 +78,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
             lock (_taskLock)
             {
-                if (_tasks.Count > 0 || _workCounter > 0)
+                if (_tasks.Reader.Count > 0 || _workCounter > 0)
                 {
                     _logger.LogDebug("Delay cleanup task, operations still running.");
                     // tasks are still there so its still in use. Reschedule cleanup task.
@@ -144,9 +145,9 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         _deadlockDetector.Value = stopToken.TaskStop;
         try
         {
-            foreach (var item in _tasks.GetConsumingEnumerable(stopToken.GlobalStop.Token))
+            while (!stopToken.GlobalStop.Token.IsCancellationRequested)
             {
-                stopToken.GlobalStop.Token.ThrowIfCancellationRequested();
+                var item = await _tasks.Reader.ReadAsync(stopToken.GlobalStop.Token).ConfigureAwait(false);
                 try
                 {
                     var newWorkerLimit = Interlocked.Increment(ref _workCounter) > 0;
@@ -264,7 +265,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         for (var i = 0; i < workItems.Length; i++)
         {
             var item = workItems[i]!;
-            _tasks.Add(item, CancellationToken.None);
+            await _tasks.Writer.WriteAsync(item, CancellationToken.None).ConfigureAwait(false);
         }
 
         if (_deadlockDetector.Value is not null)
@@ -304,13 +305,12 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
 
         _disposed = true;
-        _tasks.CompleteAdding();
+        _tasks.Writer.Complete();
         foreach (var item in _taskRunners)
         {
             await item.Key.CancelAsync().ConfigureAwait(false);
         }
 
-        _tasks.Dispose();
         if (_cleanupTask is not null)
         {
             await _cleanupTask.ConfigureAwait(false);
