@@ -117,8 +117,9 @@ jobs:
           body=$(cat openapi-changes.md)
           # Write to workflow summary
           echo "$body" >> $GITHUB_STEP_SUMMARY
-          # Set ApiChanged var
-          if [ "$body" != '' ]; then
+          # Set ApiChanged var based on openapi-diff outcome
+          # When --fail-on-changed is used, exit code is non-zero (failure) when there ARE changes
+          if [ "${{ steps.openapi-diff.outcome }}" == 'failure' ]; then
             echo "ApiChanged=1" >> "$GITHUB_OUTPUT"
           else
             echo "ApiChanged=0" >> "$GITHUB_OUTPUT"
