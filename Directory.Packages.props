@@ -25,7 +25,7 @@
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="4.0.12" />
     <PackageVersion Include="LrcParser" Version="2025.623.0" />
-    <PackageVersion Include="MetaBrainz.MusicBrainz" Version="6.1.0" />
+    <PackageVersion Include="MetaBrainz.MusicBrainz" Version="7.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.11" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
