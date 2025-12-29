@@ -20,12 +20,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
       - name: Setup .NET
         uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
         with:
           dotnet-version: '9.0.x'
+
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
       - name: Upload openapi.json
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
@@ -46,6 +49,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
+
       - name: Checkout common ancestor
         env:
           HEAD_REF: ${{ github.head_ref }}
@@ -54,12 +58,15 @@ jobs:
           git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
           ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
           git checkout --progress --force $ANCESTOR_REF
+
       - name: Setup .NET
         uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
         with:
           dotnet-version: '9.0.x'
+
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
       - name: Upload openapi.json
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
@@ -84,22 +91,27 @@ jobs:
         with:
           name: openapi-head
           path: openapi-head
+
       - name: Download openapi-base
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: openapi-base
           path: openapi-base
+
       - name: Workaround openapi-diff issue
         run: |
           sed -i 's/"allOf"/"oneOf"/g' openapi-head/openapi.json
           sed -i 's/"allOf"/"oneOf"/g' openapi-base/openapi.json
+
       - name: Calculate OpenAPI difference
+        id: openapi-diff
         uses: docker://openapitools/openapi-diff
         continue-on-error: true
         with:
           args: --fail-on-changed --markdown openapi-changes.md openapi-base/openapi.json openapi-head/openapi.json
-      - id: read-diff
-        name: Read openapi-diff output
+
+      - name: Read openapi-diff output
+        id: read-diff
         run: |
           # Read and fix markdown
           body=$(cat openapi-changes.md)
@@ -178,7 +190,6 @@ jobs:
           username: "${{ secrets.REPO_USER }}"
           key: "${{ secrets.REPO_KEY }}"
           debug: false
-          script_stop: false
           script: |
             if ! test -d /run/workflows; then
                 sudo mkdir -p /run/workflows
@@ -240,7 +251,6 @@ jobs:
           username: "${{ secrets.REPO_USER }}"
           key: "${{ secrets.REPO_KEY }}"
           debug: false
-          script_stop: false
           script: |
             if ! test -d /run/workflows; then
                 sudo mkdir -p /run/workflows
