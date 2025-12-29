@@ -255,6 +255,7 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
+                c.SchemaFilter<FlagsEnumSchemaFilter>();
                 c.OperationFilter<RetryOnTemporarilyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
@@ -342,25 +343,6 @@ namespace Jellyfin.Server.Extensions
                     }
                 });
 
-            /*
-             * Support BlurHash dictionary
-             */
-            options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
-                new OpenApiSchema
-                {
-                    Type = "object",
-                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
-                        name => name,
-                        _ => new OpenApiSchema
-                        {
-                            Type = "object",
-                            AdditionalProperties = new OpenApiSchema
-                            {
-                                Type = "string"
-                            }
-                        })
-                });
-
             // Support dictionary with nullable string value.
             options.MapType<Dictionary<string, string?>>(() =>
                 new OpenApiSchema
@@ -370,21 +352,6 @@ namespace Jellyfin.Server.Extensions
                     {
                         Type = "string",
                         Nullable = true
-                    }
-                });
-
-            // Manually describe Flags enum.
-            options.MapType<TranscodeReason>(() =>
-                new OpenApiSchema
-                {
-                    Type = "array",
-                    Items = new OpenApiSchema
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Id = nameof(TranscodeReason),
-                            Type = ReferenceType.Schema,
-                        }
                     }
                 });
 
