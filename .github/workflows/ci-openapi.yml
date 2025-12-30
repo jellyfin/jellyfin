@@ -104,20 +104,40 @@ jobs:
         with:
           base: openapi-base/openapi.json
           revision: openapi-head/openapi.json
-          fail-on-diff: true
+          output-to-file: openapi-diff.yaml
+
+      - name: Check for changes
+        id: check-diff
+        run: |
+          if [ -f openapi-diff.yaml ] && [ -s openapi-diff.yaml ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Generate changelog
         id: openapi-changelog
-        if: ${{ failure() && steps.openapi-diff.outcome == 'failure' }}
+        if: ${{ steps.check-diff.outputs.has_changes == 'true' }}
         uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
         with:
           base: openapi-base/openapi.json
           revision: openapi-head/openapi.json
-          format: markdown
+          output-to-file: changelog.md
+
+      - name: Prepend comment marker
+        if: ${{ steps.check-diff.outputs.has_changes == 'true' }}
+        run: sed -i '1s/^/<!--openapi-diff-workflow-comment-->\n/' changelog.md
 
       - name: Add changelog to workflow summary
-        if: ${{ failure() && steps.openapi-diff.outcome == 'failure' }}
-        run: echo "${{ steps.openapi-changelog.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
+        if: ${{ steps.check-diff.outputs.has_changes == 'true' }}
+        run: |
+          if [ -f changelog.md ]; then
+            # Truncate if too large for summary (max ~1MB)
+            head -c 65000 changelog.md >> $GITHUB_STEP_SUMMARY
+            if [ $(wc -c < changelog.md) -gt 65000 ]; then
+              echo -e "\n\n... (changelog truncated, see full diff in artifacts)" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
 
       - name: Find difference comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
@@ -130,18 +150,16 @@ jobs:
 
       - name: Post or update comment (changes found)
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-        if: ${{ always() && steps.openapi-diff.outcome == 'failure' }}
+        if: ${{ always() && steps.check-diff.outputs.has_changes == 'true' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
-          body: |
-            <!--openapi-diff-workflow-comment-->
-            ${{ steps.openapi-changelog.outputs.changelog }}
+          body-path: changelog.md
 
       - name: Update comment (no changes)
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-        if: ${{ always() && steps.openapi-diff.outcome == 'success' && steps.find-comment.outputs.comment-id != '' }}
+        if: ${{ always() && steps.check-diff.outputs.has_changes == 'false' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
