@@ -617,7 +617,6 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
-        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -650,19 +649,6 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
-
-        foreach (var item in newItems)
-        {
-            // reattach old userData entries
-            var userKeys = item.UserDataKey.ToArray();
-            var retentionDate = (DateTime?)null;
-            context.UserData
-                .Where(e => e.ItemId == PlaceholderId)
-                .Where(e => userKeys.Contains(e.CustomDataKey))
-                .ExecuteUpdate(e => e
-                    .SetProperty(f => f.ItemId, item.Item.Id)
-                    .SetProperty(f => f.RetentionDate, retentionDate));
-        }
 
         var itemValueMaps = tuples
             .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
@@ -757,6 +743,24 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc  />
+    public void ReattachUserData(BaseItemDto item, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var userKeys = item.GetUserDataKeys().ToArray();
+        var retentionDate = (DateTime?)null;
+        context.UserData
+            .Where(e => e.ItemId == PlaceholderId)
+            .Where(e => userKeys.Contains(e.CustomDataKey))
+            .ExecuteUpdate(e => e
+                .SetProperty(f => f.ItemId, item.Id)
+                .SetProperty(f => f.RetentionDate, retentionDate));
     }
 
     /// <inheritdoc  />
