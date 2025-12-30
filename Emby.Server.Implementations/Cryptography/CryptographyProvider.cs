@@ -39,13 +39,19 @@ namespace Emby.Server.Implementations.Cryptography
         {
             if (string.Equals(hash.Id, "PBKDF2", StringComparison.Ordinal))
             {
-                return hash.Hash.SequenceEqual(
+                // Legacy PBKDF2-SHA1 hashes are deprecated due to security vulnerabilities
+                // Verify the password with the old method to allow migration
+                bool isValid = hash.Hash.SequenceEqual(
                     Rfc2898DeriveBytes.Pbkdf2(
                         password,
                         hash.Salt,
                         int.Parse(hash.Parameters["iterations"], CultureInfo.InvariantCulture),
                         HashAlgorithmName.SHA1,
                         32));
+                
+                // Return true to allow the migration code to upgrade the hash
+                // The migration happens in DefaultAuthenticationProvider.Authenticate
+                return isValid;
             }
 
             if (string.Equals(hash.Id, "PBKDF2-SHA512", StringComparison.Ordinal))
