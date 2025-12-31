@@ -796,7 +796,8 @@ namespace Emby.Server.Implementations.Session
             if (info.Item is not null)
             {
                 _logger.LogInformation(
-                    "Playback started reported by app {0} {1} playing {2}",
+                    "Playback started for user {0} reported by app {1} {2} playing {3}",
+                    session.UserName,
                     session.Client,
                     session.ApplicationVersion,
                     info.Item.Name);
@@ -1069,7 +1070,8 @@ namespace Emby.Server.Implementations.Session
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
                 _logger.LogInformation(
-                    "Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
+                    "Playback stopped for user {0} reported by app {1} {2} playing {3}. Stopped at {4} ms",
+                    session.UserName,
                     session.Client,
                     session.ApplicationVersion,
                     info.Item.Name,
