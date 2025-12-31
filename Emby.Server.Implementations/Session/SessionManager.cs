@@ -793,6 +793,15 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
             };
 
+            if (info.Item is not null)
+            {
+                _logger.LogInformation(
+                    "Playback started reported by app {0} {1} playing {2}",
+                    session.Client,
+                    session.ApplicationVersion,
+                    info.Item.Name);
+            }
+
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
 
             // Nothing to save here
