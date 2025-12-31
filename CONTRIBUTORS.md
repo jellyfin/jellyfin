@@ -209,6 +209,7 @@
  - [Kirill Nikiforov](https://github.com/allmazz)
  - [bjorntp](https://github.com/bjorntp)
  - [martenumberto](https://github.com/martenumberto)
+ - [ZeusCraft10](https://github.com/ZeusCraft10)
 
 # Emby Contributors
 
