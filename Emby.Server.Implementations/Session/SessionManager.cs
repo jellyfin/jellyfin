@@ -796,11 +796,11 @@ namespace Emby.Server.Implementations.Session
             if (info.Item is not null)
             {
                 _logger.LogInformation(
-                    "Playback started for user {0} reported by app {1} {2} playing {3}",
+                    "User {0} started playback of '{1}' ({2} {3})",
                     session.UserName,
+                    info.Item.Name,
                     session.Client,
-                    session.ApplicationVersion,
-                    info.Item.Name);
+                    session.ApplicationVersion);
             }
 
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
@@ -1070,12 +1070,12 @@ namespace Emby.Server.Implementations.Session
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
                 _logger.LogInformation(
-                    "Playback stopped for user {0} reported by app {1} {2} playing {3}. Stopped at {4} ms",
+                    "User {0} stopped playback of '{1}' at {2}ms ({3} {4})",
                     session.UserName,
-                    session.Client,
-                    session.ApplicationVersion,
                     info.Item.Name,
-                    msString);
+                    msString,
+                    session.Client,
+                    session.ApplicationVersion);
             }
 
             if (info.NowPlayingQueue is not null)
