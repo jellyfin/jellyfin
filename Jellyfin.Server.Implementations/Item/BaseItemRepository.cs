@@ -751,18 +751,21 @@ public sealed class BaseItemRepository
         ArgumentNullException.ThrowIfNull(item);
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var context = _dbProvider.CreateDbContext();
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var userKeys = item.GetUserDataKeys().ToArray();
-        var retentionDate = (DateTime?)null;
-        await context.UserData
-            .Where(e => e.ItemId == PlaceholderId)
-            .Where(e => userKeys.Contains(e.CustomDataKey))
-            .ExecuteUpdateAsync(
-                e => e
-                .SetProperty(f => f.ItemId, item.Id)
-                .SetProperty(f => f.RetentionDate, retentionDate),
-                cancellationToken).ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var userKeys = item.GetUserDataKeys().ToArray();
+            var retentionDate = (DateTime?)null;
+            await dbContext.UserData
+                .Where(e => e.ItemId == PlaceholderId)
+                .Where(e => userKeys.Contains(e.CustomDataKey))
+                .ExecuteUpdateAsync(
+                    e => e
+                        .SetProperty(f => f.ItemId, item.Id)
+                        .SetProperty(f => f.RetentionDate, retentionDate),
+                    cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc  />
