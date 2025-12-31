@@ -40,7 +40,8 @@ public interface IItemRepository
     /// </summary>
     /// <param name="item">The item.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    void ReattachUserData(BaseItem item, CancellationToken cancellationToken);
+    /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+    Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the item.

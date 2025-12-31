@@ -280,7 +280,7 @@ namespace MediaBrowser.Providers.Manager
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
             if (reattachUserData)
             {
-                result.Item.ReattachUserData(cancellationToken);
+                await result.Item.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
             }
 
             if (result.Item.SupportsPeople && result.People is not null)

@@ -746,7 +746,7 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
-    public void ReattachUserData(BaseItemDto item, CancellationToken cancellationToken)
+    public async Task ReattachUserDataAsync(BaseItemDto item, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(item);
         cancellationToken.ThrowIfCancellationRequested();
@@ -755,12 +755,14 @@ public sealed class BaseItemRepository
 
         var userKeys = item.GetUserDataKeys().ToArray();
         var retentionDate = (DateTime?)null;
-        context.UserData
+        await context.UserData
             .Where(e => e.ItemId == PlaceholderId)
             .Where(e => userKeys.Contains(e.CustomDataKey))
-            .ExecuteUpdate(e => e
+            .ExecuteUpdateAsync(
+                e => e
                 .SetProperty(f => f.ItemId, item.Id)
-                .SetProperty(f => f.RetentionDate, retentionDate));
+                .SetProperty(f => f.RetentionDate, retentionDate),
+                cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc  />

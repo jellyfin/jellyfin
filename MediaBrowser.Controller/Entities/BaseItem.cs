@@ -2053,7 +2053,8 @@ namespace MediaBrowser.Controller.Entities
         public virtual async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
          => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
 
-        public void ReattachUserData(CancellationToken cancellationToken) => LibraryManager.ReattachUserData(this, cancellationToken);
+        public async Task ReattachUserDataAsync(CancellationToken cancellationToken) =>
+            await LibraryManager.ReattachUserDataAsync(this, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Validates that images within the item are still on the filesystem.

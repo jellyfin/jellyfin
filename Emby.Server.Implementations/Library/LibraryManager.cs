@@ -2203,9 +2203,9 @@ namespace Emby.Server.Implementations.Library
             => UpdateItemsAsync([item], parent, updateReason, cancellationToken);
 
         /// <inheritdoc />
-        public void ReattachUserData(BaseItem item, CancellationToken cancellationToken)
+        public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
         {
-            _itemRepository.ReattachUserData(item, cancellationToken);
+            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
