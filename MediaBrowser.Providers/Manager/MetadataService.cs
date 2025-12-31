@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (isFirstRefresh)
             {
-                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, false, cancellationToken).ConfigureAwait(false);
             }
 
             // Next run metadata providers
@@ -247,7 +247,7 @@ namespace MediaBrowser.Providers.Manager
                     }
 
                     // Save to database
-                    await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
+                    await SaveItemAsync(metadataResult, updateType, isFirstRefresh, cancellationToken).ConfigureAwait(false);
                 }
 
                 return updateType;
@@ -275,9 +275,14 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, bool reattachUserData, CancellationToken cancellationToken)
         {
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
+            if (reattachUserData)
+            {
+                await result.Item.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             if (result.Item.SupportsPeople && result.People is not null)
             {
                 var baseItem = result.Item;

@@ -2202,6 +2202,12 @@ namespace Emby.Server.Implementations.Library
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync([item], parent, updateReason, cancellationToken);
 
+        /// <inheritdoc />
+        public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
+        {
+            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
             if (item.IsFileProtocol)
