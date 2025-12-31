@@ -17,7 +17,7 @@ public interface IPeopleRepository
     /// </summary>
     /// <param name="filter">The query.</param>
     /// <returns>The list of people matching the filter.</returns>
-    IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter) => this.GetPeopleAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter);
 
     /// <summary>
     /// Gets the people.
@@ -32,7 +32,7 @@ public interface IPeopleRepository
     /// </summary>
     /// <param name="itemId">The item identifier.</param>
     /// <param name="people">The people.</param>
-    void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people) => this.UpdatePeopleAsync(itemId, people, CancellationToken.None).GetAwaiter().GetResult();
+    void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people);
 
     /// <summary>
     /// Updates the people.
@@ -48,7 +48,7 @@ public interface IPeopleRepository
     /// </summary>
     /// <param name="filter">The query.</param>
     /// <returns>The list of people names matching the filter.</returns>
-    IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter) => this.GetPeopleNamesAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 
     /// <summary>
     /// Gets the people names.

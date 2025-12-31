@@ -31,6 +31,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
     /// <inheritdoc/>
+    public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
+    {
+        return GetPeopleAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<PersonInfo>> GetPeopleAsync(InternalPeopleQuery filter, CancellationToken token = default)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -59,6 +65,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     }
 
     /// <inheritdoc/>
+    public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
+    {
+        return GetPeopleNamesAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<string>> GetPeopleNamesAsync(InternalPeopleQuery filter, CancellationToken token = default)
     {
         using var context = _dbProvider.CreateDbContext();
@@ -71,6 +83,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
 
         return await dbQuery.ToListAsync(token).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
+    {
+        UpdatePeopleAsync(itemId, people, CancellationToken.None).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc />
