@@ -139,6 +139,12 @@ namespace Emby.Server.Implementations.SyncPlay
         public DateTime LastActivity { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double PlaybackSpeed { get; set; } = 1.0;
+
+        /// <summary>
         /// Adds the session to the group.
         /// </summary>
         /// <param name="session">The session.</param>
@@ -422,7 +428,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 LastActivity,
                 type,
                 PositionTicks,
-                DateTime.UtcNow);
+                DateTime.UtcNow,
+                PlaybackSpeed);
         }
 
         /// <inheritdoc />
@@ -662,7 +669,9 @@ namespace Emby.Server.Implementations.SyncPlay
                 // In other words, LastActivity is in the future,
                 // when playback unpause is supposed to happen.
                 // Adjust ticks only if playback actually started.
-                startPositionTicks += Math.Max(elapsedTime.Ticks, 0);
+                // Apply playback speed to elapsed time calculation.
+                var elapsedTicks = Math.Max(elapsedTime.Ticks, 0);
+                startPositionTicks += (long)(elapsedTicks * PlaybackSpeed);
             }
 
             return new PlayQueueUpdate(
@@ -674,6 +683,12 @@ namespace Emby.Server.Implementations.SyncPlay
                 isPlaying,
                 PlayQueue.ShuffleMode,
                 PlayQueue.RepeatMode);
+        }
+
+        /// <inheritdoc />
+        public void SetPlaybackSpeed(double playbackSpeed)
+        {
+            PlaybackSpeed = Math.Clamp(playbackSpeed, 0.25, 3.0);
         }
     }
 }

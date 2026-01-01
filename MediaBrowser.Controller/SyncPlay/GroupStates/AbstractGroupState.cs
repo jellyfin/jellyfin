@@ -198,6 +198,15 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
+        public virtual void HandleRequest(SetPlaybackSpeedGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
+        {
+            context.SetPlaybackSpeed(request.PlaybackSpeed);
+
+            var command = context.NewSyncPlayCommand(SendCommandType.SetPlaybackSpeed);
+            context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public virtual void HandleRequest(PingGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Collected pings are used to account for network latency when unpausing playback.
