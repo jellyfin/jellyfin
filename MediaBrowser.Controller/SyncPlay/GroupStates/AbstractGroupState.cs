@@ -1,5 +1,6 @@
 #nullable disable
 
+using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay.PlaybackRequests;
@@ -200,6 +201,11 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         /// <inheritdoc />
         public virtual void HandleRequest(SetPlaybackSpeedGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
+            if (Math.Abs(context.PlaybackSpeed - request.PlaybackSpeed) < 0.001)
+            {
+                return;
+            }
+
             context.SetPlaybackSpeed(request.PlaybackSpeed);
 
             var command = context.NewSyncPlayCommand(SendCommandType.SetPlaybackSpeed);
