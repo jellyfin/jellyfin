@@ -688,7 +688,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void SetPlaybackSpeed(double playbackSpeed)
         {
-            PlaybackSpeed = Math.Clamp(playbackSpeed, 0.25, 3.0);
+            PlaybackSpeed = Math.Clamp(playbackSpeed, 0.25, 5.0);
         }
     }
 }
