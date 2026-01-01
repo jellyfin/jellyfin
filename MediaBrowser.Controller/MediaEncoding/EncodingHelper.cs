@@ -2940,8 +2940,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // but it's still required for fMP4 container otherwise the audio can't be synced to the video.
                     if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
                         && !string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase)
-                        && state.TranscodingType != TranscodingJobType.Progressive
-                        && !state.EnableBreakOnNonKeyFrames(outputVideoCodec))
+                        && state.TranscodingType != TranscodingJobType.Progressive)
                     {
                         seekParam += " -noaccurate_seek";
                     }

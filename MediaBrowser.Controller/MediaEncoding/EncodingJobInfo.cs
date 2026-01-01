@@ -515,21 +515,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int HlsListSize => 0;
 
-        public bool EnableBreakOnNonKeyFrames(string videoCodec)
-        {
-            if (TranscodingType != TranscodingJobType.Progressive)
-            {
-                if (IsSegmentedLiveStream)
-                {
-                    return false;
-                }
-
-                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
-            }
-
-            return false;
-        }
-
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
             var count = MediaSource.GetStreamCount(type);
