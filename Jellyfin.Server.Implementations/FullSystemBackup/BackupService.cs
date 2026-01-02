@@ -617,6 +617,15 @@ public class BackupService : IBackupService
         return manifests.ToArray();
     }
 
+    /// <summary>
+    /// Gets a list of all plugins that support backup.
+    /// </summary>
+    /// <returns>The list of all plugins that support inclusion in the backup system.</returns>
+    public IDictionary<Guid, string> SupportedPlugins()
+    {
+        return GetPluginTypes().ToDictionary(e => e.Plugin.Id, e => e.Plugin.Name);
+    }
+
     private IEnumerable<(IPlugin Plugin, IPluginBackupAttribute? PluginBackupAttribute)> GetPluginTypes()
     {
         return _serviceProvider
