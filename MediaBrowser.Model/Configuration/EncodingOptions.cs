@@ -60,6 +60,7 @@ public class EncodingOptions
         SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
+        AudioSyncType = AudioSyncType.TranscodeAudio;
     }
 
     /// <summary>
@@ -301,4 +302,9 @@ public class EncodingOptions
     /// Gets or sets the file extensions on-demand metadata based keyframe extraction is enabled for.
     /// </summary>
     public string[] AllowOnDemandMetadataBasedKeyframeExtractionForExtensions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the method used for audio synchronisation.
+    /// </summary>
+    public AudioSyncType AudioSyncType { get; set; }
 }

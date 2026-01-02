@@ -2496,7 +2496,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return true;
         }
 
-        public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
+        public bool CanStreamCopyAudio(EncodingJobInfo state, EncodingOptions options, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
         {
             var request = state.BaseRequest;
 
@@ -2553,6 +2553,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (request.AudioBitRate.HasValue
                 && audioStream.BitRate.HasValue
                 && audioStream.BitRate.Value > request.AudioBitRate.Value)
+            {
+                return false;
+            }
+
+            if (state.TranscodingType is TranscodingJobType.Hls
+                && !IsCopyCodec(state.OutputVideoCodec)
+                && options.AudioSyncType is AudioSyncType.TranscodeAudio)
             {
                 return false;
             }
@@ -2914,8 +2921,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (time > 0)
             {
-                // For direct streaming/remuxing, we seek at the exact position of the keyframe
-                // However, ffmpeg will seek to previous keyframe when the exact time is the input
+                // For direct streaming/remuxing, HLS segments start at keyframes.
+                // However, ffmpeg will seek to previous keyframe when the exact frame time is the input
                 // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
@@ -2935,12 +2942,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // If we are remuxing, then the copied stream cannot be seeked accurately (it will seek to the nearest
                     // keyframe). If we are using fMP4, then force all other streams to use the same inaccurate seeking to
                     // avoid A/V sync issues which cause playback issues on some devices.
-                    // In any case, when remuxing the segment start times correspond to key frames in the source stream,
-                    // so this option shouldn't change the seeked point that much.
+                    // When remuxing video, the segment start times correspond to key frames in the source stream, so this
+                    // option shouldn't change the seeked point that much.
                     // Important: make sure not to use it with wtv because it breaks seeking
-                    if (isHlsRemuxing
-                        && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
+                    if (state.TranscodingType is TranscodingJobType.Hls
+                        && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+                        && (IsCopyCodec(state.OutputVideoCodec) || IsCopyCodec(state.OutputAudioCodec))
+                        && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
                     {
                         seekParam += " -noaccurate_seek";
                     }
@@ -7082,7 +7090,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
 #nullable disable
-        public void TryStreamCopy(EncodingJobInfo state)
+        public void TryStreamCopy(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is not null && CanStreamCopyVideo(state, state.VideoStream))
             {
@@ -7100,7 +7108,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             if (state.AudioStream is not null
-                && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs))
+                && CanStreamCopyAudio(state, options, state.AudioStream, state.SupportedAudioCodecs))
             {
                 state.OutputAudioCodec = "copy";
             }
