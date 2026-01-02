@@ -466,48 +466,64 @@ public class BackupService : IBackupService
                         .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Plugin.Id))))
                         .Where(e => e.ManifestEntry is not null)
                         .ToArray();
-                    foreach (var pluginBackupSet in plugins)
+                    foreach (var (pluginInfo, manifestEntry) in plugins)
                     {
-                        IPluginBackupService pluginBackupService;
-                        try
+                        var backupAwarePlugin = pluginInfo.Plugin as IBackupAwarePlugin;
+                        if (backupAwarePlugin is not null)
                         {
-                            // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
-                            pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginBackupSet.PluginInfo.PluginBackupAttribute!.LoaderType)!;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginBackupSet.PluginInfo.Plugin.Name);
-                            continue;
+                            await backupAwarePlugin.SignalBackupPending().ConfigureAwait(false);
                         }
 
-                        IDictionary<string, IPluginDataEntry> pluginData;
                         try
                         {
-                            pluginData = await pluginBackupService.BackupData().ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginBackupSet.PluginInfo.Plugin.Name);
-                            continue;
-                        }
-
-                        foreach (var pluginDataItem in pluginData)
-                        {
-                            var backupData = (IPluginDataHandling)pluginDataItem.Value;
+                            IPluginBackupService pluginBackupService;
                             try
                             {
-                                var metadata = await backupData.BackupData(zipArchive, pluginBackupSet.PluginInfo.Plugin).ConfigureAwait(false);
-                                pluginBackupSet.ManifestEntry!.PluginDataLookup.Add(new()
-                                {
-                                    BackupDataFqtn = pluginDataItem.GetType().ToString(), // TODO: change to dictionary lookup to prevent issues on version change with type
-                                    Key = pluginDataItem.Key,
-                                    Metadata = metadata
-                                });
+                                // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
+                                pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo.PluginBackupAttribute!.LoaderType)!;
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Plugin '{PluginName}' failed to backup dataset from plugin. Backup might be incomplete.", pluginBackupSet.PluginInfo.Plugin.Name);
+                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Plugin.Name);
                                 continue;
+                            }
+
+                            IDictionary<string, IPluginDataEntry> pluginData;
+                            try
+                            {
+                                pluginData = await pluginBackupService.BackupData().ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Plugin.Name);
+                                continue;
+                            }
+
+                            foreach (var pluginDataItem in pluginData)
+                            {
+                                var backupData = (IPluginDataHandling)pluginDataItem.Value;
+                                try
+                                {
+                                    var metadata = await backupData.BackupData(zipArchive, pluginInfo.Plugin).ConfigureAwait(false);
+                                    manifestEntry!.PluginDataLookup.Add(new()
+                                    {
+                                        BackupDataFqtn = pluginDataItem.GetType().ToString(), // TODO: change to dictionary lookup to prevent issues on version change with type
+                                        Key = pluginDataItem.Key,
+                                        Metadata = metadata
+                                    });
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Plugin '{PluginName}' failed to backup dataset from plugin. Backup might be incomplete.", pluginInfo.Plugin.Name);
+                                    continue;
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (backupAwarePlugin is not null)
+                            {
+                                await backupAwarePlugin.SignalBackupDone().ConfigureAwait(false);
                             }
                         }
                     }
