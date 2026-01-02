@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -11,11 +12,13 @@ using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -33,6 +36,7 @@ public class BackupService : IBackupService
     private readonly IServerApplicationPaths _applicationPaths;
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly IServiceProvider _serviceProvider;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -40,6 +44,11 @@ public class BackupService : IBackupService
     };
 
     private readonly Version _backupEngineVersion = new Version(0, 2, 0);
+
+    private readonly IDictionary<string, Type> _pluginDataLoaderTypes = Assembly.GetCallingAssembly()
+        .GetTypes()
+        .Where(e => e.IsClass && !e.IsAbstract && e.IsAssignableFrom(typeof(IPluginDataHandling)))
+        .ToDictionary(e => e.Name, e => e);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupService"/> class.
@@ -50,13 +59,15 @@ public class BackupService : IBackupService
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
     /// <param name="applicationLifetime">The SystemManager.</param>
+    /// <param name="serviceProvider">The Service Provider.</param>
     public BackupService(
         ILogger<BackupService> logger,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
         IJellyfinDatabaseProvider jellyfinDatabaseProvider,
-        IHostApplicationLifetime applicationLifetime)
+        IHostApplicationLifetime applicationLifetime,
+        IServiceProvider serviceProvider)
     {
         _logger = logger;
         _dbProvider = dbProvider;
@@ -64,6 +75,7 @@ public class BackupService : IBackupService
         _applicationPaths = applicationPaths;
         _jellyfinDatabaseProvider = jellyfinDatabaseProvider;
         _hostApplicationLifetime = applicationLifetime;
+        _serviceProvider = serviceProvider;
     }
 
     /// <inheritdoc/>
@@ -238,6 +250,49 @@ public class BackupService : IBackupService
                 }
             }
 
+            if (manifest.Options.PluginData.Count > 0)
+            {
+                var plugins = GetPluginTypes()
+                    .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Plugin.Id))))
+                    .Where(e => e.ManifestEntry is not null)
+                    .ToArray();
+                foreach (var (pluginInfo, manifestEntry) in plugins)
+                {
+                    _logger.LogInformation("Begin restore of Plugin data for plugin {PluginName}-{PluginId}", pluginInfo.Plugin.Name, pluginInfo.Plugin.Id);
+                    IPluginBackupService pluginBackupService;
+                    try
+                    {
+                        // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
+                        pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo.PluginBackupAttribute!.LoaderType)!;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Plugin.Name);
+                        continue;
+                    }
+
+                    Dictionary<string, IPluginDataHandling> pluginData = [];
+                    foreach (var pluginDataEntry in manifestEntry!.PluginDataLookup)
+                    {
+                        var dataEntry = (IPluginDataHandling)Activator.CreateInstance(_pluginDataLoaderTypes[pluginDataEntry.BackupDataFqtn])!;
+                        await dataEntry.RestoreData(zipArchive, pluginDataEntry.Metadata).ConfigureAwait(false);
+                        pluginData[pluginDataEntry.Key] = dataEntry;
+                    }
+
+                    try
+                    {
+                        await pluginBackupService.RestoreData(pluginData.ToDictionary(e => e.Key, e => (IPluginDataEntry)e.Value)).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Plugin.Name);
+                        continue;
+                    }
+
+                    _logger.LogInformation("Restore of Plugin data for plugin {PluginName}-{PluginId} finished.", pluginInfo.Plugin.Name, pluginInfo.Plugin.Id);
+                }
+            }
+
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
     }
@@ -405,6 +460,59 @@ public class BackupService : IBackupService
                     CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
                 }
 
+                if (backupOptions.PluginManifest.Count > 0)
+                {
+                    var plugins = GetPluginTypes()
+                        .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Plugin.Id))))
+                        .Where(e => e.ManifestEntry is not null)
+                        .ToArray();
+                    foreach (var pluginBackupSet in plugins)
+                    {
+                        IPluginBackupService pluginBackupService;
+                        try
+                        {
+                            // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
+                            pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginBackupSet.PluginInfo.PluginBackupAttribute!.LoaderType)!;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginBackupSet.PluginInfo.Plugin.Name);
+                            continue;
+                        }
+
+                        IDictionary<string, IPluginDataEntry> pluginData;
+                        try
+                        {
+                            pluginData = await pluginBackupService.BackupData().ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginBackupSet.PluginInfo.Plugin.Name);
+                            continue;
+                        }
+
+                        foreach (var pluginDataItem in pluginData)
+                        {
+                            var backupData = (IPluginDataHandling)pluginDataItem.Value;
+                            try
+                            {
+                                var metadata = await backupData.BackupData(zipArchive, pluginBackupSet.PluginInfo.Plugin).ConfigureAwait(false);
+                                pluginBackupSet.ManifestEntry!.PluginDataLookup.Add(new()
+                                {
+                                    BackupDataFqtn = pluginDataItem.GetType().ToString(), // TODO: change to dictionary lookup to prevent issues on version change with type
+                                    Key = pluginDataItem.Key,
+                                    Metadata = metadata
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Plugin '{PluginName}' failed to backup dataset from plugin. Backup might be incomplete.", pluginBackupSet.PluginInfo.Plugin.Name);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
                 var manifestStream = zipArchive.CreateEntry(ManifestEntryName).Open();
                 await using (manifestStream.ConfigureAwait(false))
                 {
@@ -493,6 +601,14 @@ public class BackupService : IBackupService
         return manifests.ToArray();
     }
 
+    private IEnumerable<(IPlugin Plugin, IPluginBackupAttribute? PluginBackupAttribute)> GetPluginTypes()
+    {
+        return _serviceProvider
+                .GetServices<IPlugin>()
+                .Select(e => (e, e.GetType().GetCustomAttributes().FirstOrDefault(w => w is IPluginBackupAttribute) as IPluginBackupAttribute))
+                .Where(e => e.Item2 is not null);
+    }
+
     private static async ValueTask<BackupManifest?> GetManifest(string archivePath)
     {
         var archiveStream = File.OpenRead(archivePath);
@@ -532,7 +648,11 @@ public class BackupService : IBackupService
             Metadata = options.Metadata,
             Subtitles = options.Subtitles,
             Trickplay = options.Trickplay,
-            Database = options.Database
+            Database = options.Database,
+            PluginManifest = options.PluginData.Select(e => new PluginBackupManifestDto()
+            {
+                PluginId = e.PluginId
+            }).ToArray(),
         };
     }
 
@@ -543,7 +663,11 @@ public class BackupService : IBackupService
             Metadata = options.Metadata,
             Subtitles = options.Subtitles,
             Trickplay = options.Trickplay,
-            Database = options.Database
+            Database = options.Database,
+            PluginData = options.PluginManifest.Select(e => new PluginBackupManifest()
+            {
+                PluginId = e.PluginId
+            }).ToArray(),
         };
     }
 
