@@ -1,7 +1,8 @@
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// An enum representing the options to synchronise the audio and video streams.
+    /// An enum representing the options to synchronise the audio and video streams
+    /// in HLS.
     /// </summary>
     public enum AudioSyncType
     {
@@ -14,8 +15,8 @@ namespace MediaBrowser.Model.Configuration
 
         /// <summary>
         /// Prevent audio streams from being copied if the video stream is transcoded.
-        /// The resulting timestamps will be accurate and HLS segment lengths consistent,
-        /// but additional audio transcoding overhead will be incurred.
+        /// The resulting timestamps will be accurate, but additional audio transcoding
+        /// overhead will be incurred.
         /// </summary>
         TranscodeAudio = 1,
     }
