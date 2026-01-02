@@ -2932,15 +2932,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (state.IsVideoRequest)
                 {
-                    var outputVideoCodec = GetVideoEncoder(state, options);
-                    var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
-
+                    // If we are remuxing, then the copied stream cannot be seeked accurately (it will seek to the nearest
+                    // keyframe). If we are using fMP4, then force all other streams to use the same inaccurate seeking to
+                    // avoid A/V sync issues which cause playback issues on some devices.
                     // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
-                    // Disable -noaccurate_seek on mpegts container due to the timestamps issue on some clients,
-                    // but it's still required for fMP4 container otherwise the audio can't be synced to the video.
-                    if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase)
-                        && state.TranscodingType != TranscodingJobType.Progressive)
+                    if (isHlsRemuxing
+                        && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
                     {
                         seekParam += " -noaccurate_seek";
                     }
