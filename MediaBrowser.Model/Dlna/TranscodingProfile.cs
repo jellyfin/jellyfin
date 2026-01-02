@@ -138,6 +138,15 @@ public class TranscodingProfile
     public int SegmentLength { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether breaking the video stream on non-keyframes is supported.
+    /// </summary>
+    /// <remarks>
+    /// Deprecated.
+    /// </remarks>
+    [XmlAttribute("breakOnNonKeyFrames")]
+    public bool BreakOnNonKeyFrames => false;
+
+    /// <summary>
     /// Gets or sets the profile conditions.
     /// </summary>
     public ProfileCondition[] Conditions { get; set; }
