@@ -11,9 +11,11 @@ namespace MediaBrowser.Controller.SyncPlay.Requests
         /// Initializes a new instance of the <see cref="NewGroupRequest"/> class.
         /// </summary>
         /// <param name="groupName">The name of the new group.</param>
-        public NewGroupRequest(string groupName)
+        /// <param name="startingPlaybackRate">The starting playback rate.</param>
+        public NewGroupRequest(string groupName, float startingPlaybackRate)
         {
             GroupName = groupName;
+            StartingPlaybackRate = startingPlaybackRate;
         }
 
         /// <summary>
@@ -21,6 +23,12 @@ namespace MediaBrowser.Controller.SyncPlay.Requests
         /// </summary>
         /// <value>The name of the new group.</value>
         public string GroupName { get; }
+
+        /// <summary>
+        /// Gets the starting playback rate.
+        /// </summary>
+        /// <value>The starting playback rate.</value>
+        public float StartingPlaybackRate { get; }
 
         /// <inheritdoc />
         public RequestType Type { get; } = RequestType.NewGroup;
