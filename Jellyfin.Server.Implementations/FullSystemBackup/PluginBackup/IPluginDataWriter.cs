@@ -1,12 +1,17 @@
+using System;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
-internal interface IPluginDataHandling : IPluginDataEntry
+internal interface IPluginDataWriter : IPluginDataEntry
 {
-    ValueTask<string> BackupData(ZipArchive zipArchive, IPlugin plugin);
+    Type ReaderType { get; }
 
-    ValueTask RestoreData(ZipArchive zipArchive, string metadata);
+    ValueTask<string> BackupData(ZipArchive zipArchive, IPlugin plugin);
+}
+
+internal interface IPluginDataReader : IPluginDataEntry
+{
 }

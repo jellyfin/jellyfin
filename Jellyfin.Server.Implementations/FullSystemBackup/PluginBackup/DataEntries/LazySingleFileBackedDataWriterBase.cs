@@ -9,8 +9,10 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup.PluginBackup.DataEntr
 /// <summary>
 /// Defines methods to store a dataset via a <see cref="Stream"/>.
 /// </summary>
-public abstract class EagerSingleFileBackedDataEntryBase : IPluginDataHandling
+internal abstract class LazySingleFileBackedDataWriterBase : IPluginDataWriter
 {
+    public abstract Type ReaderType { get; }
+
     /// <summary>
     /// Should provide a stream of the data to backup.
     /// </summary>
@@ -18,14 +20,7 @@ public abstract class EagerSingleFileBackedDataEntryBase : IPluginDataHandling
     /// <returns>A task that completes ones the deserialisation is complete.</returns>
     protected abstract ValueTask<Stream> GetDataStream();
 
-    /// <summary>
-    /// Should deserialize the data from the backup stream back into the original format.
-    /// </summary>
-    /// <param name="dataStream">The data stream from the backup.</param>
-    /// <returns>A task that completes ones the deserialisation is complete.</returns>
-    protected abstract ValueTask LoadFromDataStream(Stream dataStream);
-
-    async ValueTask<string> IPluginDataHandling.BackupData(ZipArchive zipArchive, IPlugin plugin)
+    async ValueTask<string> IPluginDataWriter.BackupData(ZipArchive zipArchive, IPlugin plugin)
     {
         var fileGuid = Guid.NewGuid().ToString("g");
         var metaReference = $"plugin/{plugin.Id}/{fileGuid}";
@@ -43,13 +38,5 @@ public abstract class EagerSingleFileBackedDataEntryBase : IPluginDataHandling
         }
 
         return fileGuid;
-    }
-
-    async ValueTask IPluginDataHandling.RestoreData(ZipArchive zipArchive, string metadata)
-    {
-        using (var archiveStream = zipArchive.GetEntry(metadata)!.Open())
-        {
-            await LoadFromDataStream(archiveStream).ConfigureAwait(false);
-        }
     }
 }

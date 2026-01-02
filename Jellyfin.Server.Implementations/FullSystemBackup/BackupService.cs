@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -45,9 +46,9 @@ public class BackupService : IBackupService
 
     private readonly Version _backupEngineVersion = new Version(0, 2, 0);
 
-    private readonly IDictionary<string, Type> _pluginDataLoaderTypes = Assembly.GetCallingAssembly()
+    private readonly IDictionary<string, Type> _pluginDataReader = Assembly.GetCallingAssembly()
         .GetTypes()
-        .Where(e => e.IsClass && !e.IsAbstract && e.IsAssignableFrom(typeof(IPluginDataHandling)))
+        .Where(e => e.IsClass && !e.IsAbstract && e.IsAssignableFrom(typeof(IPluginDataReader)))
         .ToDictionary(e => e.Name, e => e);
 
     /// <summary>
@@ -271,17 +272,15 @@ public class BackupService : IBackupService
                         continue;
                     }
 
-                    Dictionary<string, IPluginDataHandling> pluginData = [];
+                    Dictionary<string, IPluginDataReader> pluginData = [];
                     foreach (var pluginDataEntry in manifestEntry!.PluginDataLookup)
                     {
-                        var dataEntry = (IPluginDataHandling)Activator.CreateInstance(_pluginDataLoaderTypes[pluginDataEntry.BackupDataFqtn])!;
-                        await dataEntry.RestoreData(zipArchive, pluginDataEntry.Metadata).ConfigureAwait(false);
-                        pluginData[pluginDataEntry.Key] = dataEntry;
+                        pluginData[pluginDataEntry.Key] = (IPluginDataReader)Activator.CreateInstance(_pluginDataReader[pluginDataEntry.BackupDataFqtn], [zipArchive, pluginDataEntry.Metadata])!;
                     }
 
                     try
                     {
-                        await pluginBackupService.RestoreData(pluginData.ToDictionary(e => e.Key, e => (IPluginDataEntry)e.Value)).ConfigureAwait(false);
+                        await pluginBackupService.RestoreData(pluginData.ToDictionary(e => e.Key, e => (IPluginDataEntry)e.Value).AsReadOnly()).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -501,13 +500,13 @@ public class BackupService : IBackupService
 
                             foreach (var pluginDataItem in pluginData)
                             {
-                                var backupData = (IPluginDataHandling)pluginDataItem.Value;
+                                var backupData = (IPluginDataWriter)pluginDataItem.Value;
                                 try
                                 {
                                     var metadata = await backupData.BackupData(zipArchive, pluginInfo.Plugin).ConfigureAwait(false);
                                     manifestEntry!.PluginDataLookup.Add(new()
                                     {
-                                        BackupDataFqtn = _pluginDataLoaderTypes.First(e => e.Value == pluginDataItem.GetType()).Key,
+                                        BackupDataFqtn = backupData.ReaderType.Name.ToString(),
                                         Key = pluginDataItem.Key,
                                         Metadata = metadata
                                     });
