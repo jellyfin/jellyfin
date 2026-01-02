@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "InheritedParentalRatingValue",
+                name: "InheritedParentalRatingSubValue",
                 table: "BaseItems");
 
             migrationBuilder.RenameColumn(

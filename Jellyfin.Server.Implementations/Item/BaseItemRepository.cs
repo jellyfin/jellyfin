@@ -408,31 +408,45 @@ public sealed class BaseItemRepository
         return dbQuery;
     }
 
-    private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
+        var collectionIncludes = 0;
         if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
         {
             dbQuery = dbQuery.Include(e => e.TrailerTypes);
+            collectionIncludes++;
         }
 
         if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
         {
             dbQuery = dbQuery.Include(e => e.Provider);
+            collectionIncludes++;
         }
 
         if (filter.DtoOptions.ContainsField(ItemFields.Settings))
         {
             dbQuery = dbQuery.Include(e => e.LockedFields);
+            collectionIncludes++;
         }
 
         if (filter.DtoOptions.EnableUserData)
         {
             dbQuery = dbQuery.Include(e => e.UserData);
+            collectionIncludes++;
         }
 
         if (filter.DtoOptions.EnableImages)
         {
             dbQuery = dbQuery.Include(e => e.Images);
+            collectionIncludes++;
+        }
+
+        if (collectionIncludes > 1)
+        {
+            // Apply split query behavior when multiple collections are included to avoid Cartesian explosion.
+            // This is primarily beneficial for SQLite where single-query joins can be very slow for large result sets.
+            dbQuery = dbQuery.AsSplitQuery();
+            _logger.LogDebug("Applying split query for item retrieval due to multiple collection includes ({Count})", collectionIncludes);
         }
 
         return dbQuery;
@@ -465,7 +479,6 @@ public sealed class BaseItemRepository
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
     {
         IQueryable<BaseItemEntity> dbQuery = context.BaseItems.AsNoTracking();
-        dbQuery = dbQuery.AsSingleQuery();
 
         return dbQuery;
     }
@@ -1280,7 +1293,7 @@ public sealed class BaseItemRepository
             .Include(e => e.Provider)
             .Include(e => e.LockedFields)
             .Include(e => e.Images)
-            .AsSingleQuery()
+            .AsSplitQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
         query = ApplyOrder(query, filter, context);

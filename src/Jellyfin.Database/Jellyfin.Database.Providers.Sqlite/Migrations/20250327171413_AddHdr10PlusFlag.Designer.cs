@@ -229,6 +229,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int?>("IndexNumber")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("InheritedParentalRatingSubValue")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("InheritedParentalRatingValue")
                         .HasColumnType("INTEGER");
 
@@ -1260,7 +1263,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("MaxActiveSessions")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("MaxParentalAgeRating")
+                    b.Property<int?>("MaxParentalRatingScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MaxParentalRatingSubScore")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("MustUpdatePassword")
