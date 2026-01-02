@@ -507,7 +507,7 @@ public class BackupService : IBackupService
                                     var metadata = await backupData.BackupData(zipArchive, pluginInfo.Plugin).ConfigureAwait(false);
                                     manifestEntry!.PluginDataLookup.Add(new()
                                     {
-                                        BackupDataFqtn = pluginDataItem.GetType().ToString(), // TODO: change to dictionary lookup to prevent issues on version change with type
+                                        BackupDataFqtn = _pluginDataLoaderTypes.First(e => e.Value == pluginDataItem.GetType()).Key,
                                         Key = pluginDataItem.Key,
                                         Metadata = metadata
                                     });

@@ -55,9 +55,10 @@ public abstract class LazySingleFileBackedDataEntryBase : IPluginDataHandling
         return fileGuid;
     }
 
-    async ValueTask IPluginDataHandling.RestoreData(ZipArchive zipArchive, string metadata)
+    ValueTask IPluginDataHandling.RestoreData(ZipArchive zipArchive, string metadata)
     {
         _zipArchive = zipArchive;
         _metadata = metadata;
+        return ValueTask.CompletedTask;
     }
 }

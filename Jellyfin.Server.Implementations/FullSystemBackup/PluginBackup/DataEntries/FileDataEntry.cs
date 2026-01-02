@@ -1,5 +1,7 @@
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Plugins;
 
 namespace Jellyfin.Server.Implementations.FullSystemBackup.PluginBackup.DataEntries;
 
