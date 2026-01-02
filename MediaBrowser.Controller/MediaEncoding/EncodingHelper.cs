@@ -2935,6 +2935,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // If we are remuxing, then the copied stream cannot be seeked accurately (it will seek to the nearest
                     // keyframe). If we are using fMP4, then force all other streams to use the same inaccurate seeking to
                     // avoid A/V sync issues which cause playback issues on some devices.
+                    // In any case, when remuxing the segment start times correspond to key frames in the source stream,
+                    // so this option shouldn't change the seeked point that much.
                     // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
                     if (isHlsRemuxing
                         && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
