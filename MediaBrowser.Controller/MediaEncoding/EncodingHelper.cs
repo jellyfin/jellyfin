@@ -2937,7 +2937,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // avoid A/V sync issues which cause playback issues on some devices.
                     // In any case, when remuxing the segment start times correspond to key frames in the source stream,
                     // so this option shouldn't change the seeked point that much.
-                    // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
+                    // Important: make sure not to use it with wtv because it breaks seeking
                     if (isHlsRemuxing
                         && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
                         && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
