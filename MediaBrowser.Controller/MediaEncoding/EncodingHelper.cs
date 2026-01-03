@@ -7101,6 +7101,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var preventHlsAudioCopy = state.TranscodingType is TranscodingJobType.Hls
+                && state.VideoStream is not null
                 && !IsCopyCodec(state.OutputVideoCodec)
                 && options.AudioSyncType is AudioSyncType.TranscodeAudio;
 
