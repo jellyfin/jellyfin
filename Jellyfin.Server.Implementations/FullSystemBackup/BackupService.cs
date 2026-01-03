@@ -253,22 +253,26 @@ public class BackupService : IBackupService
 
             if (manifest.Options.PluginData.Count > 0)
             {
+                // prepare plugin import
+                var appHost = _serviceProvider.GetRequiredService<IServerApplicationHost>();
+                var pluginTypes = appHost.GetExportTypes<IPlugin>();
+
                 var plugins = GetPluginTypes()
-                    .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Plugin.Id))))
+                    .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Id))))
                     .Where(e => e.ManifestEntry is not null)
                     .ToArray();
                 foreach (var (pluginInfo, manifestEntry) in plugins)
                 {
-                    _logger.LogInformation("Begin restore of Plugin data for plugin {PluginName}-{PluginId}", pluginInfo.Plugin.Name, pluginInfo.Plugin.Id);
+                    _logger.LogInformation("Begin restore of Plugin data for plugin {PluginName}-{PluginId}", pluginInfo.Name, pluginInfo.Id);
                     IPluginBackupService pluginBackupService;
                     try
                     {
                         // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
-                        pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo.PluginBackupAttribute!.LoaderType)!;
+                        pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo!.LoaderType)!;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Plugin.Name);
+                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Name);
                         continue;
                     }
 
@@ -284,11 +288,11 @@ public class BackupService : IBackupService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Plugin.Name);
+                        _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Name);
                         continue;
                     }
 
-                    _logger.LogInformation("Restore of Plugin data for plugin {PluginName}-{PluginId} finished.", pluginInfo.Plugin.Name, pluginInfo.Plugin.Id);
+                    _logger.LogInformation("Restore of Plugin data for plugin {PluginName}-{PluginId} finished.", pluginInfo.Name, pluginInfo.Id);
                 }
             }
 
@@ -461,13 +465,18 @@ public class BackupService : IBackupService
 
                 if (backupOptions.PluginManifest.Count > 0)
                 {
+                    var pluginInstances = _serviceProvider.GetServices<IPlugin>();
                     var plugins = GetPluginTypes()
-                        .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Plugin.Id))))
-                        .Where(e => e.ManifestEntry is not null)
+                        .Select(e => (
+                            PluginInfo: e,
+                            ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Id)),
+                            PluginInstance: pluginInstances.FirstOrDefault(w => w.Id.Equals(e.Id))
+                        ))
+                        .Where(e => e.ManifestEntry is not null && e.PluginInstance is not null)
                         .ToArray();
-                    foreach (var (pluginInfo, manifestEntry) in plugins)
+                    foreach (var (pluginInfo, manifestEntry, pluginInstance) in plugins)
                     {
-                        var backupAwarePlugin = pluginInfo.Plugin as IBackupAwarePlugin;
+                        var backupAwarePlugin = pluginInstance as IBackupAwarePlugin;
                         if (backupAwarePlugin is not null)
                         {
                             await backupAwarePlugin.SignalBackupPending().ConfigureAwait(false);
@@ -479,11 +488,11 @@ public class BackupService : IBackupService
                             try
                             {
                                 // this intentionally does not use the ActivatorUtilities with DI as restore is also done without a running system!
-                                pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo.PluginBackupAttribute!.LoaderType)!;
+                                pluginBackupService = (IPluginBackupService)Activator.CreateInstance(pluginInfo!.LoaderType)!;
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Plugin.Name);
+                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because it did not define a valid plugin data loader.", pluginInfo.Name);
                                 continue;
                             }
 
@@ -494,7 +503,7 @@ public class BackupService : IBackupService
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Plugin.Name);
+                                _logger.LogError(ex, "Was not able to backup plugin data from plugin '{PluginName}' because its data loader failed to provide valid data..", pluginInfo.Name);
                                 continue;
                             }
 
@@ -503,7 +512,7 @@ public class BackupService : IBackupService
                                 var backupData = (IPluginDataWriter)pluginDataItem.Value;
                                 try
                                 {
-                                    var metadata = await backupData.BackupData(zipArchive, pluginInfo.Plugin).ConfigureAwait(false);
+                                    var metadata = await backupData.BackupData(zipArchive, pluginInstance!).ConfigureAwait(false);
                                     manifestEntry!.PluginDataLookup.Add(new()
                                     {
                                         BackupDataFqtn = backupData.ReaderType.Name.ToString(),
@@ -513,7 +522,7 @@ public class BackupService : IBackupService
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.LogError(ex, "Plugin '{PluginName}' failed to backup dataset from plugin. Backup might be incomplete.", pluginInfo.Plugin.Name);
+                                    _logger.LogError(ex, "Plugin '{PluginName}' failed to backup dataset from plugin. Backup might be incomplete.", pluginInfo.Name);
                                     continue;
                                 }
                             }
@@ -622,15 +631,15 @@ public class BackupService : IBackupService
     /// <returns>The list of all plugins that support inclusion in the backup system.</returns>
     public IDictionary<Guid, string> SupportedPlugins()
     {
-        return GetPluginTypes().ToDictionary(e => e.Plugin.Id, e => e.Plugin.Name);
+        return GetPluginTypes().ToDictionary(e => e.Id, e => e.Name);
     }
 
-    private IEnumerable<(IPlugin Plugin, IPluginBackupAttribute? PluginBackupAttribute)> GetPluginTypes()
+    private IEnumerable<IPluginBackupAttribute> GetPluginTypes()
     {
         return _serviceProvider
                 .GetServices<IPlugin>()
-                .Select(e => (e, e.GetType().GetCustomAttributes().FirstOrDefault(w => w is IPluginBackupAttribute) as IPluginBackupAttribute))
-                .Where(e => e.Item2 is not null);
+                .Select(e => e.GetType().GetCustomAttributes().OfType<IPluginBackupAttribute>().FirstOrDefault()!)
+                .Where(e => e is not null);
     }
 
     private static async ValueTask<BackupManifest?> GetManifest(string archivePath)

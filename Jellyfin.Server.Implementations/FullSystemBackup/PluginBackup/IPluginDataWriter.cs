@@ -11,7 +11,3 @@ internal interface IPluginDataWriter : IPluginDataEntry
 
     ValueTask<string> BackupData(ZipArchive zipArchive, IPlugin plugin);
 }
-
-internal interface IPluginDataReader : IPluginDataEntry
-{
-}
