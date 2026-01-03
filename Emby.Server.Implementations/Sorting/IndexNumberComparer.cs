@@ -36,12 +36,12 @@ namespace Emby.Server.Implementations.Sorting
 
             if (!x.IndexNumber.HasValue)
             {
-                return -1;
+                return 1;
             }
 
             if (!y.IndexNumber.HasValue)
             {
-                return 1;
+                return -1;
             }
 
             return x.IndexNumber.Value.CompareTo(y.IndexNumber.Value);

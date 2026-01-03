@@ -27,8 +27,8 @@ public class IndexNumberComparerTests
 
     [Theory]
     [InlineData(null, null, 0)]
-    [InlineData(0, null, 1)]
-    [InlineData(null, 0, -1)]
+    [InlineData(0, null, -1)]
+    [InlineData(null, 0, 1)]
     [InlineData(1, 1, 0)]
     [InlineData(0, 1, -1)]
     [InlineData(1, 0, 1)]
