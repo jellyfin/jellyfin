@@ -139,7 +139,7 @@ public class ChapterManager : IChapterManager
 
         var runtimeTicks = video.RunTimeTicks ?? 0;
 
-        var currentImages = GetSavedChapterImages(video, directoryService);
+        var currentImages = GetSavedChapterImages(video, directoryService).ToHashSet();
 
         foreach (var chapter in chapters)
         {

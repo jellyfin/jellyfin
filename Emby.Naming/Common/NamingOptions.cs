@@ -1,6 +1,7 @@
 #pragma warning disable CA1819
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -21,8 +22,8 @@ namespace Emby.Naming.Common
         /// </summary>
         public NamingOptions()
         {
-            VideoFileExtensions =
-            [
+            VideoFileExtensions = new[]
+            {
                 ".001",
                 ".3g2",
                 ".3gp",
@@ -77,7 +78,7 @@ namespace Emby.Naming.Common
                 ".wmv",
                 ".wtv",
                 ".xvid"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             VideoFlagDelimiters =
             [
@@ -170,7 +171,7 @@ namespace Emby.Naming.Common
                 ".ssa",
                 ".sub",
                 ".sup",
-                ".vtt",
+                ".vtt"
             ];
 
             LyricFileExtensions =
@@ -210,8 +211,8 @@ namespace Emby.Naming.Common
                 "streets"
             ];
 
-            AudioFileExtensions =
-            [
+            AudioFileExtensions = new[]
+            {
                 ".669",
                 ".3gp",
                 ".aa",
@@ -292,7 +293,7 @@ namespace Emby.Naming.Common
                 ".xm",
                 ".xsp",
                 ".ymf"
-            ];
+            }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
             MediaFlagDelimiters =
             [
@@ -779,7 +780,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of audio file extensions.
         /// </summary>
-        public string[] AudioFileExtensions { get; set; }
+        public FrozenSet<string> AudioFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of external media flag delimiters.
@@ -829,7 +830,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of video file extensions.
         /// </summary>
-        public string[] VideoFileExtensions { get; set; }
+        public FrozenSet<string> VideoFileExtensions { get; set; }
 
         /// <summary>
         /// Gets or sets list of video stub file extensions.
