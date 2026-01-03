@@ -175,6 +175,32 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
+        public bool MoveFile(string source, string destination, bool overwrite)
+        {
+            // Make sure parent directory of target exists
+            var parent = Directory.GetParent(destination);
+            parent?.Create();
+
+            try
+            {
+                File.Move(source, destination, overwrite);
+                return true;
+            }
+            catch (IOException)
+            {
+                if (!overwrite && File.Exists(destination))
+                {
+                    return false;
+                }
+
+                // Cross device move requires a copy
+                File.Copy(source, destination, overwrite);
+                File.Delete(source);
+                return true;
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="FileSystemMetadata"/> object for the specified file or directory path.
         /// </summary>
