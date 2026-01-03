@@ -1,10 +1,10 @@
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// An enum representing the options to synchronise the audio and video streams
-    /// in HLS.
+    /// An enum representing the options to seek the input audio stream when
+    /// transcoding HLS segments.
     /// </summary>
-    public enum AudioSyncType
+    public enum HlsAudioSeekStrategy
     {
         /// <summary>
         /// If the video stream is transcoded and the audio stream is copied,
