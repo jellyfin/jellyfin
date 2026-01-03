@@ -610,7 +610,6 @@ namespace MediaBrowser.Model.Dlna
             playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
             playlistItem.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
 
-            playlistItem.BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames;
             playlistItem.EnableAudioVbrEncoding = transcodingProfile.EnableAudioVbrEncoding;
 
             if (transcodingProfile.MinSegments > 0)

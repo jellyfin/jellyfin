@@ -95,7 +95,6 @@
     "TranscodingProfiles": [
         {
             "AudioCodec": "aac",
-            "BreakOnNonKeyFrames": true,
             "Container": "mp4",
             "Context": "Streaming",
             "EnableAudioVbrEncoding": true,
@@ -170,7 +169,6 @@
         },
         {
             "AudioCodec": "aac,mp2,opus,flac",
-            "BreakOnNonKeyFrames": true,
             "Container": "mp4",
             "Context": "Streaming",
             "MaxAudioChannels": "2",
@@ -181,7 +179,6 @@
         },
         {
             "AudioCodec": "aac,mp3,mp2",
-            "BreakOnNonKeyFrames": true,
             "Container": "ts",
             "Context": "Streaming",
             "MaxAudioChannels": "2",
