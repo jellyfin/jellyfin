@@ -2447,7 +2447,7 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            var excludedTags = filter.ExcludeInheritedTags.ToArray();
+            var excludedTags = filter.ExcludeInheritedTags;
             baseQuery = baseQuery.Where(e =>
                 !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
                 && (!e.SeriesId.HasValue || !context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))));
@@ -2455,7 +2455,8 @@ public sealed class BaseItemRepository
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            var includeTags = filter.IncludeInheritedTags.ToArray();
+            var includeTags = filter.IncludeInheritedTags;
+            var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
             baseQuery = baseQuery.Where(e =>
                 e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
 
@@ -2463,7 +2464,7 @@ public sealed class BaseItemRepository
                 || (e.SeriesId.HasValue && context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue)))
 
                 // A playlist should be accessible to its owner regardless of allowed tags
-                || (includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
+                || (isPlaylistOnlyQuery && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
         }
 
         if (filter.SeriesStatuses.Length > 0)
