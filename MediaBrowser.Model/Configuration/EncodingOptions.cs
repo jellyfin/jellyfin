@@ -60,7 +60,7 @@ public class EncodingOptions
         SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
-        HlsAudioSeekStrategy = HlsAudioSeekStrategy.TranscodeAudio;
+        HlsAudioSeekStrategy = HlsAudioSeekStrategy.DisableAccurateSeek;
     }
 
     /// <summary>
