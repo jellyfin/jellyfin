@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Jellyfin.Api.Models.SyncPlayDtos;
 
 /// <summary>
@@ -6,8 +8,9 @@ namespace Jellyfin.Api.Models.SyncPlayDtos;
 public class SetPlaybackSpeedRequestDto
 {
     /// <summary>
-    /// Gets or sets the playback speed, should be between 0.25 and 5.
+    /// Gets or sets the playback speed.
     /// </summary>
     /// <value>The playback speed.</value>
+    [Range(0.25, 5)]
     public double PlaybackSpeed { get; set; } = 1.0;
 }
