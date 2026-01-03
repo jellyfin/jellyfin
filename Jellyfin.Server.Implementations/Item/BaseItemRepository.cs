@@ -277,7 +277,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        result.Items = SafeEnumerateItems(dbQuery, filter.SkipDeserialization).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -297,7 +297,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return SafeEnumerateItems(dbQuery, filter.SkipDeserialization).ToArray();
     }
 
     /// <inheritdoc/>
@@ -341,7 +341,7 @@ public sealed class BaseItemRepository
 
         mainquery = ApplyNavigations(mainquery, filter);
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return SafeEnumerateItems(mainquery, filter.SkipDeserialization).ToArray();
     }
 
     /// <inheritdoc />
@@ -460,6 +460,86 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
+    }
+
+    /// <summary>
+    /// Safely enumerates database entities and converts them to BaseItemDto.
+    /// Catches FormatException from corrupted datetime data and returns partial results.
+    /// </summary>
+    /// <param name="entities">The queryable entities to enumerate.</param>
+    /// <param name="skipDeserialization">Whether to skip full deserialization.</param>
+    /// <returns>Successfully deserialized items. On error, returns partial results.</returns>
+    private List<BaseItemDto> SafeEnumerateItems(IQueryable<BaseItemEntity> entities, bool skipDeserialization)
+    {
+        var results = new List<BaseItemDto>();
+
+        try
+        {
+            foreach (var entity in entities.AsEnumerable())
+            {
+                if (entity is not null)
+                {
+                    results.Add(DeserializeBaseItem(entity, skipDeserialization));
+                }
+            }
+        }
+        catch (FormatException ex)
+        {
+            // EF Core enumeration failed due to corrupted datetime data in SQLite
+            _logger.LogWarning(
+                ex,
+                "Encountered corrupted datetime data during query. Returning {Count} partial results. " +
+                "Fix: Run SanitizeInvalidDatetimes migration or see https://jellyfin.org/docs/troubleshooting/database-corruption",
+                results.Count);
+        }
+
+        return results;
+    }
+
+    /// <summary>
+    /// Safely enumerates database entities with item counts and converts them to tuples.
+    /// Catches FormatException from corrupted datetime data and returns partial results.
+    /// </summary>
+    /// <param name="entities">The enumerable entities with counts.
+    /// Expected to have properties: item (BaseItemEntity) and itemCount (ItemCounts?).</param>
+    /// <param name="skipDeserialization">Whether to skip full deserialization.</param>
+    /// <returns>Successfully deserialized items with counts. On error, returns partial results.</returns>
+    private List<(BaseItemDto Item, ItemCounts? ItemCounts)> SafeEnumerateItemsWithCounts(IEnumerable<dynamic> entities, bool skipDeserialization)
+    {
+        var results = new List<(BaseItemDto Item, ItemCounts? ItemCounts)>();
+
+        try
+        {
+            foreach (var entity in entities)
+            {
+                if (entity is null)
+                {
+                    continue;
+                }
+
+                var item = entity.item as BaseItemEntity;
+                var count = entity.itemCount as ItemCounts;
+
+                if (item is not null)
+                {
+                    results.Add((DeserializeBaseItem(item, skipDeserialization), count));
+                }
+            }
+        }
+        catch (FormatException ex)
+        {
+            // EF Core enumeration failed due to corrupted datetime data in SQLite.
+            // NOTE: Testing this error path requires a SQLite database with corrupted datetime values.
+            // Manual test: INSERT INTO BaseItems (Id, Type, DateCreated)
+            //              VALUES ('test-guid', 'Movie', '2025-89-11 18:11:29');
+            _logger.LogWarning(
+                ex,
+                "Encountered corrupted datetime data during query. Returning {Count} partial results. " +
+                "Fix: Run SanitizeInvalidDatetimes migration or see https://jellyfin.org/docs/troubleshooting/database-corruption",
+                results.Count);
+        }
+
+        return results;
     }
 
     private IQueryable<BaseItemEntity> PrepareItemQuery(JellyfinDbContext context, InternalItemsQuery filter)
@@ -1348,30 +1428,12 @@ public sealed class BaseItemRepository
             });
 
             result.StartIndex = filter.StartIndex ?? 0;
-            result.Items =
-            [
-                .. resultQuery
-                    .AsEnumerable()
-                    .Where(e => e is not null)
-                    .Select(e =>
-                    {
-                        return (DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-                    })
-            ];
+            result.Items = SafeEnumerateItemsWithCounts(resultQuery.AsEnumerable(), filter.SkipDeserialization).ToArray();
         }
         else
         {
             result.StartIndex = filter.StartIndex ?? 0;
-            result.Items =
-            [
-                .. query
-                    .AsEnumerable()
-                    .Where(e => e is not null)
-                    .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
-                    {
-                        return (DeserializeBaseItem(e, filter.SkipDeserialization), null);
-                    })
-            ];
+            result.Items = SafeEnumerateItemsWithCounts(query.AsEnumerable().Select(e => new { item = e, itemCount = (ItemCounts?)null }), filter.SkipDeserialization).ToArray();
         }
 
         return result;
