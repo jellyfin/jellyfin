@@ -2496,7 +2496,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return true;
         }
 
-        public bool CanStreamCopyAudio(EncodingJobInfo state, EncodingOptions options, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
+        public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
         {
             var request = state.BaseRequest;
 
@@ -2553,13 +2553,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (request.AudioBitRate.HasValue
                 && audioStream.BitRate.HasValue
                 && audioStream.BitRate.Value > request.AudioBitRate.Value)
-            {
-                return false;
-            }
-
-            if (state.TranscodingType is TranscodingJobType.Hls
-                && !IsCopyCodec(state.OutputVideoCodec)
-                && options.AudioSyncType is AudioSyncType.TranscodeAudio)
             {
                 return false;
             }
@@ -7107,8 +7100,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            var preventHlsAudioCopy = state.TranscodingType is TranscodingJobType.Hls
+                && !IsCopyCodec(state.OutputVideoCodec)
+                && options.AudioSyncType is AudioSyncType.TranscodeAudio;
+
             if (state.AudioStream is not null
-                && CanStreamCopyAudio(state, options, state.AudioStream, state.SupportedAudioCodecs))
+                && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs)
+                && !preventHlsAudioCopy)
             {
                 state.OutputAudioCodec = "copy";
             }
