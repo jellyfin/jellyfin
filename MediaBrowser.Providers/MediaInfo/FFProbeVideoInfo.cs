@@ -247,7 +247,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (mediaInfo is not null)
             {
-                FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
+                var collectionType = _libraryManager.GetContentType(video);
+                FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions, collectionType);
                 FetchPeople(video, mediaInfo, options);
                 video.Timestamp = mediaInfo.Timestamp;
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
@@ -389,7 +390,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
+        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions, CollectionType? collectionType)
         {
             var replaceData = refreshOptions.ReplaceAllMetadata;
 
@@ -469,12 +470,33 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Name))
             {
-                if (!string.IsNullOrWhiteSpace(data.Name) && libraryOptions.EnableEmbeddedTitles)
+                // Determine if we should apply embedded title based on priority setting
+                var shouldApplyEmbeddedTitle = libraryOptions.EmbeddedMetadataPriority switch
                 {
-                    // Separate option to use the embedded name for extras because it will often be the same name as the movie
-                    if (!video.ExtraType.HasValue || libraryOptions.EnableEmbeddedExtrasTitles)
+                    EmbeddedMetadataPriority.Always => true,
+                    EmbeddedMetadataPriority.ForHomeVideosOnly => collectionType == CollectionType.homevideos,
+                    _ => libraryOptions.EnableEmbeddedTitles // Legacy fallback
+                };
+
+                if (!string.IsNullOrWhiteSpace(data.Name) && shouldApplyEmbeddedTitle)
+                {
+                    if (string.IsNullOrWhiteSpace(video.Name) || replaceData)
                     {
-                        video.Name = data.Name;
+                        // Separate option to use the embedded name for extras because it will often be the same name as the movie
+                        if (!video.ExtraType.HasValue || libraryOptions.EnableEmbeddedExtrasTitles)
+                        {
+                            video.Name = data.Name;
+
+                            // Soft-lock the Name field to prevent remote providers from overwriting
+                            // Users can still manually edit or unlock the field
+                            if (!video.LockedFields.Contains(MetadataField.Name))
+                            {
+                                video.LockedFields = video.LockedFields
+                                    .Append(MetadataField.Name)
+                                    .Distinct()
+                                    .ToArray();
+                            }
+                        }
                     }
                 }
 
@@ -494,7 +516,30 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (string.IsNullOrWhiteSpace(video.Overview) || replaceData)
                 {
-                    video.Overview = data.Overview;
+                    if (!string.IsNullOrWhiteSpace(data.Overview))
+                    {
+                        video.Overview = data.Overview;
+
+                        // Soft-lock the Overview field to prevent remote providers from overwriting
+                        // if we are in a high-priority mode or it's a home video
+                        var shouldLockEmbeddedMetadata = libraryOptions.EmbeddedMetadataPriority switch
+                        {
+                            EmbeddedMetadataPriority.Always => true,
+                            EmbeddedMetadataPriority.ForHomeVideosOnly => collectionType == CollectionType.homevideos,
+                            _ => libraryOptions.EnableEmbeddedTitles // Legacy fallback
+                        };
+
+                        if (shouldLockEmbeddedMetadata)
+                        {
+                            if (!video.LockedFields.Contains(MetadataField.Overview))
+                            {
+                                video.LockedFields = video.LockedFields
+                                    .Append(MetadataField.Overview)
+                                    .Distinct()
+                                    .ToArray();
+                            }
+                        }
+                    }
                 }
             }
         }

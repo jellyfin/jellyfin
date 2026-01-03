@@ -71,6 +71,13 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableEmbeddedEpisodeInfos { get; set; }
 
+        /// <summary>
+        /// Gets or sets the embedded metadata priority.
+        /// Controls when embedded metadata (from media file tags) should take precedence.
+        /// </summary>
+        [DefaultValue(EmbeddedMetadataPriority.ForHomeVideosOnly)]
+        public EmbeddedMetadataPriority EmbeddedMetadataPriority { get; set; } = EmbeddedMetadataPriority.ForHomeVideosOnly;
+
         public int AutomaticRefreshIntervalDays { get; set; }
 
         /// <summary>
