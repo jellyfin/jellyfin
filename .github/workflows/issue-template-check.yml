@@ -13,13 +13,16 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: jellyfin/jellyfin-triage-script
+
       - name: install python
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: '3.14'
           cache: 'pip'
+
       - name: install python packages
         run: pip install -r main-repo-triage/requirements.txt
+
       - name: check and comment issue
         working-directory: ./main-repo-triage
         run: python3 single_issue_gha.py

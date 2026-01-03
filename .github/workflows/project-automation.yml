@@ -21,6 +21,7 @@ jobs:
         with:
           project: Current Release
           action: delete
+          column: In progress
           repo-token: ${{ secrets.JF_BOT_TOKEN }}
 
       - name: Add to 'Release Next' project
