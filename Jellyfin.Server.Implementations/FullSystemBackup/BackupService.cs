@@ -11,9 +11,11 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations.FullSystemBackup.PluginBackup;
 using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Plugins.Backup;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
 using Microsoft.EntityFrameworkCore;
@@ -284,7 +286,7 @@ public class BackupService : IBackupService
 
                     try
                     {
-                        await pluginBackupService.RestoreData(pluginData.ToDictionary(e => e.Key, e => (IPluginDataEntry)e.Value).AsReadOnly()).ConfigureAwait(false);
+                        await pluginBackupService.RestoreData(new PluginBackupDataset(pluginData.ToDictionary(e => e.Key, e => (IPluginDataEntry)e.Value).AsReadOnly())).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -496,10 +498,10 @@ public class BackupService : IBackupService
                                 continue;
                             }
 
-                            IDictionary<string, IPluginDataEntry> pluginData;
+                            Dictionary<string, IPluginDataEntry> pluginData = new();
                             try
                             {
-                                pluginData = await pluginBackupService.BackupData().ConfigureAwait(false);
+                                await pluginBackupService.BackupData(new PluginBackupDataset(pluginData)).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
@@ -634,11 +636,11 @@ public class BackupService : IBackupService
         return GetPluginTypes().ToDictionary(e => e.Id, e => e.Name);
     }
 
-    private IEnumerable<IPluginBackupAttribute> GetPluginTypes()
+    private IEnumerable<IPluginBackupInfoData> GetPluginTypes()
     {
         return _serviceProvider
                 .GetServices<IPlugin>()
-                .Select(e => e.GetType().GetCustomAttributes().OfType<IPluginBackupAttribute>().FirstOrDefault()!)
+                .Select(e => e.GetType().GetCustomAttributes().OfType<IPluginBackupInfoData>().FirstOrDefault()!)
                 .Where(e => e is not null);
     }
 

@@ -1,5 +1,6 @@
 using System;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Plugins.Backup;
 
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
@@ -8,17 +9,19 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup;
 /// </summary>
 /// <typeparam name="TPluginDataLoader">The plugin loader class that is responsible for handling serialization of the plugin data.</typeparam>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-public sealed class PluginBackupAttribute<TPluginDataLoader> : System.Attribute, IPluginBackupAttribute
+public sealed class PluginBackupAttribute<TPluginDataLoader> : System.Attribute, IPluginBackupInfoData
     where TPluginDataLoader : IPluginBackupService
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginBackupAttribute{TPluginDataLoader}"/> class.
     /// </summary>
-    /// <param name="id">The plugins ID. Should match with the <see cref="IPlugin.Id"/> value and needs to be an <see cref="Guid"/>.</param>
+    /// <param name="pluginId">The plugins ID. Should match with the <see cref="IPlugin.Id"/> value and needs to be an <see cref="Guid"/>.</param>
     /// <param name="name">The plugins Name. Should match with the <see cref="IPlugin.Name"/> value.</param>
-    public PluginBackupAttribute(string id, string name)
+#pragma warning disable CA1019 // Define accessors for attribute arguments
+    public PluginBackupAttribute(string pluginId, string name)
+#pragma warning restore CA1019 // Define accessors for attribute arguments
     {
-        Id = Guid.Parse(id);
+        Id = Guid.Parse(pluginId);
         Name = name;
     }
 
@@ -28,5 +31,5 @@ public sealed class PluginBackupAttribute<TPluginDataLoader> : System.Attribute,
     /// <inheritdoc/>
     public string Name { get; }
 
-    Type IPluginBackupAttribute.LoaderType => typeof(TPluginDataLoader);
+    Type IPluginBackupInfoData.LoaderType => typeof(TPluginDataLoader);
 }

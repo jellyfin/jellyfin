@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using MediaBrowser.Controller.SystemBackupService;
-
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 internal class PluginDataLookup

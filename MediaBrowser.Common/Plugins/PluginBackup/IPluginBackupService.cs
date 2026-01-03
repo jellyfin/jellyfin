@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Jellyfin.Server.Implementations.FullSystemBackup;
+namespace MediaBrowser.Common.Plugins.Backup;
 
 /// <summary>
 /// Defines a plugin that can provide and read data from the plugin system.
@@ -12,13 +10,14 @@ public interface IPluginBackupService
     /// <summary>
     /// Produces a set of data from the Plugin that will be included in the full system backup.
     /// </summary>
+    /// <param name="pluginBackupDataset">The Plugin data.</param>
     /// <returns>A dictionary of keyed plugin data entries.</returns>
-    ValueTask<IDictionary<string, IPluginDataEntry>> BackupData();
+    ValueTask BackupData(IPluginBackupDatasetWriter pluginBackupDataset);
 
     /// <summary>
     /// Restores the plugin data from a backup.
     /// </summary>
-    /// <param name="pluginData">The Plugin data.</param>
+    /// <param name="pluginBackupDataset">The Plugin data.</param>
     /// <returns>A task that completes when the restore operation has finished.</returns>
-    ValueTask RestoreData(IReadOnlyDictionary<string, IPluginDataEntry> pluginData);
+    ValueTask RestoreData(IPluginBackupDatasetReader pluginBackupDataset);
 }
