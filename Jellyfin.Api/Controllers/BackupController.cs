@@ -92,7 +92,7 @@ public class BackupController : BaseJellyfinApiController
     /// <response code="200">List of plugins with backup support.</response>
     /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>The list of plugins with ID and Name.</returns>
-    [HttpGet]
+    [HttpGet("SupportedPlugins")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<IDictionary<Guid, string>> ListSupportedPlugins()
