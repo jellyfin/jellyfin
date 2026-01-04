@@ -170,6 +170,7 @@ namespace Emby.Naming.Common
                 ".ssa",
                 ".sub",
                 ".sup",
+                ".ttml",
                 ".vtt",
             ];
 
