@@ -1831,6 +1831,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ":fontsdir='{0}'",
                 _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
+            var effectiveSubtitlePath = _subtitleEncoder.GetSubtitleFilePath(
+                state.SubtitleStream,
+                state.MediaSource,
+                CancellationToken.None).GetAwaiter().GetResult();
+
             if (state.SubtitleStream.IsExternal)
             {
                 var charsetParam = string.Empty;
@@ -1852,7 +1857,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "subtitles=f='{0}'{1}{2}{3}{4}{5}",
-                    _mediaEncoder.EscapeSubtitleFilterPath(state.SubtitleStream.Path),
+                    _mediaEncoder.EscapeSubtitleFilterPath(effectiveSubtitlePath),
                     charsetParam,
                     alphaParam,
                     sub2videoParam,
