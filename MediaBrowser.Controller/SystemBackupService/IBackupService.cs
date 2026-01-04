@@ -51,5 +51,5 @@ public interface IBackupService
     /// Gets a list of all plugins that support backup.
     /// </summary>
     /// <returns>The list of all plugins that support inclusion in the backup system.</returns>
-    IDictionary<Guid, string> SupportedPlugins()
+    IDictionary<Guid, string> SupportedPlugins();
 }
