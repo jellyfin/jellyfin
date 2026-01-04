@@ -33,8 +33,8 @@ internal class DirectoryDataWriter : IPluginDataWriter
             throw new InvalidOperationException($"The backup of '{_path}' cannot be performed.");
         }
 
-        var fileGuid = Guid.NewGuid().ToString("g");
-        var metaReference = $"plugin/{plugin.Id}/{fileGuid}";
+        var fileGuid = Guid.NewGuid().ToString("N");
+        var metaReference = $"plugin/{plugin.Id:N}/{fileGuid}";
 
         void CopyDirectory(string source, string target, string filter = "*")
         {

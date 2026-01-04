@@ -22,8 +22,8 @@ internal abstract class LazySingleFileBackedDataWriterBase : IPluginDataWriter
 
     async ValueTask<string> IPluginDataWriter.BackupData(ZipArchive zipArchive, IPlugin plugin)
     {
-        var fileGuid = Guid.NewGuid().ToString("g");
-        var metaReference = $"plugin/{plugin.Id}/{fileGuid}";
+        var fileGuid = Guid.NewGuid().ToString("N");
+        var metaReference = $"plugin/{plugin.Id:N}/{fileGuid}";
 
         using (var archiveStream = zipArchive.CreateEntry(metaReference).Open())
         {

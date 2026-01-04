@@ -1,3 +1,4 @@
+using System;
 using System.IO.Compression;
 using System.Text.Json;
 
@@ -7,16 +8,18 @@ internal class ObjectDataReader : IPluginDataReader
 {
     private readonly ZipArchive _zipArchive;
     private readonly string _metadata;
+    private readonly Guid _pluginId;
 
-    public ObjectDataReader(ZipArchive zipArchive, string metadata)
+    public ObjectDataReader(ZipArchive zipArchive, string metadata, Guid pluginId)
     {
         _zipArchive = zipArchive;
         _metadata = metadata;
+        _pluginId = pluginId;
     }
 
     public T? ReadAs<T>()
     {
-        using (var archiveStream = _zipArchive.GetEntry(_metadata)!.Open())
+        using (var archiveStream = _zipArchive.GetEntry($"plugin/{_pluginId:N}/{_metadata}")!.Open())
         {
             return JsonSerializer.Deserialize<T>(archiveStream);
         }

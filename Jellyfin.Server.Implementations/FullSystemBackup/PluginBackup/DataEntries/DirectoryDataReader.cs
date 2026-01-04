@@ -7,13 +7,15 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup.PluginBackup.DataEntr
 
 internal class DirectoryDataReader : IPluginDataReader
 {
+    private readonly Guid _pluginId;
     private ZipArchive? _zipArchive;
     private string? _metadata;
 
-    public DirectoryDataReader(ZipArchive zipArchive, string metadata)
+    public DirectoryDataReader(ZipArchive zipArchive, string metadata, Guid pluginId)
     {
         _zipArchive = zipArchive;
         _metadata = metadata;
+        _pluginId = pluginId;
     }
 
     /// <summary>
@@ -49,7 +51,7 @@ internal class DirectoryDataReader : IPluginDataReader
             }
         }
 
-        CopyDirectory(_metadata, path);
+        CopyDirectory($"plugin/{_pluginId:N}/{_metadata}", path);
 
         return ValueTask.CompletedTask;
     }

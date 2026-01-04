@@ -48,9 +48,9 @@ public class BackupService : IBackupService
 
     private readonly Version _backupEngineVersion = new Version(0, 2, 0);
 
-    private readonly IDictionary<string, Type> _pluginDataReader = Assembly.GetCallingAssembly()
+    private readonly IDictionary<string, Type> _pluginDataReader = typeof(BackupService).Assembly
         .GetTypes()
-        .Where(e => e.IsClass && !e.IsAbstract && e.IsAssignableFrom(typeof(IPluginDataReader)))
+        .Where(e => e.IsClass && !e.IsAbstract && e.IsAssignableTo(typeof(IPluginDataReader)))
         .ToDictionary(e => e.Name, e => e);
 
     /// <summary>
@@ -259,7 +259,7 @@ public class BackupService : IBackupService
                 var appHost = _serviceProvider.GetRequiredService<IServerApplicationHost>();
                 var pluginTypes = appHost.GetExportTypes<IPlugin>();
 
-                var plugins = GetPluginTypes()
+                var plugins = GetPluginTypes(pluginTypes)
                     .Select(e => (PluginInfo: e, ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Id))))
                     .Where(e => e.ManifestEntry is not null)
                     .ToArray();
@@ -281,7 +281,7 @@ public class BackupService : IBackupService
                     Dictionary<string, IPluginDataReader> pluginData = [];
                     foreach (var pluginDataEntry in manifestEntry!.PluginDataLookup)
                     {
-                        pluginData[pluginDataEntry.Key] = (IPluginDataReader)Activator.CreateInstance(_pluginDataReader[pluginDataEntry.BackupDataFqtn], [zipArchive, pluginDataEntry.Metadata])!;
+                        pluginData[pluginDataEntry.Key] = (IPluginDataReader)Activator.CreateInstance(_pluginDataReader[pluginDataEntry.BackupDataFqtn], [zipArchive, pluginDataEntry.Metadata, pluginInfo.Id])!;
                     }
 
                     try
@@ -467,16 +467,19 @@ public class BackupService : IBackupService
 
                 if (backupOptions.PluginManifest.Count > 0)
                 {
-                    var pluginInstances = _serviceProvider.GetServices<IPlugin>();
-                    var plugins = GetPluginTypes()
+                    var pluginManifest = new List<PluginBackupManifest>();
+                    manifest.Options.PluginData = pluginManifest;
+                    var pluginInstances = _serviceProvider.GetRequiredService<IPluginManager>().Plugins.Select(e => e.Instance!).Where(e => e is not null).ToArray();
+
+                    var plugins = GetPluginTypes(pluginInstances.Select(e => e.GetType()))
                         .Select(e => (
                             PluginInfo: e,
-                            ManifestEntry: manifest.Options.PluginData.FirstOrDefault(f => f.PluginId.Equals(e.Id)),
+                            ManifestEntry: backupOptions.PluginManifest.FirstOrDefault(f => f.PluginId.Equals(e.Id)),
                             PluginInstance: pluginInstances.FirstOrDefault(w => w.Id.Equals(e.Id))
                         ))
-                        .Where(e => e.ManifestEntry is not null && e.PluginInstance is not null)
                         .ToArray();
-                    foreach (var (pluginInfo, manifestEntry, pluginInstance) in plugins)
+                    foreach (var (pluginInfo, manifestEntry, pluginInstance) in plugins
+                        .Where(e => e.ManifestEntry is not null && e.PluginInstance is not null))
                     {
                         var backupAwarePlugin = pluginInstance as IBackupAwarePlugin;
                         if (backupAwarePlugin is not null)
@@ -509,13 +512,19 @@ public class BackupService : IBackupService
                                 continue;
                             }
 
+                            var pluginManifestData = new PluginBackupManifest()
+                            {
+                                PluginId = pluginInfo.Id
+                            };
+                            pluginManifest.Add(pluginManifestData);
+
                             foreach (var pluginDataItem in pluginData)
                             {
                                 var backupData = (IPluginDataWriter)pluginDataItem.Value;
                                 try
                                 {
                                     var metadata = await backupData.BackupData(zipArchive, pluginInstance!).ConfigureAwait(false);
-                                    manifestEntry!.PluginDataLookup.Add(new()
+                                    pluginManifestData.PluginDataLookup.Add(new()
                                     {
                                         BackupDataFqtn = backupData.ReaderType.Name.ToString(),
                                         Key = pluginDataItem.Key,
@@ -633,14 +642,15 @@ public class BackupService : IBackupService
     /// <returns>The list of all plugins that support inclusion in the backup system.</returns>
     public IDictionary<Guid, string> SupportedPlugins()
     {
-        return GetPluginTypes().ToDictionary(e => e.Id, e => e.Name);
+        var pluginManager = _serviceProvider.GetRequiredService<IPluginManager>();
+        var pluginInstances = pluginManager.Plugins.Select(e => e.Instance?.GetType()!).Where(e => e is not null).ToArray();
+        return GetPluginTypes(pluginInstances).ToDictionary(e => e.Id, e => e.Name);
     }
 
-    private IEnumerable<IPluginBackupInfoData> GetPluginTypes()
+    private IEnumerable<IPluginBackupInfoData> GetPluginTypes(IEnumerable<Type> plugins)
     {
-        return _serviceProvider
-                .GetServices<IPlugin>()
-                .Select(e => e.GetType().GetCustomAttributes().OfType<IPluginBackupInfoData>().FirstOrDefault()!)
+        return plugins
+                .Select(e => e.GetCustomAttributes().OfType<IPluginBackupInfoData>().FirstOrDefault()!)
                 .Where(e => e is not null);
     }
 

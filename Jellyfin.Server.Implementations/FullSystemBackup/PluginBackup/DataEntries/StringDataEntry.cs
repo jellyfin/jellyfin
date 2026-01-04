@@ -14,7 +14,7 @@ internal class StringDataEntry : IPluginDataReader, IPluginDataWriter
     private readonly ZipArchive? _zipArchive;
     private string? _metadata;
 
-    internal StringDataEntry(ZipArchive zipArchive, string metadata)
+    public StringDataEntry(ZipArchive zipArchive, string metadata, Guid pluginId)
     {
         _zipArchive = zipArchive;
         _metadata = metadata;
