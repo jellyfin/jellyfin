@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.SystemBackupService;
@@ -45,4 +46,10 @@ public interface IBackupService
     /// </summary>
     /// <param name="archivePath">The path to the archive to restore from.</param>
     void ScheduleRestoreAndRestartServer(string archivePath);
+
+    /// <summary>
+    /// Gets a list of all plugins that support backup.
+    /// </summary>
+    /// <returns>The list of all plugins that support inclusion in the backup system.</returns>
+    IDictionary<Guid, string> SupportedPlugins()
 }
