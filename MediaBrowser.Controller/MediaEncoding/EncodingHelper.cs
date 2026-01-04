@@ -1831,16 +1831,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ":fontsdir='{0}'",
                 _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
-            var effectiveSubtitlePath = _subtitleEncoder.GetSubtitleFilePath(
-                state.SubtitleStream,
-                state.MediaSource,
-                CancellationToken.None).GetAwaiter().GetResult();
+            var isTtml = string.Equals(state.SubtitleStream.Codec, "ttml", StringComparison.OrdinalIgnoreCase);
 
-            if (state.SubtitleStream.IsExternal)
+            if (state.SubtitleStream.IsExternal || isTtml)
             {
+                var effectiveSubtitlePath = _subtitleEncoder.GetSubtitleFilePath(
+                    state.SubtitleStream,
+                    state.MediaSource,
+                    CancellationToken.None).GetAwaiter().GetResult();
+
                 var charsetParam = string.Empty;
 
-                if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
+                if (state.SubtitleStream.IsExternal && !string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
                     var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(
                             state.SubtitleStream,
@@ -1866,9 +1868,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var subtitlePath = _subtitleEncoder.GetSubtitleFilePath(
-                    state.SubtitleStream,
-                    state.MediaSource,
-                    CancellationToken.None).GetAwaiter().GetResult();
+                state.SubtitleStream,
+                state.MediaSource,
+                CancellationToken.None).GetAwaiter().GetResult();
 
             return string.Format(
                 CultureInfo.InvariantCulture,
