@@ -143,7 +143,7 @@ public class TranscodingProfile
     [DefaultValue(false)]
     [XmlAttribute("breakOnNonKeyFrames")]
     [Obsolete("This is always false")]
-    public bool BreakOnNonKeyFrames { get; set; }
+    public bool? BreakOnNonKeyFrames { get; set; }
 
     /// <summary>
     /// Gets or sets the profile conditions.
