@@ -100,7 +100,7 @@ jobs:
 
       - name: Detect OpenAPI changes
         id: openapi-diff
-        uses: Shadowghost/openapi-diff-action@v1.0.0
+        uses: jellyfin/openapi-diff-action@9274f6bda9d01ab091942a4a8334baa53692e8a4 # v1.0.0
         with:
           old-spec: openapi-base/openapi.json
           new-spec: openapi-head/openapi.json
