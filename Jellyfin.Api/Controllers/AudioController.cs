@@ -50,6 +50,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
+    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -106,6 +107,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
+        [FromQuery, ParameterObsolete] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
@@ -214,6 +216,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
+    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -270,6 +273,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
+        [FromQuery, ParameterObsolete] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,

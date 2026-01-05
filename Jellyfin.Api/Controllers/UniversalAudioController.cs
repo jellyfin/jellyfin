@@ -83,6 +83,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="enableRemoteMedia">Optional. Whether to enable remote media.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="enableRedirection">Whether to enable redirection. Defaults to true.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <response code="302">Redirected to remote audio stream.</response>
@@ -113,6 +114,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
         [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery, ParameterObsolete] bool breakOnNonKeyFrames = false,
         [FromQuery] bool enableRedirection = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
