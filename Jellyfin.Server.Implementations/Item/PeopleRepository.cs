@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -32,6 +33,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc/>
     public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {
+        return GetPeopleAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<PersonInfo>> GetPeopleAsync(InternalPeopleQuery filter, CancellationToken token = default)
+    {
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
@@ -53,11 +60,18 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.AsEnumerable().Select(Map).ToArray();
+        var results = await dbQuery.ToListAsync(token).ConfigureAwait(false);
+        return results.Select(Map).ToList();
     }
 
     /// <inheritdoc/>
     public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
+    {
+        return GetPeopleNamesAsync(filter, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<string>> GetPeopleNamesAsync(InternalPeopleQuery filter, CancellationToken token = default)
     {
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
@@ -68,11 +82,17 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.ToArray();
+        return await dbQuery.ToListAsync(token).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
+    {
+        UpdatePeopleAsync(itemId, people, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public async Task UpdatePeopleAsync(Guid itemId, IReadOnlyList<PersonInfo> people, CancellationToken token = default)
     {
         foreach (var item in people.Where(e => e.Role is null))
         {
@@ -84,28 +104,34 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         var personKeys = people.Select(e => e.Name + "-" + e.Type).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
-        using var transaction = context.Database.BeginTransaction();
-        var existingPersons = context.Peoples.Select(e => new
+        using var transaction = await context.Database.BeginTransactionAsync(token).ConfigureAwait(false);
+
+        var existingPersons = await context.Peoples.Select(e => new
             {
                 item = e,
                 SelectionKey = e.Name + "-" + e.PersonType
             })
             .Where(p => personKeys.Contains(p.SelectionKey))
             .Select(f => f.item)
-            .ToArray();
+            .ToListAsync(token)
+            .ConfigureAwait(false);
 
         var toAdd = people
             .Where(e => e.Type is not PersonKind.Artist && e.Type is not PersonKind.AlbumArtist)
             .Where(e => !existingPersons.Any(f => f.Name == e.Name && f.PersonType == e.Type.ToString()))
             .Select(Map);
+
         context.Peoples.AddRange(toAdd);
-        context.SaveChanges();
+        await context.SaveChangesAsync(token).ConfigureAwait(false);
 
         var personsEntities = toAdd.Concat(existingPersons).ToArray();
-
-        var existingMaps = context.PeopleBaseItemMap.Include(e => e.People).Where(e => e.ItemId == itemId).ToList();
-
         var listOrder = 0;
+
+        var existingMaps = await context.PeopleBaseItemMap
+            .Include(e => e.People)
+            .Where(e => e.ItemId == itemId)
+            .ToListAsync(token)
+            .ConfigureAwait(false);
 
         foreach (var person in people)
         {
@@ -143,8 +169,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         context.PeopleBaseItemMap.RemoveRange(existingMaps);
 
-        context.SaveChanges();
-        transaction.Commit();
+        await context.SaveChangesAsync(token).ConfigureAwait(false);
+        await transaction.CommitAsync(token).ConfigureAwait(false);
     }
 
     private PersonInfo Map(People people)
