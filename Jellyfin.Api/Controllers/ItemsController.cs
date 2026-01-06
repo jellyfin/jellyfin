@@ -288,6 +288,7 @@ public class ItemsController : BaseJellyfinApiController
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
+            includeItemTypes = includeItemTypes.Union(GetBaseItemKindsForCollectionType(collectionType)).ToArray();
         }
 
         if (collectionType == CollectionType.playlists)
@@ -531,6 +532,47 @@ public class ItemsController : BaseJellyfinApiController
             startIndex,
             result.TotalRecordCount,
             _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
+    }
+
+    /// <summary>
+    /// Gets the BaseItemKind values associated with the specified CollectionType.
+    /// </summary>
+    /// <param name="collectionType">The collection type to map to BaseItemKind values.</param>
+    /// <returns>An array of BaseItemKind values that correspond to the collection type.</returns>
+    public static BaseItemKind[] GetBaseItemKindsForCollectionType(CollectionType? collectionType)
+    {
+        BaseItemKind[] includeItemTypes;
+
+        switch (collectionType)
+        {
+            case CollectionType.movies:
+                includeItemTypes = new[] { BaseItemKind.Movie };
+                break;
+            case CollectionType.tvshows:
+                includeItemTypes = new[] { BaseItemKind.Series };
+                break;
+            case CollectionType.music:
+                includeItemTypes = new[] { BaseItemKind.MusicAlbum };
+                break;
+            case CollectionType.musicvideos:
+                includeItemTypes = new[] { BaseItemKind.MusicVideo };
+                break;
+            case CollectionType.books:
+                includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
+                break;
+            case CollectionType.boxsets:
+                includeItemTypes = new[] { BaseItemKind.BoxSet };
+                break;
+            case CollectionType.homevideos:
+            case CollectionType.photos:
+                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
+                break;
+            default:
+                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
+                break;
+        }
+
+        return includeItemTypes;
     }
 
     /// <summary>
