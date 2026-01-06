@@ -511,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
 
-            if (!isAudio && _proberSupportsFirstVideoFrame)
+            if (protocol == MediaProtocol.File && !isAudio && _proberSupportsFirstVideoFrame)
             {
                 args += " -show_frames -only_first_vframe";
             }
@@ -1122,7 +1122,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private void StartProcess(ProcessWrapper process)
         {
             process.Process.Start();
-            process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+
+            try
+            {
+                process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}", process.Process.StartInfo.FileName);
+            }
 
             lock (_runningProcessesLock)
             {

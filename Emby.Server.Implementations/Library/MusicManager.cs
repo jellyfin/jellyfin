@@ -28,7 +28,9 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<BaseItem> GetInstantMixFromSong(Audio item, User? user, DtoOptions dtoOptions)
         {
-            return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
+            var instantMixItems = GetInstantMixFromGenres(item.Genres, user, dtoOptions);
+
+            return [item, .. instantMixItems.Where(i => !i.Id.Equals(item.Id))];
         }
 
         /// <inheritdoc />

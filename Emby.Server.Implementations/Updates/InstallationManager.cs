@@ -223,14 +223,13 @@ namespace Emby.Server.Implementations.Updates
             Guid id = default,
             Version? specificVersion = null)
         {
-            if (name is not null)
-            {
-                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            }
-
             if (!id.IsEmpty())
             {
                 availablePackages = availablePackages.Where(x => x.Id.Equals(id));
+            }
+            else if (name is not null)
+            {
+                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
             if (specificVersion is not null)

@@ -125,6 +125,8 @@ namespace MediaBrowser.Controller.Entities
 
         public string? Name { get; set; }
 
+        public bool? UseRawName { get; set; }
+
         public string? Person { get; set; }
 
         public Guid[] PersonIds { get; set; }

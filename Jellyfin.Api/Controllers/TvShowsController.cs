@@ -99,7 +99,6 @@ public class TvShowsController : BaseJellyfinApiController
         }
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var result = _tvSeriesManager.GetNextUp(
@@ -161,7 +160,6 @@ public class TvShowsController : BaseJellyfinApiController
         var parentIdGuid = parentId ?? Guid.Empty;
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -231,7 +229,6 @@ public class TvShowsController : BaseJellyfinApiController
         List<BaseItem> episodes;
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var shouldIncludeMissingEpisodes = (user is not null && user.DisplayMissingEpisodes) || User.GetIsApiKey();
 
@@ -360,7 +357,6 @@ public class TvShowsController : BaseJellyfinApiController
         });
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);

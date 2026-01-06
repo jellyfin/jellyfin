@@ -173,7 +173,7 @@
         <header class="flex-row">
 
             {{^IF isInReportingMode}}
-            <p>Jellyfin Server still starting. Please wait.</p>
+            <p>Jellyfin Server {{version}} still starting. Please wait.</p>
             {{#ELSE}}
             <p>Jellyfin Server has encountered an error and was not able to start.</p>
             {{/ELSE}}
@@ -213,7 +213,12 @@
             </ol>
         </div>
         {{#ELSE}}
+        {{#IF networkManagerReady}}
         <p>Please visit this page from your local network to view detailed startup logs.</p>
+        {{#ELSE}}
+        <p>Initializing network settings. Please wait.</p>
+        {{/ELSE}}
+        {{/IF}}
         {{/ELSE}}
         {{/IF}}
     </div>

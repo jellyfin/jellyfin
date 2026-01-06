@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -152,6 +153,10 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public void MoveDirectory(string source, string destination)
         {
+            // Make sure parent directory of target exists
+            var parent = Directory.GetParent(destination);
+            parent?.Create();
+
             try
             {
                 Directory.Move(source, destination);
@@ -248,47 +253,40 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                // if (!result.IsDirectory)
-                // {
-                //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                // }
-
                 if (info is FileInfo fileInfo)
                 {
-                    result.Length = fileInfo.Length;
-
-                    // Issue #2354 get the size of files behind symbolic links. Also Enum.HasFlag is bad as it boxes!
-                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+                    result.CreationTimeUtc = GetCreationTimeUtc(info);
+                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
+                    if (fileInfo.LinkTarget is not null)
                     {
                         try
                         {
-                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            var targetFileInfo = FileSystemHelper.ResolveLinkTarget(fileInfo, returnFinalTarget: true);
+                            if (targetFileInfo is not null)
                             {
-                                result.Length = RandomAccess.GetLength(fileHandle);
+                                result.Exists = targetFileInfo.Exists;
+                                if (result.Exists)
+                                {
+                                    result.Length = targetFileInfo.Length;
+                                    result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
+                                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
+                                }
                             }
-                        }
-                        catch (FileNotFoundException ex)
-                        {
-                            // Dangling symlinks cannot be detected before opening the file unfortunately...
-                            _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
-                            result.Exists = false;
+                            else
+                            {
+                                result.Exists = false;
+                            }
                         }
                         catch (UnauthorizedAccessException ex)
                         {
                             _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                         }
-                        catch (IOException ex)
-                        {
-                            // IOException generally means the file is not accessible due to filesystem issues
-                            // Catch this exception and mark the file as not exist to ignore it
-                            _logger.LogError(ex, "Reading the file at {Path} failed due to an IO Exception. Marking the file as not existing", fileInfo.FullName);
-                            result.Exists = false;
-                        }
+                    }
+                    else
+                    {
+                        result.Length = fileInfo.Length;
                     }
                 }
-
-                result.CreationTimeUtc = GetCreationTimeUtc(info);
-                result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
             }
             else
             {
@@ -499,8 +497,17 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return Path.TrimEndingDirectorySeparator(path1).Equals(
-                Path.TrimEndingDirectorySeparator(path2),
+            if (string.IsNullOrWhiteSpace(path1) || string.IsNullOrWhiteSpace(path2))
+            {
+                return false;
+            }
+
+            var normalized1 = Path.TrimEndingDirectorySeparator(path1);
+            var normalized2 = Path.TrimEndingDirectorySeparator(path2);
+
+            return string.Equals(
+                normalized1,
+                normalized2,
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 

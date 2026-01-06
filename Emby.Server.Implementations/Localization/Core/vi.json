@@ -39,7 +39,7 @@
     "TasksMaintenanceCategory": "Bảo Trì",
     "VersionNumber": "Phiên Bản {0}",
     "ValueHasBeenAddedToLibrary": "{0} đã được thêm vào thư viện của bạn",
-    "UserStoppedPlayingItemWithValues": "{0} đã phát xong {1} trên {2}",
+    "UserStoppedPlayingItemWithValues": "{0} đã kết thúc phát {1} trên {2}",
     "UserStartedPlayingItemWithValues": "{0} đang phát {1} trên {2}",
     "UserPolicyUpdatedWithName": "Chính sách người dùng đã được cập nhật cho {0}",
     "UserPasswordChangedWithName": "Mật khẩu đã được thay đổi cho người dùng {0}",

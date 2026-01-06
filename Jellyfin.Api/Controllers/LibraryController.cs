@@ -23,6 +23,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
@@ -187,7 +188,7 @@ public class LibraryController : BaseJellyfinApiController
             item = parent;
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var items = themeItems
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
             .ToArray();
@@ -260,7 +261,7 @@ public class LibraryController : BaseJellyfinApiController
             item = parent;
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var items = themeItems
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
             .ToArray();
@@ -496,7 +497,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         BaseItem? parent = item.GetParent();
 
         while (parent is not null)
@@ -556,7 +557,7 @@ public class LibraryController : BaseJellyfinApiController
             items = items.Where(i => i.IsHidden == val).ToList();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var resultArray = _dtoService.GetBaseItemDtos(items, dtoOptions);
         return new QueryResult<BaseItemDto>(resultArray);
     }
@@ -700,7 +701,18 @@ public class LibraryController : BaseJellyfinApiController
         // Quotes are valid in linux. They'll possibly cause issues here.
         var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-        return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+        var filePath = item.Path;
+        if (item.IsFileProtocol)
+        {
+            // PhysicalFile does not work well with symlinks at the moment.
+            var resolved = FileSystemHelper.ResolveLinkTarget(filePath, returnFinalTarget: true);
+            if (resolved is not null && resolved.Exists)
+            {
+                filePath = resolved.FullName;
+            }
+        }
+
+        return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
     }
 
     /// <summary>
@@ -747,8 +759,7 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions { Fields = fields };
 
         var program = item as IHasProgramAttributes;
         bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;

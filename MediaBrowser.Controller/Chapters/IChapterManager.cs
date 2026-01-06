@@ -48,8 +48,10 @@ public interface IChapterManager
     Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, IReadOnlyList<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Deletes the chapter images.
+    /// Deletes the chapter data.
     /// </summary>
-    /// <param name="video">Video to use.</param>
-    void DeleteChapterImages(Video video);
+    /// <param name="itemId">The item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
+    Task DeleteChapterDataAsync(Guid itemId, CancellationToken cancellationToken);
 }

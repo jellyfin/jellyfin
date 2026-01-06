@@ -13,6 +13,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -94,7 +95,7 @@ public class UserLibraryController : BaseJellyfinApiController
 
         await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
@@ -133,7 +134,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = _libraryManager.GetUserRootFolder();
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
 
@@ -180,7 +181,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
         return new QueryResult<BaseItemDto>(dtos);
@@ -422,7 +423,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         if (item is IHasTrailers hasTrailers)
         {
             var trailers = hasTrailers.LocalTrailers;
@@ -478,7 +479,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         return Ok(item
             .GetExtras()
@@ -549,7 +550,6 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var list = _userViewManager.GetLatestItems(
@@ -569,7 +569,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = i.Item2[0];
             var childCount = 0;
 
-            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum))
+            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum || i.Item1 is Series ))
             {
                 item = i.Item1;
                 childCount = i.Item2.Count;

@@ -135,5 +135,7 @@
     "TaskExtractMediaSegments": "การสแกนส่วนของสื่อมีเดีย",
     "TaskMoveTrickplayImagesDescription": "ย้ายไฟล์ Trickplay ตามการตั้งค่าของไลบรารี",
     "TaskExtractMediaSegmentsDescription": "แยกหรือดึงส่วนของสื่อจากปลั๊กอินที่เปิดใช้งาน MediaSegment",
-    "TaskMoveTrickplayImages": "ย้ายตำแหน่งเก็บภาพตัวอย่าง Trickplay"
+    "TaskMoveTrickplayImages": "ย้ายตำแหน่งเก็บภาพตัวอย่าง Trickplay",
+    "CleanupUserDataTask": "ส่วนงานล้างข้อมูลผู้ใช้",
+    "CleanupUserDataTaskDescription": "ล้างข้อมูลผู้ใช้ทั้งหมด (สถานะการรับชม สถานะรายการโปรด ฯลฯ) จากสื่อที่ไม่ได้ใช้งานแล้วอย่างน้อย 90 วัน"
 }

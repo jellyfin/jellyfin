@@ -16,7 +16,7 @@
     "Collections": "Barrels",
     "ItemAddedWithName": "{0} is now with yer treasure",
     "Default": "Normal-like",
-    "FailedLoginAttemptWithUserName": "Ye failed to get in, try from {0}",
+    "FailedLoginAttemptWithUserName": "Ye failed to enter from {0}",
     "Favorites": "Finest Loot",
     "ItemRemovedWithName": "{0} was taken from yer treasure",
     "LabelIpAddressValue": "Ship's coordinates: {0}",
@@ -113,5 +113,10 @@
     "TaskCleanCache": "Sweep the Cache Chest",
     "TaskRefreshChapterImages": "Claim chapter portraits",
     "TaskRefreshChapterImagesDescription": "Paints wee portraits fer videos that own chapters.",
-    "TaskRefreshLibrary": "Scan the Treasure Trove"
+    "TaskRefreshLibrary": "Scan the Treasure Trove",
+    "TasksChannelsCategory": "Channels o' thy Internet",
+    "TaskRefreshTrickplayImages": "Summon the picture tricks",
+    "TaskRefreshTrickplayImagesDescription": "Summons picture trick previews for videos in ye enabled book roost",
+    "TaskUpdatePlugins": "Resummon yer Plugins",
+    "TaskCleanTranscode": "Swab Ye Transcode Directory"
 }

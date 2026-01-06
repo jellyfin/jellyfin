@@ -287,7 +287,7 @@ namespace Jellyfin.LiveTv
                 GenreIds = query.GenreIds
             };
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 internalQuery.Limit = Math.Max(query.Limit.Value * 4, 200);
             }
@@ -305,7 +305,7 @@ namespace Jellyfin.LiveTv
 
             IEnumerable<BaseItem> programs = orderedPrograms;
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 programs = programs.Take(query.Limit.Value);
             }
