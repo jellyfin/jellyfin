@@ -2,10 +2,9 @@
 
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common.Configuration;
@@ -15,7 +14,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {
@@ -29,7 +27,7 @@ namespace Emby.Server.Implementations.Images
         {
             var view = (CollectionFolder)item;
             var viewType = view.CollectionType;
-            var includeItemTypes = ItemsController.GetBaseItemKindsForCollectionType(viewType);
+            var includeItemTypes = DtoExtensions.GetBaseItemKindsForCollectionType(viewType);
             var recursive = viewType != CollectionType.playlists;
 
             return view.GetItemList(new InternalItemsQuery

@@ -270,6 +270,8 @@ public class ItemsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        includeItemTypes ??= [];
+
         if (includeItemTypes.Length == 1
             && includeItemTypes[0] == BaseItemKind.BoxSet)
         {
@@ -288,13 +290,13 @@ public class ItemsController : BaseJellyfinApiController
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
-            includeItemTypes = includeItemTypes.Union(GetBaseItemKindsForCollectionType(collectionType)).ToArray();
+            includeItemTypes = [.. includeItemTypes.Union(DtoExtensions.GetBaseItemKindsForCollectionType(collectionType))];
         }
 
         if (collectionType == CollectionType.playlists)
         {
             recursive = true;
-            includeItemTypes = new[] { BaseItemKind.Playlist };
+            includeItemTypes = [BaseItemKind.Playlist];
         }
 
         if (item is not UserRootFolder
@@ -387,42 +389,45 @@ public class ItemsController : BaseJellyfinApiController
                 query.CollapseBoxSetItems = false;
             }
 
-            foreach (var filter in filters)
+            if (filters is not null)
             {
-                switch (filter)
+                foreach (var filter in filters)
                 {
-                    case ItemFilter.Dislikes:
-                        query.IsLiked = false;
-                        break;
-                    case ItemFilter.IsFavorite:
-                        query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsFavoriteOrLikes:
-                        query.IsFavoriteOrLiked = true;
-                        break;
-                    case ItemFilter.IsFolder:
-                        query.IsFolder = true;
-                        break;
-                    case ItemFilter.IsNotFolder:
-                        query.IsFolder = false;
-                        break;
-                    case ItemFilter.IsPlayed:
-                        query.IsPlayed = true;
-                        break;
-                    case ItemFilter.IsResumable:
-                        query.IsResumable = true;
-                        break;
-                    case ItemFilter.IsUnplayed:
-                        query.IsPlayed = false;
-                        break;
-                    case ItemFilter.Likes:
-                        query.IsLiked = true;
-                        break;
+                    switch (filter)
+                    {
+                        case ItemFilter.Dislikes:
+                            query.IsLiked = false;
+                            break;
+                        case ItemFilter.IsFavorite:
+                            query.IsFavorite = true;
+                            break;
+                        case ItemFilter.IsFavoriteOrLikes:
+                            query.IsFavoriteOrLiked = true;
+                            break;
+                        case ItemFilter.IsFolder:
+                            query.IsFolder = true;
+                            break;
+                        case ItemFilter.IsNotFolder:
+                            query.IsFolder = false;
+                            break;
+                        case ItemFilter.IsPlayed:
+                            query.IsPlayed = true;
+                            break;
+                        case ItemFilter.IsResumable:
+                            query.IsResumable = true;
+                            break;
+                        case ItemFilter.IsUnplayed:
+                            query.IsPlayed = false;
+                            break;
+                        case ItemFilter.Likes:
+                            query.IsLiked = true;
+                            break;
+                    }
                 }
             }
 
             // Filter by Series Status
-            if (seriesStatus.Length != 0)
+            if (seriesStatus is not null && seriesStatus.Length != 0)
             {
                 query.SeriesStatuses = seriesStatus;
             }
@@ -440,7 +445,7 @@ public class ItemsController : BaseJellyfinApiController
                 query.IsVirtualItem = false;
             }
 
-            if (locationTypes.Length > 0 && locationTypes.Length < 4)
+            if (locationTypes is not null && locationTypes.Length > 0 && locationTypes.Length < 4)
             {
                 query.IsVirtualItem = locationTypes.Contains(LocationType.Virtual);
             }
@@ -458,7 +463,7 @@ public class ItemsController : BaseJellyfinApiController
             }
 
             // Artists
-            if (artists.Length != 0)
+            if (artists is not null && artists.Length != 0)
             {
                 query.ArtistIds = artists.Select(i =>
                 {
@@ -474,18 +479,18 @@ public class ItemsController : BaseJellyfinApiController
             }
 
             // ExcludeArtistIds
-            if (excludeArtistIds.Length != 0)
+            if (excludeArtistIds is not null && excludeArtistIds.Length != 0)
             {
                 query.ExcludeArtistIds = excludeArtistIds;
             }
 
-            if (albumIds.Length != 0)
+            if (albumIds is not null && albumIds.Length != 0)
             {
                 query.AlbumIds = albumIds;
             }
 
             // Albums
-            if (albums.Length != 0)
+            if (albums is not null && albums.Length != 0)
             {
                 query.AlbumIds = albums.SelectMany(i =>
                 {
@@ -494,7 +499,7 @@ public class ItemsController : BaseJellyfinApiController
             }
 
             // Studios
-            if (studios.Length != 0)
+            if (studios is not null && studios.Length != 0)
             {
                 query.StudioIds = studios.Select(i =>
                 {
@@ -515,7 +520,7 @@ public class ItemsController : BaseJellyfinApiController
                 // Albums by artist
                 if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                 {
-                    query.OrderBy = new[] { (ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending) };
+                    query.OrderBy = [(ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending)];
                 }
             }
 
@@ -532,47 +537,6 @@ public class ItemsController : BaseJellyfinApiController
             startIndex,
             result.TotalRecordCount,
             _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
-    }
-
-    /// <summary>
-    /// Gets the BaseItemKind values associated with the specified CollectionType.
-    /// </summary>
-    /// <param name="collectionType">The collection type to map to BaseItemKind values.</param>
-    /// <returns>An array of BaseItemKind values that correspond to the collection type.</returns>
-    public static BaseItemKind[] GetBaseItemKindsForCollectionType(CollectionType? collectionType)
-    {
-        BaseItemKind[] includeItemTypes;
-
-        switch (collectionType)
-        {
-            case CollectionType.movies:
-                includeItemTypes = new[] { BaseItemKind.Movie };
-                break;
-            case CollectionType.tvshows:
-                includeItemTypes = new[] { BaseItemKind.Series };
-                break;
-            case CollectionType.music:
-                includeItemTypes = new[] { BaseItemKind.MusicAlbum };
-                break;
-            case CollectionType.musicvideos:
-                includeItemTypes = new[] { BaseItemKind.MusicVideo };
-                break;
-            case CollectionType.books:
-                includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
-                break;
-            case CollectionType.boxsets:
-                includeItemTypes = new[] { BaseItemKind.BoxSet };
-                break;
-            case CollectionType.homevideos:
-            case CollectionType.photos:
-                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
-                break;
-            default:
-                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
-                break;
-        }
-
-        return includeItemTypes;
     }
 
     /// <summary>
