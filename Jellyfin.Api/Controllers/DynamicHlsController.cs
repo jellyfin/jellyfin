@@ -1625,8 +1625,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             var useLegacySegmentOption = _mediaEncoder.EncoderVersion < _minFFmpegHlsSegmentOptions;
 
-            // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
-            hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+            if (state.VideoStream is not null && state.IsOutputVideo)
+            {
+                // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
+                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+            }
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;
         }
@@ -1836,8 +1839,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 if (isActualOutputVideoCodecHevc)
                 {
-                    // Prefer dvh1 to dvhe
-                    args += " -tag:v:0 dvh1 -strict -2";
+                    // Use hvc1 for 8.4. This is what Dolby uses for its official sample streams. Tagging with dvh1 would break some players with strict tag checking like Apple Safari.
+                    var codecTag = state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG ? "hvc1" : "dvh1";
+                    args += $" -tag:v:0 {codecTag} -strict -2";
                 }
                 else if (isActualOutputVideoCodecAv1)
                 {

@@ -22,12 +22,6 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public bool HasPassword(User user)
-        {
-            return true;
-        }
-
-        /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)
         {
             return Task.CompletedTask;

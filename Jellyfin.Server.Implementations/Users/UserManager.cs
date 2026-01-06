@@ -149,7 +149,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             ThrowIfInvalidUsername(newName);
 
-            if (user.Username.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
@@ -306,15 +306,12 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
-            var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
             var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = hasPassword,
-                HasConfiguredPassword = hasPassword,
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -508,23 +505,18 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
+            var passwordResetProvider = GetPasswordResetProvider(user);
+
+            var result = await passwordResetProvider
+                .StartForgotPasswordProcess(user, enteredUsername, isInNetwork)
+                .ConfigureAwait(false);
 
             if (user is not null && isInNetwork)
             {
-                var passwordResetProvider = GetPasswordResetProvider(user);
-                var result = await passwordResetProvider
-                    .StartForgotPasswordProcess(user, isInNetwork)
-                    .ConfigureAwait(false);
-
                 await UpdateUserAsync(user).ConfigureAwait(false);
-                return result;
             }
 
-            return new ForgotPasswordResult
-            {
-                Action = ForgotPasswordAction.InNetworkRequired,
-                PinFile = string.Empty
-            };
+            return result;
         }
 
         /// <inheritdoc/>
@@ -760,8 +752,13 @@ namespace Jellyfin.Server.Implementations.Users
             return GetAuthenticationProviders(user)[0];
         }
 
-        private IPasswordResetProvider GetPasswordResetProvider(User user)
+        private IPasswordResetProvider GetPasswordResetProvider(User? user)
         {
+            if (user is null)
+            {
+                return _defaultPasswordResetProvider;
+            }
+
             return GetPasswordResetProviders(user)[0];
         }
 

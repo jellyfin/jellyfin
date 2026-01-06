@@ -16,7 +16,7 @@
     "Collections": "Калекцыі",
     "Default": "Па змаўчанні",
     "FailedLoginAttemptWithUserName": "Няўдалая спроба ўваходу з {0}",
-    "Folders": "Тэчкі",
+    "Folders": "Папкі",
     "Favorites": "Абранае",
     "External": "Знешні",
     "Genres": "Жанры",
@@ -95,7 +95,7 @@
     "ServerNameNeedsToBeRestarted": "{0} патрабуе перазапуску",
     "Shows": "Шоу",
     "StartupEmbyServerIsLoading": "Jellyfin Server загружаецца. Калі ласка, паўтарыце спробу крыху пазней.",
-    "SubtitleDownloadFailureFromForItem": "Не атрымалася спампаваць субтытры з {0} для {1}",
+    "SubtitleDownloadFailureFromForItem": "Субцітры для {1} не ўдалося спампаваць з {0}",
     "TvShows": "Тэлепраграма",
     "Undefined": "Нявызначана",
     "UserLockedOutWithName": "Карыстальнік {0} быў заблакіраваны",
@@ -104,7 +104,7 @@
     "UserStartedPlayingItemWithValues": "{0} прайграваецца {1} на {2}",
     "UserStoppedPlayingItemWithValues": "{0} скончыў прайграванне {1} на {2}",
     "ValueHasBeenAddedToLibrary": "{0} быў дададзены ў вашу медыятэку",
-    "ValueSpecialEpisodeName": "Спецэпізод - {0}",
+    "ValueSpecialEpisodeName": "Спецвыпуск - {0}",
     "VersionNumber": "Версія {0}",
     "TasksMaintenanceCategory": "Абслугоўванне",
     "TasksLibraryCategory": "Бібліятэка",
@@ -114,7 +114,7 @@
     "TaskCleanCacheDescription": "Выдаляе файлы кэша, якія больш не патрэбныя сістэме.",
     "TaskRefreshChapterImages": "Вынуць выявы раздзелаў",
     "TaskRefreshLibrary": "Сканаваць бібліятэку",
-    "TaskRefreshLibraryDescription": "Скануе вашу медыятэку на наяўнасць новых файлаў і абнаўляе метададзеныя.",
+    "TaskRefreshLibraryDescription": "Сканіруе вашу медыятэку на наяўнасць новых файлаў і абнаўляе метаданыя.",
     "TaskCleanLogs": "Ачысціць журнал",
     "TaskRefreshPeople": "Абнавіць выканаўцаў",
     "TaskRefreshPeopleDescription": "Абнаўленне метаданых для акцёраў і рэжысёраў у вашай медыятэцы.",
@@ -137,5 +137,5 @@
     "TaskExtractMediaSegments": "Сканіраванне медыя-сегмента",
     "TaskMoveTrickplayImages": "Перанесці месцазнаходжанне выявы Trickplay",
     "CleanupUserDataTask": "Задача па ачыстцы дадзеных карыстальніка",
-    "CleanupUserDataTaskDescription": "Ачысьціць усе дадзеныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён."
+    "CleanupUserDataTaskDescription": "Ачышчае ўсе даныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён."
 }

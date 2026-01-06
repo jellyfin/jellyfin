@@ -457,6 +457,12 @@ namespace Emby.Server.Implementations.Library
                 _cache.TryRemove(child.Id, out _);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             ReportItemRemoved(item, parent);
         }
 
@@ -1052,6 +1058,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = [BaseItemKind.MusicArtist],
                     Name = name,
+                    UseRawName = true,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -1993,6 +2000,12 @@ namespace Emby.Server.Implementations.Library
                 RegisterItem(item);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             if (ItemAdded is not null)
             {
                 foreach (var item in items)
@@ -2131,7 +2144,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            _itemRepository.SaveImages(item);
+            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
 
             RegisterItem(item);
         }
@@ -2149,6 +2162,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.SaveItems(items, cancellationToken);
+
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
 
             if (ItemUpdated is not null)
             {

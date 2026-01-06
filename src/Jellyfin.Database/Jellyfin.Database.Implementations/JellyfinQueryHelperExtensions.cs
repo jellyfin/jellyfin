@@ -70,13 +70,14 @@ public static class JellyfinQueryHelperExtensions
         bool invert = false)
     {
         var itemFilter = OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, f => f.Id);
+        var typeFilter = OneOrManyExpressionBuilder<ItemValue, ItemValueType>(itemValueTypes, iv => iv.Type);
 
         return baseQuery.Where(item =>
             context.ItemValues
+                .Where(typeFilter)
                 .Join(context.ItemValuesMap, e => e.ItemValueId, e => e.ItemValueId, (itemVal, map) => new { itemVal, map })
                 .Any(val =>
-                    itemValueTypes.Contains(val.itemVal.Type)
-                    && context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.itemVal.CleanValue)
+                    context.BaseItems.Where(itemFilter).Any(e => e.CleanName == val.itemVal.CleanValue)
                     && val.map.ItemId == item.Id) == EF.Constant(!invert));
     }
 
