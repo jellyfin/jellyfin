@@ -71,6 +71,8 @@ namespace Emby.Server.Implementations.Dto
             {
                 BaseItemKind.Person, [
                     BaseItemKind.Audio,
+                    BaseItemKind.AudioBook,
+                    BaseItemKind.Book,
                     BaseItemKind.Episode,
                     BaseItemKind.Movie,
                     BaseItemKind.LiveTvProgram,
