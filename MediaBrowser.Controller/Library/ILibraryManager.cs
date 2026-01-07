@@ -652,5 +652,12 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        /// <summary>
+        /// Add mblink file for a media path.
+        /// </summary>
+        /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
+        /// <param name="pathInfo">The new virtualfolder.</param>
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
     }
 }

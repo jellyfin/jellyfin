@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -340,6 +341,17 @@ public class LibraryStructureController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        LibraryOptions options = item.GetLibraryOptions();
+        foreach (var mediaPath in request.LibraryOptions!.PathInfos)
+        {
+            if (options.PathInfos.Any(i => i.Path == mediaPath.Path))
+            {
+                continue;
+            }
+
+            _libraryManager.CreateShortcut(item.Path, mediaPath);
         }
 
         item.UpdateLibraryOptions(request.LibraryOptions);

@@ -3195,19 +3195,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
-
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-
-            while (File.Exists(lnk))
-            {
-                shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-            }
-
-            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
-
-            RemoveContentTypeOverrides(path);
+            CreateShortcut(virtualFolderPath, pathInfo);
 
             if (saveLibraryOptions)
             {
@@ -3371,6 +3359,25 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item is UserRootFolder || item.IsVisibleStandalone(user);
+        }
+
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo)
+        {
+            var path = pathInfo.Path;
+            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+
+            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
+
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+
+            while (File.Exists(lnk))
+            {
+                shortcutFilename += "1";
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+            }
+
+            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
+            RemoveContentTypeOverrides(path);
         }
     }
 }
