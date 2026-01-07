@@ -352,12 +352,49 @@ public class MediaInfoHelper
     /// <param name="result">Playback info response.</param>
     /// <param name="maxBitrate">Max bitrate.</param>
     public void SortMediaSources(PlaybackInfoResponse result, long? maxBitrate)
+        => SortMediaSources(result, maxBitrate, MediaSourceSelectionMode.PreferDirectPlay, null);
+
+    /// <summary>
+    /// Sort media sources using bitrate ladder selection.
+    /// </summary>
+    /// <param name="result">Playback info response.</param>
+    /// <param name="maxBitrate">Max bitrate the device can handle.</param>
+    /// <param name="selectionMode">The selection mode determining priority order.</param>
+    /// <param name="availableBandwidth">Available network bandwidth (for NetworkAware mode).</param>
+    public void SortMediaSources(
+        PlaybackInfoResponse result,
+        long? maxBitrate,
+        MediaSourceSelectionMode selectionMode,
+        long? availableBandwidth)
     {
         var originalList = result.MediaSources.ToList();
 
+        // Determine effective bitrate limit based on mode
+        var effectiveBitrate = selectionMode == MediaSourceSelectionMode.NetworkAware && availableBandwidth.HasValue
+            ? Math.Min(maxBitrate ?? long.MaxValue, availableBandwidth.Value)
+            : maxBitrate;
+
         result.MediaSources = result.MediaSources.OrderBy(i =>
             {
-                // Nothing beats direct playing a file
+                // Priority 1: Direct play capability
+                // For PreferDirectPlay and NetworkAware modes, strongly prefer direct play
+                if (selectionMode != MediaSourceSelectionMode.HighestQuality)
+                {
+                    if (i.SupportsDirectPlay && i.Protocol == MediaProtocol.File)
+                    {
+                        return 0;
+                    }
+
+                    if (i.SupportsDirectPlay || i.SupportsDirectStream)
+                    {
+                        return 1;
+                    }
+
+                    // Transcoding is least preferred
+                    return 2;
+                }
+
+                // HighestQuality mode: original behavior
                 if (i.SupportsDirectPlay && i.Protocol == MediaProtocol.File)
                 {
                     return 0;
@@ -367,16 +404,25 @@ public class MediaInfoHelper
             })
             .ThenBy(i =>
             {
-                // Let's assume direct streaming a file is just as desirable as direct playing a remote url
-                if (i.SupportsDirectPlay || i.SupportsDirectStream)
+                // Priority 2: Bitrate within limits
+                // For NetworkAware mode, penalize sources that exceed available bandwidth
+                if (selectionMode == MediaSourceSelectionMode.NetworkAware && effectiveBitrate.HasValue)
                 {
+                    var sourceBitrate = i.Bitrate ?? 0;
+                    if (sourceBitrate > effectiveBitrate.Value)
+                    {
+                        // Source exceeds available bandwidth - lower priority
+                        return 1;
+                    }
+
                     return 0;
                 }
 
-                return 1;
+                return 0;
             })
             .ThenBy(i =>
             {
+                // Priority 3: Protocol preference
                 return i.Protocol switch
                 {
                     MediaProtocol.File => 0,
@@ -385,15 +431,42 @@ public class MediaInfoHelper
             })
             .ThenBy(i =>
             {
-                if (maxBitrate.HasValue && i.Bitrate.HasValue)
+                // Priority 4: Codec efficiency preference
+                // AV1 > HEVC > VP9 > H.264 (more efficient codecs preferred)
+                var codec = i.VideoStream?.Codec?.ToLowerInvariant() ?? string.Empty;
+
+                return codec switch
                 {
-                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
+                    "av1" => 0,
+                    "hevc" or "h265" => 1,
+                    "vp9" => 2,
+                    "h264" or "avc" => 3,
+                    _ => 4
+                };
+            })
+            .ThenByDescending(i =>
+            {
+                // Priority 5: Resolution (prefer higher quality among remaining options)
+                return i.VideoStream?.Width ?? 0;
+            })
+            .ThenBy(i =>
+            {
+                // Priority 6: Bitrate within device limits
+                if (effectiveBitrate.HasValue && i.Bitrate.HasValue)
+                {
+                    return i.Bitrate.Value <= effectiveBitrate.Value ? 0 : 2;
                 }
 
                 return 1;
             })
             .ThenBy(originalList.IndexOf)
             .ToArray();
+
+        // Set the optimal media source ID for client auto-selection
+        if (result.MediaSources.Count > 0)
+        {
+            result.OptimalMediaSourceId = result.MediaSources[0].Id;
+        }
     }
 
     /// <summary>

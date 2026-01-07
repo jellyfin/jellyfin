@@ -113,6 +113,18 @@ namespace MediaBrowser.Model.Dlna
         public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
+        /// Gets or sets the media source selection mode.
+        /// Controls how the optimal media source is selected when multiple versions are available.
+        /// </summary>
+        public MediaSourceSelectionMode SelectionMode { get; set; } = MediaSourceSelectionMode.PreferDirectPlay;
+
+        /// <summary>
+        /// Gets or sets the available network bandwidth in bits per second.
+        /// Used for network-aware media source selection.
+        /// </summary>
+        public long? AvailableBandwidth { get; set; }
+
+        /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>
         /// <param name="isAudio">Whether or not this is audio.</param>
