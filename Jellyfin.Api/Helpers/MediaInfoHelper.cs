@@ -376,6 +376,13 @@ public class MediaInfoHelper
 
         result.MediaSources = result.MediaSources.OrderBy(i =>
             {
+                // Priority 0: Completely unplayable sources go to the very end
+                // This happens when transcoding is disabled for a user and the source can't direct play
+                if (!i.SupportsDirectPlay && !i.SupportsDirectStream && !i.SupportsTranscoding)
+                {
+                    return 99;
+                }
+
                 // Priority 1: Direct play capability
                 // For PreferDirectPlay and NetworkAware modes, strongly prefer direct play
                 if (selectionMode != MediaSourceSelectionMode.HighestQuality)
@@ -390,8 +397,14 @@ public class MediaInfoHelper
                         return 1;
                     }
 
-                    // Transcoding is least preferred
-                    return 2;
+                    // Transcoding - only if supported
+                    if (i.SupportsTranscoding)
+                    {
+                        return 2;
+                    }
+
+                    // Source requires transcoding but user doesn't have permission
+                    return 98;
                 }
 
                 // HighestQuality mode: original behavior
@@ -463,9 +476,12 @@ public class MediaInfoHelper
             .ToArray();
 
         // Set the optimal media source ID for client auto-selection
-        if (result.MediaSources.Count > 0)
+        // Only select a source that is actually playable
+        var optimalSource = result.MediaSources.FirstOrDefault(s =>
+            s.SupportsDirectPlay || s.SupportsDirectStream || s.SupportsTranscoding);
+        if (optimalSource is not null)
         {
-            result.OptimalMediaSourceId = result.MediaSources[0].Id;
+            result.OptimalMediaSourceId = optimalSource.Id;
         }
     }
 
