@@ -299,7 +299,7 @@ namespace MediaBrowser.Controller.Entities
                 args.FileSystemChildren = files;
             }
 
-            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
+            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations, StringComparer.OrdinalIgnoreCase);
 
             if (setPhysicalLocations)
             {
