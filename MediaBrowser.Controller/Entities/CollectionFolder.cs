@@ -303,7 +303,9 @@ namespace MediaBrowser.Controller.Entities
 
             if (setPhysicalLocations)
             {
-                PhysicalLocationsList = args.PhysicalLocations;
+                PhysicalLocationsList = args.PhysicalLocations
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
             }
 
             return args;

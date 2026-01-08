@@ -144,7 +144,9 @@ namespace MediaBrowser.Controller.Entities
             _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
             if (setPhysicalLocations)
             {
-                PhysicalLocationsList = args.PhysicalLocations;
+                PhysicalLocationsList = args.PhysicalLocations
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
             }
 
             return args;
