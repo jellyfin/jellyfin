@@ -1031,26 +1031,6 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                // var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
-                // {
-                //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                // });
-
-                // dto.ArtistItems = artistItems.Items
-                //    .Select(i =>
-                //    {
-                //        var artist = i.Item1;
-                //        return new NameIdPair
-                //        {
-                //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
-                //        };
-                //    })
-                //    .ToList();
-
-                // Include artists that are not in the database yet, e.g., just added via metadata editor
-                // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
                 dto.ArtistItems = hasArtist.Artists
@@ -1066,24 +1046,6 @@ namespace Emby.Server.Implementations.Dto
             if (item is IHasAlbumArtist hasAlbumArtist)
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
-
-                // var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
-                // {
-                //    EnableTotalRecordCount = false,
-                //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                // });
-
-                // dto.AlbumArtists = artistItems.Items
-                //    .Select(i =>
-                //    {
-                //        var artist = i.Item1;
-                //        return new NameIdPair
-                //        {
-                //            Name = artist.Name,
-                //            Id = artist.Id.ToString("N", CultureInfo.InvariantCulture)
-                //        };
-                //    })
-                //    .ToList();
 
                 var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
