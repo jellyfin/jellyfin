@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.Dto
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
-                var dto = GetBaseItemDtoInternal(item, options, user, owner, userDataBatch);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner, userDataBatch?.GetValueOrDefault(item.Id));
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null, Dictionary<Guid, UserItemData>? userDataBatch = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null, UserItemData? userData = null)
         {
             var dto = new BaseItemDto
             {
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (user is not null)
             {
-                AttachUserSpecificInfo(dto, item, user, options, userDataBatch);
+                AttachUserSpecificInfo(dto, item, user, options, userData);
             }
 
             if (item is IHasMediaSources
@@ -465,7 +465,7 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options, Dictionary<Guid, UserItemData>? userDataBatch = null)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options, UserItemData? userData = null)
         {
             if (item.IsFolder)
             {
@@ -473,11 +473,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.EnableUserData)
                 {
-                    if (userDataBatch is not null && userDataBatch.TryGetValue(item.Id, out var batchedUserData))
+                    if (userData is not null)
                     {
                         // Use pre-fetched user data
-                        dto.UserData = GetUserItemDataDto(batchedUserData, item.Id);
-                        item.FillUserDataDtoValues(dto.UserData, batchedUserData, dto, user, options);
+                        dto.UserData = GetUserItemDataDto(userData, item.Id);
+                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
                     }
                     else
                     {
@@ -520,11 +520,11 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (options.EnableUserData)
                 {
-                    if (userDataBatch is not null && userDataBatch.TryGetValue(item.Id, out var batchedUserData))
+                    if (userData is not null)
                     {
                         // Use pre-fetched user data
-                        dto.UserData = GetUserItemDataDto(batchedUserData, item.Id);
-                        item.FillUserDataDtoValues(dto.UserData, batchedUserData, dto, user, options);
+                        dto.UserData = GetUserItemDataDto(userData, item.Id);
+                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
                     }
                     else
                     {
