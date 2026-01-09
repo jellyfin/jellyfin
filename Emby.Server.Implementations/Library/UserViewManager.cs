@@ -206,10 +206,81 @@ namespace Emby.Server.Implementations.Library
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
 
+            // Batch-load parent items to avoid N+1 queries when accessing LatestItemsIndexContainer
+            Dictionary<Guid, BaseItem> parentLookup = null;
+            Dictionary<Guid, BaseItem> seriesLookup = null;
+            if (request.GroupItems)
+            {
+                // For Audio: ParentId = Album (matches LatestItemsIndexContainer)
+                var parentIds = libraryItems
+                    .OfType<MediaBrowser.Controller.Entities.Audio.Audio>()
+                    .Where(item => !item.ParentId.IsEmpty())
+                    .Select(item => item.ParentId)
+                    .Distinct()
+                    .ToList();
+
+                if (parentIds.Count > 0)
+                {
+                    var parents = _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        ItemIds = parentIds.ToArray()
+                    });
+                    parentLookup = parents.ToDictionary(p => p.Id);
+                }
+
+                // For Episodes: SeriesId = Series (matches LatestItemsIndexContainer)
+                var seriesIds = libraryItems
+                    .OfType<MediaBrowser.Controller.Entities.TV.Episode>()
+                    .Where(item => !item.SeriesId.IsEmpty())
+                    .Select(item => item.SeriesId)
+                    .Distinct()
+                    .ToList();
+
+                if (seriesIds.Count > 0)
+                {
+                    var series = _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        ItemIds = seriesIds.ToArray()
+                    });
+                    seriesLookup = series.ToDictionary(s => s.Id);
+                }
+            }
+
             foreach (var item in libraryItems)
             {
                 // Only grab the index container for media
-                var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
+                Folder container = null;
+                if (!item.IsFolder && request.GroupItems)
+                {
+                    // For Audio tracks, ParentId = Album, which matches LatestItemsIndexContainer
+                    if (item is MediaBrowser.Controller.Entities.Audio.Audio)
+                    {
+                        if (parentLookup is not null && parentLookup.TryGetValue(item.ParentId, out var parent))
+                        {
+                            container = parent as Folder;
+                        }
+                        else
+                        {
+                            container = item.LatestItemsIndexContainer;
+                        }
+                    }
+                    else if (item is MediaBrowser.Controller.Entities.TV.Episode episode)
+                    {
+                        if (seriesLookup is not null && seriesLookup.TryGetValue(episode.SeriesId, out var series))
+                        {
+                            container = series as Folder;
+                        }
+                        else
+                        {
+                            container = item.LatestItemsIndexContainer;
+                        }
+                    }
+                    else
+                    {
+                        // For Movies and other items, LatestItemsIndexContainer returns null
+                        container = item.LatestItemsIndexContainer;
+                    }
+                }
 
                 if (container is null)
                 {

@@ -314,31 +314,72 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
-        var subquery = PrepareItemQuery(context, filter);
-        subquery = TranslateQuery(subquery, context, filter);
-        var subqueryGrouped = subquery.GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
-            .Select(g => new
-            {
-                Key = g.Key,
-                MaxDateCreated = g.Max(a => a.DateCreated)
-            })
-            .OrderByDescending(g => g.MaxDateCreated)
-            .Select(g => g);
+        var limit = filter.Limit ?? 30;
+        var isMusic = collectionType == CollectionType.music;
 
-        if (filter.Limit.HasValue)
+        // Get child type name for the query
+        var childTypeName = isMusic
+            ? _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio]
+            : _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        // Find parent IDs (Album/Series) with recent content.
+        List<Guid> topParentIds;
+        if (isMusic)
         {
-            subqueryGrouped = subqueryGrouped.Take(filter.Limit.Value);
+            // For music: Query albums directly by DateCreated.
+            // Assumption: albums and tracks are created at similar times when adding music.
+            // This scans ~10K albums instead of GROUP BY on 300K tracks.
+            var albumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
+            topParentIds = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == albumTypeName)
+                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value))
+                .OrderByDescending(e => e.DateCreated)
+                .Take(limit)
+                .Select(e => e.Id)
+                .ToList();
+        }
+        else
+        {
+            // For TV: GROUP BY episodes to find series with newest episodes.
+            // Episode counts are typically smaller than music track counts.
+            var childQuery = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == childTypeName)
+                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value));
+
+            topParentIds = childQuery
+                .GroupBy(e => e.SeriesId!.Value)
+                .Select(g => new { SeriesId = g.Key, MaxDate = g.Max(e => e.DateCreated) })
+                .OrderByDescending(g => g.MaxDate)
+                .Take(limit)
+                .Select(g => g.SeriesId)
+                .ToList();
         }
 
-        filter.Limit = null;
+        if (topParentIds.Count == 0)
+        {
+            return Array.Empty<BaseItem>();
+        }
 
-        var mainquery = PrepareItemQuery(context, filter);
-        mainquery = TranslateQuery(mainquery, context, filter);
-        mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
-        mainquery = ApplyGroupingFilter(context, mainquery, filter);
-        mainquery = ApplyQueryPaging(mainquery, filter);
+        // Get child items for those parents
+        IQueryable<BaseItemEntity> mainquery = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Type == childTypeName);
 
+        if (isMusic)
+        {
+            mainquery = mainquery.Where(e => topParentIds.Contains(e.ParentId!.Value));
+        }
+        else
+        {
+            mainquery = mainquery.Where(e => topParentIds.Contains(e.SeriesId!.Value));
+        }
+
+        mainquery = mainquery.OrderByDescending(e => e.DateCreated);
+
+        // Use split query to avoid cartesian explosion with multiple Includes
+        mainquery = mainquery.AsSplitQuery();
         mainquery = ApplyNavigations(mainquery, filter);
 
         return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
