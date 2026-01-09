@@ -126,5 +126,8 @@
     "HearingImpaired": "Nam ar y clyw",
     "TaskAudioNormalization": "Gwastatau Sain",
     "TaskAudioNormalizationDescription": "Yn sganio ffeiliau am ddata gwastatau sain.",
-    "TaskRefreshTrickplayImages": "Creuwch lluniau Trickplay"
+    "TaskRefreshTrickplayImages": "Creuwch lluniau Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Creu rhagolygon Trickplay ar gyfer fideos mewn llyfrgelloedd gweithredol.",
+    "TaskDownloadMissingLyrics": "Lawrlwytho geiriau coll",
+    "TaskDownloadMissingLyricsDescription": "Lawrlwytho geiriau caneuon"
 }
