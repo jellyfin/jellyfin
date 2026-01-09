@@ -277,7 +277,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -297,7 +297,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
     }
 
     /// <inheritdoc/>
@@ -341,7 +341,7 @@ public sealed class BaseItemRepository
 
         mainquery = ApplyNavigations(mainquery, filter);
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
     }
 
     /// <inheritdoc />
@@ -1159,7 +1159,7 @@ public sealed class BaseItemRepository
         return type.GetCustomAttribute<RequiresSourceSerialisationAttribute>() == null;
     }
 
-    private BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
+    private BaseItemDto? DeserializeBaseItem(BaseItemEntity baseItemEntity, bool skipDeserialization = false)
     {
         ArgumentNullException.ThrowIfNull(baseItemEntity, nameof(baseItemEntity));
         if (_serverConfigurationManager?.Configuration is null)
@@ -1182,11 +1182,19 @@ public sealed class BaseItemRepository
     /// <param name="logger">Logger.</param>
     /// <param name="appHost">The application server Host.</param>
     /// <param name="skipDeserialization">If only mapping should be processed.</param>
-    /// <returns>A mapped BaseItem.</returns>
-    /// <exception cref="InvalidOperationException">Will be thrown if an invalid serialisation is requested.</exception>
-    public static BaseItemDto DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
+    /// <returns>A mapped BaseItem, or null if the item type is unknown.</returns>
+    public static BaseItemDto? DeserializeBaseItem(BaseItemEntity baseItemEntity, ILogger logger, IServerApplicationHost? appHost, bool skipDeserialization = false)
     {
-        var type = GetType(baseItemEntity.Type) ?? throw new InvalidOperationException("Cannot deserialize unknown type.");
+        var type = GetType(baseItemEntity.Type);
+        if (type is null)
+        {
+            logger.LogWarning(
+                "Skipping item {ItemId} with unknown type '{ItemType}'. This may indicate a removed plugin or database corruption.",
+                baseItemEntity.Id,
+                baseItemEntity.Type);
+            return null;
+        }
+
         BaseItemDto? dto = null;
         if (TypeRequiresDeserialization(type) && baseItemEntity.Data is not null && !skipDeserialization)
         {
@@ -1353,10 +1361,9 @@ public sealed class BaseItemRepository
                 .. resultQuery
                     .AsEnumerable()
                     .Where(e => e is not null)
-                    .Select(e =>
-                    {
-                        return (DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
-                    })
+                    .Select(e => (Item: DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount))
+                    .Where(e => e.Item is not null)
+                    .Select(e => (e.Item!, e.itemCount))
             ];
         }
         else
@@ -1367,10 +1374,9 @@ public sealed class BaseItemRepository
                 .. query
                     .AsEnumerable()
                     .Where(e => e is not null)
-                    .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
-                    {
-                        return (DeserializeBaseItem(e, filter.SkipDeserialization), null);
-                    })
+                    .Select(e => (Item: DeserializeBaseItem(e, filter.SkipDeserialization), ItemCounts: (ItemCounts?)null))
+                    .Where(e => e.Item is not null)
+                    .Select(e => (e.Item!, e.ItemCounts))
             ];
         }
 
@@ -2671,6 +2677,6 @@ public sealed class BaseItemRepository
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 
-        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
     }
 }
