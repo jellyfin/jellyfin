@@ -48,7 +48,7 @@ namespace Emby.Naming.TV
             {
                 var extension = Path.GetExtension(path);
                 // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                if (!_options.VideoFileExtensions.Contains(extension))
                 {
                     // It's not supported. Check stub extensions
                     if (!StubResolver.TryResolveFile(path, _options, out stubType))
