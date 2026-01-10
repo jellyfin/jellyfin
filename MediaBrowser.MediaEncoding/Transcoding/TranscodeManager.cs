@@ -46,11 +46,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly IAttachmentExtractor _attachmentExtractor;
 
     private readonly List<TranscodingJob> _activeTranscodingJobs = new();
-    private readonly AsyncKeyedLocker<string> _transcodingLocks = new(o =>
-    {
-        o.PoolSize = 20;
-        o.PoolInitialFill = 1;
-    });
+    private readonly AsyncKeyedLocker<string> _transcodingLocks;
 
     private readonly Version _maxFFmpegCkeyPauseSupported = new Version(6, 1);
 
@@ -89,6 +85,15 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _mediaEncoder = mediaEncoder;
         _mediaSourceManager = mediaSourceManager;
         _attachmentExtractor = attachmentExtractor;
+
+        // Initialize transcoding locks with configurable pool size
+        var encodingOptions = serverConfigurationManager.GetEncodingOptions();
+        var poolSize = encodingOptions.TranscodingLockPoolSize > 0 ? encodingOptions.TranscodingLockPoolSize : 20;
+        _transcodingLocks = new AsyncKeyedLocker<string>(o =>
+        {
+            o.PoolSize = poolSize;
+            o.PoolInitialFill = 1;
+        });
 
         _logger = loggerFactory.CreateLogger<TranscodeManager>();
         DeleteEncodedMediaCache();

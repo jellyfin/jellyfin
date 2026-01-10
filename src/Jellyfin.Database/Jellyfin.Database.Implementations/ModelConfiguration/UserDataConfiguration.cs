@@ -13,6 +13,7 @@ public class UserDataConfiguration : IEntityTypeConfiguration<UserData>
     public void Configure(EntityTypeBuilder<UserData> builder)
     {
         builder.HasKey(d => new { d.ItemId, d.UserId, d.CustomDataKey });
+        builder.HasIndex(d => d.UserId); // Index for queries filtering by UserId alone
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.Played });
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.PlaybackPositionTicks });
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.IsFavorite });

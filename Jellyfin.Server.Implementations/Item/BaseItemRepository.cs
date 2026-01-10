@@ -385,17 +385,24 @@ public sealed class BaseItemRepository
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            // Project to ID before FirstOrDefault to avoid loading full entity including Data blob
+            var tempQuery = dbQuery
+                .GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey })
+                .Select(g => g.Select(e => e.Id).FirstOrDefault());
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g.Select(e => e.Id).FirstOrDefault());
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery
+                .GroupBy(e => e.SeriesPresentationUniqueKey)
+                .Select(g => g.Select(e => e.Id).FirstOrDefault());
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else
@@ -702,11 +709,15 @@ public sealed class BaseItemRepository
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
-        var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+        // Use ToLookup for O(1) access per item instead of O(n) filtering per item
+        var mappedValuesLookup = context.ItemValuesMap
+            .Where(e => ids.Contains(e.ItemId))
+            .ToList()
+            .ToLookup(e => e.ItemId);
 
         foreach (var item in valueMap)
         {
-            var itemMappedValues = mappedValues.Where(e => e.ItemId == item.Item.Id).ToList();
+            var itemMappedValues = mappedValuesLookup[item.Item.Id].ToList();
             foreach (var itemValue in item.Values)
             {
                 var existingItem = itemMappedValues.FirstOrDefault(f => f.ItemValueId == itemValue.ItemValueId);
@@ -733,33 +744,48 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
 
-        foreach (var item in tuples)
-        {
-            if (item.Item.SupportsAncestors && item.AncestorIds != null)
-            {
-                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
-                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
-                foreach (var ancestorId in validAncestorIds)
-                {
-                    var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
-                    if (existingAncestorId is null)
-                    {
-                        context.AncestorIds.Add(new AncestorId()
-                        {
-                            ParentItemId = ancestorId,
-                            ItemId = item.Item.Id,
-                            Item = null!,
-                            ParentItem = null!
-                        });
-                    }
-                    else
-                    {
-                        existingAncestorIds.Remove(existingAncestorId);
-                    }
-                }
+        // Batch load all existing ancestor IDs for all items (instead of querying per-item)
+        var itemsWithAncestors = tuples.Where(t => t.Item.SupportsAncestors && t.AncestorIds != null).ToList();
+        var allItemIdsForAncestors = itemsWithAncestors.Select(t => t.Item.Id).ToList();
+        var allExistingAncestorIds = context.AncestorIds
+            .Where(e => allItemIdsForAncestors.Contains(e.ItemId))
+            .ToList()
+            .ToLookup(e => e.ItemId);
 
-                context.AncestorIds.RemoveRange(existingAncestorIds);
+        // Batch validate all unique ancestor IDs exist in BaseItems (single query instead of per-item)
+        var allAncestorIdsToValidate = itemsWithAncestors
+            .SelectMany(t => t.AncestorIds!)
+            .Distinct()
+            .ToList();
+        var validAncestorIdSet = context.BaseItems
+            .Where(e => allAncestorIdsToValidate.Contains(e.Id))
+            .Select(f => f.Id)
+            .ToHashSet();
+
+        foreach (var item in itemsWithAncestors)
+        {
+            var existingAncestorIds = allExistingAncestorIds[item.Item.Id].ToList();
+            var validAncestorIds = item.AncestorIds!.Where(id => validAncestorIdSet.Contains(id)).ToArray();
+            foreach (var ancestorId in validAncestorIds)
+            {
+                var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
+                if (existingAncestorId is null)
+                {
+                    context.AncestorIds.Add(new AncestorId()
+                    {
+                        ParentItemId = ancestorId,
+                        ItemId = item.Item.Id,
+                        Item = null!,
+                        ParentItem = null!
+                    });
+                }
+                else
+                {
+                    existingAncestorIds.Remove(existingAncestorId);
+                }
             }
+
+            context.AncestorIds.RemoveRange(existingAncestorIds);
         }
 
         context.SaveChanges();
@@ -1278,16 +1304,35 @@ public sealed class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
+        // Project to ID before FirstOrDefault to avoid loading full entity including Data blob
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
             .GroupBy(e => e.PresentationUniqueKey)
-            .Select(e => e.FirstOrDefault())
-            .Select(e => e!.Id);
+            .Select(g => g.Select(e => e.Id).FirstOrDefault());
 
-        var query = context.BaseItems
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields)
-            .Include(e => e.Images)
+        var query = context.BaseItems.AsQueryable();
+
+        // Only include navigation properties that are actually needed based on DtoOptions
+        if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+        {
+            query = query.Include(e => e.TrailerTypes);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            query = query.Include(e => e.Provider);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            query = query.Include(e => e.LockedFields);
+        }
+
+        if (filter.DtoOptions.EnableImages)
+        {
+            query = query.Include(e => e.Images);
+        }
+
+        query = query
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
@@ -1339,20 +1384,27 @@ public sealed class BaseItemRepository
             var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
 
+            // Compute all type counts in a single grouped query instead of 7 separate COUNT() calls per item
+            var typeCounts = itemCountQuery!
+                .GroupBy(f => f.Type)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.Type, x => x.Count);
+
+            var itemCounts = new ItemCounts()
+            {
+                SeriesCount = typeCounts.GetValueOrDefault(seriesTypeName, 0),
+                EpisodeCount = typeCounts.GetValueOrDefault(episodeTypeName, 0),
+                MovieCount = typeCounts.GetValueOrDefault(movieTypeName, 0),
+                AlbumCount = typeCounts.GetValueOrDefault(musicAlbumTypeName, 0),
+                ArtistCount = typeCounts.GetValueOrDefault(musicArtistTypeName, 0),
+                SongCount = typeCounts.GetValueOrDefault(audioTypeName, 0),
+                TrailerCount = typeCounts.GetValueOrDefault(trailerTypeName, 0),
+            };
+
             var resultQuery = query.Select(e => new
             {
                 item = e,
-                // TODO: This is bad refactor!
-                itemCount = new ItemCounts()
-                {
-                    SeriesCount = itemCountQuery!.Count(f => f.Type == seriesTypeName),
-                    EpisodeCount = itemCountQuery!.Count(f => f.Type == episodeTypeName),
-                    MovieCount = itemCountQuery!.Count(f => f.Type == movieTypeName),
-                    AlbumCount = itemCountQuery!.Count(f => f.Type == musicAlbumTypeName),
-                    ArtistCount = itemCountQuery!.Count(f => f.Type == musicArtistTypeName),
-                    SongCount = itemCountQuery!.Count(f => f.Type == audioTypeName),
-                    TrailerCount = itemCountQuery!.Count(f => f.Type == trailerTypeName),
-                }
+                itemCount = itemCounts
             });
 
             result.StartIndex = filter.StartIndex ?? 0;
@@ -1604,6 +1656,9 @@ public sealed class BaseItemRepository
             return query.OrderBy(e => e.SortName);
         }
 
+        // Add includes required by sort fields to avoid N+1 queries
+        query = ApplySortIncludes(query, orderBy, filter);
+
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
         var firstOrdering = orderBy.FirstOrDefault();
@@ -1646,6 +1701,47 @@ public sealed class BaseItemRepository
         }
 
         return orderedQuery ?? query;
+    }
+
+    private static IQueryable<BaseItemEntity> ApplySortIncludes(
+        IQueryable<BaseItemEntity> query,
+        (ItemSortBy OrderBy, SortOrder SortOrder)[] orderBy,
+        InternalItemsQuery filter)
+    {
+        // Sort fields that require UserData to be loaded
+        var userDataSorts = new[]
+        {
+            ItemSortBy.DatePlayed,
+            ItemSortBy.PlayCount,
+            ItemSortBy.IsFavoriteOrLiked,
+            ItemSortBy.IsPlayed,
+            ItemSortBy.IsUnplayed,
+            ItemSortBy.SeriesDatePlayed
+        };
+
+        // Sort fields that require ItemValues to be loaded
+        var itemValuesSorts = new[]
+        {
+            ItemSortBy.Artist,
+            ItemSortBy.AlbumArtist,
+            ItemSortBy.Studio
+        };
+
+        var sortFields = orderBy.Select(o => o.OrderBy).ToArray();
+
+        // Add UserData include if any sort field requires it (and user context exists)
+        if (filter.User is not null && sortFields.Any(s => userDataSorts.Contains(s)))
+        {
+            query = query.Include(e => e.UserData!.Where(ud => ud.UserId == filter.User.Id));
+        }
+
+        // Add ItemValues include if any sort field requires it
+        if (sortFields.Any(s => itemValuesSorts.Contains(s)))
+        {
+            query = query.Include(e => e.ItemValues!).ThenInclude(iv => iv.ItemValue);
+        }
+
+        return query;
     }
 
     private IQueryable<BaseItemEntity> TranslateQuery(
@@ -1773,15 +1869,18 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
             var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
-            var originalSearchTerm = filter.SearchTerm.ToLower();
+            // Use EF.Functions.Like for case-insensitive search (SQLite LIKE is case-insensitive by default)
+            // Avoid ToLower() which prevents index usage
+            var originalSearchPattern = $"%{filter.SearchTerm}%";
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), originalSearchTerm)));
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, originalSearchPattern)));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(originalSearchTerm)));
+                var cleanedSearchPattern = $"%{cleanedSearchTerm}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchPattern) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, originalSearchPattern)));
             }
         }
 
@@ -2015,9 +2114,11 @@ public sealed class BaseItemRepository
             }
             else
             {
+                // Use EF.Functions.Like for case-insensitive search without ToLower()
+                var namePattern = $"%{nameContains}%";
                 baseQuery = baseQuery.Where(e =>
-                                    e.CleanName!.Contains(nameContains)
-                                    || e.OriginalTitle!.ToLower().Contains(nameContains!));
+                                    EF.Functions.Like(e.CleanName!, namePattern)
+                                    || EF.Functions.Like(e.OriginalTitle!, namePattern));
             }
         }
 
