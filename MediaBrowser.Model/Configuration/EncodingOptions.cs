@@ -1,6 +1,7 @@
 #pragma warning disable CA1819 // XML serialization handles collections improperly, so we need to use arrays
 
 #nullable disable
+using System.ComponentModel;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration;
@@ -306,5 +307,6 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the method used for audio seeking in HLS.
     /// </summary>
+    [DefaultValue(HlsAudioSeekStrategy.DisableAccurateSeek)]
     public HlsAudioSeekStrategy HlsAudioSeekStrategy { get; set; }
 }
