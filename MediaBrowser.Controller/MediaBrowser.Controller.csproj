@@ -1,16 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
-  <PropertyGroup>
-    <ProjectGuid>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</ProjectGuid>
-  </PropertyGroup>
+  <Import Project="$(SolutionDir)Project.Nuget.targets"/>
 
   <PropertyGroup>
-    <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Controller</PackageId>
-    <VersionPrefix>10.12.0</VersionPrefix>
-    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -30,25 +24,6 @@
     <ProjectReference Include="../MediaBrowser.Common/MediaBrowser.Common.csproj" />
     <ProjectReference Include="../src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Stability)'=='Unstable'">
-    <!-- Include all symbols in the main nupkg until Azure Artifact Feed starts supporting ingesting NuGet symbol packages. -->
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-  </PropertyGroup>
 
   <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">

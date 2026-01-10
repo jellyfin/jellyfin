@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
-  <PropertyGroup>
-    <ProjectGuid>{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}</ProjectGuid>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="Test Data\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

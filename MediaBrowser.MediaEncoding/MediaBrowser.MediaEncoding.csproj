@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
-  <PropertyGroup>
-    <ProjectGuid>{960295EE-4AF4-4440-A525-B4C295B01A61}</ProjectGuid>
-  </PropertyGroup>
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
+    <Compile Include="$(SolutionDir)SharedVersion.cs" />
   </ItemGroup>
 
   <ItemGroup>
