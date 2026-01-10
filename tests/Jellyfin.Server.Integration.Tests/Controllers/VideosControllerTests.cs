@@ -5,7 +5,8 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public sealed class VideosControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public sealed class VideosControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private static string? _accessToken;
