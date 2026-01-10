@@ -202,131 +202,19 @@ namespace Emby.Server.Implementations.Library
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request, DtoOptions options)
         {
-            var libraryItems = GetItemsForLatestItems(request.User, request, options);
-
-            var list = new List<Tuple<BaseItem, List<BaseItem>>>();
-
-            // Batch-load parent items to avoid N+1 queries when accessing LatestItemsIndexContainer
-            Dictionary<Guid, BaseItem> parentLookup = null;
-            Dictionary<Guid, BaseItem> seriesLookup = null;
-            if (request.GroupItems)
-            {
-                // For Audio: ParentId = Album (matches LatestItemsIndexContainer)
-                var parentIds = libraryItems
-                    .OfType<MediaBrowser.Controller.Entities.Audio.Audio>()
-                    .Where(item => !item.ParentId.IsEmpty())
-                    .Select(item => item.ParentId)
-                    .Distinct()
-                    .ToList();
-
-                if (parentIds.Count > 0)
-                {
-                    var parents = _libraryManager.GetItemList(new InternalItemsQuery
-                    {
-                        ItemIds = parentIds.ToArray()
-                    });
-                    parentLookup = parents.ToDictionary(p => p.Id);
-                }
-
-                // For Episodes: SeriesId = Series (matches LatestItemsIndexContainer)
-                var seriesIds = libraryItems
-                    .OfType<MediaBrowser.Controller.Entities.TV.Episode>()
-                    .Where(item => !item.SeriesId.IsEmpty())
-                    .Select(item => item.SeriesId)
-                    .Distinct()
-                    .ToList();
-
-                if (seriesIds.Count > 0)
-                {
-                    var series = _libraryManager.GetItemList(new InternalItemsQuery
-                    {
-                        ItemIds = seriesIds.ToArray()
-                    });
-                    seriesLookup = series.ToDictionary(s => s.Id);
-                }
-            }
-
-            foreach (var item in libraryItems)
-            {
-                // Only grab the index container for media
-                Folder container = null;
-                if (!item.IsFolder && request.GroupItems)
-                {
-                    // For Audio tracks, ParentId = Album, which matches LatestItemsIndexContainer
-                    if (item is MediaBrowser.Controller.Entities.Audio.Audio)
-                    {
-                        if (parentLookup is not null && parentLookup.TryGetValue(item.ParentId, out var parent))
-                        {
-                            container = parent as Folder;
-                        }
-                        else
-                        {
-                            container = item.LatestItemsIndexContainer;
-                        }
-                    }
-                    else if (item is MediaBrowser.Controller.Entities.TV.Episode episode)
-                    {
-                        if (seriesLookup is not null && seriesLookup.TryGetValue(episode.SeriesId, out var series))
-                        {
-                            container = series as Folder;
-                        }
-                        else
-                        {
-                            container = item.LatestItemsIndexContainer;
-                        }
-                    }
-                    else
-                    {
-                        // For Movies and other items, LatestItemsIndexContainer returns null
-                        container = item.LatestItemsIndexContainer;
-                    }
-                }
-
-                if (container is null)
-                {
-                    list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
-                }
-                else
-                {
-                    var current = list.FirstOrDefault(i => i.Item1 is not null && i.Item1.Id.Equals(container.Id));
-
-                    if (current is not null)
-                    {
-                        current.Item2.Add(item);
-                    }
-                    else
-                    {
-                        list.Add(new Tuple<BaseItem, List<BaseItem>>(container, new List<BaseItem> { item }));
-                    }
-                }
-
-                if (list.Count >= request.Limit)
-                {
-                    break;
-                }
-            }
-
-            return list;
-        }
-
-        private IReadOnlyList<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
-        {
-            var parentId = request.ParentId;
-
-            var includeItemTypes = request.IncludeItemTypes;
+            var user = request.User;
             var limit = request.Limit ?? 10;
 
-            var parents = new List<BaseItem>();
-
-            if (!parentId.IsEmpty())
+            // Handle Channel items separately
+            if (!request.ParentId.IsEmpty())
             {
-                var parentItem = _libraryManager.GetItemById(parentId);
+                var parentItem = _libraryManager.GetItemById(request.ParentId);
                 if (parentItem is Channel)
                 {
-                    return _channelManager.GetLatestChannelItemsInternal(
+                    var channelItems = _channelManager.GetLatestChannelItemsInternal(
                         new InternalItemsQuery(user)
                         {
-                            ChannelIds = new[] { parentId },
+                            ChannelIds = new[] { request.ParentId },
                             IsPlayed = request.IsPlayed,
                             StartIndex = request.StartIndex,
                             Limit = request.Limit,
@@ -334,39 +222,72 @@ namespace Emby.Server.Implementations.Library
                             EnableTotalRecordCount = false
                         },
                         CancellationToken.None).GetAwaiter().GetResult().Items;
-                }
 
+                    return channelItems
+                        .Select(item => new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }))
+                        .ToList();
+                }
+            }
+
+            // Determine parents and collection type
+            var (parents, collectionType) = GetParentsAndCollectionType(user, request);
+            if (parents.Count == 0)
+            {
+                return new List<Tuple<BaseItem, List<BaseItem>>>();
+            }
+
+            // Build query with filters
+            var query = BuildLatestItemsQuery(user, request, parents, limit, options);
+
+            // Get grouped results from repository
+            var grouped = _libraryManager.GetLatestItemsGrouped(query, parents, collectionType);
+
+            // Convert to expected return type
+            return grouped
+                .Take(limit)
+                .Select(g => new Tuple<BaseItem, List<BaseItem>>(g.Container, g.Items.ToList()))
+                .ToList();
+        }
+
+        private (List<BaseItem> Parents, CollectionType? CollectionType) GetParentsAndCollectionType(User user, LatestItemsQuery request)
+        {
+            var parents = new List<BaseItem>();
+
+            if (!request.ParentId.IsEmpty())
+            {
+                var parentItem = _libraryManager.GetItemById(request.ParentId);
                 if (parentItem is Folder parent)
                 {
                     parents.Add(parent);
                 }
             }
 
-            var isPlayed = request.IsPlayed;
-
-            if (parents.OfType<ICollectionFolder>().Any(i => i.CollectionType == CollectionType.music))
-            {
-                isPlayed = null;
-            }
-
             if (parents.Count == 0)
             {
+                var excludedIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes).ToHashSet();
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
-                    .Where(i => i is Folder)
-                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
-                        .Contains(i.Id))
+                    .Where(i => i is Folder && !excludedIds.Contains(i.Id))
                     .ToList();
             }
 
-            if (parents.Count == 0)
-            {
-                return Array.Empty<BaseItem>();
-            }
+            var collectionType = parents
+                .Select(parent => parent switch
+                {
+                    ICollectionFolder collectionFolder => collectionFolder.CollectionType,
+                    UserView userView => userView.CollectionType,
+                    _ => null
+                })
+                .FirstOrDefault(type => type is not null);
+
+            return (parents, collectionType);
+        }
+
+        private InternalItemsQuery BuildLatestItemsQuery(User user, LatestItemsQuery request, List<BaseItem> parents, int limit, DtoOptions options)
+        {
+            var includeItemTypes = request.IncludeItemTypes;
 
             if (includeItemTypes.Length == 0)
             {
-                // Handle situations with the grouping setting, e.g. movies showing up in tv, etc.
-                // Thanks to mixed content libraries included in the UserView
                 var hasCollectionType = parents.OfType<UserView>().ToList();
                 if (hasCollectionType.Count > 0)
                 {
@@ -381,8 +302,13 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            MediaType[] mediaTypes = [];
+            var isPlayed = request.IsPlayed;
+            if (parents.OfType<ICollectionFolder>().Any(i => i.CollectionType == CollectionType.music))
+            {
+                isPlayed = null;
+            }
 
+            MediaType[] mediaTypes = [];
             if (includeItemTypes.Length == 0)
             {
                 HashSet<MediaType> tmpMediaTypes = [];
@@ -398,9 +324,6 @@ namespace Emby.Server.Implementations.Library
                             tmpMediaTypes.Add(MediaType.Audio);
                             break;
                         case CollectionType.photos:
-                            tmpMediaTypes.Add(MediaType.Photo);
-                            tmpMediaTypes.Add(MediaType.Video);
-                            break;
                         case CollectionType.homevideos:
                             tmpMediaTypes.Add(MediaType.Photo);
                             tmpMediaTypes.Add(MediaType.Video);
@@ -415,17 +338,10 @@ namespace Emby.Server.Implementations.Library
             }
 
             var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
-                ? new[]
-                {
-                    BaseItemKind.Person,
-                    BaseItemKind.Studio,
-                    BaseItemKind.Year,
-                    BaseItemKind.MusicGenre,
-                    BaseItemKind.Genre
-                }
+                ? new[] { BaseItemKind.Person, BaseItemKind.Studio, BaseItemKind.Year, BaseItemKind.MusicGenre, BaseItemKind.Genre }
                 : Array.Empty<BaseItemKind>();
 
-            var query = new InternalItemsQuery(user)
+            return new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
                 OrderBy = new[]
@@ -437,37 +353,11 @@ namespace Emby.Server.Implementations.Library
                 IsFolder = includeItemTypes.Length == 0 ? false : null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
-                Limit = limit * 5,
+                Limit = limit,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
                 MediaTypes = mediaTypes
             };
-
-            if (request.GroupItems)
-            {
-                var collectionType = parents
-                    .Select(parent => parent switch
-                    {
-                        ICollectionFolder collectionFolder => collectionFolder.CollectionType,
-                        UserView userView => userView.CollectionType,
-                        _ => null
-                    })
-                    .FirstOrDefault(type => type is not null);
-
-                if (collectionType == CollectionType.tvshows)
-                {
-                    query.Limit = limit;
-                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.tvshows);
-                }
-
-                if (collectionType == CollectionType.music)
-                {
-                    query.Limit = limit;
-                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);
-                }
-            }
-
-            return _libraryManager.GetItemList(query, parents);
         }
     }
 }

@@ -306,7 +306,7 @@ public sealed class BaseItemRepository
         ArgumentNullException.ThrowIfNull(filter);
         PrepareFilterQuery(filter);
 
-        // Early exit if collection type is not tvshows or music
+        // This method only handles TV and music - movies use a different path
         if (collectionType != CollectionType.tvshows && collectionType != CollectionType.music)
         {
             return Array.Empty<BaseItem>();
@@ -317,38 +317,32 @@ public sealed class BaseItemRepository
         var limit = filter.Limit ?? 30;
         var isMusic = collectionType == CollectionType.music;
 
-        // Get child type name for the query
-        var childTypeName = isMusic
-            ? _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio]
-            : _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
-
-        // Find parent IDs (Album/Series) with recent content.
+        // Find the top N parent entities (Albums or Series) with recent content
+        // Both use MAX(DateCreated) of child items to find parents with newest content
         List<Guid> topParentIds;
         if (isMusic)
         {
-            // For music: Query albums directly by DateCreated.
-            // Assumption: albums and tracks are created at similar times when adding music.
-            // This scans ~10K albums instead of GROUP BY on 300K tracks.
-            var albumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum];
+            var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             topParentIds = context.BaseItems
                 .AsNoTracking()
-                .Where(e => e.Type == albumTypeName)
+                .Where(e => e.Type == audioTypeName)
+                .Where(e => e.ParentId.HasValue)
                 .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value))
-                .OrderByDescending(e => e.DateCreated)
+                .GroupBy(e => e.ParentId!.Value)
+                .Select(g => new { AlbumId = g.Key, MaxDate = g.Max(e => e.DateCreated) })
+                .OrderByDescending(g => g.MaxDate)
                 .Take(limit)
-                .Select(e => e.Id)
+                .Select(g => g.AlbumId)
                 .ToList();
         }
         else
         {
-            // For TV: GROUP BY episodes to find series with newest episodes.
-            // Episode counts are typically smaller than music track counts.
-            var childQuery = context.BaseItems
+            var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+            topParentIds = context.BaseItems
                 .AsNoTracking()
-                .Where(e => e.Type == childTypeName)
-                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value));
-
-            topParentIds = childQuery
+                .Where(e => e.Type == episodeTypeName)
+                .Where(e => e.SeriesId.HasValue)
+                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value))
                 .GroupBy(e => e.SeriesId!.Value)
                 .Select(g => new { SeriesId = g.Key, MaxDate = g.Max(e => e.DateCreated) })
                 .OrderByDescending(g => g.MaxDate)
@@ -362,10 +356,119 @@ public sealed class BaseItemRepository
             return Array.Empty<BaseItem>();
         }
 
-        // Get child items for those parents
-        IQueryable<BaseItemEntity> mainquery = context.BaseItems
+        // Fetch child items (tracks/episodes) for those parents
+        // Use standard query pipeline to apply user filters (IsPlayed, IsVirtualItem, etc.)
+        // Disable grouping since we're filtering to specific parent IDs
+        filter.Limit = null;
+        filter.GroupByPresentationUniqueKey = false;
+        var mainquery = PrepareItemQuery(context, filter);
+        mainquery = TranslateQuery(mainquery, context, filter);
+
+        // Restrict to items from the top N parents
+        if (isMusic)
+        {
+            mainquery = mainquery.Where(e => topParentIds.Contains(e.ParentId!.Value));
+        }
+        else
+        {
+            mainquery = mainquery.Where(e => topParentIds.Contains(e.SeriesId!.Value));
+        }
+
+        mainquery = ApplyGroupingFilter(context, mainquery, filter);
+        mainquery = ApplyQueryPaging(mainquery, filter);
+        mainquery = mainquery.AsSplitQuery();
+        mainquery = ApplyNavigations(mainquery, filter);
+
+        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<(BaseItem Container, IReadOnlyList<BaseItem> Items)> GetLatestItemsGrouped(InternalItemsQuery filter, CollectionType? collectionType)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var limit = filter.Limit ?? 30;
+
+        // Movies: no grouping, just return each movie as its own group.
+        // This is awkward but puts movies into the same structure as music albums and TV series.
+        if (collectionType == CollectionType.movies || collectionType is null)
+        {
+            var movieQuery = PrepareItemQuery(context, filter);
+            movieQuery = TranslateQuery(movieQuery, context, filter);
+            movieQuery = ApplyGroupingFilter(context, movieQuery, filter);
+            movieQuery = ApplyQueryPaging(movieQuery, filter);
+            movieQuery = movieQuery.AsSplitQuery();
+            movieQuery = ApplyNavigations(movieQuery, filter);
+
+            var movies = movieQuery.AsEnumerable()
+                .Where(e => e is not null)
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .ToArray();
+
+            // Movies use themselves as both container and item
+            return movies.Select(m => (m, (IReadOnlyList<BaseItem>)new[] { m })).ToArray();
+        }
+
+        var isMusic = collectionType == CollectionType.music;
+
+        // Find top N albums or series with recent content
+        List<Guid> topParentIds;
+        if (isMusic)
+        {
+            var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
+            topParentIds = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == audioTypeName)
+                .Where(e => e.ParentId.HasValue)
+                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value))
+                .GroupBy(e => e.ParentId!.Value)
+                .Select(g => new { AlbumId = g.Key, MaxDate = g.Max(e => e.DateCreated) })
+                .OrderByDescending(g => g.MaxDate)
+                .Take(limit)
+                .Select(g => g.AlbumId)
+                .ToList();
+        }
+        else
+        {
+            var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+            topParentIds = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == episodeTypeName)
+                .Where(e => e.SeriesId.HasValue)
+                .Where(e => filter.TopParentIds.Contains(e.TopParentId!.Value))
+                .GroupBy(e => e.SeriesId!.Value)
+                .Select(g => new { SeriesId = g.Key, MaxDate = g.Max(e => e.DateCreated) })
+                .OrderByDescending(g => g.MaxDate)
+                .Take(limit)
+                .Select(g => g.SeriesId)
+                .ToList();
+        }
+
+        if (topParentIds.Count == 0)
+        {
+            return Array.Empty<(BaseItem, IReadOnlyList<BaseItem>)>();
+        }
+
+        // Load the parent entities (Albums/Series)
+        var parentTypeName = isMusic
+            ? _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum]
+            : _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
+
+        var parentEntities = context.BaseItems
             .AsNoTracking()
-            .Where(e => e.Type == childTypeName);
+            .Where(e => topParentIds.Contains(e.Id))
+            .AsEnumerable()
+            .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
+            .ToDictionary(e => e.Id);
+
+        // Fetch child items for those parents
+        // Disable grouping since we're filtering to specific parent IDs
+        filter.Limit = null;
+        filter.GroupByPresentationUniqueKey = false;
+        var mainquery = PrepareItemQuery(context, filter);
+        mainquery = TranslateQuery(mainquery, context, filter);
 
         if (isMusic)
         {
@@ -376,13 +479,35 @@ public sealed class BaseItemRepository
             mainquery = mainquery.Where(e => topParentIds.Contains(e.SeriesId!.Value));
         }
 
-        mainquery = mainquery.OrderByDescending(e => e.DateCreated);
-
-        // Use split query to avoid cartesian explosion with multiple Includes
+        mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = mainquery.AsSplitQuery();
         mainquery = ApplyNavigations(mainquery, filter);
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
+        var childItems = mainquery.AsEnumerable()
+            .Where(e => e is not null)
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .ToArray();
+
+        // Group children by parent, preserving parent order
+        var result = new List<(BaseItem Container, IReadOnlyList<BaseItem> Items)>();
+        foreach (var parentId in topParentIds)
+        {
+            if (!parentEntities.TryGetValue(parentId, out var parent))
+            {
+                continue;
+            }
+
+            var children = isMusic
+                ? childItems.Where(c => c.ParentId == parentId).ToArray()
+                : childItems.Where(c => c is MediaBrowser.Controller.Entities.TV.Episode ep && ep.SeriesId == parentId).ToArray();
+
+            if (children.Length > 0)
+            {
+                result.Add((parent, children));
+            }
+        }
+
+        return result;
     }
 
     /// <inheritdoc />

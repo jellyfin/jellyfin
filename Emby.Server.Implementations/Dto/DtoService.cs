@@ -467,24 +467,24 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options, UserItemData? userData = null)
         {
+            if (options.EnableUserData)
+            {
+                if (userData is not null)
+                {
+                    // Use pre-fetched user data
+                    dto.UserData = GetUserItemDataDto(userData, item.Id);
+                    item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+                }
+                else
+                {
+                    // Fall back to individual fetch
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
+                }
+            }
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
-
-                if (options.EnableUserData)
-                {
-                    if (userData is not null)
-                    {
-                        // Use pre-fetched user data
-                        dto.UserData = GetUserItemDataDto(userData, item.Id);
-                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
-                    }
-                    else
-                    {
-                        // Fall back to individual fetch
-                        dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
-                    }
-                }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
@@ -514,23 +514,6 @@ namespace Emby.Server.Implementations.Dto
                 if (options.ContainsField(ItemFields.DateLastMediaAdded))
                 {
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
-                }
-            }
-            else
-            {
-                if (options.EnableUserData)
-                {
-                    if (userData is not null)
-                    {
-                        // Use pre-fetched user data
-                        dto.UserData = GetUserItemDataDto(userData, item.Id);
-                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
-                    }
-                    else
-                    {
-                        // Fall back to individual fetch
-                        dto.UserData = _userDataRepository.GetUserDataDto(item, user);
-                    }
                 }
             }
 
