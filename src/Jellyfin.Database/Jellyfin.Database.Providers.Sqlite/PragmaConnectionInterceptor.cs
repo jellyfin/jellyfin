@@ -279,7 +279,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     /// Loads extra PRAGMA statements from:
     /// - env var: JELLYFIN_SQLITE_PRAGMAS (semicolon separated)
     /// - env var: JELLYFIN_SQLITE_PRAGMAS_FILE (path to a file)
-    /// - auto-discovered default files near the XML config directory and data directory
+    /// - auto-discovered default files near the XML config directory and data directory.
     /// </summary>
     private static IReadOnlyList<string> LoadExtraPragmas(ILogger logger)
     {
