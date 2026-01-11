@@ -321,9 +321,9 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
 
     /// <summary>
     /// Finds candidates in the most compatible order:
-    /// 1) JELLYFIN_CONFIG_DIR (official image: /config/config)  <-- where XML config is
+    /// 1) JELLYFIN_CONFIG_DIR (official image: /config/config) where XML config lives
     /// 2) JELLYFIN_DATA_DIR   (official image: /config)
-    /// 3) Common container paths (linuxserver/custom): /config/config, /conf/config, /config
+    /// 3) Common container paths (linuxserver/custom): /config/config, /conf/config, /config.
     /// </summary>
     private static IEnumerable<string> GetDefaultPragmaFileCandidates()
     {
