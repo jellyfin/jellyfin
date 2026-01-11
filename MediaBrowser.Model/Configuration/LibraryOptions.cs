@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.Configuration
 
         public LibraryOptions()
         {
+            PreferredImageLanguages = Array.Empty<string>();
             TypeOptions = Array.Empty<TypeOptions>();
             DisabledSubtitleFetchers = Array.Empty<string>();
             DisabledMediaSegmentProviders = Array.Empty<string>();
@@ -78,6 +79,13 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The preferred metadata language.</value>
         public string? PreferredMetadataLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred image languages as an array (e.g., ["en", "de", "fr", "nolang"]).
+        /// If empty, PreferredMetadataLanguage will be used as fallback.
+        /// </summary>
+        /// <value>The preferred image languages.</value>
+        public string[] PreferredImageLanguages { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata country code.

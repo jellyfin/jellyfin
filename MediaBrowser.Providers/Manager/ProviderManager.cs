@@ -293,9 +293,10 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers.Where(i => i.GetSupportedImages(item).Contains(query.ImageType.Value));
             }
 
-            var preferredLanguage = item.GetPreferredMetadataLanguage();
+            var preferredMetadataLanguage = item.GetPreferredMetadataLanguage();
+            var preferredImageLanguages = item.GetPreferredImageLanguages();
 
-            var tasks = providers.Select(i => GetImages(item, i, preferredLanguage, query.IncludeAllLanguages, cancellationToken, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, i, preferredMetadataLanguage, preferredImageLanguages, query.IncludeAllLanguages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -307,7 +308,8 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
-        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="preferredMetadataLanguage">The preferred language.</param>
+        /// <param name="preferredImageLanguages">The preferred image languages.</param>
         /// <param name="includeAllLanguages">Whether to include all languages in results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="type">The type.</param>
@@ -315,12 +317,14 @@ namespace MediaBrowser.Providers.Manager
         private async Task<IEnumerable<RemoteImageInfo>> GetImages(
             BaseItem item,
             IRemoteImageProvider provider,
-            string preferredLanguage,
+            string preferredMetadataLanguage,
+            string[] preferredImageLanguages,
             bool includeAllLanguages,
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
-            bool hasPreferredLanguage = !string.IsNullOrWhiteSpace(preferredLanguage);
+            bool hasPreferredMetadataLanguage = !string.IsNullOrWhiteSpace(preferredMetadataLanguage);
+            bool hasPreferredImageLanguages = preferredImageLanguages?.Length > 0;
 
             try
             {
@@ -331,17 +335,26 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (!includeAllLanguages && hasPreferredLanguage)
+                if (!includeAllLanguages)
                 {
-                    // Filter out languages that do not match the preferred languages.
-                    //
-                    // TODO: should exception case of "en" (English) eventually be removed?
-                    result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                               string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
-                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                    if (hasPreferredImageLanguages)
+                    {
+                        // Filter out languages that do not match the preferred image languages.
+                        result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                                   preferredImageLanguages!.Contains(i.Language, StringComparer.OrdinalIgnoreCase));
+                    }
+                    else if (hasPreferredMetadataLanguage)
+                    {
+                        // Fallback to metadata language if no image languages configured
+                        //
+                        // TODO: should exception case of "en" (English) eventually be removed?
+                        result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                                   string.Equals(preferredMetadataLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
+                                                   string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+                    }
                 }
 
-                return result.OrderByLanguageDescending(preferredLanguage);
+                return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages);
             }
             catch (OperationCanceledException)
             {
@@ -1101,15 +1114,7 @@ namespace MediaBrowser.Providers.Manager
         private async Task RefreshArtist(MusicArtist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var albums = _libraryManager
-                .GetItemList(new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
-                    ArtistIds = new[] { item.Id },
-                    DtoOptions = new DtoOptions(false)
-                    {
-                        EnableImages = false
-                    }
-                })
+                .GetItemList(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, ArtistIds = new[] { item.Id }, DtoOptions = new DtoOptions(false) { EnableImages = false } })
                 .OfType<MusicAlbum>();
 
             var musicArtists = albums
