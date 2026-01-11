@@ -115,7 +115,7 @@ public class NetworkManager : INetworkManager, IDisposable
     public static string MockNetworkSettings { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets a value indicating whether IP4 is enabled.
+    /// Gets a value indicating whether IPV4 is enabled.
     /// </summary>
     public bool IsIPv4Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv4;
 
@@ -362,7 +362,7 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <summary>
-    /// Filteres a list of bind addresses and exclusions on available interfaces.
+    /// Filters a list of bind addresses and exclusions on available interfaces.
     /// </summary>
     /// <param name="config">The network config to be filtered by.</param>
     /// <param name="interfaces">A list of possible interfaces to be filtered.</param>
