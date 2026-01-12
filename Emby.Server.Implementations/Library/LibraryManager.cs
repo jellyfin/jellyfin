@@ -1908,8 +1908,15 @@ namespace Emby.Server.Implementations.Library
         {
             IOrderedEnumerable<BaseItem>? orderedItems = null;
 
-            foreach (var orderBy in sortBy.Select(o => GetComparer(o, user)).Where(c => c is not null))
+            // Combine Select and Where in single loop - avoid intermediate allocations
+            foreach (var sort in sortBy)
             {
+                var orderBy = GetComparer(sort, user);
+                if (orderBy is null)
+                {
+                    continue;
+                }
+
                 if (orderBy is RandomComparer)
                 {
                     var randomItems = items.ToArray();
@@ -2950,22 +2957,31 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeopleNames(query)
-            .Select(i =>
+            var names = _peopleRepository.GetPeopleNames(query);
+            var result = new List<Person>(names.Count);
+            var user = query.User;
+
+            // Combine Select and Where operations in single loop for better performance
+            foreach (var name in names)
             {
+                Person? person;
                 try
                 {
-                    return GetPerson(i);
+                    person = GetPerson(name);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error getting person");
-                    return null;
+                    continue;
                 }
-            })
-            .Where(i => i is not null)
-            .Where(i => query.User is null || i!.IsVisible(query.User))
-            .ToList()!; // null values are filtered out
+
+                if (person is not null && (user is null || person.IsVisible(user)))
+                {
+                    result.Add(person);
+                }
+            }
+
+            return result;
         }
 
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)

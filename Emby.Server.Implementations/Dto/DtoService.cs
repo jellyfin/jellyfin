@@ -424,32 +424,69 @@ namespace Emby.Server.Implementations.Dto
 
         private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)
         {
+            // Count all item types in a single pass to avoid multiple enumerations
+            int albumCount = 0, musicVideoCount = 0, songCount = 0, artistCount = 0;
+            int episodeCount = 0, movieCount = 0, trailerCount = 0, seriesCount = 0, programCount = 0;
+
+            foreach (var taggedItem in taggedItems)
+            {
+                switch (taggedItem)
+                {
+                    case MusicAlbum:
+                        albumCount++;
+                        break;
+                    case MusicVideo:
+                        musicVideoCount++;
+                        break;
+                    case Audio:
+                        songCount++;
+                        break;
+                    case MusicArtist:
+                        artistCount++;
+                        break;
+                    case Episode:
+                        episodeCount++;
+                        break;
+                    case Movie:
+                        movieCount++;
+                        break;
+                    case Trailer:
+                        trailerCount++;
+                        break;
+                    case Series:
+                        seriesCount++;
+                        break;
+                    case LiveTvProgram:
+                        programCount++;
+                        break;
+                }
+            }
+
             if (item is MusicArtist)
             {
-                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
-                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
-                dto.SongCount = taggedItems.Count(i => i is Audio);
+                dto.AlbumCount = albumCount;
+                dto.MusicVideoCount = musicVideoCount;
+                dto.SongCount = songCount;
             }
             else if (item is MusicGenre)
             {
-                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
-                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
-                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
-                dto.SongCount = taggedItems.Count(i => i is Audio);
+                dto.ArtistCount = artistCount;
+                dto.AlbumCount = albumCount;
+                dto.MusicVideoCount = musicVideoCount;
+                dto.SongCount = songCount;
             }
             else
             {
                 // This populates them all and covers Genre, Person, Studio, Year
-
-                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
-                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
-                dto.EpisodeCount = taggedItems.Count(i => i is Episode);
-                dto.MovieCount = taggedItems.Count(i => i is Movie);
-                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
-                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
-                dto.SeriesCount = taggedItems.Count(i => i is Series);
-                dto.ProgramCount = taggedItems.Count(i => i is LiveTvProgram);
-                dto.SongCount = taggedItems.Count(i => i is Audio);
+                dto.ArtistCount = artistCount;
+                dto.AlbumCount = albumCount;
+                dto.EpisodeCount = episodeCount;
+                dto.MovieCount = movieCount;
+                dto.TrailerCount = trailerCount;
+                dto.MusicVideoCount = musicVideoCount;
+                dto.SeriesCount = seriesCount;
+                dto.ProgramCount = programCount;
+                dto.SongCount = songCount;
             }
 
             dto.ChildCount = taggedItems.Count;
@@ -577,10 +614,18 @@ namespace Emby.Server.Implementations.Dto
 
         private string[] GetImageTags(BaseItem item, List<ItemImageInfo> images)
         {
-            return images
-                .Select(p => GetImageCacheTag(item, p))
-                .Where(i => i is not null)
-                .ToArray()!; // null values got filtered out
+            // Pre-allocate list to avoid resizing and combine Select/Where in single loop
+            var tags = new List<string>(images.Count);
+            foreach (var image in images)
+            {
+                var tag = GetImageCacheTag(item, image);
+                if (tag is not null)
+                {
+                    tags.Add(tag);
+                }
+            }
+
+            return tags.ToArray();
         }
 
         private string? GetImageCacheTag(BaseItem item, ItemImageInfo image)
@@ -646,22 +691,35 @@ namespace Emby.Server.Implementations.Dto
 
             var list = new List<BaseItemPerson>();
 
-            Dictionary<string, Person> dictionary = people.Select(p => p.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
+            // Combine Where clauses and use a single pass for better performance
+            var dictionary = new Dictionary<string, Person>(StringComparer.OrdinalIgnoreCase);
+            var distinctNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var p in people)
+            {
+                if (!distinctNames.Add(p.Name))
                 {
-                    try
-                    {
-                        return _libraryManager.GetPerson(c);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error getting person {Name}", c);
-                        return null;
-                    }
-                }).Where(i => i is not null)
-                .Where(i => user is null || i!.IsVisible(user))
-                .DistinctBy(x => x!.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(i => i!.Name, StringComparer.OrdinalIgnoreCase)!; // null values got filtered out
+                    continue; // Already processed this name
+                }
+
+                Person? person;
+                try
+                {
+                    person = _libraryManager.GetPerson(p.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting person {Name}", p.Name);
+                    continue;
+                }
+
+                if (person is null || (user is not null && !person.IsVisible(user)))
+                {
+                    continue;
+                }
+
+                dictionary[person.Name] = person;
+            }
 
             for (var i = 0; i < people.Count; i++)
             {
