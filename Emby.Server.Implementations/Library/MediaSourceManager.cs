@@ -412,7 +412,7 @@ namespace Emby.Server.Implementations.Library
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLanguage = defaultAudioIndex is null
                 ? null
-                : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
+                : source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex)?.Language;
 
             source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(
                 source.MediaStreams,

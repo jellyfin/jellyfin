@@ -135,26 +135,43 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
+                var excludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes);
+                list = list.Where(i => !excludes.Contains(i.Id)).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
+            // Create dictionary for O(1) order lookups instead of O(n) Array.IndexOf
+            var orderDict = new Dictionary<Guid, int>(orders.Length);
+            for (int i = 0; i < orders.Length; i++)
+            {
+                orderDict[orders[i]] = i;
+            }
+
+            // Create dictionary for O(1) sorted index lookups instead of O(n) List.IndexOf
+            var sortedIndexDict = new Dictionary<Folder, int>(sorted.Count);
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                sortedIndexDict[sorted[i]] = i;
+            }
+
             return list
                 .OrderBy(i =>
                 {
-                    var index = Array.IndexOf(orders, i.Id);
-                    if (index == -1
-                        && i is UserView view
-                        && !view.DisplayParentId.IsEmpty())
+                    if (orderDict.TryGetValue(i.Id, out var index))
                     {
-                        index = Array.IndexOf(orders, view.DisplayParentId);
+                        return index;
                     }
 
-                    return index == -1 ? int.MaxValue : index;
+                    if (i is UserView view && !view.DisplayParentId.IsEmpty() && orderDict.TryGetValue(view.DisplayParentId, out index))
+                    {
+                        return index;
+                    }
+
+                    return int.MaxValue;
                 })
-                .ThenBy(sorted.IndexOf)
+                .ThenBy(i => sortedIndexDict.TryGetValue(i, out var idx) ? idx : int.MaxValue)
                 .ThenBy(i => i.SortName)
                 .ToArray();
         }
@@ -280,10 +297,10 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
+                var latestItemExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
-                        .Contains(i.Id))
+                    .Where(i => !latestItemExcludes.Contains(i.Id))
                     .ToList();
             }
 
