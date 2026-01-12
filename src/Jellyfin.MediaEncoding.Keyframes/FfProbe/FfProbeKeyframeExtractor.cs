@@ -97,7 +97,7 @@ public static class FfProbeKeyframeExtractor
                     var secondComma = rest.IndexOf(',');
                     var ptsTime = rest[..secondComma];
                     var flags = rest[(secondComma + 1)..];
-                    if (flags.StartsWith("K_"))
+                    if (flags.StartsWith("K_", StringComparison.Ordinal))
                     {
                         if (double.TryParse(ptsTime, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var keyframe))
                         {
