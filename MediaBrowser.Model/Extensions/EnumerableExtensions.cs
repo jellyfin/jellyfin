@@ -14,14 +14,14 @@ namespace MediaBrowser.Model.Extensions
         /// Orders <see cref="RemoteImageInfo"/> by requested language in descending order, prioritizing "en" over other non-matches.
         /// </summary>
         /// <param name="remoteImageInfos">The remote image infos.</param>
-        /// <param name="requestedLanguage">The requested language for the images.</param>
+        /// <param name="requestedMetadataLanguage">The requested language for the images.</param>
         /// <returns>The ordered remote image infos.</returns>
-        private static IEnumerable<RemoteImageInfo> OrderByLanguageDescending(this IEnumerable<RemoteImageInfo> remoteImageInfos, string requestedLanguage)
+        private static IEnumerable<RemoteImageInfo> OrderByLanguageDescending(this IEnumerable<RemoteImageInfo> remoteImageInfos, string requestedMetadataLanguage)
         {
-            if (string.IsNullOrWhiteSpace(requestedLanguage))
+            if (string.IsNullOrWhiteSpace(requestedMetadataLanguage))
             {
                 // Default to English if no requested language is specified.
-                requestedLanguage = "en";
+                requestedMetadataLanguage = "en";
             }
 
             return remoteImageInfos.OrderByDescending(i =>
@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.Extensions
                     //  - Images in English
                     //  - Images that don't match the requested language
 
-                    if (string.Equals(requestedLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(requestedMetadataLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
@@ -58,18 +58,18 @@ namespace MediaBrowser.Model.Extensions
         /// Orders <see cref="RemoteImageInfo"/> by preferred languages in descending order.
         /// </summary>
         /// <param name="remoteImageInfos">The remote image infos.</param>
-        /// <param name="requestedLanguage">The requested language for fallback if no preferred languages are specified.</param>
-        /// <param name="preferredLanguages">Array of preferred languages (e.g., ["en", "de", "fr", "nolang"]). If null or empty, uses requestedLanguage.</param>
+        /// <param name="requestedMetadataLanguage">The requested metadata language for fallback if no preferred languages are specified.</param>
+        /// <param name="preferredImageLanguages">Array of preferred image languages (e.g., ["en", "de", "fr", "nolang"]). If null or empty, uses requestedLanguage.</param>
         /// <returns>The ordered remote image infos.</returns>
         public static IEnumerable<RemoteImageInfo> OrderByLanguageDescending(
             this IEnumerable<RemoteImageInfo> remoteImageInfos,
-            string requestedLanguage,
-            string[]? preferredLanguages)
+            string requestedMetadataLanguage,
+            string[]? preferredImageLanguages)
         {
-            // If no preferred languages are configured, fall back to the original behavior
-            if (preferredLanguages is null || preferredLanguages.Length == 0)
+            // If no preferred image languages are configured, fall back to the original behavior
+            if (preferredImageLanguages is null || preferredImageLanguages.Length == 0)
             {
-                return remoteImageInfos.OrderByLanguageDescending(requestedLanguage);
+                return remoteImageInfos.OrderByLanguageDescending(requestedMetadataLanguage);
             }
 
             return remoteImageInfos.OrderByDescending(i =>
@@ -79,13 +79,13 @@ namespace MediaBrowser.Model.Extensions
                     //  - Images with no language if nolang is not in preferred image languages
                     //  - Images that don't match the requested language
 
-                    for (int index = 0; index < preferredLanguages.Length; index++)
+                    for (int index = 0; index < preferredImageLanguages.Length; index++)
                     {
-                        if (string.Equals(preferredLanguages[index], i.Language, StringComparison.OrdinalIgnoreCase) ||
-                            (string.Equals(preferredLanguages[index], "nolang", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(i.Language)))
+                        if (string.Equals(preferredImageLanguages[index], i.Language, StringComparison.OrdinalIgnoreCase) ||
+                            (string.Equals(preferredImageLanguages[index], "nolang", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(i.Language)))
                         {
                             // Return a high priority value, with earlier languages getting higher values
-                            return 1 + (preferredLanguages.Length - index);
+                            return 1 + (preferredImageLanguages.Length - index);
                         }
                     }
 
