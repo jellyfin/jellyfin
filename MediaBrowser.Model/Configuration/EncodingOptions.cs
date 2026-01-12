@@ -51,6 +51,14 @@ public class EncodingOptions
         // Enhanced Nvdec or system native decoder is required for DoVi to SDR tone-mapping.
         EnableEnhancedNvdecDecoder = true;
         PreferSystemNativeHwDecoder = true;
+        // NVENC optimizations for improved quality and performance
+        EnableNvencSpatialAq = true;
+        EnableNvencTemporalAq = true;
+        NvencLookaheadFrames = 32;
+        EnableNvencBFrames = true;
+        EnableNvencWeightedPred = true;
+        EnableNvencMultipass = true;
+        EnableNvencBRefMode = true;
         EnableIntelLowPowerH264HwEncoder = false;
         EnableIntelLowPowerHevcHwEncoder = false;
         EnableHardwareEncoding = true;
@@ -251,6 +259,49 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether the enhanced NVDEC is enabled.
     /// </summary>
     public bool EnableEnhancedNvdecDecoder { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether NVENC spatial adaptive quantization is enabled.
+    /// Improves quality by adjusting bitrate based on spatial complexity.
+    /// </summary>
+    public bool EnableNvencSpatialAq { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether NVENC temporal adaptive quantization is enabled.
+    /// Improves quality by adjusting bitrate based on temporal complexity (motion).
+    /// </summary>
+    public bool EnableNvencTemporalAq { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of look-ahead frames for NVENC rate control.
+    /// Higher values improve quality but increase latency and memory usage.
+    /// Range: 0-32, recommended: 16-32.
+    /// </summary>
+    public int NvencLookaheadFrames { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether B-frames are enabled for NVENC encoding.
+    /// B-frames significantly improve compression efficiency.
+    /// </summary>
+    public bool EnableNvencBFrames { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether weighted prediction is enabled for NVENC.
+    /// Improves quality in scenes with fades.
+    /// </summary>
+    public bool EnableNvencWeightedPred { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether multipass encoding is enabled for NVENC.
+    /// Provides better quality at the cost of encoding speed.
+    /// </summary>
+    public bool EnableNvencMultipass { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether B-frame reference mode is enabled for NVENC.
+    /// Allows B-frames to be used as references for improved compression (Turing+ GPUs).
+    /// </summary>
+    public bool EnableNvencBRefMode { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the system native hardware decoder should be used.
