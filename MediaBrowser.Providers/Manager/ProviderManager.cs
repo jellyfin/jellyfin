@@ -1114,7 +1114,15 @@ namespace MediaBrowser.Providers.Manager
         private async Task RefreshArtist(MusicArtist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var albums = _libraryManager
-                .GetItemList(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, ArtistIds = new[] { item.Id }, DtoOptions = new DtoOptions(false) { EnableImages = false } })
+                .GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
+                    ArtistIds = new[] { item.Id },
+                    DtoOptions = new DtoOptions(false)
+                    {
+                        EnableImages = false
+                    }
+                })
                 .OfType<MusicAlbum>();
 
             var musicArtists = albums
