@@ -1621,6 +1621,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return FormattableString.Invariant($" -b:v {bitrate} -qmin -1 -qmax -1");
             }
 
+            // NVENC optimized rate control
+            // Use VBR with larger buffer for better quality and scene adaptation
+            if (string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "av1_nvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                // Use VBR rate control for better quality
+                // Set maxrate higher than target to allow quality headroom in complex scenes
+                // Use 4x buffer for better handling of scene complexity changes
+                int maxBitrate = (int)(bitrate * 1.5);
+                int nvencBufsize = bitrate * 4;
+
+                return FormattableString.Invariant($" -rc vbr -b:v {bitrate} -maxrate {maxBitrate} -bufsize {nvencBufsize}");
+            }
+
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
         }
 
@@ -1713,6 +1728,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         || string.Equals(videoEncoder, "av1_nvenc", StringComparison.OrdinalIgnoreCase) // av1 (av1_nvenc)
             )
             {
+                // Apply preset (p1=fastest to p7=slowest/best quality)
                 param += encoderPreset switch
                 {
                         EncoderPreset.veryslow => " -preset p7",
@@ -1723,6 +1739,72 @@ namespace MediaBrowser.Controller.MediaEncoding
                         EncoderPreset.faster => " -preset p2",
                         _ => " -preset p1"
                 };
+
+                // Apply high quality tuning for transcoding workloads
+                param += " -tune hq";
+
+                // Multipass encoding for improved quality (fullres mode)
+                // Available on Turing and newer GPUs
+                if (encodingOptions.EnableNvencMultipass)
+                {
+                    param += " -multipass fullres";
+                }
+
+                // Spatial Adaptive Quantization: adjusts bitrate based on spatial complexity
+                // Improves quality in complex scenes by allocating more bits
+                if (encodingOptions.EnableNvencSpatialAq)
+                {
+                    param += " -spatial-aq 1 -aq-strength 8";
+                }
+
+                // Temporal Adaptive Quantization: adjusts bitrate based on temporal complexity
+                // Improves quality during high motion scenes
+                if (encodingOptions.EnableNvencTemporalAq)
+                {
+                    param += " -temporal-aq 1";
+                }
+
+                // Look-ahead buffer for improved rate control decisions
+                // Range 0-32, higher values improve quality but increase latency/memory
+                var lookahead = Math.Clamp(encodingOptions.NvencLookaheadFrames, 0, 32);
+                if (lookahead > 0)
+                {
+                    param += FormattableString.Invariant($" -rc-lookahead {lookahead}");
+                }
+
+                // B-frame configuration for H.264 and HEVC
+                // Note: AV1 NVENC currently has limited B-frame support
+                bool isHevcNvenc = string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase);
+                bool isH264Nvenc = string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase);
+
+                if (encodingOptions.EnableNvencBFrames)
+                {
+                    // H.264: 3 B-frames is optimal balance
+                    // HEVC: 3 B-frames (Turing+ required for HEVC B-frames)
+                    if (isH264Nvenc || isHevcNvenc)
+                    {
+                        param += " -bf 3";
+
+                        // B-frame reference mode for Turing+ GPUs
+                        // Allows B-frames to be used as references, improving compression
+                        if (encodingOptions.EnableNvencBRefMode)
+                        {
+                            param += " -b_ref_mode middle";
+                        }
+                    }
+                }
+
+                // Weighted prediction improves quality in scenes with fades
+                if (encodingOptions.EnableNvencWeightedPred && (isH264Nvenc || isHevcNvenc))
+                {
+                    param += " -weighted_pred 1";
+                }
+
+                // Disable strict GOP for better compression
+                param += " -strict_gop 0";
+
+                // Enable non-reference P-frames for better rate control
+                param += " -nonref_p 1";
             }
             else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase) // h264 (h264_amf)
                         || string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase) // hevc (hevc_amf)
