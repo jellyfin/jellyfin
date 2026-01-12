@@ -337,9 +337,13 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                if (GetParents().Any(f => f.Id.Equals(Id)))
+                // Use manual loop for parent check to avoid creating iterator for common case
+                foreach (var parent in GetParents())
                 {
-                    throw new InvalidOperationException("Recursive datastructure detected abort processing this item.");
+                    if (parent.Id.Equals(Id))
+                    {
+                        throw new InvalidOperationException("Recursive datastructure detected abort processing this item.");
+                    }
                 }
 
                 await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, allowRemoveRoot, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
@@ -1096,7 +1100,12 @@ namespace MediaBrowser.Controller.Entities
                 return remainingItems;
             }
 
+            // Return early if no remaining items to avoid unnecessary concat
             var collapsedItems = collectionManager.CollapseItemsWithinBoxSets(collapsibleItems, user);
+            if (remainingItems.Count == 0)
+            {
+                return collapsedItems;
+            }
 
             return collapsedItems.Concat(remainingItems);
         }

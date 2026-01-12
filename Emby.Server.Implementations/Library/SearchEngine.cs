@@ -37,28 +37,28 @@ namespace Emby.Server.Implementations.Library
             var results = GetSearchHints(query, user);
             var totalRecordCount = results.Count;
 
-            if (query.StartIndex.HasValue)
+            // Use Skip/Take for more efficient pagination instead of GetRange
+            IEnumerable<SearchHintInfo> paginatedResults = results;
+
+            if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
             {
-                results = results.GetRange(query.StartIndex.Value, totalRecordCount - query.StartIndex.Value);
+                paginatedResults = paginatedResults.Skip(query.StartIndex.Value);
             }
 
             if (query.Limit.HasValue && query.Limit.Value > 0)
             {
-                results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
+                paginatedResults = paginatedResults.Take(query.Limit.Value);
             }
 
             return new QueryResult<SearchHintInfo>(
                 query.StartIndex,
                 totalRecordCount,
-                results);
+                paginatedResults.ToList());
         }
 
-        private static void AddIfMissing(List<BaseItemKind> list, BaseItemKind value)
+        private static void AddIfMissing(HashSet<BaseItemKind> set, BaseItemKind value)
         {
-            if (!list.Contains(value))
-            {
-                list.Add(value);
-            }
+            set.Add(value);
         }
 
         /// <summary>
@@ -76,8 +76,9 @@ namespace Emby.Server.Implementations.Library
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();
 
-            var excludeItemTypes = query.ExcludeItemTypes.ToList();
-            var includeItemTypes = query.IncludeItemTypes.ToList();
+            // Use HashSet for O(1) Contains operations instead of List O(n)
+            var excludeItemTypes = new HashSet<BaseItemKind>(query.ExcludeItemTypes);
+            var includeItemTypes = new HashSet<BaseItemKind>(query.IncludeItemTypes);
 
             excludeItemTypes.Add(BaseItemKind.Year);
             excludeItemTypes.Add(BaseItemKind.Folder);
@@ -134,7 +135,7 @@ namespace Emby.Server.Implementations.Library
 
             AddIfMissing(excludeItemTypes, BaseItemKind.CollectionFolder);
             AddIfMissing(excludeItemTypes, BaseItemKind.Folder);
-            var mediaTypes = query.MediaTypes.ToList();
+            var mediaTypes = new HashSet<MediaType>(query.MediaTypes);
 
             if (includeItemTypes.Count > 0)
             {
@@ -145,12 +146,12 @@ namespace Emby.Server.Implementations.Library
             var searchQuery = new InternalItemsQuery(user)
             {
                 SearchTerm = searchTerm,
-                ExcludeItemTypes = excludeItemTypes.ToArray(),
-                IncludeItemTypes = includeItemTypes.ToArray(),
+                ExcludeItemTypes = [.. excludeItemTypes],
+                IncludeItemTypes = [.. includeItemTypes],
                 Limit = query.Limit,
                 IncludeItemsByName = !query.ParentId.HasValue,
                 ParentId = query.ParentId ?? Guid.Empty,
-                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+                OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)],
                 Recursive = true,
 
                 IsKids = query.IsKids,
@@ -158,7 +159,7 @@ namespace Emby.Server.Implementations.Library
                 IsNews = query.IsNews,
                 IsSeries = query.IsSeries,
                 IsSports = query.IsSports,
-                MediaTypes = mediaTypes.ToArray(),
+                MediaTypes = [.. mediaTypes],
 
                 DtoOptions = new DtoOptions
                 {
