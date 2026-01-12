@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using J2N.Collections.Generic.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -184,28 +185,31 @@ public class NetworkManager : INetworkManager, IDisposable
     /// </summary>
     private void OnNetworkChange()
     {
-        try
+        _ = Task.Run(async () =>
         {
-            Thread.Sleep(2000);
-            var networkConfig = _configurationManager.GetNetworkConfiguration();
-            if (IsIPv6Enabled && !Socket.OSSupportsIPv6)
+            try
             {
-                UpdateSettings(networkConfig);
-            }
-            else
-            {
-                InitializeInterfaces();
-                InitializeLan(networkConfig);
-                EnforceBindSettings(networkConfig);
-            }
+                await Task.Delay(2000).ConfigureAwait(false);
+                var networkConfig = _configurationManager.GetNetworkConfiguration();
+                if (IsIPv6Enabled && !Socket.OSSupportsIPv6)
+                {
+                    UpdateSettings(networkConfig);
+                }
+                else
+                {
+                    InitializeInterfaces();
+                    InitializeLan(networkConfig);
+                    EnforceBindSettings(networkConfig);
+                }
 
-            PrintNetworkInformation(networkConfig);
-            NetworkChanged?.Invoke(this, EventArgs.Empty);
-        }
-        finally
-        {
-            _eventfire = false;
-        }
+                PrintNetworkInformation(networkConfig);
+                NetworkChanged?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                _eventfire = false;
+            }
+        });
     }
 
     /// <summary>

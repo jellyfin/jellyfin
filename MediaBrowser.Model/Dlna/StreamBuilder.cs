@@ -319,8 +319,7 @@ namespace MediaBrowser.Model.Dlna
                     return TranscodeReason.AudioSampleRateNotSupported;
 
                 case ProfileConditionValue.Has64BitOffsets:
-                    // TODO
-                    return 0;
+                    return TranscodeReason.ContainerNotSupported;
 
                 case ProfileConditionValue.Height:
                     return TranscodeReason.VideoResolutionNotSupported;
@@ -329,8 +328,7 @@ namespace MediaBrowser.Model.Dlna
                     return TranscodeReason.AnamorphicVideoNotSupported;
 
                 case ProfileConditionValue.IsAvc:
-                    // TODO
-                    return 0;
+                    return TranscodeReason.VideoCodecNotSupported;
 
                 case ProfileConditionValue.IsInterlaced:
                     return TranscodeReason.InterlacedVideoNotSupported;
@@ -342,16 +340,13 @@ namespace MediaBrowser.Model.Dlna
                     return TranscodeReason.StreamCountExceedsLimit;
 
                 case ProfileConditionValue.NumAudioStreams:
-                    // TODO
-                    return 0;
+                    return TranscodeReason.StreamCountExceedsLimit;
 
                 case ProfileConditionValue.NumVideoStreams:
-                    // TODO
-                    return 0;
+                    return TranscodeReason.StreamCountExceedsLimit;
 
                 case ProfileConditionValue.PacketLength:
-                    // TODO
-                    return 0;
+                    return TranscodeReason.ContainerNotSupported;
 
                 case ProfileConditionValue.RefFrames:
                     return TranscodeReason.RefFramesNotSupported;
