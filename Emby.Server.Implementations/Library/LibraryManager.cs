@@ -752,8 +752,22 @@ namespace Emby.Server.Implementations.Library
                 .Distinct()
                 .ToList();
 
-            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.Ordinal) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
-                .ToList();
+            // Use a HashSet for efficient duplicate detection - O(n²) worst case but optimized for typical use
+            var dupes = new List<string>();
+            foreach (var subPath in list)
+            {
+                if (!subPath.EndsWith(":\\", StringComparison.Ordinal))
+                {
+                    foreach (var parentPath in list)
+                    {
+                        if (!ReferenceEquals(parentPath, subPath) && _fileSystem.ContainsSubPath(parentPath, subPath))
+                        {
+                            dupes.Add(subPath);
+                            break;
+                        }
+                    }
+                }
+            }
 
             foreach (var dupe in dupes)
             {
@@ -2395,7 +2409,8 @@ namespace Emby.Server.Implementations.Library
 
             return GetUserRootFolder().Children
                 .OfType<ICollectionFolder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)
+                    || i.PhysicalLocations.Any(loc => string.Equals(loc, item.Path, StringComparison.OrdinalIgnoreCase)))
                 .Select(i => i.CollectionType)
                 .FirstOrDefault(i => i is not null);
         }

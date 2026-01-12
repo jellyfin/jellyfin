@@ -1053,14 +1053,12 @@ namespace Emby.Server.Implementations.Dto
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))])
                     .Where(e => e.Value.Length > 0)
-                    .Select(i =>
+                    .Select(i => new NameGuidPair
                     {
-                        return new NameGuidPair
-                        {
-                            Name = i.Key,
-                            Id = i.Value.First().Id
-                        };
-                    }).Where(i => i is not null).ToArray();
+                        Name = i.Key,
+                        Id = i.Value[0].Id
+                    })
+                    .ToArray();
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)

@@ -140,10 +140,30 @@ public class PluginsController : BaseJellyfinApiController
     public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
     {
         // If no version is given, return the current instance.
-        var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId)).ToList();
+        // Select the un-instanced one first, otherwise pick the one with minimum status
+        LocalPlugin? selectedPlugin = null;
+        LocalPlugin? minStatusPlugin = null;
 
-        // Select the un-instanced one first.
-        var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.MinBy(p => p.Manifest.Status);
+        foreach (var p in _pluginManager.Plugins)
+        {
+            if (!p.Id.Equals(pluginId))
+            {
+                continue;
+            }
+
+            if (p.Instance is null)
+            {
+                selectedPlugin = p;
+                break;
+            }
+
+            if (minStatusPlugin is null || p.Manifest.Status < minStatusPlugin.Manifest.Status)
+            {
+                minStatusPlugin = p;
+            }
+        }
+
+        var plugin = selectedPlugin ?? minStatusPlugin;
 
         if (plugin is not null)
         {
