@@ -13,6 +13,7 @@ public class PeopleBaseItemMapConfiguration : IEntityTypeConfiguration<PeopleBas
     public void Configure(EntityTypeBuilder<PeopleBaseItemMap> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.PeopleId, e.Role });
+        builder.HasIndex(e => e.PeopleId); // Index for queries filtering by PeopleId
         builder.HasIndex(e => new { e.ItemId, e.SortOrder });
         builder.HasIndex(e => new { e.ItemId, e.ListOrder });
         builder.HasOne(e => e.Item);

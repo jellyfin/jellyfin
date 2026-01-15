@@ -1,21 +1,26 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        // TODO make static and switch to FastConcurrentLru.
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
+        private const int CacheSize = 10000;
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
+        // Use FastConcurrentLru for bounded cache with automatic eviction (prevents unbounded memory growth)
+        private static readonly FastConcurrentLru<string, FileSystemMetadata[]> _cache =
+            new(Environment.ProcessorCount, CacheSize, StringComparer.Ordinal);
 
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
+        private static readonly FastConcurrentLru<string, FileSystemMetadata> _fileCache =
+            new(Environment.ProcessorCount, CacheSize, StringComparer.Ordinal);
+
+        private static readonly FastConcurrentLru<string, List<string>> _filePathCache =
+            new(Environment.ProcessorCount, CacheSize, StringComparer.Ordinal);
 
         private readonly IFileSystem _fileSystem;
 
@@ -26,7 +31,14 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+            if (_cache.TryGet(path, out var entries))
+            {
+                return entries;
+            }
+
+            entries = _fileSystem.GetFileSystemEntries(path).ToArray();
+            _cache.AddOrUpdate(path, entries);
+            return entries;
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -75,17 +87,19 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.TryGetValue(path, out var result))
+            if (_fileCache.TryGet(path, out var result))
             {
-                var file = _fileSystem.GetFileSystemInfo(path);
-                if (file?.Exists ?? false)
-                {
-                    result = file;
-                    _fileCache.TryAdd(path, result);
-                }
+                return result;
             }
 
-            return result;
+            var file = _fileSystem.GetFileSystemInfo(path);
+            if (file?.Exists ?? false)
+            {
+                _fileCache.AddOrUpdate(path, file);
+                return file;
+            }
+
+            return null;
         }
 
         public IReadOnlyList<string> GetFilePaths(string path)
@@ -98,11 +112,18 @@ namespace MediaBrowser.Controller.Providers
                 _filePathCache.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+            if (!_filePathCache.TryGet(path, out var filePaths))
+            {
+                filePaths = _fileSystem.GetFilePaths(path).ToList();
+                _filePathCache.AddOrUpdate(path, filePaths);
+            }
 
             if (sort)
             {
-                filePaths.Sort();
+                // Create a copy to avoid modifying cached list
+                var sortedPaths = new List<string>(filePaths);
+                sortedPaths.Sort();
+                return sortedPaths;
             }
 
             return filePaths;

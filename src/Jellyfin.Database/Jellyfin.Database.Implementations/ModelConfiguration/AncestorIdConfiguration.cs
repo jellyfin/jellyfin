@@ -13,6 +13,7 @@ public class AncestorIdConfiguration : IEntityTypeConfiguration<AncestorId>
     public void Configure(EntityTypeBuilder<AncestorId> builder)
     {
         builder.HasKey(e => new { e.ItemId, e.ParentItemId });
+        builder.HasIndex(e => e.ItemId); // Index for queries filtering by ItemId alone
         builder.HasIndex(e => e.ParentItemId);
         builder.HasOne(e => e.ParentItem).WithMany(e => e.Children).HasForeignKey(f => f.ParentItemId);
         builder.HasOne(e => e.Item).WithMany(e => e.Parents).HasForeignKey(f => f.ItemId);

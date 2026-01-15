@@ -22,4 +22,10 @@ public class DatabaseConfigurationOptions
     /// Defaults to "NoLock".
     /// </summary>
     public DatabaseLockingBehaviorTypes LockingBehavior { get; set; }
+
+    /// <summary>
+    /// Gets or sets the DbContext pool size for concurrent database operations.
+    /// Higher values support more concurrent users. Default is 1024.
+    /// </summary>
+    public int ContextPoolSize { get; set; } = 1024;
 }

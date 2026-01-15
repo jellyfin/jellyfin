@@ -38,10 +38,18 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         // Include PeopleBaseItemMap
         if (!filter.ItemId.IsEmpty())
         {
-            dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
-                .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
-                .ThenBy(e => e.PersonType)
-                .ThenBy(e => e.Name);
+            // Use join for efficient ordering instead of correlated subquery with .First()
+            dbQuery = dbQuery
+                .Join(
+                    context.PeopleBaseItemMap.Where(m => m.ItemId == filter.ItemId),
+                    p => p.Id,
+                    m => m.PeopleId,
+                    (p, m) => new { Person = p, Map = m })
+                .OrderBy(x => x.Map.ListOrder)
+                .ThenBy(x => x.Person.PersonType)
+                .ThenBy(x => x.Person.Name)
+                .Select(x => x.Person)
+                .Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId));
         }
         else
         {
@@ -216,13 +224,15 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.First(w => w.ItemId == filter.ItemId).ListOrder <= filter.MaxListOrder.Value);
+            // Use Any() instead of First() to avoid correlated subquery issues
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId == filter.ItemId && w.ListOrder <= filter.MaxListOrder.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
         {
-            var nameContainsUpper = filter.NameContains.ToUpper();
-            query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
+            // Use EF.Functions.Like for case-insensitive search without ToUpper()
+            var namePattern = $"%{filter.NameContains}%";
+            query = query.Where(e => EF.Functions.Like(e.Name, namePattern));
         }
 
         return query;

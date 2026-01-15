@@ -44,6 +44,26 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool IsPreSorted => true;
 
+        /// <summary>
+        /// Gets or sets the children. Overridden to ensure the _childrenIds cache is cleared
+        /// when children are invalidated.
+        /// </summary>
+        [JsonIgnore]
+        public override IEnumerable<BaseItem> Children
+        {
+            get => base.Children;
+            set
+            {
+                // Clear the ID cache when children are being invalidated
+                if (value is null)
+                {
+                    ClearCache();
+                }
+
+                base.Children = value;
+            }
+        }
+
         private void ClearCache()
         {
             lock (_childIdsLock)

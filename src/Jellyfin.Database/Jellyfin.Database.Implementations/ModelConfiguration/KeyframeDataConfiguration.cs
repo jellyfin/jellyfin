@@ -13,6 +13,7 @@ public class KeyframeDataConfiguration : IEntityTypeConfiguration<KeyframeData>
     public void Configure(EntityTypeBuilder<KeyframeData> builder)
     {
         builder.HasKey(e => e.ItemId);
-        builder.HasOne(e => e.Item).WithMany().HasForeignKey(e => e.ItemId);
+        builder.HasOne(e => e.Item).WithMany().HasForeignKey(e => e.ItemId)
+            .OnDelete(DeleteBehavior.Cascade); // Delete keyframe data when item is deleted
     }
 }

@@ -60,6 +60,7 @@ public class EncodingOptions
         SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
+        TranscodingLockPoolSize = 20;
     }
 
     /// <summary>
@@ -301,4 +302,11 @@ public class EncodingOptions
     /// Gets or sets the file extensions on-demand metadata based keyframe extraction is enabled for.
     /// </summary>
     public string[] AllowOnDemandMetadataBasedKeyframeExtractionForExtensions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the pool size for transcoding locks.
+    /// Higher values allow more concurrent transcoding operations but use more memory.
+    /// Default is 20.
+    /// </summary>
+    public int TranscodingLockPoolSize { get; set; }
 }
