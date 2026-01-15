@@ -776,6 +776,14 @@ namespace Emby.Server.Implementations.Plugins
                         lastName = entry.Name;
                         continue;
                     }
+
+                    // Skip cleanup for intentionally disabled plugins - they should remain as-is
+                    // and not be treated as superseded versions or marked for deletion.
+                    // See: https://github.com/jellyfin/jellyfin/issues/15897
+                    if (entry.Manifest.Status == PluginStatus.Disabled)
+                    {
+                        continue;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(lastName))
