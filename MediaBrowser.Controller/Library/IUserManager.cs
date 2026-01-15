@@ -22,6 +22,11 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> OnUserUpdated;
 
         /// <summary>
+        /// Occurs when a user login, register, changePassword, deleted, added ex.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserChanged;
+
+        /// <summary>
         /// Gets the users.
         /// </summary>
         /// <value>The users.</value>
