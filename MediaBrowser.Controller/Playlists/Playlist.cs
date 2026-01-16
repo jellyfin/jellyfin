@@ -44,6 +44,8 @@ namespace MediaBrowser.Controller.Playlists
 
         public IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 
+        public string ShareToken { get; set; }
+
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
 
@@ -94,6 +96,11 @@ namespace MediaBrowser.Controller.Playlists
                 var path = Path;
 
                 if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                if (FileSystem is null || ConfigurationManager?.ApplicationPaths is null)
                 {
                     return false;
                 }

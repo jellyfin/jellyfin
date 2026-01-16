@@ -94,4 +94,9 @@ public static class Policies
     /// Policy name for accessing lyric management.
     /// </summary>
     public const string LyricManagement = "LyricManagement";
+
+    /// <summary>
+    /// Policy name for accessing playlists via share token (anonymous access).
+    /// </summary>
+    public const string PlaylistShareAccess = "PlaylistShareAccess";
 }
