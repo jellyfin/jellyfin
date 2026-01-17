@@ -1567,29 +1567,36 @@ public sealed class BaseItemRepository
 
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
+        // When searching, prioritize by match quality: exact match > prefix match > contains
+        if (hasSearch)
+        {
+            orderedQuery = query.OrderBy(OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!));
+        }
+
         var firstOrdering = orderBy.FirstOrDefault();
         if (firstOrdering != default)
         {
             var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
-            if (firstOrdering.SortOrder == SortOrder.Ascending)
+            if (orderedQuery is null)
             {
-                orderedQuery = query.OrderBy(expression);
+                // No search relevance ordering, start fresh
+                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
+                    ? query.OrderBy(expression)
+                    : query.OrderByDescending(expression);
             }
             else
             {
-                orderedQuery = query.OrderByDescending(expression);
+                // Search relevance ordering already applied, chain with ThenBy
+                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
+                    ? orderedQuery.ThenBy(expression)
+                    : orderedQuery.ThenByDescending(expression);
             }
 
             if (firstOrdering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
             {
-                if (firstOrdering.SortOrder is SortOrder.Ascending)
-                {
-                    orderedQuery = orderedQuery.ThenBy(e => e.Name);
-                }
-                else
-                {
-                    orderedQuery = orderedQuery.ThenByDescending(e => e.Name);
-                }
+                orderedQuery = firstOrdering.SortOrder is SortOrder.Ascending
+                    ? orderedQuery.ThenBy(e => e.Name)
+                    : orderedQuery.ThenByDescending(e => e.Name);
             }
         }
 
