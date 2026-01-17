@@ -1436,8 +1436,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "UserId", "CustomDataKey");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("ItemId", "UserId", "IsFavorite");
 
                     b.HasIndex("ItemId", "UserId", "LastPlayedDate");
@@ -1445,6 +1443,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("ItemId", "UserId", "PlaybackPositionTicks");
 
                     b.HasIndex("ItemId", "UserId", "Played");
+
+                    b.HasIndex("UserId", "ItemId", "LastPlayedDate");
 
                     b.ToTable("UserData");
 
