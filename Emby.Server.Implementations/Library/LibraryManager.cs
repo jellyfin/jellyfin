@@ -376,7 +376,18 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        BaseItem.ChannelManager.DeleteItem(item).GetAwaiter().GetResult();
+                        // Fire-and-forget to avoid blocking during item deletion
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await BaseItem.ChannelManager.DeleteItem(item).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error deleting channel item {ItemId}", item.Id);
+                            }
+                        });
                     }
                     catch (ArgumentException)
                     {
@@ -875,9 +886,20 @@ namespace Emby.Server.Implementations.Library
 
             if (!folder.ParentId.Equals(rootFolder.Id))
             {
-                rootFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
-                folder.ParentId = rootFolder.Id;
-                folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
+                // Fire-and-forget to avoid blocking during initialization
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await rootFolder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
+                        folder.ParentId = rootFolder.Id;
+                        await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error updating playlists folder in repository");
+                    }
+                });
             }
 
             rootFolder.AddVirtualChild(folder);
@@ -1174,14 +1196,18 @@ namespace Emby.Server.Implementations.Library
             foreach (var child in rootFolder.Children!.OfType<Folder>())
             {
                 // If the user has somehow deleted the collection directory, remove the metadata from the database.
-                if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
+                if (child is CollectionFolder collectionFolder)
                 {
-                    toDelete.Add(collectionFolder.Id);
+                    // Use IFileSystem abstraction (can be optimized/cached in future)
+                    var exists = await Task.Run(() => _fileSystem.DirectoryExists(collectionFolder.Path), cancellationToken).ConfigureAwait(false);
+                    if (!exists)
+                    {
+                        toDelete.Add(collectionFolder.Id);
+                        continue;
+                    }
                 }
-                else
-                {
-                    await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                }
+
+                await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
             }
 
             if (toDelete.Count > 0)
@@ -2446,8 +2472,19 @@ namespace Emby.Server.Implementations.Library
 
             if (refresh)
             {
-                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
-                ProviderManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
+                // Fire-and-forget to avoid blocking during view creation
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
+                        ProviderManager.QueueRefresh(item.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.Normal);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error updating user view in repository");
+                    }
+                });
             }
 
             return item;
@@ -2631,7 +2668,18 @@ namespace Emby.Server.Implementations.Library
             if (viewType != item.ViewType)
             {
                 item.ViewType = viewType;
-                item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                // Fire-and-forget to avoid blocking during view update
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error updating named view in repository");
+                    }
+                });
             }
 
             var lastRefreshedUtc = item.DateLastRefreshed;
@@ -2960,7 +3008,18 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
-            UpdatePeopleAsync(item, people, CancellationToken.None).GetAwaiter().GetResult();
+            // Fire-and-forget to avoid blocking during people update
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await UpdatePeopleAsync(item, people, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating people for item {ItemId}", item.Id);
+                }
+            });
         }
 
         /// <inheritdoc />
