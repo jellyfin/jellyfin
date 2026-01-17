@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BitFaster.Caching.Lru;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,9 +14,7 @@ namespace MediaBrowser.Controller.Providers
     {
         // Static cache shared across all DirectoryService instances to prevent unbounded memory growth
         // Using FastConcurrentLru for bounded, high-performance caching (as suggested in TODO)
-        private static readonly FastConcurrentLru<string, object> _staticCache = new(
-            Environment.ProcessorCount,
-            capacity: 10000); // Configurable capacity limit
+        private static readonly FastConcurrentLru<string, object> _staticCache = new(10000); // Configurable capacity limit
 
         private readonly IFileSystem _fileSystem;
 
@@ -44,9 +44,13 @@ namespace MediaBrowser.Controller.Providers
             var cacheKey = $"fs_entries_{path}";
             if (_staticCache.TryGet(cacheKey, out var cached) && cached is FileSystemMetadata[] entries)
             {
+                // Cache HIT - verify FastConcurrentLru is working
+                BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache HIT for {CacheKey}", cacheKey);
                 return entries;
             }
 
+            // Cache MISS - will add to cache
+            BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache MISS for {CacheKey}, adding to cache", cacheKey);
             entries = _fileSystem.GetFileSystemEntries(path).ToArray();
             _staticCache.AddOrUpdate(cacheKey, entries);
             return entries;
@@ -101,9 +105,11 @@ namespace MediaBrowser.Controller.Providers
             var cacheKey = $"fs_entry_{path}";
             if (_staticCache.TryGet(cacheKey, out var cached) && cached is FileSystemMetadata result)
             {
+                BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache HIT for {CacheKey}", cacheKey);
                 return result;
             }
 
+            BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache MISS for {CacheKey}", cacheKey);
             var file = _fileSystem.GetFileSystemInfo(path);
             FileSystemMetadata? result2 = null;
             if (file?.Exists ?? false)
@@ -129,11 +135,13 @@ namespace MediaBrowser.Controller.Providers
             List<string>? filePaths = null;
             if (!_staticCache.TryGet(cacheKey, out var cached) || cached is not List<string> cachedPaths)
             {
+                BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache MISS for {CacheKey}", cacheKey);
                 filePaths = _fileSystem.GetFilePaths(path).ToList();
                 _staticCache.AddOrUpdate(cacheKey, filePaths);
             }
             else
             {
+                BaseItem.Logger?.LogInformation("[PR16038] DirectoryService cache HIT for {CacheKey}", cacheKey);
                 filePaths = cachedPaths;
             }
 

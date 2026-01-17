@@ -13,6 +13,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -73,6 +74,34 @@ namespace MediaBrowser.Controller.Channels
             catch
             {
                 // Already logged at lower levels
+                return new QueryResult<BaseItem>();
+            }
+        }
+
+        /// <summary>
+        /// Gets items internally asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The query result.</returns>
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternalAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            Logger?.LogInformation("[PR16038] Channel.GetItemsInternalAsync called for {ChannelName} ({ChannelId})", Name, Id);
+            try
+            {
+                query.Parent = this;
+                query.ChannelIds = new Guid[] { Id };
+
+                Logger?.LogInformation("[PR16038] Loading channel items asynchronously for Channel {ChannelId} (no Task.Run!)", Id);
+                // Proper async implementation - no Task.Run needed!
+                var result = await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                Logger?.LogInformation("[PR16038] Channel items loaded successfully: {Count} items", result.Items.Count);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't throw - this could cause parent screens with other content to fail
+                Logger.LogError(ex, "Error loading channel items for Channel {ChannelId}", Id);
                 return new QueryResult<BaseItem>();
             }
         }

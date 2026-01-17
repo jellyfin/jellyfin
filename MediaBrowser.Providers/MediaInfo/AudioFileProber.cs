@@ -141,7 +141,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.IsLocked)
             {
-                await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics).ConfigureAwait(false);
+                await FetchDataFromTags(audio, mediaInfo, options, tryExtractEmbeddedLyrics, cancellationToken).ConfigureAwait(false);
                 if (tryExtractEmbeddedLyrics)
                 {
                     AddExternalLyrics(audio, mediaStreams, options);
@@ -160,7 +160,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
         /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
         /// <param name="tryExtractEmbeddedLyrics">Whether to extract embedded lyrics to lrc file. </param>
-        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics)
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, bool tryExtractEmbeddedLyrics, CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(audio);
             Track track = new Track(audio.Path);

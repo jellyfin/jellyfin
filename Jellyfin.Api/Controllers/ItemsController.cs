@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -159,7 +160,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItems(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItems(
         [FromQuery] Guid? userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -519,7 +520,10 @@ public class ItemsController : BaseJellyfinApiController
             }
 
             query.Parent = null;
-            result = folder.GetItems(query);
+            // Use async version when available (proper async/await, no Task.Run)
+            _logger.LogInformation("[PR16038] ItemsController.GetItems calling folder.GetItemsAsync for {FolderName} ({FolderId})", folder.Name, folder.Id);
+            result = await folder.GetItemsAsync(query, HttpContext.RequestAborted).ConfigureAwait(false);
+            _logger.LogInformation("[PR16038] ItemsController.GetItems received {ItemCount} items from GetItemsAsync", result.Items.Count);
         }
         else
         {
@@ -626,7 +630,7 @@ public class ItemsController : BaseJellyfinApiController
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserIdLegacy(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItemsByUserIdLegacy(
         [FromRoute] Guid userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -712,7 +716,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
-        => GetItems(
+    {
+        return await GetItems(
             userId,
             maxOfficialRating,
             hasThemeSong,
@@ -798,7 +803,8 @@ public class ItemsController : BaseJellyfinApiController
             studioIds,
             genreIds,
             enableTotalRecordCount,
-            enableImages);
+            enableImages).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Gets items based on a query.

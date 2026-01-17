@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -234,7 +235,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     query.ChannelIds = [ChannelId];
                     // Channel items are loaded asynchronously - return empty result to avoid blocking
                     // Note: This is a workaround for synchronous property getters that need async data
-                    // TODO: Refactor to make GetItemsInternal async when callers can be updated
+                    // Use GetItemsInternalAsync for proper async support
                     _ = Task.Run(async () =>
                     {
                         try
@@ -251,6 +252,62 @@ namespace MediaBrowser.Controller.Entities.TV
                 catch
                 {
                     // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
+            if (query.Recursive)
+            {
+                var seriesKey = GetUniqueSeriesKey(this);
+
+                query.AncestorWithPresentationUniqueKey = null;
+                query.SeriesPresentationUniqueKey = seriesKey;
+                if (query.OrderBy.Count == 0)
+                {
+                    query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
+                }
+
+                if (query.IncludeItemTypes.Length == 0)
+                {
+                    query.IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season };
+                }
+
+                query.IsVirtualItem = false;
+                return LibraryManager.GetItemsResult(query);
+            }
+
+            SetSeasonQueryOptions(query, user);
+
+            return LibraryManager.GetItemsResult(query);
+        }
+
+        /// <summary>
+        /// Gets items internally asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The query result.</returns>
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternalAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            Logger?.LogInformation("[PR16038] Series.GetItemsInternalAsync called for {SeriesName} (SourceType: {SourceType})", Name, SourceType);
+            var user = query.User;
+
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = [ChannelId];
+                    Logger?.LogInformation("[PR16038] Loading channel items asynchronously for Series {ChannelId} (no Task.Run!)", ChannelId);
+                    // Proper async implementation - no Task.Run needed!
+                    var result = await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    Logger?.LogInformation("[PR16038] Series channel items loaded: {Count} items", result.Items.Count);
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't throw - this could cause parent screens with other content to fail
+                    Logger.LogError(ex, "Error loading channel items for Series {ChannelId}", ChannelId);
                     return new QueryResult<BaseItem>();
                 }
             }
@@ -411,7 +468,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     query.ChannelIds = [ChannelId];
                     // Channel items are loaded asynchronously - return empty to avoid blocking
                     // Note: This is a workaround for synchronous property getters that need async data
-                    // TODO: Refactor to make GetItemsInternal async when callers can be updated
+                    // Use GetItemsInternalAsync for proper async support
                     _ = Task.Run(async () =>
                     {
                         try

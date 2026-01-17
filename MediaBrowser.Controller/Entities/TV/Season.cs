@@ -16,6 +16,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -162,7 +163,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     query.ChannelIds = new[] { ChannelId };
                     // Channel items are loaded asynchronously - return empty result to avoid blocking
                     // Note: This is a workaround for synchronous property getters that need async data
-                    // TODO: Refactor to make GetItemsInternal async when callers can be updated
+                    // Use GetItemsInternalAsync for proper async support
                     _ = Task.Run(async () =>
                     {
                         try
@@ -179,6 +180,49 @@ namespace MediaBrowser.Controller.Entities.TV
                 catch
                 {
                     // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
+            if (query.User is null)
+            {
+                return base.GetItemsInternal(query);
+            }
+
+            var user = query.User;
+
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+            var items = GetEpisodes(user, query.DtoOptions, true).Where(filter);
+
+            return PostFilterAndSort(items, query);
+        }
+
+        /// <summary>
+        /// Gets items internally asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The query result.</returns>
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternalAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            Logger?.LogInformation("[PR16038] Season.GetItemsInternalAsync called for {SeasonName} (SourceType: {SourceType})", Name, SourceType);
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = new[] { ChannelId };
+                    Logger?.LogInformation("[PR16038] Loading channel items asynchronously for Season {ChannelId} (no Task.Run!)", ChannelId);
+                    // Proper async implementation - no Task.Run needed!
+                    var result = await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    Logger?.LogInformation("[PR16038] Season channel items loaded: {Count} items", result.Items.Count);
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't throw - this could cause parent screens with other content to fail
+                    Logger.LogError(ex, "Error loading channel items for Season {ChannelId}", ChannelId);
                     return new QueryResult<BaseItem>();
                 }
             }

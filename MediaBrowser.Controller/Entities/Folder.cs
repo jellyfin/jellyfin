@@ -948,6 +948,56 @@ namespace MediaBrowser.Controller.Entities
             return GetItemsInternal(query).Items;
         }
 
+        /// <summary>
+        /// Gets items asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The query result.</returns>
+        public async Task<QueryResult<BaseItem>> GetItemsAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            Logger?.LogInformation("[PR16038] GetItemsAsync called for {ItemName} (Type: {ItemType})", Name, GetType().Name);
+            if (query.ItemIds.Length > 0)
+            {
+                var result = LibraryManager.GetItemsResult(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    result.Items = SortItemsByRequest(query, result.Items);
+                }
+
+                return result;
+            }
+
+            return await GetItemsInternalAsync(query, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets item list asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The item list.</returns>
+        public async Task<IReadOnlyList<BaseItem>> GetItemListAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            query.EnableTotalRecordCount = false;
+
+            if (query.ItemIds.Length > 0)
+            {
+                var result = LibraryManager.GetItemList(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    return SortItemsByRequest(query, result);
+                }
+
+                return result;
+            }
+
+            var itemsResult = await GetItemsInternalAsync(query, cancellationToken).ConfigureAwait(false);
+            return itemsResult.Items;
+        }
+
         protected virtual QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
             if (SourceType == SourceType.Channel)
@@ -979,6 +1029,71 @@ namespace MediaBrowser.Controller.Entities
                 catch
                 {
                     // Already logged at lower levels
+                    return new QueryResult<BaseItem>();
+                }
+            }
+
+            if (query.Recursive)
+            {
+                return QueryRecursive(query);
+            }
+
+            var user = query.User;
+
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+            IEnumerable<BaseItem> items;
+
+            int totalItemCount = 0;
+            if (query.User is null)
+            {
+                items = Children.Where(filter);
+                totalItemCount = items.Count();
+            }
+            else
+            {
+                // need to pass this param to the children.
+                // Note: Don't pass Limit/StartIndex here as pagination should happen after sorting in PostFilterAndSort
+                var childQuery = new InternalItemsQuery
+                {
+                    DisplayAlbumFolders = query.DisplayAlbumFolders,
+                    NameStartsWith = query.NameStartsWith,
+                    NameStartsWithOrGreater = query.NameStartsWithOrGreater,
+                    NameLessThan = query.NameLessThan
+                };
+
+                items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
+            }
+
+            return PostFilterAndSort(items, query);
+        }
+
+        /// <summary>
+        /// Gets items internally asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The query result.</returns>
+        protected virtual async Task<QueryResult<BaseItem>> GetItemsInternalAsync(InternalItemsQuery query, CancellationToken cancellationToken)
+        {
+            Logger?.LogInformation("[PR16038] GetItemsInternalAsync called for {ItemName} (SourceType: {SourceType})", Name, SourceType);
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    query.Parent = this;
+                    query.ChannelIds = new[] { ChannelId };
+
+                    Logger?.LogInformation("[PR16038] Loading channel items asynchronously for {ChannelId} (no Task.Run!)", ChannelId);
+                    // Proper async implementation - no Task.Run needed!
+                    var result = await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    Logger?.LogInformation("[PR16038] Channel items loaded successfully: {Count} items", result.Items.Count);
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't throw - this could cause parent screens with other content to fail
+                    Logger.LogError(ex, "Error loading channel items for {ChannelId}", ChannelId);
                     return new QueryResult<BaseItem>();
                 }
             }

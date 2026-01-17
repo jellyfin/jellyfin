@@ -3023,6 +3023,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdatePeopleAsync(BaseItem item, IReadOnlyList<PersonInfo> people, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("[PR16038] UpdatePeopleAsync called for {ItemName} ({ItemId}) with {PeopleCount} people", item.Name, item.Id, people.Count);
             if (!item.SupportsPeople)
             {
                 return;
