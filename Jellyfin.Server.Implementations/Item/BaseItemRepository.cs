@@ -709,41 +709,37 @@ public sealed class BaseItemRepository
             lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
         }
 
-        var allNextUnwatchedCandidates = context.BaseItems
+        var allCandidatesWithPlayedStatus = context.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == episodeTypeName)
             .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
             .Where(e => e.ParentIndexNumber != 0)
             .Where(e => !e.IsVirtualItem)
-            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
-            .Select(e => new
-            {
-                e.Id,
-                e.SeriesPresentationUniqueKey,
-                e.ParentIndexNumber,
-                EpisodeNumber = e.IndexNumber
-            })
+            .GroupJoin(
+                context.UserData.AsNoTracking().Where(ud => ud.UserId == userId),
+                e => e.Id,
+                ud => ud.ItemId,
+                (episode, userData) => new
+                {
+                    episode.Id,
+                    episode.SeriesPresentationUniqueKey,
+                    episode.ParentIndexNumber,
+                    EpisodeNumber = episode.IndexNumber,
+                    IsPlayed = userData.Any(ud => ud.Played)
+                })
+            .ToList();
+
+        var allNextUnwatchedCandidates = allCandidatesWithPlayedStatus
+            .Where(c => !c.IsPlayed)
+            .Select(c => new { c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber })
             .ToList();
 
         List<(Guid Id, string? SeriesKey, int? Season, int? Episode)> allNextPlayedCandidates = new();
         if (includeWatchedForRewatching)
         {
-            allNextPlayedCandidates = context.BaseItems
-                .AsNoTracking()
-                .Where(e => e.Type == episodeTypeName)
-                .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
-                .Where(e => e.ParentIndexNumber != 0)
-                .Where(e => !e.IsVirtualItem)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
-                .Select(e => new
-                {
-                    e.Id,
-                    e.SeriesPresentationUniqueKey,
-                    e.ParentIndexNumber,
-                    EpisodeNumber = e.IndexNumber
-                })
-                .AsEnumerable()
-                .Select(e => (e.Id, e.SeriesPresentationUniqueKey, e.ParentIndexNumber, e.EpisodeNumber))
+            allNextPlayedCandidates = allCandidatesWithPlayedStatus
+                .Where(c => c.IsPlayed)
+                .Select(c => (c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber))
                 .ToList();
         }
 
@@ -1308,12 +1304,38 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
 
+        var itemsWithAncestors = tuples
+            .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var allExistingAncestorIds = itemsWithAncestors.Count > 0
+            ? context.AncestorIds
+                .Where(e => itemsWithAncestors.Contains(e.ItemId))
+                .ToList()
+                .GroupBy(e => e.ItemId)
+                .ToDictionary(g => g.Key, g => g.ToList())
+            : new Dictionary<Guid, List<AncestorId>>();
+
+        var allRequestedAncestorIds = tuples
+            .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
+            .SelectMany(t => t.AncestorIds!)
+            .Distinct()
+            .ToList();
+
+        var validAncestorIdsSet = allRequestedAncestorIds.Count > 0
+            ? context.BaseItems
+                .Where(e => allRequestedAncestorIds.Contains(e.Id))
+                .Select(f => f.Id)
+                .ToHashSet()
+            : new HashSet<Guid>();
+
         foreach (var item in tuples)
         {
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
-                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
+                var existingAncestorIds = allExistingAncestorIds.GetValueOrDefault(item.Item.Id) ?? new List<AncestorId>();
+                var validAncestorIds = item.AncestorIds.Where(id => validAncestorIdsSet.Contains(id)).ToArray();
                 foreach (var ancestorId in validAncestorIds)
                 {
                     var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
@@ -1335,10 +1357,36 @@ public sealed class BaseItemRepository
 
                 context.AncestorIds.RemoveRange(existingAncestorIds);
             }
+        }
 
+        var folderIds = tuples
+            .Where(t => t.Item is Folder)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var videoIds = tuples
+            .Where(t => t.Item is Video)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var allLinkedChildrenByParent = new Dictionary<Guid, List<LinkedChildEntity>>();
+        if (folderIds.Count > 0 || videoIds.Count > 0)
+        {
+            var allParentIds = folderIds.Concat(videoIds).Distinct().ToList();
+            var allLinkedChildren = context.LinkedChildren
+                .Where(e => allParentIds.Contains(e.ParentId))
+                .ToList();
+
+            allLinkedChildrenByParent = allLinkedChildren
+                .GroupBy(e => e.ParentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+        }
+
+        foreach (var item in tuples)
+        {
             if (item.Item is Folder folder)
             {
-                var existingLinkedChildren = context.LinkedChildren.Where(e => e.ParentId == item.Item.Id).ToList();
+                var existingLinkedChildren = allLinkedChildrenByParent.GetValueOrDefault(item.Item.Id)?.ToList() ?? new List<LinkedChildEntity>();
                 if (folder.LinkedChildren.Length > 0)
                 {
 #pragma warning disable CS0618 // Type or member is obsolete - legacy path resolution for old data
@@ -1427,8 +1475,9 @@ public sealed class BaseItemRepository
             // Handle Video alternate versions
             if (item.Item is Video video)
             {
-                var existingLinkedChildren = context.LinkedChildren
-                    .Where(e => e.ParentId == video.Id && ((int)e.ChildType == 2 || (int)e.ChildType == 3))
+                // Use batch-fetched data and filter for alternate version types (2 = LocalAlternateVersion, 3 = LinkedAlternateVersion)
+                var existingLinkedChildren = (allLinkedChildrenByParent.GetValueOrDefault(video.Id) ?? new List<LinkedChildEntity>())
+                    .Where(e => (int)e.ChildType == 2 || (int)e.ChildType == 3)
                     .ToList();
 
                 var newLinkedChildren = new List<(Guid ChildId, LinkedChildType Type)>();
@@ -2827,19 +2876,35 @@ public sealed class BaseItemRepository
         if (filter.IsLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Rating >= UserItemData.MinLikeValue);
+                .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.Rating >= UserItemData.MinLikeValue));
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavoriteOrLiked);
+            if (filter.IsFavoriteOrLiked.Value)
+            {
+                baseQuery = baseQuery
+                    .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+            }
+            else
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+            }
         }
 
         if (filter.IsFavorite.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
+            if (filter.IsFavorite.Value)
+            {
+                baseQuery = baseQuery
+                    .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+            }
+            else
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+            }
         }
 
         if (filter.IsPlayed.HasValue)
@@ -2847,35 +2912,19 @@ public sealed class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                // Get distinct SeriesPresentationUniqueKeys that have at least one played episode
-                var playedSeriesKeys = context.BaseItems
+                // Use subquery to find series with played episodes - stays in SQL instead of materializing to HashSet
+                var playedSeriesKeysSubquery = context.BaseItems
                     .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesPresentationUniqueKey != null)
                     .Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Played))
-                    .Select(e => e.SeriesPresentationUniqueKey!)
-                    .Distinct()
-                    .ToHashSet();
+                    .Select(e => e.SeriesPresentationUniqueKey!);
 
                 if (filter.IsPlayed.Value)
                 {
-                    if (playedSeriesKeys.Count == 0)
-                    {
-                        baseQuery = baseQuery.Where(e => false);
-                    }
-                    else
-                    {
-                        baseQuery = baseQuery.Where(e => playedSeriesKeys.Contains(e.PresentationUniqueKey!));
-                    }
+                    baseQuery = baseQuery.Where(e => playedSeriesKeysSubquery.Contains(e.PresentationUniqueKey!));
                 }
                 else
                 {
-                    if (playedSeriesKeys.Count == 0)
-                    {
-                        // No played episodes - all series are unplayed, no filter needed
-                    }
-                    else
-                    {
-                        baseQuery = baseQuery.Where(e => !playedSeriesKeys.Contains(e.PresentationUniqueKey!));
-                    }
+                    baseQuery = baseQuery.Where(e => !playedSeriesKeysSubquery.Contains(e.PresentationUniqueKey!));
                 }
             }
             else if (filter.IsPlayed.Value)
@@ -2895,12 +2944,12 @@ public sealed class BaseItemRepository
             if (filter.IsResumable.Value)
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks > 0);
+                       .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
             }
             else
             {
                 baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks == 0);
+                       .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
             }
         }
 
@@ -3103,7 +3152,8 @@ public sealed class BaseItemRepository
 
         if (filter.ExtraTypes.Length > 0)
         {
-            var extraTypeValues = filter.ExtraTypes.Cast<BaseItemExtraType?>().ToArray();
+            // Convert ExtraType enum to BaseItemExtraType enum via int cast (same underlying values)
+            var extraTypeValues = filter.ExtraTypes.Select(e => (BaseItemExtraType?)(int)e).ToArray();
             baseQuery = baseQuery.Where(e => e.ExtraType != null && extraTypeValues.Contains(e.ExtraType));
         }
 

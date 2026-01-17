@@ -1,3 +1,5 @@
+#pragma warning disable RS0030 // Do not use banned APIs
+
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -24,17 +26,13 @@ internal static class FolderAwareFilterExtensions
         JellyfinDbContext context,
         Expression<Func<BaseItemEntity, bool>> condition)
     {
+        // Use correlated Any() subqueries instead of UNION + Contains for better index utilization
         var matchingIds = context.BaseItems.Where(condition).Select(b => b.Id);
-        var foldersWithMatchingDescendants = context.AncestorIds
-            .Where(a => matchingIds.Contains(a.ItemId))
-            .Select(a => a.ParentItemId)
-            .Union(context.LinkedChildren
-                .Where(lc => matchingIds.Contains(lc.ChildId))
-                .Select(lc => lc.ParentId));
 
         return query.Where(e =>
             matchingIds.Contains(e.Id)
-            || foldersWithMatchingDescendants.Contains(e.Id));
+            || context.AncestorIds.Any(a => a.ParentItemId == e.Id && matchingIds.Contains(a.ItemId))
+            || context.LinkedChildren.Any(lc => lc.ParentId == e.Id && matchingIds.Contains(lc.ChildId)));
     }
 
     /// <summary>
@@ -51,15 +49,10 @@ internal static class FolderAwareFilterExtensions
         Expression<Func<BaseItemEntity, bool>> condition)
     {
         var matchingIds = context.BaseItems.Where(condition).Select(b => b.Id);
-        var foldersWithMatchingDescendants = context.AncestorIds
-            .Where(a => matchingIds.Contains(a.ItemId))
-            .Select(a => a.ParentItemId)
-            .Union(context.LinkedChildren
-                .Where(lc => matchingIds.Contains(lc.ChildId))
-                .Select(lc => lc.ParentId));
 
         return query.Where(e =>
             !matchingIds.Contains(e.Id)
-            && !foldersWithMatchingDescendants.Contains(e.Id));
+            && !context.AncestorIds.Any(a => a.ParentItemId == e.Id && matchingIds.Contains(a.ItemId))
+            && !context.LinkedChildren.Any(lc => lc.ParentId == e.Id && matchingIds.Contains(lc.ChildId)));
     }
 }
