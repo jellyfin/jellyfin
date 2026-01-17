@@ -279,7 +279,7 @@ public sealed class BaseItemRepository
 
         // Filter nulls at database level before materialization
         dbQuery = dbQuery.Where(e => e != null);
-        
+
         // Materialize and deserialize, filtering out null DTOs
         result.Items = dbQuery.AsEnumerable()
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
