@@ -1,32 +1,41 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        // TODO make static and switch to FastConcurrentLru.
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
+        private static readonly MemoryCacheEntryOptions _defaultCacheOptions = new()
+        {
+            SlidingExpiration = TimeSpan.FromMinutes(5),
+            Size = 1
+        };
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
-
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
-
+        private readonly IMemoryCache? _cache;
         private readonly IFileSystem _fileSystem;
 
-        public DirectoryService(IFileSystem fileSystem)
+        public DirectoryService(IFileSystem fileSystem, IMemoryCache? memoryCache = null)
         {
             _fileSystem = fileSystem;
+            _cache = memoryCache;
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+            var cacheKey = $"fs_entries_{path}";
+            if (_cache?.TryGetValue<FileSystemMetadata[]>(cacheKey, out var cached) == true)
+            {
+                return cached!;
+            }
+
+            var entries = _fileSystem.GetFileSystemEntries(path).ToArray();
+            _cache?.Set(cacheKey, entries, _defaultCacheOptions);
+            return entries;
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -75,14 +84,18 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            if (!_fileCache.TryGetValue(path, out var result))
+            var cacheKey = $"fs_entry_{path}";
+            if (_cache?.TryGetValue<FileSystemMetadata>(cacheKey, out var cached) == true)
             {
-                var file = _fileSystem.GetFileSystemInfo(path);
-                if (file?.Exists ?? false)
-                {
-                    result = file;
-                    _fileCache.TryAdd(path, result);
-                }
+                return cached;
+            }
+
+            var file = _fileSystem.GetFileSystemInfo(path);
+            FileSystemMetadata? result = null;
+            if (file?.Exists ?? false)
+            {
+                result = file;
+                _cache?.Set(cacheKey, result, _defaultCacheOptions);
             }
 
             return result;
@@ -93,19 +106,25 @@ namespace MediaBrowser.Controller.Providers
 
         public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
         {
+            var cacheKey = $"fs_paths_{path}";
             if (clearCache)
             {
-                _filePathCache.TryRemove(path, out _);
+                _cache?.Remove(cacheKey);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+            List<string>? filePaths = null;
+            if (_cache?.TryGetValue<List<string>>(cacheKey, out filePaths) != true)
+            {
+                filePaths = _fileSystem.GetFilePaths(path).ToList();
+                _cache?.Set(cacheKey, filePaths, _defaultCacheOptions);
+            }
 
-            if (sort)
+            if (sort && filePaths is not null)
             {
                 filePaths.Sort();
             }
 
-            return filePaths;
+            return filePaths ?? new List<string>();
         }
 
         public bool IsAccessible(string path)
