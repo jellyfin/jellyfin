@@ -207,9 +207,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("ExternalServiceId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ExtraIds")
-                        .HasColumnType("TEXT");
-
                     b.Property<int?>("ExtraType")
                         .HasColumnType("INTEGER");
 

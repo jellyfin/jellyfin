@@ -118,8 +118,6 @@ public class BaseItemEntity
 
     public string? ProductionLocations { get; set; }
 
-    public string? ExtraIds { get; set; }
-
     public int? TotalBitrate { get; set; }
 
     public BaseItemExtraType? ExtraType { get; set; }

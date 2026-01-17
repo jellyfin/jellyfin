@@ -39,6 +39,8 @@ namespace MediaBrowser.Controller.Entities
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
+            OwnerIds = Array.Empty<Guid>();
+            ExtraTypes = Array.Empty<ExtraType>();
             MediaTypes = Array.Empty<MediaType>();
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
@@ -132,6 +134,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid[] PersonIds { get; set; }
 
         public Guid[] ItemIds { get; set; }
+
+        public Guid[] OwnerIds { get; set; }
+
+        public ExtraType[] ExtraTypes { get; set; }
 
         public Guid[] ExcludeItemIds { get; set; }
 

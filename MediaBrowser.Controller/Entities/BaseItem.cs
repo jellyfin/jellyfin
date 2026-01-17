@@ -107,7 +107,6 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = Array.Empty<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
-            ExtraIds = Array.Empty<Guid>();
             UserData = [];
         }
 
@@ -397,8 +396,6 @@ namespace MediaBrowser.Controller.Entities
         public int Width { get; set; }
 
         public int Height { get; set; }
-
-        public Guid[] ExtraIds { get; set; }
 
         /// <summary>
         /// Gets the primary image path.
@@ -1396,7 +1393,13 @@ namespace MediaBrowser.Controller.Entities
         {
             var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = Array.ConvertAll(extras, x => x.Id);
-            var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
+
+            var currentExtraIds = LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [item.Id]
+            }).Select(e => e.Id).ToArray();
+
+            var extrasChanged = !currentExtraIds.OrderBy(x => x).SequenceEqual(newExtraIds.OrderBy(x => x));
 
             if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
@@ -1418,8 +1421,7 @@ namespace MediaBrowser.Controller.Entities
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
-            // Cleanup removed extras
-            var removedExtraIds = item.ExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
+            var removedExtraIds = currentExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
             if (removedExtraIds.Length > 0)
             {
                 var removedExtras = LibraryManager.GetItemList(new InternalItemsQuery()
@@ -1436,8 +1438,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            item.ExtraIds = newExtraIds;
 
             return true;
         }
@@ -2668,10 +2668,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>An enumerable containing the items.</returns>
         public IEnumerable<BaseItem> GetExtras()
         {
-            return ExtraIds
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i is not null)
-                .OrderBy(i => i.SortName);
+            return LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [Id],
+                OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
+            });
         }
 
         /// <summary>
@@ -2681,11 +2682,12 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>An enumerable containing the extras.</returns>
         public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
         {
-            return ExtraIds
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i is not null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
-                .OrderBy(i => i.SortName);
+            return LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [Id],
+                ExtraTypes = extraTypes.ToArray(),
+                OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
+            });
         }
 
         public virtual long GetRunTimeTicksForPlayState()

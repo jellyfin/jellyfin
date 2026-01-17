@@ -881,7 +881,6 @@ public sealed class BaseItemRepository
             dto.Audio = (ProgramAudio)entity.Audio;
         }
 
-        dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
         dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
@@ -1043,7 +1042,6 @@ public sealed class BaseItemRepository
             entity.ExtraType = (BaseItemExtraType)dto.ExtraType;
         }
 
-        entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p))) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
@@ -2310,6 +2308,17 @@ public sealed class BaseItemRepository
             }
         }
 
+        if (filter.OwnerIds.Length > 0)
+        {
+            baseQuery = baseQuery.Where(e => e.OwnerId != null && filter.OwnerIds.Contains(e.OwnerId.Value));
+        }
+
+        if (filter.ExtraTypes.Length > 0)
+        {
+            var extraTypeValues = filter.ExtraTypes.Cast<BaseItemExtraType?>().ToArray();
+            baseQuery = baseQuery.Where(e => e.ExtraType != null && extraTypeValues.Contains(e.ExtraType));
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
             baseQuery = baseQuery
@@ -2585,12 +2594,12 @@ public sealed class BaseItemRepository
             if (filter.HasSpecialFeature.Value)
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ExtraIds != null);
+                    .Where(e => e.Extras != null && e.Extras.Count > 0);
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ExtraIds == null);
+                    .Where(e => e.Extras == null || e.Extras.Count == 0);
             }
         }
 
@@ -2599,12 +2608,12 @@ public sealed class BaseItemRepository
             if (filter.HasTrailer.GetValueOrDefault() || filter.HasThemeSong.GetValueOrDefault() || filter.HasThemeVideo.GetValueOrDefault())
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ExtraIds != null);
+                    .Where(e => e.Extras != null && e.Extras.Count > 0);
             }
             else
             {
                 baseQuery = baseQuery
-                    .Where(e => e.ExtraIds == null);
+                    .Where(e => e.Extras == null || e.Extras.Count == 0);
             }
         }
 

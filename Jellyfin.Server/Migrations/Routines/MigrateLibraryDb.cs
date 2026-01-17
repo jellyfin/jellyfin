@@ -1176,10 +1176,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ProductionLocations = productionLocations;
         }
 
-        if (reader.TryGetString(index++, out var extraIds))
-        {
-            entity.ExtraIds = extraIds;
-        }
+        // Skip ExtraIds column (removed - extras are now tracked via OwnerId relationship)
+        index++;
 
         if (reader.TryGetInt32(index++, out var totalBitrate))
         {
