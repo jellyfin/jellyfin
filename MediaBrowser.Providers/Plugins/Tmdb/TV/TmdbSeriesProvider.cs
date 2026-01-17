@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (series is not null)
                 {
-                    var remoteResult = MapTvShowToRemoteSearchResult(series);
+                    var remoteResult = MapTvShowToRemoteSearchResult(series, searchInfo.DisplayOrder);
 
                     return new[] { remoteResult };
                 }
@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return remoteResults;
         }
 
-        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series)
+        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series, string? displayOrder)
         {
             var remoteResult = new RemoteSearchResult
             {
@@ -139,6 +139,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 remoteResult.TrySetProviderId(MetadataProvider.Tvdb, series.ExternalIds.TvdbId);
             }
+
+            WithDisplayOrder(series, remoteResult, displayOrder);
 
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
 
@@ -318,14 +320,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (seriesResult.EpisodeGroups?.Results is not null && MapDisplayOrderToTvGroupType(displayOrder) is { } tvGroupType)
-            {
-                var episodeGroup = seriesResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
-                if (episodeGroup is not null)
-                {
-                    series.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroup.Id);
-                }
-            }
+            WithDisplayOrder(seriesResult, series, displayOrder);
 
             return series;
         }
@@ -428,6 +423,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
                 string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
                 null;
+        }
+
+        private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, string? displayOrder)
+        {
+            if (searchResult.EpisodeGroups?.Results is not null)
+            {
+                var tvGroupType = MapDisplayOrderToTvGroupType(displayOrder);
+                if (tvGroupType is not null)
+                {
+                    var episodeGroup = searchResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
+                    if (episodeGroup is not null)
+                    {
+                        providerIds.SetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroup.Id);
+                    }
+                }
+            }
         }
     }
 }
