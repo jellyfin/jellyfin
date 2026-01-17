@@ -1613,12 +1613,6 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            foreach (var child in LinkedChildren)
-            {
-                // Reset the cached value
-                child.ItemId = null;
-            }
-
             return false;
         }
 
