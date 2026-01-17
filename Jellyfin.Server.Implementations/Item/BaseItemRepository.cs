@@ -856,7 +856,7 @@ public sealed class BaseItemRepository
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
         dto.DateLastRefreshed = entity.DateLastRefreshed ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.DateLastSaved = entity.DateLastSaved ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-        dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
+        dto.OwnerId = entity.OwnerId ?? Guid.Empty;
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
         dto.UserData = entity.UserData;
@@ -1023,7 +1023,7 @@ public sealed class BaseItemRepository
         entity.ChannelId = dto.ChannelId;
         entity.DateLastRefreshed = dto.DateLastRefreshed == DateTime.MinValue ? null : dto.DateLastRefreshed;
         entity.DateLastSaved = dto.DateLastSaved == DateTime.MinValue ? null : dto.DateLastSaved;
-        entity.OwnerId = dto.OwnerId.ToString();
+        entity.OwnerId = dto.OwnerId == Guid.Empty ? null : dto.OwnerId;
         entity.Width = dto.Width;
         entity.Height = dto.Height;
         entity.Provider = dto.ProviderIds.Select(e => new BaseItemProvider()

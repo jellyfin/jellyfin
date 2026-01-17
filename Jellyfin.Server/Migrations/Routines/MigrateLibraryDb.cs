@@ -1216,9 +1216,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ShowId = showId;
         }
 
-        if (reader.TryGetString(index++, out var ownerId))
+        if (reader.TryGetString(index++, out var ownerId) && Guid.TryParse(ownerId, out var ownerIdGuid))
         {
-            entity.OwnerId = ownerId;
+            entity.OwnerId = ownerIdGuid;
         }
 
         if (reader.TryGetString(index++, out var mediaType))

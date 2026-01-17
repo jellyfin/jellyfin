@@ -273,7 +273,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<string>("Overview")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("OwnerId")
+                    b.Property<Guid?>("OwnerId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ParentId")
@@ -363,11 +363,17 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExtraType");
+
+                    b.HasIndex("OwnerId");
+
                     b.HasIndex("ParentId");
 
                     b.HasIndex("Path");
 
                     b.HasIndex("PresentationUniqueKey");
+
+                    b.HasIndex("ExtraType", "OwnerId");
 
                     b.HasIndex("TopParentId", "Id");
 
@@ -380,6 +386,12 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Id", "Type", "IsFolder", "IsVirtualItem");
 
                     b.HasIndex("MediaType", "TopParentId", "IsVirtualItem", "PresentationUniqueKey");
+
+                    b.HasIndex("TopParentId", "IsFolder", "IsVirtualItem", "DateCreated");
+
+                    b.HasIndex("TopParentId", "MediaType", "IsVirtualItem", "DateCreated");
+
+                    b.HasIndex("TopParentId", "Type", "IsVirtualItem", "DateCreated");
 
                     b.HasIndex("Type", "SeriesPresentationUniqueKey", "IsFolder", "IsVirtualItem");
 
@@ -404,7 +416,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                             IsRepeat = false,
                             IsSeries = false,
                             IsVirtualItem = false,
-                            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+                            Name = "This is a placeholder item for UserData that has been detached from its original item",
                             Type = "PLACEHOLDER"
                         });
                 });
@@ -1483,12 +1495,19 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemEntity", b =>
                 {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Owner")
+                        .WithMany("Extras")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "DirectParent")
                         .WithMany("DirectChildren")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("DirectParent");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
@@ -1713,6 +1732,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Children");
 
                     b.Navigation("DirectChildren");
+
+                    b.Navigation("Extras");
 
                     b.Navigation("Images");
 

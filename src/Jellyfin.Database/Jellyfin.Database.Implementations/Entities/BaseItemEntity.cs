@@ -134,7 +134,17 @@ public class BaseItemEntity
 
     public string? ShowId { get; set; }
 
-    public string? OwnerId { get; set; }
+    public Guid? OwnerId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the owner item (for extras like trailers, theme songs, etc.).
+    /// </summary>
+    public BaseItemEntity? Owner { get; set; }
+
+    /// <summary>
+    /// Gets or sets the extras owned by this item (trailers, theme songs, behind the scenes, etc.).
+    /// </summary>
+    public ICollection<BaseItemEntity>? Extras { get; set; }
 
     public int? Width { get; set; }
 
