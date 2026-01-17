@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +26,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private readonly IPlaylistManager _playlistManager;
     private readonly ILogger<CleanupCollectionAndPlaylistPathsTask> _logger;
     private readonly IProviderManager _providerManager;
+    private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanupCollectionAndPlaylistPathsTask"/> class.
@@ -36,18 +36,21 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
         ILocalizationManager localization,
         ICollectionManager collectionManager,
         IPlaylistManager playlistManager,
         ILogger<CleanupCollectionAndPlaylistPathsTask> logger,
-        IProviderManager providerManager)
+        IProviderManager providerManager,
+        ILibraryManager libraryManager)
     {
         _localization = localization;
         _collectionManager = collectionManager;
         _playlistManager = playlistManager;
         _logger = logger;
         _providerManager = providerManager;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc />
@@ -111,12 +114,15 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
-            var path = linkedChild.Path;
-            if (!File.Exists(path) && !Directory.Exists(path))
+            if (linkedChild.ItemId.HasValue
+                && !linkedChild.ItemId.Value.IsEmpty()
+                && _libraryManager.GetItemById(linkedChild.ItemId.Value) is not null)
             {
-                _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
-                (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
+                continue;
             }
+
+            _logger.LogInformation("Item in {FolderName} with ItemId {ItemId} no longer exists in library", folder.Name, linkedChild.ItemId);
+            (itemsToRemove ??= []).Add(linkedChild);
         }
 
         if (itemsToRemove is not null)

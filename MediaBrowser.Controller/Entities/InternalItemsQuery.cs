@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeItemIds = Array.Empty<Guid>();
             ExcludeItemTypes = Array.Empty<BaseItemKind>();
             ExcludeTags = Array.Empty<string>();
+            ExtraTypes = Array.Empty<ExtraType>();
             GenreIds = Array.Empty<Guid>();
             Genres = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
@@ -44,6 +45,7 @@ namespace MediaBrowser.Controller.Entities
             MediaTypes = Array.Empty<MediaType>();
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
+            OwnerIds = Array.Empty<Guid>();
             PersonIds = Array.Empty<Guid>();
             PersonTypes = Array.Empty<string>();
             PresetViews = Array.Empty<CollectionType?>();
@@ -368,6 +370,8 @@ namespace MediaBrowser.Controller.Entities
         public string? SeriesTimerId { get; set; }
 
         public bool SkipDeserialization { get; set; }
+
+        public bool IncludeExtras { get; set; }
 
         public void SetUser(User user)
         {

@@ -36,8 +36,9 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
+        /// <param name="skipVisibilityCheck">Skip redundant visibility check if items are already filtered.</param>
         /// <returns>The <see cref="IReadOnlyList{T}"/> of <see cref="BaseItemDto"/>.</returns>
-        IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User? user = null, BaseItem? owner = null);
+        IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User? user = null, BaseItem? owner = null, bool skipVisibilityCheck = false);
 
         /// <summary>
         /// Gets the item by name dto.

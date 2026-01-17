@@ -1820,7 +1820,6 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.Settings);
                 fields.Remove(ItemFields.SortName);
                 fields.Remove(ItemFields.Tags);
-                fields.Remove(ItemFields.ExtraIds);
 
                 dtoOptions.Fields = fields.ToArray();
 

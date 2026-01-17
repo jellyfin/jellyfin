@@ -1806,10 +1806,23 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete - fallback for legacy LinkedChild data
         private BaseItem FindLinkedChild(LinkedChild info)
         {
-            var path = info.Path;
+            // First try to find by ItemId (new preferred method)
+            if (info.ItemId.HasValue && !info.ItemId.Value.Equals(Guid.Empty))
+            {
+                var item = LibraryManager.GetItemById(info.ItemId.Value);
+                if (item is not null)
+                {
+                    return item;
+                }
 
+                Logger.LogWarning("Unable to find linked item by ItemId {0}", info.ItemId);
+            }
+
+            // Fall back to Path (legacy method)
+            var path = info.Path;
             if (!string.IsNullOrEmpty(path))
             {
                 path = FileSystem.MakeAbsolutePath(ContainingFolderPath, path);
@@ -1824,13 +1837,14 @@ namespace MediaBrowser.Controller.Entities
                 return itemByPath;
             }
 
+            // Fall back to LibraryItemId (legacy method)
             if (!string.IsNullOrEmpty(info.LibraryItemId))
             {
                 var item = LibraryManager.GetItemById(info.LibraryItemId);
 
                 if (item is null)
                 {
-                    Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
+                    Logger.LogWarning("Unable to find linked item by LibraryItemId {0}", info.LibraryItemId);
                 }
 
                 return item;
@@ -1838,6 +1852,7 @@ namespace MediaBrowser.Controller.Entities
 
             return null;
         }
+#pragma warning restore CS0618
 
         /// <summary>
         /// Adds a studio to the item.

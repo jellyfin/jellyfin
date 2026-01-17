@@ -160,7 +160,7 @@ namespace MediaBrowser.Controller.Entities
         public bool IsStacked => AdditionalParts.Length > 0;
 
         [JsonIgnore]
-        public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
+        public override bool HasLocalAlternateVersions => LibraryManager.GetLocalAlternateVersionIds(this).Any();
 
         public static IRecordingsManager RecordingsManager { get; set; }
 
@@ -260,7 +260,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (callstack.Contains(video.Id))
                     {
-                        return video.LinkedAlternateVersions.Length + video.LocalAlternateVersions.Length + 1;
+                        // Count alternate versions using LibraryManager
+                        var linkedCount = LibraryManager.GetLinkedAlternateVersions(video).Count();
+                        var localCount = LibraryManager.GetLocalAlternateVersionIds(video).Count();
+                        return linkedCount + localCount + 1;
                     }
 
                     callstack.Add(video.Id);
@@ -268,7 +271,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
+            // Count alternate versions using LibraryManager
+            var linkedVersionCount = LibraryManager.GetLinkedAlternateVersions(this).Count();
+            var localVersionCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
+            return linkedVersionCount + localVersionCount + 1;
         }
 
         public override List<string> GetUserDataKeys()
@@ -364,11 +370,6 @@ namespace MediaBrowser.Controller.Entities
             return AdditionalParts.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
         }
 
-        public IEnumerable<Guid> GetLocalAlternateVersionIds()
-        {
-            return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
-        }
-
         private string GetUserDataKey(string providerId)
         {
             var key = providerId + "-" + ExtraType.ToString().ToLowerInvariant();
@@ -380,15 +381,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return key;
-        }
-
-        public IEnumerable<Video> GetLinkedAlternateVersions()
-        {
-            return LinkedAlternateVersions
-                .Select(GetLinkedChild)
-                .Where(i => i is not null)
-                .OfType<Video>()
-                .OrderBy(i => i.SortName);
         }
 
         /// <summary>
@@ -454,13 +446,46 @@ namespace MediaBrowser.Controller.Entities
                     RefreshLinkedAlternateVersions();
 
                     var tasks = LocalAlternateVersions
-                        .Select(i => RefreshMetadataForOwnedVideo(options, false, i, cancellationToken));
+                        .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
 
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
             }
 
             return hasChanges;
+        }
+
+        protected virtual async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        {
+            await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
+        }
+
+        private new async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        {
+            var newOptions = new MetadataRefreshOptions(options)
+            {
+                SearchResult = null
+            };
+
+            var id = LibraryManager.GetNewItemId(path, typeof(Video));
+            if (LibraryManager.GetItemById(id) is not Video video)
+            {
+                video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
+
+                newOptions.ForceSave = true;
+            }
+
+            if (video is null)
+            {
+                return;
+            }
+
+            if (video.OwnerId.IsEmpty())
+            {
+                video.OwnerId = Id;
+            }
+
+            await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
         }
 
         private void RefreshLinkedAlternateVersions()
@@ -480,7 +505,7 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
-            var localAlternates = GetLocalAlternateVersionIds()
+            var localAlternates = LibraryManager.GetLocalAlternateVersionIds(this)
                 .Select(i => LibraryManager.GetItemById(i))
                 .Where(i => i is not null);
 
@@ -537,7 +562,7 @@ namespace MediaBrowser.Controller.Entities
                 (this, MediaSourceType.Default)
             };
 
-            list.AddRange(GetLinkedAlternateVersions().Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
+            list.AddRange(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
@@ -545,14 +570,14 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
                     list.Add((primary, MediaSourceType.Grouping));
-                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
+                    list.AddRange(LibraryManager.GetLinkedAlternateVersions(primary).Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
                 }
             }
 
             var localAlternates = list
                 .SelectMany(i =>
                 {
-                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
+                    return i.Item1 is Video video ? LibraryManager.GetLocalAlternateVersionIds(video) : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i is not null)
