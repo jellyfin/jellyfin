@@ -214,6 +214,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         var seasons = seriesChildren.OfType<Season>().ToList();
         var uniqueSeasonNumbers = seriesChildren
             .OfType<Episode>()
+            .Where(e => e.ParentIndexNumber.HasValue)
             .Select(e => e.ParentIndexNumber >= 0 ? e.ParentIndexNumber : null)
             .Distinct();
 
