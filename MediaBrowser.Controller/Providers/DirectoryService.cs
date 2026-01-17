@@ -19,7 +19,21 @@ namespace MediaBrowser.Controller.Providers
         private readonly IMemoryCache? _cache;
         private readonly IFileSystem _fileSystem;
 
-        public DirectoryService(IFileSystem fileSystem, IMemoryCache? memoryCache = null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryService"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        public DirectoryService(IFileSystem fileSystem)
+            : this(fileSystem, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryService"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="memoryCache">Optional memory cache for filesystem metadata.</param>
+        public DirectoryService(IFileSystem fileSystem, IMemoryCache? memoryCache)
         {
             _fileSystem = fileSystem;
             _cache = memoryCache;
