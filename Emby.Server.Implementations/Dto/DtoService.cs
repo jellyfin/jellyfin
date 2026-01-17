@@ -1051,16 +1051,22 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                dto.ArtistItems = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))])
-                    .Where(e => e.Value.Length > 0)
-                    .Select(i =>
+                var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
+                var artistItems = new List<NameGuidPair>(hasArtist.Artists.Count);
+                foreach (var name in hasArtist.Artists)
+                {
+                    if (!string.IsNullOrWhiteSpace(name) && artistsLookup.TryGetValue(name, out var artists) && artists.Length > 0)
                     {
-                        return new NameGuidPair
+                        artistItems.Add(new NameGuidPair
                         {
-                            Name = i.Key,
-                            Id = i.Value.First().Id
-                        };
-                    }).Where(i => i is not null).ToArray();
+                            Name = name,
+                            Id = artists[0].Id
+                        });
+                    }
+                }
+
+                dto.ArtistItems = artistItems.ToArray();
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
@@ -1085,31 +1091,22 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
-                dto.AlbumArtists = hasAlbumArtist.AlbumArtists
-                    // .Except(foundArtists, new DistinctNameComparer())
-                    .Select(i =>
+                var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
+                var albumArtistItems = new List<NameGuidPair>(hasAlbumArtist.AlbumArtists.Count);
+                foreach (var name in hasAlbumArtist.AlbumArtists)
+                {
+                    if (!string.IsNullOrWhiteSpace(name) && albumArtistsLookup.TryGetValue(name, out var albumArtists) && albumArtists.Length > 0)
                     {
-                        // This should not be necessary but we're seeing some cases of it
-                        if (string.IsNullOrEmpty(i))
+                        albumArtistItems.Add(new NameGuidPair
                         {
-                            return null;
-                        }
-
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
+                            Name = albumArtists[0].Name,
+                            Id = albumArtists[0].Id
                         });
-                        if (artist is not null)
-                        {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
-                        }
+                    }
+                }
 
-                        return null;
-                    }).Where(i => i is not null).ToArray();
+                dto.AlbumArtists = albumArtistItems.ToArray();
             }
 
             // Add video info
