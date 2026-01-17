@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -49,17 +50,25 @@ public class StudiosValidator
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var names = _itemRepo.GetStudioNames();
+        var existingStudioIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Studio]
+        }).ToHashSet();
 
         var numComplete = 0;
         var count = names.Count;
+        var refreshed = 0;
 
         foreach (var name in names)
         {
             try
             {
                 var item = _libraryManager.GetStudio(name);
-
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                if (!existingStudioIds.Contains(item.Id))
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -78,6 +87,8 @@ public class StudiosValidator
 
             progress.Report(percent);
         }
+
+        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new studios out of {TotalCount} total", refreshed, count);
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {

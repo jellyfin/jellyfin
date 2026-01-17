@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -48,17 +49,25 @@ public class GenresValidator
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var names = _itemRepo.GetGenreNames();
+        var existingGenreIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Genre]
+        }).ToHashSet();
 
         var numComplete = 0;
         var count = names.Count;
+        var refreshed = 0;
 
         foreach (var name in names)
         {
             try
             {
                 var item = _libraryManager.GetGenre(name);
-
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                if (!existingGenreIds.Contains(item.Id))
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -77,6 +86,8 @@ public class GenresValidator
 
             progress.Report(percent);
         }
+
+        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new genres out of {TotalCount} total", refreshed, count);
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {
