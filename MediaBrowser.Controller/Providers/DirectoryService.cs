@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MediaBrowser.Controller.Providers
 {
