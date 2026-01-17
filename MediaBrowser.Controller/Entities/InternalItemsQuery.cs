@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities
             AlbumIds = Array.Empty<Guid>();
             AncestorIds = Array.Empty<Guid>();
             ArtistIds = Array.Empty<Guid>();
+            AudioLanguages = Array.Empty<string>();
             BlockUnratedItems = Array.Empty<UnratedItem>();
             BoxSetLibraryFolders = Array.Empty<Guid>();
             ChannelIds = Array.Empty<Guid>();
@@ -184,6 +185,8 @@ namespace MediaBrowser.Controller.Entities
         public string[] Tags { get; set; }
 
         public string[] OfficialRatings { get; set; }
+
+        public string[] AudioLanguages { get; set; }
 
         public DateTime? MinPremiereDate { get; set; }
 

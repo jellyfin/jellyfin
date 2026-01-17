@@ -109,6 +109,13 @@ public interface IItemRepository
     IReadOnlyList<string> GetAllArtistNames();
 
     /// <summary>
+    /// Gets the distinct audio languages for items matching the filter.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>List of audio language codes.</returns>
+    IReadOnlyList<string> GetAudioLanguages(InternalItemsQuery filter);
+
+    /// <summary>
     /// Checks if an item has been persisted to the database.
     /// </summary>
     /// <param name="id">The id to check.</param>

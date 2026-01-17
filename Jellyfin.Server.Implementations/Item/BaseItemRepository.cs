@@ -247,6 +247,24 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
+    public IReadOnlyList<string> GetAudioLanguages(InternalItemsQuery filter)
+    {
+        PrepareFilterQuery(filter);
+        using var context = _dbProvider.CreateDbContext();
+
+        IQueryable<BaseItemEntity> dbQuery = PrepareItemQuery(context, filter);
+        dbQuery = TranslateQuery(dbQuery, context, filter);
+
+        return dbQuery
+            .SelectMany(e => e.MediaStreams!)
+            .Where(ms => ms.StreamType == MediaStreamTypeEntity.Audio && ms.Language != null)
+            .Select(ms => ms.Language!)
+            .Distinct()
+            .OrderBy(l => l)
+            .ToList();
+    }
+
+    /// <inheritdoc />
     public QueryResult<BaseItemDto> GetItems(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -2322,6 +2340,12 @@ public sealed class BaseItemRepository
         {
             baseQuery = baseQuery
                 .Where(e => e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle) == filter.HasSubtitles.Value);
+        }
+
+        if (filter.AudioLanguages.Length > 0)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && filter.AudioLanguages.Contains(f.Language)));
         }
 
         if (filter.HasChapterImages.HasValue)

@@ -641,6 +641,13 @@ namespace MediaBrowser.Controller.Library
 
         ItemCounts GetItemCounts(InternalItemsQuery query);
 
+        /// <summary>
+        /// Gets distinct audio languages for items matching the query.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>List of audio language codes.</returns>
+        IReadOnlyList<string> GetAudioLanguages(InternalItemsQuery query);
+
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
