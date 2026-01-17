@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -778,6 +778,37 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasKey("ItemId");
 
                     b.ToTable("KeyframeData");
+
+                    b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
+                });
+
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.LinkedChildEntity", b =>
+                {
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ChildId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ChildType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ParentId", "ChildId");
+
+                    b.HasIndex("ChildId");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ChildId", "ChildType");
+
+                    b.HasIndex("ParentId", "ChildType");
+
+                    b.HasIndex("ParentId", "SortOrder");
+
+                    b.ToTable("LinkedChildren", (string)null);
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
                 });
@@ -1580,6 +1611,25 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.LinkedChildEntity", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Child")
+                        .WithMany("LinkedChildOfEntities")
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Parent")
+                        .WithMany("LinkedChildEntities")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.MediaStreamInfo", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
@@ -1667,6 +1717,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("ItemValues");
+
+                    b.Navigation("LinkedChildEntities");
+
+                    b.Navigation("LinkedChildOfEntities");
 
                     b.Navigation("LockedFields");
 

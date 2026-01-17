@@ -178,6 +178,16 @@ public class BaseItemEntity
 
     public ICollection<BaseItemImageInfo>? Images { get; set; }
 
+    /// <summary>
+    /// Gets or sets the linked children (for BoxSets, Playlists, etc.).
+    /// </summary>
+    public ICollection<LinkedChildEntity>? LinkedChildEntities { get; set; }
+
+    /// <summary>
+    /// Gets or sets the items this entity is linked to as a child.
+    /// </summary>
+    public ICollection<LinkedChildEntity>? LinkedChildOfEntities { get; set; }
+
     // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
     // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
     // public BaseItemEntity? Series { get; set; }
