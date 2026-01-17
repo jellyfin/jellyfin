@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show episode group information or null if not found.</returns>
-        private async Task<TvGroup?> GetSeriesGroupAsync(string episodeGroupId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvGroup?> GetSeriesGroupAsync(string episodeGroupId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"group-{episodeGroupId}-{seasonNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out TvGroup? group))
