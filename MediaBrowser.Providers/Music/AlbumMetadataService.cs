@@ -59,13 +59,11 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         => item.GetRecursiveChildren(i => i is Audio);
 
     /// <inheritdoc />
-    protected override Task AfterMetadataRefresh(MusicAlbum item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+    protected override async Task AfterMetadataRefresh(MusicAlbum item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
     {
-        base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
+        await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
-        SetPeople(item);
-
-        return Task.CompletedTask;
+        await SetPeopleAsync(item, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -192,7 +190,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
         }
     }
 
-    private void SetPeople(MusicAlbum item)
+    private async Task SetPeopleAsync(MusicAlbum item, CancellationToken cancellationToken)
     {
         if (item.AlbumArtists.Any() || item.Artists.Any())
         {
@@ -222,7 +220,7 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
                 }
             }
 
-            LibraryManager.UpdatePeople(item, people);
+            await LibraryManager.UpdatePeopleAsync(item, people, cancellationToken).ConfigureAwait(false);
         }
     }
 

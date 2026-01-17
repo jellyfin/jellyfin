@@ -277,10 +277,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        // Filter nulls at database level before materialization
-        dbQuery = dbQuery.Where(e => e != null);
-
-        // Materialize and deserialize, filtering out null DTOs
+        // Materialize and deserialize, filtering out null DTOs (DeserializeBaseItem may return null)
         result.Items = dbQuery.AsEnumerable()
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
             .Where(dto => dto is not null)
@@ -304,9 +301,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        // Filter nulls at database level before materialization
-        dbQuery = dbQuery.Where(e => e != null);
-
+        // Materialize and deserialize, filtering out null DTOs (DeserializeBaseItem may return null)
         return dbQuery.AsEnumerable()
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
             .Where(dto => dto is not null)

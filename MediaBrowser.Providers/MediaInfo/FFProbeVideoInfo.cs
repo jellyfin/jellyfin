@@ -248,7 +248,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (mediaInfo is not null)
             {
                 FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
-                FetchPeople(video, mediaInfo, options);
+                await FetchPeopleAsync(video, mediaInfo, options, cancellationToken).ConfigureAwait(false);
                 video.Timestamp = mediaInfo.Timestamp;
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
@@ -499,7 +499,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
+        private async Task FetchPeopleAsync(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             if (video.IsLocked
                 || video.LockedFields.Contains(MetadataField.Cast)
@@ -525,7 +525,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                _libraryManager.UpdatePeople(video, people);
+                await _libraryManager.UpdatePeopleAsync(video, people, cancellationToken).ConfigureAwait(false);
             }
         }
 

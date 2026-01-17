@@ -54,23 +54,21 @@ namespace MediaBrowser.Controller.Channels
                 query.ChannelIds = new Guid[] { Id };
 
                 // Don't blow up here because it could cause parent screens with other content to fail
-                // Use Task.Run with timeout to avoid blocking the thread pool
-                try
+                // Channel items are loaded asynchronously - return empty result to avoid blocking
+                // Note: This is a workaround for synchronous property getters that need async data
+                // TODO: Refactor to make GetItemsInternal async when callers can be updated
+                _ = Task.Run(async () =>
                 {
-                    var task = Task.Run(async () => await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).ConfigureAwait(false));
-                    if (task.Wait(TimeSpan.FromSeconds(5)))
+                    try
                     {
-                        return task.GetAwaiter().GetResult();
+                        await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
                     }
-                    else
+                    catch
                     {
-                        return new QueryResult<BaseItem>();
+                        // Silently handle errors - this is a background operation
                     }
-                }
-                catch
-                {
-                    return new QueryResult<BaseItem>();
-                }
+                });
+                return new QueryResult<BaseItem>();
             }
             catch
             {

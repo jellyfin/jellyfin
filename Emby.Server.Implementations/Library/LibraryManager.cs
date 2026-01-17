@@ -3008,18 +3008,16 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
-            // Fire-and-forget to avoid blocking during people update
-            _ = Task.Run(async () =>
+            // Synchronous wrapper for backward compatibility
+            // Callers should use UpdatePeopleAsync instead when possible
+            try
             {
-                try
-                {
-                    await UpdatePeopleAsync(item, people, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error updating people for item {ItemId}", item.Id);
-                }
-            });
+                UpdatePeopleAsync(item, people, CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating people for item {ItemId}", item.Id);
+            }
         }
 
         /// <inheritdoc />

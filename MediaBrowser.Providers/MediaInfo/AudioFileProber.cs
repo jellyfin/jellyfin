@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                _libraryManager.UpdatePeople(audio, people);
+                await _libraryManager.UpdatePeopleAsync(audio, people, cancellationToken).ConfigureAwait(false);
 
                 if (options.ReplaceAllMetadata && performers.Length != 0)
                 {

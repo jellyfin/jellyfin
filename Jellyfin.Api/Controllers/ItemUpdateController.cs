@@ -92,14 +92,15 @@ public class ItemUpdateController : BaseJellyfinApiController
         // Do this first so that metadata savers can pull the updates from the database.
         if (request.People is not null)
         {
-            _libraryManager.UpdatePeople(
+            await _libraryManager.UpdatePeopleAsync(
                 item,
                 request.People.Select(x => new PersonInfo
                 {
                     Name = x.Name,
                     Role = x.Role,
                     Type = x.Type
-                }).ToList());
+                }).ToList(),
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         await UpdateItem(request, item).ConfigureAwait(false);

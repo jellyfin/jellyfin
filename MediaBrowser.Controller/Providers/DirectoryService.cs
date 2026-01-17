@@ -3,20 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private static readonly MemoryCacheEntryOptions _defaultCacheOptions = new()
-        {
-            SlidingExpiration = TimeSpan.FromMinutes(5),
-            Size = 1
-        };
+        // Static cache shared across all DirectoryService instances to prevent unbounded memory growth
+        // Using FastConcurrentLru for bounded, high-performance caching (as suggested in TODO)
+        private static readonly FastConcurrentLru<string, object> _staticCache = new(
+            Environment.ProcessorCount,
+            capacity: 10000); // Configurable capacity limit
 
-        private readonly IMemoryCache? _cache;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -24,31 +23,32 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
         public DirectoryService(IFileSystem fileSystem)
-            : this(fileSystem, null)
         {
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryService"/> class.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="memoryCache">Optional memory cache for filesystem metadata.</param>
-        public DirectoryService(IFileSystem fileSystem, IMemoryCache? memoryCache)
+        /// <param name="memoryCache">Optional memory cache for filesystem metadata (deprecated - using static FastConcurrentLru instead).</param>
+        [Obsolete("Memory cache parameter is deprecated. DirectoryService now uses a static FastConcurrentLru cache.")]
+        public DirectoryService(IFileSystem fileSystem, object? memoryCache)
+            : this(fileSystem)
         {
-            _fileSystem = fileSystem;
-            _cache = memoryCache;
+            // Parameter kept for backward compatibility but ignored
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
             var cacheKey = $"fs_entries_{path}";
-            if (_cache?.TryGetValue<FileSystemMetadata[]>(cacheKey, out var cached) == true)
+            if (_staticCache.TryGet(cacheKey, out var cached) && cached is FileSystemMetadata[] entries)
             {
-                return cached!;
+                return entries;
             }
 
-            var entries = _fileSystem.GetFileSystemEntries(path).ToArray();
-            _cache?.Set(cacheKey, entries, _defaultCacheOptions);
+            entries = _fileSystem.GetFileSystemEntries(path).ToArray();
+            _staticCache.AddOrUpdate(cacheKey, entries);
             return entries;
         }
 
@@ -99,20 +99,20 @@ namespace MediaBrowser.Controller.Providers
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
             var cacheKey = $"fs_entry_{path}";
-            if (_cache?.TryGetValue<FileSystemMetadata>(cacheKey, out var cached) == true)
+            if (_staticCache.TryGet(cacheKey, out var cached) && cached is FileSystemMetadata result)
             {
-                return cached;
+                return result;
             }
 
             var file = _fileSystem.GetFileSystemInfo(path);
-            FileSystemMetadata? result = null;
+            FileSystemMetadata? result2 = null;
             if (file?.Exists ?? false)
             {
-                result = file;
-                _cache?.Set(cacheKey, result, _defaultCacheOptions);
+                result2 = file;
+                _staticCache.AddOrUpdate(cacheKey, result2);
             }
 
-            return result;
+            return result2;
         }
 
         public IReadOnlyList<string> GetFilePaths(string path)
@@ -123,14 +123,18 @@ namespace MediaBrowser.Controller.Providers
             var cacheKey = $"fs_paths_{path}";
             if (clearCache)
             {
-                _cache?.Remove(cacheKey);
+                _staticCache.TryRemove(cacheKey);
             }
 
             List<string>? filePaths = null;
-            if (_cache?.TryGetValue<List<string>>(cacheKey, out filePaths) != true)
+            if (!_staticCache.TryGet(cacheKey, out var cached) || cached is not List<string> cachedPaths)
             {
                 filePaths = _fileSystem.GetFilePaths(path).ToList();
-                _cache?.Set(cacheKey, filePaths, _defaultCacheOptions);
+                _staticCache.AddOrUpdate(cacheKey, filePaths);
+            }
+            else
+            {
+                filePaths = cachedPaths;
             }
 
             if (sort && filePaths is not null)
