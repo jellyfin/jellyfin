@@ -1334,6 +1334,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var parents = GetParents().ToList();
             if (GetParents().Any(i => !i.IsVisible(user, true)))
             {
                 return false;
@@ -1341,7 +1342,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (checkFolders)
             {
-                var topParent = GetParents().LastOrDefault() ?? this;
+                var topParent = parents.Count > 0 ? parents[^1] : this;
 
                 if (string.IsNullOrEmpty(topParent.Path))
                 {
@@ -1670,8 +1671,16 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
+            var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
+            var blockedTagsPreference = user.GetPreference(PreferenceKind.BlockedTags);
+            var needsTagCheck = allowedTagsPreference.Length > 0 || blockedTagsPreference.Length > 0;
+            if (!needsTagCheck)
+            {
+                return true;
+            }
+
             var allTags = GetInheritedTags();
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (blockedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1682,8 +1691,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (!skipAllowedTagsCheck && allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (!skipAllowedTagsCheck && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
