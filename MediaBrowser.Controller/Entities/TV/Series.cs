@@ -232,7 +232,23 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     query.Parent = this;
                     query.ChannelIds = [ChannelId];
-                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                    // Use Task.Run with timeout to avoid blocking the thread pool
+                    try
+                    {
+                        var task = Task.Run(async () => await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).ConfigureAwait(false));
+                        if (task.Wait(TimeSpan.FromSeconds(5)))
+                        {
+                            return task.GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            return new QueryResult<BaseItem>();
+                        }
+                    }
+                    catch
+                    {
+                        return new QueryResult<BaseItem>();
+                    }
                 }
                 catch
                 {
@@ -395,7 +411,23 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     query.Parent = parentSeason;
                     query.ChannelIds = [ChannelId];
-                    allItems = [.. ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult().Items];
+                    // Use Task.Run with timeout to avoid blocking the thread pool
+                    try
+                    {
+                        var task = Task.Run(async () => await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).ConfigureAwait(false));
+                        if (task.Wait(TimeSpan.FromSeconds(5)))
+                        {
+                            allItems = [.. task.GetAwaiter().GetResult().Items];
+                        }
+                        else
+                        {
+                            allItems = [];
+                        }
+                    }
+                    catch
+                    {
+                        allItems = [];
+                    }
                 }
                 catch
                 {

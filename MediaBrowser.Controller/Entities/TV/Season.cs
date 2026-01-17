@@ -159,7 +159,23 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     query.Parent = this;
                     query.ChannelIds = new[] { ChannelId };
-                    return ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).GetAwaiter().GetResult();
+                    // Use Task.Run with timeout to avoid blocking the thread pool
+                    try
+                    {
+                        var task = Task.Run(async () => await ChannelManager.GetChannelItemsInternal(query, new Progress<double>(), CancellationToken.None).ConfigureAwait(false));
+                        if (task.Wait(TimeSpan.FromSeconds(5)))
+                        {
+                            return task.GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            return new QueryResult<BaseItem>();
+                        }
+                    }
+                    catch
+                    {
+                        return new QueryResult<BaseItem>();
+                    }
                 }
                 catch
                 {
