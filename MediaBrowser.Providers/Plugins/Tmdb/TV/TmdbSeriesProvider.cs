@@ -62,7 +62,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (series is not null)
                 {
-                    var remoteResult = MapTvShowToRemoteSearchResult(series, searchInfo.DisplayOrder);
+                    var remoteResult = MapTvShowToRemoteSearchResult(series, searchInfo);
+                    if (searchInfo.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var keepEpisodeGroupId))
+                    {
+                        remoteResult.SetProviderId(TmdbEpisodeGroupId.ProviderKey, keepEpisodeGroupId);
+                    }
 
                     return new[] { remoteResult };
                 }
@@ -122,7 +126,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return remoteResults;
         }
 
-        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series, string? displayOrder)
+        private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series, SeriesInfo search)
         {
             var remoteResult = new RemoteSearchResult
             {
@@ -140,7 +144,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 remoteResult.TrySetProviderId(MetadataProvider.Tvdb, series.ExternalIds.TvdbId);
             }
 
-            WithDisplayOrder(series, remoteResult, displayOrder);
+            WithDisplayOrder(series, remoteResult, search);
 
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
 
@@ -224,7 +228,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result = new MetadataResult<Series>
             {
-                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info.DisplayOrder),
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode, info),
                 ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
             };
 
@@ -238,7 +242,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
-        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, string? displayOrder)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode, SeriesInfo search)
         {
             var series = new Series
             {
@@ -320,7 +324,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            WithDisplayOrder(seriesResult, series, displayOrder);
+            WithDisplayOrder(seriesResult, series, search);
 
             return series;
         }
@@ -425,20 +429,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 null;
         }
 
-        private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, string? displayOrder)
+        private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, SeriesInfo search)
         {
-            if (searchResult.EpisodeGroups?.Results is not null)
+            if (!search.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroupId)
+                && searchResult.EpisodeGroups?.Results is not null)
             {
-                var tvGroupType = MapDisplayOrderToTvGroupType(displayOrder);
+                var tvGroupType = MapDisplayOrderToTvGroupType(search.DisplayOrder);
                 if (tvGroupType is not null)
                 {
                     var episodeGroup = searchResult.EpisodeGroups.Results.Find(g => g.Type == tvGroupType);
                     if (episodeGroup is not null)
                     {
-                        providerIds.SetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroup.Id);
+                        episodeGroupId = episodeGroup.Id;
                     }
                 }
             }
+
+            providerIds.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, episodeGroupId);
         }
     }
 }
