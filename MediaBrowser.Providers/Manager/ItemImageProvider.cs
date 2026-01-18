@@ -155,6 +155,7 @@ namespace MediaBrowser.Providers.Manager
 
             var typeName = item.GetType().Name;
             var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
+            var preferredImageLanguages = libraryOptions.PreferredImageLanguages.ToList();
 
             // track library limits, adding buffer to allow lazy replacing of current images
             var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;
@@ -164,7 +165,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, preferredImageLanguages, backdropLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -266,6 +267,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
+        /// <param name="preferredImageLanguages">The preferred image languages.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
         /// <param name="downloadedImages">The downloaded images.</param>
         /// <param name="result">The result.</param>
@@ -276,6 +278,7 @@ namespace MediaBrowser.Providers.Manager
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
+            List<string> preferredImageLanguages,
             int backdropLimit,
             List<ImageType> downloadedImages,
             RefreshResult result,
@@ -297,11 +300,13 @@ namespace MediaBrowser.Providers.Manager
 
                 _logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, item.Path ?? item.Name);
 
+                var includeAllLanguages = preferredImageLanguages.Count == 0;
+
                 var images = await _providerManager.GetAvailableRemoteImages(
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = true,
+                        IncludeAllLanguages = includeAllLanguages,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
