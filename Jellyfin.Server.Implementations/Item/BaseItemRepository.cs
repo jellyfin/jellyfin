@@ -74,7 +74,6 @@ public sealed class BaseItemRepository
     private readonly IItemTypeLookup _itemTypeLookup;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
-    private readonly IDescendantQueryProvider _descendantQueryProvider;
 
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
@@ -95,21 +94,18 @@ public sealed class BaseItemRepository
     /// <param name="itemTypeLookup">The static type lookup.</param>
     /// <param name="serverConfigurationManager">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
-    /// <param name="databaseProvider">The database provider for database-specific operations.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost appHost,
         IItemTypeLookup itemTypeLookup,
         IServerConfigurationManager serverConfigurationManager,
-        ILogger<BaseItemRepository> logger,
-        IJellyfinDatabaseProvider databaseProvider)
+        ILogger<BaseItemRepository> logger)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
         _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
-        _descendantQueryProvider = databaseProvider.DescendantQueryProvider;
     }
 
     /// <inheritdoc />
@@ -125,7 +121,7 @@ public sealed class BaseItemRepository
 
         var date = (DateTime?)DateTime.UtcNow;
 
-        var descendantIds = ids.SelectMany(f => _descendantQueryProvider.GetAllDescendantIds(context, f)).ToHashSet();
+        var descendantIds = ids.SelectMany(f => DescendantQueryHelper.GetAllDescendantIds(context, f)).ToHashSet();
         foreach (var id in ids)
         {
             descendantIds.Add(id);
@@ -3160,7 +3156,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
             var lang = filter.HasNoAudioTrackWithLanguage;
-            var foldersWithAudio = _descendantQueryProvider.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Audio, lang));
+            var foldersWithAudio = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Audio, lang));
 
             baseQuery = baseQuery
                 .Where(e =>
@@ -3171,7 +3167,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
             var lang = filter.HasNoInternalSubtitleTrackWithLanguage;
-            var foldersWithSubtitles = _descendantQueryProvider.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: false));
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: false));
 
             baseQuery = baseQuery
                 .Where(e =>
@@ -3182,7 +3178,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
             var lang = filter.HasNoExternalSubtitleTrackWithLanguage;
-            var foldersWithSubtitles = _descendantQueryProvider.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: true));
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: true));
 
             baseQuery = baseQuery
                 .Where(e =>
@@ -3193,7 +3189,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
             var lang = filter.HasNoSubtitleTrackWithLanguage;
-            var foldersWithSubtitles = _descendantQueryProvider.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang));
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang));
 
             baseQuery = baseQuery
                 .Where(e =>
@@ -3204,7 +3200,7 @@ public sealed class BaseItemRepository
         if (filter.HasSubtitles.HasValue)
         {
             var hasSubtitles = filter.HasSubtitles.Value;
-            var foldersWithSubtitles = _descendantQueryProvider.GetFolderIdsMatching(context, new HasSubtitles());
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasSubtitles());
             if (hasSubtitles)
             {
                 baseQuery = baseQuery
@@ -3224,7 +3220,7 @@ public sealed class BaseItemRepository
         if (filter.HasChapterImages.HasValue)
         {
             var hasChapterImages = filter.HasChapterImages.Value;
-            var foldersWithChapterImages = _descendantQueryProvider.GetFolderIdsMatching(context, new HasChapterImages());
+            var foldersWithChapterImages = DescendantQueryHelper.GetFolderIdsMatching(context, new HasChapterImages());
             if (hasChapterImages)
             {
                 baseQuery = baseQuery
@@ -3593,7 +3589,7 @@ public sealed class BaseItemRepository
 
         if (recursive)
         {
-            var descendantIds = _descendantQueryProvider.GetAllDescendantIds(dbContext, id);
+            var descendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, id);
 
             return dbContext.BaseItems
                     .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem)
@@ -3640,7 +3636,7 @@ public sealed class BaseItemRepository
         ArgumentNullException.ThrowIfNull(filter.User);
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var allDescendantIds = _descendantQueryProvider.GetAllDescendantIds(dbContext, parentId);
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, parentId);
         var baseQuery = dbContext.BaseItems
             .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
         baseQuery = ApplyAccessFiltering(dbContext, baseQuery, filter);
@@ -3735,7 +3731,7 @@ public sealed class BaseItemRepository
         Guid ancestorId)
     {
         // Use recursive CTE to get all descendants (hierarchical and linked)
-        var allDescendantIds = _descendantQueryProvider.GetAllDescendantIds(context, ancestorId);
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(context, ancestorId);
 
         var baseQuery = context.BaseItems
             .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);

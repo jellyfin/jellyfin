@@ -40,9 +40,6 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <inheritdoc/>
-    public IDescendantQueryProvider DescendantQueryProvider { get; } = new SqliteDescendantQueryProvider();
-
-    /// <inheritdoc/>
     public void Initialise(DbContextOptionsBuilder options, DatabaseConfigurationOptions databaseConfiguration)
     {
         static T? GetOption<T>(ICollection<CustomDatabaseOption>? options, string key, Func<string, T> converter, Func<T>? defaultValue = null)

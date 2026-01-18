@@ -18,12 +18,6 @@ public interface IJellyfinDatabaseProvider
     IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <summary>
-    /// Gets the descendant query provider for this database type.
-    /// Used for recursive CTE queries to find all descendants of an item.
-    /// </summary>
-    IDescendantQueryProvider DescendantQueryProvider { get; }
-
-    /// <summary>
     /// Initialises jellyfins EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
