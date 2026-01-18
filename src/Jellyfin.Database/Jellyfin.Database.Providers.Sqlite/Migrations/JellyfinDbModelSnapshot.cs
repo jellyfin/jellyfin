@@ -450,6 +450,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("ItemId", "ImageType");
+
                     b.ToTable("BaseItemImageInfos");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);

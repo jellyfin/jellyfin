@@ -908,17 +908,17 @@ public sealed class BaseItemRepository
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else
@@ -2113,7 +2113,7 @@ public sealed class BaseItemRepository
 
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
             .GroupBy(e => e.PresentationUniqueKey)
-            .Select(e => e.FirstOrDefault())
+            .Select(e => e.OrderBy(x => x.Id).FirstOrDefault())
             .Select(e => e!.Id);
 
         var query = context.BaseItems
@@ -2866,7 +2866,7 @@ public sealed class BaseItemRepository
         if (filter.ImageTypes.Length > 0)
         {
             var imgTypes = filter.ImageTypes.Select(e => (ImageInfoImageType)e).ToArray();
-            baseQuery = baseQuery.Where(e => imgTypes.Any(f => e.Images!.Any(w => w.ImageType == f)));
+            baseQuery = baseQuery.Where(e => e.Images!.Any(w => imgTypes.Contains(w.ImageType)));
         }
 
         if (filter.IsLiked.HasValue)
@@ -3667,6 +3667,7 @@ public sealed class BaseItemRepository
         var result = query
             .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
             .GroupBy(_ => 1)
+            .OrderBy(g => g.Key)
             .Select(g => new
             {
                 Total = g.Count(),
