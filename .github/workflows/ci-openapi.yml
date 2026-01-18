@@ -22,10 +22,9 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '9.0.x'
-
+          dotnet-version: '10.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
 
@@ -35,7 +34,7 @@ jobs:
           name: openapi-head
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net9.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-base:
     name: OpenAPI - BASE
@@ -60,10 +59,9 @@ jobs:
           git checkout --progress --force $ANCESTOR_REF
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '9.0.x'
-
+          dotnet-version: '10.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
 
@@ -73,7 +71,7 @@ jobs:
           name: openapi-base
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net9.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-diff:
     permissions:

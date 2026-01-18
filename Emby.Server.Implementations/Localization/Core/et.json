@@ -72,7 +72,7 @@
     "NotificationOptionApplicationUpdateAvailable": "Rakenduse uuendus on saadaval",
     "NewVersionIsAvailable": "Jellyfin serveri uus versioon on allalaadimiseks saadaval.",
     "NameSeasonUnknown": "Tundmatu hooaeg",
-    "NameSeasonNumber": "Hooaeg {0}",
+    "NameSeasonNumber": "{0}. hooaeg",
     "NameInstallFailed": "{0} paigaldamine nurjus",
     "MusicVideos": "Muusikavideod",
     "Music": "Muusika",
