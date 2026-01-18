@@ -115,7 +115,7 @@ public class NetworkManager : INetworkManager, IDisposable
     public static string MockNetworkSettings { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets a value indicating whether IPV4 is enabled.
+    /// Gets a value indicating whether IPv4 is enabled.
     /// </summary>
     public bool IsIPv4Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv4;
 
