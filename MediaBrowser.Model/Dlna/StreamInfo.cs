@@ -87,11 +87,6 @@ public class StreamInfo
     public int? MinSegments { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the stream can be broken on non-keyframes.
-    /// </summary>
-    public bool BreakOnNonKeyFrames { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the stream requires AVC.
     /// </summary>
     public bool RequireAvc { get; set; }
@@ -1018,9 +1013,6 @@ public class StreamInfo
                 sb.Append("&MinSegments=");
                 sb.Append(MinSegments.Value.ToString(CultureInfo.InvariantCulture));
             }
-
-            sb.Append("&BreakOnNonKeyFrames=");
-            sb.Append(BreakOnNonKeyFrames.ToString(CultureInfo.InvariantCulture));
         }
         else
         {

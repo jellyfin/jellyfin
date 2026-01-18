@@ -41,7 +41,6 @@ public class TranscodingProfile
         MaxAudioChannels = other.MaxAudioChannels;
         MinSegments = other.MinSegments;
         SegmentLength = other.SegmentLength;
-        BreakOnNonKeyFrames = other.BreakOnNonKeyFrames;
         Conditions = other.Conditions;
         EnableAudioVbrEncoding = other.EnableAudioVbrEncoding;
     }
@@ -143,7 +142,8 @@ public class TranscodingProfile
     /// </summary>
     [DefaultValue(false)]
     [XmlAttribute("breakOnNonKeyFrames")]
-    public bool BreakOnNonKeyFrames { get; set; }
+    [Obsolete("This is always false")]
+    public bool? BreakOnNonKeyFrames { get; set; }
 
     /// <summary>
     /// Gets or sets the profile conditions.
