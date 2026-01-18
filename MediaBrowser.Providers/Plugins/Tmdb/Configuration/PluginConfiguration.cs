@@ -39,6 +39,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public int MaxCastMembers { get; set; } = 15;
 
         /// <summary>
+        /// Gets or sets a value indicating whether to fetch and display missing movies of the collection.
+        /// </summary>
+        public bool ShowMissing { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a value indicating the maximum number of crew members to fetch for an item.
         /// </summary>
         public int MaxCrewMembers { get; set; } = 15;
