@@ -63,10 +63,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 if (series is not null)
                 {
                     var remoteResult = MapTvShowToRemoteSearchResult(series, searchInfo);
-                    if (searchInfo.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var keepEpisodeGroupId))
-                    {
-                        remoteResult.SetProviderId(TmdbEpisodeGroupId.ProviderKey, keepEpisodeGroupId);
-                    }
 
                     return new[] { remoteResult };
                 }
