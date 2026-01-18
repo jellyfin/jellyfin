@@ -25,6 +25,7 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Library.SimilarItems;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
@@ -92,7 +93,11 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Plugins.ListenBrainz;
+using MediaBrowser.Providers.Plugins.ListenBrainz.Api;
 using MediaBrowser.Providers.Plugins.Tmdb;
+using MediaBrowser.Providers.Plugins.Tmdb.Movies;
+using MediaBrowser.Providers.Plugins.Tmdb.TV;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
@@ -485,6 +490,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddScoped<ISystemManager, SystemManager>();
 
             serviceCollection.AddSingleton<TmdbClientManager>();
+            serviceCollection.AddSingleton<TmdbMovieSimilarProvider>();
+            serviceCollection.AddSingleton<TmdbSeriesSimilarProvider>();
+
+            serviceCollection.AddSingleton<ListenBrainzLabsClient>();
+            serviceCollection.AddSingleton<ListenBrainzSimilarArtistProvider>();
 
             serviceCollection.AddSingleton(NetManager);
 
@@ -530,6 +540,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
             serviceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();
+
+            serviceCollection.AddSingleton<ISimilarItemsManager, SimilarItemsManager>();
 
             serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
@@ -687,6 +699,8 @@ namespace Emby.Server.Implementations
                 GetExports<IExternalUrlProvider>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
+
+            Resolve<ISimilarItemsManager>().AddParts(GetExports<ISimilarItemsProvider>());
         }
 
         /// <summary>

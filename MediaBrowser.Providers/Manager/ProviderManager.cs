@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -31,6 +34,7 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
@@ -63,6 +67,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
         private readonly IMemoryCache _memoryCache;
         private readonly IMediaSegmentManager _mediaSegmentManager;
+        private readonly ISimilarItemsManager _similarItemsManager;
         private readonly AsyncKeyedLocker<string> _imageSaveLock = new(o =>
         {
             o.PoolSize = 20;
@@ -93,6 +98,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="mediaSegmentManager">The media segment manager.</param>
+        /// <param name="similarItemsManager">The similar items manager.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -105,7 +111,8 @@ namespace MediaBrowser.Providers.Manager
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
             IMemoryCache memoryCache,
-            IMediaSegmentManager mediaSegmentManager)
+            IMediaSegmentManager mediaSegmentManager,
+            ISimilarItemsManager similarItemsManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -119,6 +126,7 @@ namespace MediaBrowser.Providers.Manager
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
             _mediaSegmentManager = mediaSegmentManager;
+            _similarItemsManager = similarItemsManager;
         }
 
         /// <inheritdoc/>
@@ -432,6 +440,15 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc />
+        public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions, bool includeDisabled)
+            where T : BaseItem
+        {
+            var globalMetadataOptions = GetMetadataOptions(item);
+
+            return GetMetadataProvidersInternal<T>(item, libraryOptions, globalMetadataOptions, includeDisabled, false);
+        }
+
+        /// <inheritdoc />
         public IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions)
         {
             return _savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, false));
@@ -588,6 +605,14 @@ namespace MediaBrowser.Providers.Manager
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MediaSegmentProvider
+            }));
+
+            // Similar items providers
+            var similarItemsProviders = _similarItemsManager.GetSimilarItemsProviders<T>();
+            pluginList.AddRange(similarItemsProviders.Select(i => new MetadataPlugin
+            {
+                Name = i.Name,
+                Type = i.Type
             }));
 
             summary.Plugins = pluginList.ToArray();

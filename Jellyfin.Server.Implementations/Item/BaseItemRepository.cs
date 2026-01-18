@@ -2439,6 +2439,17 @@ public sealed class BaseItemRepository
             }
         }
 
+        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
+        {
+            var includeAny = filter.HasAnyProviderIds
+                .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
+                .ToArray();
+            if (includeAny.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeAny.Contains(f)));
+            }
+        }
+
         if (filter.HasImdbId.HasValue)
         {
             baseQuery = filter.HasImdbId.Value

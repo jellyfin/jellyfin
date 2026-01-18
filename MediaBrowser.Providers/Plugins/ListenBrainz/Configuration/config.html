@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ListenBrainz</title>
+</head>
+<body>
+    <div id="configPage" data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-select">
+        <div data-role="content">
+            <div class="content-primary">
+                <h1>ListenBrainz</h1>
+                <p>Get similar artist recommendations from ListenBrainz Labs.</p>
+                <form class="configForm">
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="labsServer" required label="Labs API Server" />
+                        <div class="fieldDescription">The ListenBrainz Labs API server URL. Default: https://labs.api.listenbrainz.org</div>
+                    </div>
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="algorithm">Similarity Algorithm</label>
+                        <select is="emby-select" id="algorithm" class="emby-select-withcolor">
+                            <option value="0" selected>~5 years / 1825 days (Recommended)</option>
+                            <option value="1">~5 years / 1800 days</option>
+                            <option value="2">~20 years / 7500 days</option>
+                            <option value="3">~20 years / 7500 days (high contribution)</option>
+                            <option value="4">~25 years / 9000 days</option>
+                            <option value="5">~75 days (recent)</option>
+                        </select>
+                        <div class="fieldDescription">The algorithm used for artist similarity calculation.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="rateLimit" required pattern="[0-9]*" min="0" max="10" step=".01" label="Rate Limit (seconds)" />
+                        <div class="fieldDescription">Span of time between requests in seconds. The official server is rate limited to one request per second.</div>
+                    </div>
+                    <br />
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var ListenBrainzPluginConfig = {
+                uniquePluginId: "a5b2e8c1-9d4f-4a3b-8c7e-6f1a2b3c4d5e"
+            };
+
+            document.querySelector('.configPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(ListenBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        var labsServer = document.querySelector('#labsServer');
+                        labsServer.value = config.LabsServer;
+                        labsServer.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
+                        document.querySelector('#algorithm').value = config.Algorithm;
+
+                        var rateLimit = document.querySelector('#rateLimit');
+                        rateLimit.value = config.RateLimit;
+                        rateLimit.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('.configForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(ListenBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        config.LabsServer = document.querySelector('#labsServer').value;
+                        config.Algorithm = parseInt(document.querySelector('#algorithm').value, 10);
+                        config.RateLimit = document.querySelector('#rateLimit').value;
+
+                        ApiClient.updatePluginConfiguration(ListenBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>
