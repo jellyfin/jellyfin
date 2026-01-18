@@ -70,7 +70,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            return GetOptimalStream(streams, options.GetMaxBitrate(true) ?? 0);
+            return GetOptimalStream(streams, options, isAudio: true);
         }
 
         private StreamInfo? GetOptimalAudioStream(MediaSourceInfo item, MediaOptions options)
@@ -251,17 +251,59 @@ namespace MediaBrowser.Model.Dlna
                 stream.DeviceProfileId = options.Profile.Id?.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            return GetOptimalStream(streams, options.GetMaxBitrate(false) ?? 0);
+            return GetOptimalStream(streams, options);
         }
 
         private static StreamInfo? GetOptimalStream(List<StreamInfo> streams, long maxBitrate)
-            => SortMediaSources(streams, maxBitrate).FirstOrDefault();
+            => GetOptimalStream(streams, maxBitrate, MediaSourceSelectionMode.PreferDirectPlay, null);
 
-        private static IOrderedEnumerable<StreamInfo> SortMediaSources(List<StreamInfo> streams, long maxBitrate)
+        private static StreamInfo? GetOptimalStream(List<StreamInfo> streams, MediaOptions options, bool isAudio = false)
+            => GetOptimalStream(streams, options.GetMaxBitrate(isAudio) ?? 0, options.SelectionMode, options.AvailableBandwidth);
+
+        private static StreamInfo? GetOptimalStream(List<StreamInfo> streams, long maxBitrate, MediaSourceSelectionMode selectionMode, long? availableBandwidth)
+            => SortMediaSources(streams, maxBitrate, selectionMode, availableBandwidth).FirstOrDefault();
+
+        /// <summary>
+        /// Sorts media sources according to the selection mode and device constraints.
+        /// </summary>
+        /// <param name="streams">The available stream options.</param>
+        /// <param name="maxBitrate">The maximum bitrate the device can handle.</param>
+        /// <param name="selectionMode">The selection mode determining priority order.</param>
+        /// <param name="availableBandwidth">The available network bandwidth (for NetworkAware mode).</param>
+        /// <returns>Sorted stream options with the optimal choice first.</returns>
+        private static IOrderedEnumerable<StreamInfo> SortMediaSources(
+            List<StreamInfo> streams,
+            long maxBitrate,
+            MediaSourceSelectionMode selectionMode,
+            long? availableBandwidth)
         {
+            // Determine effective bitrate limit based on mode
+            // For NetworkAware mode, use the minimum of maxBitrate and availableBandwidth
+            var effectiveBitrate = selectionMode == MediaSourceSelectionMode.NetworkAware && availableBandwidth.HasValue
+                ? Math.Min(maxBitrate > 0 ? maxBitrate : long.MaxValue, availableBandwidth.Value)
+                : maxBitrate;
+
             return streams.OrderBy(i =>
             {
-                // Nothing beats direct playing a file
+                // Priority 1: Direct play capability
+                // For PreferDirectPlay and NetworkAware modes, strongly prefer direct play
+                if (selectionMode != MediaSourceSelectionMode.HighestQuality)
+                {
+                    if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource?.Protocol == MediaProtocol.File)
+                    {
+                        return 0;
+                    }
+
+                    if (i.PlayMethod == PlayMethod.DirectPlay || i.PlayMethod == PlayMethod.DirectStream)
+                    {
+                        return 1;
+                    }
+
+                    // Transcoding is least preferred
+                    return 2;
+                }
+
+                // HighestQuality mode: original behavior - direct play file is best
                 if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource?.Protocol == MediaProtocol.File)
                 {
                     return 0;
@@ -270,9 +312,26 @@ namespace MediaBrowser.Model.Dlna
                 return 1;
             }).ThenBy(i =>
             {
+                // Priority 2: Bitrate within limits
+                // For NetworkAware mode, penalize sources that exceed available bandwidth
+                if (selectionMode == MediaSourceSelectionMode.NetworkAware && effectiveBitrate > 0)
+                {
+                    var sourceBitrate = i.MediaSource?.Bitrate ?? 0;
+                    if (sourceBitrate > effectiveBitrate)
+                    {
+                        // Source exceeds available bandwidth - lower priority
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                return 0;
+            }).ThenBy(i =>
+            {
+                // Priority 3: Play method (for HighestQuality mode mostly)
                 switch (i.PlayMethod)
                 {
-                    // Let's assume direct streaming a file is just as desirable as direct playing a remote url
                     case PlayMethod.DirectStream:
                     case PlayMethod.DirectPlay:
                         return 0;
@@ -281,6 +340,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }).ThenBy(i =>
             {
+                // Priority 4: Protocol preference
                 switch (i.MediaSource?.Protocol)
                 {
                     case MediaProtocol.File:
@@ -290,15 +350,35 @@ namespace MediaBrowser.Model.Dlna
                 }
             }).ThenBy(i =>
             {
-                if (maxBitrate > 0)
+                // Priority 5: Codec efficiency preference (for same resolution)
+                // AV1 > HEVC > VP9 > H.264 (more efficient codecs preferred for bandwidth savings)
+                var videoStream = i.MediaSource?.VideoStream;
+                var codec = videoStream?.Codec?.ToLowerInvariant() ?? string.Empty;
+
+                return codec switch
                 {
-                    if (i.MediaSource?.Bitrate is not null)
-                    {
-                        return Math.Abs(i.MediaSource.Bitrate.Value - maxBitrate);
-                    }
+                    "av1" => 0,
+                    "hevc" or "h265" => 1,
+                    "vp9" => 2,
+                    "h264" or "avc" => 3,
+                    _ => 4
+                };
+            }).ThenByDescending(i =>
+            {
+                // Priority 6: Resolution (prefer higher quality among remaining options)
+                // For PreferDirectPlay mode, among direct-playable sources prefer higher resolution
+                var videoStream = i.MediaSource?.VideoStream;
+                return videoStream?.Width ?? 0;
+            }).ThenBy(i =>
+            {
+                // Priority 7: Bitrate distance from target
+                // Prefer sources closer to the effective bitrate limit
+                if (effectiveBitrate > 0 && i.MediaSource?.Bitrate is not null)
+                {
+                    return Math.Abs(i.MediaSource.Bitrate.Value - effectiveBitrate);
                 }
 
-                return 0;
+                return 0L;
             }).ThenBy(streams.IndexOf);
         }
 
