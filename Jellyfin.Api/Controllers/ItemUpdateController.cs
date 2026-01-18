@@ -422,7 +422,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasAlbumArtist hasAlbumArtists)
             {
-                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name);
+                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name.Trim());
             }
         }
 
@@ -430,7 +430,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasArtist hasArtists)
             {
-                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name);
+                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name.Trim());
             }
         }
 
