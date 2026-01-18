@@ -83,6 +83,7 @@ namespace Emby.Server.Implementations.Library
 
             // Unix hidden files
             "**/.*",
+            "**/.*/**",
 
             // Mac - if you ever remove the above.
             // "**/._*",
