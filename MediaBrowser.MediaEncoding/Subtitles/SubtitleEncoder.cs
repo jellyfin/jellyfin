@@ -233,6 +233,46 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 };
             }
 
+            // Convert ttml files to srt that ffmpeg can work with it
+            if (string.Equals(currentFormat, "ttml", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
+
+                using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
+                {
+                    if (!File.Exists(outputPath))
+                    {
+                        var directory = Path.GetDirectoryName(outputPath);
+                        if (!string.IsNullOrEmpty(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        var protocol = subtitleStream.IsExternal ? MediaProtocol.File : _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
+                        var sourceStream = await GetStream(subtitleStream.Path, protocol, cancellationToken).ConfigureAwait(false);
+
+                        using (sourceStream)
+                        {
+                            var trackInfo = _subtitleParser.Parse(sourceStream, "ttml");
+
+                            using (var targetStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                            {
+                                var writer = GetWriter("srt");
+                                writer.Write(trackInfo, targetStream, cancellationToken);
+                            }
+                        }
+                    }
+                }
+
+                return new SubtitleInfo()
+                {
+                    Path = outputPath,
+                    Protocol = MediaProtocol.File,
+                    Format = "srt",
+                    IsExternal = true
+                };
+            }
+
             // Fallback to ffmpeg conversion
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
             {
@@ -451,7 +491,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(subtitleStream.Codec, "pgssub", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(subtitleStream.Codec, "pgssub", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(subtitleStream.Codec, "ttml", StringComparison.OrdinalIgnoreCase))
             {
                 return subtitleStream.Codec;
             }
