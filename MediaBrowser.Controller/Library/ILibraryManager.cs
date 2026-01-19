@@ -592,6 +592,16 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
 
         /// <summary>
+        /// Gets the latest items grouped by their container (Album for music, Series for TV).
+        /// Movies use themselves as both container and item.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of container-items tuples.</returns>
+        IReadOnlyList<(BaseItem Container, IReadOnlyList<BaseItem> Items)> GetLatestItemsGrouped(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType? collectionType);
+
+        /// <summary>
         /// Gets the list of series presentation keys for next up.
         /// </summary>
         /// <param name="query">The query to use.</param>

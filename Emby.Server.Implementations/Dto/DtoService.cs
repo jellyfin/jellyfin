@@ -160,10 +160,17 @@ namespace Emby.Server.Implementations.Dto
             List<(BaseItem, BaseItemDto)>? programTuples = null;
             List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
 
+            // Batch-fetch user data for all items to avoid N+1 queries
+            Dictionary<Guid, UserItemData>? userDataBatch = null;
+            if (user is not null && options.EnableUserData)
+            {
+                userDataBatch = _userDataRepository.GetUserDataBatch(accessibleItems, user);
+            }
+
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
-                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, user, owner, userDataBatch?.GetValueOrDefault(item.Id));
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -197,7 +204,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
             if (item is LiveTvChannel tvChannel)
             {
                 LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
@@ -215,7 +222,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null, UserItemData? userData = null)
         {
             var dto = new BaseItemDto
             {
@@ -252,7 +259,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (user is not null)
             {
-                AttachUserSpecificInfo(dto, item, user, options);
+                AttachUserSpecificInfo(dto, item, user, options, userData);
             }
 
             if (item is IHasMediaSources
@@ -458,16 +465,26 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options, UserItemData? userData = null)
         {
+            if (options.EnableUserData)
+            {
+                if (userData is not null)
+                {
+                    // Use pre-fetched user data
+                    dto.UserData = GetUserItemDataDto(userData, item.Id);
+                    item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+                }
+                else
+                {
+                    // Fall back to individual fetch
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
+                }
+            }
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
-
-                if (options.EnableUserData)
-                {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
-                }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
@@ -499,18 +516,35 @@ namespace Emby.Server.Implementations.Dto
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
             }
-            else
-            {
-                if (options.EnableUserData)
-                {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
-                }
-            }
 
             if (options.ContainsField(ItemFields.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
+        }
+
+        /// <summary>
+        /// Converts a UserItemData to a DTOUserItemData.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <param name="itemId">The reference key to an Item.</param>
+        /// <returns>DtoUserItemData.</returns>
+        private static UserItemDataDto GetUserItemDataDto(UserItemData data, Guid itemId)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
+            return new UserItemDataDto
+            {
+                IsFavorite = data.IsFavorite,
+                Likes = data.Likes,
+                PlaybackPositionTicks = data.PlaybackPositionTicks,
+                PlayCount = data.PlayCount,
+                Rating = data.Rating,
+                Played = data.Played,
+                LastPlayedDate = data.LastPlayedDate,
+                ItemId = itemId,
+                Key = data.Key
+            };
         }
 
         private static int GetChildCount(Folder folder, User user)
