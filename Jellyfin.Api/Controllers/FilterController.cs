@@ -89,6 +89,18 @@ public class FilterController : BaseJellyfinApiController
         }
 
         var itemList = folder.GetItemList(query);
+
+        // Get audio languages using the library manager
+        var audioLanguageQuery = new InternalItemsQuery
+        {
+            User = user,
+            MediaTypes = mediaTypes,
+            IncludeItemTypes = includeItemTypes,
+            Recursive = true,
+            AncestorIds = new[] { folder.Id }
+        };
+        var audioLanguages = _libraryManager.GetAudioLanguages(audioLanguageQuery);
+
         return new QueryFiltersLegacy
         {
             Years = itemList.Select(i => i.ProductionYear ?? -1)
@@ -113,7 +125,9 @@ public class FilterController : BaseJellyfinApiController
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order()
-                .ToArray()
+                .ToArray(),
+
+            AudioLanguages = audioLanguages.ToArray()
         };
     }
 
