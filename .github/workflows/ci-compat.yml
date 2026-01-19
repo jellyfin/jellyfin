@@ -17,9 +17,9 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Build
         run: |
@@ -47,9 +47,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Checkout common ancestor
         env:
@@ -106,7 +106,7 @@ jobs:
           {
             echo 'body<<EOF'
             for file in Jellyfin.Data.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll Emby.Naming.dll Jellyfin.Extensions.dll Jellyfin.MediaEncoding.Keyframes.dll Jellyfin.Database.Implementations.dll; do
-              COMPAT_OUTPUT="$( { apicompat --left ./abi-base/${file} --right ./abi-head/${file}; } 2>&1 )"
+              COMPAT_OUTPUT="$( { apicompat --left ./abi-base/${file} --right ./abi-head/${file}; } 2>&1 || true )"
               if [ "APICompat ran successfully without finding any breaking changes." != "${COMPAT_OUTPUT}" ]; then
                 printf "\n${file}\n${COMPAT_OUTPUT}\n"
               fi

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="Jellyfin.XmlTv" />
-    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>

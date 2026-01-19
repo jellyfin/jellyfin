@@ -260,6 +260,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedHearingImpaired { get; set; }
 
+        public string LocalizedLanguage { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -273,29 +275,8 @@ namespace MediaBrowser.Model.Entities
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
                         if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
-                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
-                            CultureInfo match = null;
-                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
-
-                                if (match is null)
-                                {
-                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
-                                    match = cultures.FirstOrDefault(r =>
-                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
-                                }
-                            }
-                            else
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
-                            }
-
-                            string fullLanguage = match?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            // Use pre-resolved localized language name, falling back to raw language code.
+                            attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
                         }
 
                         if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
@@ -393,29 +374,8 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Language))
                         {
-                            // Get full language string i.e. eng -> English, zh-Hans -> Chinese (Simplified).
-                            var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
-                            CultureInfo match = null;
-                            if (Language.Contains('-', StringComparison.OrdinalIgnoreCase))
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.Name.Equals(Language, StringComparison.OrdinalIgnoreCase));
-
-                                if (match is null)
-                                {
-                                    string baseLang = Language.AsSpan().LeftPart('-').ToString();
-                                    match = cultures.FirstOrDefault(r =>
-                                        r.TwoLetterISOLanguageName.Equals(baseLang, StringComparison.OrdinalIgnoreCase));
-                                }
-                            }
-                            else
-                            {
-                                match = cultures.FirstOrDefault(r =>
-                                    r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase));
-                            }
-
-                            string fullLanguage = match?.DisplayName;
-                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
+                            // Use pre-resolved localized language name, falling back to raw language code.
+                            attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));
                         }
                         else
                         {

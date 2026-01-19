@@ -16,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Networking.Manager;
 
@@ -115,7 +114,7 @@ public class NetworkManager : INetworkManager, IDisposable
     public static string MockNetworkSettings { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets a value indicating whether IP4 is enabled.
+    /// Gets a value indicating whether IPv4 is enabled.
     /// </summary>
     public bool IsIPv4Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv4;
 
@@ -341,12 +340,12 @@ public class NetworkManager : INetworkManager, IDisposable
             }
             else
             {
-                _lanSubnets = lanSubnets;
+                _lanSubnets = lanSubnets.Select(x => x.Subnet).ToArray();
             }
 
             _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
-                ? excludedSubnets
-                : new List<IPNetwork>();
+                ? excludedSubnets.Select(x => x.Subnet).ToArray()
+                : Array.Empty<IPNetwork>();
         }
     }
 
@@ -362,7 +361,7 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <summary>
-    /// Filteres a list of bind addresses and exclusions on available interfaces.
+    /// Filters a list of bind addresses and exclusions on available interfaces.
     /// </summary>
     /// <param name="config">The network config to be filtered by.</param>
     /// <param name="interfaces">A list of possible interfaces to be filtered.</param>
@@ -376,7 +375,7 @@ public class NetworkManager : INetworkManager, IDisposable
         if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]))
         {
             var bindAddresses = localNetworkAddresses.Select(p => NetworkUtils.TryParseToSubnet(p, out var network)
-                    ? network.Prefix
+                    ? network.Address
                     : (interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.Address)
                         .FirstOrDefault() ?? IPAddress.None))
@@ -445,7 +444,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 var remoteFilteredSubnets = remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (NetworkUtils.TryParseToSubnets(remoteFilteredSubnets, out var remoteAddressFilterResult, false))
                 {
-                    remoteAddressFilter = remoteAddressFilterResult.ToList();
+                    remoteAddressFilter = remoteAddressFilterResult.Select(x => x.Subnet).ToList();
                 }
 
                 // Parse everything else as an IP and construct subnet with a single IP
@@ -545,7 +544,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 {
                     foreach (var lan in _lanSubnets)
                     {
-                        var lanPrefix = lan.Prefix;
+                        var lanPrefix = lan.BaseAddress;
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength)),
@@ -554,12 +553,11 @@ public class NetworkManager : INetworkManager, IDisposable
                                 false));
                     }
                 }
-                else if (NetworkUtils.TryParseToSubnet(identifier, out var result) && result is not null)
+                else if (NetworkUtils.TryParseToSubnet(identifier, out var result))
                 {
-                    var data = new IPData(result.Prefix, result);
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
-                            data,
+                            result,
                             replacement,
                             true,
                             true));
@@ -621,16 +619,12 @@ public class NetworkManager : INetworkManager, IDisposable
             foreach (var details in interfaceList)
             {
                 var parts = details.Split(',');
-                if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
+                if (NetworkUtils.TryParseToSubnet(parts[0], out var data))
                 {
-                    var address = subnet.Prefix;
-                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
-                    if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
+                    data.Index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                    if (data.AddressFamily == AddressFamily.InterNetwork || data.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        var data = new IPData(address, subnet, parts[2])
-                        {
-                            Index = index
-                        };
+                        data.Name = parts[2];
                         interfaces.Add(data);
                     }
                 }
@@ -920,7 +914,7 @@ public class NetworkManager : INetworkManager, IDisposable
     {
         if (NetworkUtils.TryParseToSubnet(address, out var subnet))
         {
-            return IsInLocalNetwork(subnet.Prefix);
+            return IsInLocalNetwork(subnet.Address);
         }
 
         return NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled)
@@ -1171,13 +1165,13 @@ public class NetworkManager : INetworkManager, IDisposable
         var logLevel = debug ? LogLevel.Debug : LogLevel.Information;
         if (_logger.IsEnabled(logLevel))
         {
-            _logger.Log(logLevel, "Defined LAN subnets: {Subnets}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-            _logger.Log(logLevel, "Defined LAN exclusions: {Subnets}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-            _logger.Log(logLevel, "Used LAN subnets: {Subnets}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Defined LAN subnets: {Subnets}", _lanSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Defined LAN exclusions: {Subnets}", _excludedSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Used LAN subnets: {Subnets}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.BaseAddress + "/" + s.PrefixLength));
             _logger.Log(logLevel, "Filtered interface addresses: {Addresses}", _interfaces.OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
             _logger.Log(logLevel, "Bind Addresses {Addresses}", GetAllBindInterfaces(false).OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
             _logger.Log(logLevel, "Remote IP filter is {Type}", config.IsRemoteIPFilterBlacklist ? "Blocklist" : "Allowlist");
-            _logger.Log(logLevel, "Filtered subnets: {Subnets}", _remoteAddressFilter.Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Filtered subnets: {Subnets}", _remoteAddressFilter.Select(s => s.BaseAddress + "/" + s.PrefixLength));
         }
     }
 }

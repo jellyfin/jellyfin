@@ -8,7 +8,7 @@
   <PropertyGroup>
     <AssemblyName>jellyfin</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -44,9 +44,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Morestachio" />
     <PackageReference Include="prometheus-net" />

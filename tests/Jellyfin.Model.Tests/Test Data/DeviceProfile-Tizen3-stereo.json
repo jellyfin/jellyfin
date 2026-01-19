@@ -165,7 +165,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 1,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": true,
             "$type": "TranscodingProfile"
         },
         {
@@ -182,7 +181,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -199,7 +197,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -216,7 +213,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -233,7 +229,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -250,7 +245,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -267,7 +261,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -284,7 +277,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -301,7 +293,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -319,7 +310,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -346,7 +336,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 1,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -373,7 +362,6 @@
             "MaxAudioChannels": "2",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -399,7 +387,6 @@
             "EnableSubtitlesInManifest": false,
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
