@@ -494,17 +494,59 @@ namespace Emby.Server.Implementations.SyncPlay
                 return false;
             }
 
-            // Check if participants can access the new playing queue.
-            if (!AllUsersHaveAccessToQueue(playQueue))
+            // Expand any folder ids in the incoming queue into their playable children.
+            var expandedQueue = new List<Guid>();
+            for (var i = 0; i < playQueue.Count; i++)
+            {
+                var id = playQueue[i];
+                var item = _libraryManager.GetItemById(id);
+                if (item is MediaBrowser.Controller.Entities.Folder folder)
+                {
+                    // Append direct children of the folder in order.
+                    var children = folder.Children ?? Enumerable.Empty<MediaBrowser.Controller.Entities.BaseItem>();
+                    foreach (var child in children)
+                    {
+                        expandedQueue.Add(child.Id);
+                    }
+                }
+                else
+                {
+                    expandedQueue.Add(id);
+                }
+            }
+
+            if (expandedQueue.Count == 0)
             {
                 return false;
             }
 
+            if (!AllUsersHaveAccessToQueue(expandedQueue))
+            {
+                return false;
+            }
+
+            // Map the incoming playingItemPosition to the index in the expanded queue.
+            var newPlayingIndex = 0;
+            for (var i = 0; i < playingItemPosition; i++)
+            {
+                var id = playQueue[i];
+                var item = _libraryManager.GetItemById(id);
+                if (item is MediaBrowser.Controller.Entities.Folder f)
+                {
+                    var children = f.Children ?? Enumerable.Empty<MediaBrowser.Controller.Entities.BaseItem>();
+                    newPlayingIndex += children.Count();
+                }
+                else
+                {
+                    newPlayingIndex += 1;
+                }
+            }
+
             PlayQueue.Reset();
-            PlayQueue.SetPlaylist(playQueue);
-            PlayQueue.SetPlayingItemByIndex(playingItemPosition);
-            var item = _libraryManager.GetItemById(PlayQueue.GetPlayingItemId());
-            RunTimeTicks = item.RunTimeTicks ?? 0;
+            PlayQueue.SetPlaylist(expandedQueue);
+            PlayQueue.SetPlayingItemByIndex(newPlayingIndex);
+            var playingItem = _libraryManager.GetItemById(PlayQueue.GetPlayingItemId());
+            RunTimeTicks = playingItem.RunTimeTicks ?? 0;
             PositionTicks = startPositionTicks;
             LastActivity = DateTime.UtcNow;
 
