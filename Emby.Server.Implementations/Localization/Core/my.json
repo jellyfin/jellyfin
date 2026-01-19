@@ -126,5 +126,7 @@
     "TaskRefreshTrickplayImages": "ထရစ်ခ်ပလေး ပုံများကို ထုတ်မည်",
     "TaskKeyframeExtractor": "ကီးဖရိန်များကို ထုတ်နုတ်ခြင်း",
     "TaskCleanCollectionsAndPlaylists": "စုစည်းမှုများနှင့် အစဉ်လိုက်ပြသမှုများကို ရှင်းလင်းမည်",
-    "HearingImpaired": "အကြားအာရုံ ချို့တဲ့သူ"
+    "HearingImpaired": "အကြားအာရုံ ချို့တဲ့သူ",
+    "TaskDownloadMissingLyrics": "ကျန်နေသောသီချင်းစာသားများအား ဒေါင်းလုတ်ဆွဲပါ",
+    "TaskDownloadMissingLyricsDescription": "သီချင်းများအတွက် သီချင်းစာသား ဒေါင်းလုတ်ဆွဲပါ"
 }
