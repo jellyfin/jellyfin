@@ -2634,6 +2634,21 @@ public sealed class BaseItemRepository
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 
-        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+        var lookup = artists
+            .GroupBy(e => e.Name!)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(f => DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
+
+        var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
+        foreach (var name in artistNames)
+        {
+            if (lookup.TryGetValue(name, out var artistArray))
+            {
+                result[name] = artistArray;
+            }
+        }
+
+        return result;
     }
 }
