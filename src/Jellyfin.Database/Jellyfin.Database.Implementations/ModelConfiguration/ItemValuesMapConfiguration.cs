@@ -13,7 +13,7 @@ public class ItemValuesMapConfiguration : IEntityTypeConfiguration<ItemValueMap>
     public void Configure(EntityTypeBuilder<ItemValueMap> builder)
     {
         builder.HasKey(e => new { e.ItemValueId, e.ItemId });
-        builder.HasIndex(e => e.ItemId); // Index for queries filtering by ItemId
+        builder.HasIndex(e => new { e.ItemId, e.ItemValueId });
         builder.HasOne(e => e.Item);
         builder.HasOne(e => e.ItemValue);
     }
