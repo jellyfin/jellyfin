@@ -7,11 +7,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -22,6 +27,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Playlists;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
@@ -40,6 +46,7 @@ namespace Emby.Server.Implementations.Playlists
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
         private readonly IConfiguration _appConfig;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
         public PlaylistManager(
             ILibraryManager libraryManager,
@@ -48,7 +55,8 @@ namespace Emby.Server.Implementations.Playlists
             ILogger<PlaylistManager> logger,
             IUserManager userManager,
             IProviderManager providerManager,
-            IConfiguration appConfig)
+            IConfiguration appConfig,
+            IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
@@ -57,6 +65,7 @@ namespace Emby.Server.Implementations.Playlists
             _userManager = userManager;
             _providerManager = providerManager;
             _appConfig = appConfig;
+            _dbProvider = dbProvider;
         }
 
         public Playlist GetPlaylistForUser(Guid playlistId, Guid userId)
@@ -655,6 +664,96 @@ namespace Emby.Server.Implementations.Playlists
             {
                 SavePlaylistFile(playlist);
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<string> GenerateShareToken(Guid playlistId, Guid userId)
+        {
+            var playlist = GetPlaylistForUser(playlistId, userId);
+            if (playlist is null)
+            {
+                throw new ArgumentException("Playlist not found or user does not have access", nameof(playlistId));
+            }
+
+            if (!playlist.OwnerUserId.Equals(userId))
+            {
+                throw new UnauthorizedAccessException("Only the playlist owner can generate share tokens");
+            }
+
+            // Generate a cryptographically secure random token (32 bytes = 64 hex characters)
+            var tokenBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(tokenBytes);
+            }
+
+            var shareToken = Convert.ToHexString(tokenBytes).ToLowerInvariant();
+            playlist.ShareToken = shareToken;
+
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+
+            return shareToken;
+        }
+
+        /// <inheritdoc />
+        public async Task RevokeShareToken(Guid playlistId, Guid userId)
+        {
+            var playlist = GetPlaylistForUser(playlistId, userId);
+            if (playlist is null)
+            {
+                throw new ArgumentException("Playlist not found or user does not have access", nameof(playlistId));
+            }
+
+            if (!playlist.OwnerUserId.Equals(userId))
+            {
+                throw new UnauthorizedAccessException("Only the playlist owner can revoke share tokens");
+            }
+
+            playlist.ShareToken = null;
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public Playlist GetPlaylistByShareToken(string shareToken)
+        {
+            if (string.IsNullOrWhiteSpace(shareToken))
+            {
+                return null;
+            }
+
+            using var dbContext = _dbProvider.CreateDbContext();
+            var playlistType = typeof(Playlist).ToString();
+            var playlistEntity = dbContext.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == playlistType && e.Data != null)
+                .AsEnumerable()
+                .FirstOrDefault(e =>
+                {
+                    try
+                    {
+                        var playlist = JsonSerializer.Deserialize<Playlist>(e.Data, JsonDefaults.Options);
+                        return playlist != null && string.Equals(playlist.ShareToken, shareToken, StringComparison.OrdinalIgnoreCase);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
+            if (playlistEntity is null)
+            {
+                return null;
+            }
+
+            var playlist = JsonSerializer.Deserialize<Playlist>(playlistEntity.Data, JsonDefaults.Options);
+            if (playlist is null)
+            {
+                return null;
+            }
+
+            playlist.Id = playlistEntity.Id;
+
+            return _libraryManager.GetItemById(playlist.Id) as Playlist;
         }
     }
 }

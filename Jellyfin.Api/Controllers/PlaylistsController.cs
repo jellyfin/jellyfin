@@ -563,4 +563,128 @@ public class PlaylistsController : BaseJellyfinApiController
 
         return result;
     }
+
+    /// <summary>
+    /// Generates a share token for a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Share token generated.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>The share link information.</returns>
+    [HttpPost("{playlistId}/Share")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShareLinkDto>> GenerateShareLink(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var ownerCheckResult = GetPlaylistAsOwner(playlistId, callingUserId);
+        if (ownerCheckResult.Result is not null)
+        {
+            return ownerCheckResult.Result;
+        }
+
+        var playlist = ownerCheckResult.Value;
+        var shareToken = await _playlistManager.GenerateShareToken(playlistId, callingUserId).ConfigureAwait(false);
+
+        return new ShareLinkDto
+        {
+            ShareToken = shareToken,
+            ShareLink = BuildShareLink(shareToken)
+        };
+    }
+
+    /// <summary>
+    /// Revokes the share token for a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Share token revoked.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>No content.</returns>
+    [HttpDelete("{playlistId}/Share")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> RevokeShareLink(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var ownerCheckResult = GetPlaylistAsOwner(playlistId, callingUserId);
+        if (ownerCheckResult.Result is not null)
+        {
+            return ownerCheckResult.Result;
+        }
+
+        await _playlistManager.RevokeShareToken(playlistId, callingUserId).ConfigureAwait(false);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets the share link for a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Share link information.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found or no share token exists.</response>
+    /// <returns>The share link information.</returns>
+    [HttpGet("{playlistId}/Share")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<ShareLinkDto> GetShareLink(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var ownerCheckResult = GetPlaylistAsOwner(playlistId, callingUserId);
+        if (ownerCheckResult.Result is not null)
+        {
+            return ownerCheckResult.Result;
+        }
+
+        var playlist = ownerCheckResult.Value!;
+        if (string.IsNullOrWhiteSpace(playlist.ShareToken))
+        {
+            return NotFound("No share token exists for this playlist");
+        }
+
+        return new ShareLinkDto
+        {
+            ShareToken = playlist.ShareToken,
+            ShareLink = BuildShareLink(playlist.ShareToken)
+        };
+    }
+
+    /// <summary>
+    /// Gets a playlist and verifies the user is the owner.
+    /// </summary>
+    /// <param name="playlistId">The playlist identifier.</param>
+    /// <param name="userId">The user identifier.</param>
+    /// <returns>The playlist if the user is the owner, otherwise an error result.</returns>
+    private ActionResult<Playlist> GetPlaylistAsOwner(Guid playlistId, Guid userId)
+    {
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, userId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        if (!playlist.OwnerUserId.Equals(userId))
+        {
+            return Forbid();
+        }
+
+        return playlist;
+    }
+
+    /// <summary>
+    /// Builds a share link URL for the given share token.
+    /// </summary>
+    /// <param name="shareToken">The share token.</param>
+    /// <returns>The complete share link URL.</returns>
+    private string BuildShareLink(string shareToken) =>
+        $"{Request.Scheme}://{Request.Host}/Playlists/Share/{shareToken}";
 }
