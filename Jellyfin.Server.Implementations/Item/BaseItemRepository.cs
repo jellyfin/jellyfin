@@ -359,28 +359,30 @@ public sealed class BaseItemRepository
             _ => e => e.Album
         };
 
-        // EF Core requires compile-time expressions, so we use conditional queries
-        var topGroupKeys = collectionType switch
+        IQueryable<string> topGroupKeys;
+        if (collectionType is CollectionType.movies)
         {
-            CollectionType.movies => baseQuery
+            topGroupKeys = baseQuery
                 .Where(e => e.PresentationUniqueKey != null)
                 .GroupBy(e => e.PresentationUniqueKey)
                 .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
                 .OrderByDescending(g => g.MaxDate)
                 .Take(limit)
-                .Select(g => g.GroupKey)
-                .ToList(),
-            _ => baseQuery
+                .Select(g => g.GroupKey);
+        }
+        else
+        {
+            topGroupKeys = baseQuery
                 .Where(e => e.Album != null)
                 .GroupBy(e => e.Album)
                 .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
                 .OrderByDescending(g => g.MaxDate)
                 .Take(limit)
-                .Select(g => g.GroupKey)
-                .ToList()
-        };
+                .Select(g => g.GroupKey);
+        }
 
-        if (topGroupKeys.Count == 0)
+        var topGroupKeysList = topGroupKeys.ToList();
+        if (topGroupKeysList.Count == 0)
         {
             return [];
         }
@@ -394,9 +396,7 @@ public sealed class BaseItemRepository
         itemsQuery = itemsQuery.OrderByDescending(e => e.DateCreated).ThenByDescending(e => e.Id);
         itemsQuery = ApplyNavigations(itemsQuery, filter).AsSingleQuery();
 
-        var allItems = itemsQuery.ToList();
-
-        var latestItems = allItems
+        var latestItems = itemsQuery
             .GroupBy(groupKeySelector)
             .Select(g => g.First())
             .OrderByDescending(e => e.DateCreated)
@@ -419,36 +419,16 @@ public sealed class BaseItemRepository
     /// </remarks>
     private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int limit)
     {
-        const int WindowDays = 7;
-        const int MaxWindowDays = 84;
         const double RecentAdditionWindowHours = 24.0;
 
-        var now = DateTime.UtcNow;
-
-        List<string> topSeriesNames = [];
-        for (int days = WindowDays; days <= MaxWindowDays && topSeriesNames.Count < limit; days += WindowDays)
-        {
-            var cutoff = now.AddDays(-days);
-            topSeriesNames = baseQuery
-                .Where(e => e.SeriesName != null && e.DateCreated >= cutoff)
-                .GroupBy(e => e.SeriesName)
-                .OrderByDescending(g => g.Max(e => e.DateCreated))
-                .Take(limit)
-                .Select(g => g.Key!)
-                .ToList();
-        }
-
-        // Fallback without date filter if needed
-        if (topSeriesNames.Count < limit)
-        {
-            topSeriesNames = baseQuery
-                .Where(e => e.SeriesName != null)
-                .GroupBy(e => e.SeriesName)
-                .OrderByDescending(g => g.Max(e => e.DateCreated))
-                .Take(limit)
-                .Select(g => g.Key!)
-                .ToList();
-        }
+        var topSeriesNames = baseQuery
+            .Where(e => e.SeriesName != null)
+            .GroupBy(e => e.SeriesName)
+            .Select(g => new { SeriesName = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
+            .OrderByDescending(g => g.MaxDate)
+            .Take(limit)
+            .Select(g => g.SeriesName)
+            .ToList();
 
         if (topSeriesNames.Count == 0)
         {
@@ -615,7 +595,7 @@ public sealed class BaseItemRepository
             .Join(
                 context.UserData.AsNoTracking().Where(e => e.ItemId != EF.Constant(PlaceholderId)),
                 i => new { UserId = filter.User.Id, ItemId = i.Id },
-                u => new { UserId = u.UserId, ItemId = u.ItemId },
+                u => new { u.UserId, u.ItemId },
                 (entity, data) => new { Item = entity, UserData = data })
             .GroupBy(g => g.Item.SeriesPresentationUniqueKey)
             .Select(g => new { g.Key, LastPlayedDate = g.Max(u => u.UserData.LastPlayedDate) })
@@ -2250,7 +2230,7 @@ public sealed class BaseItemRepository
     }
 
     /// <summary>
-    /// Normalizes a value for clean comparison by removing diacritics and converting to lowercase.
+    /// Normalizes a value for clean comparison by removing diacritics, punctuation, and converting to lowercase.
     /// </summary>
     /// <param name="value">The value to clean.</param>
     /// <returns>The normalized value.</returns>
@@ -2261,7 +2241,19 @@ public sealed class BaseItemRepository
             return value;
         }
 
-        return value.RemoveDiacritics().ToLowerInvariant();
+        // Remove diacritics and convert to lowercase
+        var cleaned = value.RemoveDiacritics().ToLowerInvariant();
+
+        // Replace all punctuation and special characters with spaces
+        // This includes: periods, commas, colons, semicolons, hyphens, underscores,
+        // parentheses, brackets, braces, quotes, apostrophes, exclamation marks,
+        // question marks, ampersands, slashes, backslashes, em/en dashes, etc.
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
+
+        // Collapse multiple spaces into single space and trim
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\s+", " ").Trim();
+
+        return cleaned;
     }
 
     private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
