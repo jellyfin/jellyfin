@@ -753,10 +753,10 @@ public sealed class BaseItemRepository
 
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (dbContext)
+        await using (dbContext.ConfigureAwait(false))
         {
             var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-            await using (transaction)
+            await using (transaction.ConfigureAwait(false))
             {
                 var userKeys = item.GetUserDataKeys().ToArray();
                 var retentionDate = (DateTime?)null;
@@ -774,7 +774,6 @@ public sealed class BaseItemRepository
                 item.UserData = await dbContext.UserData
                     .AsNoTracking()
                     .Where(e => e.ItemId == item.Id)
-                    .Where(e => userKeys.Contains(e.CustomDataKey))
                     .ToArrayAsync(cancellationToken)
                     .ConfigureAwait(false);
 
