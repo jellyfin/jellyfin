@@ -1399,6 +1399,18 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
+
+        // Calculate the starting segment index from current transcoding state
+        var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
+        var startSegmentIndex = 0;
+
+        var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
+        if (currentTranscodingIndex.HasValue)
+        {
+            startSegmentIndex = currentTranscodingIndex.Value;
+        }
+
         var mediaSourceId = state.BaseRequest.MediaSourceId;
         var request = new CreateMainPlaylistRequest(
             mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
@@ -1408,7 +1420,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
             Request.QueryString.ToString(),
-            EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
+            EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
+            startSegmentIndex);
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));

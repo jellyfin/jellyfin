@@ -1,6 +1,9 @@
 using System;
+using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.MediaEncoding.Keyframes;
+using MediaBrowser.Controller.Configuration;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Hls.Tests.Playlist
@@ -94,6 +97,29 @@ namespace Jellyfin.MediaEncoding.Hls.Tests.Playlist
             };
 
             return data;
+        }
+
+        [Fact]
+        public void CreateMainPlaylist_WithStartSegmentIndex_GeneratesCorrectSequence()
+        {
+            var configManager = new Mock<IServerConfigurationManager>();
+            var generator = new DynamicHlsPlaylistGenerator(configManager.Object, Array.Empty<IKeyframeExtractor>());
+            var request = new CreateMainPlaylistRequest(
+                null,
+                "/path/to/file.mp4",
+                6000,
+                600000000000,
+                "mp4",
+                "hls1/main/",
+                "?params=1",
+                false,
+                startSegmentIndex: 1187);
+
+            var playlist = generator.CreateMainPlaylist(request);
+
+            Assert.Contains("#EXT-X-MEDIA-SEQUENCE:1187", playlist, StringComparison.Ordinal);
+            Assert.Contains("hls1/main/1187.mp4", playlist, StringComparison.Ordinal);
+            Assert.Contains("hls1/main/1188.mp4", playlist, StringComparison.Ordinal);
         }
 
         private static long MsToTicks(int value) => TimeSpan.FromMilliseconds(value).Ticks;

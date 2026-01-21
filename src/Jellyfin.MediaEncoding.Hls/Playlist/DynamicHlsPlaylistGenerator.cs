@@ -62,9 +62,9 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
             .Append("#EXT-X-TARGETDURATION:")
             .Append(Math.Ceiling(segments.Count > 0 ? segments.Max() : request.DesiredSegmentLengthMs))
             .AppendLine()
-            .AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            .AppendLine(CultureInfo.InvariantCulture, $"#EXT-X-MEDIA-SEQUENCE:{request.StartSegmentIndex}");
 
-        var index = 0;
+        var index = request.StartSegmentIndex;
 
         if (isHlsInFmp4)
         {
