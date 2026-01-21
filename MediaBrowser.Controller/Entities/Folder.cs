@@ -1402,8 +1402,15 @@ namespace MediaBrowser.Controller.Entities
                 .Where(e => e.IsVisible(user))
                 .ToArray();
 
+            bool applyNameFilterAfterBoxSetCollapse = user is not null && (!string.IsNullOrEmpty(query.NameStartsWith) || !string.IsNullOrEmpty(query.NameStartsWithOrGreater) || !string.IsNullOrEmpty(query.NameLessThan))
+                && CollapseBoxSetItems(query, this, user, ConfigurationManager);
+
+            InternalItemsQuery filterQuery = applyNameFilterAfterBoxSetCollapse
+                ? new InternalItemsQuery(query.User)
+                : query;
+
             var realChildren = visibleChildren
-                .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
+                .Where(e => UserViewBuilder.FilterItem(e, filterQuery))
                 .ToArray();
 
             var childCount = realChildren.Length;
