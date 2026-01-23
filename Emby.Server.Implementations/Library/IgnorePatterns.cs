@@ -50,6 +50,10 @@ namespace Emby.Server.Implementations.Library
             "**/lost+found",
             "**/subs/**",
             "**/subs",
+            "**/.snapshots/**",
+            "**/.snapshots",
+            "**/.snapshot/**",
+            "**/.snapshot",
 
             // Trickplay files
             "**/*.trickplay",
@@ -83,7 +87,6 @@ namespace Emby.Server.Implementations.Library
 
             // Unix hidden files
             "**/.*",
-            "**/.*/**",
 
             // Mac - if you ever remove the above.
             // "**/._*",
