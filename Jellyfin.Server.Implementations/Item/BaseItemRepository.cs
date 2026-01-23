@@ -755,16 +755,30 @@ public sealed class BaseItemRepository
 
         await using (dbContext.ConfigureAwait(false))
         {
-            var userKeys = item.GetUserDataKeys().ToArray();
-            var retentionDate = (DateTime?)null;
-            await dbContext.UserData
-                .Where(e => e.ItemId == PlaceholderId)
-                .Where(e => userKeys.Contains(e.CustomDataKey))
-                .ExecuteUpdateAsync(
-                    e => e
-                        .SetProperty(f => f.ItemId, item.Id)
-                        .SetProperty(f => f.RetentionDate, retentionDate),
-                    cancellationToken).ConfigureAwait(false);
+            var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await using (transaction.ConfigureAwait(false))
+            {
+                var userKeys = item.GetUserDataKeys().ToArray();
+                var retentionDate = (DateTime?)null;
+
+                await dbContext.UserData
+                    .Where(e => e.ItemId == PlaceholderId)
+                    .Where(e => userKeys.Contains(e.CustomDataKey))
+                    .ExecuteUpdateAsync(
+                        e => e
+                            .SetProperty(f => f.ItemId, item.Id)
+                            .SetProperty(f => f.RetentionDate, retentionDate),
+                        cancellationToken).ConfigureAwait(false);
+
+                // Rehydrate the cached userdata
+                item.UserData = await dbContext.UserData
+                    .AsNoTracking()
+                    .Where(e => e.ItemId == item.Id)
+                    .ToArrayAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
