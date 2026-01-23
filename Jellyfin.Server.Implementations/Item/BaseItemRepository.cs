@@ -274,6 +274,8 @@ public sealed class BaseItemRepository
             result.TotalRecordCount = dbQuery.Count();
         }
 
+        // Apply ordering after count to prevent EF.Functions.Random() from affecting COUNT queries
+        dbQuery = ApplyOrder(dbQuery, filter, context);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
@@ -294,6 +296,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyOrder(dbQuery, filter, context);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
@@ -337,6 +340,7 @@ public sealed class BaseItemRepository
         mainquery = TranslateQuery(mainquery, context, filter);
         mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
         mainquery = ApplyGroupingFilter(context, mainquery, filter);
+        mainquery = ApplyOrder(mainquery, filter, context);
         mainquery = ApplyQueryPaging(mainquery, filter);
 
         mainquery = ApplyNavigations(mainquery, filter);
@@ -403,7 +407,10 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Distinct();
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter, context);
+        // Note: ApplyOrder is intentionally NOT called here.
+        // Ordering is applied separately after TotalRecordCount is calculated
+        // to prevent EF.Functions.Random() from affecting COUNT queries.
+        // See: https://github.com/jellyfin/jellyfin/issues/16035
 
         return dbQuery;
     }
@@ -457,6 +464,7 @@ public sealed class BaseItemRepository
     {
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
+        dbQuery = ApplyOrder(dbQuery, filter, context);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
