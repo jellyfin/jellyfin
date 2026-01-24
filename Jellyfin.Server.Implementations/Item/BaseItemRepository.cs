@@ -295,6 +295,25 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+
+        var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
+        if (hasRandomSort)
+        {
+            var orderedIds = dbQuery.Select(e => e.Id).ToList();
+            if (orderedIds.Count == 0)
+            {
+                return Array.Empty<BaseItemDto>();
+            }
+
+            var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+                .AsEnumerable()
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .Where(dto => dto is not null)
+                .ToDictionary(i => i!.Id);
+
+            return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
+        }
+
         dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
