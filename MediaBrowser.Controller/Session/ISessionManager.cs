@@ -350,5 +350,12 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionIdOrPlaySessionId">The session id or playsession id.</param>
         /// <returns>Task.</returns>
         Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId);
+
+        /// <summary>
+        /// Gets the dto for session info.
+        /// </summary>
+        /// <param name="sessionInfo">The session info.</param>
+        /// <returns><see cref="SessionInfoDto"/> of the session.</returns>
+        SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo);
     }
 }
