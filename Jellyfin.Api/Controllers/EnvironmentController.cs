@@ -129,20 +129,6 @@ public class EnvironmentController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets network paths.
-    /// </summary>
-    /// <response code="200">Empty array returned.</response>
-    /// <returns>List of entries.</returns>
-    [Obsolete("This endpoint is obsolete.")]
-    [HttpGet("NetworkShares")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<FileSystemEntryInfo>> GetNetworkShares()
-    {
-        _logger.LogWarning("Obsolete endpoint accessed: /Environment/NetworkShares");
-        return Array.Empty<FileSystemEntryInfo>();
-    }
-
-    /// <summary>
     /// Gets available drives from the server's file system.
     /// </summary>
     /// <response code="200">List of entries returned.</response>
