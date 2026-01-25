@@ -57,7 +57,7 @@
     "NotificationOptionPluginUpdateInstalled": "插件已更新",
     "NotificationOptionServerRestartRequired": "服务器需要重启",
     "NotificationOptionTaskFailed": "计划任务失败",
-    "NotificationOptionUserLockedOut": "用户已锁定",
+    "NotificationOptionUserLockedOut": "用户已被锁定",
     "NotificationOptionVideoPlayback": "视频已开始播放",
     "NotificationOptionVideoPlaybackStopped": "视频播放已停止",
     "Photos": "照片",
