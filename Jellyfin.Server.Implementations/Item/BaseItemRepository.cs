@@ -381,12 +381,6 @@ public sealed class BaseItemRepository
                 .Select(g => g.GroupKey);
         }
 
-        var topGroupKeysList = topGroupKeys.ToList();
-        if (topGroupKeysList.Count == 0)
-        {
-            return [];
-        }
-
         var itemsQuery = collectionType switch
         {
             CollectionType.movies => baseQuery.Where(e => e.PresentationUniqueKey != null && topGroupKeys.Contains(e.PresentationUniqueKey)),
@@ -396,14 +390,12 @@ public sealed class BaseItemRepository
         itemsQuery = itemsQuery.OrderByDescending(e => e.DateCreated).ThenByDescending(e => e.Id);
         itemsQuery = ApplyNavigations(itemsQuery, filter).AsSingleQuery();
 
-        var latestItems = itemsQuery
+        return itemsQuery
+            .AsEnumerable()
             .GroupBy(groupKeySelector)
             .Select(g => g.First())
             .OrderByDescending(e => e.DateCreated)
             .ThenByDescending(e => e.Id)
-            .ToList();
-
-        return latestItems
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
             .Where(dto => dto is not null)
             .ToArray()!;
@@ -413,14 +405,32 @@ public sealed class BaseItemRepository
     /// Gets the latest TV show items with smart Season/Series container selection.
     /// </summary>
     /// <remarks>
-    /// If multiple episodes were recently added to a single season, returns the Season.
-    /// If episodes span multiple seasons, returns the Series.
-    /// If only a single episode was added, returns the Episode.
+    /// <para>
+    /// This method implements intelligent container selection for TV shows in the "Latest" section.
+    /// Instead of always showing individual episodes, it analyzes recent additions and may return
+    /// a Season or Series container when multiple related episodes were recently added.
+    /// </para>
+    /// <para>
+    /// The selection logic is:
+    /// <list type="bullet">
+    ///     <item>If recent episodes span multiple seasons → return the Series</item>
+    ///     <item>If multiple recent episodes are from one season AND the series has multiple seasons → return the Season</item>
+    ///     <item>If multiple recent episodes are from one season AND the series has only one season → return the Series</item>
+    ///     <item>Otherwise → return the most recent Episode</item>
+    /// </list>
+    /// </para>
     /// </remarks>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The base query with filters already applied.</param>
+    /// <param name="filter">The query filter options.</param>
+    /// <param name="limit">Maximum number of items to return.</param>
+    /// <returns>A list of BaseItemDto representing the latest TV content.</returns>
     private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int limit)
     {
+        // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
 
+        // Step 1: Find the top N series with recently added content, ordered by most recent addition
         var topSeriesNames = baseQuery
             .Where(e => e.SeriesName != null)
             .GroupBy(e => e.SeriesName)
@@ -430,12 +440,7 @@ public sealed class BaseItemRepository
             .Select(g => g.SeriesName)
             .ToList();
 
-        if (topSeriesNames.Count == 0)
-        {
-            return [];
-        }
-
-        // Get all episodes from identified series with navigations
+        // Step 2: Fetch all episodes from the identified series (needed for analysis)
         var allEpisodes = ApplyNavigations(
                 baseQuery
                     .Where(e => e.SeriesName != null && topSeriesNames.Contains(e.SeriesName))
@@ -445,20 +450,25 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .ToList();
 
+        // Collect all season/series IDs we'll need to look up for count information
         var allSeasonIds = new HashSet<Guid>();
         var allSeriesIds = new HashSet<Guid>();
+
+        // Analysis data for each series: which episodes were recently added and to which seasons
         var analysisData = new List<(
             List<BaseItemEntity> RecentEpisodes,
             List<Guid> SeasonIds,
             DateTime MaxDate,
             BaseItemEntity MostRecentEpisode)>();
 
+        // Step 3: Analyze each series to identify recent additions within the time window
         foreach (var group in allEpisodes.GroupBy(e => e.SeriesName))
         {
             var episodes = group.ToList();
             var mostRecentDate = episodes[0].DateCreated ?? DateTime.MinValue;
             var recentCutoff = mostRecentDate.AddHours(-RecentAdditionWindowHours);
 
+            // Find episodes added within the recent window
             var recentEpisodes = new List<BaseItemEntity>();
             var seasonIdSet = new HashSet<Guid>();
 
@@ -477,6 +487,7 @@ public sealed class BaseItemRepository
             var seasonIds = seasonIdSet.ToList();
             analysisData.Add((recentEpisodes, seasonIds, mostRecentDate, episodes[0]));
 
+            // Track all unique season/series IDs for batch lookups
             foreach (var sid in seasonIds)
             {
                 allSeasonIds.Add(sid);
@@ -488,6 +499,8 @@ public sealed class BaseItemRepository
             }
         }
 
+        // Step 4: Batch fetch counts - episodes per season and seasons per series
+        // These counts help determine whether to show Season or Series as the container
         var episodeType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
         var seasonType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Season];
         var seasonEpisodeCounts = allSeasonIds.Count > 0
@@ -508,8 +521,10 @@ public sealed class BaseItemRepository
                 .ToDictionary(x => x.SeriesId, x => x.Count)
             : [];
 
+        // Step 5: Apply the container selection logic for each series
         var entitiesToFetch = new HashSet<Guid>();
         var seriesResults = new List<(Guid? SeasonId, Guid? SeriesId, DateTime MaxDate, BaseItemEntity MostRecentEpisode)>(analysisData.Count);
+
         foreach (var (recentEpisodes, seasonIds, maxDate, mostRecentEpisode) in analysisData)
         {
             Guid? seasonId = null;
@@ -517,6 +532,7 @@ public sealed class BaseItemRepository
 
             if (seasonIds.Count == 1)
             {
+                // All recent episodes are from a single season
                 var sid = seasonIds[0];
                 var totalEpisodes = seasonEpisodeCounts.GetValueOrDefault(sid, 0);
                 var episodeSeriesId = recentEpisodes.Count > 0 ? recentEpisodes[0].SeriesId : null;
@@ -524,20 +540,27 @@ public sealed class BaseItemRepository
                     ? seriesSeasonCounts.GetValueOrDefault(episodeSeriesId.Value, 1)
                     : 1;
 
+                // Check if multiple episodes were added, or if all episodes in the season were added
                 var hasMultipleOrAllEpisodes = recentEpisodes.Count > 1 || recentEpisodes.Count == totalEpisodes;
+
                 if (totalSeasonsInSeries > 1 && hasMultipleOrAllEpisodes)
                 {
+                    // Multi-season series with bulk additions: show the Season
                     seasonId = sid;
                     entitiesToFetch.Add(sid);
                 }
                 else if (hasMultipleOrAllEpisodes && episodeSeriesId.HasValue)
                 {
+                    // Single-season series with bulk additions: show the Series
                     seriesId = episodeSeriesId;
                     entitiesToFetch.Add(episodeSeriesId.Value);
                 }
+
+                // Otherwise: single episode, will fall through to show the Episode
             }
             else if (seasonIds.Count > 1 && recentEpisodes.Count > 0 && recentEpisodes[0].SeriesId.HasValue)
             {
+                // Recent episodes span multiple seasons: show the Series
                 seriesId = recentEpisodes[0].SeriesId;
                 entitiesToFetch.Add(seriesId!.Value);
             }
@@ -545,6 +568,7 @@ public sealed class BaseItemRepository
             seriesResults.Add((seasonId, seriesId, maxDate, mostRecentEpisode));
         }
 
+        // Step 6: Fetch the Season/Series entities we decided to return
         var entities = entitiesToFetch.Count > 0
             ? ApplyNavigations(
                     context.BaseItems.AsNoTracking().Where(e => entitiesToFetch.Contains(e.Id)),
@@ -553,6 +577,7 @@ public sealed class BaseItemRepository
                 .ToDictionary(e => e.Id)
             : [];
 
+        // Step 7: Build final results, preferring Season > Series > Episode
         var results = new List<(BaseItemEntity Entity, DateTime MaxDate)>(seriesResults.Count);
         foreach (var (seasonId, seriesId, maxDate, mostRecentEpisode) in seriesResults)
         {
@@ -568,6 +593,7 @@ public sealed class BaseItemRepository
                 continue;
             }
 
+            // Fallback: show the most recent episode
             results.Add((mostRecentEpisode, maxDate));
         }
 
@@ -685,40 +711,6 @@ public sealed class BaseItemRepository
             lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
         }
 
-        var allCandidatesWithPlayedStatus = context.BaseItems
-            .AsNoTracking()
-            .Where(e => e.Type == episodeTypeName)
-            .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
-            .Where(e => e.ParentIndexNumber != 0)
-            .Where(e => !e.IsVirtualItem)
-            .GroupJoin(
-                context.UserData.AsNoTracking().Where(ud => ud.UserId == userId),
-                e => e.Id,
-                ud => ud.ItemId,
-                (episode, userData) => new
-                {
-                    episode.Id,
-                    episode.SeriesPresentationUniqueKey,
-                    episode.ParentIndexNumber,
-                    EpisodeNumber = episode.IndexNumber,
-                    IsPlayed = userData.Any(ud => ud.Played)
-                })
-            .ToList();
-
-        var allNextUnwatchedCandidates = allCandidatesWithPlayedStatus
-            .Where(c => !c.IsPlayed)
-            .Select(c => new { c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber })
-            .ToList();
-
-        List<(Guid Id, string? SeriesKey, int? Season, int? Episode)> allNextPlayedCandidates = new();
-        if (includeWatchedForRewatching)
-        {
-            allNextPlayedCandidates = allCandidatesWithPlayedStatus
-                .Where(c => c.IsPlayed)
-                .Select(c => (c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber))
-                .ToList();
-        }
-
         Dictionary<string, List<BaseItemEntity>> specialsBySeriesKey = new();
         if (includeSpecials)
         {
@@ -757,10 +749,34 @@ public sealed class BaseItemRepository
         var nextEpisodeIds = new HashSet<Guid>();
         var seriesNextIdMap = new Dictionary<string, Guid>();
         var seriesNextPlayedIdMap = new Dictionary<string, Guid>();
+        var allCandidatesWithPlayedStatus = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Type == episodeTypeName)
+            .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+            .Where(e => e.ParentIndexNumber != 0)
+            .Where(e => !e.IsVirtualItem)
+            .GroupJoin(
+                context.UserData.AsNoTracking().Where(ud => ud.UserId == userId),
+                e => e.Id,
+                ud => ud.ItemId,
+                (episode, userData) => new
+                {
+                    episode.Id,
+                    episode.SeriesPresentationUniqueKey,
+                    episode.ParentIndexNumber,
+                    EpisodeNumber = episode.IndexNumber,
+                    IsPlayed = userData.Any(ud => ud.Played)
+                })
+            .ToList();
+
+        var allNextPlayedCandidates = allCandidatesWithPlayedStatus
+            .Where(c => includeWatchedForRewatching)
+            .Select(c => new { c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber })
+            .ToList();
 
         foreach (var seriesKey in seriesKeys)
         {
-            var candidates = allNextUnwatchedCandidates
+            var candidates = allNextPlayedCandidates
                 .Where(c => c.SeriesPresentationUniqueKey == seriesKey);
 
             if (lastWatchedInfo.TryGetValue(seriesKey, out var lwId) && lwId != Guid.Empty)
@@ -799,21 +815,21 @@ public sealed class BaseItemRepository
                     var lastEp = lastByDateEntity.IndexNumber;
 
                     var playedCandidates = allNextPlayedCandidates
-                        .Where(c => c.SeriesKey == seriesKey);
+                        .Where(c => c.SeriesPresentationUniqueKey == seriesKey);
 
                     if (lastSeason.HasValue && lastEp.HasValue)
                     {
                         playedCandidates = playedCandidates.Where(c =>
-                            c.Season > lastSeason ||
-                            (c.Season == lastSeason && c.Episode > lastEp));
+                            c.ParentIndexNumber > lastSeason ||
+                            (c.ParentIndexNumber == lastSeason && c.EpisodeNumber > lastEp));
                     }
 
                     var nextPlayedCandidate = playedCandidates
-                        .OrderBy(c => c.Season)
-                        .ThenBy(c => c.Episode)
+                        .OrderBy(c => c.ParentIndexNumber)
+                        .ThenBy(c => c.EpisodeNumber)
                         .FirstOrDefault();
 
-                    if (nextPlayedCandidate.Id != Guid.Empty)
+                    if (nextPlayedCandidate is not null && nextPlayedCandidate.Id != Guid.Empty)
                     {
                         nextEpisodeIds.Add(nextPlayedCandidate.Id);
                         seriesNextPlayedIdMap[seriesKey] = nextPlayedCandidate.Id;
@@ -1098,28 +1114,6 @@ public sealed class BaseItemRepository
         return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(k))
             .FirstOrDefault(t => t is not null));
-    }
-
-    /// <summary>
-    /// Saves image information for an item.
-    /// </summary>
-    /// <param name="item">The item DTO containing image info.</param>
-    public void SaveImages(BaseItemDto item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-
-        var images = item.ImageInfos.Select(e => Map(item.Id, e));
-        using var context = _dbProvider.CreateDbContext();
-
-        if (!context.BaseItems.Any(bi => bi.Id == item.Id))
-        {
-            _logger.LogWarning("Unable to save ImageInfo for non existing BaseItem");
-            return;
-        }
-
-        context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(images);
-        context.SaveChanges();
     }
 
     /// <inheritdoc  />
@@ -3012,9 +3006,7 @@ public sealed class BaseItemRepository
         if (filter.OfficialRatings.Length > 0)
         {
             var ratings = filter.OfficialRatings;
-            Expression<Func<BaseItemEntity, bool>> hasOfficialRating = e => ratings.Contains(e.OfficialRating);
-
-            baseQuery = baseQuery.WhereItemOrDescendantMatches(context, hasOfficialRating);
+            baseQuery = baseQuery.WhereItemOrDescendantMatches(context, e => ratings.Contains(e.OfficialRating));
         }
 
         Expression<Func<BaseItemEntity, bool>>? minParentalRatingFilter = null;
@@ -3658,8 +3650,7 @@ public sealed class BaseItemRepository
     {
         var result = query
             .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
-            .GroupBy(_ => 1)
-            .OrderBy(g => g.Key)
+            .GroupBy(_ => 1) // Hack to aggregate over entire set
             .Select(g => new
             {
                 Total = g.Count(),
