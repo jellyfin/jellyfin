@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
