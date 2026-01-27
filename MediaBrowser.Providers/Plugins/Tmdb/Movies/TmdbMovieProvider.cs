@@ -303,9 +303,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                         CrewMember = crewMember,
                         PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
                     })
-                    .Where(entry =>
-                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
-                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+                    .Where(entry => TmdbUtils.WantedCrewKinds.Contains(entry.PersonType));
 
                 if (config.HideMissingCrewMembers)
                 {

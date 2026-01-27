@@ -2202,6 +2202,12 @@ namespace Emby.Server.Implementations.Library
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync([item], parent, updateReason, cancellationToken);
 
+        /// <inheritdoc />
+        public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
+        {
+            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
             if (item.IsFileProtocol)
@@ -3195,19 +3201,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
-
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-
-            while (File.Exists(lnk))
-            {
-                shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-            }
-
-            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
-
-            RemoveContentTypeOverrides(path);
+            CreateShortcut(virtualFolderPath, pathInfo);
 
             if (saveLibraryOptions)
             {
@@ -3371,6 +3365,25 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item is UserRootFolder || item.IsVisibleStandalone(user);
+        }
+
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo)
+        {
+            var path = pathInfo.Path;
+            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+
+            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
+
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+
+            while (File.Exists(lnk))
+            {
+                shortcutFilename += "1";
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+            }
+
+            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
+            RemoveContentTypeOverrides(path);
         }
     }
 }
