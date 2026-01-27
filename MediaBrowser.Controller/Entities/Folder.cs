@@ -398,7 +398,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Logger.LogError(ex, "Error retrieving children from file system");
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
                 {
                     Logger.LogError(ex, "Error retrieving children");
                     return;
@@ -554,10 +554,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken, HashSet<Guid> visited = null)
         {
+            visited ??= new HashSet<Guid>();
+            if (!visited.Add(Id))
+            {
+                return; // Already visited this folder, prevent infinite recursion
+            }
+
             await RunTasks(
-                (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
+                (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken, visited),
                 children,
                 progress,
                 cancellationToken).ConfigureAwait(false);
@@ -573,7 +579,7 @@ namespace MediaBrowser.Controller.Entities
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken, HashSet<Guid> visited = null)
         {
             if (child is IMetadataContainer container)
             {
@@ -588,8 +594,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (recursive && child is Folder folder)
                 {
-                    folder.Children = null; // invalidate cached children.
-                    await folder.RefreshMetadataRecursive(folder.Children.Except([this, child]).ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
+                    folder.Children = null; // force reload to avoid stale cached children
+                    var refreshedChildren = folder.Children
+                        .Where(item => item.Id != Id && item.Id != child.Id)
+                        .ToList();
+                    await folder.RefreshMetadataRecursive(refreshedChildren, refreshOptions, true, progress, cancellationToken, visited).ConfigureAwait(false);
                 }
             }
         }

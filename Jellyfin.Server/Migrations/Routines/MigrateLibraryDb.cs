@@ -34,6 +34,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 {
     private const string DbFilename = "library.db";
+    private const int MigrationBatchSize = 5000;
 
     private readonly IStartupLogger _logger;
     private readonly IServerApplicationPaths _paths;
@@ -229,10 +230,12 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.UserDataKey = UserDatas.key)
             """);
 
-            using (new TrackedMigrationStep("Loading UserData", _logger))
+            using (new TrackedMigrationStep("Loading and saving UserData", _logger))
             {
                 var users = operation.JellyfinDbContext.Users.AsNoTracking().ToArray();
                 var userIdBlacklist = new HashSet<int>();
+                int batchCount = 0;
+                int totalCount = 0;
 
                 foreach (var entity in queryResult)
                 {
@@ -264,15 +267,34 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
                     userData.ItemId = refItem.Id;
                     operation.JellyfinDbContext.UserData.Add(userData);
+                    batchCount++;
+                    totalCount++;
+
+                    if (batchCount >= MigrationBatchSize)
+                    {
+                        operation.JellyfinDbContext.SaveChanges();
+                        operation.JellyfinDbContext.ChangeTracker.Clear();
+                        batchCount = 0;
+                    }
+                }
+
+                if (batchCount > 0)
+                {
+                    operation.JellyfinDbContext.SaveChanges();
+                }
+
+                _logger.LogInformation("Saved {Count} UserData entries", totalCount);
+
+                if (userIdBlacklist.Count > 0)
+                {
+                    _logger.LogWarning(
+                        "Skipped user data for {Count} non-existent user IDs: {UserIds}",
+                        userIdBlacklist.Count,
+                        string.Join(", ", userIdBlacklist));
                 }
             }
 
             legacyBaseItemWithUserKeys.Clear();
-
-            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.UserData.Local.Count} UserData entries", _logger))
-            {
-                operation.JellyfinDbContext.SaveChanges();
-            }
         }
 
         using (var operation = GetPreparedDbContext("Moving MediaStreamInfos"))
@@ -288,8 +310,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = MediaStreams.ItemId)
             """;
 
-            using (new TrackedMigrationStep("Loading MediaStreamInfos", _logger))
+            using (new TrackedMigrationStep("Loading and saving MediaStreamInfos", _logger))
             {
+                int batchCount = 0;
+                int totalCount = 0;
+
                 foreach (SqliteDataReader dto in connection.Query(mediaStreamQuery))
                 {
                     var entity = GetMediaStream(dto);
@@ -299,12 +324,23 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     operation.JellyfinDbContext.MediaStreamInfos.Add(entity);
-                }
-            }
+                    batchCount++;
+                    totalCount++;
 
-            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.MediaStreamInfos.Local.Count} MediaStreamInfos entries", _logger))
-            {
-                operation.JellyfinDbContext.SaveChanges();
+                    if (batchCount >= MigrationBatchSize)
+                    {
+                        operation.JellyfinDbContext.SaveChanges();
+                        operation.JellyfinDbContext.ChangeTracker.Clear();
+                        batchCount = 0;
+                    }
+                }
+
+                if (batchCount > 0)
+                {
+                    operation.JellyfinDbContext.SaveChanges();
+                }
+
+                _logger.LogInformation("Saved {Count} MediaStreamInfos entries", totalCount);
             }
         }
 
@@ -406,8 +442,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             WHERE EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = Chapters2.ItemId)
             """;
 
-            using (new TrackedMigrationStep("Loading Chapters", _logger))
+            using (new TrackedMigrationStep("Loading and saving Chapters", _logger))
             {
+                int batchCount = 0;
+                int totalCount = 0;
+
                 foreach (SqliteDataReader dto in connection.Query(chapterQuery))
                 {
                     var chapter = GetChapter(dto);
@@ -417,12 +456,23 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     operation.JellyfinDbContext.Chapters.Add(chapter);
-                }
-            }
+                    batchCount++;
+                    totalCount++;
 
-            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.Chapters.Local.Count} Chapters entries", _logger))
-            {
-                operation.JellyfinDbContext.SaveChanges();
+                    if (batchCount >= MigrationBatchSize)
+                    {
+                        operation.JellyfinDbContext.SaveChanges();
+                        operation.JellyfinDbContext.ChangeTracker.Clear();
+                        batchCount = 0;
+                    }
+                }
+
+                if (batchCount > 0)
+                {
+                    operation.JellyfinDbContext.SaveChanges();
+                }
+
+                _logger.LogInformation("Saved {Count} Chapters entries", totalCount);
             }
         }
 
@@ -437,8 +487,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             EXISTS(SELECT 1 FROM TypedBaseItems WHERE TypedBaseItems.guid = AncestorIds.AncestorId)
             """;
 
-            using (new TrackedMigrationStep("Loading AncestorIds", _logger))
+            using (new TrackedMigrationStep("Loading and saving AncestorIds", _logger))
             {
+                int batchCount = 0;
+                int totalCount = 0;
+
                 foreach (SqliteDataReader dto in connection.Query(ancestorIdsQuery))
                 {
                     var ancestorId = GetAncestorId(dto);
@@ -448,12 +501,23 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     }
 
                     operation.JellyfinDbContext.AncestorIds.Add(ancestorId);
-                }
-            }
+                    batchCount++;
+                    totalCount++;
 
-            using (new TrackedMigrationStep($"Saving {operation.JellyfinDbContext.AncestorIds.Local.Count} AncestorId entries", _logger))
-            {
-                operation.JellyfinDbContext.SaveChanges();
+                    if (batchCount >= MigrationBatchSize)
+                    {
+                        operation.JellyfinDbContext.SaveChanges();
+                        operation.JellyfinDbContext.ChangeTracker.Clear();
+                        batchCount = 0;
+                    }
+                }
+
+                if (batchCount > 0)
+                {
+                    operation.JellyfinDbContext.SaveChanges();
+                }
+
+                _logger.LogInformation("Saved {Count} AncestorId entries", totalCount);
             }
         }
 
