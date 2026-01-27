@@ -277,3 +277,6 @@ apiclient/generated
 
 # Omnisharp crash logs
 mono_crash.*.json
+
+# Agent rules
+.agent/

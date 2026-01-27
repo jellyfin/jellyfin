@@ -1,0 +1,157 @@
+---
+description: Logging patterns and conventions using Serilog
+globs: **/*.cs
+alwaysApply: false
+---
+
+# Logging Conventions
+
+## Serilog Framework
+
+Jellyfin uses Serilog for structured logging.
+
+## Logger Injection
+
+```csharp
+// ✅ GOOD - Inject ILogger<T>
+public class MyService
+{
+    private readonly ILogger<MyService> _logger;
+
+    public MyService(ILogger<MyService> logger)
+    {
+        _logger = logger;
+    }
+}
+```
+
+## Log Levels
+
+```csharp
+// ✅ GOOD - Use appropriate log levels
+public void ProcessItem(Item item)
+{
+    _logger.LogTrace("Starting to process item {ItemId}", item.Id);
+    _logger.LogDebug("Item details: {ItemName}, {ItemType}", item.Name, item.Type);
+    _logger.LogInformation("Processing item {ItemId}", item.Id);
+    _logger.LogWarning("Item {ItemId} has missing metadata", item.Id);
+    _logger.LogError(exception, "Failed to process item {ItemId}", item.Id);
+    _logger.LogCritical(exception, "Critical system failure");
+}
+```
+
+## Structured Logging
+
+Always use structured logging with named placeholders:
+
+```csharp
+// ✅ GOOD - Structured with named placeholders
+_logger.LogInformation(
+    "User {UserId} accessed item {ItemId} from {IpAddress}",
+    userId,
+    itemId,
+    ipAddress);
+
+// ❌ BAD - String interpolation/concatenation
+_logger.LogInformation($"User {userId} accessed item {itemId}");
+_logger.LogInformation("User " + userId + " accessed item");
+```
+
+## Exception Logging
+
+```csharp
+// ✅ GOOD
+try
+{
+    await ProcessItemAsync(item);
+}
+catch (FileNotFoundException ex)
+{
+    _logger.LogError(
+        ex,
+        "File not found for item {ItemId}: {FilePath}",
+        item.Id,
+        item.Path);
+    throw;
+}
+catch (Exception ex)
+{
+    _logger.LogError(
+        ex,
+        "Unexpected error processing item {ItemId}",
+        item.Id);
+    throw;
+}
+
+// ❌ BAD - Don't log exception message in format string
+catch (Exception ex)
+{
+    _logger.LogError("Error: " + ex.Message);  // Loses stack trace
+}
+```
+
+## Performance-Sensitive Logging
+
+Use LoggerMessage source generators for high-frequency logging:
+
+```csharp
+// ✅ GOOD - For hot paths
+public partial class MyService
+{
+    private readonly ILogger<MyService> _logger;
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Debug,
+        Message = "Processing item {ItemId}")]
+    private partial void LogProcessing(Guid itemId);
+
+    public void Process(Item item)
+    {
+        LogProcessing(item.Id);
+    }
+}
+```
+
+## Avoid Expensive Operations in Logs
+
+```csharp
+// ✅ GOOD - Log only when needed
+if (_logger.IsEnabled(LogLevel.Debug))
+{
+    var details = GetExpensiveDetails(item);
+    _logger.LogDebug("Item details: {@Details}", details);
+}
+
+// ❌ BAD - Always computes even if not logged
+_logger.LogDebug("Item details: {@Details}", GetExpensiveDetails(item));
+```
+
+## Sensitive Data
+
+Never log sensitive information:
+
+```csharp
+// ❌ FORBIDDEN
+_logger.LogInformation("User password: {Password}", password);
+_logger.LogInformation("API key: {ApiKey}", apiKey);
+_logger.LogInformation("Access token: {Token}", token);
+
+// ✅ GOOD - Log only non-sensitive identifiers
+_logger.LogInformation("Authentication successful for user {UserId}", userId);
+```
+
+## Log Scopes
+
+Use log scopes for contextual information:
+
+```csharp
+// ✅ GOOD
+using (_logger.BeginScope("Processing request {RequestId}", requestId))
+{
+    _logger.LogInformation("Starting processing");
+    // All logs in this scope include RequestId
+    ProcessData();
+    _logger.LogInformation("Completed processing");
+}
+```

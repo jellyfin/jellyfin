@@ -1,0 +1,149 @@
+---
+description: Database and Entity Framework conventions
+globs: src/Jellyfin.Database/**/*.cs
+alwaysApply: false
+---
+
+# Database Conventions
+
+## Entity Framework Core
+
+Jellyfin uses EF Core with SQLite provider.
+
+## DbContext
+
+```csharp
+// ✅ GOOD
+public class JellyfinDbContext : DbContext
+{
+    public JellyfinDbContext(DbContextOptions<JellyfinDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Item> Items => Set<Item>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configure entities
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Username).IsRequired();
+        });
+    }
+}
+```
+
+## Migrations
+
+Migrations are in `src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Migrations/`:
+
+```csharp
+// ✅ GOOD - Migration naming: YYYYMMDDHHmmss_Description
+public partial class AddHdr10PlusFlag_20250327171413 : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<bool>(
+            name: "HasHdr10Plus",
+            table: "MediaStreams",
+            type: "INTEGER",
+            nullable: false,
+            defaultValue: false);
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "HasHdr10Plus",
+            table: "MediaStreams");
+    }
+}
+```
+
+## Repository Pattern
+
+```csharp
+// ✅ GOOD - Interface in MediaBrowser.Controller
+public interface IItemRepository
+{
+    Task<Item?> GetItemAsync(Guid id, CancellationToken cancellationToken);
+    Task SaveItemAsync(Item item, CancellationToken cancellationToken);
+}
+
+// Implementation in Jellyfin.Server.Implementations
+public class ItemRepository : IItemRepository
+{
+    private readonly JellyfinDbContext _dbContext;
+
+    public ItemRepository(JellyfinDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<Item?> GetItemAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Items
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+}
+```
+
+## Query Best Practices
+
+```csharp
+// ✅ GOOD
+public async Task<List<Item>> GetItemsAsync(CancellationToken cancellationToken)
+{
+    return await _dbContext.Items
+        .AsNoTracking()  // Read-only queries
+        .Where(x => x.IsActive)
+        .OrderBy(x => x.Name)
+        .Take(100)
+        .ToListAsync(cancellationToken);  // Always pass CancellationToken
+}
+
+// ❌ BAD
+public List<Item> GetItems()
+{
+    return _dbContext.Items.ToList();  // Sync, no AsNoTracking, no cancellation
+}
+```
+
+## Transactions
+
+```csharp
+// ✅ GOOD
+public async Task SaveMultipleAsync(
+    IEnumerable<Item> items,
+    CancellationToken cancellationToken)
+{
+    await using var transaction = await _dbContext.Database
+        .BeginTransactionAsync(cancellationToken);
+
+    try
+    {
+        await _dbContext.Items.AddRangeAsync(items, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+    catch
+    {
+        await transaction.RollbackAsync(cancellationToken);
+        throw;
+    }
+}
+```
+
+## SQLite-Specific
+
+- Use `INTEGER` for booleans (SQLite limitation)
+- Be careful with collation (see `FixedCollation` migration)
+- Journal mode configured in migrations

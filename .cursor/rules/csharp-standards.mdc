@@ -1,0 +1,160 @@
+---
+description: C# coding standards and conventions for Jellyfin
+globs: **/*.cs
+alwaysApply: false
+---
+
+# C# Coding Standards
+
+## Naming Conventions
+
+```csharp
+// ✅ GOOD
+public class MyService
+{
+    private readonly ILogger _logger;  // Instance fields: _ prefix, camelCase
+    private static readonly string _configPath;  // Static fields: _ prefix, camelCase
+    private const int MaxRetries = 3;  // Constants: PascalCase
+
+    public void ProcessItem(string itemName)  // Parameters: camelCase
+    {
+        var localVar = GetData();  // Locals: camelCase
+    }
+
+    public string ItemName { get; set; }  // Properties: PascalCase
+}
+
+// ❌ BAD
+private logger;  // Missing type and _ prefix
+private static ConfigPath;  // Wrong casing for static
+private const int maxRetries = 3;  // Wrong casing for const
+```
+
+## File-Scoped Namespaces
+
+Always use file-scoped namespace declarations (C# 10+):
+
+```csharp
+// ✅ GOOD
+namespace Jellyfin.Api.Controllers;
+
+public class MyController { }
+
+// ❌ BAD
+namespace Jellyfin.Api.Controllers
+{
+    public class MyController { }
+}
+```
+
+## Nullable Reference Types
+
+Nullable reference types are enabled project-wide. Be explicit:
+
+```csharp
+// ✅ GOOD
+public string ProcessData(string? optionalParam)
+{
+    ArgumentNullException.ThrowIfNull(requiredParam);
+    return result ?? string.Empty;
+}
+
+// ❌ BAD - Will cause warnings
+public string ProcessData(string optionalParam)  // Should be string?
+{
+    return result;  // Possible null return
+}
+```
+
+## Banned Symbols
+
+Never use these APIs (will cause build errors):
+
+```csharp
+// ❌ FORBIDDEN
+var result = task.Result;  // Use await instead
+if (guid1 == guid2) { }  // Use guid1.Equals(guid2) with IEqualityComparer
+if (guid1.Equals(obj)) { }  // Use typed Equals overload
+```
+
+## String Comparisons
+
+Always specify `StringComparison`:
+
+```csharp
+// ✅ GOOD
+if (str.Equals(other, StringComparison.OrdinalIgnoreCase)) { }
+if (str.Contains(value, StringComparison.Ordinal)) { }
+
+// ❌ BAD - Will cause error
+if (str.Equals(other)) { }
+if (str.ToLower() == other.ToLower()) { }
+```
+
+## Formatting
+
+- **Indentation**: 4 spaces (never tabs)
+- **Line endings**: LF (Unix-style)
+- **Trailing whitespace**: Remove all
+- **Final newline**: Required
+- **Braces**: Always on new line (Allman style)
+
+```csharp
+// ✅ GOOD
+if (condition)
+{
+    DoSomething();
+}
+
+// ❌ BAD
+if (condition) {
+    DoSomething();
+}
+```
+
+## Async/Await
+
+```csharp
+// ✅ GOOD
+public async Task<string> GetDataAsync(CancellationToken cancellationToken)
+{
+    return await _client.GetAsync(url, cancellationToken);
+}
+
+// ❌ BAD
+public Task<string> GetDataAsync()  // Missing CancellationToken
+{
+    return Task.Run(() => _client.Get(url));  // Sync method in Task.Run
+}
+```
+
+## Disposal Patterns
+
+```csharp
+// ✅ GOOD
+using var stream = File.OpenRead(path);
+// or
+await using var connection = await CreateConnectionAsync();
+
+// For IDisposable implementations
+public class MyClass : IDisposable
+{
+    private bool _disposed;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
+        {
+            // Dispose managed resources
+        }
+        _disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}
+```

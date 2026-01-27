@@ -1,0 +1,203 @@
+---
+description: Error handling and exception patterns
+globs: **/*.cs
+alwaysApply: false
+---
+
+# Error Handling
+
+## Exception Types
+
+Use specific exception types, never throw base `Exception`:
+
+```csharp
+// ✅ GOOD
+if (string.IsNullOrEmpty(userId))
+{
+    throw new ArgumentNullException(nameof(userId));
+}
+
+if (pageSize < 1)
+{
+    throw new ArgumentOutOfRangeException(
+        nameof(pageSize),
+        "Page size must be greater than 0");
+}
+
+// ❌ BAD - CA2201 error
+throw new Exception("Something went wrong");
+```
+
+## Null Checks
+
+Use modern null checking patterns:
+
+```csharp
+// ✅ GOOD - .NET 10
+ArgumentNullException.ThrowIfNull(parameter);
+ArgumentNullException.ThrowIfNullOrEmpty(stringParameter);
+ArgumentNullException.ThrowIfNullOrWhiteSpace(stringParameter);
+
+// Also acceptable for nullable parameters
+if (optionalParam is null)
+{
+    return defaultValue;
+}
+
+// ❌ BAD - Verbose legacy pattern
+if (parameter == null)
+{
+    throw new ArgumentNullException(nameof(parameter));
+}
+```
+
+## ObjectDisposedException
+
+Use `ThrowIf` instead of manual checks:
+
+```csharp
+// ✅ GOOD
+public void DoWork()
+{
+    ObjectDisposedException.ThrowIf(_disposed, this);
+    // Continue with work
+}
+
+// ❌ BAD
+public void DoWork()
+{
+    if (_disposed)
+    {
+        throw new ObjectDisposedException(GetType().Name);
+    }
+}
+```
+
+## Try-Catch Patterns
+
+```csharp
+// ✅ GOOD - Catch specific exceptions
+public async Task<Item?> GetItemAsync(Guid id)
+{
+    try
+    {
+        return await _repository.GetItemAsync(id);
+    }
+    catch (DbUpdateException ex)
+    {
+        _logger.LogError(ex, "Database error getting item {ItemId}", id);
+        throw;
+    }
+    catch (OperationCanceledException)
+    {
+        _logger.LogInformation("Operation cancelled for item {ItemId}", id);
+        throw;
+    }
+}
+
+// ⚠️ SUGGESTION - Avoid empty catch (CA1031)
+try
+{
+    await DoWork();
+}
+catch (Exception)
+{
+    // Silent failure - only if truly acceptable
+}
+```
+
+## API Error Responses
+
+In controllers, return proper HTTP status codes:
+
+```csharp
+// ✅ GOOD
+[HttpGet("{id}")]
+public ActionResult<ItemDto> GetItem(Guid id)
+{
+    try
+    {
+        var item = _service.GetItem(id);
+        if (item is null)
+        {
+            return NotFound($"Item {id} not found");
+        }
+
+        return Ok(item);
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return Forbid();
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error getting item {ItemId}", id);
+        return StatusCode(500, "Internal server error");
+    }
+}
+```
+
+## Custom Exceptions
+
+Define custom exceptions when needed:
+
+```csharp
+// ✅ GOOD
+namespace Jellyfin.Api.Exceptions;
+
+public class ItemNotFoundException : Exception
+{
+    public ItemNotFoundException(Guid itemId)
+        : base($"Item {itemId} not found")
+    {
+        ItemId = itemId;
+    }
+
+    public ItemNotFoundException(Guid itemId, Exception innerException)
+        : base($"Item {itemId} not found", innerException)
+    {
+        ItemId = itemId;
+    }
+
+    public Guid ItemId { get; }
+}
+```
+
+## CancellationToken
+
+Always handle cancellation properly:
+
+```csharp
+// ✅ GOOD
+public async Task ProcessItemsAsync(
+    IEnumerable<Item> items,
+    CancellationToken cancellationToken)
+{
+    foreach (var item in items)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await ProcessItemAsync(item, cancellationToken);
+    }
+}
+
+// Pass CancellationToken.None explicitly if intentionally not propagating
+await _client.SendAsync(request, CancellationToken.None);
+```
+
+## Exception Middleware
+
+API exceptions are handled by `ExceptionMiddleware` in `Jellyfin.Api.Middleware`. It automatically converts exceptions to appropriate HTTP responses.
+
+```csharp
+// The middleware handles:
+// - ArgumentException -> 400 Bad Request
+// - UnauthorizedAccessException -> 403 Forbidden
+// - SecurityException -> 403 Forbidden
+// - FileNotFoundException -> 404 Not Found
+// - DirectoryNotFoundException -> 404 Not Found
+// - Other exceptions -> 500 Internal Server Error
+```

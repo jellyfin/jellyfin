@@ -1,0 +1,123 @@
+---
+description: API Controller patterns and conventions
+globs: **/Controllers/**/*.cs
+alwaysApply: false
+---
+
+# Controller Patterns
+
+## Base Controller
+
+All API controllers inherit from `BaseJellyfinApiController`:
+
+```csharp
+// ✅ GOOD
+[Route("api/[controller]")]
+[Authorize]
+public class MyController : BaseJellyfinApiController
+{
+    private readonly ILogger<MyController> _logger;
+    private readonly IMyService _myService;
+
+    public MyController(
+        ILogger<MyController> logger,
+        IMyService myService)
+    {
+        _logger = logger;
+        _myService = myService;
+    }
+}
+
+// ❌ BAD
+public class MyController : ControllerBase  // Wrong base
+```
+
+## Action Methods
+
+```csharp
+// ✅ GOOD
+[HttpGet("items/{id}")]
+[ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+public ActionResult<ItemDto> GetItem(
+    [FromRoute, Required] Guid id,
+    [FromQuery] bool includeMetadata = false)
+{
+    var item = _service.GetItem(id);
+    if (item is null)
+    {
+        return NotFound();
+    }
+
+    return Ok(item);
+}
+
+// Async with CancellationToken
+[HttpPost]
+public async Task<ActionResult> CreateItem(
+    [FromBody, Required] CreateItemRequest request,
+    CancellationToken cancellationToken)
+{
+    await _service.CreateItemAsync(request, cancellationToken);
+    return NoContent();
+}
+```
+
+## Authorization
+
+```csharp
+// Require authentication for entire controller
+[Authorize]
+public class SecureController : BaseJellyfinApiController { }
+
+// Allow anonymous for specific action
+[AllowAnonymous]
+[HttpGet("public")]
+public ActionResult GetPublicData() { }
+
+// Require specific policy
+[Authorize(Policy = "RequiresElevation")]
+[HttpDelete]
+public ActionResult DeleteItem() { }
+```
+
+## Validation
+
+```csharp
+// ✅ GOOD - Use validation attributes
+public ActionResult ProcessData(
+    [FromBody, Required] RequestDto request,
+    [FromQuery, Range(1, 100)] int pageSize = 10)
+{
+    // Data is pre-validated by framework
+}
+
+// Check ModelState if needed
+if (!ModelState.IsValid)
+{
+    return ValidationProblem(ModelState);
+}
+```
+
+## Dependency Injection
+
+Controllers receive dependencies via constructor injection:
+
+```csharp
+public class VideosController : BaseJellyfinApiController
+{
+    private readonly ILibraryManager _libraryManager;
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly ILogger<VideosController> _logger;
+
+    public VideosController(
+        ILibraryManager libraryManager,
+        IMediaSourceManager mediaSourceManager,
+        ILogger<VideosController> logger)
+    {
+        _libraryManager = libraryManager;
+        _mediaSourceManager = mediaSourceManager;
+        _logger = logger;
+    }
+}
+```

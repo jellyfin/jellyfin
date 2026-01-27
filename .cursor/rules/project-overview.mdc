@@ -1,0 +1,97 @@
+---
+description: Jellyfin project overview and core architecture
+alwaysApply: true
+---
+
+# Jellyfin Project Overview
+
+## What is Jellyfin?
+
+Jellyfin is a Free Software Media System that manages and streams media. It's an alternative to proprietary solutions like Emby and Plex, providing media from a dedicated server to end-user devices.
+
+## Tech Stack
+
+- **.NET 10.0** (net10.0) - Core framework (README may reference .NET 9 SDK)
+- **C#** with nullable reference types enabled
+- **ASP.NET Core** - Web framework
+- **Entity Framework Core** - ORM with SQLite
+- **Serilog** - Logging framework
+- **Prometheus** - Metrics
+- **Swagger/ReDoc** - API documentation
+- **xUnit, Moq, AutoFixture** - Testing
+
+## Project Structure
+
+### Core Projects
+
+- `Jellyfin.Server` - Main server application and entry point
+- `Jellyfin.Api` - REST API controllers and endpoints
+- `Jellyfin.Server.Implementations` - Server-specific implementations
+- `MediaBrowser.Controller` - Core interfaces and abstractions
+- `MediaBrowser.Common` - Shared common code
+- `MediaBrowser.Model` - Data models and DTOs
+
+### Domain Projects
+
+- `Emby.Server.Implementations` - Core server implementations (legacy naming)
+- `Emby.Naming` - File naming conventions
+- `MediaBrowser.MediaEncoding` - Media encoding logic
+- `MediaBrowser.Providers` - Metadata providers
+- `src/Jellyfin.*` - Modern modular features (LiveTv, Database, Extensions, etc.)
+
+### Tests
+
+All test projects follow pattern: `tests/[ProjectName].Tests/`
+
+## Architecture Principles
+
+- **Dependency Injection**: All services registered via DI container
+- **Interface-based**: Core abstractions in `MediaBrowser.Controller`
+- **Separation of Concerns**: API, business logic, and data layers are distinct
+- **Configuration**: Centralized package management (`Directory.Packages.props`)
+
+## Build Configuration
+
+- Warnings treated as errors (`TreatWarningsAsErrors=true`)
+- Analysis mode enabled in Debug builds
+- StyleCop, Roslyn analyzers, and custom analyzers enforced
+- Central package version management enabled
+
+## Contribution Guidelines
+
+### Before Starting Work
+
+1. Browse the [issues list](https://github.com/jellyfin/jellyfin/issues)
+2. Comment on an issue to indicate intent to work on it (prevents duplication)
+3. If no issue exists for your changes, create one first and reference it in your PR
+
+### Development Workflow
+
+1. Fork the repository to your GitHub account
+2. Clone your fork locally
+3. Add upstream remote: `git remote add upstream git@github.com:jellyfin/jellyfin.git`
+4. Create a feature branch off `master`: `git checkout -b my-feature master`
+5. Make changes and commit to your feature branch
+6. Rebase against upstream/master before submitting
+7. Push to your fork and create a PR against upstream `master`
+
+### CONTRIBUTORS.md
+
+First-time contributors should add themselves to `CONTRIBUTORS.md` at the bottom of the "Jellyfin Contributors" section.
+
+### Pull Request Requirements
+
+- Use imperative mood in PR titles (e.g., "Add LDAP support", not "Added LDAP support")
+- Keep title short, descriptive, with proper capitalization but no punctuation
+- Follow the PR template and explain:
+  - Why changes are being made (reference issues with `fixes`, `closes`, etc.)
+  - How you approached the issue
+- Mark unfinished PRs as "draft"
+- Squash "junk" commits but keep logical commits separate
+- All PRs require at least 2 team member reviews before merging to `master`
+- Avoid rebasing/force-pushing after reviews when possible
+
+### Branch Strategy
+
+- **master** - Primary development branch, all PRs target this branch
+- **Feature branches** - Created for major projects requiring multiple PRs

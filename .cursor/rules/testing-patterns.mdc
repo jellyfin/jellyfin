@@ -1,0 +1,156 @@
+---
+description: Testing patterns and conventions
+globs: tests/**/*.cs
+alwaysApply: false
+---
+
+# Testing Patterns
+
+## Test Framework
+
+- **xUnit** for test framework
+- **Moq** for mocking
+- **AutoFixture** for test data generation
+- **FluentAssertions** for assertions (where applicable)
+
+## Test Class Structure
+
+```csharp
+// ✅ GOOD
+namespace Jellyfin.Server.Tests.Services;
+
+public class MyServiceTests
+{
+    [Fact]
+    public void MethodName_Scenario_ExpectedBehavior()
+    {
+        // Arrange
+        var service = new MyService();
+        var input = "test";
+
+        // Act
+        var result = service.Process(input);
+
+        // Assert
+        Assert.Equal("expected", result);
+    }
+
+    [Theory]
+    [InlineData("input1", "expected1")]
+    [InlineData("input2", "expected2")]
+    public void MethodName_WithVariousInputs_ReturnsExpected(
+        string input,
+        string expected)
+    {
+        var service = new MyService();
+        Assert.Equal(expected, service.Process(input));
+    }
+}
+```
+
+## Naming Convention
+
+Test methods follow pattern: `MethodName_Scenario_ExpectedBehavior`
+
+```csharp
+// ✅ GOOD
+public void GetItem_WhenItemExists_ReturnsItem()
+public void GetItem_WhenItemNotFound_ReturnsNull()
+public void CreateItem_WithInvalidData_ThrowsArgumentException()
+
+// ❌ BAD
+public void Test1()
+public void GetItemTest()
+```
+
+## Mocking with Moq
+
+```csharp
+// ✅ GOOD
+[Fact]
+public void ProcessItem_CallsRepository()
+{
+    // Arrange
+    var mockRepo = new Mock<IItemRepository>();
+    mockRepo.Setup(x => x.GetItem(It.IsAny<Guid>()))
+        .Returns(new Item { Id = Guid.NewGuid() });
+
+    var service = new ItemService(mockRepo.Object);
+
+    // Act
+    service.ProcessItem(Guid.NewGuid());
+
+    // Assert
+    mockRepo.Verify(x => x.GetItem(It.IsAny<Guid>()), Times.Once);
+}
+```
+
+## Integration Tests
+
+Integration tests use `JellyfinApplicationFactory`:
+
+```csharp
+public sealed class MyControllerTests : IClassFixture<JellyfinApplicationFactory>
+{
+    private readonly JellyfinApplicationFactory _factory;
+
+    public MyControllerTests(JellyfinApplicationFactory factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task GetEndpoint_ReturnsSuccess()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.GetAsync("/api/my/endpoint");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+}
+```
+
+## Test Data
+
+Prefer `InlineData` for simple cases, AutoFixture for complex objects:
+
+```csharp
+// Simple data
+[Theory]
+[InlineData(1, "one")]
+[InlineData(2, "two")]
+public void Convert_ValidInput(int input, string expected) { }
+
+// Complex data with AutoFixture
+[Theory, AutoData]
+public void Process_ComplexObject(MyComplexDto dto)
+{
+    // dto is auto-generated with valid data
+}
+```
+
+## Async Tests
+
+```csharp
+// ✅ GOOD
+[Fact]
+public async Task GetDataAsync_ReturnsData()
+{
+    var service = new MyService();
+    var result = await service.GetDataAsync();
+    Assert.NotNull(result);
+}
+
+// ❌ BAD - Don't use .Result
+[Fact]
+public void GetDataAsync_ReturnsData()
+{
+    var result = service.GetDataAsync().Result;  // FORBIDDEN
+}
+```
+
+## Relaxed Rules in Tests
+
+Note: Test files have relaxed analyzer rules:
+- Underscores in method names are allowed
+- `ConfigureAwait` not required
+- Some CA rules are suggestions instead of errors

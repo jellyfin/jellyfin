@@ -1,0 +1,140 @@
+---
+description: Dependency injection patterns and service registration
+globs: **/*.cs
+alwaysApply: false
+---
+
+# Dependency Injection
+
+## Service Registration
+
+Services are registered in `Startup.cs` and extension methods:
+
+```csharp
+// ✅ GOOD - In Startup.cs or extension methods
+public void ConfigureServices(IServiceCollection services)
+{
+    // Singleton - One instance for app lifetime
+    services.AddSingleton<ILibraryManager, LibraryManager>();
+
+    // Scoped - One instance per request
+    services.AddScoped<IItemRepository, ItemRepository>();
+
+    // Transient - New instance every time
+    services.AddTransient<IEmailService, EmailService>();
+
+    // Register with interface
+    services.AddSingleton<IMyService, MyServiceImpl>();
+}
+```
+
+## Service Lifetimes
+
+- **Singleton**: Shared across entire application (e.g., managers, configuration)
+- **Scoped**: Per HTTP request (e.g., database contexts, repositories)
+- **Transient**: New instance each time (e.g., helpers, lightweight services)
+
+## Constructor Injection
+
+```csharp
+// ✅ GOOD - Prefer constructor injection
+public class MediaSourceManager : IMediaSourceManager
+{
+    private readonly ILibraryManager _libraryManager;
+    private readonly ILogger<MediaSourceManager> _logger;
+    private readonly IFileSystem _fileSystem;
+
+    public MediaSourceManager(
+        ILibraryManager libraryManager,
+        ILogger<MediaSourceManager> logger,
+        IFileSystem fileSystem)
+    {
+        _libraryManager = libraryManager;
+        _logger = logger;
+        _fileSystem = fileSystem;
+    }
+}
+
+// ❌ BAD - Don't use service locator pattern
+public class BadService
+{
+    private ILibraryManager _manager;
+
+    public void DoWork(IServiceProvider provider)
+    {
+        _manager = provider.GetService<ILibraryManager>();  // Avoid this
+    }
+}
+```
+
+## Interface Definitions
+
+Interfaces go in `MediaBrowser.Controller` or `MediaBrowser.Common`:
+
+```csharp
+// In MediaBrowser.Controller/Library/ILibraryManager.cs
+namespace MediaBrowser.Controller.Library;
+
+public interface ILibraryManager
+{
+    Task<Item?> GetItemAsync(Guid id, CancellationToken cancellationToken);
+    Task SaveItemAsync(Item item, CancellationToken cancellationToken);
+}
+```
+
+## Implementation Placement
+
+Implementations go in appropriate implementation projects:
+
+```csharp
+// In Emby.Server.Implementations/Library/LibraryManager.cs
+namespace Emby.Server.Implementations.Library;
+
+public class LibraryManager : ILibraryManager
+{
+    // Implementation here
+}
+```
+
+## Logging
+
+Always inject `ILogger<T>` where T is the class:
+
+```csharp
+// ✅ GOOD
+public class MyService
+{
+    private readonly ILogger<MyService> _logger;
+
+    public MyService(ILogger<MyService> logger)
+    {
+        _logger = logger;
+    }
+
+    public void DoWork()
+    {
+        _logger.LogInformation("Processing started");
+    }
+}
+```
+
+## Options Pattern
+
+Use `IOptions<T>` for configuration:
+
+```csharp
+// ✅ GOOD
+public class EncodingService
+{
+    private readonly EncodingOptions _options;
+
+    public EncodingService(IOptions<EncodingOptions> options)
+    {
+        _options = options.Value;
+    }
+}
+
+// Registration in Startup.cs
+services.Configure<EncodingOptions>(
+    Configuration.GetSection("Encoding"));
+```
