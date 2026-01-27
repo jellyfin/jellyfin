@@ -162,7 +162,7 @@ public sealed class SetupServer : IDisposable
                                 {
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(_loggerFactory.CreateLogger<NetworkManager>(), false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,
