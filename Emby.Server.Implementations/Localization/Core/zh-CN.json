@@ -73,7 +73,6 @@
     "Shows": "节目",
     "Songs": "歌曲",
     "StartupEmbyServerIsLoading": "Jellyfin 服务器正在启动，请稍后再试。",
-    "SubtitleDownloadFailureForItem": "为 {0} 下载字幕失败",
     "SubtitleDownloadFailureFromForItem": "无法从 {0} 下载 {1} 的字幕",
     "Sync": "同步",
     "System": "系统",

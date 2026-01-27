@@ -73,7 +73,6 @@
     "Shows": "Serije",
     "Songs": "Pjesme",
     "StartupEmbyServerIsLoading": "Jellyfin server se učitava. Pokušajte ponovo uskoro.",
-    "SubtitleDownloadFailureForItem": "Titlovi prijevoda nisu preuzeti za {0}",
     "SubtitleDownloadFailureFromForItem": "Prijevod nije uspješno preuzet od {0} za {1}",
     "Sync": "Sinkronizacija",
     "System": "Sustav",

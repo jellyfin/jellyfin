@@ -73,7 +73,6 @@
     "Shows": "Sorozatok",
     "Songs": "Számok",
     "StartupEmbyServerIsLoading": "A Jellyfin kiszolgáló betöltődik. Próbálja újra hamarosan.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Nem sikerült a felirat letöltése innen: {0}, ehhez: {1}",
     "Sync": "Szinkronizálás",
     "System": "Rendszer",

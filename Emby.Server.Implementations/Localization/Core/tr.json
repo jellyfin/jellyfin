@@ -73,7 +73,6 @@
     "Shows": "Diziler",
     "Songs": "Şarkılar",
     "StartupEmbyServerIsLoading": "Jellyfin Sunucusu yükleniyor. Lütfen kısa süre sonra tekrar deneyin.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{1} için altyazılar {0} sağlayıcısından indirilemedi",
     "Sync": "Eşzamanlama",
     "System": "Sistem",

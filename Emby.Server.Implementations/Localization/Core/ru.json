@@ -73,7 +73,6 @@
     "Shows": "Сериалы",
     "Songs": "Композиции",
     "StartupEmbyServerIsLoading": "Jellyfin Server загружается. Повторите попытку в ближайшее время.",
-    "SubtitleDownloadFailureForItem": "Субтитры к {0} не удалось загрузить",
     "SubtitleDownloadFailureFromForItem": "Субтитры к {1} не удалось загрузить с {0}",
     "Sync": "Синхронизация",
     "System": "Система",
