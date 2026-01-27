@@ -338,29 +338,6 @@ public class UserController : BaseJellyfinApiController
         => UpdateUserPassword(userId, request);
 
     /// <summary>
-    /// Updates a user's easy password.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
-    /// <response code="204">Password successfully reset.</response>
-    /// <response code="403">User is not allowed to update the password.</response>
-    /// <response code="404">User not found.</response>
-    /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
-    [HttpPost("{userId}/EasyPassword")]
-    [Obsolete("Use Quick Connect instead")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult UpdateUserEasyPassword(
-        [FromRoute, Required] Guid userId,
-        [FromBody, Required] UpdateUserEasyPassword request)
-    {
-        return Forbid();
-    }
-
-    /// <summary>
     /// Updates a user.
     /// </summary>
     /// <param name="userId">The user id.</param>
