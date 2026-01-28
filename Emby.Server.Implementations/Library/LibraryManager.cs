@@ -406,6 +406,37 @@ namespace Emby.Server.Implementations.Library
                     item.Id);
             }
 
+            // If deleting a primary version video, clear PrimaryVersionId from alternate versions
+            if (item is Video video && string.IsNullOrEmpty(video.PrimaryVersionId))
+            {
+                var alternateVersions = GetLocalAlternateVersionIds(video)
+                    .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
+                    .Distinct()
+                    .Select(id => GetItemById(id))
+                    .OfType<Video>()
+                    .ToList();
+
+                if (alternateVersions.Count > 0)
+                {
+                    _logger.LogInformation(
+                        "Clearing PrimaryVersionId from {Count} alternate versions of {Name}",
+                        alternateVersions.Count,
+                        item.Name ?? "Unknown name");
+
+                    // Promote the first alternate version to be the new primary
+                    var newPrimary = alternateVersions[0];
+                    newPrimary.SetPrimaryVersionId(null);
+                    newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+
+                    // Update remaining alternates to point to new primary
+                    foreach (var alternate in alternateVersions.Skip(1))
+                    {
+                        alternate.SetPrimaryVersionId(newPrimary.Id.ToString("N", CultureInfo.InvariantCulture));
+                        alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                    }
+                }
+            }
+
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
                 : [];
@@ -575,6 +606,9 @@ namespace Emby.Server.Implementations.Library
             {
                 // Trickplay
                 list.Add(_pathManager.GetTrickplayDirectory(video));
+
+                // Chapter Images
+                list.Add(_pathManager.GetChapterImageFolderPath(video));
 
                 // Subtitles and attachments
                 foreach (var mediaSource in item.GetMediaSources(false))
@@ -1421,14 +1455,7 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User, allowExternalContent);
             }
 
-            var itemList = _itemRepository.GetItemList(query);
-            var user = query.User;
-            if (user is not null)
-            {
-                return itemList.Where(i => i.IsVisible(user)).ToList();
-            }
-
-            return itemList;
+            return _itemRepository.GetItemList(query);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1474,6 +1501,11 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemCounts(query);
         }
 
+        public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
+        {
+            return _itemRepository.GetChildCountBatch(parentIds, userId);
+        }
+
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
@@ -1517,6 +1549,16 @@ namespace Emby.Server.Implementations.Library
             }
 
             return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<string, MediaBrowser.Controller.Persistence.NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
+            InternalItemsQuery query,
+            IReadOnlyList<string> seriesKeys,
+            bool includeSpecials,
+            bool includeWatchedForRewatching)
+        {
+            return _itemRepository.GetNextUpEpisodesBatch(query, seriesKeys, includeSpecials, includeWatchedForRewatching);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1700,6 +1742,11 @@ namespace Emby.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
+            if (query.User is null)
+            {
+                query.SetUser(user);
+            }
+
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.IsEmpty() &&
                 query.ChannelIds.Count == 0 &&
@@ -1723,6 +1770,15 @@ namespace Emby.Server.Implementations.Library
                     query.TopParentIds = [Guid.NewGuid()];
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public void ConfigureUserAccess(InternalItemsQuery query, User user)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+            ArgumentNullException.ThrowIfNull(user);
+
+            AddUserToQuery(query, user);
         }
 
         private IEnumerable<Guid> GetTopParentIdsForQuery(BaseItem item, User? user)
@@ -1887,6 +1943,38 @@ namespace Emby.Server.Implementations.Library
             }
 
             return video;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Guid> GetLocalAlternateVersionIds(Video video)
+        {
+            ArgumentNullException.ThrowIfNull(video);
+
+            var linkedIds = _itemRepository.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LocalAlternateVersion);
+            if (linkedIds.Count > 0)
+            {
+                return linkedIds;
+            }
+
+            return [];
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Video> GetLinkedAlternateVersions(Video video)
+        {
+            ArgumentNullException.ThrowIfNull(video);
+
+            var linkedIds = _itemRepository.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
+            if (linkedIds.Count > 0)
+            {
+                return linkedIds
+                    .Select(id => GetItemById(id))
+                    .Where(i => i is not null)
+                    .OfType<Video>()
+                    .OrderBy(i => i.SortName);
+            }
+
+            return [];
         }
 
         /// <inheritdoc />
@@ -2896,10 +2984,17 @@ namespace Emby.Server.Implementations.Library
                     extra.ExtraType = extraType;
                 }
 
-                extra.ParentId = Guid.Empty;
-                extra.OwnerId = owner.Id;
-                extra.IsInMixedFolder = isInMixedFolder;
-                return extra;
+                // Only set OwnerId if this is actually an extra (not Unknown or null)
+                if (extra.ExtraType is not null)
+                {
+                    extra.ParentId = Guid.Empty;
+                    extra.OwnerId = owner.Id;
+                    extra.IsInMixedFolder = isInMixedFolder;
+
+                    return extra;
+                }
+
+                return null;
             }
         }
 

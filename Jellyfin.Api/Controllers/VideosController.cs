@@ -157,7 +157,7 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        foreach (var link in item.GetLinkedAlternateVersions())
+        foreach (var link in _libraryManager.GetLinkedAlternateVersions(item))
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -222,18 +222,18 @@ public class VideosController : BaseJellyfinApiController
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-            if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
+            if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
             {
                 alternateVersionsOfPrimary.Add(new LinkedChild
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
+                    ItemId = item.Id,
+                    Type = LinkedChildType.LinkedAlternateVersion
                 });
             }
 
             foreach (var linkedItem in item.LinkedAlternateVersions)
             {
-                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                if (linkedItem.ItemId.HasValue && !alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(linkedItem.ItemId.Value)))
                 {
                     alternateVersionsOfPrimary.Add(linkedItem);
                 }

@@ -45,6 +45,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Event raised when library options are updated for any collection folder.
+        /// </summary>
+        public static event EventHandler<LibraryOptionsUpdatedEventArgs> LibraryOptionsUpdated;
+
+        /// <summary>
         /// Gets the display preferences id.
         /// </summary>
         /// <remarks>
@@ -168,6 +173,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             XmlSerializer.SerializeToFile(clone, GetLibraryOptionsPath(path));
+
+            LibraryOptionsUpdated?.Invoke(null, new LibraryOptionsUpdatedEventArgs(path, options));
         }
 
         public static void OnCollectionFolderChange()

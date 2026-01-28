@@ -780,7 +780,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         /// <summary>
-        /// Get linked child.
+        /// Get linked child from XML. Uses deprecated Path/LibraryItemId properties for backward compatibility
+        /// with existing XML files. These will be resolved to ItemId when the linked child is accessed.
         /// </summary>
         /// <param name="reader">The xml reader.</param>
         /// <returns>The linked child.</returns>
@@ -791,6 +792,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.MoveToContent();
             reader.Read();
 
+#pragma warning disable CS0618 // Type or member is obsolete - reading legacy XML format for backward compatibility
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
@@ -820,6 +822,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             {
                 return linkedItem;
             }
+#pragma warning restore CS0618
 
             return null;
         }

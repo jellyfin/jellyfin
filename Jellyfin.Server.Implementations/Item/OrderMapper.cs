@@ -1,4 +1,7 @@
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 using System;
 using System.Linq;
@@ -57,10 +60,18 @@ public static class OrderMapper
             (ItemSortBy.SeriesDatePlayed, not null) => e =>
                             jellyfinDbContext.BaseItems
                                 .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .Join(jellyfinDbContext.UserData.Where(w => w.UserId == query.User.Id && w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
+                                .LeftJoin(
+                                    jellyfinDbContext.UserData.Where(w => w.UserId == query.User.Id && w.Played),
+                                    item => item.Id,
+                                    userData => userData.ItemId,
+                                    (item, userData) => userData == null ? (DateTime?)null : userData.LastPlayedDate)
                                 .Max(f => f),
             (ItemSortBy.SeriesDatePlayed, null) => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .Join(jellyfinDbContext.UserData.Where(w => w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
+                                .LeftJoin(
+                                    jellyfinDbContext.UserData.Where(w => w.Played),
+                                    item => item.Id,
+                                    userData => userData.ItemId,
+                                    (item, userData) => userData == null ? (DateTime?)null : userData.LastPlayedDate)
                                 .Max(f => f),
             // ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.UserData
             //     .Where(u => u.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey && u.Played)
@@ -73,6 +84,7 @@ public static class OrderMapper
     /// <summary>
     /// Creates an expression to order search results by match quality.
     /// Prioritizes: exact match (0) > prefix match with word boundary (1) > prefix match (2) > contains (3).
+    /// Considers both CleanName and OriginalTitle for matching.
     /// </summary>
     /// <param name="searchTerm">The search term to match against.</param>
     /// <returns>An expression that returns an integer representing match quality (lower is better).</returns>
@@ -80,10 +92,15 @@ public static class OrderMapper
     {
         var cleanSearchTerm = GetCleanValue(searchTerm);
         var searchPrefix = cleanSearchTerm + " ";
+        var originalSearchLower = searchTerm.ToLowerInvariant();
+        var originalSearchPrefix = originalSearchLower + " ";
         return e =>
-            e.CleanName == cleanSearchTerm ? 0 :
-            e.CleanName!.StartsWith(searchPrefix) ? 1 :
-            e.CleanName!.StartsWith(cleanSearchTerm) ? 2 : 3;
+            // Exact match on CleanName or OriginalTitle
+            (e.CleanName == cleanSearchTerm || (e.OriginalTitle != null && e.OriginalTitle.ToLower() == originalSearchLower)) ? 0 :
+            // Prefix match with word boundary
+            (e.CleanName!.StartsWith(searchPrefix) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchPrefix))) ? 1 :
+            // Prefix match
+            (e.CleanName!.StartsWith(cleanSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchLower))) ? 2 : 3;
     }
 
     private static string GetCleanValue(string value)

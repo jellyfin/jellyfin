@@ -72,7 +72,7 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
             }
             else
             {
-                targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.Path).ToArray();
+                targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.ItemId).ToArray();
             }
 
             if (replaceData || targetItem.Shares.Count == 0)

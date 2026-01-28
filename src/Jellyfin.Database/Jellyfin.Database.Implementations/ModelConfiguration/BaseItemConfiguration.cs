@@ -28,12 +28,16 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.Parents);
         builder.HasMany(e => e.Children);
         builder.HasMany(e => e.DirectChildren).WithOne(e => e.DirectParent).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(e => e.Extras).WithOne(e => e.Owner).HasForeignKey(e => e.OwnerId).OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
+        builder.HasIndex(e => e.OwnerId);
+        builder.HasIndex(e => e.ExtraType);
+        builder.HasIndex(e => new { e.ExtraType, e.OwnerId });
         builder.HasIndex(e => e.PresentationUniqueKey);
         builder.HasIndex(e => new { e.Id, e.Type, e.IsFolder, e.IsVirtualItem });
 
@@ -53,6 +57,10 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         // latest items
         builder.HasIndex(e => new { e.Type, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
         builder.HasIndex(e => new { e.IsFolder, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey, e.DateCreated });
+        // latest items - optimized for sorting by DateCreated (no PresentationUniqueKey breaking the sort)
+        builder.HasIndex(e => new { e.TopParentId, e.Type, e.IsVirtualItem, e.DateCreated });
+        builder.HasIndex(e => new { e.TopParentId, e.IsFolder, e.IsVirtualItem, e.DateCreated });
+        builder.HasIndex(e => new { e.TopParentId, e.MediaType, e.IsVirtualItem, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
 
@@ -60,7 +68,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             Type = "PLACEHOLDER",
-            Name = "This is a placeholder item for UserData that has been detacted from its original item",
+            Name = "This is a placeholder item for UserData that has been detached from its original item",
         });
     }
 }

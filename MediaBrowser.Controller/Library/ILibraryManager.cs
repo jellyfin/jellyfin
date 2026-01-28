@@ -214,6 +214,22 @@ namespace MediaBrowser.Controller.Library
         Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
 
         /// <summary>
+        /// Gets the IDs of local alternate versions for a video.
+        /// Local alternate versions are alternate quality versions at different file paths.
+        /// </summary>
+        /// <param name="video">The video item.</param>
+        /// <returns>Enumerable of alternate version item IDs.</returns>
+        IEnumerable<Guid> GetLocalAlternateVersionIds(Video video);
+
+        /// <summary>
+        /// Gets the linked alternate versions for a video.
+        /// Linked alternate versions are different items representing the same content (e.g., Director's Cut).
+        /// </summary>
+        /// <param name="video">The video item.</param>
+        /// <returns>Enumerable of linked Video items.</returns>
+        IEnumerable<Video> GetLinkedAlternateVersions(Video video);
+
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
@@ -601,6 +617,20 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
 
         /// <summary>
+        /// Gets next up episodes for multiple series in a single batched query.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <param name="seriesKeys">The series presentation unique keys to query.</param>
+        /// <param name="includeSpecials">Whether to include specials for aired episode order sorting.</param>
+        /// <param name="includeWatchedForRewatching">Whether to include watched episodes for rewatching mode.</param>
+        /// <returns>A dictionary mapping series key to batch result.</returns>
+        IReadOnlyDictionary<string, MediaBrowser.Controller.Persistence.NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
+            InternalItemsQuery query,
+            IReadOnlyList<string> seriesKeys,
+            bool includeSpecials,
+            bool includeWatchedForRewatching);
+
+        /// <summary>
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -648,6 +678,23 @@ namespace MediaBrowser.Controller.Library
         int GetCount(InternalItemsQuery query);
 
         ItemCounts GetItemCounts(InternalItemsQuery query);
+
+        /// <summary>
+        /// Batch-fetches child counts for multiple parent folders.
+        /// Returns the count of immediate children (non-recursive) for each parent.
+        /// </summary>
+        /// <param name="parentIds">The list of parent folder IDs.</param>
+        /// <param name="userId">The user ID for access filtering.</param>
+        /// <returns>Dictionary mapping parent ID to child count.</returns>
+        Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+
+        /// <summary>
+        /// Configures the query with user access settings including TopParentIds for library access.
+        /// Call this before passing a query to methods that need user access filtering.
+        /// </summary>
+        /// <param name="query">The query to configure.</param>
+        /// <param name="user">The user to configure access for.</param>
+        void ConfigureUserAccess(InternalItemsQuery query, User user);
 
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 

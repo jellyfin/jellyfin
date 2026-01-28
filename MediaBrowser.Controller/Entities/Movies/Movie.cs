@@ -4,13 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -28,9 +28,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the name of the TMDb collection.
@@ -83,6 +81,34 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             return info;
+        }
+
+        protected override async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        {
+            var newOptions = new MetadataRefreshOptions(options)
+            {
+                SearchResult = null
+            };
+
+            var id = LibraryManager.GetNewItemId(path, typeof(Movie));
+            if (LibraryManager.GetItemById(id) is not Movie movie)
+            {
+                movie = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Movie;
+
+                newOptions.ForceSave = true;
+            }
+
+            if (movie is null)
+            {
+                return;
+            }
+
+            if (movie.OwnerId.Equals(Guid.Empty))
+            {
+                movie.OwnerId = Id;
+            }
+
+            await RefreshMetadataForOwnedItem(movie, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
