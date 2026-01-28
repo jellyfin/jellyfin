@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Jellyfin.Api.WebSocketListeners;
 /// <summary>
 /// Class SessionInfoWebSocketListener.
 /// </summary>
-public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
+public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>, IWebSocketListener
 {
     private readonly ISessionManager _sessionManager;
     private bool _disposed;
@@ -138,5 +139,24 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     private void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
     {
         SendData(true);
+    }
+
+    /// <inheritdoc />
+    public new async Task ProcessMessageAsync(WebSocketMessageInfo message)
+    {
+        if (message.MessageType == StopType)
+        {
+            try
+            {
+                // Delay to allow concurrent HTTP Disconnect operations to propagate their events
+                await Task.Delay(1500).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Normal behavior if socket closes entirely
+            }
+        }
+
+        await base.ProcessMessageAsync(message).ConfigureAwait(false);
     }
 }
