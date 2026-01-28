@@ -72,5 +72,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reportedPositionTicks">New playstate.</param>
         /// <returns>True if playstate was updated.</returns>
         bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks);
+
+        /// <summary>
+        /// Gets user data for multiple items in a single batch operation.
+        /// </summary>
+        /// <param name="items">The items to get user data for.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>A dictionary mapping item IDs to their user data.</returns>
+        Dictionary<Guid, UserItemData> GetUserDataBatch(IReadOnlyList<BaseItem> items, User user);
     }
 }
