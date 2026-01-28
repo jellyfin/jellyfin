@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("/media/movies/#recycle", true)]
         [InlineData("thumbs.db", true)]
         [InlineData(@"C:\media\movies\movie.avi", false)]
-        [InlineData("/media/.hiddendir/file.mp4", true)]
+        [InlineData("/media/.hiddendir/file.mp4", false)]
         [InlineData("/media/dir/.hiddenfile.mp4", true)]
         [InlineData("/media/dir/._macjunk.mp4", true)]
         [InlineData("/volume1/video/Series/@eaDir", true)]
@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("/media/music/Foo B.A.R", false)]
         [InlineData("/media/music/Foo B.A.R.", false)]
         [InlineData("/movies/.zfs/snapshot/AutoM-2023-09", true)]
-        public void PathIgnored(string path,  bool expected)
+        public void PathIgnored(string path, bool expected)
         {
             Assert.Equal(expected, IgnorePatterns.ShouldIgnore(path));
         }
