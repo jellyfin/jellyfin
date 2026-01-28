@@ -444,13 +444,31 @@ namespace Emby.Server.Implementations
             }
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
-            HttpPort = networkConfiguration.InternalHttpPort;
-            HttpsPort = networkConfiguration.InternalHttpsPort;
+
+            // Check for port overrides from CLI/environment variables
+            var httpPortOverride = _startupConfig.GetValue<int?>(HttpPortKey);
+            var httpsPortOverride = _startupConfig.GetValue<int?>(HttpsPortKey);
+
+            HttpPort = httpPortOverride ?? networkConfiguration.InternalHttpPort;
+            HttpsPort = httpsPortOverride ?? networkConfiguration.InternalHttpsPort;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
             {
                 HttpPort = NetworkConfiguration.DefaultHttpPort;
+                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
+            }
+
+            // Validate port ranges
+            if (HttpPort < 1 || HttpPort > 65535)
+            {
+                Logger.LogWarning("HTTP port {Port} is outside valid range (1-65535), using default {Default}", HttpPort, NetworkConfiguration.DefaultHttpPort);
+                HttpPort = NetworkConfiguration.DefaultHttpPort;
+            }
+
+            if (HttpsPort < 1 || HttpsPort > 65535)
+            {
+                Logger.LogWarning("HTTPS port {Port} is outside valid range (1-65535), using default {Default}", HttpsPort, NetworkConfiguration.DefaultHttpsPort);
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
