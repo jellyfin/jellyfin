@@ -1400,10 +1400,20 @@ public class DynamicHlsController : BaseJellyfinApiController
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
         var mediaSourceId = state.BaseRequest.MediaSourceId;
+        double fps = state.TargetFramerate ?? 0.0f;
+        int segmentLength = state.SegmentLength * 1000;
+
+        // If framerate is fractional (i.e. 23.976), we need to slightly adjust segment length
+        if (Math.Abs(fps - Math.Floor(fps + 0.001f)) > 0.001)
+        {
+            double nearestIntFramerate = Math.Ceiling(fps);
+            segmentLength = (int)Math.Ceiling(segmentLength * (nearestIntFramerate / fps));
+        }
+
         var request = new CreateMainPlaylistRequest(
             mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
             state.MediaPath,
-            state.SegmentLength * 1000,
+            segmentLength,
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
