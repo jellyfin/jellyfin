@@ -80,6 +80,18 @@ namespace Jellyfin.Server
         public string? RestoreArchive { get; set; }
 
         /// <summary>
+        /// Gets or sets the HTTP port for the web server.
+        /// </summary>
+        [Option("http-port", Required = false, HelpText = "HTTP port for the web server (overrides network configuration).")]
+        public int? HttpPort { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTPS port for the web server.
+        /// </summary>
+        [Option("https-port", Required = false, HelpText = "HTTPS port for the web server (overrides network configuration).")]
+        public int? HttpsPort { get; set; }
+
+        /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
@@ -105,6 +117,16 @@ namespace Jellyfin.Server
             if (NoDetectNetworkChange)
             {
                 config.Add(DetectNetworkChangeKey, bool.FalseString);
+            }
+
+            if (HttpPort.HasValue)
+            {
+                config.Add(HttpPortKey, HttpPort.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            if (HttpsPort.HasValue)
+            {
+                config.Add(HttpsPortKey, HttpsPort.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
 
             return config;
