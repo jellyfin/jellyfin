@@ -114,6 +114,31 @@ public sealed class BaseItemRepository
 
         var relatedItems = ids.SelectMany(f => TraverseHirachyDown(f, context)).ToArray();
 
+        // Remove duplicate UserData entries for items being deleted.
+        // For each (UserId, CustomDataKey) combination, keep only the entry with the newest LastPlayedDate.
+        var userDataToCheck = context.UserData
+            .WhereOneOrMany(relatedItems, e => e.ItemId)
+            .Select(u => new { u.ItemId, u.UserId, u.CustomDataKey, u.LastPlayedDate })
+            .ToArray();
+
+        var duplicateKeys = userDataToCheck
+            .GroupBy(u => new { u.UserId, u.CustomDataKey })
+            .Where(g => g.Count() > 1)
+            .SelectMany(g => g.OrderByDescending(u => u.LastPlayedDate.HasValue)
+                .ThenByDescending(u => u.LastPlayedDate)
+                .Skip(1)
+                .Select(u => new { u.UserId, u.CustomDataKey, u.ItemId }))
+            .ToArray();
+
+        foreach (var key in duplicateKeys)
+        {
+            context.UserData
+                .Where(e => e.UserId == key.UserId
+                            && e.CustomDataKey == key.CustomDataKey
+                            && e.ItemId == key.ItemId)
+                .ExecuteDelete();
+        }
+
         // Remove any UserData entries for the placeholder item that would conflict with the UserData
         // being detached from the item being deleted. This is necessary because, during an update,
         // UserData may be reattached to a new entry, but some entries can be left behind.
