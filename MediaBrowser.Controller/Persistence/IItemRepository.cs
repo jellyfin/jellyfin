@@ -210,4 +210,21 @@ public interface IItemRepository
     /// <param name="userId">The user ID for access filtering.</param>
     /// <returns>Dictionary mapping parent ID to child count.</returns>
     Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+
+    /// <summary>
+    /// Gets parent IDs (Playlists/BoxSets) that reference the specified child with LinkedChildType.Manual.
+    /// </summary>
+    /// <param name="childId">The child item ID.</param>
+    /// <returns>List of parent IDs that reference the child.</returns>
+    IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId);
+
+    /// <summary>
+    /// Updates LinkedChildren references from one child to another, preserving SortOrder.
+    /// Handles duplicates: if parent already references toChildId, removes the old reference instead.
+    /// Used when video versions change to maintain collection integrity.
+    /// </summary>
+    /// <param name="fromChildId">The child ID to re-route from.</param>
+    /// <param name="toChildId">The child ID to re-route to.</param>
+    /// <returns>Number of references updated.</returns>
+    int RerouteLinkedChildren(Guid fromChildId, Guid toChildId);
 }

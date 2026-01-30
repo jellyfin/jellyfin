@@ -714,5 +714,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
         /// <param name="pathInfo">The new virtualfolder.</param>
         public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
+
+        /// <summary>
+        /// Re-routes LinkedChildren references from one child to another.
+        /// Used when video versions change to maintain playlist/BoxSet integrity.
+        /// </summary>
+        /// <param name="fromChildId">The child ID to re-route from.</param>
+        /// <param name="toChildId">The child ID to re-route to.</param>
+        /// <returns>Number of references updated.</returns>
+        int RerouteLinkedChildReferences(Guid fromChildId, Guid toChildId);
     }
 }

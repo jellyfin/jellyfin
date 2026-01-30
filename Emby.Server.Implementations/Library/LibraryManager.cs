@@ -428,6 +428,9 @@ namespace Emby.Server.Implementations.Library
                     newPrimary.SetPrimaryVersionId(null);
                     newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
 
+                    // Re-route playlist/collection references from deleted primary to new primary
+                    _itemRepository.RerouteLinkedChildren(video.Id, newPrimary.Id);
+
                     // Update remaining alternates to point to new primary
                     foreach (var alternate in alternateVersions.Skip(1))
                     {
@@ -435,6 +438,12 @@ namespace Emby.Server.Implementations.Library
                         alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                     }
                 }
+            }
+            else if (item is Video alternateVideo && !string.IsNullOrEmpty(alternateVideo.PrimaryVersionId)
+                && Guid.TryParse(alternateVideo.PrimaryVersionId, out var primaryId))
+            {
+                // If deleting an alternate version, re-route references to its primary
+                _itemRepository.RerouteLinkedChildren(alternateVideo.Id, primaryId);
             }
 
             var children = item.IsFolder
@@ -3479,6 +3488,12 @@ namespace Emby.Server.Implementations.Library
 
             _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
             RemoveContentTypeOverrides(path);
+        }
+
+        /// <inheritdoc />
+        public int RerouteLinkedChildReferences(Guid fromChildId, Guid toChildId)
+        {
+            return _itemRepository.RerouteLinkedChildren(fromChildId, toChildId);
         }
     }
 }

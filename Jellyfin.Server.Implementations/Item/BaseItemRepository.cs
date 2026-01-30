@@ -3843,4 +3843,43 @@ public sealed class BaseItemRepository
 
         return result;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        return context.LinkedChildren
+            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public int RerouteLinkedChildren(Guid fromChildId, Guid toChildId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        // Get parents that already reference toChildId (to avoid duplicates)
+        var parentsWithTarget = context.LinkedChildren
+            .Where(lc => lc.ChildId == toChildId && lc.ChildType == DbLinkedChildType.Manual)
+            .Select(lc => lc.ParentId)
+            .ToHashSet();
+
+        // Update references that won't create duplicates
+        var updated = context.LinkedChildren
+            .Where(lc => lc.ChildId == fromChildId
+                && lc.ChildType == DbLinkedChildType.Manual
+                && !parentsWithTarget.Contains(lc.ParentId))
+            .ExecuteUpdate(s => s.SetProperty(e => e.ChildId, toChildId));
+
+        // Remove references that would be duplicates
+        context.LinkedChildren
+            .Where(lc => lc.ChildId == fromChildId
+                && lc.ChildType == DbLinkedChildType.Manual
+                && parentsWithTarget.Contains(lc.ParentId))
+            .ExecuteDelete();
+
+        return updated;
+    }
 }

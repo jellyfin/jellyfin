@@ -222,6 +222,9 @@ public class VideosController : BaseJellyfinApiController
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
+            // Re-route any playlist/collection references from this item to the primary
+            _libraryManager.RerouteLinkedChildReferences(item.Id, primaryVersion.Id);
+
             if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
             {
                 alternateVersionsOfPrimary.Add(new LinkedChild
