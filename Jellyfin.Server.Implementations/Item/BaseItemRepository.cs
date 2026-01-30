@@ -322,6 +322,25 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+
+        var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
+        if (hasRandomSort)
+        {
+            var orderedIds = dbQuery.Select(e => e.Id).ToList();
+            if (orderedIds.Count == 0)
+            {
+                return Array.Empty<BaseItemDto>();
+            }
+
+            var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+                .AsEnumerable()
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .Where(dto => dto is not null)
+                .ToDictionary(i => i!.Id);
+
+            return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
+        }
+
         dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
@@ -1552,16 +1571,30 @@ public sealed class BaseItemRepository
 
         await using (dbContext.ConfigureAwait(false))
         {
-            var userKeys = item.GetUserDataKeys().ToArray();
-            var retentionDate = (DateTime?)null;
-            await dbContext.UserData
-                .Where(e => e.ItemId == PlaceholderId)
-                .Where(e => userKeys.Contains(e.CustomDataKey))
-                .ExecuteUpdateAsync(
-                    e => e
-                        .SetProperty(f => f.ItemId, item.Id)
-                        .SetProperty(f => f.RetentionDate, retentionDate),
-                    cancellationToken).ConfigureAwait(false);
+            var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await using (transaction.ConfigureAwait(false))
+            {
+                var userKeys = item.GetUserDataKeys().ToArray();
+                var retentionDate = (DateTime?)null;
+
+                await dbContext.UserData
+                    .Where(e => e.ItemId == PlaceholderId)
+                    .Where(e => userKeys.Contains(e.CustomDataKey))
+                    .ExecuteUpdateAsync(
+                        e => e
+                            .SetProperty(f => f.ItemId, item.Id)
+                            .SetProperty(f => f.RetentionDate, retentionDate),
+                        cancellationToken).ConfigureAwait(false);
+
+                // Rehydrate the cached userdata
+                item.UserData = await dbContext.UserData
+                    .AsNoTracking()
+                    .Where(e => e.ItemId == item.Id)
+                    .ToArrayAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -3793,6 +3826,21 @@ public sealed class BaseItemRepository
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 
-        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
+        var lookup = artists
+            .GroupBy(e => e.Name!)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(f => DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
+
+        var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
+        foreach (var name in artistNames)
+        {
+            if (lookup.TryGetValue(name, out var artistArray))
+            {
+                result[name] = artistArray;
+            }
+        }
+
+        return result;
     }
 }

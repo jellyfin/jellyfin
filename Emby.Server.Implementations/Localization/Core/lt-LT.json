@@ -73,7 +73,6 @@
     "Shows": "Laidos",
     "Songs": "Kūriniai",
     "StartupEmbyServerIsLoading": "Jellyfin Server kraunasi. Netrukus pabandykite dar kartą.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{1} subtitrai buvo nesėkmingai parsiųsti iš {0}",
     "Sync": "Sinchronizuoti",
     "System": "Sistema",

@@ -73,7 +73,6 @@
     "Shows": "Serie TV",
     "Songs": "Brani",
     "StartupEmbyServerIsLoading": "Jellyfin server si sta avviando. Per favore riprova più tardi.",
-    "SubtitleDownloadFailureForItem": "Impossibile scaricare i sottotitoli per {0}",
     "SubtitleDownloadFailureFromForItem": "Impossibile scaricare i sottotitoli da {0} per {1}",
     "Sync": "Sincronizza",
     "System": "Sistema",

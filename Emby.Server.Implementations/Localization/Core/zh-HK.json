@@ -73,7 +73,6 @@
     "Shows": "節目",
     "Songs": "歌曲",
     "StartupEmbyServerIsLoading": "正在載入 Jellyfin，請稍後再試。",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "無法從 {0} 下載 {1} 的字幕",
     "Sync": "同步",
     "System": "系統",

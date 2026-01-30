@@ -73,7 +73,6 @@
     "Shows": "Seriály",
     "Songs": "Skladby",
     "StartupEmbyServerIsLoading": "Jellyfin Server sa spúšťa. Prosím, skúste to o chvíľu znova.",
-    "SubtitleDownloadFailureForItem": "Sťahovanie titulkov pre {0} zlyhalo",
     "SubtitleDownloadFailureFromForItem": "Sťahovanie titulkov z {0} pre {1} zlyhalo",
     "Sync": "Synchronizácia",
     "System": "Systém",
