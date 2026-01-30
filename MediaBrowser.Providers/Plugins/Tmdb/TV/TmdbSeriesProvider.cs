@@ -279,6 +279,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.EndDate = seriesResult.LastAirDate;
             series.PremiereDate = seriesResult.FirstAirDate;
+            series.ProductionYear = seriesResult.FirstAirDate?.Year;
 
             var ids = seriesResult.ExternalIds;
             if (ids is not null)
