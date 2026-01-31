@@ -659,7 +659,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ => string.Empty
             };
 
-            return string.IsNullOrEmpty(target) ? string.Empty : $",scale=-2:'min(ih,{target})'";
+            return string.IsNullOrEmpty(target) ? string.Empty : $",scale=-2:min(ih\\,{target})";
         }
 
         private async Task<string> ExtractImageInternal(
