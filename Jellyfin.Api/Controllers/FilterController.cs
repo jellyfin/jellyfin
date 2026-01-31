@@ -151,16 +151,16 @@ public class FilterController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        BaseItem? parentItem = null;
-        if (includeItemTypes.Length == 1
+        // For global item types (BoxSet, Playlist, Trailer, Program), we don't use a parent item
+        // but we still need to respect user library access permissions
+        var isGlobalItemType = includeItemTypes.Length == 1
             && (includeItemTypes[0] == BaseItemKind.BoxSet
                 || includeItemTypes[0] == BaseItemKind.Playlist
                 || includeItemTypes[0] == BaseItemKind.Trailer
-                || includeItemTypes[0] == BaseItemKind.Program))
-        {
-            parentItem = null;
-        }
-        else if (parentId.HasValue)
+                || includeItemTypes[0] == BaseItemKind.Program);
+
+        BaseItem? parentItem = null;
+        if (!isGlobalItemType && parentId.HasValue)
         {
             parentItem = _libraryManager.GetItemById<BaseItem>(parentId.Value);
         }
@@ -185,7 +185,19 @@ public class FilterController : BaseJellyfinApiController
 
         if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
         {
-            genreQuery.AncestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+            if (parentItem is not null)
+            {
+                genreQuery.AncestorIds = new[] { parentItem.Id };
+            }
+            else if (user is not null)
+            {
+                // For global item types without a parent, restrict to user's accessible libraries
+                // to prevent metadata leakage from restricted libraries
+                genreQuery.AncestorIds = _libraryManager.GetUserRootFolder()
+                    .GetChildren(user, true)
+                    .Select(i => i.Id)
+                    .ToArray();
+            }
         }
         else
         {
