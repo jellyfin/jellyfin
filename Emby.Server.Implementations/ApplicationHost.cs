@@ -446,30 +446,53 @@ namespace Emby.Server.Implementations
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
 
             // Check for port overrides from CLI/environment variables
-            var httpPortOverride = _startupConfig.GetValue<int?>(HttpPortKey);
-            var httpsPortOverride = _startupConfig.GetValue<int?>(HttpsPortKey);
+            var httpPortOverride = GetPortOverride(HttpPortKey, "HTTP");
+            var httpsPortOverride = GetPortOverride(HttpsPortKey, "HTTPS");
 
+            // Apply overrides or use config defaults
             HttpPort = httpPortOverride ?? networkConfiguration.InternalHttpPort;
             HttpsPort = httpsPortOverride ?? networkConfiguration.InternalHttpsPort;
 
-            // Safeguard against invalid configuration
+            // Validate configured ports (if no overrides were applied)
+            if (!httpPortOverride.HasValue && !IsValidPortNumber(HttpPort))
+            {
+                Logger.LogWarning("HTTP port {Port} from configuration is outside valid range (1-65535), using default {Default}", HttpPort, NetworkConfiguration.DefaultHttpPort);
+                HttpPort = NetworkConfiguration.DefaultHttpPort;
+            }
+
+            if (!httpsPortOverride.HasValue && !IsValidPortNumber(HttpsPort))
+            {
+                Logger.LogWarning("HTTPS port {Port} from configuration is outside valid range (1-65535), using default {Default}", HttpsPort, NetworkConfiguration.DefaultHttpsPort);
+                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
+            }
+
+            // Safeguard against port conflicts
             if (HttpPort == HttpsPort)
             {
-                HttpPort = NetworkConfiguration.DefaultHttpPort;
-                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
-            }
-
-            // Validate port ranges
-            if (HttpPort < 1 || HttpPort > 65535)
-            {
-                Logger.LogWarning("HTTP port {Port} is outside valid range (1-65535), using default {Default}", HttpPort, NetworkConfiguration.DefaultHttpPort);
-                HttpPort = NetworkConfiguration.DefaultHttpPort;
-            }
-
-            if (HttpsPort < 1 || HttpsPort > 65535)
-            {
-                Logger.LogWarning("HTTPS port {Port} is outside valid range (1-65535), using default {Default}", HttpsPort, NetworkConfiguration.DefaultHttpsPort);
-                HttpsPort = NetworkConfiguration.DefaultHttpsPort;
+                if (httpPortOverride.HasValue && !httpsPortOverride.HasValue)
+                {
+                    // User explicitly set HTTP, adjust HTTPS
+                    Logger.LogWarning("HTTPS port {Port} conflicts with HTTP port override, using default {Default}", HttpsPort, NetworkConfiguration.DefaultHttpsPort);
+                    HttpsPort = NetworkConfiguration.DefaultHttpsPort;
+                }
+                else if (!httpPortOverride.HasValue && httpsPortOverride.HasValue)
+                {
+                    // User explicitly set HTTPS, adjust HTTP
+                    Logger.LogWarning("HTTP port {Port} conflicts with HTTPS port override, using default {Default}", HttpPort, NetworkConfiguration.DefaultHttpPort);
+                    HttpPort = NetworkConfiguration.DefaultHttpPort;
+                }
+                else if (httpPortOverride.HasValue && httpsPortOverride.HasValue)
+                {
+                    // Both explicitly overridden to same value - hard error
+                    Logger.LogError("HTTP and HTTPS ports are both set to {Port}. Please use different ports.", HttpPort);
+                    throw new InvalidOperationException($"HTTP and HTTPS ports cannot both be {HttpPort}");
+                }
+                else
+                {
+                    // Both from config - hard error
+                    Logger.LogError("HTTP and HTTPS ports are both set to {Port}. Please use different ports.", HttpPort);
+                    throw new InvalidOperationException($"HTTP and HTTPS ports cannot both be {HttpPort}");
+                }
             }
 
             CertificatePath = networkConfiguration.CertificatePath;
@@ -613,6 +636,34 @@ namespace Emby.Server.Implementations
             SetStaticProperties();
 
             FindParts();
+        }
+
+        private static bool IsValidPortNumber(int port)
+        {
+            return port >= 1 && port <= 65535;
+        }
+
+        private int? GetPortOverride(string configKey, string portType)
+        {
+            var portString = _startupConfig[configKey];
+            if (string.IsNullOrEmpty(portString))
+            {
+                return null;
+            }
+
+            if (!int.TryParse(portString, out var port))
+            {
+                Logger.LogWarning("{PortType} port override '{Value}' is not a valid integer, ignoring override", portType, portString);
+                return null;
+            }
+
+            if (!IsValidPortNumber(port))
+            {
+                Logger.LogWarning("{PortType} port override {Port} is outside valid range (1-65535), ignoring override", portType, port);
+                return null;
+            }
+
+            return port;
         }
 
         private X509Certificate2 GetCertificate(string path, string password)
