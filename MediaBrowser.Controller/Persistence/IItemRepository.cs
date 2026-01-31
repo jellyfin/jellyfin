@@ -219,6 +219,13 @@ public interface IItemRepository
     IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId);
 
     /// <summary>
+    /// Gets legacy query filters (Years, Genres, Tags, OfficialRatings) aggregated directly from the database.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>Aggregated filter values.</returns>
+    QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
+
+    /// <summary>
     /// Updates LinkedChildren references from one child to another, preserving SortOrder.
     /// Handles duplicates: if parent already references toChildId, removes the old reference instead.
     /// Used when video versions change to maintain collection integrity.

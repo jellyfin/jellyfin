@@ -3495,5 +3495,11 @@ namespace Emby.Server.Implementations.Library
         {
             return _itemRepository.RerouteLinkedChildren(fromChildId, toChildId);
         }
+
+        /// <inheritdoc />
+        public QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query)
+        {
+            return _itemRepository.GetQueryFiltersLegacy(query);
+        }
     }
 }

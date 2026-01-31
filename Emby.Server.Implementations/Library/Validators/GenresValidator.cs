@@ -54,6 +54,13 @@ public class GenresValidator
             IncludeItemTypes = [BaseItemKind.Genre]
         }).ToHashSet();
 
+        var existingGenres = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Genre]
+        }).Cast<Genre>()
+        .GroupBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
         var numComplete = 0;
         var count = names.Count;
         var refreshed = 0;
@@ -62,7 +69,15 @@ public class GenresValidator
         {
             try
             {
-                var item = _libraryManager.GetGenre(name);
+                Genre? item = null;
+                if (existingGenres.TryGetValue(name, out var existingGenre))
+                {
+                    item = existingGenre;
+                }
+
+                // Fall back to GetGenre if not found (creates new item if needed)
+                item ??= _libraryManager.GetGenre(name);
+
                 if (!existingGenreIds.Contains(item.Id))
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);

@@ -62,10 +62,9 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
 
-        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
         if (filter.Limit > 0)
         {
-            dbQuery = dbQuery.Take(filter.Limit);
+            dbQuery = dbQuery.OrderBy(e => e).Take(filter.Limit);
         }
 
         return dbQuery.ToArray();

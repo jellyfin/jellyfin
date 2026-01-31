@@ -55,6 +55,8 @@ public class ArtistsValidator
             IncludeItemTypes = [BaseItemKind.MusicArtist]
         }).ToHashSet();
 
+        var existingArtists = _libraryManager.GetArtists(names);
+
         var numComplete = 0;
         var count = names.Count;
         var refreshed = 0;
@@ -63,7 +65,15 @@ public class ArtistsValidator
         {
             try
             {
-                var item = _libraryManager.GetArtist(name);
+                MusicArtist? item = null;
+                if (existingArtists.TryGetValue(name, out var artists) && artists.Length > 0)
+                {
+                    item = artists.OrderBy(i => i.IsAccessedByName ? 1 : 0).First();
+                }
+
+                // Fall back to GetArtist if not found (creates new item if needed)
+                item ??= _libraryManager.GetArtist(name);
+
                 if (!existingArtistIds.Contains(item.Id))
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);

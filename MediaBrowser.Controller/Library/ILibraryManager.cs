@@ -723,5 +723,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="toChildId">The child ID to re-route to.</param>
         /// <returns>Number of references updated.</returns>
         int RerouteLinkedChildReferences(Guid fromChildId, Guid toChildId);
+
+        /// <summary>
+        /// Gets legacy query filters for filtering UI.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>Aggregated filter values.</returns>
+        QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
     }
 }

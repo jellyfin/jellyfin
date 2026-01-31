@@ -26,13 +26,25 @@ internal static class FolderAwareFilterExtensions
         JellyfinDbContext context,
         Expression<Func<BaseItemEntity, bool>> condition)
     {
-        // Use correlated Any() subqueries instead of UNION + Contains for better index utilization
-        var matchingIds = context.BaseItems.Where(condition).Select(b => b.Id);
+        // Get IDs of items that directly match the condition
+        var directMatchIds = context.BaseItems.Where(condition).Select(b => b.Id);
 
-        return query.Where(e =>
-            matchingIds.Contains(e.Id)
-            || context.AncestorIds.Any(a => a.ParentItemId == e.Id && matchingIds.Contains(a.ItemId))
-            || context.LinkedChildren.Any(lc => lc.ParentId == e.Id && matchingIds.Contains(lc.ChildId)));
+        // Get parent IDs where a descendant (via AncestorIds) matches
+        var ancestorMatchIds = context.AncestorIds
+            .Where(a => directMatchIds.Contains(a.ItemId))
+            .Select(a => a.ParentItemId);
+
+        // Get parent IDs where a linked child matches
+        var linkedMatchIds = context.LinkedChildren
+            .Where(lc => directMatchIds.Contains(lc.ChildId))
+            .Select(lc => lc.ParentId);
+
+        var allMatchingIds = directMatchIds
+            .Concat(ancestorMatchIds)
+            .Concat(linkedMatchIds)
+            .Distinct();
+
+        return query.Where(e => allMatchingIds.Contains(e.Id));
     }
 
     /// <summary>
@@ -48,11 +60,24 @@ internal static class FolderAwareFilterExtensions
         JellyfinDbContext context,
         Expression<Func<BaseItemEntity, bool>> condition)
     {
-        var matchingIds = context.BaseItems.Where(condition).Select(b => b.Id);
+        // Get IDs of items that directly match the condition
+        var directMatchIds = context.BaseItems.Where(condition).Select(b => b.Id);
 
-        return query.Where(e =>
-            !matchingIds.Contains(e.Id)
-            && !context.AncestorIds.Any(a => a.ParentItemId == e.Id && matchingIds.Contains(a.ItemId))
-            && !context.LinkedChildren.Any(lc => lc.ParentId == e.Id && matchingIds.Contains(lc.ChildId)));
+        // Get parent IDs where a descendant (via AncestorIds) matches
+        var ancestorMatchIds = context.AncestorIds
+            .Where(a => directMatchIds.Contains(a.ItemId))
+            .Select(a => a.ParentItemId);
+
+        // Get parent IDs where a linked child matches
+        var linkedMatchIds = context.LinkedChildren
+            .Where(lc => directMatchIds.Contains(lc.ChildId))
+            .Select(lc => lc.ParentId);
+
+        var allMatchingIds = directMatchIds
+            .Concat(ancestorMatchIds)
+            .Concat(linkedMatchIds)
+            .Distinct();
+
+        return query.Where(e => !allMatchingIds.Contains(e.Id));
     }
 }

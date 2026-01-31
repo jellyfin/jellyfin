@@ -55,6 +55,13 @@ public class StudiosValidator
             IncludeItemTypes = [BaseItemKind.Studio]
         }).ToHashSet();
 
+        var existingStudios = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Studio]
+        }).Cast<Studio>()
+        .GroupBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
         var numComplete = 0;
         var count = names.Count;
         var refreshed = 0;
@@ -63,7 +70,15 @@ public class StudiosValidator
         {
             try
             {
-                var item = _libraryManager.GetStudio(name);
+                Studio? item = null;
+                if (existingStudios.TryGetValue(name, out var existingStudio))
+                {
+                    item = existingStudio;
+                }
+
+                // Fall back to GetStudio if not found (creates new item if needed)
+                item ??= _libraryManager.GetStudio(name);
+
                 if (!existingStudioIds.Contains(item.Id))
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);

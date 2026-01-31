@@ -362,6 +362,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ExtraType");
 
+                    b.HasIndex("Name");
+
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
@@ -1446,7 +1448,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "Played");
 
+                    b.HasIndex("UserId", "IsFavorite", "ItemId");
+
                     b.HasIndex("UserId", "ItemId", "LastPlayedDate");
+
+                    b.HasIndex("UserId", "Played", "ItemId");
 
                     b.ToTable("UserData");
 

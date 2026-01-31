@@ -993,7 +993,7 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.Extras);
         }
 
-        return dbQuery;
+        return dbQuery.AsSingleQuery();
     }
 
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -1044,6 +1044,62 @@ public sealed class BaseItemRepository
         var dbQuery = TranslateQuery(context.BaseItems.AsNoTracking(), context, filter);
 
         return dbQuery.Count();
+    }
+
+    /// <inheritdoc />
+    public QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+
+        // Get matching item IDs as a subquery (not materialized)
+        var matchingItemIds = baseQuery.Select(e => e.Id);
+
+        // Query distinct years directly from the database
+        var years = baseQuery
+            .Where(e => e.ProductionYear != null && e.ProductionYear > 0)
+            .Select(e => e.ProductionYear!.Value)
+            .Distinct()
+            .OrderBy(y => y)
+            .ToArray();
+
+        // Query distinct official ratings directly from the database
+        var officialRatings = baseQuery
+            .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty)
+            .Select(e => e.OfficialRating!)
+            .Distinct()
+            .OrderBy(r => r)
+            .ToArray();
+
+        // Tags via ItemValuesMap JOIN - uses subquery for matching items
+        var tags = context.ItemValuesMap
+            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Tags)
+            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
+            .Select(ivm => ivm.ItemValue.CleanValue)
+            .Distinct()
+            .OrderBy(t => t)
+            .ToArray();
+
+        // Genres via ItemValuesMap JOIN - uses subquery for matching items
+        var genres = context.ItemValuesMap
+            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Genre)
+            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
+            .Select(ivm => ivm.ItemValue.CleanValue)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToArray();
+
+        return new QueryFiltersLegacy
+        {
+            Years = years,
+            OfficialRatings = officialRatings,
+            Tags = tags,
+            Genres = genres
+        };
     }
 
     /// <inheritdoc />
@@ -1229,8 +1285,6 @@ public sealed class BaseItemRepository
             }
         }
 
-        context.SaveChanges();
-
         var itemValueMaps = tuples
             .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
             .ToArray();
@@ -1255,7 +1309,6 @@ public sealed class BaseItemRepository
             Value = f.Value
         }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
-        context.SaveChanges();
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
@@ -1290,8 +1343,6 @@ public sealed class BaseItemRepository
             // all still listed values are not in the new list so remove them.
             context.ItemValuesMap.RemoveRange(itemMappedValues);
         }
-
-        context.SaveChanges();
 
         var itemsWithAncestors = tuples
             .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
@@ -1619,7 +1670,8 @@ public sealed class BaseItemRepository
             .Include(e => e.LockedFields)
             .Include(e => e.UserData)
             .Include(e => e.Images)
-            .Include(e => e.LinkedChildEntities);
+            .Include(e => e.LinkedChildEntities)
+            .AsSingleQuery();
 
         var item = dbQuery.FirstOrDefault(e => e.Id == id);
         if (item is null)
@@ -2780,7 +2832,7 @@ public sealed class BaseItemRepository
         if (filter.TrailerTypes.Length > 0)
         {
             var trailerTypes = filter.TrailerTypes.Select(e => (int)e).ToArray();
-            baseQuery = baseQuery.Where(e => trailerTypes.Any(f => e.TrailerTypes!.Any(w => w.Id == f)));
+            baseQuery = baseQuery.Where(e => e.TrailerTypes!.Any(w => trailerTypes.Contains(w.Id)));
         }
 
         if (filter.IsAiring.HasValue)
@@ -2896,29 +2948,31 @@ public sealed class BaseItemRepository
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
+            var favoriteItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
             if (filter.IsFavoriteOrLiked.Value)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
             }
         }
 
         if (filter.IsFavorite.HasValue)
         {
+            var favoriteItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
             if (filter.IsFavorite.Value)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.IsFavorite));
+                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
             }
         }
 
@@ -2927,44 +2981,56 @@ public sealed class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                // Use subquery to find series with played episodes - stays in SQL instead of materializing to HashSet
-                var playedSeriesKeysSubquery = context.BaseItems
-                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesPresentationUniqueKey != null)
-                    .Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Played))
-                    .Select(e => e.SeriesPresentationUniqueKey!);
+                // Get played series IDs by joining episodes to UserData via SeriesId (Guid foreign key).
+                // Don't filter episodes by TopParentIds here - the series will be filtered by baseQuery anyway.
+                // This allows the materialized list to be reused across library-scoped queries.
+                var playedSeriesIdList = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
+                    .Join(
+                        context.UserData.Where(ud => ud.UserId == filter.User!.Id && ud.Played),
+                        episode => episode.Id,
+                        ud => ud.ItemId,
+                        (episode, ud) => episode.SeriesId!.Value)
+                    .Distinct()
+                    .ToList();
 
                 if (filter.IsPlayed.Value)
                 {
-                    baseQuery = baseQuery.Where(e => playedSeriesKeysSubquery.Contains(e.PresentationUniqueKey!));
+                    baseQuery = baseQuery.Where(s => playedSeriesIdList.Contains(s.Id));
                 }
                 else
                 {
-                    baseQuery = baseQuery.Where(e => !playedSeriesKeysSubquery.Contains(e.PresentationUniqueKey!));
+                    baseQuery = baseQuery.Where(s => !playedSeriesIdList.Contains(s.Id));
                 }
-            }
-            else if (filter.IsPlayed.Value)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.Played));
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.Played));
+                var playedItemIds = context.UserData
+                    .Where(ud => ud.UserId == filter.User!.Id && ud.Played)
+                    .Select(ud => ud.ItemId);
+                if (filter.IsPlayed.Value)
+                {
+                    baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(e => !playedItemIds.Contains(e.Id));
+                }
             }
         }
 
         if (filter.IsResumable.HasValue)
         {
+            var resumableItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
+                .Select(ud => ud.ItemId);
             if (filter.IsResumable.Value)
             {
-                baseQuery = baseQuery
-                       .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
+                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id));
             }
             else
             {
-                baseQuery = baseQuery
-                       .Where(e => !e.UserData!.Any(f => f.UserId == filter.User!.Id && f.PlaybackPositionTicks > 0));
+                baseQuery = baseQuery.Where(e => !resumableItemIds.Contains(e.Id));
             }
         }
 
@@ -3681,9 +3747,12 @@ public sealed class BaseItemRepository
 
     private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)
     {
+        // GroupBy with a constant key aggregates all rows into a single group for server-side counting.
+        // OrderBy is required before FirstOrDefault to avoid EF Core warnings about unpredictable results.
         var result = query
             .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
-            .GroupBy(_ => 1) // Hack to aggregate over entire set
+            .GroupBy(_ => 1)
+            .OrderBy(g => g.Key)
             .Select(g => new
             {
                 Total = g.Count(),
