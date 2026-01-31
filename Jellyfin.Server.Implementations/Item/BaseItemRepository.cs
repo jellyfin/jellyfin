@@ -1303,7 +1303,7 @@ public sealed class BaseItemRepository
             .ToArray();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
-            CleanValue = GetCleanValue(f.Value),
+            CleanValue = f.Value.GetCleanValue(),
             ItemValueId = Guid.NewGuid(),
             Type = f.MagicNumber,
             Value = f.Value
@@ -1877,7 +1877,7 @@ public sealed class BaseItemRepository
         entity.IndexNumber = dto.IndexNumber;
         entity.IsLocked = dto.IsLocked;
         entity.Name = dto.Name;
-        entity.CleanName = GetCleanValue(dto.Name);
+        entity.CleanName = dto.Name.GetCleanValue();
         entity.OfficialRating = dto.OfficialRating;
         entity.Overview = dto.Overview;
         entity.ParentIndexNumber = dto.ParentIndexNumber;
@@ -2308,33 +2308,6 @@ public sealed class BaseItemRepository
         }
     }
 
-    /// <summary>
-    /// Normalizes a value for clean comparison by removing diacritics, punctuation, and converting to lowercase.
-    /// </summary>
-    /// <param name="value">The value to clean.</param>
-    /// <returns>The normalized value.</returns>
-    public static string GetCleanValue(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return value;
-        }
-
-        // Remove diacritics and convert to lowercase
-        var cleaned = value.RemoveDiacritics().ToLowerInvariant();
-
-        // Replace all punctuation and special characters with spaces
-        // This includes: periods, commas, colons, semicolons, hyphens, underscores,
-        // parentheses, brackets, braces, quotes, apostrophes, exclamation marks,
-        // question marks, ampersands, slashes, backslashes, em/en dashes, etc.
-        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
-
-        // Collapse multiple spaces into single space and trim
-        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\s+", " ").Trim();
-
-        return cleaned;
-    }
-
     private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
     {
         var list = new List<(ItemValueType, string)>();
@@ -2664,7 +2637,7 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
+            var cleanedSearchTerm = filter.SearchTerm.GetCleanValue();
             var originalSearchTerm = filter.SearchTerm;
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
@@ -2893,7 +2866,7 @@ public sealed class BaseItemRepository
             }
             else
             {
-                var cleanName = GetCleanValue(filter.Name);
+                var cleanName = filter.Name.GetCleanValue();
                 baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
             }
         }
@@ -3078,21 +3051,21 @@ public sealed class BaseItemRepository
 
         if (filter.Genres.Count > 0)
         {
-            var cleanGenres = filter.Genres.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanGenres = filter.Genres.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Genre).Any(cleanGenres));
         }
 
         if (tags.Count > 0)
         {
-            var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = tags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
         }
 
         if (excludeTags.Count > 0)
         {
-            var cleanValues = excludeTags.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = excludeTags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => !e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
         }
@@ -3486,23 +3459,29 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            var excludedTags = filter.ExcludeInheritedTags;
+            var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             baseQuery = baseQuery.Where(e =>
                 !context.ItemValuesMap.Any(f =>
                     f.ItemValue.Type == ItemValueType.Tags
                     && excludedTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value))));
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            var includeTags = filter.IncludeInheritedTags;
+            var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
             baseQuery = baseQuery.Where(e =>
                 context.ItemValuesMap.Any(f =>
                     f.ItemValue.Type == ItemValueType.Tags
                     && includeTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)))
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value)))
 
                 // A playlist should be accessible to its owner regardless of allowed tags
                 || (isPlaylistOnlyQuery && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
@@ -3864,23 +3843,29 @@ public sealed class BaseItemRepository
         // Apply excluded tags filtering (blocked tags)
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            var excludedTags = filter.ExcludeInheritedTags;
+            var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             baseQuery = baseQuery.Where(e =>
                 !context.ItemValuesMap.Any(f =>
                     f.ItemValue.Type == ItemValueType.Tags
                     && excludedTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value))));
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
         // Apply included tags filtering (allowed tags - item must have at least one)
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            var includeTags = filter.IncludeInheritedTags;
+            var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             baseQuery = baseQuery.Where(e =>
                 context.ItemValuesMap.Any(f =>
                     f.ItemValue.Type == ItemValueType.Tags
                     && includeTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value))));
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
         return baseQuery;

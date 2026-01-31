@@ -61,7 +61,7 @@ public class RefreshCleanNames : IAsyncMigrationRoutine
         {
             try
             {
-                var newCleanName = string.IsNullOrWhiteSpace(item.Name) ? string.Empty : BaseItemRepository.GetCleanValue(item.Name);
+                var newCleanName = string.IsNullOrWhiteSpace(item.Name) ? string.Empty : item.Name.GetCleanValue();
                 if (!string.Equals(newCleanName, item.CleanName, StringComparison.Ordinal))
                 {
                     _logger.LogDebug(

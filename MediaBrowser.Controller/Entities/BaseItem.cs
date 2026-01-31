@@ -1671,16 +1671,26 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
-            var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            var blockedTagsPreference = user.GetPreference(PreferenceKind.BlockedTags);
-            var needsTagCheck = allowedTagsPreference.Length > 0 || blockedTagsPreference.Length > 0;
-            if (!needsTagCheck)
+            var blockedTags = user.GetPreference(PreferenceKind.BlockedTags);
+            var allowedTags = user.GetPreference(PreferenceKind.AllowedTags);
+
+            if (blockedTags.Length == 0 && allowedTags.Length == 0)
             {
                 return true;
             }
 
-            var allTags = GetInheritedTags();
-            if (blockedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            // Normalize tags using the same logic as database queries
+            var normalizedBlockedTags = blockedTags
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.GetCleanValue())
+                .ToHashSet(StringComparer.Ordinal);
+
+            var normalizedItemTags = GetInheritedTags()
+                .Select(t => t.GetCleanValue())
+                .ToHashSet(StringComparer.Ordinal);
+
+            // Check blocked tags - item is hidden if it has any blocked tag
+            if (normalizedBlockedTags.Overlaps(normalizedItemTags))
             {
                 return false;
             }
@@ -1691,9 +1701,18 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (!skipAllowedTagsCheck && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            // Check allowed tags - item must have at least one allowed tag
+            if (!skipAllowedTagsCheck && allowedTags.Length > 0)
             {
-                return false;
+                var normalizedAllowedTags = allowedTags
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Select(t => t.GetCleanValue())
+                    .ToHashSet(StringComparer.Ordinal);
+
+                if (!normalizedAllowedTags.Overlaps(normalizedItemTags))
+                {
+                    return false;
+                }
             }
 
             return true;
