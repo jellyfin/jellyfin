@@ -126,6 +126,7 @@ public sealed class BaseItemRepository
             .Where(g => g.Count() > 1)
             .SelectMany(g => g.OrderByDescending(u => u.LastPlayedDate.HasValue)
                 .ThenByDescending(u => u.LastPlayedDate)
+                .ThenByDescending(u => u.ItemId)
                 .Skip(1)
                 .Select(u => new { u.UserId, u.CustomDataKey, u.ItemId }))
             .ToArray();
