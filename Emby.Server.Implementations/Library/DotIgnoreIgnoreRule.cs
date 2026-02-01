@@ -134,15 +134,6 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         return ignore.IsIgnored(pathToCheck);
     }
 
-    /// <summary>
-    /// Clears the internal caches.
-    /// </summary>
-    public void ClearCache()
-    {
-        _directoryCache.Clear();
-        _rulesCache.Clear();
-    }
-
     private string? FindIgnoreFileCached(string directory)
     {
         // Check if we have a cached result for this directory
