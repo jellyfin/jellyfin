@@ -249,7 +249,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.IndexNumber = request.IndexNumber;
         item.ParentIndexNumber = request.ParentIndexNumber;
         item.Overview = request.Overview;
-        item.Genres = request.Genres;
+        item.Genres = request.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
         if (item is Episode episode)
         {
