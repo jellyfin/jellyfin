@@ -55,7 +55,7 @@
     "NotificationOptionPluginInstalled": "Bővítmény telepítve",
     "NotificationOptionPluginUninstalled": "Bővítmény eltávolítva",
     "NotificationOptionPluginUpdateInstalled": "Bővítményfrissítés telepítve",
-    "NotificationOptionServerRestartRequired": "A kiszolgáló újraindítása szükséges",
+    "NotificationOptionServerRestartRequired": "A szerver újraindítása szükséges",
     "NotificationOptionTaskFailed": "Hiba az ütemezett feladatban",
     "NotificationOptionUserLockedOut": "Felhasználó tiltva",
     "NotificationOptionVideoPlayback": "Videólejátszás elkezdve",
