@@ -459,11 +459,11 @@ namespace MediaBrowser.Controller.Entities
                 // If it's an AggregateFolder, don't remove
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
-                    // Build a set of paths that are alternate versions of valid children
+                    // Build a set of paths that are alternate versions or additional parts of valid children
                     // These items should not be deleted - they're managed by their primary video
-                    var alternateVersionPaths = validChildren
+                    var protectedPaths = validChildren
                         .OfType<Video>()
-                        .SelectMany(v => v.LocalAlternateVersions ?? [])
+                        .SelectMany(v => (v.LocalAlternateVersions ?? []).Concat(v.AdditionalParts ?? []))
                         .Where(p => !string.IsNullOrEmpty(p))
                         .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -485,10 +485,10 @@ namespace MediaBrowser.Controller.Entities
                                 continue;
                             }
 
-                            // Check if path is in LocalAlternateVersions of any valid child
-                            if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
+                            // Check if path is in LocalAlternateVersions or AdditionalParts of any valid child
+                            if (!string.IsNullOrEmpty(item.Path) && protectedPaths.Contains(item.Path))
                             {
-                                Logger.LogDebug("Item path matches an alternate version, skipping deletion: {Path}", item.Path);
+                                Logger.LogDebug("Item path is a protected path (alternate version or additional part), skipping deletion: {Path}", item.Path);
                                 continue;
                             }
                         }
@@ -569,7 +569,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (container is not null)
                 {
-                    await RefreshAllMetadataForContainer(container, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                    await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -593,21 +593,11 @@ namespace MediaBrowser.Controller.Entities
                 cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            if (container is Series series)
-            {
-                await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-            }
-
-            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
-        }
-
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (child is IMetadataContainer container)
             {
-                await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+                await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
             }
             else
             {
