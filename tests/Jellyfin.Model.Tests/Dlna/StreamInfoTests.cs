@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.MediaStreams;
 using Xunit;
 
 namespace Jellyfin.Model.Tests.Dlna;
@@ -239,5 +242,104 @@ public class StreamInfoTests
 
             Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
         }
+    }
+
+    [Fact]
+    public void GetSubtitleStreamInfo_RemoteMediaSource_WithLocalSubtitlePath_ReturnsApiUrl()
+    {
+        // Arrange
+        var mediaSource = new MediaSourceInfo
+        {
+            Protocol = MediaProtocol.Http,  // Remote media source
+            Id = "test-media-source",
+            Path = "http://example.com/video.mkv",
+            MediaStreams = new List<MediaStream>()
+        };
+
+        var streamInfo = new StreamInfo
+        {
+            ItemId = Guid.NewGuid(),
+            MediaSource = mediaSource,
+            MediaSourceId = mediaSource.Id
+        };
+
+        var subtitleStream = new MediaStream
+        {
+            Type = MediaStreamType.Subtitle,
+            Index = 0,
+            IsExternal = true,
+            SupportsExternalStream = true,
+            Codec = "subrip",
+            Path = "E:\\Movies\\subtitle.srt",  // Local Windows path
+            Language = "eng"
+        };
+
+        var subtitleProfiles = new[]
+        {
+            new SubtitleProfile { Format = "subrip", Method = SubtitleDeliveryMethod.External }
+        };
+
+        // Act
+        var result = streamInfo.GetType()
+            .GetMethod("GetSubtitleStreamInfo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.Invoke(streamInfo, new object[] { subtitleStream, "http://localhost:8096", "test-token", 0, subtitleProfiles, null });
+
+        // Assert
+        Assert.NotNull(result);
+        var subtitleInfo = (SubtitleStreamInfo)result;
+        
+        // For remote media with local subtitle path, should return API URL, not the local path
+        Assert.False(subtitleInfo.IsExternalUrl);
+        Assert.StartsWith("http://localhost:8096/Videos/", subtitleInfo.Url);
+        Assert.EndsWith("/Stream.subrip", subtitleInfo.Url);
+    }
+
+    [Fact]
+    public void GetSubtitleStreamInfo_LocalMediaSource_WithHttpSubtitleUrl_ReturnsDirectPath()
+    {
+        // Arrange
+        var mediaSource = new MediaSourceInfo
+        {
+            Protocol = MediaProtocol.File,  // Local media source
+            Id = "test-media-source",
+            Path = "/media/video.mkv",
+            MediaStreams = new List<MediaStream>()
+        };
+
+        var streamInfo = new StreamInfo
+        {
+            ItemId = Guid.NewGuid(),
+            MediaSource = mediaSource,
+            MediaSourceId = mediaSource.Id
+        };
+
+        var subtitleStream = new MediaStream
+        {
+            Type = MediaStreamType.Subtitle,
+            Index = 0,
+            IsExternal = true,
+            SupportsExternalStream = true,
+            Codec = "subrip",
+            Path = "http://example.com/subtitle.srt",  // Remote HTTP subtitle URL
+            Language = "eng"
+        };
+
+        var subtitleProfiles = new[]
+        {
+            new SubtitleProfile { Format = "subrip", Method = SubtitleDeliveryMethod.External }
+        };
+
+        // Act
+        var result = streamInfo.GetType()
+            .GetMethod("GetSubtitleStreamInfo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.Invoke(streamInfo, new object[] { subtitleStream, "http://localhost:8096", "test-token", 0, subtitleProfiles, null });
+
+        // Assert
+        Assert.NotNull(result);
+        var subtitleInfo = (SubtitleStreamInfo)result;
+        
+        // For local media with HTTP subtitle URL, should use direct path
+        Assert.True(subtitleInfo.IsExternalUrl);
+        Assert.Equal("http://example.com/subtitle.srt", subtitleInfo.Url);
     }
 }
