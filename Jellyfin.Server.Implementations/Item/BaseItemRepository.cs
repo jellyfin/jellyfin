@@ -2044,7 +2044,7 @@ public sealed class BaseItemRepository
         // query = query.DistinctBy(e => e.CleanValue);
         return query.Select(e => e.ItemValue)
             .GroupBy(e => e.CleanValue)
-            .Select(e => e.First().Value)
+            .Select(e => e.OrderBy(v => v.Value).First().Value)
             .ToArray();
     }
 
@@ -3737,6 +3737,7 @@ public sealed class BaseItemRepository
                 Total = g.Count(),
                 Played = g.Count(isPlayed => isPlayed)
             })
+            .OrderBy(_ => 1)
             .FirstOrDefault();
 
         return result is null ? (0, 0) : (result.Played, result.Total);
