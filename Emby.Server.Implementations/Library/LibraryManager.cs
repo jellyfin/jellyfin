@@ -83,6 +83,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
+        private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -120,6 +121,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="directoryService">The directory service.</param>
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
+        /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -137,7 +139,8 @@ namespace Emby.Server.Implementations.Library
             NamingOptions namingOptions,
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -158,6 +161,7 @@ namespace Emby.Server.Implementations.Library
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
+            _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -2833,7 +2837,7 @@ namespace Emby.Server.Implementations.Library
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             // Apply .ignore rules
-            var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
+            var filtered = fileSystemChildren.Where(c => !_dotIgnoreIgnoreRule.ShouldIgnore(c, owner)).ToList();
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
