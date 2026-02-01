@@ -201,12 +201,17 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
+            if (series is null)
+            {
+                return [];
+            }
+
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes);
         }
 
         public List<BaseItem> GetEpisodes()
         {
-            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true), true);
+            return GetEpisodes(Series, null, null, new DtoOptions(true), true);
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
