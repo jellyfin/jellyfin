@@ -334,7 +334,7 @@ public class DotIgnoreIgnoreRuleTest
             Assert.True(result1);
 
             // Clear cache
-            rule.ClearCache();
+            rule.ClearDirectoryCache();
 
             // Should still work (will re-populate cache)
             var result2 = rule.ShouldIgnore(fileInfo, null);

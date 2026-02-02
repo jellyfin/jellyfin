@@ -39,6 +39,15 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnoredInternal(fileInfo, parent);
 
     /// <summary>
+    /// Clears the directory lookup cache. The parsed rules cache is not cleared
+    /// as it validates file modification time on each access.
+    /// </summary>
+    public void ClearDirectoryCache()
+    {
+        _directoryCache.Clear();
+    }
+
+    /// <summary>
     /// Checks whether or not the file is ignored.
     /// </summary>
     /// <param name="fileInfo">The file information.</param>

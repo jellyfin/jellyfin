@@ -1135,6 +1135,7 @@ namespace Emby.Server.Implementations.Library
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             IsScanRunning = true;
+            ClearIgnoreRuleCache();
             LibraryMonitor.Stop();
 
             try
@@ -1143,6 +1144,7 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                ClearIgnoreRuleCache();
                 LibraryMonitor.Start();
                 IsScanRunning = false;
             }
@@ -1150,6 +1152,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
+            ClearIgnoreRuleCache();
             RootFolder.Children = null;
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
@@ -1192,6 +1195,14 @@ namespace Emby.Server.Implementations.Library
             {
                 _itemRepository.DeleteItem(toDelete.ToArray());
             }
+
+            ClearIgnoreRuleCache();
+        }
+
+        /// <inheritdoc />
+        public void ClearIgnoreRuleCache()
+        {
+            _dotIgnoreIgnoreRule.ClearDirectoryCache();
         }
 
         private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
