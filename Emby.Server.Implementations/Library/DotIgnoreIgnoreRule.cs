@@ -28,11 +28,11 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         _directoryCache = new FastConcurrentLru<string, IgnoreFileCacheEntry>(
             Environment.ProcessorCount,
             cacheSize,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.Ordinal);
         _rulesCache = new FastConcurrentLru<string, ParsedIgnoreCacheEntry>(
             Environment.ProcessorCount,
             Math.Max(32, cacheSize / 4),
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.Ordinal);
     }
 
     /// <inheritdoc />
