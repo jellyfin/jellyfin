@@ -211,6 +211,7 @@
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
  - [AliveDevil](https://github.com/AliveDevil)
+ - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
 
 # Emby Contributors
 

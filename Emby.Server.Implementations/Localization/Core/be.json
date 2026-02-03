@@ -50,7 +50,7 @@
     "User": "Карыстальнік",
     "UserDeletedWithName": "Карыстальнік {0} быў выдалены",
     "UserDownloadingItemWithValues": "{0} спампоўваецца {1}",
-    "TaskOptimizeDatabase": "Аптымізаваць базу дадзеных",
+    "TaskOptimizeDatabase": "Аптымізацыя базы даных",
     "Artists": "Выканаўцы",
     "UserOfflineFromDevice": "{0} адлучыўся ад {1}",
     "UserPolicyUpdatedWithName": "Палітыка карыстальніка абноўлена для {0}",
@@ -59,8 +59,8 @@
     "TaskCleanLogsDescription": "Выдаляе файлы журналу, якім больш за {0} дзён.",
     "TaskUpdatePluginsDescription": "Спампоўвае і ўсталёўвае абнаўленні для плагінаў, якія сканфігураваныя на аўтаматычнае абнаўленне.",
     "TaskRefreshChannelsDescription": "Абнаўляе інфармацыю аб інтэрнэт-канале.",
-    "TaskDownloadMissingSubtitlesDescription": "Шукае ў інтэрнэце адсутныя субцітры на аснове канфігурацыі метададзеных.",
-    "TaskOptimizeDatabaseDescription": "Ушчыльняе базу дадзеных і скарачае вольную прастору. Выкананне гэтай задачы пасля сканавання бібліятэкі або ўнясення іншых зменаў, якія прадугледжваюць мадыфікацыю базы дадзеных, можа палепшыць выдайнасць.",
+    "TaskDownloadMissingSubtitlesDescription": "Шукае ў інтэрнэце адсутныя субцітры на аснове канфігурацыі метаданых.",
+    "TaskOptimizeDatabaseDescription": "Сціскае базу даных і вызваляе вольную прастору. Выкананне гэтай задачы пасля сканіравання бібліятэкі або іншых змяненняў, якія мадыфікуюць базу даных, можа палепшыць прадукцыйнасць.",
     "TaskKeyframeExtractor": "Экстрактар ключавых кадраў",
     "TasksApplicationCategory": "Праграма",
     "AppDeviceValues": "Праграма: {0}, Прылада: {1}",
@@ -136,6 +136,6 @@
     "TaskDownloadMissingLyricsDescription": "Спампоўвае тэксты для песняў",
     "TaskExtractMediaSegments": "Сканіраванне медыя-сегмента",
     "TaskMoveTrickplayImages": "Перанесці месцазнаходжанне выявы Trickplay",
-    "CleanupUserDataTask": "Задача па ачыстцы дадзеных карыстальніка",
+    "CleanupUserDataTask": "Задача па ачыстцы даных карыстальніка",
     "CleanupUserDataTaskDescription": "Ачышчае ўсе даныя карыстальніка (стан прагляду, абранае і г.д.) для медыяфайлаў, што адсутнічаюць больш за 90 дзён."
 }

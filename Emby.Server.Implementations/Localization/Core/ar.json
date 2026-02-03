@@ -73,7 +73,6 @@
     "Shows": "العروض",
     "Songs": "الأغاني",
     "StartupEmbyServerIsLoading": "يتم تحميل خادم Jellyfin . الرجاء المحاولة بعد قليل.",
-    "SubtitleDownloadFailureForItem": "عملية إنزال الترجمة فشلت لـ{0}",
     "SubtitleDownloadFailureFromForItem": "فشل تحميل الترجمات من {0} ل {1}",
     "Sync": "مزامنة",
     "System": "النظام",

@@ -1,5 +1,6 @@
 #pragma warning disable MT1013 // Releasing lock without guarantee of execution
 #pragma warning disable MT1012 // Acquiring lock without guarantee of releasing
+#pragma warning disable CA1873
 
 using System;
 using System.Data;

@@ -73,7 +73,6 @@
     "Shows": "Sèries",
     "Songs": "Cançons",
     "StartupEmbyServerIsLoading": "El servidor de Jellyfin s'està carregant. Proveu-ho de nou en una estona.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Els subtítols per a {1} no s'han pogut baixar de {0}",
     "Sync": "Sincronitza",
     "System": "Sistema",

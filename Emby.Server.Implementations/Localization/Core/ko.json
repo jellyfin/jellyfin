@@ -73,7 +73,6 @@
     "Shows": "시리즈",
     "Songs": "노래",
     "StartupEmbyServerIsLoading": "Jellyfin 서버를 불러오고 있습니다. 잠시 후에 다시 시도하십시오.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{0}에서 {1} 자막 다운로드에 실패했습니다",
     "Sync": "동기화",
     "System": "시스템",

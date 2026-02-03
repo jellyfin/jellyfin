@@ -73,7 +73,6 @@
     "Shows": "סדרות",
     "Songs": "שירים",
     "StartupEmbyServerIsLoading": "שרת Jellyfin בתהליך טעינה. נא לנסות שוב בקרוב.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "הורדת כתוביות מ־{0} עבור {1} נכשלה",
     "Sync": "סנכרון",
     "System": "מערכת",
