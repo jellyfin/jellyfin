@@ -983,7 +983,7 @@ public sealed class BaseItemRepository
             BaseItemKind.Video,
             BaseItemKind.Movie
         };
-        if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
+        if (filter.IncludeItemTypes.Length > 0 && filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
             dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
         }
@@ -1399,6 +1399,10 @@ public sealed class BaseItemRepository
             }
         }
 
+        // This is necessary because LocalAlternateVersions resolution queries the database by path,
+        // and newly imported alternate version items need to exist before we can link them
+        context.SaveChanges();
+
         var folderIds = tuples
             .Where(t => t.Item is Folder)
             .Select(t => t.Item.Id)
@@ -1603,6 +1607,7 @@ public sealed class BaseItemRepository
             }
         }
 
+        // Phase 2 commit: Save LinkedChildren changes
         context.SaveChanges();
         transaction.Commit();
     }
