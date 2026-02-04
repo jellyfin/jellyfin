@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 
 namespace MediaBrowser.Controller.Persistence;
 
@@ -234,4 +235,13 @@ public interface IItemRepository
     /// <param name="toChildId">The child ID to re-route to.</param>
     /// <returns>Number of references updated.</returns>
     int RerouteLinkedChildren(Guid fromChildId, Guid toChildId);
+
+    /// <summary>
+    /// Creates or updates a LinkedChild entry linking a parent to a child item.
+    /// If the link already exists, updates the child type.
+    /// </summary>
+    /// <param name="parentId">The parent item ID.</param>
+    /// <param name="childId">The child item ID.</param>
+    /// <param name="childType">The type of linked child relationship.</param>
+    void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType);
 }

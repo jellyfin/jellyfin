@@ -19,6 +19,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -428,6 +429,17 @@ namespace MediaBrowser.Controller.Entities
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
+            // Clean up LocalAlternateVersions - remove paths that no longer exist
+            if (LocalAlternateVersions.Length > 0)
+            {
+                var validPaths = LocalAlternateVersions.Where(FileSystem.FileExists).ToArray();
+                if (validPaths.Length != LocalAlternateVersions.Length)
+                {
+                    LocalAlternateVersions = validPaths;
+                    hasChanges = true;
+                }
+            }
+
             if (IsStacked)
             {
                 var tasks = AdditionalParts
@@ -467,7 +479,21 @@ namespace MediaBrowser.Controller.Entities
                 SearchResult = null
             };
 
-            var id = LibraryManager.GetNewItemId(path, typeof(Video));
+            var id = LibraryManager.GetNewItemId(path, GetType());
+
+            // Check if the file still exists
+            if (!FileSystem.FileExists(path))
+            {
+                // File was removed - clean up any orphaned database entry
+                if (LibraryManager.GetItemById(id) is Video orphanedVideo && orphanedVideo.OwnerId.Equals(Id))
+                {
+                    Logger.LogInformation("Owned video file no longer exists, removing orphaned item: {Path}", path);
+                    LibraryManager.DeleteItem(orphanedVideo, new DeleteOptions { DeleteFileLocation = false });
+                }
+
+                return;
+            }
+
             if (LibraryManager.GetItemById(id) is not Video video)
             {
                 video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
@@ -486,6 +512,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
+
+            // Create LinkedChild entry for this local alternate version
+            // This ensures the relationship exists in the database even if the alternate version
+            // was created after the primary video was first saved
+            LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
         }
 
         private void RefreshLinkedAlternateVersions()

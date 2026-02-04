@@ -1987,6 +1987,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public void UpsertLinkedChild(Guid parentId, Guid childId, MediaBrowser.Controller.Entities.LinkedChildType childType)
+        {
+            _itemRepository.UpsertLinkedChild(parentId, childId, childType);
+        }
+
+        /// <inheritdoc />
         public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<ItemSortBy> sortBy, SortOrder sortOrder)
         {
             IOrderedEnumerable<BaseItem>? orderedItems = null;
@@ -2090,9 +2096,40 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
+            // Resolve and add any local alternate version items that don't exist yet
+            // This ensures they exist in the database when LinkedChildren are processed
+            var allItems = new List<BaseItem>(items);
             foreach (var item in items)
+            {
+                if (item is Video video && video.LocalAlternateVersions.Length > 0)
+                {
+                    var videoType = video.GetType();
+                    foreach (var path in video.LocalAlternateVersions)
+                    {
+                        if (string.IsNullOrEmpty(path))
+                        {
+                            continue;
+                        }
+
+                        // Use the primary video's type for ID calculation to ensure consistency
+                        var altId = GetNewItemId(path, videoType);
+                        if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
+                        {
+                            // Alternate version doesn't exist, resolve and create it
+                            var altVideo = ResolvePath(_fileSystem.GetFileSystemInfo(path)) as Video;
+                            if (altVideo is not null)
+                            {
+                                altVideo.OwnerId = video.Id;
+                                allItems.Add(altVideo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _itemRepository.SaveItems(allItems, cancellationToken);
+
+            foreach (var item in allItems)
             {
                 RegisterItem(item);
             }
@@ -2258,7 +2295,38 @@ namespace Emby.Server.Implementations.Library
                 item.DateLastSaved = DateTime.UtcNow;
             }
 
-            _itemRepository.SaveItems(items, cancellationToken);
+            // Resolve and add any local alternate version items that don't exist yet
+            // This ensures they exist in the database when LinkedChildren are processed
+            var allItems = new List<BaseItem>(items);
+            foreach (var item in items)
+            {
+                if (item is Video video && video.LocalAlternateVersions.Length > 0)
+                {
+                    var videoType = video.GetType();
+                    foreach (var path in video.LocalAlternateVersions)
+                    {
+                        if (string.IsNullOrEmpty(path))
+                        {
+                            continue;
+                        }
+
+                        // Use the primary video's type for ID calculation to ensure consistency
+                        var altId = GetNewItemId(path, videoType);
+                        if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
+                        {
+                            // Alternate version doesn't exist, resolve and create it
+                            var altVideo = ResolvePath(_fileSystem.GetFileSystemInfo(path)) as Video;
+                            if (altVideo is not null)
+                            {
+                                altVideo.OwnerId = video.Id;
+                                allItems.Add(altVideo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _itemRepository.SaveItems(allItems, cancellationToken);
 
             if (parent is Folder folder)
             {

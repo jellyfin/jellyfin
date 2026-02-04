@@ -1599,10 +1599,35 @@ public sealed class BaseItemRepository
                     }
                 }
 
-                // Remove orphaned alternate version links
+                // Remove orphaned alternate version links and their items
                 if (existingLinkedChildren.Count > 0)
                 {
+                    // Get the child IDs of LocalAlternateVersions that are being removed
+                    // These items should be deleted as they are owned by this video
+                    var orphanedLocalVersionIds = existingLinkedChildren
+                        .Where(e => e.ChildType == DbLinkedChildType.LocalAlternateVersion)
+                        .Select(e => e.ChildId)
+                        .ToList();
+
                     context.LinkedChildren.RemoveRange(existingLinkedChildren);
+
+                    // Delete the orphaned LocalAlternateVersion items themselves
+                    if (orphanedLocalVersionIds.Count > 0)
+                    {
+                        var orphanedItems = context.BaseItems
+                            .Where(e => orphanedLocalVersionIds.Contains(e.Id) && e.OwnerId == video.Id)
+                            .ToList();
+
+                        if (orphanedItems.Count > 0)
+                        {
+                            _logger.LogInformation(
+                                "Deleting {Count} orphaned LocalAlternateVersion items for video {VideoName} ({VideoId})",
+                                orphanedItems.Count,
+                                video.Name,
+                                video.Id);
+                            context.BaseItems.RemoveRange(orphanedItems);
+                        }
+                    }
                 }
             }
         }
@@ -3941,5 +3966,32 @@ public sealed class BaseItemRepository
             .ExecuteDelete();
 
         return updated;
+    }
+
+    /// <inheritdoc/>
+    public void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        var dbChildType = (DbLinkedChildType)childType;
+        var existingLink = context.LinkedChildren
+            .FirstOrDefault(lc => lc.ParentId == parentId && lc.ChildId == childId);
+
+        if (existingLink is null)
+        {
+            context.LinkedChildren.Add(new LinkedChildEntity
+            {
+                ParentId = parentId,
+                ChildId = childId,
+                ChildType = dbChildType,
+                SortOrder = null
+            });
+        }
+        else
+        {
+            existingLink.ChildType = dbChildType;
+        }
+
+        context.SaveChanges();
     }
 }

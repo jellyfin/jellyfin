@@ -182,6 +182,18 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
             if (toInsert.Count > 0)
             {
+                // Deduplicate by composite key (ParentId, ChildId)
+                // Priority: LocalAlternateVersion > LinkedAlternateVersion > Other
+                toInsert = toInsert
+                    .OrderBy(lc => lc.ChildType switch
+                    {
+                        LinkedChildType.LocalAlternateVersion => 0,
+                        LinkedChildType.LinkedAlternateVersion => 1,
+                        _ => 2
+                    })
+                    .DistinctBy(lc => new { lc.ParentId, lc.ChildId })
+                    .ToList();
+
                 var childIds = toInsert.Select(lc => lc.ChildId).Distinct().ToList();
                 var existingChildIds = context.BaseItems
                     .Where(b => childIds.Contains(b.Id))
@@ -207,7 +219,53 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("LinkedChildren migration completed. Processed {Count} items.", processedCount);
 
+        UpdateAlternateVersionTypes(context);
         CleanupOrphanedLinkedChildren(context);
+    }
+
+    private void UpdateAlternateVersionTypes(JellyfinDbContext context)
+    {
+        _logger.LogInformation("Updating alternate version item types to match their parent's type...");
+
+        // Find all LocalAlternateVersion relationships where the child is a generic Video
+        // but the parent is a more specific type (like Movie)
+        var genericVideoType = "MediaBrowser.Controller.Entities.Video";
+
+        var alternateVersionsToUpdate = context.LinkedChildren
+            .Where(lc => lc.ChildType == LinkedChildType.LocalAlternateVersion)
+            .Join(
+                context.BaseItems,
+                lc => lc.ParentId,
+                parent => parent.Id,
+                (lc, parent) => new { lc.ChildId, ParentType = parent.Type })
+            .Join(
+                context.BaseItems,
+                x => x.ChildId,
+                child => child.Id,
+                (x, child) => new { x.ChildId, x.ParentType, ChildType = child.Type, Child = child })
+            .Where(x => x.ChildType == genericVideoType && x.ParentType != genericVideoType)
+            .ToList();
+
+        if (alternateVersionsToUpdate.Count == 0)
+        {
+            _logger.LogInformation("No alternate version items need type updates.");
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} alternate version items to update.", alternateVersionsToUpdate.Count);
+
+        foreach (var item in alternateVersionsToUpdate)
+        {
+            item.Child.Type = item.ParentType;
+            _logger.LogDebug(
+                "Updating item {ChildId} type from {OldType} to {NewType}",
+                item.ChildId,
+                genericVideoType,
+                item.ParentType);
+        }
+
+        context.SaveChanges();
+        _logger.LogInformation("Successfully updated {Count} alternate version item types.", alternateVersionsToUpdate.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)

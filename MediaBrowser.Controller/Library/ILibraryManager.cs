@@ -20,6 +20,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
+using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Controller.Library
@@ -228,6 +229,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="video">The video item.</param>
         /// <returns>Enumerable of linked Video items.</returns>
         IEnumerable<Video> GetLinkedAlternateVersions(Video video);
+
+        /// <summary>
+        /// Creates or updates a LinkedChild entry linking a parent to a child item.
+        /// </summary>
+        /// <param name="parentId">The parent item ID.</param>
+        /// <param name="childId">The child item ID.</param>
+        /// <param name="childType">The type of linked child relationship.</param>
+        void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType);
 
         /// <summary>
         /// Adds the parts.

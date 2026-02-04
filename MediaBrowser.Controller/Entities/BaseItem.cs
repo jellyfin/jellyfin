@@ -1430,10 +1430,15 @@ namespace MediaBrowser.Controller.Entities
                 });
                 foreach (var removedExtra in removedExtras)
                 {
-                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                    // Only delete items that are actual extras (have ExtraType set)
+                    // Items with OwnerId but no ExtraType might be alternate versions, not extras
+                    if (removedExtra.ExtraType.HasValue)
                     {
-                        DeleteFileLocation = false
-                    });
+                        LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                        {
+                            DeleteFileLocation = false
+                        });
+                    }
                 }
             }
 

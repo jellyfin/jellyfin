@@ -9,8 +9,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -91,6 +93,20 @@ namespace MediaBrowser.Controller.Entities.Movies
             };
 
             var id = LibraryManager.GetNewItemId(path, typeof(Movie));
+
+            // Check if the file still exists
+            if (!FileSystem.FileExists(path))
+            {
+                // File was removed - clean up any orphaned database entry
+                if (LibraryManager.GetItemById(id) is Movie orphanedMovie && orphanedMovie.OwnerId.Equals(Id))
+                {
+                    Logger.LogInformation("Alternate version file no longer exists, removing orphaned item: {Path}", path);
+                    LibraryManager.DeleteItem(orphanedMovie, new DeleteOptions { DeleteFileLocation = false });
+                }
+
+                return;
+            }
+
             if (LibraryManager.GetItemById(id) is not Movie movie)
             {
                 movie = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Movie;
@@ -109,6 +125,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             await RefreshMetadataForOwnedItem(movie, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
+
+            // Create LinkedChild entry for this local alternate version
+            LibraryManager.UpsertLinkedChild(Id, movie.Id, LinkedChildType.LocalAlternateVersion);
         }
 
         /// <inheritdoc />
