@@ -1350,8 +1350,27 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemCollectionFolders.Count > 0)
                 {
-                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true).Select(i => i.Id).ToList();
-                    if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                    var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
+                    IEnumerable<Guid> userCollectionFolderIds;
+                    if (blockedMediaFolders.Length > 0)
+                    {
+                        // User has blocked folders - get all library folders and exclude blocked ones
+                        userCollectionFolderIds = LibraryManager.GetUserRootFolder().Children
+                            .Select(i => i.Id)
+                            .Where(id => !blockedMediaFolders.Contains(id));
+                    }
+                    else if (user.HasPermission(PermissionKind.EnableAllFolders))
+                    {
+                        // User can access all folders - no need to filter
+                        return true;
+                    }
+                    else
+                    {
+                        // User has specific enabled folders
+                        userCollectionFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders);
+                    }
+
+                    if (!itemCollectionFolders.Any(userCollectionFolderIds.Contains))
                     {
                         return false;
                     }

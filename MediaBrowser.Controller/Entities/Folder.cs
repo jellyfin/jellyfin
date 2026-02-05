@@ -1699,8 +1699,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (SupportsPlayedStatus || (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount)))
             {
+                // Create a minimal query with just the user - skip ConfigureUserAccess to avoid
+                // expensive GetUserViews calls. Since we're counting descendants of a specific
+                // item (this folder) that the user already has access to, TopParentIds filtering
+                // is redundant. The parental rating filter is applied via query.User.
                 var query = new InternalItemsQuery(user);
-                LibraryManager.ConfigureUserAccess(query, user);
 
                 int playedCount;
                 int totalCount;
