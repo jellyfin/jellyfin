@@ -788,14 +788,23 @@ public sealed class BaseItemRepository
                 })
             .ToList();
 
-        var allNextPlayedCandidates = allCandidatesWithPlayedStatus
-            .Where(c => includeWatchedForRewatching)
+        // For regular NextUp: unplayed episodes
+        var allNextUpCandidates = allCandidatesWithPlayedStatus
+            .Where(c => !c.IsPlayed)
             .Select(c => new { c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber })
             .ToList();
 
+        // For rewatching: played episodes (only used when includeWatchedForRewatching is true)
+        var allNextPlayedCandidates = includeWatchedForRewatching
+            ? allCandidatesWithPlayedStatus
+                .Where(c => c.IsPlayed)
+                .Select(c => new { c.Id, c.SeriesPresentationUniqueKey, c.ParentIndexNumber, c.EpisodeNumber })
+                .ToList()
+            : [];
+
         foreach (var seriesKey in seriesKeys)
         {
-            var candidates = allNextPlayedCandidates
+            var candidates = allNextUpCandidates
                 .Where(c => c.SeriesPresentationUniqueKey == seriesKey);
 
             if (lastWatchedInfo.TryGetValue(seriesKey, out var lwId) && lwId != Guid.Empty)
