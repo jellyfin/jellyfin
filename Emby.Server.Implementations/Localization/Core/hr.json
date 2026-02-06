@@ -70,7 +70,7 @@
     "ScheduledTaskFailedWithName": "{0} neuspjelo",
     "ScheduledTaskStartedWithName": "{0} pokrenuto",
     "ServerNameNeedsToBeRestarted": "{0} treba ponovno pokrenuti",
-    "Shows": "Serije",
+    "Shows": "Emisije",
     "Songs": "Pjesme",
     "StartupEmbyServerIsLoading": "Jellyfin server se učitava. Pokušajte ponovo uskoro.",
     "SubtitleDownloadFailureFromForItem": "Prijevod nije uspješno preuzet od {0} za {1}",
