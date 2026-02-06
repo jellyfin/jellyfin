@@ -360,8 +360,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExtraType");
-
                     b.HasIndex("Name");
 
                     b.HasIndex("OwnerId");
@@ -372,6 +370,12 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("PresentationUniqueKey");
 
+                    b.HasIndex("SeasonId");
+
+                    b.HasIndex("SeriesId");
+
+                    b.HasIndex("SeriesName");
+
                     b.HasIndex("ExtraType", "OwnerId");
 
                     b.HasIndex("TopParentId", "Id");
@@ -380,9 +384,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Type", "TopParentId", "PresentationUniqueKey");
 
-                    b.HasIndex("Type", "TopParentId", "StartDate");
+                    b.HasIndex("Type", "TopParentId", "SortName");
 
-                    b.HasIndex("Id", "Type", "IsFolder", "IsVirtualItem");
+                    b.HasIndex("Type", "TopParentId", "StartDate");
 
                     b.HasIndex("MediaType", "TopParentId", "IsVirtualItem", "PresentationUniqueKey");
 
@@ -393,6 +397,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("TopParentId", "Type", "IsVirtualItem", "DateCreated");
 
                     b.HasIndex("Type", "SeriesPresentationUniqueKey", "IsFolder", "IsVirtualItem");
+
+                    b.HasIndex("Type", "SeriesPresentationUniqueKey", "ParentIndexNumber", "IndexNumber");
 
                     b.HasIndex("Type", "SeriesPresentationUniqueKey", "PresentationUniqueKey", "SortName");
 
@@ -450,8 +456,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
-
                     b.HasIndex("ItemId", "ImageType");
 
                     b.ToTable("BaseItemImageInfos");
@@ -490,7 +494,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ProviderId");
 
-                    b.HasIndex("ProviderId", "ProviderValue", "ItemId");
+                    b.HasIndex("ProviderId", "ItemId", "ProviderValue");
 
                     b.ToTable("BaseItemProviders");
 
@@ -811,10 +815,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ParentId", "ChildId");
 
-                    b.HasIndex("ChildId");
-
-                    b.HasIndex("ParentId");
-
                     b.HasIndex("ChildId", "ChildType");
 
                     b.HasIndex("ParentId", "ChildType");
@@ -999,14 +999,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ItemId", "StreamIndex");
-
-                    b.HasIndex("StreamIndex");
-
-                    b.HasIndex("StreamType");
-
-                    b.HasIndex("StreamIndex", "StreamType");
-
-                    b.HasIndex("StreamIndex", "StreamType", "Language");
 
                     b.ToTable("MediaStreamInfos");
 
@@ -1210,8 +1202,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
 
                     b.HasIndex("AccessToken", "DateLastActivity");
 

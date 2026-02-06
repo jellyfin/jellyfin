@@ -37,11 +37,8 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.OwnerId);
         builder.HasIndex(e => e.Name);
-        builder.HasIndex(e => e.ExtraType);
         builder.HasIndex(e => new { e.ExtraType, e.OwnerId });
         builder.HasIndex(e => e.PresentationUniqueKey);
-        builder.HasIndex(e => new { e.Id, e.Type, e.IsFolder, e.IsVirtualItem });
-
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });
         // series
@@ -64,6 +61,15 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => new { e.TopParentId, e.MediaType, e.IsVirtualItem, e.DateCreated });
         // resume
         builder.HasIndex(e => new { e.MediaType, e.TopParentId, e.IsVirtualItem, e.PresentationUniqueKey });
+        // sorted library queries (e.g., Series sorted by SortName)
+        builder.HasIndex(e => new { e.Type, e.TopParentId, e.SortName });
+        // NextUp: per-series episode ordering (index seek + range scan on season/episode)
+        builder.HasIndex(e => new { e.Type, e.SeriesPresentationUniqueKey, e.ParentIndexNumber, e.IndexNumber });
+        // Latest TV: GROUP BY SeriesName
+        builder.HasIndex(e => e.SeriesName);
+        // Latest TV: episode count per season, season count per series
+        builder.HasIndex(e => e.SeasonId);
+        builder.HasIndex(e => e.SeriesId);
 
         builder.HasData(new BaseItemEntity()
         {
