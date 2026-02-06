@@ -1515,6 +1515,12 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetChildCountBatch(parentIds, userId);
         }
 
+        /// <inheritdoc/>
+        public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
+        {
+            return _itemRepository.GetPlayedAndTotalCountBatch(folderIds, user);
+        }
+
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);

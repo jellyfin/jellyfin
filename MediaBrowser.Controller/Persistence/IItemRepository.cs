@@ -189,6 +189,16 @@ public interface IItemRepository
     (int Played, int Total) GetPlayedAndTotalCountFromLinkedChildren(InternalItemsQuery filter, Guid parentId);
 
     /// <summary>
+    /// Batch-fetches played and total counts for multiple folder items using the AncestorIds table.
+    /// This avoids N+1 queries when building DTOs for lists of folder items (Series, Seasons, etc.).
+    /// Applies user access filtering (parental controls, tags).
+    /// </summary>
+    /// <param name="folderIds">The list of folder item IDs to get counts for.</param>
+    /// <param name="user">The user for access filtering and played status.</param>
+    /// <returns>Dictionary mapping folder ID to (Played count, Total count).</returns>
+    Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user);
+
+    /// <summary>
     /// Gets the IDs of linked children for the specified parent.
     /// </summary>
     /// <param name="parentId">The parent item ID.</param>

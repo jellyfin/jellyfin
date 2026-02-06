@@ -1693,7 +1693,7 @@ namespace MediaBrowser.Controller.Entities
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
+        protected bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
             var blockedTags = user.GetPreference(PreferenceKind.BlockedTags);
             var allowedTags = user.GetPreference(PreferenceKind.AllowedTags);
@@ -2487,7 +2487,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields, (int Played, int Total)? precomputedCounts = null)
         {
             if (RunTimeTicks.HasValue)
             {

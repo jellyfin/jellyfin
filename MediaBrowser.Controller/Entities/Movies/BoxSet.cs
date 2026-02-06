@@ -158,25 +158,25 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (base.IsVisible(user, skipAllowedTagsCheck))
+            if (!IsVisibleViaTags(user, skipAllowedTagsCheck))
             {
-                if (LinkedChildren.Length == 0)
-                {
-                    return true;
-                }
-
-                var userLibraryFolderIds = GetLibraryFolderIds(user);
-                var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
-
-                if (libraryFolderIds.Length == 0)
-                {
-                    return true;
-                }
-
-                return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
+                return false;
             }
 
-            return false;
+            if (LinkedChildren.Length == 0)
+            {
+                return true;
+            }
+
+            var userLibraryFolderIds = GetLibraryFolderIds(user);
+            var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
+
+            if (libraryFolderIds.Length == 0)
+            {
+                return true;
+            }
+
+            return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
         }
 
         public override bool IsVisibleStandalone(User user)

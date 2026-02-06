@@ -698,6 +698,15 @@ namespace MediaBrowser.Controller.Library
         Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
 
         /// <summary>
+        /// Batch-fetches played and total counts for multiple folder items.
+        /// Avoids N+1 queries when building DTOs for lists of folder items.
+        /// </summary>
+        /// <param name="folderIds">The list of folder item IDs.</param>
+        /// <param name="user">The user for access filtering and played status.</param>
+        /// <returns>Dictionary mapping folder ID to (Played count, Total count).</returns>
+        Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user);
+
+        /// <summary>
         /// Configures the query with user access settings including TopParentIds for library access.
         /// Call this before passing a query to methods that need user access filtering.
         /// </summary>

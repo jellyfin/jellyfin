@@ -730,36 +730,9 @@ namespace MediaBrowser.Controller.Entities
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
         {
-            var user = query.User;
-
             if (!query.ForceDirect && RequiresPostFiltering(query))
             {
-                IEnumerable<BaseItem> items;
-                Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
-                var totalCount = 0;
-                if (query.User is null)
-                {
-                    items = GetRecursiveChildren(filter);
-                    totalCount = items.Count();
-                }
-                else
-                {
-                    // Save pagination params before clearing them to prevent pagination from happening
-                    // before sorting. PostFilterAndSort will apply pagination after sorting.
-                    var limit = query.Limit;
-                    var startIndex = query.StartIndex;
-                    query.Limit = null;
-                    query.StartIndex = null;
-
-                    items = GetRecursiveChildren(user, query, out totalCount);
-
-                    // Restore pagination params so PostFilterAndSort can apply them after sorting
-                    query.Limit = limit;
-                    query.StartIndex = startIndex;
-                }
-
-                return PostFilterAndSort(items, query);
+                query.CollapseBoxSetItems = true;
             }
 
             if (this is not UserRootFolder
@@ -1690,7 +1663,7 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user, userItemData);
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields, (int Played, int Total)? precomputedCounts = null)
         {
             if (!SupportsUserDataFromChildren)
             {
@@ -1699,22 +1672,28 @@ namespace MediaBrowser.Controller.Entities
 
             if (SupportsPlayedStatus || (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount)))
             {
-                // Create a minimal query with just the user - skip ConfigureUserAccess to avoid
-                // expensive GetUserViews calls. Since we're counting descendants of a specific
-                // item (this folder) that the user already has access to, TopParentIds filtering
-                // is redundant. The parental rating filter is applied via query.User.
-                var query = new InternalItemsQuery(user);
-
                 int playedCount;
                 int totalCount;
 
-                if (LinkedChildren.Length > 0)
+                if (precomputedCounts.HasValue && LinkedChildren.Length == 0)
                 {
-                    (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCountFromLinkedChildren(query, Id);
+                    // Use batch-fetched counts (avoids N+1 queries)
+                    (playedCount, totalCount) = precomputedCounts.Value;
                 }
                 else
                 {
-                    (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCount(query, Id);
+                    // Fall back to per-item query for LinkedChildren items (BoxSets, Playlists)
+                    // or when no batch data is available
+                    var query = new InternalItemsQuery(user);
+
+                    if (LinkedChildren.Length > 0)
+                    {
+                        (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCountFromLinkedChildren(query, Id);
+                    }
+                    else
+                    {
+                        (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCount(query, Id);
+                    }
                 }
 
                 if (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount))
