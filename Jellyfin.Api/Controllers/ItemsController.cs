@@ -96,6 +96,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasOverview">Optional filter by items that have an overview or not.</param>
     /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
     /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
+    /// <param name="tmdbId">Optional filter by TMDB ID.</param>
     /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
     /// <param name="isMovie">Optional filter for live tv movies.</param>
     /// <param name="isSeries">Optional filter for live tv series.</param>
@@ -186,6 +187,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasOverview,
         [FromQuery] bool? hasImdbId,
         [FromQuery] bool? hasTmdbId,
+        [FromQuery] string? tmdbId,
         [FromQuery] bool? hasTvdbId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
@@ -335,6 +337,7 @@ public class ItemsController : BaseJellyfinApiController
                 Is3D = is3D,
                 HasTvdbId = hasTvdbId,
                 HasTmdbId = hasTmdbId,
+                TmdbId = tmdbId,
                 IsMovie = isMovie,
                 IsSeries = isSeries,
                 IsNews = isNews,
@@ -518,6 +521,17 @@ public class ItemsController : BaseJellyfinApiController
                 }
             }
 
+            // Filter by tmdbid
+            if (!string.IsNullOrWhiteSpace(tmdbId))
+            {
+                query.IncludeItemTypes = query.IncludeItemTypes?.Length > 0
+                    ? query.IncludeItemTypes
+                    : [BaseItemKind.Movie, BaseItemKind.Series];
+                query.HasTmdbId = true;
+                query.HasAnyProviderId = [];
+                query.HasAnyProviderId["Tmdb"] = tmdbId;
+            }
+
             query.Parent = null;
             result = folder.GetItems(query);
         }
@@ -561,6 +575,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasOverview">Optional filter by items that have an overview or not.</param>
     /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
     /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
+    /// <param name="tmdbId">Optional filter by TMDB ID.</param>
     /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
     /// <param name="isMovie">Optional filter for live tv movies.</param>
     /// <param name="isSeries">Optional filter for live tv series.</param>
@@ -652,6 +667,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasOverview,
         [FromQuery] bool? hasImdbId,
         [FromQuery] bool? hasTmdbId,
+        [FromQuery] string? tmdbId,
         [FromQuery] bool? hasTvdbId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
@@ -739,6 +755,7 @@ public class ItemsController : BaseJellyfinApiController
             hasOverview,
             hasImdbId,
             hasTmdbId,
+            tmdbId,
             hasTvdbId,
             isMovie,
             isSeries,
