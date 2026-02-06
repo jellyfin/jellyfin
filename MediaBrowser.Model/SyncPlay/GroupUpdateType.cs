@@ -8,46 +8,66 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// The user-joined update. Tells members of a group about a new user.
         /// </summary>
-        UserJoined,
+        UserJoined = 0,
 
         /// <summary>
         /// The user-left update. Tells members of a group that a user left.
         /// </summary>
-        UserLeft,
+        UserLeft = 1,
 
         /// <summary>
         /// The group-joined update. Tells a user that the group has been joined.
         /// </summary>
-        GroupJoined,
+        GroupJoined = 2,
 
         /// <summary>
         /// The group-left update. Tells a user that the group has been left.
         /// </summary>
-        GroupLeft,
+        GroupLeft = 3,
 
         /// <summary>
-        /// The group-state update. Tells members of the group that the state changed.
+        /// The group-update. Updates information about the group.
         /// </summary>
-        StateUpdate,
+        GroupUpdate = 4,
 
         /// <summary>
         /// The play-queue update. Tells a user the playing queue of the group.
         /// </summary>
-        PlayQueue,
+        PlayQueue = 5,
+
+        /// <summary>
+        /// The group-state update. Tells members of the group that the state changed.
+        /// </summary>
+        StateUpdate = 6,
 
         /// <summary>
         /// The not-in-group error. Tells a user that they don't belong to a group.
         /// </summary>
-        NotInGroup,
+        NotInGroup = 7,
 
         /// <summary>
         /// The group-does-not-exist error. Sent when trying to join a non-existing group.
         /// </summary>
-        GroupDoesNotExist,
+        GroupDoesNotExist = 8,
+
+        /// <summary>
+        /// The create-group-denied error. Sent when a user isn't allowed to create groups.
+        /// </summary>
+        CreateGroupDenied = 9,
+
+        /// <summary>
+        /// The join-group-denied error. Sent when a user isn't allowed to join groups.
+        /// </summary>
+        JoinGroupDenied = 10,
 
         /// <summary>
         /// The library-access-denied error. Sent when a user tries to join a group without required access to the library.
         /// </summary>
-        LibraryAccessDenied
+        LibraryAccessDenied = 11,
+
+        /// <summary>
+        /// The group-snapshot update. Sends a full group snapshot to a client.
+        /// </summary>
+        GroupSnapshot = 12
     }
 }

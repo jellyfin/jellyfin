@@ -56,6 +56,21 @@ namespace MediaBrowser.Controller.SyncPlay
         GroupInfoDto GetGroup(SessionInfo session, Guid groupId);
 
         /// <summary>
+        /// Gets the authoritative V2 group state for the specified group.
+        /// </summary>
+        /// <param name="session">The current session.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns>The V2 group state, or null when not available.</returns>
+        SyncPlayGroupStateV2Dto GetGroupStateV2(SessionInfo session, Guid groupId);
+
+        /// <summary>
+        /// Gets the authoritative V2 group state for the current session's joined group.
+        /// </summary>
+        /// <param name="session">The current session.</param>
+        /// <returns>The V2 group state, or null when session is not in a group.</returns>
+        SyncPlayGroupStateV2Dto GetJoinedGroupStateV2(SessionInfo session);
+
+        /// <summary>
         /// Handle a request by a session in a group.
         /// </summary>
         /// <param name="session">The session.</param>

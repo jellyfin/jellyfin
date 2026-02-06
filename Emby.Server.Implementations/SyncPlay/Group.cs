@@ -139,6 +139,12 @@ namespace Emby.Server.Implementations.SyncPlay
         public DateTime LastActivity { get; set; }
 
         /// <summary>
+        /// Gets the monotonic V2 state revision.
+        /// </summary>
+        /// <value>The state revision.</value>
+        public long Revision { get; private set; }
+
+        /// <summary>
         /// Adds the session to the group.
         /// </summary>
         /// <param name="session">The session.</param>
@@ -160,6 +166,14 @@ namespace Emby.Server.Implementations.SyncPlay
         private void RemoveSession(SessionInfo session)
         {
             _participants.Remove(session.Id);
+        }
+
+        /// <summary>
+        /// Increments the V2 state revision.
+        /// </summary>
+        private void TouchRevision()
+        {
+            Revision++;
         }
 
         /// <summary>
@@ -251,6 +265,7 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             GroupName = request.GroupName;
             AddSession(session);
+            TouchRevision();
 
             var sessionIsPlayingAnItem = session.FullNowPlayingItem is not null;
 
@@ -278,6 +293,8 @@ namespace Emby.Server.Implementations.SyncPlay
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
 
+            SendSnapshotUpdate(session, SyncPlayBroadcastType.AllGroup, cancellationToken);
+
             _logger.LogInformation("Session {SessionId} created group {GroupId}.", session.Id, GroupId.ToString());
         }
 
@@ -290,6 +307,7 @@ namespace Emby.Server.Implementations.SyncPlay
         public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             AddSession(session);
+            TouchRevision();
 
             var updateSession = new SyncPlayGroupJoinedUpdate(GroupId, GetInfo());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
@@ -298,6 +316,8 @@ namespace Emby.Server.Implementations.SyncPlay
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
             _state.SessionJoined(this, _state.Type, session, cancellationToken);
+
+            SendSnapshotUpdate(session, SyncPlayBroadcastType.AllGroup, cancellationToken);
 
             _logger.LogInformation("Session {SessionId} joined group {GroupId}.", session.Id, GroupId.ToString());
         }
@@ -313,12 +333,15 @@ namespace Emby.Server.Implementations.SyncPlay
             _state.SessionLeaving(this, _state.Type, session, cancellationToken);
 
             RemoveSession(session);
+            TouchRevision();
 
             var updateSession = new SyncPlayGroupLeftUpdate(GroupId, GroupId.ToString());
             SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
 
             var updateOthers = new SyncPlayUserLeftUpdate(GroupId, session.UserName);
             SendGroupUpdate(session, SyncPlayBroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
+
+            SendSnapshotUpdate(session, SyncPlayBroadcastType.AllGroup, cancellationToken);
 
             _logger.LogInformation("Session {SessionId} left group {GroupId}.", session.Id, GroupId.ToString());
         }
@@ -345,7 +368,13 @@ namespace Emby.Server.Implementations.SyncPlay
             //      Once all clients report to be ready the group's state can change to Playing or Paused.
             // - Playing: clients have some media loaded and playback is unpaused.
             // - Paused: clients have some media loaded but playback is currently paused.
+            var previousRevision = Revision;
             request.Apply(this, _state, session, cancellationToken);
+
+            if (Revision != previousRevision)
+            {
+                SendSnapshotUpdate(session, SyncPlayBroadcastType.AllGroup, cancellationToken);
+            }
         }
 
         /// <summary>
@@ -356,6 +385,64 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var participants = _participants.Values.Select(session => session.UserName).Distinct().ToList();
             return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Gets the authoritative V2 group state.
+        /// </summary>
+        /// <returns>The V2 group state payload.</returns>
+        public SyncPlayGroupStateV2Dto GetStateV2()
+        {
+            return new SyncPlayGroupStateV2Dto(GroupId, Revision, BuildSnapshot(includeStatePlaybackCommand: true), DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Sends an authoritative V2 snapshot update to selected sessions.
+        /// </summary>
+        /// <param name="from">The source session for broadcast filtering.</param>
+        /// <param name="type">The target sessions type.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="playingCommand">Optional playback command to attach to the snapshot.</param>
+        /// <param name="includeStatePlaybackCommand">Whether to derive a state command when no explicit command is provided.</param>
+        public void SendSnapshotUpdate(
+            SessionInfo from,
+            SyncPlayBroadcastType type,
+            CancellationToken cancellationToken,
+            SendCommand playingCommand = null,
+            bool includeStatePlaybackCommand = false)
+        {
+            var snapshotUpdate = new SyncPlayGroupSnapshotUpdate(GroupId, BuildSnapshot(playingCommand, includeStatePlaybackCommand));
+            SendGroupUpdate(from, type, snapshotUpdate, cancellationToken);
+        }
+
+        private SyncPlayGroupSnapshotDto BuildSnapshot(SendCommand playingCommand = null, bool includeStatePlaybackCommand = false)
+        {
+            var groupInfo = GetInfo();
+            var playQueueUpdate = GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
+
+            // When no explicit command is provided we optionally derive one from current state.
+            // This lets clients reconstruct paused/playing intent after reconnect without requiring
+            // an immediate transport command message.
+            if (playingCommand is null && includeStatePlaybackCommand)
+            {
+                if (_state.Type == GroupStateType.Playing)
+                {
+                    playingCommand = NewSyncPlayCommand(SendCommandType.Unpause);
+                }
+                else if (_state.Type == GroupStateType.Paused || _state.Type == GroupStateType.Waiting)
+                {
+                    playingCommand = NewSyncPlayCommand(SendCommandType.Pause);
+                }
+            }
+
+            return new SyncPlayGroupSnapshotDto(groupInfo, playQueueUpdate, playingCommand, Revision, DateTime.UtcNow);
+        }
+
+        private static bool IsLegacyPlaybackUpdate(GroupUpdateType type)
+        {
+            return type == GroupUpdateType.GroupUpdate
+                || type == GroupUpdateType.PlayQueue
+                || type == GroupUpdateType.StateUpdate;
         }
 
         /// <summary>
@@ -374,7 +461,13 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
+                if (value.IgnoreGroupWait == ignoreGroupWait)
+                {
+                    return;
+                }
+
                 value.IgnoreGroupWait = ignoreGroupWait;
+                TouchRevision();
             }
         }
 
@@ -383,11 +476,21 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             _logger.LogInformation("Group {GroupId} switching from {FromStateType} to {ToStateType}.", GroupId.ToString(), _state.Type, state.Type);
             this._state = state;
+            TouchRevision();
         }
 
         /// <inheritdoc />
         public Task SendGroupUpdate<T>(SessionInfo from, SyncPlayBroadcastType type, GroupUpdate<T> message, CancellationToken cancellationToken)
         {
+            // Legacy clients still expect old update types, but V2 clients reconcile from snapshots.
+            // Convert legacy playback updates into snapshot updates so all consumers see one
+            // authoritative shape and revision progression.
+            if (message.Type != GroupUpdateType.GroupSnapshot && IsLegacyPlaybackUpdate(message.Type))
+            {
+                var snapshotUpdate = new SyncPlayGroupSnapshotUpdate(GroupId, BuildSnapshot());
+                return SendGroupUpdate(from, type, snapshotUpdate, cancellationToken);
+            }
+
             IEnumerable<Task> GetTasks()
             {
                 foreach (var sessionId in FilterSessions(from.Id, type))
@@ -402,15 +505,10 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public Task SendCommand(SessionInfo from, SyncPlayBroadcastType type, SendCommand message, CancellationToken cancellationToken)
         {
-            IEnumerable<Task> GetTasks()
-            {
-                foreach (var sessionId in FilterSessions(from.Id, type))
-                {
-                    yield return _sessionManager.SendSyncPlayCommand(sessionId, message, cancellationToken);
-                }
-            }
-
-            return Task.WhenAll(GetTasks());
+            // Transport commands mutate observed playback intent and therefore advance revision.
+            TouchRevision();
+            var snapshotUpdate = new SyncPlayGroupSnapshotUpdate(GroupId, BuildSnapshot(message));
+            return SendGroupUpdate(from, type, snapshotUpdate, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -458,16 +556,34 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             if (_participants.TryGetValue(session.Id, out GroupMember value))
             {
+                if (value.IsBuffering == isBuffering)
+                {
+                    return;
+                }
+
                 value.IsBuffering = isBuffering;
+                TouchRevision();
             }
         }
 
         /// <inheritdoc />
         public void SetAllBuffering(bool isBuffering)
         {
+            var changed = false;
             foreach (var session in _participants.Values)
             {
+                if (session.IsBuffering == isBuffering)
+                {
+                    continue;
+                }
+
                 session.IsBuffering = isBuffering;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                TouchRevision();
             }
         }
 
@@ -507,6 +623,8 @@ namespace Emby.Server.Implementations.SyncPlay
             RunTimeTicks = item.RunTimeTicks ?? 0;
             PositionTicks = startPositionTicks;
             LastActivity = DateTime.UtcNow;
+            // Queue replacement is a hard state boundary for clients, always revisioned.
+            TouchRevision();
 
             return true;
         }
@@ -534,17 +652,24 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void ClearPlayQueue(bool clearPlayingItem)
         {
+            var previousCount = PlayQueue.GetPlaylist().Count;
             PlayQueue.ClearPlaylist(clearPlayingItem);
             if (clearPlayingItem)
             {
                 RestartCurrentItem();
+            }
+            else if (PlayQueue.GetPlaylist().Count != previousCount)
+            {
+                TouchRevision();
             }
         }
 
         /// <inheritdoc />
         public bool RemoveFromPlayQueue(IReadOnlyList<Guid> playlistItemIds)
         {
+            var previousCount = PlayQueue.GetPlaylist().Count;
             var playingItemRemoved = PlayQueue.RemoveFromPlaylist(playlistItemIds);
+            var queueChanged = PlayQueue.GetPlaylist().Count != previousCount;
             if (playingItemRemoved)
             {
                 var itemId = PlayQueue.GetPlayingItemId();
@@ -561,13 +686,24 @@ namespace Emby.Server.Implementations.SyncPlay
                 RestartCurrentItem();
             }
 
+            if (queueChanged && !playingItemRemoved)
+            {
+                TouchRevision();
+            }
+
             return playingItemRemoved;
         }
 
         /// <inheritdoc />
         public bool MoveItemInPlayQueue(Guid playlistItemId, int newIndex)
         {
-            return PlayQueue.MovePlaylistItem(playlistItemId, newIndex);
+            var moved = PlayQueue.MovePlaylistItem(playlistItemId, newIndex);
+            if (moved)
+            {
+                TouchRevision();
+            }
+
+            return moved;
         }
 
         /// <inheritdoc />
@@ -594,6 +730,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayQueue.Queue(newItems);
             }
 
+            TouchRevision();
             return true;
         }
 
@@ -602,6 +739,8 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             PositionTicks = 0;
             LastActivity = DateTime.UtcNow;
+            // Resetting item position changes derived playback time for all clients.
+            TouchRevision();
         }
 
         /// <inheritdoc />
@@ -613,10 +752,9 @@ namespace Emby.Server.Implementations.SyncPlay
                 var item = _libraryManager.GetItemById(PlayQueue.GetPlayingItemId());
                 RunTimeTicks = item.RunTimeTicks ?? 0;
                 RestartCurrentItem();
-                return true;
             }
 
-            return false;
+            return update;
         }
 
         /// <inheritdoc />
@@ -628,22 +766,23 @@ namespace Emby.Server.Implementations.SyncPlay
                 var item = _libraryManager.GetItemById(PlayQueue.GetPlayingItemId());
                 RunTimeTicks = item.RunTimeTicks ?? 0;
                 RestartCurrentItem();
-                return true;
             }
 
-            return false;
+            return update;
         }
 
         /// <inheritdoc />
         public void SetRepeatMode(GroupRepeatMode mode)
         {
             PlayQueue.SetRepeatMode(mode);
+            TouchRevision();
         }
 
         /// <inheritdoc />
         public void SetShuffleMode(GroupShuffleMode mode)
         {
             PlayQueue.SetShuffleMode(mode);
+            TouchRevision();
         }
 
         /// <inheritdoc />

@@ -112,7 +112,10 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Request is null!");
             }
 
-            // Locking required to access list of groups.
+            // Locking required to mutate group registry and session/group mapping atomically.
+            // Lock order invariant:
+            // 1) _groupsLock
+            // 2) individual Group lock (when required)
             lock (_groupsLock)
             {
                 // Make sure that session has not joined another group.
@@ -151,7 +154,8 @@ namespace Emby.Server.Implementations.SyncPlay
 
             var user = _userManager.GetUserById(session.UserId);
 
-            // Locking required to access list of groups.
+            // Group map and membership updates must happen under _groupsLock so
+            // session->group mapping cannot race with leave/remove operations.
             lock (_groupsLock)
             {
                 _groups.TryGetValue(request.GroupId, out Group group);
@@ -165,7 +169,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     return;
                 }
 
-                // Group lock required to let other requests end first.
+                // Group lock serializes per-group state transitions. Group itself is not thread-safe.
                 lock (group)
                 {
                     if (!group.HasAccessToPlayQueue(user))
@@ -215,12 +219,12 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Request is null!");
             }
 
-            // Locking required to access list of groups.
+            // Locking required so removing a session and pruning an empty group happen in one critical section.
             lock (_groupsLock)
             {
                 if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
                 {
-                    // Group lock required to let other requests end first.
+                    // Group lock required to serialize with in-flight group requests.
                     lock (group)
                     {
                         if (_sessionToGroupMap.TryRemove(session.Id, out var tempGroup))
@@ -315,6 +319,67 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public SyncPlayGroupStateV2Dto GetGroupStateV2(SessionInfo session, Guid groupId)
+        {
+            ArgumentNullException.ThrowIfNull(session);
+
+            var user = _userManager.GetUserById(session.UserId);
+
+            lock (_groupsLock)
+            {
+                if (!_groups.TryGetValue(groupId, out var group))
+                {
+                    return null;
+                }
+
+                // Locking required as group is not thread-safe.
+                lock (group)
+                {
+                    if (!group.HasAccessToPlayQueue(user))
+                    {
+                        return null;
+                    }
+
+                    return group.GetStateV2();
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public SyncPlayGroupStateV2Dto GetJoinedGroupStateV2(SessionInfo session)
+        {
+            ArgumentNullException.ThrowIfNull(session);
+
+            var user = _userManager.GetUserById(session.UserId);
+
+            lock (_groupsLock)
+            {
+                if (!_sessionToGroupMap.TryGetValue(session.Id, out var group))
+                {
+                    return null;
+                }
+
+                // Group lock is mandatory because snapshot/revision are mutable and must be read consistently.
+                lock (group)
+                {
+                    // Revalidate mapping under group lock. Session may have moved groups between checks.
+                    if (!_sessionToGroupMap.TryGetValue(session.Id, out var checkGroup)
+                        || !checkGroup.GroupId.Equals(group.GroupId))
+                    {
+                        return null;
+                    }
+
+                    if (!group.HasAccessToPlayQueue(user))
+                    {
+                        return null;
+                    }
+
+                    return group.GetStateV2();
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
             if (session is null)
@@ -330,6 +395,8 @@ namespace Emby.Server.Implementations.SyncPlay
             if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
             {
                 // Group lock required as Group is not thread-safe.
+                // Requests are intentionally dropped when membership changes mid-flight
+                // because the source session is no longer authoritative for this group.
                 lock (group)
                 {
                     // Make sure that session still belongs to this group.
@@ -340,6 +407,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     }
 
                     // Drop request if group is empty.
+                    // Group cleanup may be in-progress from another session leave.
                     if (group.IsGroupEmpty())
                     {
                         return;

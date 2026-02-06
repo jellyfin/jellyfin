@@ -105,7 +105,9 @@ namespace Jellyfin.Server.Implementations.Security
                 token = queryString["ApiKey"];
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            // Keep lowercase query key support for clients that still send `api_key`
+            // on websocket and long-poll requests even when legacy auth is disabled.
+            if (string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
             }

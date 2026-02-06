@@ -20,7 +20,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Api.Controllers;
 
 /// <summary>
-/// The sync play controller.
+/// SyncPlay API surface.
+///
+/// Route compatibility notes:
+/// - V2 routes are the authoritative protocol surface used by modern clients.
+/// - Legacy aliases are still exposed for backward compatibility.
+/// - Most write operations map to typed playback/group requests handled by <see cref="ISyncPlayManager"/>.
 /// </summary>
 [Authorize(Policy = Policies.SyncPlayHasAccess)]
 public class SyncPlayController : BaseJellyfinApiController
@@ -52,6 +57,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">New group created.</response>
     /// <returns>An <see cref="GroupInfoDto"/> for the created group.</returns>
     [HttpPost("New")]
+    [HttpPost("V2/New")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.SyncPlayCreateGroup)]
     public async Task<ActionResult<GroupInfoDto>> SyncPlayCreateGroup(
@@ -69,6 +75,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Group join successful.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Join")]
+    [HttpPost("V2/Join")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayJoinGroup)]
     public async Task<ActionResult> SyncPlayJoinGroup(
@@ -86,6 +93,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Group leave successful.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Leave")]
+    [HttpPost("V2/Leave")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayLeaveGroup()
@@ -102,6 +110,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="200">Groups returned.</response>
     /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
     [HttpGet("List")]
+    [HttpGet("V2/List")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.SyncPlayJoinGroup)]
     public async Task<ActionResult<IEnumerable<GroupInfoDto>>> SyncPlayGetGroups()
@@ -129,12 +138,48 @@ public class SyncPlayController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets the authoritative V2 state for the current joined SyncPlay group.
+    /// </summary>
+    /// <response code="200">State returned.</response>
+    /// <response code="404">Session is not currently in a group.</response>
+    /// <returns>A <see cref="SyncPlayGroupStateV2Dto"/> for the current group.</returns>
+    [HttpGet("V2/Joined")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = Policies.SyncPlayJoinGroup)]
+    public async Task<ActionResult<SyncPlayGroupStateV2Dto>> SyncPlayGetJoinedGroupStateV2()
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var state = _syncPlayManager.GetJoinedGroupStateV2(currentSession);
+        return state is null ? NotFound() : Ok(state);
+    }
+
+    /// <summary>
+    /// Gets the authoritative V2 state for a SyncPlay group by id.
+    /// </summary>
+    /// <param name="id">The id of the group.</param>
+    /// <response code="200">State returned.</response>
+    /// <response code="404">Group not found or inaccessible.</response>
+    /// <returns>A <see cref="SyncPlayGroupStateV2Dto"/> for the requested group.</returns>
+    [HttpGet("V2/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = Policies.SyncPlayJoinGroup)]
+    public async Task<ActionResult<SyncPlayGroupStateV2Dto>> SyncPlayGetGroupStateV2([FromRoute] Guid id)
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var state = _syncPlayManager.GetGroupStateV2(currentSession, id);
+        return state is null ? NotFound() : Ok(state);
+    }
+
+    /// <summary>
     /// Request to set new playlist in SyncPlay group.
     /// </summary>
     /// <param name="requestData">The new playlist to play in the group.</param>
     /// <response code="204">Queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("SetNewQueue")]
+    [HttpPost("V2/SetNewQueue")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySetNewQueue(
@@ -156,6 +201,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("SetPlaylistItem")]
+    [HttpPost("V2/SetPlaylistItem")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySetPlaylistItem(
@@ -174,6 +220,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("RemoveFromPlaylist")]
+    [HttpPost("V2/RemoveFromPlaylist")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayRemoveFromPlaylist(
@@ -192,6 +239,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("MovePlaylistItem")]
+    [HttpPost("V2/MovePlaylistItem")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayMovePlaylistItem(
@@ -210,6 +258,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Queue")]
+    [HttpPost("V2/Queue")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayQueue(
@@ -227,6 +276,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Unpause update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Unpause")]
+    [HttpPost("V2/Unpause")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayUnpause()
@@ -243,6 +293,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Pause update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Pause")]
+    [HttpPost("V2/Pause")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayPause()
@@ -259,6 +310,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Stop update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Stop")]
+    [HttpPost("V2/Stop")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayStop()
@@ -276,6 +328,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Seek update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Seek")]
+    [HttpPost("V2/Seek")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySeek(
@@ -294,6 +347,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Group state update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Buffering")]
+    [HttpPost("V2/Buffering")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayBuffering(
@@ -316,6 +370,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Group state update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Ready")]
+    [HttpPost("V2/Ready")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayReady(
@@ -338,6 +393,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Member state updated.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("SetIgnoreWait")]
+    [HttpPost("V2/SetIgnoreWait")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySetIgnoreWait(
@@ -356,6 +412,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Next item update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("NextItem")]
+    [HttpPost("V2/NextItem")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayNextItem(
@@ -374,6 +431,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Previous item update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("PreviousItem")]
+    [HttpPost("V2/PreviousItem")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlayPreviousItem(
@@ -392,6 +450,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Play queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("SetRepeatMode")]
+    [HttpPost("V2/SetRepeatMode")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySetRepeatMode(
@@ -410,6 +469,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Play queue update sent to all group members.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("SetShuffleMode")]
+    [HttpPost("V2/SetShuffleMode")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Policy = Policies.SyncPlayIsInGroup)]
     public async Task<ActionResult> SyncPlaySetShuffleMode(
@@ -428,6 +488,7 @@ public class SyncPlayController : BaseJellyfinApiController
     /// <response code="204">Ping updated.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Ping")]
+    [HttpPost("V2/Ping")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SyncPlayPing(
         [FromBody, Required] PingRequestDto requestData)
