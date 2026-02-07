@@ -353,6 +353,17 @@ namespace Emby.Server.Implementations.Library
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
+            if (item.Path != null && item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var source in sources)
+                {
+                    if (source.Protocol == MediaProtocol.Http)
+                    {
+                        source.SupportsDirectPlay = false;
+                    }
+                }
+            }
+
             if (user is not null)
             {
                 foreach (var source in sources)
