@@ -1553,7 +1553,13 @@ public sealed class BaseItemRepository
                         }
                     }
 
-                    var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).Distinct().ToList();
+                    // Deduplicate by ChildId, keeping the last occurrence (for playlist ordering)
+                    resolvedChildren = resolvedChildren
+                        .GroupBy(c => c.ChildId)
+                        .Select(g => g.Last())
+                        .ToList();
+
+                    var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).ToList();
                     var existingChildIds = childIdsToCheck.Count > 0
                         ? context.BaseItems
                             .Where(e => childIdsToCheck.Contains(e.Id))
@@ -1646,8 +1652,14 @@ public sealed class BaseItemRepository
                     }
                 }
 
+                // Deduplicate by ChildId, keeping the last occurrence
+                newLinkedChildren = newLinkedChildren
+                    .GroupBy(c => c.ChildId)
+                    .Select(g => g.Last())
+                    .ToList();
+
                 // Validate that all child items exist
-                var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).Distinct().ToList();
+                var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).ToList();
                 var existingChildIds = childIdsToCheck.Count > 0
                     ? context.BaseItems
                         .Where(e => childIdsToCheck.Contains(e.Id))
