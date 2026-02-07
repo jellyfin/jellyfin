@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 ResumePlaying = true;
                 // Pause group and compute the media playback position.
                 var currentTime = DateTime.UtcNow;
-                var elapsedTime = currentTime - context.LastActivity;
+                var elapsedTime = (currentTime - context.LastActivity) * context.PlaybackRate;
                 context.LastActivity = currentTime;
                 // Elapsed time is negative if event happens
                 // during the delay added to account for latency.
@@ -321,6 +321,43 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
+        public override void HandleRequest(SetPlaybackRateRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
+        {
+            // Save state if first event.
+            if (!InitialStateSet)
+            {
+                InitialState = prevState;
+                InitialStateSet = true;
+            }
+
+            if (prevState.Equals(GroupStateType.Playing))
+            {
+                ResumePlaying = true;
+
+                // Pause group and compute the media playback position.
+                var currentTime = DateTime.UtcNow;
+                var elapsedTime = (currentTime - context.LastActivity) * context.PlaybackRate;
+                context.LastActivity = currentTime;
+                context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
+            }
+            else if (prevState.Equals(GroupStateType.Paused))
+            {
+                ResumePlaying = false;
+            }
+
+            context.PlaybackRate = context.SanitizePlaybackRate(request.PlaybackRate);
+
+            var command = context.NewSyncPlayCommand(SendCommandType.Seek);
+            context.SendCommand(session, SyncPlayBroadcastType.AllGroup, command, cancellationToken);
+
+            // Reset status of sessions and await for all Ready events.
+            context.SetAllBuffering(true);
+
+            // Notify relevant state change event.
+            SendGroupStateUpdate(context, request, session, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public override void HandleRequest(BufferGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             // Save state if first event.
@@ -352,7 +389,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                 // Pause group and compute the media playback position.
                 var currentTime = DateTime.UtcNow;
-                var elapsedTime = currentTime - context.LastActivity;
+                var elapsedTime = (currentTime - context.LastActivity) * context.PlaybackRate;
                 context.LastActivity = currentTime;
                 // Elapsed time is negative if event happens
                 // during the delay added to account for latency.
@@ -423,7 +460,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             // However, to avoid waiting indefinitely when a client is not reporting a correct time,
             // the elapsed time is ignored after a certain threshold.
             var currentTime = DateTime.UtcNow;
-            var elapsedTime = currentTime.Subtract(request.When);
+            var elapsedTime = currentTime.Subtract(request.When) * context.PlaybackRate;
             var timeSyncThresholdTicks = TimeSpan.FromMilliseconds(context.TimeSyncOffset).Ticks;
             if (Math.Abs(elapsedTime.Ticks) > timeSyncThresholdTicks)
             {
