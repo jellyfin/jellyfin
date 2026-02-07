@@ -382,10 +382,10 @@ public class LibraryController : BaseJellyfinApiController
             return Unauthorized("Unauthorized access");
         }
 
-        _libraryManager.DeleteItem(
+        _libraryManager.DeleteItemAsync(
             item,
             new DeleteOptions { DeleteFileLocation = true },
-            true);
+            true).GetAwaiter().GetResult();
 
         return NoContent();
     }
@@ -428,10 +428,10 @@ public class LibraryController : BaseJellyfinApiController
                 return Unauthorized("Unauthorized access");
             }
 
-            _libraryManager.DeleteItem(
+            _libraryManager.DeleteItemAsync(
                 item,
                 new DeleteOptions { DeleteFileLocation = true },
-                true);
+                true).GetAwaiter().GetResult();
         }
 
         return NoContent();
