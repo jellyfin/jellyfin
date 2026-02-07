@@ -153,11 +153,11 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? HasTmdbId { get; set; }
 
-        public string? TmdbId { get; set; }
-
         public bool? HasOfficialRating { get; set; }
 
         public bool? HasTvdbId { get; set; }
+
+        public string? ExternalProviderId { get; set; }
 
         public bool? HasThemeSong { get; set; }
 

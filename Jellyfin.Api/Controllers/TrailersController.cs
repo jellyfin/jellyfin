@@ -56,8 +56,8 @@ public class TrailersController : BaseJellyfinApiController
     /// <param name="hasOverview">Optional filter by items that have an overview or not.</param>
     /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
     /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
-    /// <param name="tmdbId">Optional filter by TMDB ID.</param>
     /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
+    /// <param name="externalProviderId">Optional filter by any external provider id. It has to be used in pair with any of hasTmdbId, hasTvdbId or hasImdb field to target one provider.</param>
     /// <param name="isMovie">Optional filter for live tv movies.</param>
     /// <param name="isSeries">Optional filter for live tv series.</param>
     /// <param name="isNews">Optional filter for live tv news.</param>
@@ -145,8 +145,8 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery] bool? hasOverview,
         [FromQuery] bool? hasImdbId,
         [FromQuery] bool? hasTmdbId,
-        [FromQuery] string? tmdbId,
         [FromQuery] bool? hasTvdbId,
+        [FromQuery] string? externalProviderId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
         [FromQuery] bool? isNews,
@@ -236,8 +236,8 @@ public class TrailersController : BaseJellyfinApiController
                 hasOverview,
                 hasImdbId,
                 hasTmdbId,
-                tmdbId,
                 hasTvdbId,
+                externalProviderId,
                 isMovie,
                 isSeries,
                 isNews,
