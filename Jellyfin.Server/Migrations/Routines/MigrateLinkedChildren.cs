@@ -5,6 +5,7 @@ using System.Text.Json;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using LinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
@@ -20,13 +21,16 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 {
     private readonly ILogger<MigrateLinkedChildren> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly ILibraryManager _libraryManager;
 
     public MigrateLinkedChildren(
         ILoggerFactory loggerFactory,
-        IDbContextFactory<JellyfinDbContext> dbProvider)
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        ILibraryManager libraryManager)
     {
         _logger = loggerFactory.CreateLogger<MigrateLinkedChildren>();
         _dbProvider = dbProvider;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc/>
@@ -219,19 +223,21 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("LinkedChildren migration completed. Processed {Count} items.", processedCount);
 
-        UpdateAlternateVersionTypes(context);
+        CleanupWrongTypeAlternateVersions(context);
         CleanupOrphanedLinkedChildren(context);
     }
 
-    private void UpdateAlternateVersionTypes(JellyfinDbContext context)
+    private void CleanupWrongTypeAlternateVersions(JellyfinDbContext context)
     {
-        _logger.LogInformation("Updating alternate version item types to match their parent's type...");
+        _logger.LogInformation("Cleaning up alternate version items with wrong type...");
 
         // Find all LocalAlternateVersion relationships where the child is a generic Video
-        // but the parent is a more specific type (like Movie)
+        // but the parent is a more specific type (like Movie).
+        // Since IDs are computed from type + path, just updating the Type column would break ID lookups.
+        // Instead, delete them and let the runtime recreate them with the correct type during the next library scan.
         var genericVideoType = "MediaBrowser.Controller.Entities.Video";
 
-        var alternateVersionsToUpdate = context.LinkedChildren
+        var wrongTypeChildIds = context.LinkedChildren
             .Where(lc => lc.ChildType == LinkedChildType.LocalAlternateVersion)
             .Join(
                 context.BaseItems,
@@ -242,30 +248,30 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 context.BaseItems,
                 x => x.ChildId,
                 child => child.Id,
-                (x, child) => new { x.ChildId, x.ParentType, ChildType = child.Type, Child = child })
+                (x, child) => new { x.ChildId, x.ParentType, ChildType = child.Type })
             .Where(x => x.ChildType == genericVideoType && x.ParentType != genericVideoType)
+            .Select(x => x.ChildId)
+            .Distinct()
             .ToList();
 
-        if (alternateVersionsToUpdate.Count == 0)
+        if (wrongTypeChildIds.Count == 0)
         {
-            _logger.LogInformation("No alternate version items need type updates.");
+            _logger.LogInformation("No wrong-type alternate version items found.");
             return;
         }
 
-        _logger.LogInformation("Found {Count} alternate version items to update.", alternateVersionsToUpdate.Count);
+        _logger.LogInformation("Found {Count} wrong-type alternate version items to remove.", wrongTypeChildIds.Count);
 
-        foreach (var item in alternateVersionsToUpdate)
+        foreach (var childId in wrongTypeChildIds)
         {
-            item.Child.Type = item.ParentType;
-            _logger.LogDebug(
-                "Updating item {ChildId} type from {OldType} to {NewType}",
-                item.ChildId,
-                genericVideoType,
-                item.ParentType);
+            var item = _libraryManager.GetItemById(childId);
+            if (item is not null)
+            {
+                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
+            }
         }
 
-        context.SaveChanges();
-        _logger.LogInformation("Successfully updated {Count} alternate version item types.", alternateVersionsToUpdate.Count);
+        _logger.LogInformation("Removed {Count} wrong-type alternate version items. They will be recreated with the correct type on next library scan.", wrongTypeChildIds.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)

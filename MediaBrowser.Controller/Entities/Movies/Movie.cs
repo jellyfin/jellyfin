@@ -109,7 +109,14 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (LibraryManager.GetItemById(id) is not Movie movie)
             {
-                movie = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Movie;
+                // Pass parent and collectionType so the resolver creates a Movie
+                // instead of a generic Video
+                var parentFolder = GetParent() as Folder;
+                var collectionType = GetParents().OfType<ICollectionFolder>().FirstOrDefault()?.CollectionType;
+                movie = LibraryManager.ResolvePath(
+                    FileSystem.GetFileSystemInfo(path),
+                    parentFolder,
+                    collectionType: collectionType) as Movie;
 
                 newOptions.ForceSave = true;
             }

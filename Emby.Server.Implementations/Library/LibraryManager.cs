@@ -407,7 +407,8 @@ namespace Emby.Server.Implementations.Library
             }
 
             // If deleting a primary version video, clear PrimaryVersionId from alternate versions
-            if (item is Video video && string.IsNullOrEmpty(video.PrimaryVersionId))
+            // OwnerId check: items with OwnerId set are alternate versions or extras, not primaries
+            if (item is Video video && string.IsNullOrEmpty(video.PrimaryVersionId) && video.OwnerId.IsEmpty())
             {
                 var alternateVersions = GetLocalAlternateVersionIds(video)
                     .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
@@ -700,8 +701,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem? ResolvePath(FileSystemMetadata fileInfo, Folder? parent = null, IDirectoryService? directoryService = null)
-            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent);
+        public BaseItem? ResolvePath(FileSystemMetadata fileInfo, Folder? parent = null, IDirectoryService? directoryService = null, CollectionType? collectionType = null)
+            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
 
         private BaseItem? ResolvePath(
             FileSystemMetadata fileInfo,
@@ -2105,6 +2106,8 @@ namespace Emby.Server.Implementations.Library
             // Resolve and add any local alternate version items that don't exist yet
             // This ensures they exist in the database when LinkedChildren are processed
             var allItems = new List<BaseItem>(items);
+            var parentFolder = parent as Folder;
+            var parentCollectionType = parent is not null ? GetTopFolderContentType(parent) : null;
             foreach (var item in items)
             {
                 if (item is Video video && video.LocalAlternateVersions.Length > 0)
@@ -2122,7 +2125,14 @@ namespace Emby.Server.Implementations.Library
                         if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
                         {
                             // Alternate version doesn't exist, resolve and create it
-                            var altVideo = ResolvePath(_fileSystem.GetFileSystemInfo(path)) as Video;
+                            // Pass parent and collectionType so the resolver creates the correct type
+                            // (e.g. Movie instead of generic Video)
+                            var altVideo = ResolvePath(
+                                _fileSystem.GetFileSystemInfo(path),
+                                new DirectoryService(_fileSystem),
+                                null,
+                                parentFolder,
+                                parentCollectionType) as Video;
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;
@@ -2304,6 +2314,8 @@ namespace Emby.Server.Implementations.Library
             // Resolve and add any local alternate version items that don't exist yet
             // This ensures they exist in the database when LinkedChildren are processed
             var allItems = new List<BaseItem>(items);
+            var parentFolder = parent as Folder;
+            var parentCollectionType = GetTopFolderContentType(parent);
             foreach (var item in items)
             {
                 if (item is Video video && video.LocalAlternateVersions.Length > 0)
@@ -2321,7 +2333,14 @@ namespace Emby.Server.Implementations.Library
                         if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
                         {
                             // Alternate version doesn't exist, resolve and create it
-                            var altVideo = ResolvePath(_fileSystem.GetFileSystemInfo(path)) as Video;
+                            // Pass parent and collectionType so the resolver creates the correct type
+                            // (e.g. Movie instead of generic Video)
+                            var altVideo = ResolvePath(
+                                _fileSystem.GetFileSystemInfo(path),
+                                new DirectoryService(_fileSystem),
+                                null,
+                                parentFolder,
+                                parentCollectionType) as Video;
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;

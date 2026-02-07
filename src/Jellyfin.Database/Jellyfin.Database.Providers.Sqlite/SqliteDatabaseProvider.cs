@@ -77,7 +77,8 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
                 sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly))
             // TODO: Remove when https://github.com/dotnet/efcore/pull/35873 is merged & released
             .ConfigureWarnings(warnings =>
-                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning))
+                warnings.Ignore(RelationalEventId.NonTransactionalMigrationOperationWarning)
+                    .Ignore(RelationalEventId.MultipleCollectionIncludeWarning))
             .AddInterceptors(new PragmaConnectionInterceptor(
                 _logger,
                 GetOption<int?>(customOptions, "cacheSize", e => int.Parse(e, CultureInfo.InvariantCulture)),

@@ -457,10 +457,20 @@ namespace MediaBrowser.Controller.Entities
                 {
                     RefreshLinkedAlternateVersions();
 
-                    var tasks = LocalAlternateVersions
-                        .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
+                    if (LocalAlternateVersions.Length > 0)
+                    {
+                        // Check if LinkedChildren are in sync before processing
+                        var existingLinkCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
+                        var tasks = LocalAlternateVersions
+                            .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
 
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                        if (existingLinkCount != LocalAlternateVersions.Length)
+                        {
+                            hasChanges = true;
+                        }
+                    }
                 }
             }
 
@@ -470,6 +480,15 @@ namespace MediaBrowser.Controller.Entities
         protected virtual async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
         {
             await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
+
+            // Create LinkedChild entry for this local alternate version
+            // This ensures the relationship exists in the database even if the alternate version
+            // was created after the primary video was first saved
+            var id = LibraryManager.GetNewItemId(path, GetType());
+            if (LibraryManager.GetItemById(id) is Video video)
+            {
+                LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
+            }
         }
 
         private new async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
@@ -496,7 +515,12 @@ namespace MediaBrowser.Controller.Entities
 
             if (LibraryManager.GetItemById(id) is not Video video)
             {
-                video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
+                var parentFolder = GetParent() as Folder;
+                var collectionType = GetParents().OfType<ICollectionFolder>().FirstOrDefault()?.CollectionType;
+                video = LibraryManager.ResolvePath(
+                    FileSystem.GetFileSystemInfo(path),
+                    parentFolder,
+                    collectionType: collectionType) as Video;
 
                 newOptions.ForceSave = true;
             }
@@ -512,11 +536,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
-
-            // Create LinkedChild entry for this local alternate version
-            // This ensures the relationship exists in the database even if the alternate version
-            // was created after the primary video was first saved
-            LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
         }
 
         private void RefreshLinkedAlternateVersions()

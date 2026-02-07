@@ -59,11 +59,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <param name="collectionType">The collection type of the library containing this item.</param>
         /// <returns>BaseItem.</returns>
         BaseItem? ResolvePath(
             FileSystemMetadata fileInfo,
             Folder? parent = null,
-            IDirectoryService? directoryService = null);
+            IDirectoryService? directoryService = null,
+            CollectionType? collectionType = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
