@@ -16,6 +16,7 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Infrastructure;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
@@ -182,12 +183,12 @@ namespace Jellyfin.Server
                     extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseDefaultFiles(new DefaultFilesOptions
                     {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        FileProvider = new SafeTimestampFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web"
                     });
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        FileProvider = new SafeTimestampFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider,
                         OnPrepareResponse = (context) =>
