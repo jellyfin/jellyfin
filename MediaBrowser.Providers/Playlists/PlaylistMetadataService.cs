@@ -67,17 +67,24 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
         {
             targetItem.PlaylistMediaType = sourceItem.PlaylistMediaType;
 
-            if (replaceData || targetItem.LinkedChildren.Length == 0)
+            // Only merge LinkedChildren from metadata for external playlists (not managed by Jellyfin).
+            // For internal playlists, the database LinkedChildren table is the source of truth.
+            var targetPath = targetItem.Path;
+            if (!string.IsNullOrEmpty(targetPath)
+                && !FileSystem.ContainsSubPath(ServerConfigurationManager.ApplicationPaths.DataPath, targetPath))
             {
-                targetItem.LinkedChildren = sourceItem.LinkedChildren;
-            }
-            else
-            {
+                if (replaceData || targetItem.LinkedChildren.Length == 0)
+                {
+                    targetItem.LinkedChildren = sourceItem.LinkedChildren;
+                }
+                else
+                {
 #pragma warning disable CS0618 // Type or member is obsolete - fallback for legacy path-based dedup
-                targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren)
-                    .DistinctBy(i => i.ItemId.HasValue && !i.ItemId.Value.Equals(Guid.Empty) ? i.ItemId.Value.ToString() : i.Path ?? string.Empty)
-                    .ToArray();
+                    targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren)
+                        .DistinctBy(i => i.ItemId.HasValue && !i.ItemId.Value.Equals(Guid.Empty) ? i.ItemId.Value.ToString() : i.Path ?? string.Empty)
+                        .ToArray();
 #pragma warning restore CS0618
+                }
             }
 
             if (replaceData || targetItem.Shares.Count == 0)
