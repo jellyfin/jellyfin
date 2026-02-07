@@ -3200,13 +3200,16 @@ namespace Emby.Server.Implementations.Library
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+            var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+            if (Array.Find(libraryOptions.PathInfos, i => i.Path.StartsWith(path, StringComparison.Ordinal) || path.StartsWith(i.Path, StringComparison.Ordinal)) is not null)
+            {
+                return;
+            }
 
             CreateShortcut(virtualFolderPath, pathInfo);
 
             if (saveLibraryOptions)
             {
-                var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
-
                 libraryOptions.PathInfos = [.. libraryOptions.PathInfos, pathInfo];
 
                 SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
