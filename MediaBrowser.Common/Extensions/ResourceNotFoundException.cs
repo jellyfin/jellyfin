@@ -22,5 +22,15 @@ namespace MediaBrowser.Common.Extensions
             : base(message)
         {
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceNotFoundException"/> class.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+        public ResourceNotFoundException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }
