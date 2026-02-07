@@ -31,6 +31,7 @@
  - [DaveChild](https://github.com/DaveChild)
  - [DavidFair](https://github.com/DavidFair)
  - [Delgan](https://github.com/Delgan)
+ - [DeerMaximum](https://github.com/DeerMaximum)
  - [Derpipose](https://github.com/Derpipose)
  - [dcrdev](https://github.com/dcrdev)
  - [dhartung](https://github.com/dhartung)
