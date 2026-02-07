@@ -121,7 +121,9 @@ public sealed class BaseItemRepository
 
         var date = (DateTime?)DateTime.UtcNow;
 
-        var descendantIds = ids.SelectMany(f => DescendantQueryHelper.GetAllDescendantIds(context, f)).ToHashSet();
+        // Use owned-only traversal (AncestorIds) to avoid deleting items that are merely
+        // linked via LinkedChildren (e.g. movies/series inside a BoxSet are associations, not owned children).
+        var descendantIds = ids.SelectMany(f => DescendantQueryHelper.GetOwnedDescendantIds(context, f)).ToHashSet();
         foreach (var id in ids)
         {
             descendantIds.Add(id);
@@ -333,6 +335,7 @@ public sealed class BaseItemRepository
             }
 
             var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+                .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
                 .Where(dto => dto is not null)
@@ -341,7 +344,7 @@ public sealed class BaseItemRepository
             return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
         }
 
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter).AsSplitQuery();
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
     }
@@ -994,7 +997,7 @@ public sealed class BaseItemRepository
 
         if (filter.CollapseBoxSetItems == true)
         {
-            dbQuery = ApplyBoxSetCollapsing(context, dbQuery);
+            dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
         }
 
         dbQuery = ApplyOrder(dbQuery, filter, context);
@@ -1004,12 +1007,55 @@ public sealed class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyBoxSetCollapsing(
         JellyfinDbContext context,
-        IQueryable<BaseItemEntity> dbQuery)
+        IQueryable<BaseItemEntity> dbQuery,
+        BaseItemKind[] collapsibleTypes)
     {
         var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
 
         var currentIds = dbQuery.Select(e => e.Id);
 
+        if (collapsibleTypes.Length == 0)
+        {
+            // Collapse all item types into box sets
+            return ApplyBoxSetCollapsingAll(context, currentIds, boxSetTypeName);
+        }
+
+        // Only collapse specific item types, keep others untouched
+        var collapsibleTypeNames = collapsibleTypes.Select(t => _itemTypeLookup.BaseItemKindNames[t]).ToList();
+
+        // Items whose type is NOT collapsible (always kept in results)
+        var nonCollapsibleIds = currentIds
+            .Where(id => !context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type)));
+
+        // Collapsible items that are NOT in any box set (kept in results)
+        var collapsibleNotInBoxSet = currentIds
+            .Where(id =>
+                context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type))
+                && !context.BaseItems.Any(bs => bs.Id == id && bs.Type == boxSetTypeName)
+                && !context.LinkedChildren.Any(lc =>
+                    lc.ChildId == id
+                    && lc.ChildType == DbLinkedChildType.Manual
+                    && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
+
+        // Box set IDs containing at least one accessible collapsible child item
+        var boxSetIds = context.LinkedChildren
+            .Where(lc =>
+                lc.ChildType == DbLinkedChildType.Manual
+                && currentIds.Contains(lc.ChildId)
+                && context.BaseItems.Any(bi => bi.Id == lc.ChildId && collapsibleTypeNames.Contains(bi.Type))
+                && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName))
+            .Select(lc => lc.ParentId)
+            .Distinct();
+
+        var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
+        return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyBoxSetCollapsingAll(
+        JellyfinDbContext context,
+        IQueryable<Guid> currentIds,
+        string boxSetTypeName)
+    {
         // Items that are NOT box sets and NOT in any box set
         var notInBoxSet = currentIds
             .Where(id =>
@@ -1019,8 +1065,7 @@ public sealed class BaseItemRepository
                     && lc.ChildType == DbLinkedChildType.Manual
                     && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
 
-        // Box set IDs containing at least one accessible child item.
-        // Access filtering is already applied to currentIds via TranslateQuery
+        // Box set IDs containing at least one accessible child item
         var boxSetIds = context.LinkedChildren
             .Where(lc =>
                 lc.ChildType == DbLinkedChildType.Manual
@@ -1060,8 +1105,10 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
-        // Only include LinkedChildEntities for container types and videos that use them
-        // (BoxSet, Playlist, CollectionFolder for manual linking; Video, Movie for alternate versions)
+        // Include LinkedChildEntities for container types and videos that use them
+        // (BoxSet, Playlist, CollectionFolder for manual linking; Video, Movie for alternate versions).
+        // When IncludeItemTypes is empty (any type may be returned), always include them to ensure
+        // LinkedChildren are loaded before items are saved back, preventing accidental deletion.
         var linkedChildTypes = new[]
         {
             BaseItemKind.BoxSet,
@@ -1070,7 +1117,7 @@ public sealed class BaseItemRepository
             BaseItemKind.Video,
             BaseItemKind.Movie
         };
-        if (filter.IncludeItemTypes.Length > 0 && filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
+        if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
         {
             dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
         }
@@ -1108,7 +1155,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter).AsSplitQuery();
         return dbQuery;
     }
 
@@ -1531,7 +1578,9 @@ public sealed class BaseItemRepository
                         ? context.BaseItems
                             .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
                             .Select(e => new { e.Path, e.Id })
-                            .ToDictionary(e => e.Path!, e => e.Id)
+                            .AsEnumerable()
+                            .GroupBy(e => e.Path!)
+                            .ToDictionary(g => g.Key, g => g.First().Id)
                         : [];
 
                     var resolvedChildren = new List<(LinkedChild Child, Guid ChildId)>();
@@ -1628,7 +1677,9 @@ public sealed class BaseItemRepository
                         var pathToIdMap = context.BaseItems
                             .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
                             .Select(e => new { e.Path, e.Id })
-                            .ToDictionary(e => e.Path!, e => e.Id);
+                            .AsEnumerable()
+                            .GroupBy(e => e.Path!)
+                            .ToDictionary(g => g.Key, g => g.First().Id);
 
                         foreach (var path in pathsToResolve)
                         {
@@ -3323,6 +3374,13 @@ public sealed class BaseItemRepository
                 baseQuery = baseQuery
                     .Where(e => e.OwnerId == null);
             }
+        }
+        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0)
+        {
+            // Exclude alternate versions from general queries. Alternate versions have
+            // OwnerId set (pointing to their primary) but no ExtraType.
+            // Extras (trailers, etc.) also have OwnerId but DO have ExtraType set - keep those.
+            baseQuery = baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null);
         }
 
         if (filter.OwnerIds.Length > 0)

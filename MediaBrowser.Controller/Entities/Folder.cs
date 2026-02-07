@@ -733,6 +733,7 @@ namespace MediaBrowser.Controller.Entities
             if (!query.ForceDirect && RequiresPostFiltering(query))
             {
                 query.CollapseBoxSetItems = true;
+                SetCollapseBoxSetItemTypes(query);
             }
 
             if (this is not UserRootFolder
@@ -1037,6 +1038,33 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return (queryHasMovies || queryHasSeries) && AllowBoxSetCollapsing(query);
+        }
+
+        private void SetCollapseBoxSetItemTypes(InternalItemsQuery query)
+        {
+            var config = ConfigurationManager.Configuration;
+            bool collapseMovies = config.EnableGroupingMoviesIntoCollections;
+            bool collapseSeries = config.EnableGroupingShowsIntoCollections;
+
+            if (collapseMovies && collapseSeries)
+            {
+                // Empty means collapse all types
+                query.CollapseBoxSetItemTypes = [];
+                return;
+            }
+
+            var types = new List<BaseItemKind>();
+            if (collapseMovies)
+            {
+                types.Add(BaseItemKind.Movie);
+            }
+
+            if (collapseSeries)
+            {
+                types.Add(BaseItemKind.Series);
+            }
+
+            query.CollapseBoxSetItemTypes = types.ToArray();
         }
 
         private static bool AllowBoxSetCollapsing(InternalItemsQuery request)

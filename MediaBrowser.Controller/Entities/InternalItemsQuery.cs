@@ -113,6 +113,12 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? CollapseBoxSetItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item types that should be collapsed into box sets.
+        /// When empty, all types are collapsed. When set, only items of these types are replaced by their parent box set.
+        /// </summary>
+        public BaseItemKind[] CollapseBoxSetItemTypes { get; set; } = [];
+
         public string? NameStartsWithOrGreater { get; set; }
 
         public string? NameStartsWith { get; set; }

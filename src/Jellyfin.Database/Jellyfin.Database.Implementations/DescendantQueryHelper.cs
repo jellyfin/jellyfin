@@ -31,6 +31,25 @@ public static class DescendantQueryHelper
     }
 
     /// <summary>
+    /// Gets a queryable of all owned descendant IDs for a parent item.
+    /// Traverses only AncestorIds (hierarchical ownership), NOT LinkedChildren (associations).
+    /// Use this for deletion to avoid destroying items that are merely linked (e.g. movies in a BoxSet).
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="parentId">Parent item ID.</param>
+    /// <returns>Queryable of owned descendant item IDs.</returns>
+    public static IQueryable<Guid> GetOwnedDescendantIds(JellyfinDbContext context, Guid parentId)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var descendants = TraverseHierarchyDownOwned(context, [parentId]);
+
+        descendants.Remove(parentId);
+
+        return descendants.AsQueryable();
+    }
+
+    /// <summary>
     /// Gets a queryable of all folder IDs that have any descendant matching the specified criteria.
     /// Can be used in LINQ .Contains() expressions.
     /// </summary>
@@ -113,6 +132,47 @@ public static class DescendantQueryHelper
                 .ToHashSet();
 
             foreach (var childId in allChildren)
+            {
+                if (visited.Add(childId) && childFolders.Contains(childId))
+                {
+                    folderStack.Add(childId);
+                }
+            }
+        }
+
+        return visited;
+    }
+
+    /// <summary>
+    /// Traverses DOWN the hierarchy using only AncestorIds (ownership), not LinkedChildren.
+    /// </summary>
+    private static HashSet<Guid> TraverseHierarchyDownOwned(JellyfinDbContext context, ICollection<Guid> startIds)
+    {
+        var visited = new HashSet<Guid>(startIds);
+        var folderStack = new HashSet<Guid>(startIds);
+
+        while (folderStack.Count != 0)
+        {
+            var currentFolders = folderStack.ToArray();
+            folderStack.Clear();
+
+            var directChildren = context.AncestorIds
+                .WhereOneOrMany(currentFolders, e => e.ParentItemId)
+                .Select(e => e.ItemId)
+                .ToArray();
+
+            if (directChildren.Length == 0)
+            {
+                break;
+            }
+
+            var childFolders = context.BaseItems
+                .WhereOneOrMany(directChildren, e => e.Id)
+                .Where(e => e.IsFolder)
+                .Select(e => e.Id)
+                .ToHashSet();
+
+            foreach (var childId in directChildren)
             {
                 if (visited.Add(childId) && childFolders.Contains(childId))
                 {
