@@ -959,6 +959,13 @@ namespace Emby.Server.Implementations.Session
                 changed = true;
             }
 
+            // Handle ProgressState for complex media types (e.g., EPUB CFI)
+            if (!string.IsNullOrEmpty(info.ProgressState))
+            {
+                data.ProgressState = info.ProgressState;
+                changed = true;
+            }
+
             var tracksChanged = UpdatePlaybackSettings(user, info, data);
             if (!tracksChanged)
             {
