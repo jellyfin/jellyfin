@@ -117,14 +117,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 preferredLanguage = NormalizeLanguage(preferredLanguage, countryCode);
 
                 languages.Add(preferredLanguage);
-
-                if (preferredLanguage.Length == 5) // Like en-US
-                {
-                    // Currently, TMDb supports 2-letter language codes only.
-                    // They are planning to change this in the future, thus we're
-                    // supplying both codes if we're having a 5-letter code.
-                    languages.Add(preferredLanguage.Substring(0, 2));
-                }
             }
 
             languages.Add("null");
