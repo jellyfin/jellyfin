@@ -381,7 +381,7 @@ namespace Emby.Naming.Common
                 // /server/anything_102.mp4
                 // /server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv
                 // /server/anything_1996.11.14.mp4
-                new EpisodeExpression(@"[\\/._ -](?<seriesname>(?![0-9]+[0-9][0-9])([^\\\/_])*)[\\\/._ -](?<seasonnumber>[0-9]+)(?<epnumber>[0-9][0-9](?:(?:[a-i]|\.[1-9])(?![0-9]))?)([._ -][^\\\/]*)$")
+                new EpisodeExpression(@"(?:^|[\\/])(?<seriesname>(?=[^\\/]*[A-Za-z])[^\\/_]+?(?:[._ -][^\\/_]+?)*)[._ -](?<![0-9])(?<seasonnumber>[0-9]{1,3})(?<epnumber>(?!00)[0-9]{2})(?:(?:[a-i]|\.[1-9])(?![0-9]))?(?:[._ -][^\\/]*)*\.[\w-]{2,7}$")
                 {
                     IsOptimistic = true,
                     IsNamed = true,
