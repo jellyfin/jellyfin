@@ -1,6 +1,6 @@
 {
     "name": "Development Jellyfin Server",
-    "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
     "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
@@ -10,8 +10,8 @@
     "features": {
         "ghcr.io/devcontainers/features/dotnet:2": {
             "version": "none",
-            "dotnetRuntimeVersions": "9.0",
-            "aspNetCoreRuntimeVersions": "9.0"
+            "dotnetRuntimeVersions": "10.0",
+            "aspNetCoreRuntimeVersions": "10.0"
         },
         "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "preserve_apt_list": false,
