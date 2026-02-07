@@ -916,6 +916,11 @@ namespace Emby.Server.Implementations.Dto
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
             }
 
+            if (item is Series series)
+            {
+                dto.InvertEpisodeOrder = series.InvertEpisodeOrder;
+            }
+
             if (item is IHasCollectionType hasCollectionType)
             {
                 dto.CollectionType = hasCollectionType.CollectionType;
@@ -1236,13 +1241,11 @@ namespace Emby.Server.Implementations.Dto
             }
 
             // Add SeriesInfo
-            Series? series;
-            if (item is Series tmp)
+            if (item is Series seriesItem)
             {
-                series = tmp;
-                dto.AirDays = series.AirDays;
-                dto.AirTime = series.AirTime;
-                dto.Status = series.Status?.ToString();
+                dto.AirDays = seriesItem.AirDays;
+                dto.AirTime = seriesItem.AirTime;
+                dto.Status = seriesItem.Status?.ToString();
             }
 
             // Add SeasonInfo
@@ -1251,14 +1254,14 @@ namespace Emby.Server.Implementations.Dto
                 dto.SeriesName = season.SeriesName;
                 dto.SeriesId = season.SeriesId;
 
-                series = null;
+                Series? parentSeries = null;
 
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
-                    series ??= season.Series;
-                    if (series is not null)
+                    parentSeries ??= season.Series;
+                    if (parentSeries is not null)
                     {
-                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                        dto.SeriesStudio = parentSeries.Studios.FirstOrDefault();
                     }
                 }
 
@@ -1266,13 +1269,13 @@ namespace Emby.Server.Implementations.Dto
                 // TODO maybe remove the if statement entirely
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
-                    series ??= season.Series;
-                    if (series is not null)
+                    parentSeries ??= season.Series;
+                    if (parentSeries is not null)
                     {
-                        dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
+                        dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, parentSeries, ImageType.Primary);
                         if (dto.ImageTags is null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
-                            AttachPrimaryImageAspectRatio(dto, series);
+                            AttachPrimaryImageAspectRatio(dto, parentSeries);
                         }
                     }
                 }
