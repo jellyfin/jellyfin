@@ -88,10 +88,12 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
 
             var audio1 = res.MediaStreams[1];
             Assert.Equal("eac3", audio1.Codec);
+            Assert.True(audio1.IsOriginal);
             Assert.Equal(AudioSpatialFormat.DolbyAtmos, audio1.AudioSpatialFormat);
 
             var audio2 = res.MediaStreams[2];
             Assert.Equal("dts", audio2.Codec);
+            Assert.False(audio2.IsOriginal);
             Assert.Equal(AudioSpatialFormat.DTSX, audio2.AudioSpatialFormat);
 
             Assert.Empty(res.Chapters);
@@ -138,6 +140,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("aac", res.MediaStreams[1].Codec);
             Assert.Equal(7, res.MediaStreams[1].Channels);
             Assert.True(res.MediaStreams[1].IsDefault);
+            Assert.False(res.MediaStreams[1].IsOriginal);
             Assert.Equal("eng", res.MediaStreams[1].Language);
             Assert.Equal("Surround 6.1", res.MediaStreams[1].Title);
 

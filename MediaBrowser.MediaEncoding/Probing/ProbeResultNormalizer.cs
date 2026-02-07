@@ -734,6 +734,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Type = MediaStreamType.Audio;
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedOriginal = _localization.GetLocalizedString("Original");
 
                 stream.Channels = streamInfo.Channels;
 
@@ -1034,6 +1035,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("hearing_impaired") == 1)
                 {
                     stream.IsHearingImpaired = true;
+                }
+
+                if (disposition.GetValueOrDefault("original") == 1)
+                {
+                    stream.IsOriginal = true;
                 }
             }
 
