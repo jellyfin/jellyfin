@@ -108,5 +108,25 @@ public enum ViewType
     /// <summary>
     /// Shows upcoming.
     /// </summary>
-    Upcoming = 20
+    Upcoming = 20,
+
+    /// <summary>
+    /// Shows photos.
+    /// </summary>
+    Photos = 21,
+
+    /// <summary>
+    /// Shows photo albums.
+    /// </summary>
+    PhotoAlbums = 22,
+
+    /// <summary>
+    /// Shows videos.
+    /// </summary>
+    Videos = 23,
+
+    /// <summary>
+    /// Shows series timers.
+    /// </summary>
+    SeriesTimers = 24
 }
