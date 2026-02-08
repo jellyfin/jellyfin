@@ -1719,6 +1719,7 @@ public sealed class BaseItemRepository
                     : [];
 
                 // Add or update LinkedChildren entries
+                int sortOrder = 0;
                 foreach (var (childId, childType) in newLinkedChildren)
                 {
                     if (!existingChildIds.Contains(childId))
@@ -1739,14 +1740,17 @@ public sealed class BaseItemRepository
                             ParentId = video.Id,
                             ChildId = childId,
                             ChildType = (DbLinkedChildType)childType,
-                            SortOrder = null
+                            SortOrder = sortOrder
                         });
                     }
                     else
                     {
                         existingLink.ChildType = (DbLinkedChildType)childType;
+                        existingLink.SortOrder = sortOrder;
                         existingLinkedChildren.Remove(existingLink);
                     }
+
+                    sortOrder++;
                 }
 
                 // Remove orphaned alternate version links and their items
@@ -3953,6 +3957,7 @@ public sealed class BaseItemRepository
         }
 
         return query
+            .OrderBy(lc => lc.SortOrder)
             .Select(lc => lc.ChildId)
             .ToList();
     }

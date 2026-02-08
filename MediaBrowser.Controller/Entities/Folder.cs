@@ -730,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
         {
-            if (!query.ForceDirect && RequiresPostFiltering(query))
+            if (!query.ForceDirect && CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 query.CollapseBoxSetItems = true;
                 SetCollapseBoxSetItemTypes(query);
@@ -743,15 +743,15 @@ namespace MediaBrowser.Controller.Entities
                 query.Parent = this;
             }
 
-            if (RequiresPostFiltering2(query))
+            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
-                return QueryWithPostFiltering2(query);
+                return QueryWithPostFiltering(query);
             }
 
             return LibraryManager.GetItemsResult(query);
         }
 
-        protected QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
+        protected QueryResult<BaseItem> QueryWithPostFiltering(InternalItemsQuery query)
         {
             var startIndex = query.StartIndex;
             var limit = query.Limit;
@@ -795,28 +795,6 @@ namespace MediaBrowser.Controller.Entities
                 query.StartIndex,
                 totalCount,
                 returnItems.ToArray());
-        }
-
-        private bool RequiresPostFiltering2(InternalItemsQuery query)
-        {
-            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
-            {
-                Logger.LogDebug("Query requires post-filtering due to BoxSet query");
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool RequiresPostFiltering(InternalItemsQuery query)
-        {
-            if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
-            {
-                Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
-                return true;
-            }
-
-            return false;
         }
 
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
