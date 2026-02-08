@@ -1260,7 +1260,8 @@ public class StreamInfo
                 && string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) // Format must match (no conversion needed)
                 && !string.IsNullOrEmpty(stream.Path) // Path must exist
                 && Uri.TryCreate(stream.Path, UriKind.Absolute, out Uri? uriResult) // Path must be an absolute URI
-                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)) // Scheme must be HTTP or HTTPS
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps) // Scheme must be HTTP or HTTPS
+                && MediaSource.Protocol == MediaProtocol.File) // Only use direct path if media source is local (File protocol). For remote media (Http, etc.), always use API URL to avoid returning local file paths that clients can't access.
             {
                 // All conditions met, override with the direct path
                 info.Url = stream.Path;
