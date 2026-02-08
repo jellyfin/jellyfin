@@ -175,11 +175,11 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
 
     private LinkedChild GetLinkedChild(string itemPath, string playlistPath, List<string> libraryRoots)
     {
-        if (TryGetPlaylistItemPath(itemPath, playlistPath, libraryRoots, out var parsedPath))
+        if (TryResolvePlaylistItem(itemPath, playlistPath, libraryRoots, out var item))
         {
             return new LinkedChild
             {
-                Path = parsedPath,
+                ItemId = item.Id,
                 Type = LinkedChildType.Manual
             };
         }
@@ -187,9 +187,9 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
         return null;
     }
 
-    private bool TryGetPlaylistItemPath(string itemPath, string playlistPath, List<string> libraryPaths, out string path)
+    private bool TryResolvePlaylistItem(string itemPath, string playlistPath, List<string> libraryPaths, out BaseItem item)
     {
-        path = null;
+        item = null;
         string pathToCheck = _fileSystem.MakeAbsolutePath(Path.GetDirectoryName(playlistPath), itemPath);
         if (!File.Exists(pathToCheck))
         {
@@ -200,8 +200,8 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
         {
             if (pathToCheck.StartsWith(libraryPath, StringComparison.OrdinalIgnoreCase))
             {
-                path = pathToCheck;
-                return true;
+                item = _libraryManager.FindByPath(pathToCheck, null);
+                return item is not null;
             }
         }
 

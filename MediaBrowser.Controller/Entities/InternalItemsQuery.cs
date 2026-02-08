@@ -33,15 +33,19 @@ namespace MediaBrowser.Controller.Entities
             ExcludeItemIds = Array.Empty<Guid>();
             ExcludeItemTypes = Array.Empty<BaseItemKind>();
             ExcludeTags = Array.Empty<string>();
+            ExtraTypes = Array.Empty<ExtraType>();
             GenreIds = Array.Empty<Guid>();
             Genres = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
+            OwnerIds = Array.Empty<Guid>();
+            ExtraTypes = Array.Empty<ExtraType>();
             MediaTypes = Array.Empty<MediaType>();
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
+            OwnerIds = Array.Empty<Guid>();
             PersonIds = Array.Empty<Guid>();
             PersonTypes = Array.Empty<string>();
             PresetViews = Array.Empty<CollectionType?>();
@@ -109,6 +113,12 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? CollapseBoxSetItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item types that should be collapsed into box sets.
+        /// When empty, all types are collapsed. When set, only items of these types are replaced by their parent box set.
+        /// </summary>
+        public BaseItemKind[] CollapseBoxSetItemTypes { get; set; } = [];
+
         public string? NameStartsWithOrGreater { get; set; }
 
         public string? NameStartsWith { get; set; }
@@ -132,6 +142,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid[] PersonIds { get; set; }
 
         public Guid[] ItemIds { get; set; }
+
+        public Guid[] OwnerIds { get; set; }
+
+        public ExtraType[] ExtraTypes { get; set; }
 
         public Guid[] ExcludeItemIds { get; set; }
 
@@ -362,6 +376,8 @@ namespace MediaBrowser.Controller.Entities
         public string? SeriesTimerId { get; set; }
 
         public bool SkipDeserialization { get; set; }
+
+        public bool IncludeExtras { get; set; }
 
         public void SetUser(User user)
         {
