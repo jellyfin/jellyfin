@@ -60,11 +60,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
 
         var customOptions = databaseConfiguration.CustomProviderOptions?.Options;
 
-        var sqliteConnectionBuilder = new SqliteConnectionStringBuilder();
-        sqliteConnectionBuilder.DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
-        sqliteConnectionBuilder.Cache = GetOption(customOptions, "cache", Enum.Parse<SqliteCacheMode>, () => SqliteCacheMode.Default);
-        sqliteConnectionBuilder.Pooling = GetOption(customOptions, "pooling", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => true);
-        sqliteConnectionBuilder.DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => 30);
+        var sqliteConnectionBuilder = new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db"),
+            Cache = GetOption(customOptions, "cache", Enum.Parse<SqliteCacheMode>, () => SqliteCacheMode.Default),
+            Pooling = GetOption(customOptions, "pooling", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => true),
+            DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => 60)
+        };
 
         var connectionString = sqliteConnectionBuilder.ToString();
 
@@ -156,7 +158,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public Task RestoreBackupFast(string key, CancellationToken cancellationToken)
     {
-        // ensure there are absolutly no dangling Sqlite connections.
+        // ensure there are absolutely no dangling Sqlite connections.
         SqliteConnection.ClearAllPools();
         var path = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         var backupFile = Path.Combine(_applicationPaths.DataPath, BackupFolderName, $"{key}_jellyfin.db");

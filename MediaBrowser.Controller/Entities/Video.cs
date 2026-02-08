@@ -453,38 +453,45 @@ namespace MediaBrowser.Controller.Entities
             // The additional parts won't have additional parts themselves
             if (IsFileProtocol && SupportsOwnedItems)
             {
-                if (!IsStacked)
+                // Check if LinkedChildren are in sync before processing
+                var existingVersionCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
+                var tasks = LocalAlternateVersions
+                    .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                if (existingVersionCount != LocalAlternateVersions.Length)
                 {
-                    RefreshLinkedAlternateVersions();
-
-                    if (LocalAlternateVersions.Length > 0)
-                    {
-                        // Check if LinkedChildren are in sync before processing
-                        var existingLinkCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
-                        var tasks = LocalAlternateVersions
-                            .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
-
-                        await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                        if (existingLinkCount != LocalAlternateVersions.Length)
-                        {
-                            hasChanges = true;
-                        }
-                    }
+                    hasChanges = true;
                 }
             }
 
             return hasChanges;
         }
 
-        protected virtual async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        private async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
         {
+            // Ensure the alternate version exists with the correct type (e.g. Movie, not Video)
+            // before refreshing. This must happen here rather than in RefreshMetadataForOwnedVideo
+            // because that method is also used for stacked parts which should keep their resolved type.
+            var id = LibraryManager.GetNewItemId(path, GetType());
+            if (LibraryManager.GetItemById(id) is not Video && FileSystem.FileExists(path))
+            {
+                var parentFolder = GetParent() as Folder;
+                var collectionType = LibraryManager.GetContentType(this);
+                var altVideo = LibraryManager.ResolveAlternateVersion(path, GetType(), parentFolder, collectionType);
+                if (altVideo is not null)
+                {
+                    altVideo.OwnerId = Id;
+                    LibraryManager.CreateItem(altVideo, GetParent());
+                }
+            }
+
             await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
 
             // Create LinkedChild entry for this local alternate version
             // This ensures the relationship exists in the database even if the alternate version
             // was created after the primary video was first saved
-            var id = LibraryManager.GetNewItemId(path, GetType());
             if (LibraryManager.GetItemById(id) is Video video)
             {
                 LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
@@ -516,18 +523,21 @@ namespace MediaBrowser.Controller.Entities
             if (LibraryManager.GetItemById(id) is not Video video)
             {
                 var parentFolder = GetParent() as Folder;
-                var collectionType = GetParents().OfType<ICollectionFolder>().FirstOrDefault()?.CollectionType;
+                var collectionType = LibraryManager.GetContentType(this);
                 video = LibraryManager.ResolvePath(
                     FileSystem.GetFileSystemInfo(path),
                     parentFolder,
                     collectionType: collectionType) as Video;
 
-                newOptions.ForceSave = true;
-            }
+                if (video is null)
+                {
+                    return;
+                }
 
-            if (video is null)
-            {
-                return;
+                video.Id = id;
+                video.OwnerId = Id;
+                LibraryManager.CreateItem(video, parentFolder);
+                newOptions.ForceSave = true;
             }
 
             if (video.OwnerId.IsEmpty())
@@ -536,18 +546,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
-        }
-
-        private void RefreshLinkedAlternateVersions()
-        {
-            foreach (var child in LinkedAlternateVersions)
-            {
-                // Reset the cached value
-                if (child.ItemId.IsNullOrEmpty())
-                {
-                    child.ItemId = null;
-                }
-            }
         }
 
         /// <inheritdoc />

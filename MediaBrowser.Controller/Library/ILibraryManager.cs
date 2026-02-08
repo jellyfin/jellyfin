@@ -68,6 +68,22 @@ namespace MediaBrowser.Controller.Library
             CollectionType? collectionType = null);
 
         /// <summary>
+        /// Resolves a video file as an alternate version of a primary video, ensuring the result
+        /// has the same concrete type as the primary (e.g. Movie instead of generic Video).
+        /// Also cleans up any existing item with the wrong type from a previous scan.
+        /// </summary>
+        /// <param name="path">The file path of the alternate version.</param>
+        /// <param name="expectedVideoType">The expected concrete type (same as the primary video).</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="collectionType">The collection type of the library.</param>
+        /// <returns>A correctly-typed Video, or null if resolution fails.</returns>
+        Video? ResolveAlternateVersion(
+            string path,
+            Type expectedVideoType,
+            Folder? parent,
+            CollectionType? collectionType);
+
+        /// <summary>
         /// Resolves a set of files into a list of BaseItem.
         /// </summary>
         /// <param name="files">The list of tiles.</param>

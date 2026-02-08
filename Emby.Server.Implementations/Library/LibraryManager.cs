@@ -704,6 +704,57 @@ namespace Emby.Server.Implementations.Library
         public BaseItem? ResolvePath(FileSystemMetadata fileInfo, Folder? parent = null, IDirectoryService? directoryService = null, CollectionType? collectionType = null)
             => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
 
+        /// <inheritdoc />
+        public Video? ResolveAlternateVersion(string path, Type expectedVideoType, Folder? parent, CollectionType? collectionType)
+        {
+            // Clean up any existing item saved with wrong type (e.g. Video instead of Movie).
+            // This happens when items were previously resolved without proper type context
+            // in mixed-content libraries where collectionType is null.
+            var expectedId = GetNewItemId(path, expectedVideoType);
+            if (expectedVideoType != typeof(Video))
+            {
+                var wrongTypeId = GetNewItemId(path, typeof(Video));
+                if (!wrongTypeId.Equals(expectedId) && GetItemById(wrongTypeId) is Video wrongTypeItem)
+                {
+                    _logger.LogInformation(
+                        "Removing alternate version with wrong type {WrongType}, expected {ExpectedType}: {Path}",
+                        wrongTypeItem.GetType().Name,
+                        expectedVideoType.Name,
+                        path);
+                    DeleteItem(wrongTypeItem, new DeleteOptions { DeleteFileLocation = false });
+                }
+            }
+
+            var resolved = ResolvePath(
+                _fileSystem.GetFileSystemInfo(path),
+                parent,
+                collectionType: collectionType) as Video;
+
+            if (resolved is null)
+            {
+                return null;
+            }
+
+            // Ensure the alternate version has the same concrete type as the primary video.
+            // ResolvePath may return a generic Video for files in mixed-content libraries
+            // where collectionType is null, even though the primary is a Movie/Episode/etc.
+            if (resolved.GetType() != expectedVideoType)
+            {
+                if (Activator.CreateInstance(expectedVideoType) is Video correctVideo)
+                {
+                    correctVideo.Path = resolved.Path;
+                    correctVideo.Name = resolved.Name;
+                    correctVideo.VideoType = resolved.VideoType;
+                    correctVideo.ProductionYear = resolved.ProductionYear;
+                    correctVideo.ExtraType = resolved.ExtraType;
+                    resolved = correctVideo;
+                }
+            }
+
+            resolved.Id = expectedId;
+            return resolved;
+        }
+
         private BaseItem? ResolvePath(
             FileSystemMetadata fileInfo,
             IDirectoryService directoryService,
@@ -2125,14 +2176,8 @@ namespace Emby.Server.Implementations.Library
                         if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
                         {
                             // Alternate version doesn't exist, resolve and create it
-                            // Pass parent and collectionType so the resolver creates the correct type
-                            // (e.g. Movie instead of generic Video)
-                            var altVideo = ResolvePath(
-                                _fileSystem.GetFileSystemInfo(path),
-                                new DirectoryService(_fileSystem),
-                                null,
-                                parentFolder,
-                                parentCollectionType) as Video;
+                            // ensuring it has the same type as the primary video
+                            var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;
@@ -2333,14 +2378,8 @@ namespace Emby.Server.Implementations.Library
                         if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
                         {
                             // Alternate version doesn't exist, resolve and create it
-                            // Pass parent and collectionType so the resolver creates the correct type
-                            // (e.g. Movie instead of generic Video)
-                            var altVideo = ResolvePath(
-                                _fileSystem.GetFileSystemInfo(path),
-                                new DirectoryService(_fileSystem),
-                                null,
-                                parentFolder,
-                                parentCollectionType) as Video;
+                            // ensuring it has the same type as the primary video
+                            var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;
@@ -2352,6 +2391,14 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.SaveItems(allItems, cancellationToken);
+
+            foreach (var item in allItems)
+            {
+                if (!items.Contains(item))
+                {
+                    RegisterItem(item);
+                }
+            }
 
             if (parent is Folder folder)
             {

@@ -304,7 +304,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter).AsSplitQuery();
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
         result.StartIndex = filter.StartIndex ?? 0;
@@ -1850,7 +1850,8 @@ public sealed class BaseItemRepository
             .Include(e => e.LockedFields)
             .Include(e => e.UserData)
             .Include(e => e.Images)
-            .Include(e => e.LinkedChildEntities);
+            .Include(e => e.LinkedChildEntities)
+            .AsSingleQuery();
 
         var item = dbQuery.FirstOrDefault(e => e.Id == id);
         if (item is null)

@@ -85,58 +85,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             return info;
         }
 
-        protected override async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
-        {
-            var newOptions = new MetadataRefreshOptions(options)
-            {
-                SearchResult = null
-            };
-
-            var id = LibraryManager.GetNewItemId(path, typeof(Movie));
-
-            // Check if the file still exists
-            if (!FileSystem.FileExists(path))
-            {
-                // File was removed - clean up any orphaned database entry
-                if (LibraryManager.GetItemById(id) is Movie orphanedMovie && orphanedMovie.OwnerId.Equals(Id))
-                {
-                    Logger.LogInformation("Alternate version file no longer exists, removing orphaned item: {Path}", path);
-                    LibraryManager.DeleteItem(orphanedMovie, new DeleteOptions { DeleteFileLocation = false });
-                }
-
-                return;
-            }
-
-            if (LibraryManager.GetItemById(id) is not Movie movie)
-            {
-                // Pass parent and collectionType so the resolver creates a Movie
-                // instead of a generic Video
-                var parentFolder = GetParent() as Folder;
-                var collectionType = GetParents().OfType<ICollectionFolder>().FirstOrDefault()?.CollectionType;
-                movie = LibraryManager.ResolvePath(
-                    FileSystem.GetFileSystemInfo(path),
-                    parentFolder,
-                    collectionType: collectionType) as Movie;
-
-                newOptions.ForceSave = true;
-            }
-
-            if (movie is null)
-            {
-                return;
-            }
-
-            if (movie.OwnerId.Equals(Guid.Empty))
-            {
-                movie.OwnerId = Id;
-            }
-
-            await RefreshMetadataForOwnedItem(movie, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
-
-            // Create LinkedChild entry for this local alternate version
-            LibraryManager.UpsertLinkedChild(Id, movie.Id, LinkedChildType.LocalAlternateVersion);
-        }
-
         /// <inheritdoc />
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
