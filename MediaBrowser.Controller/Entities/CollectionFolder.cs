@@ -189,11 +189,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (!changed)
             {
-                var locations = PhysicalLocations;
+                var locations = PhysicalLocations
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                var newLocations = CreateResolveArgs(new DirectoryService(FileSystem), false).PhysicalLocations;
+                var newLocations = CreateResolveArgs(new DirectoryService(FileSystem), false).PhysicalLocations
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                if (!locations.SequenceEqual(newLocations))
+                if (!locations.SequenceEqual(newLocations, StringComparer.OrdinalIgnoreCase))
                 {
                     changed = true;
                 }
@@ -299,11 +303,17 @@ namespace MediaBrowser.Controller.Entities
                 args.FileSystemChildren = files;
             }
 
-            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
+            var physicalLocations = args.PhysicalLocations
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var currentLocations = PhysicalLocations
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            _requiresRefresh = _requiresRefresh || !physicalLocations.SequenceEqual(currentLocations, StringComparer.OrdinalIgnoreCase);
 
             if (setPhysicalLocations)
             {
-                PhysicalLocationsList = args.PhysicalLocations;
+                PhysicalLocationsList = physicalLocations;
             }
 
             return args;
