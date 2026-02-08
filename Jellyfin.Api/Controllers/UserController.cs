@@ -114,7 +114,19 @@ public class UserController : BaseJellyfinApiController
             return Ok(Get(false, false, false, false));
         }
 
-        return Ok(Get(false, false, true, true));
+        var networkConfiguration = _config.GetNetworkConfiguration();
+        var ip = HttpContext.GetNormalizedRemoteIP();
+        var isLocal = HttpContext.IsLocal() || _networkManager.IsInLocalNetwork(ip);
+
+        if (networkConfiguration.PublicUserListing &&
+            (isLocal || !networkConfiguration.PublicUserListingLocalOnly))
+        {
+            return Ok(Get(false, false, true, false));
+        }
+        else
+        {
+            return Ok(Array.Empty<UserDto>().AsEnumerable());
+        }
     }
 
     /// <summary>
