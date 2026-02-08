@@ -1,30 +1,31 @@
 name: OpenAPI
+
 on:
   push:
     branches:
       - master
     tags:
       - 'v*'
-  pull_request_target:
+  workflow_run:
+    workflows: ["OpenAPI Build"]
+    types: [completed]
 
 permissions: {}
 
 jobs:
   openapi-head:
     name: OpenAPI - HEAD
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    permissions: read-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
           dotnet-version: '10.0.x'
+
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
 
@@ -32,43 +33,6 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: openapi-head
-          retention-days: 14
-          if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
-
-  openapi-base:
-    name: OpenAPI - BASE
-    if: ${{ github.base_ref != '' }}
-    runs-on: ubuntu-latest
-    permissions: read-all
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 0
-
-      - name: Checkout common ancestor
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }}
-          git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
-          ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
-          git checkout --progress --force $ANCESTOR_REF
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
-        with:
-          dotnet-version: '10.0.x'
-      - name: Generate openapi.json
-        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
-
-      - name: Upload openapi.json
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: openapi-base
           retention-days: 14
           if-no-files-found: error
           path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
@@ -78,23 +42,24 @@ jobs:
       pull-requests: write
 
     name: OpenAPI - Difference
-    if: ${{ github.event_name == 'pull_request_target' }}
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
     runs-on: ubuntu-latest
-    needs:
-      - openapi-head
-      - openapi-base
     steps:
       - name: Download openapi-head
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: openapi-head
           path: openapi-head
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download openapi-base
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: openapi-base
           path: openapi-base
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Detect OpenAPI changes
         id: openapi-diff
@@ -105,11 +70,12 @@ jobs:
           markdown: openapi-changelog.md
           add-pr-comment: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-number: ${{ github.event.workflow_run.pull_requests[0].number }}
 
 
   publish-unstable:
     name: OpenAPI - Publish Unstable Spec
-    if: ${{ github.event_name != 'pull_request_target' && !startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
+    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
     runs-on: ubuntu-latest
     needs:
       - openapi-head
@@ -170,7 +136,7 @@ jobs:
 
   publish-stable:
     name: OpenAPI - Publish Stable Spec
-    if: ${{ startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
     runs-on: ubuntu-latest
     needs:
       - openapi-head
