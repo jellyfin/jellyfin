@@ -106,7 +106,7 @@ public class PathManager : IPathManager
             GetTrickplayDirectory(item, false),
             GetTrickplayDirectory(item, true),
             GetChapterImageFolderPath(item),
-            waveformPath
+            GetWaveformPath(item.Id)
         ];
     }
 }
