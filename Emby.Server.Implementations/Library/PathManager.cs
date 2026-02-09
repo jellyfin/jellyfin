@@ -89,7 +89,7 @@ public class PathManager : IPathManager
     }
 
     /// <inheritdoc/>
-    public string GetWaveformPath(Guid itemId)
+    public string GetWaveformPath(BaseItem item)
     {
         var id = itemId.ToString("D", CultureInfo.InvariantCulture).AsSpan();
         return Path.Join(WaveformCachePath, id[..2], id) + ".json";
