@@ -126,8 +126,9 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
         {
             _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Error sending refresh progress message for item {ItemId}", item.Id);
         }
 
         var collectionFolders = _libraryManager.GetCollectionFolders(item);
@@ -144,8 +145,9 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
             {
                 _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "Error sending refresh progress message for collection folder {FolderId}", collectionFolder.Id);
             }
         }
     }

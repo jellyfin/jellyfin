@@ -1395,7 +1395,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 value = value[(nextSegment + 1)..];
                 var length = value.Length;
 
-                Span<char> blurHashSpan = stackalloc char[length];
+                Span<char> blurHashSpan = length <= 512 ? stackalloc char[length] : new char[length];
                 for (int i = 0; i < length; i++)
                 {
                     var c = value[i];

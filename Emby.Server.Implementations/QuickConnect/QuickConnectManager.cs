@@ -185,6 +185,7 @@ namespace Emby.Server.Implementations.QuickConnect
 
         private string GenerateSecureRandom(int length = 32)
         {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 256);
             Span<byte> bytes = stackalloc byte[length];
             RandomNumberGenerator.Fill(bytes);
 

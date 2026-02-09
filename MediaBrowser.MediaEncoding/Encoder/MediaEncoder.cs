@@ -1319,7 +1319,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     },
                     CancellationToken.None).GetAwaiter().GetResult();
 
-                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks ?? 0).TotalSeconds;
 
                 // Add file path stanza to concat configuration
                 sw.WriteLine("file '{0}'", path.Replace("'", @"'\''", StringComparison.Ordinal));

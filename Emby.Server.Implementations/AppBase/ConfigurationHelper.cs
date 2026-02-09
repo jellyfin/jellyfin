@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.AppBase
 
                 configuration = xmlSerializer.DeserializeFromBytes(type, buffer);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.Xml.XmlException)
             {
                 // Note: CreateInstance returns null for Nullable<T>, e.g. CreateInstance(typeof(int?)) returns null.
                 configuration = Activator.CreateInstance(type)!;

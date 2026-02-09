@@ -1018,10 +1018,17 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetParents()
         {
+            var visitedIds = new HashSet<Guid>();
             var parent = GetParent();
 
             while (parent is not null)
             {
+                // Prevent infinite loop from circular parent references
+                if (!visitedIds.Add(parent.Id))
+                {
+                    yield break;
+                }
+
                 yield return parent;
 
                 parent = parent.GetParent();

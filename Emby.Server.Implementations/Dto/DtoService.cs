@@ -1383,6 +1383,7 @@ namespace Emby.Server.Implementations.Dto
 
             BaseItem? parent = null;
             var isFirst = true;
+            var visitedIds = new HashSet<Guid>();
 
             var imageTags = dto.ImageTags;
 
@@ -1393,6 +1394,12 @@ namespace Emby.Server.Implementations.Dto
             {
                 parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
                 if (parent is null)
+                {
+                    break;
+                }
+
+                // Prevent infinite loop from circular parent references
+                if (!visitedIds.Add(parent.Id))
                 {
                     break;
                 }

@@ -87,9 +87,14 @@ public class HlsSegmentController : BaseJellyfinApiController
     {
         var file = string.Concat(playlistId, Path.GetExtension(Request.Path.Value.AsSpan()));
         var transcodePath = _serverConfigurationManager.GetTranscodePath();
+        // Ensure transcodePath ends with separator for safe StartsWith comparison
+        if (!transcodePath.EndsWith(Path.DirectorySeparatorChar))
+        {
+            transcodePath += Path.DirectorySeparatorChar;
+        }
+
         file = Path.GetFullPath(Path.Combine(transcodePath, file));
-        var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture)
+        if (!file.StartsWith(transcodePath, StringComparison.OrdinalIgnoreCase)
             || Path.GetExtension(file.AsSpan()).Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest("Invalid segment.");
