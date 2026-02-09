@@ -900,6 +900,11 @@ namespace MediaBrowser.Controller.Entities
             if (user is not null)
             {
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
+
+                // After collapse, BoxSets may have replaced items whose names matched the filter
+                // but the BoxSet's own name may not match. Re-apply name filtering so BoxSets
+                // appear under the correct letter (e.g. "Jump Street" under J, not under #).
+                items = ApplyNameFilter(items, query);
             }
 
             var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
@@ -911,6 +916,26 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return result;
+        }
+
+        private static IEnumerable<BaseItem> ApplyNameFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)
+        {
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+            {
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
+            {
+                items = items.Where(i => string.Compare(i.SortName, query.NameStartsWithOrGreater, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(i.SortName, query.NameLessThan, StringComparison.OrdinalIgnoreCase) < 0);
+            }
+
+            return items;
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(

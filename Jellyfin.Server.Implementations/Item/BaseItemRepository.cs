@@ -998,6 +998,10 @@ public sealed class BaseItemRepository
         if (filter.CollapseBoxSetItems == true)
         {
             dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
+
+            // Apply name-range filters after collapse so BoxSets are filtered by their own name,
+            // not by their children's names.
+            dbQuery = ApplyNameFilters(dbQuery, filter);
         }
 
         dbQuery = ApplyOrder(dbQuery, filter, context);
@@ -1076,6 +1080,29 @@ public sealed class BaseItemRepository
 
         var collapsedIds = notInBoxSet.Union(boxSetIds);
         return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        {
+            var nameStartsWithLower = filter.NameStartsWith.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        {
+            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(startsOrGreaterLower) >= 0);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
+        {
+            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
+        }
+
+        return dbQuery;
     }
 
     private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -3073,22 +3100,13 @@ public sealed class BaseItemRepository
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        // When box set collapsing is active, defer name-range filters to after the collapse.
+        // Otherwise, items are filtered by their own name but then collapsed into a BoxSet
+        // whose name may fall in a different range (e.g. "21 Jump Street" is under "#"
+        // but its BoxSet "Jump Street Collection" should appear under "J").
+        if (filter.CollapseBoxSetItems != true)
         {
-            var nameStartsWithLower = filter.NameStartsWith.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
-        {
-            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.ToLower().CompareTo(startsOrGreaterLower) >= 0);
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
-        {
-            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
+            baseQuery = ApplyNameFilters(baseQuery, filter);
         }
 
         if (filter.ImageTypes.Length > 0)
