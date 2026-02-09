@@ -34,6 +34,8 @@ public class PathManager : IPathManager
 
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
+    private string WaveformCachePath => Path.Combine(_appPaths.DataPath, "waveforms");
+
     /// <inheritdoc />
     public string GetAttachmentPath(string mediaSourceId, string fileName)
     {
@@ -87,15 +89,24 @@ public class PathManager : IPathManager
     }
 
     /// <inheritdoc/>
+    public string GetWaveformPath(Guid itemId)
+    {
+        var id = itemId.ToString("D", CultureInfo.InvariantCulture).AsSpan();
+        return Path.Join(WaveformCachePath, id[..2], id) + ".json";
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item)
     {
         var mediaSourceId = item.Id.ToString("N", CultureInfo.InvariantCulture);
+        var waveformPath = GetWaveformPath(item.Id);
         return [
             GetAttachmentFolderPath(mediaSourceId),
             GetSubtitleFolderPath(mediaSourceId),
             GetTrickplayDirectory(item, false),
             GetTrickplayDirectory(item, true),
-            GetChapterImageFolderPath(item)
+            GetChapterImageFolderPath(item),
+            waveformPath
         ];
     }
 }
