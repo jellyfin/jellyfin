@@ -315,6 +315,8 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         Dictionary<string, Guid> pathToIdMap,
         List<LinkedChildEntity> linkedChildrenToAdd)
     {
+        int sortOrder = 0;
+
         if (root.TryGetProperty("LocalAlternateVersions", out var localAlternateVersionsElement)
             && localAlternateVersionsElement.ValueKind == JsonValueKind.Array)
         {
@@ -339,7 +341,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                         ParentId = parentId,
                         ChildId = childId,
                         ChildType = LinkedChildType.LocalAlternateVersion,
-                        SortOrder = null
+                        SortOrder = sortOrder++
                     });
 
                     _logger.LogDebug(
@@ -412,7 +414,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                     ParentId = parentId,
                     ChildId = childId.Value,
                     ChildType = LinkedChildType.LinkedAlternateVersion,
-                    SortOrder = null
+                    SortOrder = sortOrder++
                 });
 
                 _logger.LogDebug(
