@@ -48,7 +48,8 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         var videoTypes = new[]
         {
             "MediaBrowser.Controller.Entities.Video",
-            "MediaBrowser.Controller.Entities.Movies.Movie"
+            "MediaBrowser.Controller.Entities.Movies.Movie",
+            "MediaBrowser.Controller.Entities.TV.Episode"
         };
 
         var itemsWithData = context.BaseItems
@@ -78,7 +79,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             {
                 using var doc = JsonDocument.Parse(item.Data);
 
-                var isVideo = item.Type == "MediaBrowser.Controller.Entities.Video" || item.Type == "MediaBrowser.Controller.Entities.Movies.Movie";
+                var isVideo = videoTypes.Contains(item.Type);
 
                 // Handle Video alternate versions
                 if (isVideo)
@@ -235,8 +236,6 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         // but the parent is a more specific type (like Movie).
         // Since IDs are computed from type + path, just updating the Type column would break ID lookups.
         // Instead, delete them and let the runtime recreate them with the correct type during the next library scan.
-        var genericVideoType = "MediaBrowser.Controller.Entities.Video";
-
         var wrongTypeChildIds = context.LinkedChildren
             .Where(lc => lc.ChildType == LinkedChildType.LocalAlternateVersion)
             .Join(
@@ -249,7 +248,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
                 x => x.ChildId,
                 child => child.Id,
                 (x, child) => new { x.ChildId, x.ParentType, ChildType = child.Type })
-            .Where(x => x.ChildType == genericVideoType && x.ParentType != genericVideoType)
+            .Where(x => x.ChildType != x.ParentType)
             .Select(x => x.ChildId)
             .Distinct()
             .ToList();
