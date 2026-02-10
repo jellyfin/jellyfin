@@ -1,17 +1,31 @@
 {
     "name": "Development Jellyfin Server",
-    "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
     "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
     "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
-    // reads the extensions list and installs them
-    "postAttachCommand": "cat .vscode/extensions.json | jq -r .recommendations[] | xargs -n 1 code --install-extension",
+    // The previous way of installing extensions via the vs command dont work on selfhosted devcontainers
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "editorconfig.editorconfig",
+                "github.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csdevkit",
+                "alexcvzz.vscode-sqlite",
+                "streetsidesoftware.code-spell-checker",
+                "eamodio.gitlens",
+                "redhat.vscode-xml"
+            ]
+        }
+    },
     "features": {
         "ghcr.io/devcontainers/features/dotnet:2": {
             "version": "none",
-            "dotnetRuntimeVersions": "9.0",
-            "aspNetCoreRuntimeVersions": "9.0"
+            "dotnetRuntimeVersions": "10.0",
+            "aspNetCoreRuntimeVersions": "10.0"
         },
         "ghcr.io/devcontainers-extra/features/apt-packages:1": {
             "preserve_apt_list": false,
