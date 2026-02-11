@@ -992,9 +992,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteTunerHost([FromQuery] string? id)
     {
-        var config = _configurationManager.GetConfiguration<LiveTvOptions>("livetv");
-        config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-        _configurationManager.SaveConfiguration("livetv", config);
+        _tunerHostManager.DeleteTunerHost(id);
         return NoContent();
     }
 
