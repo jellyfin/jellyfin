@@ -149,7 +149,7 @@ namespace Jellyfin.LiveTv.Listings
                 var willBeCached = endDate.HasValue && endDate.Value < DateTime.UtcNow.AddDays(GuideManager.MaxCacheDays);
                 if (willBeCached && images is not null)
                 {
-                    var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId[..10]);
+                    var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId);
                     if (imageIndex > -1)
                     {
                         var programEntry = programDict[schedule.ProgramId];
@@ -458,32 +458,32 @@ namespace Jellyfin.LiveTv.Listings
                 return [];
             }
 
-            StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
-            foreach (var i in programIds)
+            // SD API accepts max 500 program IDs per request
+            const int BatchSize = 500;
+            var results = new List<ShowImagesDto>();
+            for (int i = 0; i < programIds.Count; i += BatchSize)
             {
-                str.Append('"')
-                    .Append(i[..10])
-                    .Append("\",");
+                var batch = programIds.Skip(i).Take(BatchSize);
+
+                using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
+                message.Headers.TryAddWithoutValidation("token", token);
+                message.Content = JsonContent.Create(batch, options: _jsonOptions);
+
+                try
+                {
+                    var batchResult = await Request<IReadOnlyList<ShowImagesDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
+                    if (batchResult is not null)
+                    {
+                        results.AddRange(batchResult);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting image info from schedules direct");
+                }
             }
 
-            // Remove last ,
-            str.Length--;
-            str.Append(']');
-
-            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
-            message.Headers.TryAddWithoutValidation("token", token);
-            message.Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json);
-
-            try
-            {
-                return await Request<IReadOnlyList<ShowImagesDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting image info from schedules direct");
-
-                return [];
-            }
+            return results;
         }
 
         public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
@@ -547,7 +547,7 @@ namespace Jellyfin.LiveTv.Listings
             }
 
             // Avoid hammering SD
-            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 1)
+            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
             {
                 return null;
             }
@@ -579,7 +579,7 @@ namespace Jellyfin.LiveTv.Listings
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                    if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
                         _lastErrorResponse = DateTime.UtcNow;
@@ -700,6 +700,13 @@ namespace Jellyfin.LiveTv.Listings
                 if (ex.StatusCode is HttpStatusCode.BadRequest)
                 {
                     return false;
+                }
+
+                // Clear tokens on any client error to avoid hammering SD with stale credentials
+                if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
+                {
+                    _tokens.Clear();
+                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
