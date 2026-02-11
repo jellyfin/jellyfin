@@ -338,19 +338,20 @@ public class ListingsManager : IListingsManager
         _epgChannels.TryRemove(providerId, out _);
 
         // Delete the cached XMLTV file so a fresh copy is downloaded
-        var xmltvCacheFile = Path.Combine(
-            _config.CommonApplicationPaths.CachePath,
-            "xmltv",
-            providerId + ".xml");
-        if (File.Exists(xmltvCacheFile))
+        var cachePath = _config.CommonApplicationPaths?.CachePath;
+        if (!string.IsNullOrEmpty(cachePath))
         {
-            try
+            var xmltvCacheFile = Path.Combine(cachePath, "xmltv", providerId + ".xml");
+            if (File.Exists(xmltvCacheFile))
             {
-                File.Delete(xmltvCacheFile);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogWarning(ex, "Error deleting XMLTV cache file for provider {ProviderId}", providerId);
+                try
+                {
+                    File.Delete(xmltvCacheFile);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogWarning(ex, "Error deleting XMLTV cache file for provider {ProviderId}", providerId);
+                }
             }
         }
     }
