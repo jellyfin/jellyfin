@@ -135,7 +135,15 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public DeviceInfoDto? GetDevice(string id)
         {
-            var device = _devices.Values.Where(d => d.DeviceId == id).OrderByDescending(d => d.DateLastActivity).FirstOrDefault();
+            Device? device = null;
+            foreach (var d in _devices)
+            {
+                if (d.Value.DeviceId == id && (device == null || device.DateLastActivity < d.Value.DateLastActivity))
+                {
+                    device = d.Value;
+                }
+            }
+
             _deviceOptions.TryGetValue(id, out var deviceOption);
 
             var deviceInfo = device is null ? null : ToDeviceInfo(device, deviceOption);

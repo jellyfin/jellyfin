@@ -505,7 +505,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var (provider, keyId) = GetProvider(request.OpenToken);
 
-                var currentLiveStreams = _openStreams.Values.ToList();
+                var currentLiveStreams = _openStreams.Select(x => x.Value).ToList();
 
                 liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
 

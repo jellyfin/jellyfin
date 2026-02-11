@@ -155,7 +155,16 @@ namespace Emby.Server.Implementations.Session
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
-        public IEnumerable<SessionInfo> Sessions => _activeConnections.Values.OrderByDescending(c => c.LastActivityDate);
+        public IEnumerable<SessionInfo> Sessions
+        {
+            get
+            {
+                return _activeConnections
+                    .OrderByDescending(c => c.Value.LastActivityDate)
+                    .Select(x => x.Value)
+                    .ToList();
+            }
+        }
 
         private void OnDeviceManagerDeviceOptionsUpdated(object sender, GenericEventArgs<Tuple<string, DeviceOptions>> e)
         {
