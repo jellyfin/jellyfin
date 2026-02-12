@@ -168,7 +168,36 @@ namespace Emby.Server.Implementations.IO
             {
                 item = _libraryManager.FindByPath(path, null);
 
-                path = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
+                if (item is null)
+                {
+                    var parentDir = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
+
+                    // If this path is an untracked directory, look for a known media
+                    // item inside it (eg. a movie file in a movie folder). This prevents
+                    // walking all the way up to the library root when intermediate
+                    // directories like movie folders are not tracked in the DB.
+                    if (!string.IsNullOrEmpty(parentDir) && Directory.Exists(path))
+                    {
+                        try
+                        {
+                            foreach (var file in Directory.EnumerateFiles(path))
+                            {
+                                var childItem = _libraryManager.FindByPath(file, false);
+                                if (childItem is not null)
+                                {
+                                    item = childItem;
+                                    break;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Error enumerating files in {Path}", path);
+                        }
+                    }
+
+                    path = parentDir;
+                }
             }
 
             if (item is not null)
