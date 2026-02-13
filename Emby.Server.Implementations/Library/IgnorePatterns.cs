@@ -43,8 +43,8 @@ namespace Emby.Server.Implementations.Library
             "**/*.minta.???",
             "**/*.minta.????",
             "**/*.minta.?????",
-            "**/minta/*",            
-            
+            "**/minta/*",
+
             // Directories
             "**/metadata/**",
             "**/metadata",
