@@ -141,6 +141,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
+            remoteResult.ProductionYear = series.FirstAirDate?.Year;
 
             return remoteResult;
         }
@@ -157,6 +158,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
             remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
+            remoteResult.ProductionYear = series.FirstAirDate?.Year;
 
             return remoteResult;
         }
