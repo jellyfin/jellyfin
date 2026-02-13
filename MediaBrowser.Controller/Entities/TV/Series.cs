@@ -451,7 +451,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!currentSeasonNumber.HasValue && !seasonNumber.HasValue && parentSeason.LocationType == LocationType.Virtual)
                 {
-                    return true;
+                    var episodeSeason = episodeItem.Season;
+                    return episodeSeason is null || episodeSeason.LocationType == LocationType.Virtual;
                 }
 
                 var season = episodeItem.Season;
