@@ -1225,10 +1225,33 @@ namespace MediaBrowser.Controller.Entities
                 var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                 if (HasLocalAlternateVersions)
                 {
+                    // For movies, the containing folder name is the base name.
+                    // For episodes (or when folder name doesn't match), compute the common
+                    // prefix across the primary and all alternate filenames, then strip it.
+                    // HasLocalAlternateVersions is only true for Video, so the cast is safe.
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
-                    if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
+                    var primaryName = System.IO.Path.GetFileNameWithoutExtension(Path);
+
+                    string baseName = null;
+                    if (containingFolderName is not null
+                        && displayName.Length > containingFolderName.Length
+                        && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
+                        baseName = containingFolderName;
+                    }
+                    else if (primaryName is not null)
+                    {
+                        baseName = Emby.Naming.Video.VideoListResolver.FindCommonPrefix(
+                            primaryName,
+                            ((Video)this).LocalAlternateVersions.Select(System.IO.Path.GetFileNameWithoutExtension).Where(n => n is not null)!);
+                    }
+
+                    if (baseName is not null
+                        && baseName.Length > 0
+                        && displayName.Length > baseName.Length
+                        && displayName.StartsWith(baseName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var name = displayName.AsSpan(baseName.Length).TrimStart([' ', '-']);
                         if (!name.IsWhiteSpace())
                         {
                             terms.Add(name.ToString());

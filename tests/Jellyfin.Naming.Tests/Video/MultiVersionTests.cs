@@ -438,6 +438,17 @@ namespace Jellyfin.Naming.Tests.Video
 
         // Episode multi-version tests
 
+        private List<VideoInfo> ResolveEpisodeVersions(string[] files, bool supportEpisodeGrouping = true)
+        {
+            return VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions,
+                true,
+                true,
+                string.Empty,
+                supportEpisodeGrouping).ToList();
+        }
+
         [Fact]
         public void TestEpisodeMultiVersion_RealWorldNaming()
         {
@@ -448,10 +459,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Stranger Things (2016)/Season 01/Stranger Things (2016) [tvdbid-305288] - S01E01 - [WEBDL-2160p][EAC3 5.1][DV HDR10][h265]-HONE.mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Single(result);
             Assert.Equal(2, result[0].AlternateVersions.Count);
@@ -468,10 +476,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Season 01/Show - S01E02 - [2160p].mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Equal(2, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -488,10 +493,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Season 01/Show - S01E03.mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Equal(3, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -510,10 +512,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Show - S02E01 - [2160p].mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Equal(2, result.Count);
             Assert.Single(result[0].AlternateVersions);
@@ -530,10 +529,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Season 01/Show S01E01 - 1080p.mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Single(result);
             Assert.Equal("/TV/Show/Season 01/Show S01E01.mkv", result[0].Files[0].Path);
@@ -549,10 +545,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Season 01/Show S01E01 - [2160p].mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: false).ToList();
+            var result = ResolveEpisodeVersions(files, supportEpisodeGrouping: false);
 
             Assert.Equal(2, result.Count);
             Assert.Empty(result[0].AlternateVersions);
@@ -567,10 +560,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "/TV/Show/Season 01/Show S01E01-E03 - [2160p].mkv",
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions,
-                supportEpisodeGrouping: true).ToList();
+            var result = ResolveEpisodeVersions(files);
 
             Assert.Single(result);
             Assert.Single(result[0].AlternateVersions);

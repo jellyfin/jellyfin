@@ -30,9 +30,21 @@ namespace Emby.Naming.Video
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
         /// <param name="libraryRoot">Top-level folder for the containing library.</param>
+        /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
+        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true, string? libraryRoot = "")
+            => Resolve(videoInfos, namingOptions, supportMultiVersion, parseName, libraryRoot, supportEpisodeGrouping: false);
+
+        /// <summary>
+        /// Resolves alternative versions and extras from list of video files.
+        /// </summary>
+        /// <param name="videoInfos">List of related video files.</param>
+        /// <param name="namingOptions">The naming options.</param>
+        /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
+        /// <param name="parseName">Whether to parse the name or use the filename.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <param name="supportEpisodeGrouping">Whether to group episode files by parsed episode identity for multi-version support.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true, string? libraryRoot = "", bool supportEpisodeGrouping = false)
+        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion, bool parseName, string? libraryRoot, bool supportEpisodeGrouping)
         {
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
@@ -104,6 +116,76 @@ namespace Emby.Naming.Video
             return list;
         }
 
+        /// <summary>
+        /// Finds the longest common filename prefix across a set of filenames, trimming trailing separators.
+        /// </summary>
+        /// <param name="first">The reference filename to compare against.</param>
+        /// <param name="others">Additional filenames to include in the comparison.</param>
+        /// <returns>The common prefix with trailing separators removed.</returns>
+        public static string FindCommonPrefix(string first, IEnumerable<string> others)
+        {
+            var prefixLen = first.Length;
+
+            foreach (var other in others)
+            {
+                prefixLen = Math.Min(prefixLen, other.Length);
+                for (var j = 0; j < prefixLen; j++)
+                {
+                    if (char.ToLowerInvariant(first[j]) != char.ToLowerInvariant(other[j]))
+                    {
+                        prefixLen = j;
+                        break;
+                    }
+                }
+            }
+
+            // Trim trailing separator characters to get a clean base name
+            return first.AsSpan(0, prefixLen).TrimEnd(" -._[".AsSpan()).ToString();
+        }
+
+        /// <summary>
+        /// Sorts videos by resolution (descending) then name (ascending), selects a primary version,
+        /// and assigns the rest as alternate versions.
+        /// </summary>
+        private static List<VideoInfo> SortAndAssignVersions(List<VideoInfo> videos, VideoInfo? primary, string baseName)
+        {
+            if (videos.Count > 1)
+            {
+                var groups = videos
+                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
+                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
+                    .GroupBy(x => x.resolutionMatch.Success)
+                    .ToList();
+
+                videos.Clear();
+
+                StringComparer comparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
+                foreach (var group in groups)
+                {
+                    if (group.Key)
+                    {
+                        videos.InsertRange(0, group
+                            .OrderByDescending(x => x.resolutionMatch.Value, comparer)
+                            .ThenBy(x => x.filename, comparer)
+                            .Select(x => x.value));
+                    }
+                    else
+                    {
+                        videos.AddRange(group.OrderBy(x => x.filename, comparer).Select(x => x.value));
+                    }
+                }
+            }
+
+            primary ??= videos[0];
+            videos.Remove(primary);
+
+            var list = new List<VideoInfo> { primary };
+            list[0].AlternateVersions = videos.Select(x => x.Files[0]).ToArray();
+            list[0].Name = baseName;
+
+            return list;
+        }
+
         private static List<VideoInfo> GetVideosGroupedByVersion(List<VideoInfo> videos, NamingOptions namingOptions)
         {
             if (videos.Count == 0)
@@ -139,45 +221,7 @@ namespace Emby.Naming.Video
                 }
             }
 
-            if (videos.Count > 1)
-            {
-                var groups = videos
-                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
-                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
-                    .GroupBy(x => x.resolutionMatch.Success)
-                    .ToList();
-
-                videos.Clear();
-
-                StringComparer comparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
-                foreach (var group in groups)
-                {
-                    if (group.Key)
-                    {
-                        videos.InsertRange(0, group
-                            .OrderByDescending(x => x.resolutionMatch.Value, comparer)
-                            .ThenBy(x => x.filename, comparer)
-                            .Select(x => x.value));
-                    }
-                    else
-                    {
-                        videos.AddRange(group.OrderBy(x => x.filename, comparer).Select(x => x.value));
-                    }
-                }
-            }
-
-            primary ??= videos[0];
-            videos.Remove(primary);
-
-            var list = new List<VideoInfo>
-            {
-                primary
-            };
-
-            list[0].AlternateVersions = videos.Select(x => x.Files[0]).ToArray();
-            list[0].Name = folderName.ToString();
-
-            return list;
+            return SortAndAssignVersions(videos, primary, folderName.ToString());
         }
 
         private static List<VideoInfo> GetEpisodesGroupedByVersion(List<VideoInfo> videos, NamingOptions namingOptions)
@@ -238,8 +282,9 @@ namespace Emby.Naming.Video
 
         private static List<VideoInfo> OrganizeEpisodeVersions(List<VideoInfo> videos, NamingOptions namingOptions)
         {
-            // Find the longest common prefix of all filenames in the group
-            var baseName = FindCommonPrefix(videos);
+            var baseName = FindCommonPrefix(
+                videos[0].Files[0].FileNameWithoutExtension.ToString(),
+                videos.Skip(1).Select(v => v.Files[0].FileNameWithoutExtension.ToString()));
 
             if (baseName.Length == 0)
             {
@@ -262,75 +307,7 @@ namespace Emby.Naming.Video
                 }
             }
 
-            // Sort by resolution (descending) then name (ascending)
-            if (videos.Count > 1)
-            {
-                var groups = videos
-                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
-                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
-                    .GroupBy(x => x.resolutionMatch.Success)
-                    .ToList();
-
-                videos.Clear();
-
-                StringComparer comparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
-                foreach (var group in groups)
-                {
-                    if (group.Key)
-                    {
-                        videos.InsertRange(0, group
-                            .OrderByDescending(x => x.resolutionMatch.Value, comparer)
-                            .ThenBy(x => x.filename, comparer)
-                            .Select(x => x.value));
-                    }
-                    else
-                    {
-                        videos.AddRange(group.OrderBy(x => x.filename, comparer).Select(x => x.value));
-                    }
-                }
-            }
-
-            primary ??= videos[0];
-            videos.Remove(primary);
-
-            var list = new List<VideoInfo>
-            {
-                primary
-            };
-
-            list[0].AlternateVersions = videos.Select(x => x.Files[0]).ToArray();
-            list[0].Name = baseName;
-
-            return list;
-        }
-
-        private static string FindCommonPrefix(List<VideoInfo> videos)
-        {
-            if (videos.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            var first = videos[0].Files[0].FileNameWithoutExtension.ToString();
-            var prefixLen = first.Length;
-
-            for (var i = 1; i < videos.Count; i++)
-            {
-                var other = videos[i].Files[0].FileNameWithoutExtension.ToString();
-                prefixLen = Math.Min(prefixLen, other.Length);
-                for (var j = 0; j < prefixLen; j++)
-                {
-                    if (char.ToLowerInvariant(first[j]) != char.ToLowerInvariant(other[j]))
-                    {
-                        prefixLen = j;
-                        break;
-                    }
-                }
-            }
-
-            // Trim trailing separator characters to get a clean base name
-            var prefix = first.AsSpan(0, prefixLen);
-            return prefix.TrimEnd(" -._[".AsSpan()).ToString();
+            return SortAndAssignVersions(videos, primary, baseName);
         }
 
         private static bool HaveSameYear(IReadOnlyList<VideoInfo> videos)
