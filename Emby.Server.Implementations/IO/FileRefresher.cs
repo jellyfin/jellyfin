@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -182,6 +183,11 @@ namespace Emby.Server.Implementations.IO
                         {
                             foreach (var file in Directory.EnumerateFiles(path))
                             {
+                                if (IgnorePatterns.ShouldIgnore(file))
+                                {
+                                    continue;
+                                }
+
                                 var childItem = _libraryManager.FindByPath(file, false);
                                 if (childItem is not null)
                                 {
