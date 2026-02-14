@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -2127,17 +2126,6 @@ namespace MediaBrowser.Controller.Entities
                     DateModified = chapter.ImageDateModified,
                     Type = imageType
                 };
-            }
-
-            // Music albums usually don't have dedicated backdrops, so return one from the artist instead
-            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
-            {
-                var artist = FindParent<MusicArtist>();
-
-                if (artist is not null)
-                {
-                    return artist.GetImages(imageType).ElementAtOrDefault(imageIndex);
-                }
             }
 
             return GetImages(imageType)
