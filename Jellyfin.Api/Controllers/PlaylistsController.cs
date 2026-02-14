@@ -359,7 +359,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="ids">Item id, comma delimited.</param>
-    /// <param name="position">Optional. 0-based index where to place the items or at the end if null.</param>
+    /// <param name="position">Optional. 0-based index where to place the items or at the end if <c>null</c>.</param>
     /// <param name="userId">The userId.</param>
     /// <response code="204">Items added to playlist.</response>
     /// <response code="403">Access forbidden.</response>
