@@ -1232,6 +1232,10 @@ namespace MediaBrowser.Controller.Entities
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
                     var primaryName = System.IO.Path.GetFileNameWithoutExtension(Path);
 
+                    // Try both the folder name and the common filename prefix, use whichever
+                    // gives a longer base name (shorter suffix). The folder name works for movies;
+                    // the common prefix works for episodes where the folder is "Season XX" or the
+                    // series name (which is shorter than the full episode prefix).
                     string baseName = null;
                     if (containingFolderName is not null
                         && displayName.Length > containingFolderName.Length
@@ -1239,11 +1243,16 @@ namespace MediaBrowser.Controller.Entities
                     {
                         baseName = containingFolderName;
                     }
-                    else if (primaryName is not null)
+
+                    if (primaryName is not null)
                     {
-                        baseName = Emby.Naming.Video.VideoListResolver.FindCommonPrefix(
+                        var commonPrefix = Emby.Naming.Video.VideoListResolver.FindCommonPrefix(
                             primaryName,
                             ((Video)this).LocalAlternateVersions.Select(System.IO.Path.GetFileNameWithoutExtension).Where(n => n is not null)!);
+                        if (commonPrefix.Length > (baseName?.Length ?? 0))
+                        {
+                            baseName = commonPrefix;
+                        }
                     }
 
                     if (baseName is not null
