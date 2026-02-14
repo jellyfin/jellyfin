@@ -159,6 +159,13 @@ public static class StreamingHelpers
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
+        if (string.IsNullOrEmpty(containerInternal)
+            && (!string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId)
+                || (mediaSource != null && mediaSource.IsInfiniteStream)))
+        {
+            containerInternal = ".ts";
+        }
+
         if (!string.IsNullOrEmpty(streamingRequest.Container))
         {
             containerInternal = streamingRequest.Container;
@@ -194,7 +201,7 @@ public static class StreamingHelpers
             state.OutputVideoCodec = state.Request.VideoCodec;
             state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
-            encodingHelper.TryStreamCopy(state);
+            encodingHelper.TryStreamCopy(state, encodingOptions);
 
             if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && state.OutputVideoBitrate.HasValue)
             {

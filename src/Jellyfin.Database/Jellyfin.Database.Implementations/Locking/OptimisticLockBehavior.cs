@@ -1,3 +1,5 @@
+#pragma warning disable CA1873
+
 using System;
 using System.Data.Common;
 using System.Linq;
@@ -52,10 +54,14 @@ public class OptimisticLockBehavior : IEntityFrameworkCoreLockingBehavior
 
         _logger = logger;
         _writePolicy = Policy
-            .HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase))
+            .HandleInner<Exception>(e =>
+                e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase) ||
+                e.Message.Contains("database table is locked", StringComparison.InvariantCultureIgnoreCase))
             .WaitAndRetry(sleepDurations.Length, backoffProvider, RetryHandle);
         _writeAsyncPolicy = Policy
-            .HandleInner<Exception>(e => e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase))
+            .HandleInner<Exception>(e =>
+                e.Message.Contains("database is locked", StringComparison.InvariantCultureIgnoreCase) ||
+                e.Message.Contains("database table is locked", StringComparison.InvariantCultureIgnoreCase))
             .WaitAndRetryAsync(sleepDurations.Length, backoffProvider, RetryHandle);
 
         void RetryHandle(Exception exception, TimeSpan timespan, int retryNo, Context context)

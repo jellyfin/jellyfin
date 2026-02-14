@@ -73,7 +73,6 @@
     "Shows": "Serier",
     "Songs": "Låtar",
     "StartupEmbyServerIsLoading": "Jellyfin Server arbetar. Pröva igen snart.",
-    "SubtitleDownloadFailureForItem": "Nerladdning av undertexter för {0} misslyckades",
     "SubtitleDownloadFailureFromForItem": "Undertexter kunde inte laddas ner från {0} till {1}",
     "Sync": "Synk",
     "System": "System",

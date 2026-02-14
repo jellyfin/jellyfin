@@ -457,6 +457,12 @@ namespace Emby.Server.Implementations.Library
                 _cache.TryRemove(child.Id, out _);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             ReportItemRemoved(item, parent);
         }
 
@@ -1052,6 +1058,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     IncludeItemTypes = [BaseItemKind.MusicArtist],
                     Name = name,
+                    UseRawName = true,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
@@ -1993,6 +2000,12 @@ namespace Emby.Server.Implementations.Library
                 RegisterItem(item);
             }
 
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
+
             if (ItemAdded is not null)
             {
                 foreach (var item in items)
@@ -2131,7 +2144,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            _itemRepository.SaveImages(item);
+            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
 
             RegisterItem(item);
         }
@@ -2149,6 +2162,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.SaveItems(items, cancellationToken);
+
+            if (parent is Folder folder)
+            {
+                folder.Children = null;
+                folder.UserData = null;
+            }
 
             if (ItemUpdated is not null)
             {
@@ -2182,6 +2201,12 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync([item], parent, updateReason, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
+        {
+            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
+        }
 
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
@@ -3176,19 +3201,7 @@ namespace Emby.Server.Implementations.Library
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
-
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-
-            while (File.Exists(lnk))
-            {
-                shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-            }
-
-            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
-
-            RemoveContentTypeOverrides(path);
+            CreateShortcut(virtualFolderPath, pathInfo);
 
             if (saveLibraryOptions)
             {
@@ -3352,6 +3365,25 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item is UserRootFolder || item.IsVisibleStandalone(user);
+        }
+
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo)
+        {
+            var path = pathInfo.Path;
+            var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+
+            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
+
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+
+            while (File.Exists(lnk))
+            {
+                shortcutFilename += "1";
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+            }
+
+            _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
+            RemoveContentTypeOverrides(path);
         }
     }
 }

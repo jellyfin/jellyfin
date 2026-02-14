@@ -33,7 +33,15 @@ public interface IItemRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
 
-    void SaveImages(BaseItem item);
+    Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reattaches the user data to the item.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+    Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the item.

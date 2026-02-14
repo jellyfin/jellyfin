@@ -73,7 +73,6 @@
     "Shows": "Shows",
     "Songs": "Songs",
     "StartupEmbyServerIsLoading": "Jellyfin Server is loading. Please try again shortly.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Subtitles failed to download from {0} for {1}",
     "Sync": "Sync",
     "System": "System",

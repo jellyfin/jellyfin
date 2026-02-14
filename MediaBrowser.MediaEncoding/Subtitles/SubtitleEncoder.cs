@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -37,6 +39,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
         private readonly IPathManager _pathManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -54,7 +57,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
             ISubtitleParser subtitleParser,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -63,6 +67,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
             _pathManager = pathManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         private MemoryStream ConvertSubtitles(
@@ -167,23 +172,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task<Stream> GetSubtitleStream(SubtitleInfo fileInfo, CancellationToken cancellationToken)
         {
-            if (fileInfo.IsExternal)
+            if (fileInfo.Protocol == MediaProtocol.Http)
             {
-                var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
-                await using (stream.ConfigureAwait(false))
+                var result = await DetectCharset(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+                var detected = result.Detected;
+
+                if (detected is not null)
                 {
-                    var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-                    var detected = result.Detected;
-                    stream.Position = 0;
+                    _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
-                    if (detected is not null)
+                    using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetStreamAsync(new Uri(fileInfo.Path), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await using (stream.ConfigureAwait(false))
                     {
-                        _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
+                      using var reader = new StreamReader(stream, detected.Encoding);
+                      var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                        using var reader = new StreamReader(stream, detected.Encoding);
-                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-
-                        return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                      return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
             }
@@ -213,7 +220,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 };
             }
 
-            var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
+            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
                 .TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
@@ -394,7 +401,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -677,7 +685,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -828,7 +837,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -933,42 +943,44 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
+            var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var charset = result.Detected?.EncodingName ?? string.Empty;
+
+            // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
+            if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
+                && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
             {
-                var result = await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-                var charset = result.Detected?.EncodingName ?? string.Empty;
-
-                // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
-                    && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
-                {
-                    charset = string.Empty;
-                }
-
-                _logger.LogDebug("charset {0} detected for {Path}", charset, path);
-
-                return charset;
+                charset = string.Empty;
             }
+
+            _logger.LogDebug("charset {0} detected for {Path}", charset, path);
+
+            return charset;
         }
 
-        private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
+        private async Task<DetectionResult> DetectCharset(string path, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                    {
-                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                            .GetAsync(new Uri(path), cancellationToken)
-                            .ConfigureAwait(false);
-                        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                {
+                    using var stream = await _httpClientFactory
+                      .CreateClient(NamedClient.Default)
+                      .GetStreamAsync(new Uri(path), cancellationToken)
+                      .ConfigureAwait(false);
+
+                    return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                }
 
                 case MediaProtocol.File:
-                    return AsyncFile.OpenRead(path);
+                {
+                    return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
+                                          .ConfigureAwait(false);
+                }
+
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(protocol));
+                    throw new ArgumentOutOfRangeException(nameof(protocol), protocol, "Unsupported protocol");
             }
         }
 

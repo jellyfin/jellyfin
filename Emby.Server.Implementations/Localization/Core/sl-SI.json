@@ -73,7 +73,6 @@
     "Shows": "Serije",
     "Songs": "Pesmi",
     "StartupEmbyServerIsLoading": "Jellyfin strežnik se zaganja. Poskusite ponovno kasneje.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Neuspešen prenos podnapisov iz {0} za {1}",
     "Sync": "Sinhroniziraj",
     "System": "Sistem",

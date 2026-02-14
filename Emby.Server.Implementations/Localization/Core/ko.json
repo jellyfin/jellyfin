@@ -73,7 +73,6 @@
     "Shows": "시리즈",
     "Songs": "노래",
     "StartupEmbyServerIsLoading": "Jellyfin 서버를 불러오고 있습니다. 잠시 후에 다시 시도하십시오.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{0}에서 {1} 자막 다운로드에 실패했습니다",
     "Sync": "동기화",
     "System": "시스템",
@@ -136,5 +135,7 @@
     "TaskMoveTrickplayImages": "트릭플레이 이미지 위치 마이그레이션",
     "TaskMoveTrickplayImagesDescription": "추출된 트릭플레이 이미지를 라이브러리 설정에 따라 이동합니다.",
     "TaskDownloadMissingLyrics": "누락된 가사 다운로드",
-    "TaskDownloadMissingLyricsDescription": "가사 다운로드"
+    "TaskDownloadMissingLyricsDescription": "가사 다운로드",
+    "CleanupUserDataTask": "사용자 데이터 정리 작업",
+    "CleanupUserDataTaskDescription": "최소 90일 이상 존재하지 않는 미디어에 대한 사용자 데이터(시청 상태, 즐겨찾기 등)를 정리합니다."
 }

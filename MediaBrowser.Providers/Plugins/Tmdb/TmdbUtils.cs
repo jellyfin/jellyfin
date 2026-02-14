@@ -69,19 +69,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The Jellyfin person type.</returns>
         public static PersonKind MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
+            if (crew.Department.Equals("directing", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Equals("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Director;
             }
 
             if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
+                && crew.Job.Equals("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase)
+                && (crew.Job.Equals("writer", StringComparison.OrdinalIgnoreCase) || crew.Job.Equals("screenplay", StringComparison.OrdinalIgnoreCase)))
             {
                 return PersonKind.Writer;
             }
@@ -116,14 +117,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 preferredLanguage = NormalizeLanguage(preferredLanguage, countryCode);
 
                 languages.Add(preferredLanguage);
-
-                if (preferredLanguage.Length == 5) // Like en-US
-                {
-                    // Currently, TMDb supports 2-letter language codes only.
-                    // They are planning to change this in the future, thus we're
-                    // supplying both codes if we're having a 5-letter code.
-                    languages.Add(preferredLanguage.Substring(0, 2));
-                }
             }
 
             languages.Add("null");

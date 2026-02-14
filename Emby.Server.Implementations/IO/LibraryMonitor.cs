@@ -352,6 +352,12 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
+            {
+                return;
+            }
+
             // Ignore certain files, If the parent of an ignored path has a change event, ignore that too
             foreach (var i in _tempIgnoredPaths.Keys)
             {

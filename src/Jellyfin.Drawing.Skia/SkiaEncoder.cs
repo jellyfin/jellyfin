@@ -209,39 +209,69 @@ public class SkiaEncoder : IImageEncoder
             return default;
         }
 
-        using var codec = SKCodec.Create(safePath, out var result);
-
-        switch (result)
+        SKCodec? codec = null;
+        bool isSafePathTemp = !string.Equals(Path.GetFullPath(safePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
+        try
         {
-            case SKCodecResult.Success:
-            // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
-            // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
-            // `SKCodec.Create` returns a *non‑null* codec together with
-            // SKCodecResult.InternalError.  The header still contains valid dimensions,
-            // which is all we need here – so we fall back to them instead of aborting.
-            // See e.g. Skia bugs #4139, #6092.
-            case SKCodecResult.InternalError when codec is not null:
-                var info = codec.Info;
-                return new ImageDimensions(info.Width, info.Height);
-
-            case SKCodecResult.Unimplemented:
-                _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return default;
-
-            default:
+            codec = SKCodec.Create(safePath, out var result);
+            switch (result)
             {
-                var boundsInfo = SKBitmap.DecodeBounds(safePath);
+                case SKCodecResult.Success:
+                // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
+                // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
+                // `SKCodec.Create` returns a *non‑null* codec together with
+                // SKCodecResult.InternalError.  The header still contains valid dimensions,
+                // which is all we need here – so we fall back to them instead of aborting.
+                // See e.g. Skia bugs #4139, #6092.
+                case SKCodecResult.InternalError when codec is not null:
+                    var info = codec.Info;
+                    return new ImageDimensions(info.Width, info.Height);
 
-                if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                case SKCodecResult.Unimplemented:
+                    _logger.LogDebug("Image format not supported: {FilePath}", path);
+                    return default;
+
+                default:
                 {
-                    return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
-                }
+                    var boundsInfo = SKBitmap.DecodeBounds(safePath);
+                    if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                    {
+                        return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                    }
 
-                _logger.LogWarning(
-                    "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
-                    path,
-                    result);
-                return default;
+                    _logger.LogWarning(
+                        "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
+                        path,
+                        result);
+
+                    return default;
+                }
+            }
+        }
+        finally
+        {
+            try
+            {
+                codec?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Error by closing codec for {FilePath}", safePath);
+            }
+
+            if (isSafePathTemp)
+            {
+                try
+                {
+                    if (File.Exists(safePath))
+                    {
+                        File.Delete(safePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", safePath);
+                }
             }
         }
     }

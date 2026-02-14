@@ -180,11 +180,14 @@ public class ItemUpdateController : BaseJellyfinApiController
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (inheritedContentType is null || inheritedContentType == CollectionType.tvshows)
+                if (inheritedContentType is null
+                    || inheritedContentType == CollectionType.tvshows
+                    || inheritedContentType == CollectionType.movies)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
-                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase))
+                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(i.Value, "Movies", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
             }
@@ -418,7 +421,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasAlbumArtist hasAlbumArtists)
             {
-                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name);
+                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name.Trim());
             }
         }
 
@@ -426,7 +429,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasArtist hasArtists)
             {
-                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name);
+                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name.Trim());
             }
         }
 

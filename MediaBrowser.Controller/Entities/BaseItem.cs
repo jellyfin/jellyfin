@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -1127,6 +1128,15 @@ namespace MediaBrowser.Controller.Entities
 
             var protocol = item.PathProtocol;
 
+            // Resolve the item path so everywhere we use the media source it will always point to
+            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
+            // path will return null, so it's safe to check for all paths.
+            var itemPath = item.Path;
+            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
+            {
+                itemPath = linkInfo.FullName;
+            }
+
             var info = new MediaSourceInfo
             {
                 Id = item.Id.ToString("N", CultureInfo.InvariantCulture),
@@ -1134,7 +1144,7 @@ namespace MediaBrowser.Controller.Entities
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
                 Name = GetMediaSourceName(item),
-                Path = enablePathSubstitution ? GetMappedPath(item, item.Path, protocol) : item.Path,
+                Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
                 Size = item.Size,
@@ -1610,12 +1620,17 @@ namespace MediaBrowser.Controller.Entities
                 return isAllowed;
             }
 
-            if (maxAllowedSubRating is not null)
+            if (!maxAllowedRating.HasValue)
             {
-                return (ratingScore.SubScore ?? 0) <= maxAllowedSubRating && ratingScore.Score <= maxAllowedRating.Value;
+                return true;
             }
 
-            return !maxAllowedRating.HasValue || ratingScore.Score <= maxAllowedRating.Value;
+            if (ratingScore.Score != maxAllowedRating.Value)
+            {
+                return ratingScore.Score < maxAllowedRating.Value;
+            }
+
+            return !maxAllowedSubRating.HasValue || (ratingScore.SubScore ?? 0) <= maxAllowedSubRating.Value;
         }
 
         public ParentalRatingScore GetParentalRatingScore()
@@ -2037,6 +2052,9 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
          => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
+
+        public async Task ReattachUserDataAsync(CancellationToken cancellationToken) =>
+            await LibraryManager.ReattachUserDataAsync(this, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Validates that images within the item are still on the filesystem.

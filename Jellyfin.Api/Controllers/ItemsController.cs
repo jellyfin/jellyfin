@@ -268,7 +268,6 @@ public class ItemsController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         if (includeItemTypes.Length == 1
@@ -849,7 +848,6 @@ public class ItemsController : BaseJellyfinApiController
 
         var parentIdGuid = parentId ?? Guid.Empty;
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var ancestorIds = Array.Empty<Guid>();

@@ -272,6 +272,8 @@ namespace Emby.Server.Implementations.Playlists
                 playlist.LinkedChildren = [.. playlist.LinkedChildren, .. childrenToAdd];
             }
 
+            playlist.DateLastMediaAdded = DateTime.UtcNow;
+
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
 
             // Refresh playlist metadata

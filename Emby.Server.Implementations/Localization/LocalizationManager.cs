@@ -38,6 +38,7 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
+        private readonly ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
         private List<CultureDto> _cultures = [];
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
@@ -161,6 +162,7 @@ namespace Emby.Server.Implementations.Localization
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
+                _cultureCache.Clear();
                 _cultures = list;
                 _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
@@ -169,20 +171,31 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public CultureDto? FindLanguageInfo(string language)
         {
-            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
-            for (var i = 0; i < _cultures.Count; i++)
+            if (string.IsNullOrEmpty(language))
             {
-                var culture = _cultures[i];
-                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
-                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return culture;
-                }
+                return null;
             }
 
-            return default;
+            return _cultureCache.GetOrAdd(
+                language,
+                static (lang, cultures) =>
+                {
+                    // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+                    for (var i = 0; i < cultures.Count; i++)
+                    {
+                        var culture = cultures[i];
+                        if (lang.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                            || culture.ThreeLetterISOLanguageNames.Contains(lang, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return culture;
+                        }
+                    }
+
+                    return null;
+                },
+                _cultures);
         }
 
         /// <inheritdoc />
@@ -311,15 +324,19 @@ namespace Emby.Server.Implementations.Localization
             else
             {
                 // Fall back to server default language for ratings check
-                // If it has no ratings, use the US ratings
-                var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
+                var ratingsDictionary = GetParentalRatingsDictionary();
                 if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRatingScore? value))
                 {
                     return value;
                 }
             }
 
-            // If we don't find anything, check all ratings systems
+            // If we don't find anything, check all ratings systems, starting with US
+            if (_allParentalRatings.TryGetValue("us", out var usRatings) && usRatings.TryGetValue(rating, out var usValue))
+            {
+                return usValue;
+            }
+
             foreach (var dictionary in _allParentalRatings.Values)
             {
                 if (dictionary.TryGetValue(rating, out var value))

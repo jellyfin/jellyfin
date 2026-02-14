@@ -122,6 +122,16 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         {
             lastWriteTimeUtc = File.GetLastWriteTimeUtc(filePath);
         }
+        catch (ArgumentOutOfRangeException e)
+        {
+            _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
+            return null;
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
+            return null;
+        }
         catch (IOException e)
         {
             _logger.LogDebug("Skipping {Path}: {Exception}", filePath, e.Message);
@@ -135,14 +145,21 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
         return Path.Join(keyframeCachePath, prefix, filename);
     }
 
-    private static bool TryReadFromCache(string? cachePath, [NotNullWhen(true)] out MediaEncoding.Keyframes.KeyframeData? cachedResult)
+    private bool TryReadFromCache(string? cachePath, [NotNullWhen(true)] out MediaEncoding.Keyframes.KeyframeData? cachedResult)
     {
         if (File.Exists(cachePath))
         {
-            var bytes = File.ReadAllBytes(cachePath);
-            cachedResult = JsonSerializer.Deserialize<MediaEncoding.Keyframes.KeyframeData>(bytes, _jsonOptions);
+            try
+            {
+                var bytes = File.ReadAllBytes(cachePath);
+                cachedResult = JsonSerializer.Deserialize<MediaEncoding.Keyframes.KeyframeData>(bytes, _jsonOptions);
 
-            return cachedResult is not null;
+                return cachedResult is not null;
+            }
+            catch (JsonException jsonException)
+            {
+                _logger.LogWarning(jsonException, "Failed to read {Path}", cachePath);
+            }
         }
 
         cachedResult = null;

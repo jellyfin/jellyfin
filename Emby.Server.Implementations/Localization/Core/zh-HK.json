@@ -23,7 +23,7 @@
     "HeaderFavoriteShows": "最愛的節目",
     "HeaderFavoriteSongs": "最愛的歌曲",
     "HeaderLiveTV": "電視直播",
-    "HeaderNextUp": "接著播放",
+    "HeaderNextUp": "繼續觀看",
     "HeaderRecordingGroups": "錄製組",
     "HomeVideos": "家庭影片",
     "Inherit": "繼承",
@@ -73,7 +73,6 @@
     "Shows": "節目",
     "Songs": "歌曲",
     "StartupEmbyServerIsLoading": "正在載入 Jellyfin，請稍後再試。",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "無法從 {0} 下載 {1} 的字幕",
     "Sync": "同步",
     "System": "系統",
@@ -127,8 +126,8 @@
     "HearingImpaired": "聽力障礙",
     "TaskRefreshTrickplayImages": "建立 Trickplay 圖像",
     "TaskRefreshTrickplayImagesDescription": "為已啟用 Trickplay 的媒體庫內的影片建立 Trickplay 預覽圖。",
-    "TaskExtractMediaSegments": "掃描媒體段落",
-    "TaskExtractMediaSegmentsDescription": "從MediaSegment中被允許的插件獲取媒體段落。",
+    "TaskExtractMediaSegments": "掃描媒體分段資訊",
+    "TaskExtractMediaSegmentsDescription": "從允許MediaSegment 功能的插件中獲取媒體片段。",
     "TaskDownloadMissingLyrics": "下載欠缺歌詞",
     "TaskDownloadMissingLyricsDescription": "下載歌詞",
     "TaskCleanCollectionsAndPlaylists": "整理媒體與播放清單",
@@ -137,5 +136,6 @@
     "TaskCleanCollectionsAndPlaylistsDescription": "從資料庫及播放清單中移除已不存在的項目。",
     "TaskMoveTrickplayImagesDescription": "根據媒體庫設定移動現有的 Trickplay 檔案。",
     "TaskMoveTrickplayImages": "轉移 Trickplay 影像位置",
-    "CleanupUserDataTask": "用戶資料清理工作"
+    "CleanupUserDataTask": "用戶資料清理工作",
+    "CleanupUserDataTaskDescription": "從用戶數據中清除已經被刪除超過 90 日的媒體相關資料。"
 }

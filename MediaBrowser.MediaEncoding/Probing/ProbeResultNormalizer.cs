@@ -83,6 +83,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "Smith/Kotzen",
             "We;Na",
             "LSR/CITY",
+            "Kairon; IRSE!",
         };
 
         /// <summary>
@@ -154,11 +155,12 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             info.Name = tags.GetFirstNotNullNorWhiteSpaceValue("title", "title-eng");
             info.ForcedSortName = tags.GetFirstNotNullNorWhiteSpaceValue("sort_name", "title-sort", "titlesort");
-            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc");
+            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc", "comment");
 
-            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort");
             info.ParentIndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "season_number");
-            info.ShowName = tags.GetValueOrDefault("show_name");
+            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort") ??
+                               FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_id");
+            info.ShowName = tags.GetValueOrDefault("show_name", "show");
             info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retail/premiere date
@@ -299,9 +301,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 // Handle WebM
                 else if (string.Equals(splitFormat[i], "webm", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Limit WebM to supported codecs
-                    if (mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
-                        || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                    // Limit WebM to supported stream types and codecs.
+                    // FFprobe can report "matroska,webm" for Matroska-like containers, so only keep "webm" if all streams are WebM-compatible.
+                    // Any stream that is not video nor audio is not supported in WebM and should disqualify the webm container probe result.
+                    if (mediaStreams.Any(stream => stream.Type is not MediaStreamType.Video and not MediaStreamType.Audio)
+                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
+                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
                     {
                         splitFormat[i] = string.Empty;
                     }
@@ -853,7 +858,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(streamInfo.SampleAspectRatio)
+                    && string.IsNullOrEmpty(streamInfo.DisplayAspectRatio))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
                 {
                     stream.IsAnamorphic = false;
                 }
@@ -929,6 +939,15 @@ namespace MediaBrowser.MediaEncoding.Probing
                         else if (string.Equals(data.SideDataType, "Display Matrix", StringComparison.OrdinalIgnoreCase))
                         {
                             stream.Rotation = data.Rotation;
+                        }
+
+                        // Parse video frame cropping metadata from side_data
+                        // TODO: save them and make HW filters to apply them in HWA pipelines
+                        else if (string.Equals(data.SideDataType, "Frame Cropping", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Streams containing artificially added frame cropping
+                            // metadata should not be marked as anamorphic.
+                            stream.IsAnamorphic = false;
                         }
                     }
                 }

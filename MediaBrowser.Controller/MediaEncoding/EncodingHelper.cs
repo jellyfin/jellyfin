@@ -2378,6 +2378,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
 
+                // If SDR is the only supported range, we should not copy any of the HDR streams.
+                // All the following copy check assumes at least one HDR format is supported.
+                if (requestedRangeTypes.Length == 1 && requestHasSDR && videoStream.VideoRangeType != VideoRangeType.SDR)
+                {
+                    return false;
+                }
+
                 // If the client does not support DOVI and the video stream is DOVI without fallback, we should not copy it.
                 if (!requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVI)
                 {
@@ -2390,8 +2397,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
                             || (requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.HDR10Plus)))
                 {
-                    // If the video stream is in a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
-                    if (videoStream.VideoRangeType is VideoRangeType.HDR10 or VideoRangeType.HLG)
+                    // If the video stream is in HDR10+ or a static HDR format, don't allow copy if the client does not support HDR10 or HLG.
+                    if (videoStream.VideoRangeType is VideoRangeType.HDR10Plus or VideoRangeType.HDR10 or VideoRangeType.HLG)
                     {
                         return false;
                     }
@@ -2907,8 +2914,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (time > 0)
             {
-                // For direct streaming/remuxing, we seek at the exact position of the keyframe
-                // However, ffmpeg will seek to previous keyframe when the exact time is the input
+                // For direct streaming/remuxing, HLS segments start at keyframes.
+                // However, ffmpeg will seek to previous keyframe when the exact frame time is the input
                 // Workaround this by adding 0.5s offset to the seeking time to get the exact keyframe on most videos.
                 // This will help subtitle syncing.
                 var isHlsRemuxing = state.IsVideoRequest && state.TranscodingType is TranscodingJobType.Hls && IsCopyCodec(state.OutputVideoCodec);
@@ -2925,17 +2932,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (state.IsVideoRequest)
                 {
-                    var outputVideoCodec = GetVideoEncoder(state, options);
-                    var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
-
-                    // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
-                    // Disable -noaccurate_seek on mpegts container due to the timestamps issue on some clients,
-                    // but it's still required for fMP4 container otherwise the audio can't be synced to the video.
-                    if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase)
-                        && state.TranscodingType != TranscodingJobType.Progressive
-                        && !state.EnableBreakOnNonKeyFrames(outputVideoCodec)
-                        && (state.BaseRequest.StartTimeTicks ?? 0) > 0)
+                    // If we are remuxing, then the copied stream cannot be seeked accurately (it will seek to the nearest
+                    // keyframe). If we are using fMP4, then force all other streams to use the same inaccurate seeking to
+                    // avoid A/V sync issues which cause playback issues on some devices.
+                    // When remuxing video, the segment start times correspond to key frames in the source stream, so this
+                    // option shouldn't change the seeked point that much.
+                    // Important: make sure not to use it with wtv because it breaks seeking
+                    if (state.TranscodingType is TranscodingJobType.Hls
+                        && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+                        && (IsCopyCodec(state.OutputVideoCodec) || IsCopyCodec(state.OutputAudioCodec))
+                        && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
                     {
                         seekParam += " -noaccurate_seek";
                     }
@@ -5942,25 +5948,34 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
-                var outFormat = doOclTonemap ? "p010" : (isMjpegEncoder ? "bgra" : "nv12"); // RGA only support full range in rgb fmts
+                var outFormat = doOclTonemap ? "p010" : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("vpp", "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
-                var doScaling = GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var doScaling = !string.IsNullOrEmpty(GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH));
 
                 if (!hasSubs
                      || doRkVppTranspose
                      || !isFullAfbcPipeline
-                     || !string.IsNullOrEmpty(doScaling))
+                     || doScaling)
                 {
+                    var isScaleRatioSupported = IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f);
+
                     // RGA3 hardware only support (1/8 ~ 8) scaling in each blit operation,
                     // but in Trickplay there's a case: (3840/320 == 12), enable 2pass for it
-                    if (!string.IsNullOrEmpty(doScaling)
-                        && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
+                    if (doScaling && !isScaleRatioSupported)
                     {
                         // Vendor provided BSP kernel has an RGA driver bug that causes the output to be corrupted for P010 format.
                         // Use NV15 instead of P010 to avoid the issue.
                         // SDR inputs are using BGRA formats already which is not affected.
-                        var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
+                        var intermediateFormat = doOclTonemap ? "nv15" : (isMjpegEncoder ? "bgra" : outFormat);
                         var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_original_aspect_ratio=increase:force_divisible_by=4:afbc=1";
+                        mainFilters.Add(hwScaleFilterFirstPass);
+                    }
+
+                    // The RKMPP MJPEG encoder on some newer chip models no longer supports RGB input.
+                    // Use 2pass here to enable RGA output of full-range YUV in the 2nd pass.
+                    if (isMjpegEncoder && !doOclTonemap && ((doScaling && isScaleRatioSupported) || !doScaling))
+                    {
+                        var hwScaleFilterFirstPass = "vpp_rkrga=format=bgra:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -6340,6 +6355,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                         && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
                     {
                         return null;
+                    }
+                }
+
+                // Block unsupported H.264 Hi422P and Hi444PP profiles, which can be encoded with 4:2:0 pixel format
+                if (string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (videoStream.Profile.Contains("4:2:2", StringComparison.OrdinalIgnoreCase)
+                        || videoStream.Profile.Contains("4:4:4", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // VideoToolbox on Apple Silicon has H.264 Hi444PP and theoretically also has Hi422P
+                        if (!(hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                              && RuntimeInformation.OSArchitecture.Equals(Architecture.Arm64)))
+                        {
+                            return null;
+                        }
                     }
                 }
 
@@ -7023,8 +7053,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
-                    var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
-                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                    // there's an issue about AV1 AFBC on RK3588, disable it for now until it's fixed upstream
+                    return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
                 }
             }
 
@@ -7053,7 +7083,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
 #nullable disable
-        public void TryStreamCopy(EncodingJobInfo state)
+        public void TryStreamCopy(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is not null && CanStreamCopyVideo(state, state.VideoStream))
             {
@@ -7070,8 +7100,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            var preventHlsAudioCopy = state.TranscodingType is TranscodingJobType.Hls
+                && state.VideoStream is not null
+                && !IsCopyCodec(state.OutputVideoCodec)
+                && options.HlsAudioSeekStrategy is HlsAudioSeekStrategy.TranscodeAudio;
+
             if (state.AudioStream is not null
-                && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs))
+                && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs)
+                && !preventHlsAudioCopy)
             {
                 state.OutputAudioCodec = "copy";
             }

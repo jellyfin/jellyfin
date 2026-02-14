@@ -156,6 +156,11 @@ namespace Emby.Server.Implementations.Updates
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
                 return Array.Empty<PackageInfo>();
             }
+            catch (NotSupportedException ex)
+            {
+                _logger.LogError(ex, "The URL scheme configured for the plugin repository is not supported: {Manifest}", manifest);
+                return Array.Empty<PackageInfo>();
+            }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
@@ -223,14 +228,13 @@ namespace Emby.Server.Implementations.Updates
             Guid id = default,
             Version? specificVersion = null)
         {
-            if (name is not null)
-            {
-                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            }
-
             if (!id.IsEmpty())
             {
                 availablePackages = availablePackages.Where(x => x.Id.Equals(id));
+            }
+            else if (name is not null)
+            {
+                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
             if (specificVersion is not null)
@@ -558,7 +562,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            ZipFile.ExtractToDirectory(stream, targetDir, true);
+            await ZipFile.ExtractToDirectoryAsync(stream, targetDir, true, cancellationToken);
 
             // Ensure we create one or populate existing ones with missing data.
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);

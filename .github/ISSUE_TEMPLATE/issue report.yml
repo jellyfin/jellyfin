@@ -87,7 +87,13 @@ body:
       label: Jellyfin Server version
       description: What version of Jellyfin are you using?
       options:
-        - 10.10.0+
+        - 10.11.6
+        - 10.11.5
+        - 10.11.4
+        - 10.11.3
+        - 10.11.2
+        - 10.11.1
+        - 10.11.0
         - Master
         - Unstable
         - Older*
@@ -136,13 +142,14 @@ body:
         - **FFmpeg Version**: [e.g. 5.1.2-Jellyfin]
         - **Playback**: [Direct Play, Remux, Direct Stream, Transcode]
         - **Hardware Acceleration**: [e.g. none, VAAPI, NVENC, etc.]
+        - **CPU Model**: [e.g. AMD Ryzen 5 9600X, Intel Core i7-8565U, etc.]
         - **GPU Model**: [e.g. none, UHD630, GTX1050, etc.]
         - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
         - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
         - **Base URL**: [e.g. none, yes: /example]
         - **Networking**: [e.g. Host, Bridge/NAT]
-        - **Jellyfin Data Storage**: [e.g. local SATA SSD, local HDD]
-        - **Media Storage**: [e.g. Local HDD, SMB Share]
+        - **Jellyfin Data Storage & Filesystem**: [e.g. local SATA SSD - ext4, local HDD - NTFS]
+        - **Media Storage & Filesystem**: [e.g. Local HDD - ext4, SMB Share]
         - **External Integrations**: [e.g. Jellystat, Jellyseerr]
       value: |
         - OS:
@@ -153,13 +160,14 @@ body:
         - FFmpeg Version:
         - Playback Method:
         - Hardware Acceleration:
+        - CPU Model:
         - GPU Model:
         - Plugins:
         - Reverse Proxy:
         - Base URL:
         - Networking:
-        - Jellyfin Data Storage:
-        - Media Storage:
+        - Jellyfin Data Storage & Filesystem:
+        - Media Storage & Filesystem:
         - External Integrations:
       render: markdown
     validations:

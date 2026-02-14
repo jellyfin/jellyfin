@@ -177,8 +177,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var item = new Episode
             {
-                IndexNumber = info.IndexNumber,
-                ParentIndexNumber = info.ParentIndexNumber,
+                IndexNumber = episodeNumber,
+                ParentIndexNumber = seasonNumber,
                 IndexNumberEnd = info.IndexNumberEnd,
                 Name = episodeResult.Name,
                 PremiereDate = episodeResult.AirDate,
@@ -275,9 +275,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                         CrewMember = crewMember,
                         PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
                     })
-                    .Where(entry =>
-                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
-                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+                    .Where(entry => TmdbUtils.WantedCrewKinds.Contains(entry.PersonType));
 
                 if (config.HideMissingCrewMembers)
                 {

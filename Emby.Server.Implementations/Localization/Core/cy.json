@@ -8,7 +8,7 @@
     "CameraImageUploadedFrom": "Mae delwedd camera newydd wedi'i lanlwytho o {0}",
     "Books": "Llyfrau",
     "AuthenticationSucceededWithUserName": "{0} wedi’i ddilysu’n llwyddiannus",
-    "Artists": "Artistiaid",
+    "Artists": "Crewyr",
     "AppDeviceValues": "Ap: {0}, Dyfais: {1}",
     "Albums": "Albwmau",
     "Genres": "Genres",
@@ -67,7 +67,7 @@
     "NotificationOptionAudioPlayback": "Dechreuwyd chwarae sain",
     "MessageServerConfigurationUpdated": "Mae gosodiadau gweinydd wedi'i ddiweddaru",
     "MessageNamedServerConfigurationUpdatedWithValue": "Mae adran gosodiadau gweinydd {0} wedi'i diweddaru",
-    "FailedLoginAttemptWithUserName": "Cais mewngofnodi wedi methu gan {0}",
+    "FailedLoginAttemptWithUserName": "Cais mewngofnodi wedi methu o {0}",
     "ValueHasBeenAddedToLibrary": "{0} wedi'i hychwanegu at eich llyfrgell gyfryngau",
     "UserStoppedPlayingItemWithValues": "{0} wedi gorffen chwarae {1} ar {2}",
     "UserStartedPlayingItemWithValues": "{0} yn chwarae {1} ar {2}",
@@ -123,5 +123,14 @@
     "TaskRefreshChapterImages": "Echdynnu Lluniau Pennod",
     "TaskCleanCacheDescription": "Dileu ffeiliau cache nad oes eu hangen ar y system mwyach.",
     "TaskCleanCache": "Gwaghau Ffolder Cache",
-    "HearingImpaired": "Nam ar y clyw"
+    "HearingImpaired": "Nam ar y clyw",
+    "TaskAudioNormalization": "Gwastatau Sain",
+    "TaskAudioNormalizationDescription": "Yn sganio ffeiliau am ddata gwastatau sain.",
+    "TaskRefreshTrickplayImages": "Creuwch lluniau Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Creu rhagolygon Trickplay ar gyfer fideos mewn llyfrgelloedd gweithredol.",
+    "TaskDownloadMissingLyrics": "Lawrlwytho geiriau coll",
+    "TaskDownloadMissingLyricsDescription": "Lawrlwytho geiriau caneuon",
+    "TaskCleanCollectionsAndPlaylists": "Glanhau casgliadau a rhestrau chwarae",
+    "TaskCleanCollectionsAndPlaylistsDescription": "Dileu eitemau o gasgliadau a rhestrau chwarae sydd ddim yn bodoli bellach.",
+    "TaskExtractMediaSegments": "Sganio Darnau Cyfryngau"
 }

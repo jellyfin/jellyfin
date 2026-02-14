@@ -73,7 +73,6 @@
     "Shows": "Serier",
     "Songs": "Sanger",
     "StartupEmbyServerIsLoading": "Jellyfin Server laster. Prøv igjen snart.",
-    "SubtitleDownloadFailureForItem": "En feil oppstå under nedlasting av undertekster for  {0}",
     "SubtitleDownloadFailureFromForItem": "Kunne ikke laste ned undertekster fra {0} for {1}",
     "Sync": "Synkroniser",
     "System": "System",
