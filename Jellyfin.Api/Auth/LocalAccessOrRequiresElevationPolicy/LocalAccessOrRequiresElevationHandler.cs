@@ -34,20 +34,9 @@ namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
             var ip = _httpContextAccessor.HttpContext?.GetNormalizedRemoteIP();
 
             // Loopback will be on LAN, so we can accept null.
-            if (ip is null || _networkManager.IsInLocalNetwork(ip))
+            if (ip is null || _networkManager.IsInLocalNetwork(ip) || context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
-
-                return Task.CompletedTask;
-            }
-
-            if (context.User.IsInRole(UserRoles.Administrator))
-            {
-                context.Succeed(requirement);
-            }
-            else
-            {
-                context.Fail();
             }
 
             return Task.CompletedTask;
