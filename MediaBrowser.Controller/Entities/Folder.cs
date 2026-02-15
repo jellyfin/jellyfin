@@ -838,6 +838,24 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (query.IsHD.HasValue || query.Is4K.HasValue || query.MinHeight.HasValue || query.MaxHeight.HasValue || query.MinWidth.HasValue || query.MaxWidth.HasValue)
+            {
+                Logger.LogDebug("Query requires post-filtering due to Min/Max Width/Height or IsHD/Is4k");
+                return true;
+            }
+
+            if (query.SubtitleLanguage.Length > 0)
+            {
+                Logger.LogDebug("Query requires post-filtering due to SubtitleLanguage");
+                return true;
+            }
+
+            if (query.AudioLanguage.Length > 0)
+            {
+                Logger.LogDebug("Query requires post-filtering due to AudioLanguage");
+                return true;
+            }
+
             if (query.HasOfficialRating.HasValue)
             {
                 Logger.LogDebug("Query requires post-filtering due to HasOfficialRating");
@@ -853,12 +871,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.HasSpecialFeature.HasValue)
             {
                 Logger.LogDebug("Query requires post-filtering due to HasSpecialFeature");
-                return true;
-            }
-
-            if (query.HasSubtitles.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasSubtitles");
                 return true;
             }
 
