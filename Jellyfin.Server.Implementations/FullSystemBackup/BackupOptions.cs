@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using MediaBrowser.Controller.SystemBackupService;
+
 namespace Jellyfin.Server.Implementations.FullSystemBackup;
 
 /// <summary>
@@ -12,4 +16,6 @@ internal class BackupOptions
     public bool Subtitles { get; set; }
 
     public bool Database { get; set; }
+
+    public IReadOnlyCollection<PluginBackupManifest> PluginData { get; set; } = [];
 }
