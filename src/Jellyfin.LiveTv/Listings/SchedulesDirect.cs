@@ -547,7 +547,7 @@ namespace Jellyfin.LiveTv.Listings
             }
 
             // Avoid hammering SD
-            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 1)
+            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
             {
                 return null;
             }
@@ -579,7 +579,7 @@ namespace Jellyfin.LiveTv.Listings
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                    if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
                         _lastErrorResponse = DateTime.UtcNow;
@@ -700,6 +700,13 @@ namespace Jellyfin.LiveTv.Listings
                 if (ex.StatusCode is HttpStatusCode.BadRequest)
                 {
                     return false;
+                }
+
+                // Clear tokens on any client error to avoid hammering SD with stale credentials
+                if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
+                {
+                    _tokens.Clear();
+                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
