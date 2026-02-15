@@ -98,7 +98,7 @@ namespace MediaBrowser.Controller.Providers
                 _filePathCache.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p, true).ToList(), _fileSystem);
 
             if (sort)
             {
