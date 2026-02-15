@@ -1,0 +1,55 @@
+name: OpenAPI Build
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  openapi-head:
+    name: OpenAPI - HEAD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Generate openapi.json
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
+      - name: Upload openapi.json
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: openapi-head
+          retention-days: 1
+          if-no-files-found: error
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
+
+  openapi-base:
+    name: OpenAPI - BASE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Generate openapi.json
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
+      - name: Upload openapi.json
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: openapi-base
+          retention-days: 1
+          if-no-files-found: error
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
