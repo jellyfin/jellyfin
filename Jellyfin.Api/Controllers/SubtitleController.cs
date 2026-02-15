@@ -14,6 +14,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
+using Jellyfin.LibAssUtils;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -326,6 +327,74 @@ public class SubtitleController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets a list of fonts for given ASS subtitles file.
+    /// </summary>
+    /// <param name="routeItemId">The (route) item id.</param>
+    /// <param name="routeMediaSourceId">The (route) media source id.</param>
+    /// <param name="routeIndex">The (route) subtitle stream index.</param>
+    /// <response code="200">File returned.</response>
+    /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+    [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/Fonts")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IAsyncEnumerable<FontStreamInfo> GetSubtitleFonts(
+        [FromRoute, Required] Guid routeItemId,
+        [FromRoute, Required] string routeMediaSourceId,
+        [FromRoute, Required] int routeIndex)
+    {
+        return GetSubtitleFontsWithTicks(routeItemId, routeMediaSourceId, routeIndex, 0);
+    }
+
+    /// <summary>
+    /// Gets a list of fonts for given ASS subtitles file.
+    /// </summary>
+    /// <param name="routeItemId">The (route) item id.</param>
+    /// <param name="routeMediaSourceId">The (route) media source id.</param>
+    /// <param name="routeIndex">The (route) subtitle stream index.</param>
+    /// <param name="routeStartPositionTicks">The (route) start position of the subtitle in ticks.</param>
+    /// <response code="200">File returned.</response>
+    /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
+    [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/{routeStartPositionTicks}/Fonts")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async IAsyncEnumerable<FontStreamInfo> GetSubtitleFontsWithTicks(
+        [FromRoute, Required] Guid routeItemId,
+        [FromRoute, Required] string routeMediaSourceId,
+        [FromRoute, Required] int routeIndex,
+        [FromRoute, Required] long routeStartPositionTicks)
+    {
+        // return File(,MimeTypes.GetMimeType("file." + format));
+        var stream = await EncodeSubtitles(
+                routeItemId,
+                routeMediaSourceId,
+                routeIndex,
+                "ass", // TODO: problem: "ssa" subtitles will probably be converted instead of grabbed as-is, and that'll throw out Styles
+                routeStartPositionTicks,
+                null,
+                false).ConfigureAwait(false);
+
+        var fontInfos = LibAssUtils.Fonts.GetFontsForSubtitlesBuffer(stream);
+
+        foreach (var fontInfo in fontInfos)
+        {
+            if (fontInfo.path is null)
+            {
+                continue;
+            }
+
+            yield return new FontStreamInfo
+            {
+                Path = fontInfo.path,
+                Key = string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}", fontInfo.font_name, fontInfo.bold, fontInfo.italic),
+                FontName = fontInfo.font_name,
+                PostScriptName = fontInfo.postscript_name,
+                Bold = fontInfo.bold,
+                Italic = fontInfo.italic,
+            };
+        }
+    }
+
+    /// <summary>
     /// Gets an HLS subtitle playlist.
     /// </summary>
     /// <param name="itemId">The item id.</param>
@@ -576,5 +645,56 @@ public class SubtitleController : BaseJellyfinApiController
 
         // returning HTTP 204 will break the SubtitlesOctopus
         return Ok();
+    }
+
+    /// <summary>
+    /// Gets a font file from installed server-side fonts.
+    /// </summary>
+    /// <param name="family">The name of the font file family, full name or PostScript name.</param>
+    /// <param name="bold">Font's boldness score.</param>
+    /// <param name="italic">Whether the font is supposed to be italic or not.</param>
+    /// <response code="200">Font file retrieved.</response>
+    /// <returns>The font file matched to the query.</returns>
+    [HttpGet("Fonts/{family},{bold},{italic}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesFile("font/*")]
+    public ActionResult GetStreamFont(
+        [FromRoute, Required] string family,
+        [FromRoute, Required] int bold,
+        [FromRoute, Required] int italic)
+    {
+        LibAssUtils.FontDesc desc;
+        desc.Family = family;
+        desc.Bold = bold;
+        desc.Italic = italic;
+        var fontInfo = LibAssUtils.Fonts.GetFontForQuery(desc);
+
+        if (fontInfo.path is not null && fontInfo.postscript_name is not null)
+        {
+            Response.Headers["X-Selected-Font-Path"] = fontInfo.path;
+            Response.Headers["X-Selected-Font-Postscript-Name"] = fontInfo.postscript_name;
+            return PhysicalFile(fontInfo.path, MimeTypes.GetMimeType(fontInfo.path));
+        }
+
+        _logger.LogWarning("Font for such parameters was not found: {0},{1},{2}", family, bold, italic);
+
+        // returning HTTP 204 will break the SubtitlesOctopus
+        return Ok();
+    }
+
+    /// <summary>
+    /// Gets a font file from installed server-side fonts.
+    /// </summary>
+    /// <param name="family">The name of the font file family, full name or PostScript name.</param>
+    /// <response code="200">Fallback font file retrieved.</response>
+    /// <returns>The fallback font file.</returns>
+    [HttpGet("Fonts/{family}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesFile("font/*")]
+    public ActionResult GetStreamFont([FromRoute, Required] string family)
+    {
+        return GetStreamFont(family, 0, 0);
     }
 }
