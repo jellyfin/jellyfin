@@ -1432,11 +1432,11 @@ namespace MediaBrowser.Controller.Entities
                 var subOptions = new MetadataRefreshOptions(options);
                 if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
                 {
-                    i.OwnerId = ownerId;
-                    i.ParentId = Guid.Empty;
                     subOptions.ForceSave = true;
                 }
 
+                i.OwnerId = ownerId;
+                i.ParentId = Guid.Empty;
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 

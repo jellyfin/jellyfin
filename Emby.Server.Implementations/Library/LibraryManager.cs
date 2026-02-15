@@ -3134,13 +3134,12 @@ namespace Emby.Server.Implementations.Library
                     extra.ExtraType = extraType;
                 }
 
-                // Only set OwnerId if this is actually an extra (not Unknown or null)
+                // Only return items that are actual extras (have ExtraType set)
+                // Note: OwnerId and ParentId are set by RefreshExtras, not here,
+                // so that RefreshExtras can detect when they need updating and set ForceSave.
                 if (extra.ExtraType is not null)
                 {
-                    extra.ParentId = Guid.Empty;
-                    extra.OwnerId = owner.Id;
                     extra.IsInMixedFolder = isInMixedFolder;
-
                     return extra;
                 }
 
