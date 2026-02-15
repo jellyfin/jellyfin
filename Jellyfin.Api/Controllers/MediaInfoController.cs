@@ -213,7 +213,11 @@ public class MediaInfoController : BaseJellyfinApiController
                     Request.HttpContext.GetNormalizedRemoteIP());
             }
 
-            _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
+            _mediaInfoHelper.SortMediaSources(
+                info,
+                maxStreamingBitrate,
+                playbackInfoDto?.MediaSourceSelectionMode ?? MediaBrowser.Model.Dlna.MediaSourceSelectionMode.PreferDirectPlay,
+                playbackInfoDto?.AvailableBandwidth);
         }
 
         if (autoOpenLiveStream.Value)
