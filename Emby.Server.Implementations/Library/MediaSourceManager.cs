@@ -23,6 +23,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -423,7 +424,7 @@ namespace Emby.Server.Implementations.Library
             MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLanguage);
         }
 
-        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
+        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection, string originalLanguage)
         {
             if (userData is not null && userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
             {
@@ -437,7 +438,42 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
+            if (user.AudioLanguagePreference == "OriginalLanguage")
+            {
+                originalLanguage = !string.IsNullOrWhiteSpace(originalLanguage)
+                    ? originalLanguage.Split(',').FirstOrDefault()
+                    : null;
+
+                if (user.PlayDefaultAudioTrack)
+                {
+                    source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
+                        source.MediaStreams,
+                        NormalizeLanguage(originalLanguage),
+                        user.PlayDefaultAudioTrack);
+                    return;
+                }
+
+                var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
+                // If original language and the language name with the original indicator
+                if (!string.IsNullOrWhiteSpace(originalLanguage) && originalIndex != -1)
+                {
+                    var mediaLanguageOriginal = source.MediaStreams[originalIndex].Language;
+                    if (NormalizeLanguage(mediaLanguageOriginal).Contains(NormalizeLanguage(originalLanguage).FirstOrDefault()))
+                    {
+                        source.DefaultAudioStreamIndex = originalIndex;
+                        return;
+                    }
+                }
+                else if (originalIndex != -1)
+                {
+                    source.DefaultAudioStreamIndex = originalIndex;
+                    return;
+                }
+            }
+
+            var preferredAudio = user.AudioLanguagePreference == "OriginalLanguage" && !string.IsNullOrWhiteSpace(originalLanguage)
+                ? NormalizeLanguage(originalLanguage)
+                : NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
             if (user.PlayDefaultAudioTrack)
@@ -462,7 +498,19 @@ namespace Emby.Server.Implementations.Library
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
-                SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
+                var originalLanguage = item?.OriginalLanguage ?? item switch
+                {
+                    Episode episode => episode.Series.OriginalLanguage,
+                    Video video => video.GetOwner() switch
+                    {
+                        Episode ownerEpisode => ownerEpisode.OriginalLanguage ?? ownerEpisode.Series.OriginalLanguage,
+                        BaseItem owner => owner.OriginalLanguage,
+                        null => null
+                    },
+                    _ => null
+                };
+
+                SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection, originalLanguage);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
             }
             else if (mediaType == MediaType.Audio)
