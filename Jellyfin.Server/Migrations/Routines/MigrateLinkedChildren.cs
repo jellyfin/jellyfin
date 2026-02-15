@@ -278,51 +278,25 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
     {
         _logger.LogInformation("Starting cleanup of orphaned alternate version BaseItems...");
 
-        // Check 1: Find BaseItems that have PrimaryVersionId set (they were alternate versions)
-        // but no LinkedChild entry references them — meaning they're orphaned.
-        // This happens when a version file is renamed: the old BaseItem remains
-        // in the DB with a stale PrimaryVersionId but nothing links to it anymore.
+        // Find BaseItems that have OwnerId set (they belonged to another item) and are not extras,
+        // but no LinkedChild entry references them — meaning they're orphaned alternate versions.
+        // This happens when a version file is renamed: the old BaseItem remains in the DB
+        // with a stale OwnerId but nothing links to it anymore.
         var orphanedVersionIds = context.BaseItems
-            .Where(b => b.PrimaryVersionId != null && b.PrimaryVersionId != string.Empty)
+            .Where(b => b.OwnerId.HasValue && b.ExtraType == null)
             .Where(b => !context.LinkedChildren.Any(lc => lc.ChildId.Equals(b.Id)))
             .Select(b => b.Id)
             .ToList();
 
-        _logger.LogInformation("Found {Count} orphaned alternate versions with stale PrimaryVersionId.", orphanedVersionIds.Count);
-
-        // Check 2: Find generic Video items that share a parent folder with a Movie/Episode
-        // but are not linked as alternate versions. These are orphaned entries from renamed
-        // alternate version files where PrimaryVersionId was already cleared by the old server.
-        var specificVideoTypes = new[]
-        {
-            "MediaBrowser.Controller.Entities.Movies.Movie",
-            "MediaBrowser.Controller.Entities.TV.Episode"
-        };
-
-        var orphanedVideoIds = context.BaseItems
-            .Where(b => b.Type == "MediaBrowser.Controller.Entities.Video")
-            .Where(b => b.ExtraType == null && !b.OwnerId.HasValue)
-            .Where(b => !context.LinkedChildren.Any(lc => lc.ChildId.Equals(b.Id)))
-            .Where(b => b.ParentId.HasValue
-                && context.BaseItems.Any(sibling =>
-                    sibling.ParentId.Equals(b.ParentId)
-                    && specificVideoTypes.Contains(sibling.Type)))
-            .Select(b => b.Id)
-            .ToList();
-
-        _logger.LogInformation("Found {Count} orphaned generic Video items in movie/episode folders.", orphanedVideoIds.Count);
-
-        var allOrphanedIds = orphanedVersionIds.Union(orphanedVideoIds).ToList();
-
-        if (allOrphanedIds.Count == 0)
+        if (orphanedVersionIds.Count == 0)
         {
             _logger.LogInformation("No orphaned alternate version BaseItems found.");
             return;
         }
 
-        _logger.LogInformation("Removing {Count} total orphaned alternate version BaseItems.", allOrphanedIds.Count);
+        _logger.LogInformation("Found {Count} orphaned alternate version BaseItems to remove.", orphanedVersionIds.Count);
 
-        foreach (var id in allOrphanedIds)
+        foreach (var id in orphanedVersionIds)
         {
             var item = _libraryManager.GetItemById(id);
             if (item is not null)
@@ -331,7 +305,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
             }
         }
 
-        _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", allOrphanedIds.Count);
+        _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", orphanedVersionIds.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)
