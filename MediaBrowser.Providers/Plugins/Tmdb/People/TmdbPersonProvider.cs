@@ -56,13 +56,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     }
 
                     result.SetProviderId(MetadataProvider.Tmdb, personResult.Id.ToString(CultureInfo.InvariantCulture));
-                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
+                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds?.ImdbId);
 
-                    return new[] { result };
+                    return [result];
                 }
             }
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
+            if (personSearchResult is null)
+            {
+                return [];
+            }
 
             var remoteSearchResults = new RemoteSearchResult[personSearchResult.Count];
             for (var i = 0; i < personSearchResult.Count; i++)
@@ -91,7 +95,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (personTmdbId <= 0)
             {
                 var personSearchResults = await _tmdbClientManager.SearchPersonAsync(info.Name, cancellationToken).ConfigureAwait(false);
-                if (personSearchResults.Count > 0)
+                if (personSearchResults?.Count > 0)
                 {
                     personTmdbId = personSearchResults[0].Id;
                 }
