@@ -7,7 +7,8 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.UserDtos;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
@@ -274,16 +275,15 @@ public class UserController : BaseJellyfinApiController
         [FromBody, Required] UpdateUserPassword request)
     {
         var requestUserId = userId ?? User.GetUserId();
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
-        }
-
         var user = _userManager.GetUserById(requestUserId);
-
         if (user is null)
         {
-            return NotFound("User not found");
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
         }
 
         if (request.ResetPassword)
@@ -296,7 +296,6 @@ public class UserController : BaseJellyfinApiController
             {
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
-                    request.CurrentPw ?? string.Empty,
                     request.CurrentPw ?? string.Empty,
                     HttpContext.GetNormalizedRemoteIP().ToString(),
                     false).ConfigureAwait(false);
@@ -339,29 +338,6 @@ public class UserController : BaseJellyfinApiController
         => UpdateUserPassword(userId, request);
 
     /// <summary>
-    /// Updates a user's easy password.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
-    /// <response code="204">Password successfully reset.</response>
-    /// <response code="403">User is not allowed to update the password.</response>
-    /// <response code="404">User not found.</response>
-    /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
-    [HttpPost("{userId}/EasyPassword")]
-    [Obsolete("Use Quick Connect instead")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult UpdateUserEasyPassword(
-        [FromRoute, Required] Guid userId,
-        [FromBody, Required] UpdateUserEasyPassword request)
-    {
-        return Forbid();
-    }
-
-    /// <summary>
     /// Updates a user.
     /// </summary>
     /// <param name="userId">The user id.</param>
@@ -386,7 +362,7 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
         }
@@ -396,7 +372,7 @@ public class UserController : BaseJellyfinApiController
             await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
         }
 
-        await _userManager.UpdateConfigurationAsync(user.Id, updateUser.Configuration).ConfigureAwait(false);
+        await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -495,7 +471,13 @@ public class UserController : BaseJellyfinApiController
         [FromBody, Required] UserConfiguration userConfig)
     {
         var requestUserId = userId ?? User.GetUserId();
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, requestUserId, true))
+        var user = _userManager.GetUserById(requestUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
         }

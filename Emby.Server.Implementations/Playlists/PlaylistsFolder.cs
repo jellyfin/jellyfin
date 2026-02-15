@@ -3,14 +3,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Playlists
 {
+    [RequiresSourceSerialisation]
     public class PlaylistsFolder : BasePluginFolder
     {
         public PlaylistsFolder()

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
+    [Common.RequiresSourceSerialisation]
     public class AudioBook : Audio.Audio, IHasSeries, IHasLookupInfo<SongInfo>
     {
         [JsonIgnore]

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,7 +34,7 @@ namespace Jellyfin.Server.Integration.Tests
             // Write out for publishing
             string outputPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? ".", "openapi.json"));
             _outputHelper.WriteLine("Writing OpenAPI Spec JSON to '{0}'.", outputPath);
-            await using var fs = File.Create(outputPath);
+            await using var fs = AsyncFile.Create(outputPath);
             await response.Content.CopyToAsync(fs);
         }
     }

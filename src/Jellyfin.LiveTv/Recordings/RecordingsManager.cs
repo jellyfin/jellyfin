@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Timers;
@@ -159,7 +160,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 Locations = [customPath],
                 Name = "Recorded Movies",
-                CollectionType = CollectionTypeOptions.Movies
+                CollectionType = CollectionTypeOptions.movies
             };
         }
 
@@ -172,7 +173,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 Locations = [customPath],
                 Name = "Recorded Shows",
-                CollectionType = CollectionTypeOptions.TvShows
+                CollectionType = CollectionTypeOptions.tvshows
             };
         }
     }
@@ -229,7 +230,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             if (pathsAdded.Count > 0 || pathsToRemove.Count > 0)
             {
                 pathsAdded.InsertRange(0, config.MediaLocationsCreated);
-                config.MediaLocationsCreated = pathsAdded.Except(pathsToRemove).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                config.MediaLocationsCreated = pathsAdded.Except(pathsToRemove).Distinct().ToArray();
                 _config.SaveConfiguration("livetv", config);
             }
 

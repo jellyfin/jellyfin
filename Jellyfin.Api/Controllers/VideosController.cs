@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -105,10 +104,13 @@ public class VideosController : BaseJellyfinApiController
             ? (userId.IsNullOrEmpty()
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
-            : _libraryManager.GetItemById(itemId);
+            : _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions();
-        dtoOptions = dtoOptions.AddClientFields(User);
 
         BaseItemDto[] items;
         if (item is Video video)
@@ -139,24 +141,23 @@ public class VideosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteAlternateSources([FromRoute, Required] Guid itemId)
     {
-        var video = (Video)_libraryManager.GetItemById(itemId);
-
-        if (video is null)
-        {
-            return NotFound("The video either does not exist or the id does not belong to a video.");
-        }
-
-        if (video.LinkedAlternateVersions.Length == 0)
-        {
-            video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
-        }
-
-        if (video is null)
+        var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
+        if (item is null)
         {
             return NotFound();
         }
 
-        foreach (var link in video.GetLinkedAlternateVersions())
+        if (item.LinkedAlternateVersions.Length == 0)
+        {
+            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
+        }
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        foreach (var link in item.GetLinkedAlternateVersions())
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -164,9 +165,9 @@ public class VideosController : BaseJellyfinApiController
             await link.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
-        video.LinkedAlternateVersions = Array.Empty<LinkedChild>();
-        video.SetPrimaryVersionId(null);
-        await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        item.LinkedAlternateVersions = Array.Empty<LinkedChild>();
+        item.SetPrimaryVersionId(null);
+        await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
         return NoContent();
     }
@@ -182,10 +183,11 @@ public class VideosController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> MergeVersions([FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+    public async Task<ActionResult> MergeVersions([FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids)
     {
+        var userId = User.GetUserId();
         var items = ids
-            .Select(i => _libraryManager.GetItemById(i))
+            .Select(i => _libraryManager.GetItemById<BaseItem>(i, userId))
             .OfType<Video>()
             .OrderBy(i => i.Id)
             .ToList();
@@ -264,11 +266,10 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -296,13 +297,14 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream")]
@@ -311,29 +313,28 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] string? container,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -354,13 +355,14 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] string? videoCodec,
-        [FromQuery] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
@@ -382,7 +384,6 @@ public class VideosController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate,
@@ -416,7 +417,8 @@ public class VideosController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
         var state = await StreamingHelpers.GetStreamingState(
@@ -476,7 +478,7 @@ public class VideosController : BaseJellyfinApiController
 
         // Need to start ffmpeg (because media can't be returned directly)
         var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, "superfast");
+        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast);
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,
@@ -502,11 +504,10 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="minSegments">The minimum number of segments.</param>
     /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
     /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
-    /// <param name="audioCodec">Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.</param>
+    /// <param name="audioCodec">Optional. Specify an audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -534,13 +535,14 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
     /// <param name="liveStreamId">The live stream id.</param>
     /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
+    /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension.</param>
     /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
     /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
     /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}")]
@@ -549,29 +551,28 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public Task<ActionResult> GetVideoStreamByContainer(
         [FromRoute, Required] Guid itemId,
-        [FromRoute, Required] string container,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -592,13 +593,14 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] string? videoCodec,
-        [FromQuery] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] bool enableAudioVbrEncoding = true)
     {
         return GetVideoStream(
             itemId,
@@ -617,7 +619,6 @@ public class VideosController : BaseJellyfinApiController
             enableAutoStreamCopy,
             allowVideoStreamCopy,
             allowAudioStreamCopy,
-            breakOnNonKeyFrames,
             audioSampleRate,
             maxAudioBitDepth,
             audioBitRate,
@@ -651,6 +652,7 @@ public class VideosController : BaseJellyfinApiController
             audioStreamIndex,
             videoStreamIndex,
             context,
-            streamOptions);
+            streamOptions,
+            enableAudioVbrEncoding);
     }
 }

@@ -8,6 +8,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -65,12 +66,13 @@ public class UserViewsController : BaseJellyfinApiController
     public QueryResult<BaseItemDto> GetUserViews(
         [FromQuery] Guid? userId,
         [FromQuery] bool? includeExternalContent,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
     {
         userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
 
-        var query = new UserViewQuery { UserId = userId.Value, IncludeHidden = includeHidden };
+        var query = new UserViewQuery { User = user, IncludeHidden = includeHidden };
 
         if (includeExternalContent.HasValue)
         {
@@ -84,17 +86,10 @@ public class UserViewsController : BaseJellyfinApiController
 
         var folders = _userViewManager.GetUserViews(query);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
-        var fields = dtoOptions.Fields.ToList();
+        var dtoOptions = new DtoOptions();
+        dtoOptions.Fields = [..dtoOptions.Fields, ItemFields.PrimaryImageAspectRatio, ItemFields.DisplayPreferencesId];
 
-        fields.Add(ItemFields.PrimaryImageAspectRatio);
-        fields.Add(ItemFields.DisplayPreferencesId);
-        dtoOptions.Fields = fields.ToArray();
-
-        var user = _userManager.GetUserById(userId.Value);
-
-        var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
-            .ToArray();
+        var dtos = Array.ConvertAll(folders, i => _dtoService.GetBaseItemDto(i, dtoOptions, user));
 
         return new QueryResult<BaseItemDto>(dtos);
     }
@@ -115,7 +110,7 @@ public class UserViewsController : BaseJellyfinApiController
     public QueryResult<BaseItemDto> GetUserViewsLegacy(
         [FromRoute, Required] Guid userId,
         [FromQuery] bool? includeExternalContent,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
         => GetUserViews(userId, includeExternalContent, presetViews, includeHidden);
 

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Session;
 using Xunit;

@@ -11,6 +11,8 @@ namespace MediaBrowser.Controller.Providers
         public ItemInfo(BaseItem item)
         {
             Path = item.Path;
+            ParentId = item.ParentId;
+            IndexNumber = item.IndexNumber;
             ContainingFolderPath = item.ContainingFolderPath;
             IsInMixedFolder = item.IsInMixedFolder;
 
@@ -26,6 +28,10 @@ namespace MediaBrowser.Controller.Providers
         public Type ItemType { get; set; }
 
         public string Path { get; set; }
+
+        public Guid ParentId { get; set; }
+
+        public int? IndexNumber { get; set; }
 
         public string ContainingFolderPath { get; set; }
 

@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             PersonKind.Producer
         };
 
-        [GeneratedRegex(@"[\W_]+")]
+        [GeneratedRegex(@"[\W_-[·]]+")]
         private static partial Regex NonWordRegex();
 
         /// <summary>
@@ -69,19 +69,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The Jellyfin person type.</returns>
         public static PersonKind MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
+            if (crew.Department.Equals("directing", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Equals("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Director;
             }
 
             if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
+                && crew.Job.Equals("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase)
+                && (crew.Job.Equals("writer", StringComparison.OrdinalIgnoreCase) || crew.Job.Equals("screenplay", StringComparison.OrdinalIgnoreCase)))
             {
                 return PersonKind.Writer;
             }
@@ -105,24 +106,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Normalizes a language string for use with TMDb's include image language parameter.
         /// </summary>
         /// <param name="preferredLanguage">The preferred language as either a 2 letter code with or without country code.</param>
+        /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <returns>The comma separated language string.</returns>
-        public static string GetImageLanguagesParam(string preferredLanguage)
+        public static string GetImageLanguagesParam(string preferredLanguage, string? countryCode = null)
         {
             var languages = new List<string>();
 
             if (!string.IsNullOrEmpty(preferredLanguage))
             {
-                preferredLanguage = NormalizeLanguage(preferredLanguage);
+                preferredLanguage = NormalizeLanguage(preferredLanguage, countryCode);
 
                 languages.Add(preferredLanguage);
-
-                if (preferredLanguage.Length == 5) // Like en-US
-                {
-                    // Currently, TMDb supports 2-letter language codes only.
-                    // They are planning to change this in the future, thus we're
-                    // supplying both codes if we're having a 5-letter code.
-                    languages.Add(preferredLanguage.Substring(0, 2));
-                }
             }
 
             languages.Add("null");
@@ -140,13 +134,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Normalizes a language string for use with TMDb's language parameter.
         /// </summary>
         /// <param name="language">The language code.</param>
+        /// <param name="countryCode">The country code.</param>
         /// <returns>The normalized language code.</returns>
         [return: NotNullIfNotNull(nameof(language))]
-        public static string? NormalizeLanguage(string? language)
+        public static string? NormalizeLanguage(string? language, string? countryCode = null)
         {
             if (string.IsNullOrEmpty(language))
             {
                 return language;
+            }
+
+            // Handle es-419 (Latin American Spanish) by converting to regional variant
+            if (string.Equals(language, "es-419", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(countryCode))
+            {
+                language = string.Equals(countryCode, "AR", StringComparison.OrdinalIgnoreCase)
+                    ? "es-AR"
+                    : "es-MX";
             }
 
             // TMDb requires this to be uppercase
@@ -185,7 +188,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return requestLanguage;
             }
 
-            return imageLanguage;
+            // TMDb now returns xx for no language instead of an empty string.
+            return string.Equals(imageLanguage, "xx", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : imageLanguage;
         }
 
         /// <summary>

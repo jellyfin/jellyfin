@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -24,6 +25,17 @@ public class SkiaEncoder : IImageEncoder
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
     private static readonly SKImageFilter _imageFilter;
+    private static readonly SKTypeface[] _typefaces;
+
+    /// <summary>
+    /// The default sampling options, equivalent to old high quality filter settings when upscaling.
+    /// </summary>
+    public static readonly SKSamplingOptions UpscaleSamplingOptions;
+
+    /// <summary>
+    /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
+    /// </summary>
+    public static readonly SKSamplingOptions DefaultSamplingOptions;
 
 #pragma warning disable CA1810
     static SkiaEncoder()
@@ -46,6 +58,26 @@ public class SkiaEncoder : IImageEncoder
             kernelOffset,
             SKShaderTileMode.Clamp,
             true);
+
+        // Initialize the list of typefaces
+        // We have to statically build a list of typefaces because MatchCharacter only accepts a single character or code point
+        // But in reality a human-readable character (grapheme cluster) could be multiple code points. For example, 🚵🏻‍♀️ is a single emoji but 5 code points (U+1F6B5 + U+1F3FB + U+200D + U+2640 + U+FE0F)
+        _typefaces =
+        [
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '鸡'), // CJK Simplified Chinese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '雞'), // CJK Traditional Chinese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ノ'), // CJK Japanese
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, '각'), // CJK Korean
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 128169), // Emojis, 128169 is the 💩emoji
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ז'), // Hebrew
+            SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, 'ي'), // Arabic
+            SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) // Default font
+        ];
+
+        // use cubic for upscaling
+        UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
+        // use bilinear for everything else
+        DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
     }
 
     /// <summary>
@@ -96,6 +128,11 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc/>
     public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
         => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png, ImageFormat.Svg };
+
+    /// <summary>
+    /// Gets the default typeface to use.
+    /// </summary>
+    public static SKTypeface DefaultTypeFace => _typefaces.Last();
 
     /// <summary>
     /// Check if the native lib is available.
@@ -165,18 +202,77 @@ public class SkiaEncoder : IImageEncoder
             }
         }
 
-        using var codec = SKCodec.Create(path, out SKCodecResult result);
-        switch (result)
+        var safePath = NormalizePath(path);
+        if (new FileInfo(safePath).Length == 0)
         {
-            case SKCodecResult.Success:
-                var info = codec.Info;
-                return new ImageDimensions(info.Width, info.Height);
-            case SKCodecResult.Unimplemented:
-                _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return default;
-            default:
-                _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
-                return default;
+            _logger.LogDebug("Skip zero‑byte image {FilePath}", path);
+            return default;
+        }
+
+        SKCodec? codec = null;
+        bool isSafePathTemp = !string.Equals(Path.GetFullPath(safePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
+        try
+        {
+            codec = SKCodec.Create(safePath, out var result);
+            switch (result)
+            {
+                case SKCodecResult.Success:
+                // Skia/SkiaSharp edge‑case: when the image header is parsed but the actual pixel
+                // decode fails (truncated JPEG/PNG, exotic ICC/EXIF, CMYK without color‑transform, etc.)
+                // `SKCodec.Create` returns a *non‑null* codec together with
+                // SKCodecResult.InternalError.  The header still contains valid dimensions,
+                // which is all we need here – so we fall back to them instead of aborting.
+                // See e.g. Skia bugs #4139, #6092.
+                case SKCodecResult.InternalError when codec is not null:
+                    var info = codec.Info;
+                    return new ImageDimensions(info.Width, info.Height);
+
+                case SKCodecResult.Unimplemented:
+                    _logger.LogDebug("Image format not supported: {FilePath}", path);
+                    return default;
+
+                default:
+                {
+                    var boundsInfo = SKBitmap.DecodeBounds(safePath);
+                    if (boundsInfo.Width > 0 && boundsInfo.Height > 0)
+                    {
+                        return new ImageDimensions(boundsInfo.Width, boundsInfo.Height);
+                    }
+
+                    _logger.LogWarning(
+                        "Unable to determine image dimensions for {FilePath}: {SkCodecResult}",
+                        path,
+                        result);
+
+                    return default;
+                }
+            }
+        }
+        finally
+        {
+            try
+            {
+                codec?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Error by closing codec for {FilePath}", safePath);
+            }
+
+            if (isSafePathTemp)
+            {
+                try
+                {
+                    if (File.Exists(safePath))
+                    {
+                        File.Delete(safePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", safePath);
+                }
+            }
         }
     }
 
@@ -188,14 +284,17 @@ public class SkiaEncoder : IImageEncoder
         ArgumentException.ThrowIfNullOrEmpty(path);
 
         var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
             return string.Empty;
         }
 
+        // Use FileStream with FileShare.Read instead of having Skia open the file to allow concurrent read access
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         // Any larger than 128x128 is too slow and there's no visually discernible difference
-        return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
+        return BlurHashEncoder.Encode(xComp, yComp, fileStream, 128, 128);
     }
 
     private bool RequiresSpecialCharacterHack(string path)
@@ -218,7 +317,7 @@ public class SkiaEncoder : IImageEncoder
             return path;
         }
 
-        var tempPath = Path.Combine(_appPaths.TempDirectory, string.Concat(Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
+        var tempPath = Path.Join(_appPaths.TempDirectory, string.Concat("skia_", Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
         File.Copy(path, tempPath, true);
@@ -262,15 +361,30 @@ public class SkiaEncoder : IImageEncoder
                 return null;
             }
 
+            if (codec.FrameCount != 0)
+            {
+                throw new ArgumentException("Cannot decode images with multiple frames");
+            }
+
             // create the bitmap
-            var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+            SKBitmap? bitmap = null;
+            try
+            {
+                bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
 
-            // decode
-            _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+                // decode
+                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
 
-            origin = codec.EncodedOrigin;
+                origin = codec.EncodedOrigin;
 
-            return bitmap;
+                return bitmap!;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Detected intermediary error decoding image {0}", path);
+                bitmap?.Dispose();
+                throw;
+            }
         }
 
         var resultBitmap = SKBitmap.Decode(NormalizePath(path));
@@ -280,17 +394,26 @@ public class SkiaEncoder : IImageEncoder
             return Decode(path, true, orientation, out origin);
         }
 
-        // If we have to resize these they often end up distorted
-        if (resultBitmap.ColorType == SKColorType.Gray8)
+        try
         {
-            using (resultBitmap)
+             // If we have to resize these they often end up distorted
+            if (resultBitmap.ColorType == SKColorType.Gray8)
             {
-                return Decode(path, true, orientation, out origin);
+                using (resultBitmap)
+                {
+                    return Decode(path, true, orientation, out origin);
+                }
             }
-        }
 
-        origin = SKEncodedOrigin.TopLeft;
-        return resultBitmap;
+            origin = SKEncodedOrigin.TopLeft;
+            return resultBitmap;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Detected intermediary error decoding image {0}", path);
+            resultBitmap?.Dispose();
+            throw;
+        }
     }
 
     private SKBitmap? GetBitmap(string path, bool autoOrient, ImageOrientation? orientation)
@@ -329,58 +452,78 @@ public class SkiaEncoder : IImageEncoder
         var width = (int)Math.Round(svg.Drawable.Bounds.Width);
         var height = (int)Math.Round(svg.Drawable.Bounds.Height);
 
-        var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.DrawPicture(svg.Picture);
-        canvas.Flush();
-        canvas.Save();
+        SKBitmap? bitmap = null;
+        try
+        {
+            bitmap = new SKBitmap(width, height);
+            using var canvas = new SKCanvas(bitmap);
+            canvas.DrawPicture(svg.Picture);
+            canvas.Flush();
+            canvas.Save();
 
-        return bitmap;
+            return bitmap!;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Detected intermediary error extracting image {0}", path);
+            bitmap?.Dispose();
+            throw;
+        }
     }
 
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
     {
         var needsFlip = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
-        var rotated = needsFlip
-            ? new SKBitmap(bitmap.Height, bitmap.Width)
-            : new SKBitmap(bitmap.Width, bitmap.Height);
-        using var surface = new SKCanvas(rotated);
-        var midX = (float)rotated.Width / 2;
-        var midY = (float)rotated.Height / 2;
-
-        switch (origin)
+        SKBitmap? rotated = null;
+        try
         {
-            case SKEncodedOrigin.TopRight:
-                surface.Scale(-1, 1, midX, midY);
-                break;
-            case SKEncodedOrigin.BottomRight:
-                surface.RotateDegrees(180, midX, midY);
-                break;
-            case SKEncodedOrigin.BottomLeft:
-                surface.Scale(1, -1, midX, midY);
-                break;
-            case SKEncodedOrigin.LeftTop:
-                surface.Translate(0, -rotated.Height);
-                surface.Scale(1, -1, midX, midY);
-                surface.RotateDegrees(-90);
-                break;
-            case SKEncodedOrigin.RightTop:
-                surface.Translate(rotated.Width, 0);
-                surface.RotateDegrees(90);
-                break;
-            case SKEncodedOrigin.RightBottom:
-                surface.Translate(rotated.Width, 0);
-                surface.Scale(1, -1, midX, midY);
-                surface.RotateDegrees(90);
-                break;
-            case SKEncodedOrigin.LeftBottom:
-                surface.Translate(0, rotated.Height);
-                surface.RotateDegrees(-90);
-                break;
-        }
+            rotated = needsFlip
+                ? new SKBitmap(bitmap.Height, bitmap.Width)
+                : new SKBitmap(bitmap.Width, bitmap.Height);
+            using var surface = new SKCanvas(rotated);
+            var midX = (float)rotated.Width / 2;
+            var midY = (float)rotated.Height / 2;
 
-        surface.DrawBitmap(bitmap, 0, 0);
-        return rotated;
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopRight:
+                    surface.Scale(-1, 1, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomRight:
+                    surface.RotateDegrees(180, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomLeft:
+                    surface.Scale(1, -1, midX, midY);
+                    break;
+                case SKEncodedOrigin.LeftTop:
+                    surface.Translate(0, -rotated.Height);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(-90);
+                    break;
+                case SKEncodedOrigin.RightTop:
+                    surface.Translate(rotated.Width, 0);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.RightBottom:
+                    surface.Translate(rotated.Width, 0);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.LeftBottom:
+                    surface.Translate(0, rotated.Height);
+                    surface.RotateDegrees(-90);
+                    break;
+            }
+
+            surface.DrawBitmap(bitmap, 0, 0, DefaultSamplingOptions);
+            return rotated;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Detected intermediary error rotating image");
+            rotated?.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -398,18 +541,23 @@ public class SkiaEncoder : IImageEncoder
     {
         using var surface = SKSurface.Create(targetInfo);
         using var canvas = surface.Canvas;
-        using var paint = new SKPaint
-        {
-            FilterQuality = SKFilterQuality.High,
-            IsAntialias = isAntialias,
-            IsDither = isDither
-        };
+        using var paint = new SKPaint();
+        paint.IsAntialias = isAntialias;
+        paint.IsDither = isDither;
+
+        // Historically, kHigh implied cubic filtering, but only when upsampling.
+        // If specified kHigh, and were down-sampling, Skia used to switch back to kMedium (bilinear filtering plus mipmaps).
+        // With current skia API, passing Mitchell cubic when down-sampling will cause serious quality degradation.
+        var samplingOptions = source.Width > targetInfo.Width || source.Height > targetInfo.Height
+            ? DefaultSamplingOptions
+            : UpscaleSamplingOptions;
 
         paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),
             SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+            samplingOptions,
             paint);
 
         return surface.Snapshot();
@@ -488,20 +636,13 @@ public class SkiaEncoder : IImageEncoder
             canvas.Clear(SKColor.Parse(options.BackgroundColor));
         }
 
+        using var paint = new SKPaint();
         // Add blur if option is present
-        if (blur > 0)
-        {
-            // create image from resized bitmap to apply blur
-            using var paint = new SKPaint();
-            using var filter = SKImageFilter.CreateBlur(blur, blur);
-            paint.ImageFilter = filter;
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
-        }
-        else
-        {
-            // draw resized bitmap onto canvas
-            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
-        }
+        using var filter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null;
+        paint.ImageFilter = filter;
+
+        // create image from resized bitmap to apply blur
+        canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), DefaultSamplingOptions, paint);
 
         // If foreground layer present then draw
         if (hasForegroundColor)
@@ -553,9 +694,13 @@ public class SkiaEncoder : IImageEncoder
     /// <inheritdoc />
     public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
     {
-        var splashBuilder = new SplashscreenBuilder(this);
-        var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
-        splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        // Only generate the splash screen if we have at least one poster and at least one backdrop/thumbnail.
+        if (posters.Count > 0 && backdrops.Count > 0)
+        {
+            var splashBuilder = new SplashscreenBuilder(this, _logger);
+            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
+            splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        }
     }
 
     /// <inheritdoc />
@@ -623,7 +768,7 @@ public class SkiaEncoder : IImageEncoder
                     throw new InvalidOperationException("Image height does not match first image height.");
                 }
 
-                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value);
+                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value, DefaultSamplingOptions);
             }
         }
 
@@ -653,5 +798,23 @@ public class SkiaEncoder : IImageEncoder
         {
             _logger.LogError(ex, "Error drawing indicator overlay");
         }
+    }
+
+    /// <summary>
+    /// Return the typeface that contains the glyph for the given character.
+    /// </summary>
+    /// <param name="c">The text character.</param>
+    /// <returns>The typeface contains the character.</returns>
+    public static SKTypeface? GetFontForCharacter(string c)
+    {
+        foreach (var typeface in _typefaces)
+        {
+            if (typeface.ContainsGlyphs(c))
+            {
+                return typeface;
+            }
+        }
+
+        return null;
     }
 }

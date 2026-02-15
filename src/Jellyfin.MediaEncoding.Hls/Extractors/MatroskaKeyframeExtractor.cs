@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Jellyfin.MediaEncoding.Keyframes;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,7 @@ public class MatroskaKeyframeExtractor : IKeyframeExtractor
     public bool IsMetadataBased => true;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         if (!filePath.AsSpan().EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
         {

@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.IO;
 using System.Linq;
@@ -11,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.LocalMetadata.Savers;
-using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -20,18 +17,18 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class PlaylistResolver : GenericFolderResolver<Playlist>
     {
-        private CollectionType?[] _musicPlaylistCollectionTypes =
-        {
+        private readonly CollectionType?[] _musicPlaylistCollectionTypes =
+        [
             null,
             CollectionType.music
-        };
+        ];
 
         /// <inheritdoc/>
         protected override Playlist Resolve(ItemResolveArgs args)
         {
             if (args.IsDirectory)
             {
-                // It's a boxset if the path is a directory with [playlist] in its name
+                // It's a playlist if the path is a directory with [playlist] in its name
                 var filename = Path.GetFileName(Path.TrimEndingDirectorySeparator(args.Path));
                 if (string.IsNullOrEmpty(filename))
                 {

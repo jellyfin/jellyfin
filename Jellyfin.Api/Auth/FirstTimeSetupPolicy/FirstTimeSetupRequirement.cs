@@ -1,4 +1,4 @@
-﻿using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 
 namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
 {

@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicGenre.
     /// </summary>
+    [Common.RequiresSourceSerialisation]
     public class MusicGenre : BaseItem, IItemByName
     {
         [JsonIgnore]
@@ -64,7 +65,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return true;
         }
 
-        public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.GenreIds = new[] { Id };
             query.IncludeItemTypes = new[] { BaseItemKind.MusicVideo, BaseItemKind.Audio, BaseItemKind.MusicAlbum, BaseItemKind.MusicArtist };

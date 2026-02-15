@@ -118,5 +118,8 @@
     "Undefined": "Udefinert",
     "Forced": "Tvungen",
     "Default": "Standard",
-    "External": "Ekstern"
+    "External": "Ekstern",
+    "HearingImpaired": "Nedsett høyrsel",
+    "TaskRefreshTrickplayImages": "Generer Trickplay-bilete",
+    "TaskAudioNormalization": "Normalisering av lyd"
 }

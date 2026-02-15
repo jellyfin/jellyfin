@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using MediaBrowser.Model.Dto;
@@ -12,8 +12,8 @@ namespace MediaBrowser.Controller.MediaEncoding;
 public sealed class TranscodingJob : IDisposable
 {
     private readonly ILogger<TranscodingJob> _logger;
-    private readonly object _processLock = new();
-    private readonly object _timerLock = new();
+    private readonly Lock _processLock = new();
+    private readonly Lock _timerLock = new();
 
     private Timer? _killTimer;
 
@@ -137,6 +137,11 @@ public sealed class TranscodingJob : IDisposable
     public TranscodingThrottler? TranscodingThrottler { get; set; }
 
     /// <summary>
+    /// Gets or sets transcoding segment cleaner.
+    /// </summary>
+    public TranscodingSegmentCleaner? TranscodingSegmentCleaner { get; set; }
+
+    /// <summary>
     /// Gets or sets last ping date.
     /// </summary>
     public DateTime LastPingDate { get; set; }
@@ -239,6 +244,7 @@ public sealed class TranscodingJob : IDisposable
         {
 #pragma warning disable CA1849 // Can't await in lock block
             TranscodingThrottler?.Stop().GetAwaiter().GetResult();
+            TranscodingSegmentCleaner?.Stop();
 
             var process = Process;
 
@@ -276,5 +282,7 @@ public sealed class TranscodingJob : IDisposable
         CancellationTokenSource = null;
         TranscodingThrottler?.Dispose();
         TranscodingThrottler = null;
+        TranscodingSegmentCleaner?.Dispose();
+        TranscodingSegmentCleaner = null;
     }
 }

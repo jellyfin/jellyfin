@@ -20,6 +20,8 @@ public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEn
     /// <value>The task manager.</value>
     private readonly ITaskManager _taskManager;
 
+    private bool _disposed;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener"/> class.
     /// </summary>
@@ -56,31 +58,32 @@ public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEn
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool dispose)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        if (dispose)
+        if (!_disposed)
         {
             _taskManager.TaskExecuting -= OnTaskExecuting;
             _taskManager.TaskCompleted -= OnTaskCompleted;
+            _disposed = true;
         }
 
-        base.Dispose(dispose);
+        await base.DisposeAsyncCore().ConfigureAwait(false);
     }
 
-    private async void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
+    private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
     {
         e.Task.TaskProgress -= OnTaskProgress;
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
+    private void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
         e.Argument.TaskProgress += OnTaskProgress;
     }
 
-    private async void OnTaskProgress(object? sender, GenericEventArgs<double> e)
+    private void OnTaskProgress(object? sender, GenericEventArgs<double> e)
     {
-        await SendData(false).ConfigureAwait(false);
+        SendData(false);
     }
 }

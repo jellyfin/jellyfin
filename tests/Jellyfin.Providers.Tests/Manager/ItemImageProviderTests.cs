@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -209,7 +210,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(ImageType.Backdrop, 2, false)]
         [InlineData(ImageType.Primary, 1, true)]
         [InlineData(ImageType.Backdrop, 2, true)]
-        public async void RefreshImages_PopulatedItemPopulatedProviderDynamic_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
+        public async Task RefreshImages_PopulatedItemPopulatedProviderDynamic_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
 
@@ -261,7 +262,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(ImageType.Backdrop, 2, true, MediaProtocol.File)]
         [InlineData(ImageType.Primary, 1, false, MediaProtocol.File)]
         [InlineData(ImageType.Backdrop, 2, false, MediaProtocol.File)]
-        public async void RefreshImages_EmptyItemPopulatedProviderDynamic_AddsImages(ImageType imageType, int imageCount, bool responseHasPath, MediaProtocol protocol)
+        public async Task RefreshImages_EmptyItemPopulatedProviderDynamic_AddsImages(ImageType imageType, int imageCount, bool responseHasPath, MediaProtocol protocol)
         {
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem = Mock.Of<IFileSystem>();
@@ -292,6 +293,9 @@ namespace Jellyfin.Providers.Tests.Manager
             providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
                 .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
                 .Returns(Task.CompletedTask);
+            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<string>(), It.IsAny<string>(), imageType, null, null, It.IsAny<CancellationToken>()))
+                .Callback<BaseItem, string, string, ImageType, int?, bool?, CancellationToken>((callbackItem, _, _, callbackType, _, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
+                .Returns(Task.CompletedTask);
             var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
 
@@ -311,7 +315,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(ImageType.Primary, 1, true)]
         [InlineData(ImageType.Backdrop, 1, true)]
         [InlineData(ImageType.Backdrop, 2, true)]
-        public async void RefreshImages_PopulatedItemPopulatedProviderRemote_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
+        public async Task RefreshImages_PopulatedItemPopulatedProviderRemote_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
 
@@ -366,7 +370,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(ImageType.Backdrop, 0, false)] // empty item, no cache to check
         [InlineData(ImageType.Backdrop, 1, false)] // populated item, cached so no download
         [InlineData(ImageType.Backdrop, 1, true)] // populated item, forced to download
-        public async void RefreshImages_NonStubItemPopulatedProviderRemote_DownloadsIfNecessary(ImageType imageType, int initialImageCount, bool fullRefresh)
+        public async Task RefreshImages_NonStubItemPopulatedProviderRemote_DownloadsIfNecessary(ImageType imageType, int initialImageCount, bool fullRefresh)
         {
             var targetImageCount = 1;
 
@@ -388,7 +392,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 {
                     ReasonPhrase = url,
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(Content, Encoding.UTF8, "image/jpeg")
+                    Content = new StringContent(Content, Encoding.UTF8, MediaTypeNames.Image.Jpeg)
                 });
 
             var refreshOptions = fullRefresh
@@ -429,7 +433,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_EmptyItemPopulatedProviderRemoteExtras_LimitsImages(ImageType imageType, int imageCount)
+        public async Task RefreshImages_EmptyItemPopulatedProviderRemoteExtras_LimitsImages(ImageType imageType, int imageCount)
         {
             var item = new Video();
 
@@ -473,7 +477,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_PopulatedItemEmptyProviderRemoteFullRefresh_DoesntClearImages(ImageType imageType, int imageCount)
+        public async Task RefreshImages_PopulatedItemEmptyProviderRemoteFullRefresh_DoesntClearImages(ImageType imageType, int imageCount)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
 
@@ -501,7 +505,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(9, false)]
         [InlineData(10, true)]
         [InlineData(null, true)]
-        public async void RefreshImages_ProviderRemote_FiltersByWidth(int? remoteImageWidth, bool expectedToUpdate)
+        public async Task RefreshImages_ProviderRemote_FiltersByWidth(int? remoteImageWidth, bool expectedToUpdate)
         {
             var imageType = ImageType.Primary;
 
@@ -575,18 +579,23 @@ namespace Jellyfin.Providers.Tests.Manager
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem ??= Mock.Of<IFileSystem>();
 
-            var item = new Video();
+            var item = new Mock<Video>
+            {
+                CallBase = true
+            };
+            item.Setup(m => m.IsSaveLocalMetadataEnabled()).Returns(false);
+            item.Setup(m => m.GetInternalMetadataPath()).Returns(string.Empty);
 
             var path = validPaths ? _testDataImagePath.Format : "invalid path {0}";
             for (int i = 0; i < count; i++)
             {
-                item.SetImagePath(type, i, new FileSystemMetadata
+                item.Object.SetImagePath(type, i, new FileSystemMetadata
                 {
                     FullName = string.Format(CultureInfo.InvariantCulture, path, i),
                 });
             }
 
-            return item;
+            return item.Object;
         }
 
         private static ILocalImageProvider GetImageProvider(ImageType type, int count, bool validPaths)

@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.Helpers;
@@ -57,6 +58,10 @@ public static class StartupHelpers
         logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
         logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
         logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+        logger.LogInformation("Log directory path: {LogDirectoryPath}", appPaths.LogDirectoryPath);
+        logger.LogInformation("Config directory path: {ConfigurationDirectoryPath}", appPaths.ConfigurationDirectoryPath);
+        logger.LogInformation("Cache path: {CachePath}", appPaths.CachePath);
+        logger.LogInformation("Temp directory path: {TempDirPath}", appPaths.TempDirectory);
         logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
         logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
     }
@@ -79,7 +84,7 @@ public static class StartupHelpers
         var dataDir = options.DataDir
             ?? Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR")
             ?? Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                 "jellyfin");
 
         var configDir = options.ConfigDir ?? Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
@@ -93,7 +98,7 @@ public static class StartupHelpers
             {
                 // UNIX: $XDG_CONFIG_HOME
                 configDir = Path.Join(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify),
                     "jellyfin");
             }
         }
@@ -159,7 +164,7 @@ public static class StartupHelpers
         if (cacheHome is null || !cacheHome.StartsWith('/'))
         {
             cacheHome = Path.Join(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify),
                 ".cache");
         }
 
@@ -253,11 +258,14 @@ public static class StartupHelpers
     {
         try
         {
+            var startupLogger = new LoggerProviderCollection();
+            startupLogger.AddProvider(new SetupServer.SetupLoggerFactory());
             // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
+                .WriteTo.Async(e => e.Providers(startupLogger))
                 .CreateLogger();
         }
         catch (Exception ex)
@@ -288,13 +296,5 @@ public static class StartupHelpers
         // Make sure we have all the code pages we can get
         // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // Increase the max http request limit
-        // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-        ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
-        // Disable the "Expect: 100-Continue" header by default
-        // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-        ServicePointManager.Expect100Continue = false;
     }
 }

@@ -141,7 +141,7 @@ namespace Jellyfin.Model.Tests.Entities
         public void SetProviderId_Null_Remove()
         {
             var provider = new ProviderIdsExtensionsTestsObject();
-            provider.SetProviderId(MetadataProvider.Imdb, null!);
+            Assert.Throws<ArgumentNullException>(() => provider.SetProviderId(MetadataProvider.Imdb, null!));
             Assert.Empty(provider.ProviderIds);
         }
 
@@ -150,8 +150,8 @@ namespace Jellyfin.Model.Tests.Entities
         {
             var provider = new ProviderIdsExtensionsTestsObject();
             provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
-            provider.SetProviderId(MetadataProvider.Imdb, string.Empty);
-            Assert.Empty(provider.ProviderIds);
+            Assert.Throws<ArgumentException>(() => provider.SetProviderId(MetadataProvider.Imdb, string.Empty));
+            Assert.Single(provider.ProviderIds);
         }
 
         [Fact]
@@ -182,8 +182,18 @@ namespace Jellyfin.Model.Tests.Entities
                 ProviderIds = null!
             };
 
-            nullProvider.SetProviderId(MetadataProvider.Imdb, string.Empty);
+            Assert.Throws<ArgumentException>(() => nullProvider.SetProviderId(MetadataProvider.Imdb, string.Empty));
             Assert.Null(nullProvider.ProviderIds);
+        }
+
+        [Fact]
+        public void RemoveProviderId_Null_Remove()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
+            provider.RemoveProviderId(MetadataProvider.Imdb);
+            Assert.Empty(provider.ProviderIds);
         }
 
         private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds

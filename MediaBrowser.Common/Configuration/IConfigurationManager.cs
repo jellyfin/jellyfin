@@ -61,7 +61,7 @@ namespace MediaBrowser.Common.Configuration
         object GetConfiguration(string key);
 
         /// <summary>
-        /// Gets the array of coniguration stores.
+        /// Gets the array of configuration stores.
         /// </summary>
         /// <returns>Array of ConfigurationStore.</returns>
         ConfigurationStore[] GetConfigurationStores();

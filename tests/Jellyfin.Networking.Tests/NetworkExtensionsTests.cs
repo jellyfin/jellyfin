@@ -1,4 +1,5 @@
 using FsCheck;
+using FsCheck.Fluent;
 using FsCheck.Xunit;
 using MediaBrowser.Common.Net;
 using Xunit;

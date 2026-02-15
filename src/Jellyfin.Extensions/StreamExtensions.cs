@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Jellyfin.Extensions
 {
@@ -48,11 +50,12 @@ namespace Jellyfin.Extensions
         /// Reads all lines in the <see cref="TextReader" />.
         /// </summary>
         /// <param name="reader">The <see cref="TextReader" /> to read from.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>All lines in the stream.</returns>
-        public static async IAsyncEnumerable<string> ReadAllLinesAsync(this TextReader reader)
+        public static async IAsyncEnumerable<string> ReadAllLinesAsync(this TextReader reader, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             string? line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) is not null)
+            while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is not null)
             {
                 yield return line;
             }

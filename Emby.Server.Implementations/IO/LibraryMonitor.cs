@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.IO
                 .Where(IsLibraryMonitorEnabled)
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Distinct()
                 .Order();
 
             foreach (var path in paths)
@@ -314,6 +314,12 @@ namespace Emby.Server.Implementations.IO
             var ex = e.GetException();
             var dw = (FileSystemWatcher)sender;
 
+            if (ex is UnauthorizedAccessException unauthorizedAccessException)
+            {
+                _logger.LogError(unauthorizedAccessException, "Permission error for Directory watcher: {Path}", dw.Path);
+                return;
+            }
+
             _logger.LogError(ex, "Error in Directory watcher for: {Path}", dw.Path);
 
             DisposeWatcher(dw, true);
@@ -342,6 +348,12 @@ namespace Emby.Server.Implementations.IO
             ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (IgnorePatterns.ShouldIgnore(path))
+            {
+                return;
+            }
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
             {
                 return;
             }

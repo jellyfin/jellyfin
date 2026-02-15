@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Providers;
@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Extensions
 
                     return 0;
                 })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => Math.Round(i.CommunityRating ?? 0, 1) )
                 .ThenByDescending(i => i.VoteCount ?? 0);
         }
     }

@@ -50,8 +50,8 @@ public class FilterController : BaseJellyfinApiController
     public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaTypes)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -137,7 +137,7 @@ public class FilterController : BaseJellyfinApiController
     public ActionResult<QueryFilters> GetQueryFilters(
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool? isAiring,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSports,
@@ -162,7 +162,7 @@ public class FilterController : BaseJellyfinApiController
         }
         else if (parentId.HasValue)
         {
-            parentItem = _libraryManager.GetItemById(parentId.Value);
+            parentItem = _libraryManager.GetItemById<BaseItem>(parentId.Value);
         }
 
         var filters = new QueryFilters();

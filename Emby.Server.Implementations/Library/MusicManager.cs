@@ -1,19 +1,18 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Model.Querying;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Library
@@ -27,35 +26,35 @@ namespace Emby.Server.Implementations.Library
             _libraryManager = libraryManager;
         }
 
-        public List<BaseItem> GetInstantMixFromSong(Audio item, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromSong(Audio item, User? user, DtoOptions dtoOptions)
         {
-            var list = new List<Audio>
-            {
-                item
-            };
+            var instantMixItems = GetInstantMixFromGenres(item.Genres, user, dtoOptions);
 
-            return list.Concat(GetInstantMixFromGenres(item.Genres, user, dtoOptions)).ToList();
+            return [item, .. instantMixItems.Where(i => !i.Id.Equals(item.Id))];
         }
 
         /// <inheritdoc />
-        public List<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User? user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(artist.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, User? user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromFolder(Folder item, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromFolder(Folder item, User? user, DtoOptions dtoOptions)
         {
             var genres = item
-               .GetRecursiveChildren(user, new InternalItemsQuery(user)
-               {
-                   IncludeItemTypes = new[] { BaseItemKind.Audio },
-                   DtoOptions = dtoOptions
-               })
+               .GetRecursiveChildren(
+                user,
+                new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    DtoOptions = dtoOptions
+                },
+                out _)
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
@@ -64,12 +63,12 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenres(genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromPlaylist(Playlist item, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromPlaylist(Playlist item, User? user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions)
         {
             var genreIds = genres.DistinctNames().Select(i =>
             {
@@ -86,27 +85,23 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, User? user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { BaseItemKind.Audio },
-
-                GenreIds = genreIds.ToArray(),
-
+                IncludeItemTypes = [BaseItemKind.Audio],
+                GenreIds = genreIds,
                 Limit = 200,
-
-                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
-
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
                 DtoOptions = dtoOptions
             });
         }
 
-        public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromItem(BaseItem item, User? user, DtoOptions dtoOptions)
         {
             if (item is MusicGenre)
             {
-                return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
+                return GetInstantMixFromGenreIds([item.Id], user, dtoOptions);
             }
 
             if (item is Playlist playlist)

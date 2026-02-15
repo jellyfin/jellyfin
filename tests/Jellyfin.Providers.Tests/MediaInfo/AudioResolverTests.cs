@@ -64,7 +64,7 @@ public class AudioResolverTests
     [InlineData("My.Video.mp3", false, true)]
     [InlineData("My.Video.srt", true, false)]
     [InlineData("My.Video.mp3", true, true)]
-    public async void GetExternalStreams_MixedFilenames_PicksAudio(string file, bool metadataDirectory, bool matches)
+    public async Task GetExternalStreams_MixedFilenames_PicksAudio(string file, bool metadataDirectory, bool matches)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 

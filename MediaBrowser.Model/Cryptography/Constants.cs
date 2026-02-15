@@ -18,6 +18,6 @@ namespace MediaBrowser.Model.Cryptography
         /// <summary>
         /// The default amount of iterations for hashing passwords.
         /// </summary>
-        public const int DefaultIterations = 120000;
+        public const int DefaultIterations = 210000;
     }
 }

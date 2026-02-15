@@ -35,11 +35,11 @@ namespace Emby.Server.Implementations.Library
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
-            item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
+            item.IsLocked = item.Path.Contains("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) ||
                 item.GetParents().Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            var fileInfo = directoryService.GetFile(item.Path);
+            var fileInfo = directoryService.GetFileSystemEntry(item.Path);
             if (fileInfo is null)
             {
                 return false;
@@ -136,22 +136,32 @@ namespace Emby.Server.Implementations.Library
 
             if (config.UseFileCreationTimeForDateAdded)
             {
-                // directoryService.getFile may return null
-                if (info is not null)
+                var fileCreationDate = info?.CreationTimeUtc;
+                if (fileCreationDate is not null)
                 {
-                    var dateCreated = info.CreationTimeUtc;
-
-                    if (dateCreated.Equals(DateTime.MinValue))
+                    var dateCreated = fileCreationDate;
+                    if (dateCreated == DateTime.MinValue)
                     {
                         dateCreated = DateTime.UtcNow;
                     }
 
-                    item.DateCreated = dateCreated;
+                    item.DateCreated = dateCreated.Value;
                 }
             }
             else
             {
                 item.DateCreated = DateTime.UtcNow;
+            }
+
+            if (info is not null && !info.IsDirectory)
+            {
+                item.Size = info.Length;
+            }
+
+            var fileModificationDate = info?.LastWriteTimeUtc;
+            if (fileModificationDate.HasValue)
+            {
+                item.DateModified = fileModificationDate.Value;
             }
         }
     }

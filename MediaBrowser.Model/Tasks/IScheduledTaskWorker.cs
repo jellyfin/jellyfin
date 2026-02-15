@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Events;
 
 namespace MediaBrowser.Model.Tasks
@@ -60,7 +61,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets or sets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
-        TaskTriggerInfo[] Triggers { get; set; }
+        IReadOnlyList<TaskTriggerInfo> Triggers { get; set; }
 
         /// <summary>
         /// Gets the unique id.

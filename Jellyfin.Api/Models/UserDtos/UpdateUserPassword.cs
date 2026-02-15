@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Api.Models.UserDtos;
+namespace Jellyfin.Api.Models.UserDtos;
 
 /// <summary>
 /// The update user password request body.

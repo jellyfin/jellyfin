@@ -165,7 +165,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 1,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": true,
             "$type": "TranscodingProfile"
         },
         {
@@ -182,7 +181,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -199,7 +197,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -216,7 +213,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -233,7 +229,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -250,7 +245,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -267,7 +261,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -284,7 +277,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -301,7 +293,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "$type": "TranscodingProfile"
         },
         {
@@ -319,7 +310,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -346,7 +336,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 1,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -373,7 +362,6 @@
             "MaxAudioChannels": "6",
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -399,7 +387,6 @@
             "EnableSubtitlesInManifest": false,
             "MinSegments": 0,
             "SegmentLength": 0,
-            "BreakOnNonKeyFrames": false,
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -439,7 +426,14 @@
                 {
                     "Condition": "EqualsAny",
                     "Property": "VideoProfile",
-                    "Value": "high|main|baseline|constrained baseline|high 10",
+                    "Value": "high|main|baseline|constrained baseline",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoRangeType",
+                    "Value": "SDR",
                     "IsRequired": false,
                     "$type": "ProfileCondition"
                 },
@@ -472,6 +466,13 @@
                     "$type": "ProfileCondition"
                 },
                 {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoRangeType",
+                    "Value": "SDR|DOVIWithSDR|HDR10|DOVIWithHDR10|HLG|DOVIWithHLG",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
                     "Condition": "LessThanEqual",
                     "Property": "VideoLevel",
                     "Value": "183",
@@ -481,6 +482,21 @@
             ],
             "Codec": "hevc",
             "$type": "CodecProfile"
+        }
+    ],
+    "ContainerProfiles": [
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "NumStreams",
+                    "Value": "32",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "$type": "ContainerProfile"
         }
     ],
     "ResponseProfiles": [

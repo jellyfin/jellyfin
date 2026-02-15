@@ -1,0 +1,69 @@
+{
+    "countryCode": "no",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["A"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["6"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["9"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["11"],
+            "ratingScore": {
+                "score": 11,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["Not approved"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

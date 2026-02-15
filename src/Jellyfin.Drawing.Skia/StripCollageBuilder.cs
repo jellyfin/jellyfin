@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using SkiaSharp;
@@ -22,9 +23,6 @@ public partial class StripCollageBuilder
     {
         _skiaEncoder = skiaEncoder;
     }
-
-    [GeneratedRegex(@"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]")]
-    private static partial Regex NonCjkPatternRegex();
 
     [GeneratedRegex(@"\p{IsArabic}|\p{IsArmenian}|\p{IsHebrew}|\p{IsSyriac}|\p{IsThaana}")]
     private static partial Regex IsRtlTextRegex();
@@ -111,43 +109,33 @@ public partial class StripCollageBuilder
 
         // resize to the same aspect as the original
         var backdropHeight = Math.Abs(width * backdrop.Height / backdrop.Width);
-        using var residedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+        using var resizedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+        using var paint = new SKPaint();
         // draw the backdrop
-        canvas.DrawImage(residedBackdrop, 0, 0);
+        canvas.DrawImage(resizedBackdrop, 0, 0, SkiaEncoder.DefaultSamplingOptions, paint);
 
         // draw shadow rectangle
-        using var paintColor = new SKPaint
-        {
-            Color = SKColors.Black.WithAlpha(0x78),
-            Style = SKPaintStyle.Fill
-        };
+        using var paintColor = new SKPaint();
+        paintColor.Color = SKColors.Black.WithAlpha(0x78);
+        paintColor.Style = SKPaintStyle.Fill;
         canvas.DrawRect(0, 0, width, height, paintColor);
 
-        var typeFace = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
-
-        // use the system fallback to find a typeface for the given CJK character
-        var filteredName = NonCjkPatternRegex().Replace(libraryName ?? string.Empty, string.Empty);
-        if (!string.IsNullOrEmpty(filteredName))
-        {
-            typeFace = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, filteredName[0]);
-        }
+        var typeFace = SkiaEncoder.DefaultTypeFace;
 
         // draw library name
-        using var textPaint = new SKPaint
-        {
-            Color = SKColors.White,
-            Style = SKPaintStyle.Fill,
-            TextSize = 112,
-            TextAlign = SKTextAlign.Center,
-            Typeface = typeFace,
-            IsAntialias = true
-        };
+        using var textFont = new SKFont();
+        textFont.Size = 112;
+        textFont.Typeface = typeFace;
+        using var textPaint = new SKPaint();
+        textPaint.Color = SKColors.White;
+        textPaint.Style = SKPaintStyle.Fill;
+        textPaint.IsAntialias = true;
 
         // scale down text to 90% of the width if text is larger than 95% of the width
-        var textWidth = textPaint.MeasureText(libraryName);
+        var textWidth = textFont.MeasureText(libraryName);
         if (textWidth > width * 0.95)
         {
-            textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
+            textFont.Size = 0.9f * width * textFont.Size / textWidth;
         }
 
         if (string.IsNullOrWhiteSpace(libraryName))
@@ -155,13 +143,22 @@ public partial class StripCollageBuilder
             return bitmap;
         }
 
+        var realWidth = DrawText(null, 0, (height / 2f) + (textFont.Metrics.XHeight / 2), libraryName, textPaint, textFont);
+        if (realWidth > width * 0.95)
+        {
+            textFont.Size = 0.9f * width * textFont.Size / realWidth;
+            realWidth = DrawText(null, 0, (height / 2f) + (textFont.Metrics.XHeight / 2), libraryName, textPaint, textFont);
+        }
+
+        var padding = (width - realWidth) / 2;
+
         if (IsRtlTextRegex().IsMatch(libraryName))
         {
-            canvas.DrawShapedText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            DrawText(canvas, width - padding, (height / 2f) + (textFont.Metrics.XHeight / 2), libraryName, textPaint, textFont, true);
         }
         else
         {
-            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            DrawText(canvas, padding, (height / 2f) + (textFont.Metrics.XHeight / 2), libraryName, textPaint, textFont);
         }
 
         return bitmap;
@@ -187,17 +184,128 @@ public partial class StripCollageBuilder
                     continue;
                 }
 
-                // Scale image. The FromBitmap creates a copy
+                // Scale image
                 var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
                 using var resizeImage = SkiaEncoder.ResizeImage(currentBitmap, imageInfo);
+                using var paint = new SKPaint();
 
                 // draw this image into the strip at the next position
                 var xPos = x * cellWidth;
                 var yPos = y * cellHeight;
-                canvas.DrawImage(resizeImage, xPos, yPos);
+                canvas.DrawImage(resizeImage, xPos, yPos, SkiaEncoder.DefaultSamplingOptions, paint);
             }
         }
 
         return bitmap;
+    }
+
+    /// <summary>
+    /// Draw shaped text with given SKPaint.
+    /// </summary>
+    /// <param name="canvas">If not null, draw text to this canvas, otherwise only measure the text width.</param>
+    /// <param name="x">x position of the canvas to draw text.</param>
+    /// <param name="y">y position of the canvas to draw text.</param>
+    /// <param name="text">The text to draw.</param>
+    /// <param name="textPaint">The SKPaint to style the text.</param>
+    /// <param name="textFont">The SKFont to style the text.</param>
+    /// <param name="alignment">The alignment of the text. Default aligns to left.</param>
+    /// <returns>The width of the text.</returns>
+    private static float MeasureAndDrawText(SKCanvas? canvas, float x, float y, string text, SKPaint textPaint, SKFont textFont, SKTextAlign alignment = SKTextAlign.Left)
+    {
+        var width = textFont.MeasureText(text);
+        canvas?.DrawShapedText(text, x, y, alignment, textFont, textPaint);
+        return width;
+    }
+
+    /// <summary>
+    /// Draw shaped text with given SKPaint, search defined type faces to render as many texts as possible.
+    /// </summary>
+    /// <param name="canvas">If not null, draw text to this canvas, otherwise only measure the text width.</param>
+    /// <param name="x">x position of the canvas to draw text.</param>
+    /// <param name="y">y position of the canvas to draw text.</param>
+    /// <param name="text">The text to draw.</param>
+    /// <param name="textPaint">The SKPaint to style the text.</param>
+    /// <param name="textFont">The SKFont to style the text.</param>
+    /// <param name="isRtl">If true, render from right to left.</param>
+    /// <returns>The width of the text.</returns>
+    private static float DrawText(SKCanvas? canvas, float x, float y, string text, SKPaint textPaint, SKFont textFont, bool isRtl = false)
+    {
+        float width = 0;
+        var alignment = isRtl ? SKTextAlign.Right : SKTextAlign.Left;
+
+        if (textFont.ContainsGlyphs(text))
+        {
+            // Current font can render all characters in text
+            return MeasureAndDrawText(canvas, x, y, text, textPaint, textFont, alignment);
+        }
+
+        // Iterate over all text elements using TextElementEnumerator
+        // We cannot use foreach here because a human-readable character (grapheme cluster) can be multiple code points
+        // We cannot render character by character because glyphs do not always have same width
+        // And the result will look very unnatural due to the width difference and missing natural spacing
+        var start = 0;
+        var enumerator = StringInfo.GetTextElementEnumerator(text);
+        while (enumerator.MoveNext())
+        {
+            bool notAtEnd;
+            var textElement = enumerator.GetTextElement();
+            if (textFont.ContainsGlyphs(textElement))
+            {
+                continue;
+            }
+
+            // If we get here, we have a text element which cannot be rendered with current font
+            // Draw previous characters which can be rendered with current font
+            if (start != enumerator.ElementIndex)
+            {
+                var regularText = text.Substring(start, enumerator.ElementIndex - start);
+                width += MeasureAndDrawText(canvas, MoveX(x, width), y, regularText, textPaint, textFont, alignment);
+                start = enumerator.ElementIndex;
+            }
+
+            // Search for next point where current font can render the character there
+            while ((notAtEnd = enumerator.MoveNext()) && !textFont.ContainsGlyphs(enumerator.GetTextElement()))
+            {
+                // Do nothing, just move enumerator to the point where current font can render the character
+            }
+
+            // Now we have a substring that should pick another font
+            // The enumerator may or may not be already at the end of the string
+            var subtext = notAtEnd
+                ? text.Substring(start, enumerator.ElementIndex - start)
+                : text[start..];
+
+            var fallback = SkiaEncoder.GetFontForCharacter(textElement);
+
+            if (fallback is not null)
+            {
+                using var fallbackTextFont = new SKFont();
+                fallbackTextFont.Size = textFont.Size;
+                fallbackTextFont.Typeface = fallback;
+                using var fallbackTextPaint = new SKPaint();
+                fallbackTextPaint.Color = textPaint.Color;
+                fallbackTextPaint.Style = textPaint.Style;
+                fallbackTextPaint.IsAntialias = textPaint.IsAntialias;
+
+                // Do the search recursively to select all possible fonts
+                width += DrawText(canvas, MoveX(x, width), y, subtext, fallbackTextPaint, fallbackTextFont, isRtl);
+            }
+            else
+            {
+                // Used up all fonts and no fonts can be found, just use current font
+                width += MeasureAndDrawText(canvas, MoveX(x, width), y, text[start..], textPaint, textFont, alignment);
+            }
+
+            start = notAtEnd ? enumerator.ElementIndex : text.Length;
+        }
+
+        // Render the remaining text that current fonts can render
+        if (start < text.Length)
+        {
+            width += MeasureAndDrawText(canvas, MoveX(x, width), y, text[start..], textPaint, textFont, alignment);
+        }
+
+        return width;
+        float MoveX(float currentX, float dWidth) => isRtl ? currentX - dWidth : currentX + dWidth;
     }
 }

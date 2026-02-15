@@ -1,4 +1,4 @@
-﻿using Jellyfin.LiveTv.Channels;
+using Jellyfin.LiveTv.Channels;
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Listings;

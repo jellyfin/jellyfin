@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
 using LrcParser.Model;
 using LrcParser.Parser;
@@ -15,12 +16,11 @@ namespace MediaBrowser.Providers.Lyric;
 /// <summary>
 /// LRC Lyric Parser.
 /// </summary>
-public class LrcLyricParser : ILyricParser
+public partial class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
     private static readonly string[] _supportedMediaTypes = [".lrc", ".elrc"];
-    private static readonly string[] _acceptedTimeFormats = ["HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LrcLyricParser"/> class.
@@ -59,37 +59,7 @@ public class LrcLyricParser : ILyricParser
             return null;
         }
 
-        List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.Where(x => x.TimeTags.Count > 0).OrderBy(x => x.TimeTags.First().Value).ToList();
-
-        // Parse metadata rows
-        var metaDataRows = lyricData.Lyrics
-            .Where(x => x.TimeTags.Count == 0)
-            .Where(x => x.Text.StartsWith('[') && x.Text.EndsWith(']'))
-            .Select(x => x.Text)
-            .ToList();
-
-        var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (string metaDataRow in metaDataRows)
-        {
-            var index = metaDataRow.IndexOf(':', StringComparison.OrdinalIgnoreCase);
-            if (index == -1)
-            {
-                continue;
-            }
-
-            // Remove square bracket before field name, and after field value
-            // Example 1: [au: 1hitsong]
-            // Example 2: [ar: Calabrese]
-            var metaDataFieldName = GetMetadataFieldName(metaDataRow, index);
-            var metaDataFieldValue = GetMetadataValue(metaDataRow, index);
-
-            if (string.IsNullOrEmpty(metaDataFieldName) || string.IsNullOrEmpty(metaDataFieldValue))
-            {
-                continue;
-            }
-
-            fileMetaData[metaDataFieldName] = metaDataFieldValue;
-        }
+        List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.OrderBy(x => x.StartTime).ToList();
 
         if (sortedLyricData.Count == 0)
         {
@@ -97,102 +67,56 @@ public class LrcLyricParser : ILyricParser
         }
 
         List<LyricLine> lyricList = [];
-
-        for (int i = 0; i < sortedLyricData.Count; i++)
+        for (var lineIndex = 0; lineIndex < sortedLyricData.Count; lineIndex++)
         {
-            var timeData = sortedLyricData[i].TimeTags.First().Value;
-            if (timeData is null)
+            var lyric = sortedLyricData[lineIndex];
+
+            // Extract cues from time tags
+            var cues = new List<LyricLineCue>();
+            if (lyric.TimeTags.Count > 0)
             {
-                continue;
+                var keys = lyric.TimeTags.Keys.ToList();
+                for (var tagIndex = 0; tagIndex < keys.Count - 1; tagIndex++)
+                {
+                    var currentKey = keys[tagIndex];
+                    var nextKey = keys[tagIndex + 1];
+
+                    var currentPos = currentKey.State == IndexState.End ? currentKey.Index + 1 : currentKey.Index;
+                    var nextPos = nextKey.State == IndexState.End ? nextKey.Index + 1 : nextKey.Index;
+                    var currentMs = lyric.TimeTags[currentKey] ?? 0;
+                    var nextMs = lyric.TimeTags[keys[tagIndex + 1]] ?? 0;
+                    var currentSlice = lyric.Text[currentPos..nextPos];
+                    var currentSliceTrimmed = currentSlice.Trim();
+                    if (currentSliceTrimmed.Length > 0)
+                    {
+                        cues.Add(new LyricLineCue(
+                            position: currentPos,
+                            endPosition: nextPos,
+                            start: TimeSpan.FromMilliseconds(currentMs).Ticks,
+                            end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                    }
+                }
+
+                var lastKey = keys[^1];
+                var lastPos = lastKey.State == IndexState.End ? lastKey.Index + 1 : lastKey.Index;
+                var lastMs = lyric.TimeTags[lastKey] ?? 0;
+                var lastSlice = lyric.Text[lastPos..];
+                var lastSliceTrimmed = lastSlice.Trim();
+
+                if (lastSliceTrimmed.Length > 0)
+                {
+                    cues.Add(new LyricLineCue(
+                        position: lastPos,
+                        endPosition: lyric.Text.Length,
+                        start: TimeSpan.FromMilliseconds(lastMs).Ticks,
+                        end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
+                }
             }
 
-            long ticks = TimeSpan.FromMilliseconds(timeData.Value).Ticks;
-            lyricList.Add(new LyricLine(sortedLyricData[i].Text.Trim(), ticks));
-        }
-
-        if (fileMetaData.Count != 0)
-        {
-            // Map metaData values from LRC file to LyricMetadata properties
-            LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
-
-            return new LyricDto { Metadata = lyricMetadata, Lyrics = lyricList };
+            long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
+            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues));
         }
 
         return new LyricDto { Lyrics = lyricList };
-    }
-
-    /// <summary>
-    /// Converts metadata from an LRC file to LyricMetadata properties.
-    /// </summary>
-    /// <param name="metaData">The metadata from the LRC file.</param>
-    /// <returns>A lyricMetadata object with mapped property data.</returns>
-    private static LyricMetadata MapMetadataValues(Dictionary<string, string> metaData)
-    {
-        LyricMetadata lyricMetadata = new();
-
-        if (metaData.TryGetValue("ar", out var artist) && !string.IsNullOrEmpty(artist))
-        {
-            lyricMetadata.Artist = artist;
-        }
-
-        if (metaData.TryGetValue("al", out var album) && !string.IsNullOrEmpty(album))
-        {
-            lyricMetadata.Album = album;
-        }
-
-        if (metaData.TryGetValue("ti", out var title) && !string.IsNullOrEmpty(title))
-        {
-            lyricMetadata.Title = title;
-        }
-
-        if (metaData.TryGetValue("au", out var author) && !string.IsNullOrEmpty(author))
-        {
-            lyricMetadata.Author = author;
-        }
-
-        if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
-        {
-            if (DateTime.TryParseExact(length, _acceptedTimeFormats, null, DateTimeStyles.None, out var value))
-            {
-                lyricMetadata.Length = value.TimeOfDay.Ticks;
-            }
-        }
-
-        if (metaData.TryGetValue("by", out var by) && !string.IsNullOrEmpty(by))
-        {
-            lyricMetadata.By = by;
-        }
-
-        if (metaData.TryGetValue("offset", out var offset) && !string.IsNullOrEmpty(offset))
-        {
-            if (int.TryParse(offset, out var value))
-            {
-                lyricMetadata.Offset = TimeSpan.FromMilliseconds(value).Ticks;
-            }
-        }
-
-        if (metaData.TryGetValue("re", out var creator) && !string.IsNullOrEmpty(creator))
-        {
-            lyricMetadata.Creator = creator;
-        }
-
-        if (metaData.TryGetValue("ve", out var version) && !string.IsNullOrEmpty(version))
-        {
-            lyricMetadata.Version = version;
-        }
-
-        return lyricMetadata;
-    }
-
-    private static string GetMetadataFieldName(string metaDataRow, int index)
-    {
-        var metadataFieldName = metaDataRow.AsSpan(1, index - 1).Trim();
-        return metadataFieldName.IsEmpty ? string.Empty : metadataFieldName.ToString();
-    }
-
-    private static string GetMetadataValue(string metaDataRow, int index)
-    {
-        var metadataValue = metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim();
-        return metadataValue.IsEmpty ? string.Empty : metadataValue.ToString();
     }
 }

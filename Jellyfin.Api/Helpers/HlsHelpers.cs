@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -45,15 +45,9 @@ public static class HlsHelpers
                     using var reader = new StreamReader(fileStream);
                     var count = 0;
 
-                    while (!reader.EndOfStream)
+                    string? line;
+                    while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is not null)
                     {
-                        var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-                        if (line is null)
-                        {
-                            // Nothing currently in buffer.
-                            break;
-                        }
-
                         if (line.Contains("#EXTINF:", StringComparison.OrdinalIgnoreCase))
                         {
                             count++;

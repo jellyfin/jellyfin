@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities.Security;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using Microsoft.Data.Sqlite;
@@ -15,7 +15,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// A migration that moves data from the authentication database into the new schema.
     /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+    [JellyfinMigration("2025-04-20T14:00:00", nameof(MigrateAuthenticationDb), "5BD72F41-E6F3-4F60-90AA-09869ABE0E22")]
     public class MigrateAuthenticationDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "authentication.db";
 
@@ -44,21 +47,31 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc />
-        public Guid Id => Guid.Parse("5BD72F41-E6F3-4F60-90AA-09869ABE0E22");
-
-        /// <inheritdoc />
-        public string Name => "MigrateAuthenticationDatabase";
-
-        /// <inheritdoc />
-        public bool PerformOnNewInstall => false;
-
-        /// <inheritdoc />
         public void Perform()
         {
             var dataPath = _appPaths.DataPath;
-            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
+            var dbFilePath = Path.Combine(dataPath, DbFilename);
+
+            if (!File.Exists(dbFilePath))
+            {
+                _logger.LogWarning("{Path} doesn't exist, nothing to migrate", dbFilePath);
+                return;
+            }
+
+            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
                 connection.Open();
+
+                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Tokens';");
+                foreach (var row in tableQuery)
+                {
+                    if (row.GetInt32(0) == 0)
+                    {
+                        _logger.LogWarning("Table 'Tokens' doesn't exist in {Path}, nothing to migrate", dbFilePath);
+                        return;
+                    }
+                }
+
                 using var dbContext = _dbProvider.CreateDbContext();
 
                 var authenticatedDevices = connection.Query("SELECT * FROM Tokens");

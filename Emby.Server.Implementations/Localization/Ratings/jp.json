@@ -1,0 +1,62 @@
+{
+    "countryCode": "jp",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["A", "G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["PG12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["B"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["15A", "15PG"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["C", "15+", "R15+"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["16+"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["D"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18+", "Z"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

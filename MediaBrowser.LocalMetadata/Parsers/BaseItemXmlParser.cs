@@ -234,8 +234,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     item.CustomRating = reader.ReadNormalizedString();
                     break;
                 case "RunningTime":
-                    var runtimeText = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(runtimeText))
+                    var runtimeText = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(runtimeText))
                     {
                         if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
@@ -253,7 +253,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     break;
                 case "LockData":
-                    item.IsLocked = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                    item.IsLocked = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "Network":
                     foreach (var name in reader.GetStringArray())
@@ -331,9 +331,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 case "Rating":
                 case "IMDBrating":
                 {
-                    var rating = reader.ReadElementContentAsString();
+                    var rating = reader.ReadNormalizedString();
 
-                    if (!string.IsNullOrWhiteSpace(rating))
+                    if (!string.IsNullOrEmpty(rating))
                     {
                         // All external meta is saving this as '.' for decimal I believe...but just to be sure
                         if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
@@ -365,10 +365,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
                 case "CollectionNumber":
                     var tmdbCollection = reader.ReadNormalizedString();
-                    if (!string.IsNullOrEmpty(tmdbCollection))
-                    {
-                        item.SetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
-                    }
+                    item.TrySetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
 
                     break;
 
@@ -452,7 +449,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "OwnerUserId":
                 {
-                    var val = reader.ReadElementContentAsString();
+                    var val = reader.ReadNormalizedString();
 
                     if (Guid.TryParse(val, out var guid) && !guid.Equals(Guid.Empty))
                     {
@@ -467,7 +464,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Format3D":
                 {
-                    var val = reader.ReadElementContentAsString();
+                    var val = reader.ReadNormalizedString();
 
                     if (item is Video video)
                     {
@@ -501,11 +498,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     string readerName = reader.Name;
                     if (_validProviderIds!.TryGetValue(readerName, out string? providerIdValue))
                     {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(providerIdValue, id);
-                        }
+                        var id = reader.ReadNormalizedString();
+                        item.TrySetProviderId(providerIdValue, id);
                     }
                     else
                     {
@@ -519,7 +513,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromSharesNode(XmlReader reader, IHasShares item)
         {
-            var list = new List<Share>();
+            var list = new List<PlaylistUserPermissions>();
 
             reader.MoveToContent();
             reader.Read();
@@ -565,7 +559,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.Shares = list.ToArray();
+            item.Shares = [.. list];
         }
 
         /// <summary>
@@ -586,7 +580,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "Tagline":
-                            item.Tagline = reader.ReadNormalizedString();
+                            var val = reader.ReadNormalizedString();
+                            if (!string.IsNullOrEmpty(val))
+                            {
+                                item.Tagline = val;
+                            }
+
                             break;
                         default:
                             reader.Skip();
@@ -830,12 +829,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// </summary>
         /// <param name="reader">The xml reader.</param>
         /// <returns>The share.</returns>
-        protected Share? GetShare(XmlReader reader)
+        protected PlaylistUserPermissions? GetShare(XmlReader reader)
         {
-            var item = new Share();
-
             reader.MoveToContent();
             reader.Read();
+            string? userId = null;
+            var canEdit = false;
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -845,10 +844,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "UserId":
-                            item.UserId = reader.ReadNormalizedString();
+                            userId = reader.ReadNormalizedString();
                             break;
                         case "CanEdit":
-                            item.CanEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                            canEdit = string.Equals(reader.ReadNormalizedString(), "true", StringComparison.OrdinalIgnoreCase);
                             break;
                         default:
                             reader.Skip();
@@ -862,9 +861,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             // This is valid
-            if (!string.IsNullOrWhiteSpace(item.UserId))
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var guid))
             {
-                return item;
+                return new PlaylistUserPermissions(guid, canEdit);
             }
 
             return null;

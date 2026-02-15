@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -18,7 +20,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         public const string MetaDataPath = "/meta/data/path";
 
         private readonly IFixture _fixture;
-        private readonly SqliteItemRepository _sqliteItemRepository;
+        private readonly BaseItemRepository _sqliteItemRepository;
 
         public SqliteItemRepositoryTests()
         {
@@ -40,7 +42,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             _fixture.Inject(appHost);
             _fixture.Inject(config);
-            _sqliteItemRepository = _fixture.Create<SqliteItemRepository>();
+            _sqliteItemRepository = _fixture.Create<BaseItemRepository>();
         }
 
         public static TheoryData<string, ItemImageInfo> ItemImageInfoFromValueString_Valid_TestData()
@@ -95,31 +97,6 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                 });
 
             return data;
-        }
-
-        [Theory]
-        [MemberData(nameof(ItemImageInfoFromValueString_Valid_TestData))]
-        public void ItemImageInfoFromValueString_Valid_Success(string value, ItemImageInfo expected)
-        {
-            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value);
-            Assert.Equal(expected.Path, result.Path);
-            Assert.Equal(expected.Type, result.Type);
-            Assert.Equal(expected.DateModified, result.DateModified);
-            Assert.Equal(expected.Width, result.Width);
-            Assert.Equal(expected.Height, result.Height);
-            Assert.Equal(expected.BlurHash, result.BlurHash);
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("*")]
-        [InlineData("https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0")]
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*6374520964785129080*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid modified date
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*-637452096478512963*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Negative modified date
-        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Invalid*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid type
-        public void ItemImageInfoFromValueString_Invalid_Null(string value)
-        {
-            Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));
         }
 
         public static TheoryData<string, ItemImageInfo[]> DeserializeImages_Valid_TestData()
@@ -200,97 +177,6 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                 Array.Empty<ItemImageInfo>());
 
             return data;
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_Valid_TestData))]
-        public void DeserializeImages_Valid_Success(string value, ItemImageInfo[] expected)
-        {
-            var result = _sqliteItemRepository.DeserializeImages(value);
-            Assert.Equal(expected.Length, result.Length);
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.Equal(expected[i].Path, result[i].Path);
-                Assert.Equal(expected[i].Type, result[i].Type);
-                Assert.Equal(expected[i].DateModified, result[i].DateModified);
-                Assert.Equal(expected[i].Width, result[i].Width);
-                Assert.Equal(expected[i].Height, result[i].Height);
-                Assert.Equal(expected[i].BlurHash, result[i].BlurHash);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_ValidAndInvalid_TestData))]
-        public void DeserializeImages_ValidAndInvalid_Success(string value, ItemImageInfo[] expected)
-        {
-            var result = _sqliteItemRepository.DeserializeImages(value);
-            Assert.Equal(expected.Length, result.Length);
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.Equal(expected[i].Path, result[i].Path);
-                Assert.Equal(expected[i].Type, result[i].Type);
-                Assert.Equal(expected[i].DateModified, result[i].DateModified);
-                Assert.Equal(expected[i].Width, result[i].Width);
-                Assert.Equal(expected[i].Height, result[i].Height);
-                Assert.Equal(expected[i].BlurHash, result[i].BlurHash);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeImages_Valid_TestData))]
-        public void SerializeImages_Valid_Success(string expected, ItemImageInfo[] value)
-        {
-            Assert.Equal(expected, _sqliteItemRepository.SerializeImages(value));
-        }
-
-        public static TheoryData<string, Dictionary<string, string>> DeserializeProviderIds_Valid_TestData()
-        {
-            var data = new TheoryData<string, Dictionary<string, string>>();
-
-            data.Add(
-                "Imdb=tt0119567",
-                new Dictionary<string, string>()
-                {
-                    { "Imdb", "tt0119567" },
-                });
-
-            data.Add(
-                "Imdb=tt0119567|Tmdb=330|TmdbCollection=328",
-                new Dictionary<string, string>()
-                {
-                    { "Imdb", "tt0119567" },
-                    { "Tmdb", "330" },
-                    { "TmdbCollection", "328" },
-                });
-
-            data.Add(
-                "MusicBrainzAlbum=9d363e43-f24f-4b39-bc5a-7ef305c677c7|MusicBrainzReleaseGroup=63eba062-847c-3b73-8b0f-6baf27bba6fa|AudioDbArtist=111352|AudioDbAlbum=2116560|MusicBrainzAlbumArtist=20244d07-534f-4eff-b4d4-930878889970",
-                new Dictionary<string, string>()
-                {
-                    { "MusicBrainzAlbum", "9d363e43-f24f-4b39-bc5a-7ef305c677c7" },
-                    { "MusicBrainzReleaseGroup", "63eba062-847c-3b73-8b0f-6baf27bba6fa" },
-                    { "AudioDbArtist", "111352" },
-                    { "AudioDbAlbum", "2116560" },
-                    { "MusicBrainzAlbumArtist", "20244d07-534f-4eff-b4d4-930878889970" },
-                });
-
-            return data;
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
-        public void DeserializeProviderIds_Valid_Success(string value, Dictionary<string, string> expected)
-        {
-            var result = new ProviderIdsExtensionsTestsObject();
-            SqliteItemRepository.DeserializeProviderIds(value, result);
-            Assert.Equal(expected, result.ProviderIds);
-        }
-
-        [Theory]
-        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
-        public void SerializeProviderIds_Valid_Success(string expected, Dictionary<string, string> values)
-        {
-            Assert.Equal(expected, SqliteItemRepository.SerializeProviderIds(values));
         }
 
         private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
@@ -47,6 +47,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
             var movie = new Movie() { Path = "/media/movies/Avengers Endgame", VideoType = VideoType.Dvd };
             var path1 = "/media/movies/Avengers Endgame/Avengers Endgame.nfo";
             var path2 = "/media/movies/Avengers Endgame/VIDEO_TS/VIDEO_TS.nfo";
+            var path3 = "/media/movies/Avengers Endgame/movie.nfo";
 
             // uses ContainingFolderPath which uses Operating system specific paths
             if (OperatingSystem.IsWindows())
@@ -54,12 +55,14 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
                 movie.Path = movie.Path.Replace('/', '\\');
                 path1 = path1.Replace('/', '\\');
                 path2 = path2.Replace('/', '\\');
+                path3 = path3.Replace('/', '\\');
             }
 
             var paths = MovieNfoSaver.GetMovieSavePaths(new ItemInfo(movie)).ToArray();
-            Assert.Equal(2, paths.Length);
+            Assert.Equal(3, paths.Length);
             Assert.Contains(path1, paths);
             Assert.Contains(path2, paths);
+            Assert.Contains(path3, paths);
         }
     }
 }

@@ -1,0 +1,55 @@
+{
+    "countryCode": "br",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["L", "AL", "Livre"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["9"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["10", "A10", "ER"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12", "A12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14", "A14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16", "A16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "A18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

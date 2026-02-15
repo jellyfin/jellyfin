@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -19,9 +20,9 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(true, true)]
         public void MergeBaseItemData_MergeMetadataSettings_MergesWhenSet(bool mergeMetadataSettings, bool defaultDate)
         {
-            var newLocked = new[] { MetadataField.Cast };
+            var newLocked = new[] { MetadataField.Genres, MetadataField.Cast };
             var newString = "new";
-            var newDate = DateTime.Now;
+            var newDate = DateTime.UtcNow;
 
             var oldLocked = new[] { MetadataField.Genres };
             var oldString = "old";
@@ -38,6 +39,7 @@ namespace Jellyfin.Providers.Tests.Manager
                     DateCreated = newDate
                 }
             };
+
             if (defaultDate)
             {
                 source.Item.DateCreated = default;
@@ -77,7 +79,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [InlineData("Name", MetadataField.Name, false)]
-        [InlineData("OriginalTitle", null, false)]
+        [InlineData("OriginalTitle", null)]
         [InlineData("OfficialRating", MetadataField.OfficialRating)]
         [InlineData("CustomRating")]
         [InlineData("Tagline")]
@@ -140,8 +142,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 { "ProductionYear", 1, 2 },
                 { "CommunityRating", 1.0f, 2.0f },
                 { "CriticRating", 1.0f, 2.0f },
-                { "EndDate", DateTime.UnixEpoch, DateTime.Now },
-                { "PremiereDate", DateTime.UnixEpoch, DateTime.Now },
+                { "EndDate", DateTime.UnixEpoch, DateTime.UtcNow },
+                { "PremiereDate", DateTime.UnixEpoch, DateTime.UtcNow },
                 { "Video3DFormat", Video3DFormat.HalfSideBySide, Video3DFormat.FullSideBySide }
             };
 
@@ -155,7 +157,17 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
             Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, null, newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            // Video3DFormat - null values do NOT replace existing data
+            if (string.Equals(propName, "Video3DFormat", StringComparison.Ordinal))
+            {
+                Assert.False(
+                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            }
+            else
+            {
+                Assert.True(
+                    TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
+            }
         }
 
         [Fact]
@@ -329,7 +341,7 @@ namespace Jellyfin.Providers.Tests.Manager
             MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = target.People;
-            return newValue?.Equals(actualValue) ?? actualValue is null;
+            return newValue?.SequenceEqual((IEnumerable<PersonInfo>)actualValue!) ?? actualValue is null;
         }
 
         /// <summary>

@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (personResult is not null)
                 {
@@ -56,10 +56,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     }
 
                     result.SetProviderId(MetadataProvider.Tmdb, personResult.Id.ToString(CultureInfo.InvariantCulture));
-                    if (!string.IsNullOrEmpty(personResult.ExternalIds.ImdbId))
-                    {
-                        result.SetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
-                    }
+                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
 
                     return new[] { result };
                 }
@@ -104,7 +101,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (person is null)
                 {
                     return result;
@@ -129,11 +126,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 }
 
                 item.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
-
-                if (!string.IsNullOrEmpty(person.ImdbId))
-                {
-                    item.SetProviderId(MetadataProvider.Imdb, person.ImdbId);
-                }
+                item.TrySetProviderId(MetadataProvider.Imdb, person.ImdbId);
 
                 result.HasMetadata = true;
                 result.Item = item;

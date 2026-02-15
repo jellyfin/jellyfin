@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Api.Models.LibraryStructureDto;

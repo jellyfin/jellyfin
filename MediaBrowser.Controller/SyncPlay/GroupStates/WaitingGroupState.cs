@@ -78,7 +78,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
             // Prepare new session.
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, update, cancellationToken);
 
             context.SetBuffering(session, true);
@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             }
 
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
-            var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+            var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
             context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
             // Reset status of sessions and await for all Ready events.
@@ -177,7 +177,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             if (result)
             {
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
-                var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
@@ -215,7 +215,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 context.RestartCurrentItem();
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist);
-                var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
@@ -336,7 +336,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 _logger.LogDebug("Session {SessionId} reported wrong playlist item in group {GroupId}.", session.Id, context.GroupId.ToString());
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
-                var updateSession = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var updateSession = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, updateSession, cancellationToken);
                 context.SetBuffering(session, true);
 
@@ -410,7 +410,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 _logger.LogDebug("Session {SessionId} reported wrong playlist item in group {GroupId}.", session.Id, context.GroupId.ToString());
 
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.SetCurrentItem);
-                var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.CurrentSession, update, cancellationToken);
                 context.SetBuffering(session, true);
 
@@ -583,7 +583,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             {
                 // Send playing-queue update.
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.NextItem);
-                var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.
@@ -629,7 +629,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             {
                 // Send playing-queue update.
                 var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.PreviousItem);
-                var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);
+                var update = new SyncPlayPlayQueueUpdate(context.GroupId, playQueueUpdate);
                 context.SendGroupUpdate(session, SyncPlayBroadcastType.AllGroup, update, cancellationToken);
 
                 // Reset status of sessions and await for all Ready events.

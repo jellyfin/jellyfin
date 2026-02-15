@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,8 +28,9 @@ namespace Emby.Naming.Video
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
+        /// <param name="libraryRoot">Top-level folder for the containing library.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true)
+        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true, string? libraryRoot = "")
         {
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
@@ -65,7 +67,7 @@ namespace Emby.Naming.Video
             {
                 var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => VideoResolver.Resolve(i, stack.IsDirectoryStack, namingOptions, parseName))
+                    Files = stack.Files.Select(i => VideoResolver.Resolve(i, stack.IsDirectoryStack, namingOptions, parseName, libraryRoot))
                         .OfType<VideoFileInfo>()
                         .ToList()
                 };
@@ -135,17 +137,27 @@ namespace Emby.Naming.Video
 
             if (videos.Count > 1)
             {
-                var groups = videos.GroupBy(x => ResolutionRegex().IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                var groups = videos
+                    .Select(x => (filename: x.Files[0].FileNameWithoutExtension.ToString(), value: x))
+                    .Select(x => (x.filename, resolutionMatch: ResolutionRegex().Match(x.filename), x.value))
+                    .GroupBy(x => x.resolutionMatch.Success)
+                    .ToList();
+
                 videos.Clear();
+
+                StringComparer comparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
                 foreach (var group in groups)
                 {
                     if (group.Key)
                     {
-                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                        videos.InsertRange(0, group
+                            .OrderByDescending(x => x.resolutionMatch.Value, comparer)
+                            .ThenBy(x => x.filename, comparer)
+                            .Select(x => x.value));
                     }
                     else
                     {
-                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                        videos.AddRange(group.OrderBy(x => x.filename, comparer).Select(x => x.value));
                     }
                 }
             }

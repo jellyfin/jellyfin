@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Authentication;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -19,12 +19,6 @@ namespace Jellyfin.Server.Implementations.Users
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
             throw new AuthenticationException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
-        }
-
-        /// <inheritdoc />
-        public bool HasPassword(User user)
-        {
-            return true;
         }
 
         /// <inheritdoc />

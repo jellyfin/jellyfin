@@ -11,7 +11,7 @@
             {
                 "Name": "Console",
                 "Args": {
-                    "outputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
+                    "outputTemplate": "[{Timestamp:HH:mm:ss.fff}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
                 }
             },
             {

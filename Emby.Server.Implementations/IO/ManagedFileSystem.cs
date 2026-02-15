@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -79,12 +81,14 @@ namespace Emby.Server.Implementations.IO
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
             // path is actually a stream
-            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(filePath))
             {
                 return filePath;
             }
 
-            if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
+            var isAbsolutePath = Path.IsPathRooted(filePath) && (!OperatingSystem.IsWindows() || filePath[0] != '\\');
+
+            if (isAbsolutePath)
             {
                 // absolute local path
                 return filePath;
@@ -96,17 +100,10 @@ namespace Emby.Server.Implementations.IO
                 return filePath;
             }
 
-            var firstChar = filePath[0];
-            if (firstChar == '/')
-            {
-                // for this we don't really know
-                return filePath;
-            }
-
             var filePathSpan = filePath.AsSpan();
 
-            // relative path
-            if (firstChar == '\\')
+            // relative path on windows
+            if (filePath[0] == '\\')
             {
                 filePathSpan = filePathSpan.Slice(1);
             }
@@ -150,6 +147,31 @@ namespace Emby.Server.Implementations.IO
             else
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        /// <inheritdoc />
+        public void MoveDirectory(string source, string destination)
+        {
+            // Make sure parent directory of target exists
+            var parent = Directory.GetParent(destination);
+            parent?.Create();
+
+            try
+            {
+                Directory.Move(source, destination);
+            }
+            catch (IOException)
+            {
+                // Cross device move requires a copy
+                Directory.CreateDirectory(destination);
+                var sourceDir = new DirectoryInfo(source);
+                foreach (var file in sourceDir.EnumerateFiles())
+                {
+                    file.CopyTo(Path.Combine(destination, file.Name), true);
+                }
+
+                sourceDir.Delete(true);
             }
         }
 
@@ -231,40 +253,40 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                // if (!result.IsDirectory)
-                // {
-                //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                // }
-
                 if (info is FileInfo fileInfo)
                 {
-                    result.Length = fileInfo.Length;
-
-                    // Issue #2354 get the size of files behind symbolic links. Also Enum.HasFlag is bad as it boxes!
-                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+                    result.CreationTimeUtc = GetCreationTimeUtc(info);
+                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
+                    if (fileInfo.LinkTarget is not null)
                     {
                         try
                         {
-                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            var targetFileInfo = FileSystemHelper.ResolveLinkTarget(fileInfo, returnFinalTarget: true);
+                            if (targetFileInfo is not null)
                             {
-                                result.Length = RandomAccess.GetLength(fileHandle);
+                                result.Exists = targetFileInfo.Exists;
+                                if (result.Exists)
+                                {
+                                    result.Length = targetFileInfo.Length;
+                                    result.CreationTimeUtc = GetCreationTimeUtc(targetFileInfo);
+                                    result.LastWriteTimeUtc = GetLastWriteTimeUtc(targetFileInfo);
+                                }
                             }
-                        }
-                        catch (FileNotFoundException ex)
-                        {
-                            // Dangling symlinks cannot be detected before opening the file unfortunately...
-                            _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
-                            result.Exists = false;
+                            else
+                            {
+                                result.Exists = false;
+                            }
                         }
                         catch (UnauthorizedAccessException ex)
                         {
                             _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
                         }
                     }
+                    else
+                    {
+                        result.Length = fileInfo.Length;
+                    }
                 }
-
-                result.CreationTimeUtc = GetCreationTimeUtc(info);
-                result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
             }
             else
             {
@@ -331,11 +353,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetCreationTimeUtc(string path)
         {
             return GetCreationTimeUtc(GetFileSystemInfo(path));
@@ -372,11 +390,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        /// <summary>
-        /// Gets the last write time UTC.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>DateTime.</returns>
+        /// <inheritdoc />
         public virtual DateTime GetLastWriteTimeUtc(string path)
         {
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
@@ -393,7 +407,7 @@ namespace Emby.Server.Implementations.IO
             var info = new FileInfo(path);
 
             if (info.Exists &&
-                ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) != isHidden)
+                (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden != isHidden)
             {
                 if (isHidden)
                 {
@@ -421,8 +435,8 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) == readOnly
-                && ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) == isHidden)
+            if ((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly == readOnly
+                && (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden == isHidden)
             {
                 return;
             }
@@ -450,11 +464,7 @@ namespace Emby.Server.Implementations.IO
             File.SetAttributes(path, attributes);
         }
 
-        /// <summary>
-        /// Swaps the files.
-        /// </summary>
-        /// <param name="file1">The file1.</param>
-        /// <param name="file2">The file2.</param>
+        /// <inheritdoc />
         public virtual void SwapFiles(string file1, string file2)
         {
             ArgumentException.ThrowIfNullOrEmpty(file1);
@@ -470,7 +480,7 @@ namespace Emby.Server.Implementations.IO
             File.Copy(file1, temp1, true);
 
             File.Copy(file2, file1, true);
-            File.Copy(temp1, file2, true);
+            File.Move(temp1, file2, true);
         }
 
         /// <inheritdoc />
@@ -487,8 +497,17 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return Path.TrimEndingDirectorySeparator(path1).Equals(
-                Path.TrimEndingDirectorySeparator(path2),
+            if (string.IsNullOrWhiteSpace(path1) || string.IsNullOrWhiteSpace(path2))
+            {
+                return false;
+            }
+
+            var normalized1 = Path.TrimEndingDirectorySeparator(path1);
+            var normalized2 = Path.TrimEndingDirectorySeparator(path2);
+
+            return string.Equals(
+                normalized1,
+                normalized2,
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
@@ -530,8 +549,8 @@ namespace Emby.Server.Implementations.IO
             return DriveInfo.GetDrives()
                 .Where(
                     d => (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
-                        && d.IsReady
-                        && d.TotalSize != 0)
+                         && d.IsReady
+                         && d.TotalSize != 0)
                 .Select(d => new FileSystemMetadata
                 {
                     Name = d.Name,
@@ -549,22 +568,36 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
         {
-            return GetFiles(path, null, false, recursive);
+            return GetFiles(path, "*", recursive);
         }
 
         /// <inheritdoc />
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, bool recursive = false)
+        {
+            return GetFiles(path, searchPattern, null, false, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive)
+        {
+            return GetFiles(path, "*", extensions, enableCaseSensitiveExtensions, recursive);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
-                return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
+                searchPattern = searchPattern.EndsWith(extensions[0], StringComparison.Ordinal) ? searchPattern : searchPattern + extensions[0];
+
+                return ToMetadata(new DirectoryInfo(path).EnumerateFiles(searchPattern, enumerationOptions));
             }
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
+            var files = new DirectoryInfo(path).EnumerateFiles(searchPattern, enumerationOptions);
 
             if (extensions is not null && extensions.Count > 0)
             {
@@ -586,6 +619,9 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
+            // Note: any of unhandled exceptions thrown by this method may cause the caller to believe the whole path is not accessible.
+            // But what causing the exception may be a single file under that path. This could lead to unexpected behavior.
+            // For example, the scanner will remove everything in that path due to unhandled errors.
             var directoryInfo = new DirectoryInfo(path);
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -614,7 +650,7 @@ namespace Emby.Server.Implementations.IO
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            // On linux and osx the search pattern is case sensitive
+            // On linux and macOS the search pattern is case-sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {
@@ -643,7 +679,15 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
-            return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
+            try
+            {
+                return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or DirectoryNotFoundException or SecurityException)
+            {
+                _logger.LogError(ex, "Failed to enumerate path {Path}", path);
+                return Enumerable.Empty<string>();
+            }
         }
 
         /// <inheritdoc />

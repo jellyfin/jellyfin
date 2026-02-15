@@ -10,13 +10,14 @@ namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private readonly IFileSystem _fileSystem;
-
+        // TODO make static and switch to FastConcurrentLru.
         private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
 
         private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
 
         private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
+
+        private readonly IFileSystem _fileSystem;
 
         public DirectoryService(IFileSystem fileSystem)
         {
@@ -26,6 +27,22 @@ namespace MediaBrowser.Controller.Providers
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
             return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+        }
+
+        public List<FileSystemMetadata> GetDirectories(string path)
+        {
+            var list = new List<FileSystemMetadata>();
+            var items = GetFileSystemEntries(path);
+            for (var i = 0; i < items.Length; i++)
+            {
+                var item = items[i];
+                if (item.IsDirectory)
+                {
+                    list.Add(item);
+                }
+            }
+
+            return list;
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
@@ -46,10 +63,22 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFile(string path)
         {
+            var entry = GetFileSystemEntry(path);
+            return entry is not null && !entry.IsDirectory ? entry : null;
+        }
+
+        public FileSystemMetadata? GetDirectory(string path)
+        {
+            var entry = GetFileSystemEntry(path);
+            return entry is not null && entry.IsDirectory ? entry : null;
+        }
+
+        public FileSystemMetadata? GetFileSystemEntry(string path)
+        {
             if (!_fileCache.TryGetValue(path, out var result))
             {
-                var file = _fileSystem.GetFileInfo(path);
-                if (file.Exists)
+                var file = _fileSystem.GetFileSystemInfo(path);
+                if (file?.Exists ?? false)
                 {
                     result = file;
                     _fileCache.TryAdd(path, result);
@@ -77,6 +106,11 @@ namespace MediaBrowser.Controller.Providers
             }
 
             return filePaths;
+        }
+
+        public bool IsAccessible(string path)
+        {
+            return _fileSystem.GetFileSystemEntryPaths(path).Any();
         }
     }
 }

@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -236,7 +238,7 @@ namespace MediaBrowser.Controller.Entities
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
 
-        private QueryResult<BaseItem> ConvertToResult(List<BaseItem> items)
+        private QueryResult<BaseItem> ConvertToResult(IReadOnlyList<BaseItem> items)
         {
             return new QueryResult<BaseItem>(items);
         }
@@ -337,7 +339,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    User = query.User
                 },
                 parentFolders,
                 query.DtoOptions);
@@ -430,36 +432,30 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             ILibraryManager libraryManager)
         {
-            var user = query.User;
-
             // This must be the last filter
             if (!query.AdjacentTo.IsNullOrEmpty())
             {
                 items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return SortAndPage(items, totalRecordLimit, query, libraryManager, true);
+            return SortAndPage(items, totalRecordLimit, query, libraryManager);
         }
 
         public static QueryResult<BaseItem> SortAndPage(
             IEnumerable<BaseItem> items,
             int? totalRecordLimit,
             InternalItemsQuery query,
-            ILibraryManager libraryManager,
-            bool enableSorting)
+            ILibraryManager libraryManager)
         {
-            if (enableSorting)
+            if (query.OrderBy.Count > 0)
             {
-                if (query.OrderBy.Count > 0)
-                {
-                    items = libraryManager.Sort(items, query.User, query.OrderBy);
-                }
+                items = libraryManager.Sort(items, query.User, query.OrderBy);
             }
 
             var itemsArray = totalRecordLimit.HasValue ? items.Take(totalRecordLimit.Value).ToArray() : items.ToArray();
             var totalCount = itemsArray.Length;
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 itemsArray = itemsArray.Skip(query.StartIndex ?? 0).Take(query.Limit.Value).ToArray();
             }
@@ -476,6 +472,23 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
+            if (!string.IsNullOrEmpty(query.NameStartsWith) && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return false;
+            }
+
+#pragma warning disable CA1309 // Use ordinal string comparison
+            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater) && string.Compare(query.NameStartsWithOrGreater, item.SortName, StringComparison.InvariantCultureIgnoreCase) == 1)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(query.NameLessThan) && string.Compare(query.NameLessThan, item.SortName, StringComparison.InvariantCultureIgnoreCase) != 1)
+#pragma warning restore CA1309 // Use ordinal string comparison
+            {
+                return false;
+            }
+
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType))
             {
                 return false;
@@ -506,7 +519,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsLiked.HasValue)
             {
                 userData = userDataManager.GetUserData(user, item);
-
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
                     return false;
@@ -515,7 +527,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= userDataManager.GetUserData(user, item);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -526,8 +538,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavorite.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
-
+                userData ??= userDataManager.GetUserData(user, item);
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
                     return false;
@@ -536,7 +547,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsResumable.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                userData ??= userDataManager.GetUserData(user, item);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)
@@ -547,7 +558,8 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (item.IsPlayed(user) != query.IsPlayed.Value)
+                userData ??= userDataManager.GetUserData(user, item);
+                if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
                 {
                     return false;
                 }
@@ -744,7 +756,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeSong.Value;
 
-                var themeCount = item.GetThemeSongs().Count;
+                var themeCount = item.GetThemeSongs(user).Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -757,7 +769,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeVideo.Value;
 
-                var themeCount = item.GetThemeVideos().Count;
+                var themeCount = item.GetThemeVideos(user).Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -922,6 +934,11 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+            }
+
+            if (query.ExcludeItemIds.Contains(item.Id))
+            {
+                return false;
             }
 
             return true;

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 #pragma warning disable CS1591
 
@@ -42,8 +42,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool AllowVideoStreamCopy { get; set; }
 
         public bool AllowAudioStreamCopy { get; set; }
-
-        public bool BreakOnNonKeyFrames { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate.
@@ -190,6 +188,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         public EncodingContext Context { get; set; }
 
         public Dictionary<string, string> StreamOptions { get; set; }
+
+        public bool EnableAudioVbrEncoding { get; set; }
+
+        public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 
         public string GetOption(string qualifier, string name)
         {

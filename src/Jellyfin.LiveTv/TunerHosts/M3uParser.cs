@@ -93,7 +93,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
-                    var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
+                    var channel = GetChannelInfo(extInf, tunerHostId, trimmedLine);
                     channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     channel.Path = trimmedLine;
@@ -106,7 +106,7 @@ namespace Jellyfin.LiveTv.TunerHosts
             return channels;
         }
 
-        private ChannelInfo GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
+        private ChannelInfo GetChannelInfo(string extInf, string tunerHostId, string mediaUrl)
         {
             var channel = new ChannelInfo()
             {
@@ -200,8 +200,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         var numberIndex = nameInExtInf.IndexOf(' ');
                         if (numberIndex > 0)
                         {
-                            var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
-
+                            var numberPart = nameInExtInf[..numberIndex].Trim(stackalloc[] { ' ', '.' });
                             if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                             {
                                 numberString = numberPart.ToString();
@@ -273,12 +272,12 @@ namespace Jellyfin.LiveTv.TunerHosts
                 var numberIndex = nameInExtInf.IndexOf(' ', StringComparison.Ordinal);
                 if (numberIndex > 0)
                 {
-                    var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+                    var numberPart = nameInExtInf.AsSpan(0, numberIndex).Trim(stackalloc[] { ' ', '.' });
 
                     if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
-                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
+                        nameInExtInf = nameInExtInf.AsSpan(numberIndex + 1).Trim(stackalloc[] { ' ', '-' }).ToString();
                     }
                 }
             }

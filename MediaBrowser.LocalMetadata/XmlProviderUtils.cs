@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.LocalMetadata
+namespace MediaBrowser.LocalMetadata
 {
     /// <summary>
     /// The xml provider utils.

@@ -1,5 +1,5 @@
-﻿using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
-using Jellyfin.Data.Enums;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace Jellyfin.Api.Auth.UserPermissionPolicy
 {

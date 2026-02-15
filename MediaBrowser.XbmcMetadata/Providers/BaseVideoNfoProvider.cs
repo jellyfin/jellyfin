@@ -54,11 +54,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
             result.People = tmpItem.People;
             result.Images = tmpItem.Images;
             result.RemoteImages = tmpItem.RemoteImages;
-
-            if (tmpItem.UserDataList is not null)
-            {
-                result.UserDataList = tmpItem.UserDataList;
-            }
         }
 
         /// <inheritdoc />

@@ -64,7 +64,7 @@ public class SubtitleResolverTests
     [InlineData("My.Video.mp3", false, false)]
     [InlineData("My.Video.srt", true, true)]
     [InlineData("My.Video.mp3", true, false)]
-    public async void GetExternalStreams_MixedFilenames_PicksSubtitles(string file, bool metadataDirectory, bool matches)
+    public async Task GetExternalStreams_MixedFilenames_PicksSubtitles(string file, bool metadataDirectory, bool matches)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 

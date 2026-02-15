@@ -219,7 +219,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
             }
 
-            throw new LiveTvConflictException();
+            throw new LiveTvConflictException("Unable to find host to play channel");
         }
 
         protected virtual bool IsValidChannelId(string channelId)

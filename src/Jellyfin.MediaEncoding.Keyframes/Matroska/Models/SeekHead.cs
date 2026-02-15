@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
+namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
 
 /// <summary>
 /// The matroska SeekHead segment. All positions are relative to the Segment container.

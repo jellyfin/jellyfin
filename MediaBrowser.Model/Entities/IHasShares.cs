@@ -1,4 +1,6 @@
-﻿namespace MediaBrowser.Model.Entities;
+using System.Collections.Generic;
+
+namespace MediaBrowser.Model.Entities;
 
 /// <summary>
 /// Interface for access to shares.
@@ -8,5 +10,5 @@ public interface IHasShares
     /// <summary>
     /// Gets or sets the shares.
     /// </summary>
-    Share[] Shares { get; set; }
+    IReadOnlyList<PlaylistUserPermissions> Shares { get; set; }
 }

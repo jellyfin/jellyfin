@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -13,9 +16,10 @@ namespace Jellyfin.Api.WebSocketListeners;
 /// <summary>
 /// Class SessionInfoWebSocketListener.
 /// </summary>
-public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
+public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, WebSocketListenerState>
 {
     private readonly ISessionManager _sessionManager;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
@@ -49,15 +53,32 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// Gets the data to send.
     /// </summary>
     /// <returns>Task{SystemInfo}.</returns>
-    protected override Task<IEnumerable<SessionInfo>> GetDataToSend()
+    protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend()
     {
-        return Task.FromResult(_sessionManager.Sessions);
+        return Task.FromResult(_sessionManager.Sessions.Select(_sessionManager.ToSessionInfoDto));
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool dispose)
+    protected override Task<IEnumerable<SessionInfoDto>> GetDataToSendForConnection(IWebSocketConnection connection)
     {
-        if (dispose)
+        var sessions = _sessionManager.Sessions;
+
+        // For non-admin users, filter the sessions to only include their own sessions
+        if (connection.AuthorizationInfo?.User is not null &&
+            !connection.AuthorizationInfo.IsApiKey &&
+            !connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        {
+            var userId = connection.AuthorizationInfo.User.Id;
+            sessions = sessions.Where(s => s.UserId.Equals(userId) || s.ContainsUser(userId));
+        }
+
+        return Task.FromResult(sessions.Select(_sessionManager.ToSessionInfoDto));
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        if (!_disposed)
         {
             _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
             _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
@@ -66,9 +87,10 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
             _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
             _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
             _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+            _disposed = true;
         }
 
-        base.Dispose(dispose);
+        await base.DisposeAsyncCore().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -77,46 +99,47 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <param name="message">The message.</param>
     protected override void Start(WebSocketMessageInfo message)
     {
-        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        // Allow all authenticated users to subscribe to session information
+        if (message.Connection.AuthorizationInfo.User is null && !message.Connection.AuthorizationInfo.IsApiKey)
         {
-            throw new AuthenticationException("Only admin users can subscribe to session information.");
+            throw new AuthenticationException("User must be authenticated to subscribe to session Information.");
         }
 
         base.Start(message);
     }
 
-    private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
     {
-        await SendData(false).ConfigureAwait(false);
+        SendData(false);
     }
 
-    private async void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
+    private void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(!e.IsAutomated).ConfigureAwait(false);
+        SendData(!e.IsAutomated);
     }
 
-    private async void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
+    private void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
+    private void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 
-    private async void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
+    private void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
     {
-        await SendData(true).ConfigureAwait(false);
+        SendData(true);
     }
 }

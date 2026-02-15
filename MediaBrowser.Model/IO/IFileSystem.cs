@@ -34,6 +34,13 @@ namespace MediaBrowser.Model.IO
         string MakeAbsolutePath(string folderPath, string filePath);
 
         /// <summary>
+        /// Moves a directory to a new location.
+        /// </summary>
+        /// <param name="source">Source directory.</param>
+        /// <param name="destination">Destination directory.</param>
+        void MoveDirectory(string source, string destination);
+
+        /// <summary>
         /// Returns a <see cref="FileSystemMetadata" /> object for the specified file or directory path.
         /// </summary>
         /// <param name="path">A path to a file or directory.</param>
@@ -138,7 +145,7 @@ namespace MediaBrowser.Model.IO
         /// Gets the directories.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectories.</param>
         /// <returns>All found directories.</returns>
         IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false);
 
@@ -146,11 +153,39 @@ namespace MediaBrowser.Model.IO
         /// Gets the files.
         /// </summary>
         /// <param name="path">The path in which to search.</param>
-        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectories.</param>
         /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
+        /// <summary>
+        /// Gets the files.
+        /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="searchPattern">The search string to match against the names of files. This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but it doesn't support regular expressions.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectories.</param>
+        /// <returns>All found files.</returns>
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, bool recursive = false);
+
+        /// <summary>
+        /// Gets the files.
+        /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="extensions">The file extensions to search for.</param>
+        /// <param name="enableCaseSensitiveExtensions">Enable case-sensitive check for extensions.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectories.</param>
+        /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
+
+        /// <summary>
+        /// Gets the files.
+        /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="searchPattern">The search string to match against the names of files. This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but it doesn't support regular expressions.</param>
+        /// <param name="extensions">The file extensions to search for.</param>
+        /// <param name="enableCaseSensitiveExtensions">Enable case-sensitive check for extensions.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectories.</param>
+        /// <returns>All found files.</returns>
+        IEnumerable<FileSystemMetadata> GetFiles(string path, string searchPattern, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.

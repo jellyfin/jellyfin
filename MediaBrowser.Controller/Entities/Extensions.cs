@@ -30,15 +30,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (item.RemoteTrailers.Count == 0)
                 {
-                    item.RemoteTrailers = new[] { mediaUrl };
+                    item.RemoteTrailers = [mediaUrl];
                 }
                 else
                 {
-                    var oldIds = item.RemoteTrailers;
-                    var newIds = new MediaUrl[oldIds.Count + 1];
-                    oldIds.CopyTo(newIds);
-                    newIds[oldIds.Count] = mediaUrl;
-                    item.RemoteTrailers = newIds;
+                    item.RemoteTrailers = [..item.RemoteTrailers, mediaUrl];
                 }
             }
         }

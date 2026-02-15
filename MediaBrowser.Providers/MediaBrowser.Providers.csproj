@@ -18,20 +18,18 @@
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="LrcParser" />
     <PackageReference Include="MetaBrainz.MusicBrainz" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="PlaylistsNET" />
-    <PackageReference Include="TagLibSharp" />
+    <PackageReference Include="z440.atl.core" />
     <PackageReference Include="TMDbLib" />
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <!-- Code Analyzers -->

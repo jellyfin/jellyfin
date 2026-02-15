@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1819, CS1591
+#pragma warning disable CA1819, CS1591
 
 namespace MediaBrowser.Controller.Channels
 {

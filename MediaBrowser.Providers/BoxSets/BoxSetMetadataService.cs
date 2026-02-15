@@ -1,78 +1,93 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.BoxSets
+namespace MediaBrowser.Providers.BoxSets;
+
+/// <summary>
+/// Service to manage boxset metadata.
+/// </summary>
+public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
 {
-    public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BoxSetMetadataService"/> class.
+    /// </summary>
+    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+    /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
+    public BoxSetMetadataService(
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<BoxSetMetadataService> logger,
+        IProviderManager providerManager,
+        IFileSystem fileSystem,
+        ILibraryManager libraryManager,
+        IExternalDataManager externalDataManager,
+        IItemRepository itemRepository)
+        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
-        public BoxSetMetadataService(
-            IServerConfigurationManager serverConfigurationManager,
-            ILogger<BoxSetMetadataService> logger,
-            IProviderManager providerManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+    }
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingGenresFromChildren => true;
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingOfficialRatingFromChildren => true;
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingStudiosFromChildren => true;
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingPremiereDateFromChildren => true;
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(BoxSet item)
+    {
+        return item.GetLinkedChildren();
+    }
+
+    /// <inheritdoc />
+    protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+    {
+        base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+        var sourceItem = source.Item;
+        var targetItem = target.Item;
+
+        if (mergeMetadataSettings)
         {
+            // TODO: Change to only replace when currently empty or requested. This is currently not done because the metadata service is not handling attaching collection items based on the provider responses
+            targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren).DistinctBy(i => i.Path).ToArray();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override ItemUpdateType BeforeSaveInternal(BoxSet item, bool isFullRefresh, ItemUpdateType updateType)
+    {
+        var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
+
+        var libraryFolderIds = item.GetLibraryFolderIds();
+
+        var itemLibraryFolderIds = item.LibraryFolderIds;
+        if (itemLibraryFolderIds is null || !libraryFolderIds.SequenceEqual(itemLibraryFolderIds))
+        {
+            item.LibraryFolderIds = libraryFolderIds;
+            updatedType |= ItemUpdateType.MetadataImport;
         }
 
-        /// <inheritdoc />
-        protected override bool EnableUpdatingGenresFromChildren => true;
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingOfficialRatingFromChildren => true;
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingStudiosFromChildren => true;
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
-
-        /// <inheritdoc />
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(BoxSet item)
-        {
-            return item.GetLinkedChildren();
-        }
-
-        /// <inheritdoc />
-        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-
-            var sourceItem = source.Item;
-            var targetItem = target.Item;
-
-            if (mergeMetadataSettings)
-            {
-                targetItem.LinkedChildren = sourceItem.LinkedChildren;
-            }
-        }
-
-        /// <inheritdoc />
-        protected override ItemUpdateType BeforeSaveInternal(BoxSet item, bool isFullRefresh, ItemUpdateType updateType)
-        {
-            var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
-
-            var libraryFolderIds = item.GetLibraryFolderIds();
-
-            var itemLibraryFolderIds = item.LibraryFolderIds;
-            if (itemLibraryFolderIds is null || !libraryFolderIds.SequenceEqual(itemLibraryFolderIds))
-            {
-                item.LibraryFolderIds = libraryFolderIds;
-                updatedType |= ItemUpdateType.MetadataImport;
-            }
-
-            return updatedType;
-        }
+        return updatedType;
     }
 }

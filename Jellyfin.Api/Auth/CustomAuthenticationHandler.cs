@@ -3,7 +3,8 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using Jellyfin.Data.Enums;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
@@ -50,7 +51,8 @@ namespace Jellyfin.Api.Auth
                 }
 
                 var role = UserRoles.User;
-                if (authorizationInfo.IsApiKey || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+                if (authorizationInfo.IsApiKey
+                    || (authorizationInfo.User?.HasPermission(PermissionKind.IsAdministrator) ?? false))
                 {
                     role = UserRoles.Administrator;
                 }
@@ -60,10 +62,10 @@ namespace Jellyfin.Api.Auth
                     new Claim(ClaimTypes.Name, authorizationInfo.User?.Username ?? string.Empty),
                     new Claim(ClaimTypes.Role, role),
                     new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
-                    new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId),
-                    new Claim(InternalClaimTypes.Device, authorizationInfo.Device),
-                    new Claim(InternalClaimTypes.Client, authorizationInfo.Client),
-                    new Claim(InternalClaimTypes.Version, authorizationInfo.Version),
+                    new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId ?? string.Empty),
+                    new Claim(InternalClaimTypes.Device, authorizationInfo.Device ?? string.Empty),
+                    new Claim(InternalClaimTypes.Client, authorizationInfo.Client ?? string.Empty),
+                    new Claim(InternalClaimTypes.Version, authorizationInfo.Version ?? string.Empty),
                     new Claim(InternalClaimTypes.Token, authorizationInfo.Token),
                     new Claim(InternalClaimTypes.IsApiKey, authorizationInfo.IsApiKey.ToString(CultureInfo.InvariantCulture))
                 };

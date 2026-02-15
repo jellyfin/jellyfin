@@ -1,0 +1,41 @@
+{
+    "countryCode": "cl",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["TE"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["6"],
+            "ratingScore": {
+                "score": 6,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["TE+7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "18V", "18S"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

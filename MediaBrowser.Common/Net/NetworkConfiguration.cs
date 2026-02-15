@@ -110,6 +110,7 @@ public class NetworkConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether to enable automatic port forwarding.
     /// </summary>
+    [Obsolete("No longer supported")]
     public bool EnableUPnP { get; set; }
 
     /// <summary>

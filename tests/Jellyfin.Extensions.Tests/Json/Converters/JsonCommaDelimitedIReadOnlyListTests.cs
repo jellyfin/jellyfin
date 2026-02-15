@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jellyfin.Extensions.Tests.Json.Models;
@@ -86,6 +87,18 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
 
             var value = JsonSerializer.Deserialize<GenericBodyIReadOnlyListModel<GeneralCommandType>>(@"{ ""Value"": [""MoveUp"", ""MoveDown""] }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
+        }
+
+        [Fact]
+        public void Serialize_GenericCommandType_IReadOnlyList_Valid_Success()
+        {
+            var valueToSerialize = new GenericBodyIReadOnlyListModel<GeneralCommandType>
+            {
+                Value = new List<GeneralCommandType> { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
+            };
+
+            string value = JsonSerializer.Serialize<GenericBodyIReadOnlyListModel<GeneralCommandType>>(valueToSerialize, _jsonOptions);
+            Assert.Equal(@"{""Value"":[""MoveUp"",""MoveDown""]}", value);
         }
     }
 }

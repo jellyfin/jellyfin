@@ -6,12 +6,12 @@ namespace MediaBrowser.Model.Plugins
     public class PluginPageInfo
     {
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the name of the plugin.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Gets or sets the display name of the plugin.
         /// </summary>
         public string? DisplayName { get; set; }
 

@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -29,11 +30,6 @@ namespace MediaBrowser.Controller.Providers
         /// This can be used along with the <see cref="ProviderName"/> to localize the external id on the client.
         /// </remarks>
         ExternalIdMediaType? Type { get; }
-
-        /// <summary>
-        /// Gets the URL format string for this id.
-        /// </summary>
-        string? UrlFormatString { get; }
 
         /// <summary>
         /// Determines whether this id supports a given item type.

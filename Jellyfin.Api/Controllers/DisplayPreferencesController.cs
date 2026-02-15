@@ -4,8 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Dto;
@@ -95,9 +95,6 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         {
             dto.CustomPrefs.TryAdd(key, value);
         }
-
-        // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
-        _displayPreferencesManager.SaveChanges();
 
         return dto;
     }
@@ -194,9 +191,17 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
         {
-            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
+            var viewType = displayPreferences.CustomPrefs[key];
+
+            if (string.IsNullOrEmpty(viewType))
             {
-                _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
+                displayPreferences.CustomPrefs.Remove(key);
+                continue;
+            }
+
+            if (!Enum.TryParse<ViewType>(viewType, true, out _))
+            {
+                _logger.LogError("Invalid ViewType: {LandingScreenOption}", viewType);
                 displayPreferences.CustomPrefs.Remove(key);
             }
         }
@@ -210,8 +215,8 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         // Set all remaining custom preferences.
         _displayPreferencesManager.SetCustomItemDisplayPreferences(userId.Value, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
-        _displayPreferencesManager.SaveChanges();
-
+        _displayPreferencesManager.UpdateItemDisplayPreferences(itemPrefs);
+        _displayPreferencesManager.UpdateDisplayPreferences(existingDisplayPreferences);
         return NoContent();
     }
 }

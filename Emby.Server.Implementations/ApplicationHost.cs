@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
+using Emby.Server.Implementations.Chapters;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
@@ -39,7 +40,10 @@ using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.FullSystemBackup;
+using Jellyfin.Server.Implementations.Item;
+using Jellyfin.Server.Implementations.MediaSegments;
+using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -55,10 +59,14 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -82,7 +90,6 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
@@ -90,7 +97,6 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -109,13 +115,13 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts.
         /// </summary>
-        private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
+        private readonly ConcurrentBag<IDisposable> _disposableParts = new();
         private readonly DeviceId _deviceId;
 
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
-        private readonly IPluginManager _pluginManager;
+        private readonly PluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
 
@@ -146,7 +152,7 @@ namespace Emby.Server.Implementations
             _startupConfig = startupConfig;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
+            _deviceId = new DeviceId(ApplicationPaths, LoggerFactory.CreateLogger<DeviceId>());
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
@@ -161,7 +167,7 @@ namespace Emby.Server.Implementations
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
 
-            _disposableParts.TryAdd((PluginManager)_pluginManager, byte.MinValue);
+            _disposableParts.Add(_pluginManager);
         }
 
         /// <summary>
@@ -265,8 +271,15 @@ namespace Emby.Server.Implementations
                 ? Environment.MachineName
                 : ConfigurationManager.Configuration.ServerName;
 
+        public string RestoreBackupPath { get; set; }
+
         public string ExpandVirtualPath(string path)
         {
+            if (path is null)
+            {
+                return null;
+            }
+
             var appPaths = ApplicationPaths;
 
             return path.Replace(appPaths.VirtualDataPath, appPaths.DataPath, StringComparison.OrdinalIgnoreCase)
@@ -360,7 +373,7 @@ namespace Emby.Server.Implementations
             {
                 foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.TryAdd(part, byte.MinValue);
+                    _disposableParts.Add(part);
                 }
             }
 
@@ -381,7 +394,7 @@ namespace Emby.Server.Implementations
             {
                 foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.TryAdd(part, byte.MinValue);
+                    _disposableParts.Add(part);
                 }
             }
 
@@ -401,7 +414,12 @@ namespace Emby.Server.Implementations
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
-            Resolve<IMediaEncoder>().SetFFmpegPath();
+            var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
+
+            if (!ffmpegValid)
+            {
+                throw new FfmpegException("Failed to find valid ffmpeg");
+            }
 
             Logger.LogInformation("ServerId: {ServerId}", SystemId);
             Logger.LogInformation("Core startup complete");
@@ -422,7 +440,7 @@ namespace Emby.Server.Implementations
             // Initialize runtime stat collection
             if (ConfigurationManager.Configuration.EnableMetrics)
             {
-                DotNetRuntimeStatsBuilder.Default().StartCollecting();
+                _disposableParts.Add(DotNetRuntimeStatsBuilder.Default().StartCollecting());
             }
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
@@ -457,8 +475,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
-            serviceCollection.AddSingleton(_pluginManager);
+            serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IBackupService, BackupService>();
 
             serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
             serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();
@@ -486,13 +505,20 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
-            serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
+            serviceCollection.AddSingleton<IItemRepository, BaseItemRepository>();
+            serviceCollection.AddSingleton<IPeopleRepository, PeopleRepository>();
+            serviceCollection.AddSingleton<IChapterRepository, ChapterRepository>();
+            serviceCollection.AddSingleton<IMediaAttachmentRepository, MediaAttachmentRepository>();
+            serviceCollection.AddSingleton<IMediaStreamRepository, MediaStreamRepository>();
+            serviceCollection.AddSingleton<IKeyframeRepository, KeyframeRepository>();
+            serviceCollection.AddSingleton<IItemTypeLookup, ItemTypeLookup>();
 
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
             serviceCollection.AddSingleton<EncodingHelper>();
+            serviceCollection.AddSingleton<IPathManager, PathManager>();
+            serviceCollection.AddSingleton<IExternalDataManager, ExternalDataManager>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -527,6 +553,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
+            serviceCollection.AddSingleton<ILimitedConcurrencyLibraryScheduler, LimitedConcurrencyLibraryScheduler>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
@@ -536,13 +563,12 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
-            serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
-
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
+            serviceCollection.AddSingleton<IKeyframeManager, KeyframeManager>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
@@ -552,28 +578,17 @@ namespace Emby.Server.Implementations
             serviceCollection.AddScoped<DynamicHlsHelper>();
             serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+
+            serviceCollection.AddSingleton<IMediaSegmentManager, MediaSegmentManager>();
         }
 
         /// <summary>
         /// Create services registered with the service container that need to be initialized at application startup.
         /// </summary>
+        /// <param name="startupConfig">The configuration used to initialise the application.</param>
         /// <returns>A task representing the service initialization operation.</returns>
-        public async Task InitializeServices()
+        public async Task InitializeServices(IConfiguration startupConfig)
         {
-            var jellyfinDb = await Resolve<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
-            await using (jellyfinDb.ConfigureAwait(false))
-            {
-                if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
-                {
-                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
-                    await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
-                    Logger.LogInformation("EFCore migrations applied successfully");
-                }
-            }
-
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
-            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize();
-
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 
@@ -599,7 +614,7 @@ namespace Emby.Server.Implementations
                 // Don't use an empty string password
                 password = string.IsNullOrWhiteSpace(password) ? null : password;
 
-                var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
+                var localCert = X509CertificateLoader.LoadPkcs12FromFile(path, password, X509KeyStorageFlags.UserKeySet);
                 if (!localCert.HasPrivateKey)
                 {
                     Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
@@ -621,22 +636,26 @@ namespace Emby.Server.Implementations
         private void SetStaticProperties()
         {
             // For now there's no real way to inject these properly
-            BaseItem.Logger = Resolve<ILogger<BaseItem>>();
-            BaseItem.ConfigurationManager = ConfigurationManager;
-            BaseItem.LibraryManager = Resolve<ILibraryManager>();
-            BaseItem.ProviderManager = Resolve<IProviderManager>();
-            BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
-            BaseItem.ItemRepository = Resolve<IItemRepository>();
-            BaseItem.FileSystem = Resolve<IFileSystem>();
-            BaseItem.UserDataManager = Resolve<IUserDataManager>();
+            BaseItem.ChapterManager = Resolve<IChapterManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
-            Video.RecordingsManager = Resolve<IRecordingsManager>();
-            Folder.UserViewManager = Resolve<IUserViewManager>();
-            UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
-            UserView.CollectionManager = Resolve<ICollectionManager>();
+            BaseItem.ConfigurationManager = ConfigurationManager;
+            BaseItem.FileSystem = Resolve<IFileSystem>();
+            BaseItem.ItemRepository = Resolve<IItemRepository>();
+            BaseItem.LibraryManager = Resolve<ILibraryManager>();
+            BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
+            BaseItem.Logger = Resolve<ILogger<BaseItem>>();
+            BaseItem.MediaSegmentManager = Resolve<IMediaSegmentManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
+            BaseItem.ProviderManager = Resolve<IProviderManager>();
+            BaseItem.UserDataManager = Resolve<IUserDataManager>();
             CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.ApplicationHost = this;
+            Folder.UserViewManager = Resolve<IUserViewManager>();
+            Folder.CollectionManager = Resolve<ICollectionManager>();
+            Folder.LimitedConcurrencyLibraryScheduler = Resolve<ILimitedConcurrencyLibraryScheduler>();
+            Episode.MediaEncoder = Resolve<IMediaEncoder>();
+            UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
+            Video.RecordingsManager = Resolve<IRecordingsManager>();
         }
 
         /// <summary>
@@ -664,7 +683,8 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataService>(),
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
-                GetExports<IExternalId>());
+                GetExports<IExternalId>(),
+                GetExports<IExternalUrlProvider>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
         }
@@ -965,7 +985,7 @@ namespace Emby.Server.Implementations
 
                 Logger.LogInformation("Disposing {Type}", type.Name);
 
-                foreach (var (part, _) in _disposableParts)
+                foreach (var part in _disposableParts.ToArray())
                 {
                     var partType = part.GetType();
                     if (partType == type)

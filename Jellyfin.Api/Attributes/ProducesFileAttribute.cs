@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1813 // Avoid unsealed attributes
+#pragma warning disable CA1813 // Avoid unsealed attributes
 
 using System;
 

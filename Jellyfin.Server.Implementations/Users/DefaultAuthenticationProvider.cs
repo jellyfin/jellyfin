@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Cryptography;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -12,14 +14,17 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class DefaultAuthenticationProvider : IAuthenticationProvider, IRequiresResolvedUser
     {
+        private readonly ILogger<DefaultAuthenticationProvider> _logger;
         private readonly ICryptoProvider _cryptographyProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultAuthenticationProvider"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public DefaultAuthenticationProvider(ICryptoProvider cryptographyProvider)
+        public DefaultAuthenticationProvider(ILogger<DefaultAuthenticationProvider> logger, ICryptoProvider cryptographyProvider)
         {
+            _logger = logger;
             _cryptographyProvider = cryptographyProvider;
         }
 
@@ -54,7 +59,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // As long as jellyfin supports password-less users, we need this little block here to accommodate
-            if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(resolvedUser.Password) && string.IsNullOrEmpty(password))
             {
                 return Task.FromResult(new ProviderAuthenticationResult
                 {
@@ -75,8 +80,10 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // Migrate old hashes to the new default
-            if (!string.Equals(readyHash.Id, _cryptographyProvider.DefaultHashMethod, StringComparison.Ordinal))
+            if (!string.Equals(readyHash.Id, _cryptographyProvider.DefaultHashMethod, StringComparison.Ordinal)
+                || int.Parse(readyHash.Parameters["iterations"], CultureInfo.InvariantCulture) != Constants.DefaultIterations)
             {
+                _logger.LogInformation("Migrating password hash of {User} to the latest default", username);
                 ChangePassword(resolvedUser, password);
             }
 
@@ -85,10 +92,6 @@ namespace Jellyfin.Server.Implementations.Users
                 Username = username
             });
         }
-
-        /// <inheritdoc />
-        public bool HasPassword(User user)
-            => !string.IsNullOrEmpty(user?.Password);
 
         /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)

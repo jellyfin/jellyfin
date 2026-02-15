@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
   pull_request_target:
 
 permissions: {}
@@ -14,23 +16,25 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
       - name: Setup .NET
-        uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
       - name: Upload openapi.json
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: openapi-head
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-base:
     name: OpenAPI - BASE
@@ -39,11 +43,12 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
+
       - name: Checkout common ancestor
         env:
           HEAD_REF: ${{ github.head_ref }}
@@ -52,23 +57,25 @@ jobs:
           git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
           ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
           git checkout --progress --force $ANCESTOR_REF
+
       - name: Setup .NET
-        uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+
       - name: Upload openapi.json
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: openapi-base
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net10.0/openapi.json
 
   openapi-diff:
     permissions:
-      pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
+      pull-requests: write
 
     name: OpenAPI - Difference
     if: ${{ github.event_name == 'pull_request_target' }}
@@ -78,62 +85,146 @@ jobs:
       - openapi-base
     steps:
       - name: Download openapi-head
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: openapi-head
           path: openapi-head
+
       - name: Download openapi-base
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: openapi-base
           path: openapi-base
-      - name: Workaround openapi-diff issue
-        run: |
-          sed -i 's/"allOf"/"oneOf"/g' openapi-head/openapi.json
-          sed -i 's/"allOf"/"oneOf"/g' openapi-base/openapi.json
-      - name: Calculate OpenAPI difference
-        uses: docker://openapitools/openapi-diff
-        continue-on-error: true
-        with:
-          args: --fail-on-changed --markdown openapi-changes.md openapi-base/openapi.json openapi-head/openapi.json
-      - id: read-diff
-        name: Read openapi-diff output
-        run: |
-          body=$(cat openapi-changes.md)
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}"
-          echo ::set-output name=body::$body
-      - name: Find difference comment
-        uses: peter-evans/find-comment@d5fe37641ad8451bdd80312415672ba26c86575e # v3.0.0
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          direction: last
-          body-includes: openapi-diff-workflow-comment
-      - name: Reply or edit difference comment (changed)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: ${{ steps.read-diff.outputs.body != '' }}
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          edit-mode: replace
-          body: |
-            <!--openapi-diff-workflow-comment-->
-            <details>
-            <summary>Changes in OpenAPI specification found. Expand to see details.</summary>
 
-            ${{ steps.read-diff.outputs.body }}
-
-            </details>
-      - name: Edit difference comment (unchanged)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
+      - name: Detect OpenAPI changes
+        id: openapi-diff
+        uses: jellyfin/openapi-diff-action@9274f6bda9d01ab091942a4a8334baa53692e8a4 # v1.0.0
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          edit-mode: replace
-          body: |
-            <!--openapi-diff-workflow-comment-->
+          old-spec: openapi-base/openapi.json
+          new-spec: openapi-head/openapi.json
+          markdown: openapi-changelog.md
+          add-pr-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-            No changes to OpenAPI specification found. See history of this comment for previous changes.
+
+  publish-unstable:
+    name: OpenAPI - Publish Unstable Spec
+    if: ${{ github.event_name != 'pull_request_target' && !startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
+    runs-on: ubuntu-latest
+    needs:
+      - openapi-head
+    steps:
+      - name: Set unstable dated version
+        id: version
+        run: |-
+          echo "JELLYFIN_VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Download openapi-head
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: openapi-head
+          path: openapi-head
+      - name: Upload openapi.json (unstable) to repository server
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
+        with:
+          host: "${{ secrets.REPO_HOST }}"
+          username: "${{ secrets.REPO_USER }}"
+          key: "${{ secrets.REPO_KEY }}"
+          source: openapi-head/openapi.json
+          strip_components: 1
+          target: "/srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}"
+      - name: Move openapi.json (unstable) into place
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: "${{ secrets.REPO_HOST }}"
+          username: "${{ secrets.REPO_USER }}"
+          key: "${{ secrets.REPO_KEY }}"
+          debug: false
+          script: |
+            if ! test -d /run/workflows; then
+                sudo mkdir -p /run/workflows
+                sudo chown ${{ secrets.REPO_USER }} /run/workflows
+            fi
+            (
+            flock -x -w 300 200 || exit 1
+            TGT_DIR="/srv/repository/main/openapi"
+            LAST_SPEC="$( ls -lt ${TGT_DIR}/unstable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
+            # If new and previous spec don't differ (diff retcode 0), remove incoming and finish
+            if diff /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/unstable/${LAST_SPEC} &>/dev/null; then
+                rm -r /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}
+                exit 0
+            fi
+            # Move new spec into place
+            sudo mv /srv/incoming/openapi/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
+            # Delete previous jellyfin-openapi-unstable_previous.json
+            sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
+            # Move current jellyfin-openapi-unstable.json symlink to jellyfin-openapi-unstable_previous.json
+            sudo mv ${TGT_DIR}/jellyfin-openapi-unstable.json ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
+            # Create new jellyfin-openapi-unstable.json symlink
+            sudo ln -s unstable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/jellyfin-openapi-unstable.json
+            # Check that the previous openapi unstable spec link is correct
+            if [[ "$( readlink ${TGT_DIR}/jellyfin-openapi-unstable_previous.json )" != "unstable/${LAST_SPEC}" ]]; then
+                sudo rm ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
+                sudo ln -s unstable/${LAST_SPEC} ${TGT_DIR}/jellyfin-openapi-unstable_previous.json
+            fi
+            ) 200>/run/workflows/openapi-unstable.lock
+
+  publish-stable:
+    name: OpenAPI - Publish Stable Spec
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
+    runs-on: ubuntu-latest
+    needs:
+      - openapi-head
+    steps:
+      - name: Set version number
+        id: version
+        run: |-
+          echo "JELLYFIN_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      - name: Download openapi-head
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: openapi-head
+          path: openapi-head
+      - name: Upload openapi.json (stable) to repository server
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
+        with:
+          host: "${{ secrets.REPO_HOST }}"
+          username: "${{ secrets.REPO_USER }}"
+          key: "${{ secrets.REPO_KEY }}"
+          source: openapi-head/openapi.json
+          strip_components: 1
+          target: "/srv/incoming/openapi/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}"
+      - name: Move openapi.json (stable) into place
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: "${{ secrets.REPO_HOST }}"
+          username: "${{ secrets.REPO_USER }}"
+          key: "${{ secrets.REPO_KEY }}"
+          debug: false
+          script: |
+            if ! test -d /run/workflows; then
+                sudo mkdir -p /run/workflows
+                sudo chown ${{ secrets.REPO_USER }} /run/workflows
+            fi
+            (
+            flock -x -w 300 200 || exit 1
+            TGT_DIR="/srv/repository/main/openapi"
+            LAST_SPEC="$( ls -lt ${TGT_DIR}/stable/ | grep 'jellyfin-openapi' | head -1 | awk '{ print $NF }' )"
+            # If new and previous spec don't differ (diff retcode 0), remove incoming and finish
+            if diff /srv/incoming/openapi/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/stable/${LAST_SPEC} &>/dev/null; then
+                rm -r /srv/incoming/openapi/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}
+                exit 0
+            fi
+            # Move new spec into place
+            sudo mv /srv/incoming/openapi/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}/openapi.json ${TGT_DIR}/stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json
+            # Delete previous jellyfin-openapi-stable_previous.json
+            sudo rm ${TGT_DIR}/jellyfin-openapi-stable_previous.json
+            # Move current jellyfin-openapi-stable.json symlink to jellyfin-openapi-stable_previous.json
+            sudo mv ${TGT_DIR}/jellyfin-openapi-stable.json ${TGT_DIR}/jellyfin-openapi-stable_previous.json
+            # Create new jellyfin-openapi-stable.json symlink
+            sudo ln -s stable/jellyfin-openapi-${{ env.JELLYFIN_VERSION }}.json ${TGT_DIR}/jellyfin-openapi-stable.json
+            # Check that the previous openapi stable spec link is correct
+            if [[ "$( readlink ${TGT_DIR}/jellyfin-openapi-stable_previous.json )" != "stable/${LAST_SPEC}" ]]; then
+                sudo rm ${TGT_DIR}/jellyfin-openapi-stable_previous.json
+                sudo ln -s stable/${LAST_SPEC} ${TGT_DIR}/jellyfin-openapi-stable_previous.json
+            fi
+            ) 200>/run/workflows/openapi-stable.lock

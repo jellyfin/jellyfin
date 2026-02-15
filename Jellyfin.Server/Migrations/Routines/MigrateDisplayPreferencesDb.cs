@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Emby.Server.Implementations.Data;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
-using Jellyfin.Server.Implementations;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -20,7 +20,10 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the display preferences database to EF Core.
     /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+    [JellyfinMigration("2025-04-20T12:00:00", nameof(MigrateDisplayPreferencesDb), "06387815-C3CC-421F-A888-FB5F9992BEA8")]
     public class MigrateDisplayPreferencesDb : IMigrationRoutine
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private const string DbFilename = "displaypreferences.db";
 
@@ -52,15 +55,6 @@ namespace Jellyfin.Server.Migrations.Routines
         }
 
         /// <inheritdoc />
-        public Guid Id => Guid.Parse("06387815-C3CC-421F-A888-FB5F9992BEA8");
-
-        /// <inheritdoc />
-        public string Name => "MigrateDisplayPreferencesDatabase";
-
-        /// <inheritdoc />
-        public bool PerformOnNewInstall => false;
-
-        /// <inheritdoc />
         public void Perform()
         {
             HomeSectionType[] defaults =
@@ -84,9 +78,27 @@ namespace Jellyfin.Server.Migrations.Routines
             var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
+
+            if (!File.Exists(dbFilePath))
+            {
+                _logger.LogWarning("{Path} doesn't exist, nothing to migrate", dbFilePath);
+                return;
+            }
+
             using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
                 connection.Open();
+
+                var tableQuery = connection.Query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='userdisplaypreferences';");
+                foreach (var row in tableQuery)
+                {
+                    if (row.GetInt32(0) == 0)
+                    {
+                        _logger.LogWarning("Table 'userdisplaypreferences' doesn't exist in {Path}, nothing to migrate", dbFilePath);
+                        return;
+                    }
+                }
+
                 using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");

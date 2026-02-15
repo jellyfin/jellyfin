@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jellyfin.Data.Entities;
+using Diacritics.Extensions;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 
@@ -37,7 +40,6 @@ namespace MediaBrowser.Controller.Entities
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
             MediaTypes = Array.Empty<MediaType>();
-            MinSimilarityScore = 20;
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             PersonIds = Array.Empty<Guid>();
@@ -51,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
+            SkipDeserialization = false;
         }
 
         public InternalItemsQuery(User? user)
@@ -69,8 +72,6 @@ namespace MediaBrowser.Controller.Entities
         public int? Limit { get; set; }
 
         public User? User { get; set; }
-
-        public BaseItem? SimilarTo { get; set; }
 
         public bool? IsFolder { get; set; }
 
@@ -123,6 +124,8 @@ namespace MediaBrowser.Controller.Entities
         public string? Path { get; set; }
 
         public string? Name { get; set; }
+
+        public bool? UseRawName { get; set; }
 
         public string? Person { get; set; }
 
@@ -232,9 +235,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? IndexNumber { get; set; }
 
-        public int? MinParentalRating { get; set; }
+        public ParentalRatingScore? MinParentalRating { get; set; }
 
-        public int? MaxParentalRating { get; set; }
+        public ParentalRatingScore? MaxParentalRating { get; set; }
 
         public bool? HasDeadParentId { get; set; }
 
@@ -294,8 +297,6 @@ namespace MediaBrowser.Controller.Entities
 
         public DtoOptions DtoOptions { get; set; }
 
-        public int MinSimilarityScore { get; set; }
-
         public string? HasNoAudioTrackWithLanguage { get; set; }
 
         public string? HasNoInternalSubtitleTrackWithLanguage { get; set; }
@@ -307,6 +308,8 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsDeadArtist { get; set; }
 
         public bool? IsDeadStudio { get; set; }
+
+        public bool? IsDeadGenre { get; set; }
 
         public bool? IsDeadPerson { get; set; }
 
@@ -358,20 +361,30 @@ namespace MediaBrowser.Controller.Entities
 
         public string? SeriesTimerId { get; set; }
 
+        public bool SkipDeserialization { get; set; }
+
         public void SetUser(User user)
         {
-            MaxParentalRating = user.MaxParentalAgeRating;
-
-            if (MaxParentalRating.HasValue)
+            var maxRating = user.MaxParentalRatingScore;
+            if (maxRating.HasValue)
             {
-                string other = UnratedItem.Other.ToString();
-                BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
-                    .Where(i => i != other)
-                    .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
+                MaxParentalRating = new(maxRating.Value, user.MaxParentalRatingSubScore);
             }
 
-            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
-            IncludeInheritedTags = user.GetPreference(PreferenceKind.AllowedTags);
+            var other = UnratedItem.Other.ToString();
+            BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                .Where(i => i != other)
+                .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
+
+            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags)
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
+                .ToArray();
+
+            IncludeInheritedTags = user.GetPreference(PreferenceKind.AllowedTags)
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.RemoveDiacritics().ToLowerInvariant())
+                .ToArray();
 
             User = user;
         }

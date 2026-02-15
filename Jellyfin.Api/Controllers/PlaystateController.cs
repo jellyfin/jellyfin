@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -71,25 +72,25 @@ public class PlaystateController : BaseJellyfinApiController
     [HttpPost("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserItemDataDto>> MarkPlayedItem(
+    public async Task<ActionResult<UserItemDataDto?>> MarkPlayedItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-
-        var item = _libraryManager.GetItemById(itemId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
         }
+
+        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
 
         var dto = UpdatePlayedStatus(user, item, true, datePlayed);
         foreach (var additionalUserInfo in session.AdditionalUsers)
@@ -120,7 +121,7 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public Task<ActionResult<UserItemDataDto>> MarkPlayedItemLegacy(
+    public Task<ActionResult<UserItemDataDto?>> MarkPlayedItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
         [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
@@ -137,24 +138,24 @@ public class PlaystateController : BaseJellyfinApiController
     [HttpDelete("UserPlayedItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem(
+    public async Task<ActionResult<UserItemDataDto?>> MarkUnplayedItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
     {
-        var requestUserId = RequestHelpers.GetUserId(User, userId);
-        var user = _userManager.GetUserById(requestUserId);
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
         if (user is null)
         {
             return NotFound();
         }
 
-        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        var item = _libraryManager.GetItemById(itemId);
-
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
             return NotFound();
         }
+
+        var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext, userId).ConfigureAwait(false);
 
         var dto = UpdatePlayedStatus(user, item, false, null);
         foreach (var additionalUserInfo in session.AdditionalUsers)
@@ -184,7 +185,7 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public Task<ActionResult<UserItemDataDto>> MarkUnplayedItemLegacy(
+    public Task<ActionResult<UserItemDataDto?>> MarkUnplayedItemLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
         => MarkUnplayedItem(userId, itemId);
@@ -271,6 +272,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackStart instead")]
     public async Task<ActionResult> OnPlaybackStart(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,
@@ -349,6 +351,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("PlayingItems/{itemId}/Progress")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackProgress instead")]
     public async Task<ActionResult> OnPlaybackProgress(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,
@@ -437,6 +440,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("This endpoint is obsolete. Use ReportPlaybackStop instead")]
     public async Task<ActionResult> OnPlaybackStopped(
         [FromRoute, Required] Guid itemId,
         [FromQuery] string? mediaSourceId,
@@ -501,7 +505,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
     /// <param name="datePlayed">The date played.</param>
     /// <returns>Task.</returns>
-    private UserItemDataDto UpdatePlayedStatus(User user, BaseItem item, bool wasPlayed, DateTime? datePlayed)
+    private UserItemDataDto? UpdatePlayedStatus(User user, BaseItem item, bool wasPlayed, DateTime? datePlayed)
     {
         if (wasPlayed)
         {

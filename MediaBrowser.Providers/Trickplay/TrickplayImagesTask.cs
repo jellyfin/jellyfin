@@ -59,14 +59,14 @@ public class TrickplayImagesTask : IScheduledTask
     /// <inheritdoc />
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[]
-        {
+        return
+        [
             new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerDaily,
+                Type = TaskTriggerInfoType.DailyTrigger,
                 TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
             }
-        };
+        ];
     }
 
     /// <inheritdoc />
@@ -74,8 +74,8 @@ public class TrickplayImagesTask : IScheduledTask
     {
         var query = new InternalItemsQuery
         {
-            MediaTypes = new[] { MediaType.Video },
-            SourceTypes = new[] { SourceType.Library },
+            MediaTypes = [MediaType.Video],
+            SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
             IsFolder = false,
             Recursive = true,
@@ -98,7 +98,8 @@ public class TrickplayImagesTask : IScheduledTask
 
                 try
                 {
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, cancellationToken).ConfigureAwait(false);
+                    var libraryOptions = _libraryManager.GetLibraryOptions(video);
+                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

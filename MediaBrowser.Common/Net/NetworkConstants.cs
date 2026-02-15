@@ -1,5 +1,4 @@
 using System.Net;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace MediaBrowser.Common.Net;
 
@@ -57,6 +56,11 @@ public static class NetworkConstants
     /// IPv4 private class C as defined in RFC 1918.
     /// </summary>
     public static readonly IPNetwork IPv4RFC1918PrivateClassC = new IPNetwork(IPAddress.Parse("192.168.0.0"), 16);
+
+    /// <summary>
+    /// IPv4 Link-Local as defined in RFC 3927.
+    /// </summary>
+    public static readonly IPNetwork IPv4RFC3927LinkLocal = new IPNetwork(IPAddress.Parse("169.254.0.0"), 16);
 
     /// <summary>
     /// IPv6 loopback as defined in RFC 4291.

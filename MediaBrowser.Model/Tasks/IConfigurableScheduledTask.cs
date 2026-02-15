@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.Tasks
 {
+    /// <summary>
+    /// Interface for configurable scheduled tasks.
+    /// </summary>
     public interface IConfigurableScheduledTask
     {
         /// <summary>
@@ -16,6 +17,10 @@ namespace MediaBrowser.Model.Tasks
         /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
         bool IsEnabled { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is logged.
+        /// </summary>
+        /// <value><c>true</c> if this instance is logged; otherwise, <c>false</c>.</value>
         bool IsLogged { get; }
     }
 }

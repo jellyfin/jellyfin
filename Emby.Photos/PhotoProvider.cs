@@ -26,7 +26,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
     private readonly ILogger<PhotoProvider> _logger;
     private readonly IImageProcessor _imageProcessor;
 
-    // These are causing taglib to hang
+    // Other extensions might cause taglib to hang
     private readonly string[] _includeExtensions = [".jpg", ".jpeg", ".png", ".tiff", ".cr2", ".webp", ".avif"];
 
     /// <summary>
@@ -49,7 +49,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
         if (item.IsFileProtocol)
         {
             var file = directoryService.GetFile(item.Path);
-            return file is not null && file.LastWriteTimeUtc != item.DateModified;
+            return file is not null && item.HasChanged(file.LastWriteTimeUtc);
         }
 
         return false;
@@ -108,7 +108,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
                     var dateTaken = image.ImageTag.DateTime;
                     if (dateTaken.HasValue)
                     {
-                        item.DateCreated = dateTaken.Value;
+                        item.DateCreated = dateTaken.Value.ToUniversalTime();
                         item.PremiereDate = dateTaken.Value;
                         item.ProductionYear = dateTaken.Value.Year;
                     }

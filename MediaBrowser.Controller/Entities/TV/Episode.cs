@@ -7,12 +7,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -22,6 +24,8 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
+        public static IMediaEncoder MediaEncoder { get; set; }
+
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
@@ -180,10 +184,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public string FindSeriesPresentationUniqueKey()
-        {
-            var series = Series;
-            return series is null ? null : series.PresentationUniqueKey;
-        }
+            => Series?.PresentationUniqueKey;
 
         public string FindSeasonName()
         {
@@ -328,6 +329,39 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 if (SourceType == SourceType.Library || SourceType == SourceType.LiveTV)
                 {
+                    var libraryOptions = LibraryManager.GetLibraryOptions(this);
+                    if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(Container, "mp4", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var mediaInfo = MediaEncoder.GetMediaInfo(
+                                new MediaInfoRequest
+                                {
+                                    MediaSource = GetMediaSources(false)[0],
+                                    MediaType = DlnaProfileType.Video
+                                },
+                                CancellationToken.None).GetAwaiter().GetResult();
+                            if (mediaInfo.ParentIndexNumber > 0)
+                            {
+                                ParentIndexNumber = mediaInfo.ParentIndexNumber;
+                            }
+
+                            if (mediaInfo.IndexNumber > 0)
+                            {
+                                IndexNumber = mediaInfo.IndexNumber;
+                            }
+
+                            if (!string.IsNullOrEmpty(mediaInfo.ShowName))
+                            {
+                                SeriesName = mediaInfo.ShowName;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Error reading the episode information with ffprobe. Episode: {EpisodeInfo}", Path);
+                        }
+                    }
+
                     try
                     {
                         if (LibraryManager.FillMissingEpisodeNumbersFromPath(this, replaceAllMetadata))
@@ -343,23 +377,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
-        }
-
-        public override List<ExternalUrl> GetRelatedUrls()
-        {
-            var list = base.GetRelatedUrls();
-
-            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                list.Add(new ExternalUrl
-                {
-                    Name = "Trakt",
-                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/episodes/{0}", imdbId)
-                });
-            }
-
-            return list;
         }
     }
 }

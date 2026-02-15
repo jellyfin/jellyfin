@@ -9,19 +9,20 @@ on:
   pull_request:
 
 env:
-  SDK_VERSION: "8.0.x"
+  SDK_VERSION: "10.0.x"
 
 jobs:
   run-tests:
     strategy:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+      fail-fast: false
 
     runs-on: "${{ matrix.os }}"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      - uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
         with:
           dotnet-version: ${{ env.SDK_VERSION }}
 
@@ -34,7 +35,7 @@ jobs:
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@b067e0c5d288fb4277b9f397b2dc6013f60381f0 # 5.2.2
+        uses: danielpalme/ReportGenerator-GitHub-Action@ee0ae774f6d3afedcbd1683c1ab21b83670bdf8e # v5.5.1
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"

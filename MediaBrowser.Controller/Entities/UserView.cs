@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
 
@@ -87,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
         /// <inheritdoc />
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count;
+            return GetChildren(user, true, null).Count;
         }
 
         /// <inheritdoc />
@@ -132,20 +134,22 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IReadOnlyList<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query, out int totalCount)
         {
             query.SetUser(user);
             query.Recursive = true;
             query.EnableTotalRecordCount = false;
             query.ForceDirect = true;
+            var data = GetItemList(query);
+            totalCount = data.Count;
 
-            return GetItemList(query);
+            return data;
         }
 
         /// <inheritdoc />
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IReadOnlyList<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return GetChildren(user, false);
+            return GetChildren(user, false, null);
         }
 
         public static bool IsUserSpecific(Folder folder)
@@ -180,7 +184,7 @@ namespace MediaBrowser.Controller.Entities
             return _originalFolderViewTypes.Contains(viewType);
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService, System.Threading.CancellationToken cancellationToken)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

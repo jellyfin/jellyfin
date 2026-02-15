@@ -1,0 +1,41 @@
+{
+    "countryCode": "pl",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["b.o.", "AL"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7", "od 7 lat"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12", "od 12 lat"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["16", "od 16 lat"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "od 18 lat", "R"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

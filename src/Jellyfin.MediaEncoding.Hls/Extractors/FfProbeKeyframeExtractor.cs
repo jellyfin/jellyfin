@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Emby.Naming.Common;
@@ -34,7 +34,7 @@ public class FfProbeKeyframeExtractor : IKeyframeExtractor
     public bool IsMetadataBased => false;
 
     /// <inheritdoc />
-    public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
+    public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         if (!_namingOptions.VideoFileExtensions.Contains(Path.GetExtension(filePath.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {

@@ -1,4 +1,4 @@
-﻿using Jellyfin.Api;
+using Jellyfin.Api;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers

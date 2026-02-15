@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -29,9 +30,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const string ArtistReplaceValue = " | ";
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
-        private readonly string[] _webmVideoCodecs = { "av1", "vp8", "vp9" };
-        private readonly string[] _webmAudioCodecs = { "opus", "vorbis" };
+        private static readonly char[] _basicDelimiters = ['/', ';'];
+        private static readonly char[] _nameDelimiters = [.. _basicDelimiters, '|', '\\'];
+        private static readonly char[] _genreDelimiters = [.. _basicDelimiters, ','];
+        private static readonly string[] _webmVideoCodecs = ["av1", "vp8", "vp9"];
+        private static readonly string[] _webmAudioCodecs = ["opus", "vorbis"];
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -79,6 +82,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             "5/8erl in Ehr'n",
             "Smith/Kotzen",
             "We;Na",
+            "LSR/CITY",
+            "Kairon; IRSE!",
         };
 
         /// <summary>
@@ -103,8 +108,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             SetSize(data, info);
 
             var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
+            var internalFrames = data.Frames ?? Array.Empty<MediaFrameInfo>();
 
-            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
+            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format, internalFrames))
                 .Where(i => i is not null)
                 // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
@@ -149,11 +155,12 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             info.Name = tags.GetFirstNotNullNorWhiteSpaceValue("title", "title-eng");
             info.ForcedSortName = tags.GetFirstNotNullNorWhiteSpaceValue("sort_name", "title-sort", "titlesort");
-            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc");
+            info.Overview = tags.GetFirstNotNullNorWhiteSpaceValue("synopsis", "description", "desc", "comment");
 
-            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort");
             info.ParentIndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "season_number");
-            info.ShowName = tags.GetValueOrDefault("show_name");
+            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort") ??
+                               FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_id");
+            info.ShowName = tags.GetValueOrDefault("show_name", "show");
             info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retail/premiere date
@@ -171,7 +178,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("artists", out var artists) && !string.IsNullOrWhiteSpace(artists))
             {
-                info.Artists = SplitDistinctArtists(artists, new[] { '/', ';' }, false).ToArray();
+                info.Artists = SplitDistinctArtists(artists, _basicDelimiters, false).ToArray();
             }
             else
             {
@@ -279,8 +286,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     splitFormat[i] = "mpeg";
                 }
 
-                // Handle MPEG-2 container
-                else if (string.Equals(splitFormat[i], "mpeg", StringComparison.OrdinalIgnoreCase))
+                // Handle MPEG-TS container
+                else if (string.Equals(splitFormat[i], "mpegts", StringComparison.OrdinalIgnoreCase))
                 {
                     splitFormat[i] = "ts";
                 }
@@ -294,9 +301,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 // Handle WebM
                 else if (string.Equals(splitFormat[i], "webm", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Limit WebM to supported codecs
-                    if (mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
-                        || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                    // Limit WebM to supported stream types and codecs.
+                    // FFprobe can report "matroska,webm" for Matroska-like containers, so only keep "webm" if all streams are WebM-compatible.
+                    // Any stream that is not video nor audio is not supported in WebM and should disqualify the webm container probe result.
+                    if (mediaStreams.Any(stream => stream.Type is not MediaStreamType.Video and not MediaStreamType.Audio)
+                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
+                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
                     {
                         splitFormat[i] = string.Empty;
                     }
@@ -306,7 +316,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return string.Join(',', splitFormat.Where(s => !string.IsNullOrEmpty(s)));
         }
 
-        private int? GetEstimatedAudioBitrate(string codec, int? channels)
+        private static int? GetEstimatedAudioBitrate(string codec, int? channels)
         {
             if (!channels.HasValue)
             {
@@ -527,45 +537,47 @@ namespace MediaBrowser.MediaEncoding.Probing
             return pairs;
         }
 
-        private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
+        private static void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
             List<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            var distinctPairs = pairs.Select(p => p.Value)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Trimmed()
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
-                info.Studios = pairs.Select(p => p.Value)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
+                info.Studios = distinctPairs.ToArray();
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Writer
                     });
                 }
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Producer
                     });
                 }
             }
             else if (string.Equals(key, "directors", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var pair in pairs)
+                foreach (var pair in distinctPairs)
                 {
                     peoples.Add(new BaseItemPerson
                     {
-                        Name = pair.Value,
+                        Name = pair,
                         Type = PersonKind.Director
                     });
                 }
@@ -574,7 +586,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.People = peoples.ToArray();
         }
 
-        private NameValuePair GetNameValuePair(XmlReader reader)
+        private static NameValuePair GetNameValuePair(XmlReader reader)
         {
             string name = null;
             string value = null;
@@ -590,10 +602,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     switch (reader.Name)
                     {
                         case "key":
-                            name = reader.ReadElementContentAsString();
+                            name = reader.ReadNormalizedString();
                             break;
                         case "string":
-                            value = reader.ReadElementContentAsString();
+                            value = reader.ReadNormalizedString();
                             break;
                         default:
                             reader.Skip();
@@ -606,8 +618,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(name)
-                || string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(name)
+                || string.IsNullOrEmpty(value))
             {
                 return null;
             }
@@ -619,19 +631,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             };
         }
 
-        private string NormalizeSubtitleCodec(string codec)
+        private static string NormalizeSubtitleCodec(string codec)
         {
             if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "dvbsub";
+                codec = "DVBSUB";
             }
-            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvb_teletext", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "PGSSUB";
+                codec = "DVBTXT";
             }
-            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "dvd_subtitle", StringComparison.OrdinalIgnoreCase))
             {
-                codec = "DVDSUB";
+                codec = "DVDSUB"; // .sub+.idx
+            }
+            else if (string.Equals(codec, "hdmv_pgs_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "PGSSUB"; // .sup
             }
 
             return codec;
@@ -677,8 +693,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
+        /// <param name="frameInfoList">The frame info.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
+        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo, IReadOnlyList<MediaFrameInfo> frameInfoList)
         {
             // These are mp4 chapters
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
@@ -716,6 +733,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.CodecType == CodecType.Audio)
             {
                 stream.Type = MediaStreamType.Audio;
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 stream.Channels = streamInfo.Channels;
 
@@ -778,11 +797,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
 
                 if (isAudio
-                    && (string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase)))
+                    || string.Equals(stream.Codec, "bmp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "webp", StringComparison.OrdinalIgnoreCase))
                 {
                     stream.Type = MediaStreamType.EmbeddedImage;
                 }
@@ -839,12 +857,41 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                 }
 
-                // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
-                //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
-                //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
-
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                stream.IsAnamorphic = string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.OrdinalIgnoreCase);
+                if (string.IsNullOrEmpty(streamInfo.SampleAspectRatio)
+                    && string.IsNullOrEmpty(streamInfo.DisplayAspectRatio))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!string.Equals(streamInfo.SampleAspectRatio, "0:1", StringComparison.Ordinal))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else if (string.Equals(streamInfo.DisplayAspectRatio, "0:1", StringComparison.Ordinal))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!string.Equals(
+                             streamInfo.DisplayAspectRatio,
+                             // Force GetAspectRatio() to derive ratio from Width/Height directly by using null DAR
+                             GetAspectRatio(new MediaStreamInfo
+                             {
+                                 Width = streamInfo.Width,
+                                 Height = streamInfo.Height,
+                                 DisplayAspectRatio = null
+                             }),
+                             StringComparison.Ordinal))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else
+                {
+                    stream.IsAnamorphic = false;
+                }
 
                 if (streamInfo.Refs > 0)
                 {
@@ -886,10 +933,30 @@ namespace MediaBrowser.MediaEncoding.Probing
                             stream.ElPresentFlag = data.ElPresentFlag;
                             stream.BlPresentFlag = data.BlPresentFlag;
                             stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+                        }
 
-                            break;
+                        // Parse video rotation metadata from side_data
+                        else if (string.Equals(data.SideDataType, "Display Matrix", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.Rotation = data.Rotation;
+                        }
+
+                        // Parse video frame cropping metadata from side_data
+                        // TODO: save them and make HW filters to apply them in HWA pipelines
+                        else if (string.Equals(data.SideDataType, "Frame Cropping", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Streams containing artificially added frame cropping
+                            // metadata should not be marked as anamorphic.
+                            stream.IsAnamorphic = false;
                         }
                     }
+                }
+
+                var frameInfo = frameInfoList?.FirstOrDefault(i => i.StreamIndex == stream.Index);
+                if (frameInfo?.SideDataList is not null
+                    && frameInfo.SideDataList.Any(data => string.Equals(data.SideDataType, "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)", StringComparison.OrdinalIgnoreCase)))
+                {
+                    stream.Hdr10PlusPresentFlag = true;
                 }
             }
             else if (streamInfo.CodecType == CodecType.Data)
@@ -941,7 +1008,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
                     var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
                     var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && bytes is not null)
+                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
                     {
                         bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
                         if (bps > 0)
@@ -976,7 +1043,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return stream;
         }
 
-        private void NormalizeStreamTitle(MediaStream stream)
+        private static void NormalizeStreamTitle(MediaStream stream)
         {
             if (string.Equals(stream.Title, "cc", StringComparison.OrdinalIgnoreCase)
                 || stream.Type == MediaStreamType.EmbeddedImage)
@@ -991,7 +1058,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.String.</returns>
-        private string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
+        private static string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
         {
             if (tags is null)
             {
@@ -1003,7 +1070,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return val;
         }
 
-        private string ParseChannelLayout(string input)
+        private static string ParseChannelLayout(string input)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -1013,7 +1080,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return input.AsSpan().LeftPart('(').ToString();
         }
 
-        private string GetAspectRatio(MediaStreamInfo info)
+        private static string GetAspectRatio(MediaStreamInfo info)
         {
             var original = info.DisplayAspectRatio;
 
@@ -1082,7 +1149,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return original;
         }
 
-        private bool IsClose(double d1, double d2, double variance = .005)
+        private static bool IsClose(double d1, double d2, double variance = .005)
         {
             return Math.Abs(d1 - d2) <= variance;
         }
@@ -1115,7 +1182,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return divisor == 0f ? null : dividend / divisor;
         }
 
-        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
+        private static void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
         {
             // Get the first info stream
             var stream = result.Streams?.FirstOrDefault(s => s.CodecType == CodecType.Audio);
@@ -1140,7 +1207,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private int? GetBPSFromTags(MediaStreamInfo streamInfo)
+        private static int? GetBPSFromTags(MediaStreamInfo streamInfo)
         {
             if (streamInfo?.Tags is null)
             {
@@ -1156,7 +1223,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
+        private static double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
         {
             if (streamInfo?.Tags is null)
             {
@@ -1172,7 +1239,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private long? GetNumberOfBytesFromTags(MediaStreamInfo streamInfo)
+        private static long? GetNumberOfBytesFromTags(MediaStreamInfo streamInfo)
         {
             if (streamInfo?.Tags is null)
             {
@@ -1189,7 +1256,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private void SetSize(InternalMediaInfoResult data, MediaInfo info)
+        private static void SetSize(InternalMediaInfoResult data, MediaInfo info)
         {
             if (data.Format is null)
             {
@@ -1315,35 +1382,34 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support multiple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Artist Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Album Id"))
                 ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Group Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+            audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
-        private string GetMultipleMusicBrainzId(string value)
+        private static string GetMultipleMusicBrainzId(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }
 
-            return value.Split('/', StringSplitOptions.RemoveEmptyEntries)
-                .Select(i => i.Trim())
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            return value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -1352,17 +1418,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="val">The val.</param>
         /// <param name="allowCommaDelimiter">if set to <c>true</c> [allow comma delimiter].</param>
         /// <returns>System.String[][].</returns>
-        private IEnumerable<string> Split(string val, bool allowCommaDelimiter)
+        private string[] Split(string val, bool allowCommaDelimiter)
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
-                _nameDelimiters :
-                new[] { ',' };
-
-            return val.Split(delimiter, StringSplitOptions.RemoveEmptyEntries)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => i.Trim());
+            return !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
+                val.Split(_nameDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) :
+                val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
 
         private IEnumerable<string> SplitDistinctArtists(string val, char[] delimiters, bool splitFeaturing)
@@ -1386,9 +1448,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            var artists = val.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => i.Trim());
+            var artists = val.Split(delimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             artistsFound.AddRange(artists);
             return artistsFound.DistinctNames();
@@ -1450,7 +1510,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             var genres = new List<string>(info.Genres);
             foreach (var genre in Split(genreVal, true))
             {
-                if (string.IsNullOrWhiteSpace(genre))
+                if (string.IsNullOrEmpty(genre))
                 {
                     continue;
                 }
@@ -1513,15 +1573,12 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("WM/Genre", out var genres) && !string.IsNullOrWhiteSpace(genres))
             {
-                var genreList = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => i.Trim())
-                    .ToList();
+                var genreList = genres.Split(_genreDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                 // If this is empty then don't overwrite genres that might have been fetched earlier
-                if (genreList.Count > 0)
+                if (genreList.Length > 0)
                 {
-                    video.Genres = genreList.ToArray();
+                    video.Genres = genreList;
                 }
             }
 
@@ -1532,10 +1589,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (tags.TryGetValue("WM/MediaCredits", out var people) && !string.IsNullOrEmpty(people))
             {
-                video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonKind.Actor })
-                    .ToArray();
+                video.People = Array.ConvertAll(
+                    people.Split(_basicDelimiters, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    i => new BaseItemPerson { Name = i, Type = PersonKind.Actor });
             }
 
             if (tags.TryGetValue("WM/OriginalReleaseTime", out var year) && int.TryParse(year, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
@@ -1643,13 +1699,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         // REVIEW: find out why the byte array needs to be 197 bytes long and comment the reason
-        private TransportStreamTimestamp GetMpegTimestamp(string path)
+        private static TransportStreamTimestamp GetMpegTimestamp(string path)
         {
             var packetBuffer = new byte[197];
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
-                fs.Read(packetBuffer);
+                fs.ReadExactly(packetBuffer);
             }
 
             if (packetBuffer[0] == 71)

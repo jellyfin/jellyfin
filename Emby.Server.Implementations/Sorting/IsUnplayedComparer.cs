@@ -2,12 +2,11 @@
 
 #pragma warning disable CS1591
 
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Sorting
 {
@@ -26,10 +25,10 @@ namespace Emby.Server.Implementations.Sorting
         public ItemSortBy Type => ItemSortBy.IsUnplayed;
 
         /// <summary>
-        /// Gets or sets the user data repository.
+        /// Gets or sets the user data manager.
         /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataManager UserDataRepository { get; set; }
+        /// <value>The user data manager.</value>
+        public IUserDataManager UserDataManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -55,7 +54,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsUnplayed(User) ? 0 : 1;
+            return x.IsUnplayed(User, userItemData: null) ? 0 : 1;
         }
     }
 }

@@ -14,6 +14,6 @@ namespace MediaBrowser.Controller.Resolvers
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent BaseItem.</param>
         /// <returns>True if the file should be ignored.</returns>
-        bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent);
+        bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent);
     }
 }

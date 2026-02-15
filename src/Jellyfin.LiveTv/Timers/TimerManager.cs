@@ -22,7 +22,7 @@ namespace Jellyfin.LiveTv.Timers
         public TimerManager(ILogger<TimerManager> logger, IConfigurationManager config)
             : base(
                 logger,
-                Path.Combine(config.CommonApplicationPaths.DataPath, "livetv"),
+                Path.Combine(config.CommonApplicationPaths.DataPath, "livetv/timers.json"),
                 (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }

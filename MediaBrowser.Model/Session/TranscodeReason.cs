@@ -14,10 +14,12 @@ namespace MediaBrowser.Model.Session
         SubtitleCodecNotSupported = 1 << 3,
         AudioIsExternal = 1 << 4,
         SecondaryAudioNotSupported = 1 << 5,
+        StreamCountExceedsLimit = 1 << 26,
 
         // Video Constraints
         VideoProfileNotSupported = 1 << 6,
         VideoRangeTypeNotSupported = 1 << 24,
+        VideoCodecTagNotSupported = 1 << 25,
         VideoLevelNotSupported = 1 << 7,
         VideoResolutionNotSupported = 1 << 8,
         VideoBitDepthNotSupported = 1 << 9,

@@ -1,6 +1,5 @@
 using System;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Events.Authentication;
@@ -29,7 +28,7 @@ public class AuthenticationResultEventArgs : EventArgs
     /// <summary>
     /// Gets or sets the session information.
     /// </summary>
-    public SessionInfo? SessionInfo { get; set; }
+    public SessionInfoDto? SessionInfo { get; set; }
 
     /// <summary>
     /// Gets or sets the server id.

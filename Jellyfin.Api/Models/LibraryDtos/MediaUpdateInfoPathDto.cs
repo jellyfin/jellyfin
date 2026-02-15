@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Api.Models.LibraryDtos;
+namespace Jellyfin.Api.Models.LibraryDtos;
 
 /// <summary>
 /// The media update info path.

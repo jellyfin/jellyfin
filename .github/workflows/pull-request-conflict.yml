@@ -12,10 +12,10 @@ jobs:
   label:
     name: Labeling
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    if: ${{ github.repository == 'jellyfin/jellyfin' && github.event.issue.pull_request }}
     steps:
       - name: Apply label
-        uses: eps1lon/actions-label-merge-conflict@fd1f295ee7443d13745804bc49fe158e240f6c6e # tag=v2.1.0
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
         if: ${{ github.event_name == 'push' || github.event_name == 'pull_request_target'}}
         with:
           dirtyLabel: 'merge conflict'

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jellyfin.Extensions;
 
@@ -54,5 +55,23 @@ public static class EnumerableExtensions
     public static IEnumerable<T> SingleItemAsEnumerable<T>(this T item)
     {
         yield return item;
+    }
+
+    /// <summary>
+    /// Gets an IEnumerable consisting of all flags of an enum.
+    /// </summary>
+    /// <param name="flags">The flags enum.</param>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <returns>The IEnumerable{Enum}.</returns>
+    public static IEnumerable<T> GetUniqueFlags<T>(this T flags)
+        where T : struct, Enum
+    {
+        foreach (T value in Enum.GetValues<T>())
+        {
+            if (flags.HasFlag(value))
+            {
+                yield return value;
+            }
+        }
     }
 }

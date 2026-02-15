@@ -1,0 +1,48 @@
+{
+    "countryCode": "ro",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["AG", "AP"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["12", "AP-12"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15", "N-15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18", "IM-18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["18+", "IM-18-XXX"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["IC"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": null
+            }
+        }
+    ]
+}

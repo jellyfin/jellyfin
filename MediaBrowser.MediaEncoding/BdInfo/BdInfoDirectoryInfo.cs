@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using BDInfo.IO;
@@ -58,6 +59,8 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
         }
     }
 
+    private static bool IsHidden(ReadOnlySpan<char> name) => name.StartsWith('.');
+
     /// <summary>
     /// Gets the directories.
     /// </summary>
@@ -65,6 +68,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IDirectoryInfo[] GetDirectories()
     {
         return _fileSystem.GetDirectories(_impl.FullName)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoDirectoryInfo(_fileSystem, x))
             .ToArray();
     }
@@ -76,6 +80,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     public IFileInfo[] GetFiles()
     {
         return _fileSystem.GetFiles(_impl.FullName)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -84,10 +89,11 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     /// Gets the files matching a pattern.
     /// </summary>
     /// <param name="searchPattern">The search pattern.</param>
-    /// <returns>All files of the directory matchign the search pattern.</returns>
+    /// <returns>All files of the directory matching the search pattern.</returns>
     public IFileInfo[] GetFiles(string searchPattern)
     {
         return _fileSystem.GetFiles(_impl.FullName, new[] { searchPattern }, false, false)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
@@ -96,8 +102,8 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
     /// Gets the files matching a pattern and search options.
     /// </summary>
     /// <param name="searchPattern">The search pattern.</param>
-    /// <param name="searchOption">The search optin.</param>
-    /// <returns>All files of the directory matchign the search pattern and options.</returns>
+    /// <param name="searchOption">The search option.</param>
+    /// <returns>All files of the directory matching the search pattern and options.</returns>
     public IFileInfo[] GetFiles(string searchPattern, SearchOption searchOption)
     {
         return _fileSystem.GetFiles(
@@ -105,6 +111,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 new[] { searchPattern },
                 false,
                 searchOption == SearchOption.AllDirectories)
+            .Where(d => !IsHidden(d.Name))
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
