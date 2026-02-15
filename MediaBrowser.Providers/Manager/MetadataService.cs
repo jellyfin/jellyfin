@@ -341,26 +341,32 @@ namespace MediaBrowser.Providers.Manager
             if (!string.IsNullOrEmpty(itemPath))
             {
                 var info = FileSystem.GetFileSystemInfo(itemPath);
-                if (info.Exists && item.HasChanged(info.LastWriteTimeUtc))
+                if (info.Exists)
                 {
-                    Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
+                    var timestampChanged = Math.Abs((item.DateModified - info.LastWriteTimeUtc).TotalSeconds) > 1;
+                    var sizeChanged = !info.IsDirectory && item.Size.HasValue && item.Size.Value != info.Length;
 
-                    item.DateModified = info.LastWriteTimeUtc;
-                    if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
+                    if (timestampChanged && sizeChanged)
                     {
-                        if (info.CreationTimeUtc > DateTime.MinValue)
+                        Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
+
+                        item.DateModified = info.LastWriteTimeUtc;
+                        if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
                         {
-                            item.DateCreated = info.CreationTimeUtc;
+                            if (info.CreationTimeUtc > DateTime.MinValue)
+                            {
+                                item.DateCreated = info.CreationTimeUtc;
+                            }
                         }
-                    }
 
-                    if (item is Video video)
-                    {
-                        Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
-                        ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
-                    }
+                        if (item is Video video)
+                        {
+                            Logger.LogInformation("File changed, pruning extracted data: {Path}", item.Path);
+                            ExternalDataManager.DeleteExternalItemDataAsync(video, CancellationToken.None).GetAwaiter().GetResult();
+                        }
 
-                    updateType |= ItemUpdateType.MetadataImport;
+                        updateType |= ItemUpdateType.MetadataImport;
+                    }
                 }
             }
 
