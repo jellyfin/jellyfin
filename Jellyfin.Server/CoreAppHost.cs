@@ -15,6 +15,7 @@ using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Implementations.Security;
 using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.Users;
+using Jellyfin.Server.Implementations.Waveform;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.BaseItemManager;
@@ -26,6 +27,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Controller.Waveform;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
@@ -87,6 +89,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
             serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
+            serviceCollection.AddSingleton<IWaveformManager, WaveformManager>();
 
             // TODO search the assemblies instead of adding them manually?
             serviceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
