@@ -1074,9 +1074,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.OriginalTitle = originalTitle;
         }
 
-        if (reader.TryGetString(index++, out var primaryVersionId))
+        if (reader.TryGetString(index++, out var primaryVersionId) && Guid.TryParse(primaryVersionId, out var primaryVersionGuid))
         {
-            entity.PrimaryVersionId = primaryVersionId;
+            entity.PrimaryVersionId = primaryVersionGuid;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastMediaAdded))
@@ -1178,10 +1178,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ProductionLocations = productionLocations;
         }
 
-        if (reader.TryGetString(index++, out var extraIds))
-        {
-            entity.ExtraIds = extraIds;
-        }
+        // Skip ExtraIds column (removed - extras are now tracked via OwnerId relationship)
+        index++;
 
         if (reader.TryGetInt32(index++, out var totalBitrate))
         {
@@ -1218,9 +1216,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ShowId = showId;
         }
 
-        if (reader.TryGetString(index++, out var ownerId))
+        if (reader.TryGetString(index++, out var ownerId) && Guid.TryParse(ownerId, out var ownerIdGuid))
         {
-            entity.OwnerId = ownerId;
+            entity.OwnerId = ownerIdGuid;
         }
 
         if (reader.TryGetString(index++, out var mediaType))

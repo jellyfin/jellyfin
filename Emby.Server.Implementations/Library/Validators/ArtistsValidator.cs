@@ -50,21 +50,38 @@ public class ArtistsValidator
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var names = _itemRepo.GetAllArtistNames();
+        var existingArtistIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.MusicArtist]
+        }).ToHashSet();
+
+        var existingArtists = _libraryManager.GetArtists(names);
 
         var numComplete = 0;
         var count = names.Count;
+        var refreshed = 0;
 
         foreach (var name in names)
         {
             try
             {
-                var item = _libraryManager.GetArtist(name);
+                MusicArtist? item = null;
+                if (existingArtists.TryGetValue(name, out var artists) && artists.Length > 0)
+                {
+                    item = artists.OrderBy(i => i.IsAccessedByName ? 1 : 0).First();
+                }
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                // Fall back to GetArtist if not found (creates new item if needed)
+                item ??= _libraryManager.GetArtist(name);
+
+                if (!existingArtistIds.Contains(item.Id))
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
+                }
             }
             catch (OperationCanceledException)
             {
-                // Don't clutter the log
                 throw;
             }
             catch (Exception ex)
@@ -79,6 +96,8 @@ public class ArtistsValidator
 
             progress.Report(percent);
         }
+
+        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new artists out of {TotalCount} total", refreshed, count);
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {

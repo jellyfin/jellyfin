@@ -37,9 +37,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the display order.
@@ -160,25 +158,25 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (base.IsVisible(user, skipAllowedTagsCheck))
+            if (!IsVisibleViaTags(user, skipAllowedTagsCheck))
             {
-                if (LinkedChildren.Length == 0)
-                {
-                    return true;
-                }
-
-                var userLibraryFolderIds = GetLibraryFolderIds(user);
-                var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
-
-                if (libraryFolderIds.Length == 0)
-                {
-                    return true;
-                }
-
-                return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
+                return false;
             }
 
-            return false;
+            if (LinkedChildren.Length == 0)
+            {
+                return true;
+            }
+
+            var userLibraryFolderIds = GetLibraryFolderIds(user);
+            var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
+
+            if (libraryFolderIds.Length == 0)
+            {
+                return true;
+            }
+
+            return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
         }
 
         public override bool IsVisibleStandalone(User user)

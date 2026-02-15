@@ -456,19 +456,18 @@ public class LibraryController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var counts = new ItemCounts
+        var query = new InternalItemsQuery(user)
         {
-            AlbumCount = GetCount(BaseItemKind.MusicAlbum, user, isFavorite),
-            EpisodeCount = GetCount(BaseItemKind.Episode, user, isFavorite),
-            MovieCount = GetCount(BaseItemKind.Movie, user, isFavorite),
-            SeriesCount = GetCount(BaseItemKind.Series, user, isFavorite),
-            SongCount = GetCount(BaseItemKind.Audio, user, isFavorite),
-            MusicVideoCount = GetCount(BaseItemKind.MusicVideo, user, isFavorite),
-            BoxSetCount = GetCount(BaseItemKind.BoxSet, user, isFavorite),
-            BookCount = GetCount(BaseItemKind.Book, user, isFavorite)
+            Recursive = true,
+            IsVirtualItem = false,
+            IsFavorite = isFavorite,
+            DtoOptions = new DtoOptions(false)
+            {
+                EnableImages = false
+            }
         };
 
-        return counts;
+        return _libraryManager.GetItemCounts(query);
     }
 
     /// <summary>
@@ -935,24 +934,6 @@ public class LibraryController : BaseJellyfinApiController
         result.TypeOptions = typeOptions.ToArray();
 
         return result;
-    }
-
-    private int GetCount(BaseItemKind itemKind, User? user, bool? isFavorite)
-    {
-        var query = new InternalItemsQuery(user)
-        {
-            IncludeItemTypes = new[] { itemKind },
-            Limit = 0,
-            Recursive = true,
-            IsVirtualItem = false,
-            IsFavorite = isFavorite,
-            DtoOptions = new DtoOptions(false)
-            {
-                EnableImages = false
-            }
-        };
-
-        return _libraryManager.GetItemsResult(query).TotalRecordCount;
     }
 
     private BaseItem? TranslateParentItem(BaseItem item, User user)
