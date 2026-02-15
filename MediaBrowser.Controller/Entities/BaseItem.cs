@@ -1225,10 +1225,42 @@ namespace MediaBrowser.Controller.Entities
                 var displayName = System.IO.Path.GetFileNameWithoutExtension(path);
                 if (HasLocalAlternateVersions)
                 {
+                    // For movies, the containing folder name is the base name.
+                    // For episodes (or when folder name doesn't match), compute the common
+                    // prefix across the primary and all alternate filenames, then strip it.
+                    // HasLocalAlternateVersions is only true for Video, so the cast is safe.
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
-                    if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
+                    var primaryName = System.IO.Path.GetFileNameWithoutExtension(Path);
+
+                    // Try both the folder name and the common filename prefix, use whichever
+                    // gives a longer base name (shorter suffix). The folder name works for movies;
+                    // the common prefix works for episodes where the folder is "Season XX" or the
+                    // series name (which is shorter than the full episode prefix).
+                    string baseName = null;
+                    if (containingFolderName is not null
+                        && displayName.Length > containingFolderName.Length
+                        && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
+                        baseName = containingFolderName;
+                    }
+
+                    if (primaryName is not null)
+                    {
+                        var commonPrefix = Emby.Naming.Video.VideoListResolver.FindCommonPrefix(
+                            primaryName,
+                            ((Video)this).LocalAlternateVersions.Select(System.IO.Path.GetFileNameWithoutExtension).Where(n => n is not null)!);
+                        if (commonPrefix.Length > (baseName?.Length ?? 0))
+                        {
+                            baseName = commonPrefix;
+                        }
+                    }
+
+                    if (baseName is not null
+                        && baseName.Length > 0
+                        && displayName.Length > baseName.Length
+                        && displayName.StartsWith(baseName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var name = displayName.AsSpan(baseName.Length).TrimStart([' ', '-']);
                         if (!name.IsWhiteSpace())
                         {
                             terms.Add(name.ToString());
