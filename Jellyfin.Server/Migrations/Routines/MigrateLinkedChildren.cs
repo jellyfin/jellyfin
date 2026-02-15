@@ -225,8 +225,8 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         _logger.LogInformation("LinkedChildren migration completed. Processed {Count} items.", processedCount);
 
         CleanupWrongTypeAlternateVersions(context);
-        CleanupOrphanedLinkedChildren(context);
         CleanupOrphanedAlternateVersionBaseItems(context);
+        CleanupOrphanedLinkedChildren(context);
     }
 
     private void CleanupWrongTypeAlternateVersions(JellyfinDbContext context)
