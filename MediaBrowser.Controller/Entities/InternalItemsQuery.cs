@@ -227,6 +227,8 @@ namespace MediaBrowser.Controller.Entities
 
         public double? MinCommunityRating { get; set; }
 
+        public double? MinUserRating { get; set; }
+
         public IReadOnlyList<Guid> ChannelIds { get; set; }
 
         public int? ParentIndexNumber { get; set; }
