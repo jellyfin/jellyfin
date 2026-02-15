@@ -132,25 +132,28 @@ namespace Emby.Server.Implementations.Library
 
         private static void SetDateCreated(BaseItem item, FileSystemMetadata? info)
         {
-            var config = BaseItem.ConfigurationManager.GetMetadataConfiguration();
-
-            if (config.UseFileCreationTimeForDateAdded)
+            if (item.DateCreated == DateTime.MinValue)
             {
-                var fileCreationDate = info?.CreationTimeUtc;
-                if (fileCreationDate is not null)
+                var config = BaseItem.ConfigurationManager.GetMetadataConfiguration();
+
+                if (config.UseFileCreationTimeForDateAdded)
                 {
-                    var dateCreated = fileCreationDate;
-                    if (dateCreated == DateTime.MinValue)
+                    var fileCreationDate = info?.CreationTimeUtc;
+                    if (fileCreationDate is not null)
                     {
-                        dateCreated = DateTime.UtcNow;
-                    }
+                        var dateCreated = fileCreationDate;
+                        if (dateCreated == DateTime.MinValue)
+                        {
+                            dateCreated = DateTime.UtcNow;
+                        }
 
-                    item.DateCreated = dateCreated.Value;
+                        item.DateCreated = dateCreated.Value;
+                    }
                 }
-            }
-            else
-            {
-                item.DateCreated = DateTime.UtcNow;
+                else
+                {
+                    item.DateCreated = DateTime.UtcNow;
+                }
             }
 
             if (info is not null && !info.IsDirectory)
@@ -158,10 +161,13 @@ namespace Emby.Server.Implementations.Library
                 item.Size = info.Length;
             }
 
-            var fileModificationDate = info?.LastWriteTimeUtc;
-            if (fileModificationDate.HasValue)
+            if (item.DateModified == DateTime.MinValue)
             {
-                item.DateModified = fileModificationDate.Value;
+                var fileModificationDate = info?.LastWriteTimeUtc;
+                if (fileModificationDate.HasValue)
+                {
+                    item.DateModified = fileModificationDate.Value;
+                }
             }
         }
     }
