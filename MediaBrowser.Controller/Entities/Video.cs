@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public string PrimaryVersionId { get; set; }
+        public Guid? PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
 
@@ -254,9 +254,9 @@ namespace MediaBrowser.Controller.Entities
         private int GetMediaSourceCount(HashSet<Guid> callstack = null)
         {
             callstack ??= new();
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                var item = LibraryManager.GetItemById(PrimaryVersionId);
+                var item = LibraryManager.GetItemById(PrimaryVersionId.Value);
                 if (item is Video video)
                 {
                     if (callstack.Contains(video.Id))
@@ -317,25 +317,17 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public void SetPrimaryVersionId(string id)
+        public void SetPrimaryVersionId(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                PrimaryVersionId = null;
-            }
-            else
-            {
-                PrimaryVersionId = id;
-            }
-
+            PrimaryVersionId = id;
             PresentationUniqueKey = CreatePresentationUniqueKey();
         }
 
         public override string CreatePresentationUniqueKey()
         {
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                return PrimaryVersionId;
+                return PrimaryVersionId.Value.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return base.CreatePresentationUniqueKey();
@@ -483,6 +475,7 @@ namespace MediaBrowser.Controller.Entities
                 if (altVideo is not null)
                 {
                     altVideo.OwnerId = Id;
+                    altVideo.SetPrimaryVersionId(Id);
                     LibraryManager.CreateItem(altVideo, GetParent());
                 }
             }
@@ -495,6 +488,13 @@ namespace MediaBrowser.Controller.Entities
             if (LibraryManager.GetItemById(id) is Video video)
             {
                 LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
+
+                // Ensure PrimaryVersionId is set for existing alternate versions that may not have it
+                if (!video.PrimaryVersionId.HasValue)
+                {
+                    video.SetPrimaryVersionId(Id);
+                    await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
@@ -612,9 +612,9 @@ namespace MediaBrowser.Controller.Entities
 
             list.AddRange(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
+                if (LibraryManager.GetItemById(PrimaryVersionId.Value) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
                     list.Add((primary, MediaSourceType.Grouping));

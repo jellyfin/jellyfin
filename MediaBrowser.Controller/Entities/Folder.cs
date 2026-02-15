@@ -480,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
                         if (item is Video video)
                         {
                             // Check via PrimaryVersionId
-                            if (!string.IsNullOrEmpty(video.PrimaryVersionId))
+                            if (video.PrimaryVersionId.HasValue)
                             {
                                 Logger.LogDebug("Item is an alternate version (via PrimaryVersionId), skipping deletion: {Path}", item.Path ?? item.Name);
                                 continue;

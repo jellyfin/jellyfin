@@ -408,7 +408,7 @@ namespace Emby.Server.Implementations.Library
 
             // If deleting a primary version video, clear PrimaryVersionId from alternate versions
             // OwnerId check: items with OwnerId set are alternate versions or extras, not primaries
-            if (item is Video video && string.IsNullOrEmpty(video.PrimaryVersionId) && video.OwnerId.IsEmpty())
+            if (item is Video video && !video.PrimaryVersionId.HasValue && video.OwnerId.IsEmpty())
             {
                 var alternateVersions = GetLocalAlternateVersionIds(video)
                     .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
@@ -435,16 +435,15 @@ namespace Emby.Server.Implementations.Library
                     // Update remaining alternates to point to new primary
                     foreach (var alternate in alternateVersions.Skip(1))
                     {
-                        alternate.SetPrimaryVersionId(newPrimary.Id.ToString("N", CultureInfo.InvariantCulture));
+                        alternate.SetPrimaryVersionId(newPrimary.Id);
                         alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                     }
                 }
             }
-            else if (item is Video alternateVideo && !string.IsNullOrEmpty(alternateVideo.PrimaryVersionId)
-                && Guid.TryParse(alternateVideo.PrimaryVersionId, out var primaryId))
+            else if (item is Video alternateVideo && alternateVideo.PrimaryVersionId.HasValue)
             {
                 // If deleting an alternate version, re-route references to its primary
-                _itemRepository.RerouteLinkedChildren(alternateVideo.Id, primaryId);
+                _itemRepository.RerouteLinkedChildren(alternateVideo.Id, alternateVideo.PrimaryVersionId.Value);
             }
 
             var children = item.IsFolder
@@ -2181,6 +2180,7 @@ namespace Emby.Server.Implementations.Library
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;
+                                altVideo.SetPrimaryVersionId(video.Id);
                                 allItems.Add(altVideo);
                             }
                         }
@@ -2383,6 +2383,7 @@ namespace Emby.Server.Implementations.Library
                             if (altVideo is not null)
                             {
                                 altVideo.OwnerId = video.Id;
+                                altVideo.SetPrimaryVersionId(video.Id);
                                 allItems.Add(altVideo);
                             }
                         }

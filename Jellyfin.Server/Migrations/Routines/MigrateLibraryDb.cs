@@ -1074,9 +1074,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.OriginalTitle = originalTitle;
         }
 
-        if (reader.TryGetString(index++, out var primaryVersionId))
+        if (reader.TryGetString(index++, out var primaryVersionId) && Guid.TryParse(primaryVersionId, out var primaryVersionGuid))
         {
-            entity.PrimaryVersionId = primaryVersionId;
+            entity.PrimaryVersionId = primaryVersionGuid;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastMediaAdded))

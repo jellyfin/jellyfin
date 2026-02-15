@@ -284,7 +284,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
                 lc => lc.ChildId,
                 item => item.Id,
                 (lc, item) => new { lc.ParentId, lc.ChildId, item.PrimaryVersionId })
-            .Where(x => x.PrimaryVersionId == null || x.PrimaryVersionId != x.ParentId.ToString())
+            .Where(x => !x.PrimaryVersionId.HasValue || !x.PrimaryVersionId.Value.Equals(x.ParentId))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -307,7 +307,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
             if (childItem is not null)
             {
-                childItem.PrimaryVersionId = link.ParentId.ToString();
+                childItem.PrimaryVersionId = link.ParentId;
                 updatedCount++;
             }
         }

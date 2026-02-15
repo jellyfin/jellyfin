@@ -96,7 +96,7 @@ public class BaseItemEntity
 
     public string? OriginalTitle { get; set; }
 
-    public string? PrimaryVersionId { get; set; }
+    public Guid? PrimaryVersionId { get; set; }
 
     public DateTime? DateLastMediaAdded { get; set; }
 

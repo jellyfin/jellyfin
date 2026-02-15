@@ -147,9 +147,9 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (item.LinkedAlternateVersions.Length == 0)
+        if (item.LinkedAlternateVersions.Length == 0 && item.PrimaryVersionId.HasValue)
         {
-            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
+            item = _libraryManager.GetItemById<Video>(item.PrimaryVersionId.Value);
         }
 
         if (item is null)
@@ -197,7 +197,7 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest("Please supply at least two videos to merge.");
         }
 
-        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
+        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && !i.PrimaryVersionId.HasValue);
         if (primaryVersion is null)
         {
             primaryVersion = items
@@ -218,7 +218,7 @@ public class VideosController : BaseJellyfinApiController
 
         foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
         {
-            item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
+            item.SetPrimaryVersionId(primaryVersion.Id);
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
