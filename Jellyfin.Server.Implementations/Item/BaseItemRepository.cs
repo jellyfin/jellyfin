@@ -335,7 +335,6 @@ public sealed class BaseItemRepository
             }
 
             var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
-                .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
                 .Where(dto => dto is not null)
@@ -344,7 +343,7 @@ public sealed class BaseItemRepository
             return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
         }
 
-        dbQuery = ApplyNavigations(dbQuery, filter).AsSplitQuery();
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
     }
@@ -1182,7 +1181,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
-        dbQuery = ApplyNavigations(dbQuery, filter).AsSplitQuery();
+        dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
     }
 
