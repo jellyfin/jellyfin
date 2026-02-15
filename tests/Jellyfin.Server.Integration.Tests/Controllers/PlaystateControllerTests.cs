@@ -5,7 +5,8 @@ using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
-public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory>
+[Collection("Controller collection")]
+public class PlaystateControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private static string? _accessToken;

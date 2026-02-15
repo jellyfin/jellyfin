@@ -14,8 +14,9 @@ using Xunit.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
+    [Collection("Controller collection")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
-    public sealed class UserControllerTests : IClassFixture<JellyfinApplicationFactory>
+    public sealed class UserControllerTests : ICollectionFixture<ControllerCollectionFixture>
     {
         private const string TestUsername = "testUser01";
 

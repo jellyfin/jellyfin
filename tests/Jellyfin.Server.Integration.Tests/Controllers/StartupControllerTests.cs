@@ -12,8 +12,9 @@ using Xunit.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
+    [Collection("Controller collection")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
-    public sealed class StartupControllerTests : IClassFixture<JellyfinApplicationFactory>
+    public sealed class StartupControllerTests
     {
         private readonly JellyfinApplicationFactory _factory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
