@@ -533,6 +533,12 @@ namespace MediaBrowser.Controller.Library
         Task UpdatePeopleAsync(BaseItem item, IReadOnlyList<PersonInfo> people, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Updates the artists.
+        /// </summary>
+        /// <param name="artists">The artists.</param>
+        void UpdateArtists(IEnumerable<string> artists);
+
+        /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>

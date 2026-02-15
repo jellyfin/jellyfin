@@ -1494,7 +1494,7 @@ public sealed class BaseItemRepository
 
         if (item is IHasArtist hasArtist)
         {
-            list.AddRange(hasArtist.Artists.Select(i => ((ItemValueType)0, i)));
+            list.AddRange(hasArtist.Artists.Select(i => (ItemValueType.Artist, i)));
         }
 
         if (item is IHasAlbumArtist hasAlbumArtist)

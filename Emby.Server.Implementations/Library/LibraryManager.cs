@@ -1030,10 +1030,10 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre.
+        /// Gets an Artist.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
+        /// <returns>The Artist.</returns>
         public MusicArtist GetArtist(string name)
         {
             return GetArtist(name, new DtoOptions(true));
@@ -2152,6 +2152,20 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
+            // update artists on all the items if needed
+            var artists = items.SelectMany(item =>
+            {
+                return item switch
+                {
+                    IHasAlbumArtist hasAlbumArtist and IHasArtist hasArtist => [..hasArtist.Artists, ..hasAlbumArtist.AlbumArtists],
+                    IHasAlbumArtist hasAlbumArtist => hasAlbumArtist.AlbumArtists,
+                    IHasArtist hasArtist => hasArtist.Artists,
+                    _ => []
+                };
+            }).Distinct();
+
+            UpdateArtists(artists);
+
             foreach (var item in items)
             {
                 item.DateLastSaved = DateTime.UtcNow;
@@ -2982,6 +2996,17 @@ namespace Emby.Server.Implementations.Library
                 people = people.Where(e => e is not null).ToArray();
                 _peopleRepository.UpdatePeople(item.Id, people);
                 await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public void UpdateArtists(IEnumerable<string> artists)
+        {
+            ArgumentNullException.ThrowIfNull(artists);
+
+            foreach (var artistName in artists)
+            {
+                // this actually creates the artist if it doesn't exist
+                GetArtist(artistName);
             }
         }
 

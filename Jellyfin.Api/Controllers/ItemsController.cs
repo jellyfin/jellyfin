@@ -459,17 +459,9 @@ public class ItemsController : BaseJellyfinApiController
             // Artists
             if (artists.Length != 0)
             {
-                query.ArtistIds = artists.Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i, new DtoOptions(false));
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }).Where(i => i is not null).Select(i => i!.Id).ToArray();
+                query.ArtistIds = _libraryManager.GetArtists(artists)
+                    .SelectMany(criteria => criteria.Value.Where(artist => artist is not null).Select(artist => artist.Id))
+                    .ToArray();
             }
 
             // ExcludeArtistIds
