@@ -222,9 +222,18 @@ namespace Jellyfin.Server
                 mainApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
+
                     if (_serverConfigurationManager.Configuration.EnableMetrics)
                     {
-                        endpoints.MapMetrics();
+                        var metricsPort = _serverConfigurationManager.Configuration.MetricsListenPort;
+                        var metricsEndpoint = endpoints.MapMetrics(); // Always map if enabled
+
+                        // Apply host filtering ONLY if a dedicated port is configured
+                        if (metricsPort > 0)
+                        {
+                            // Require requests to target the specific metrics port
+                            metricsEndpoint.RequireHost($"*:{metricsPort}");
+                        }
                     }
 
                     endpoints.MapHealthChecks("/health");
