@@ -226,6 +226,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         CleanupWrongTypeAlternateVersions(context);
         CleanupOrphanedLinkedChildren(context);
+        CleanupOrphanedAlternateVersionBaseItems(context);
     }
 
     private void CleanupWrongTypeAlternateVersions(JellyfinDbContext context)
@@ -271,6 +272,40 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         }
 
         _logger.LogInformation("Removed {Count} wrong-type alternate version items. They will be recreated with the correct type on next library scan.", wrongTypeChildIds.Count);
+    }
+
+    private void CleanupOrphanedAlternateVersionBaseItems(JellyfinDbContext context)
+    {
+        _logger.LogInformation("Starting cleanup of orphaned alternate version BaseItems...");
+
+        // Find BaseItems that have PrimaryVersionId set (they were alternate versions)
+        // but no LinkedChild entry references them — meaning they're orphaned.
+        // This happens when a version file is renamed: the old BaseItem remains
+        // in the DB with a stale PrimaryVersionId but nothing links to it anymore.
+        var orphanedVersionIds = context.BaseItems
+            .Where(b => b.PrimaryVersionId != null && b.PrimaryVersionId != string.Empty)
+            .Where(b => !context.LinkedChildren.Any(lc => lc.ChildId.Equals(b.Id)))
+            .Select(b => b.Id)
+            .ToList();
+
+        if (orphanedVersionIds.Count == 0)
+        {
+            _logger.LogInformation("No orphaned alternate version BaseItems found.");
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} orphaned alternate version BaseItems to remove.", orphanedVersionIds.Count);
+
+        foreach (var id in orphanedVersionIds)
+        {
+            var item = _libraryManager.GetItemById(id);
+            if (item is not null)
+            {
+                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
+            }
+        }
+
+        _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", orphanedVersionIds.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)
