@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
@@ -62,6 +63,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return result;
             }
 
+            TvGroup? groupResult = null;
+            if (info.SeriesProviderIds.TryGetValue(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup) && !string.IsNullOrWhiteSpace(episodeGroup))
+            {
+                groupResult = await _tmdbClientManager.GetSeriesGroupAsync(episodeGroup, seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            }
+
             result.HasMetadata = true;
             result.Item = new Season
             {
@@ -77,6 +84,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
+
+            if (groupResult is not null)
+            {
+                result.Item.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, groupResult.Id);
+            }
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
