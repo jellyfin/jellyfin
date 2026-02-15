@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
@@ -41,7 +42,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             Folder parent,
             List<FileSystemMetadata> files,
             CollectionType? collectionType,
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            LibraryOptions libraryOptions)
         {
             var result = ResolveMultipleInternal(parent, files, collectionType);
 
