@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Api
         /// <returns>The image portion of the TMDb client configuration.</returns>
         [HttpGet("ClientConfiguration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ConfigImageTypes> TmdbClientConfiguration()
+        public async Task<ConfigImageTypes?> TmdbClientConfiguration()
         {
             return (await _tmdbClientManager.GetClientConfiguration().ConfigureAwait(false)).Images;
         }

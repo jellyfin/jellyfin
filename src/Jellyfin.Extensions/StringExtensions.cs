@@ -131,7 +131,7 @@ namespace Jellyfin.Extensions
         /// </summary>
         /// <param name="values">The enumerable of strings to trim.</param>
         /// <returns>The enumeration of trimmed strings.</returns>
-        public static IEnumerable<string> Trimmed(this IEnumerable<string> values)
+        public static IEnumerable<string> Trimmed(this IEnumerable<string?> values)
         {
             return values.Select(i => (i ?? string.Empty).Trim());
         }
