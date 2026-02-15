@@ -456,6 +456,7 @@ namespace MediaBrowser.Controller.Entities
                 // That's all the new and changed ones - now see if any have been removed and need cleanup
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
+                var actuallyRemoved = new List<BaseItem>();
                 // If it's an AggregateFolder, don't remove
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
@@ -497,6 +498,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             Logger.LogDebug("Removed item: {Path}", item.Path);
 
+                            actuallyRemoved.Add(item);
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
@@ -506,6 +508,20 @@ namespace MediaBrowser.Controller.Entities
                 if (newItems.Count > 0)
                 {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
+                }
+
+                // After removing items, reattach any detached user data to remaining children
+                // that share the same user data keys (eg. same episode replaced with a new file).
+                if (actuallyRemoved.Count > 0)
+                {
+                    var removedKeys = actuallyRemoved.SelectMany(i => i.GetUserDataKeys()).ToHashSet();
+                    foreach (var child in validChildren)
+                    {
+                        if (child.GetUserDataKeys().Any(removedKeys.Contains))
+                        {
+                            await child.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
+                        }
+                    }
                 }
             }
             else

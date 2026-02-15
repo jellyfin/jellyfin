@@ -1163,7 +1163,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 Item = null!,
                 ProviderId = e[0],
                 ProviderValue = string.Join('|', e.Skip(1))
-            }).ToArray();
+            })
+            .DistinctBy(e => e.ProviderId)
+            .ToArray();
         }
 
         if (reader.TryGetString(index++, out var imageInfos))
