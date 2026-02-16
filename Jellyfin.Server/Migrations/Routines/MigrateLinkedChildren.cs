@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,15 +24,21 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
     private readonly ILogger<MigrateLinkedChildren> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly ILibraryManager _libraryManager;
+    private readonly IServerApplicationHost _appHost;
+    private readonly IServerApplicationPaths _appPaths;
 
     public MigrateLinkedChildren(
         ILoggerFactory loggerFactory,
         IDbContextFactory<JellyfinDbContext> dbProvider,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IServerApplicationHost appHost,
+        IServerApplicationPaths appPaths)
     {
         _logger = loggerFactory.CreateLogger<MigrateLinkedChildren>();
         _dbProvider = dbProvider;
         _libraryManager = libraryManager;
+        _appHost = appHost;
+        _appPaths = appPaths;
     }
 
     /// <inheritdoc/>
@@ -226,6 +234,8 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         CleanupWrongTypeAlternateVersions(context);
         CleanupOrphanedAlternateVersionBaseItems(context);
+        CleanupItemsFromDeletedLibraries(context);
+        CleanupStaleFileEntries(context);
         CleanupOrphanedLinkedChildren(context);
     }
 
@@ -306,6 +316,128 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
         }
 
         _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", orphanedVersionIds.Count);
+    }
+
+    private void CleanupItemsFromDeletedLibraries(JellyfinDbContext context)
+    {
+        _logger.LogInformation("Starting cleanup of items from deleted libraries...");
+
+        // Find BaseItems whose TopParentId points to a library (collection folder) that no longer exists.
+        // This happens when a library is removed but the scan didn't fully clean up all items under it.
+        var orphanedIds = context.BaseItems
+            .Where(b => b.TopParentId.HasValue)
+            .Where(b => !context.BaseItems.Any(lib => lib.Id.Equals(b.TopParentId!.Value)))
+            .Select(b => b.Id)
+            .ToList();
+
+        if (orphanedIds.Count == 0)
+        {
+            _logger.LogInformation("No items from deleted libraries found.");
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} items from deleted libraries to remove.", orphanedIds.Count);
+
+        foreach (var id in orphanedIds)
+        {
+            var item = _libraryManager.GetItemById(id);
+            if (item is not null)
+            {
+                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
+            }
+        }
+
+        _logger.LogInformation("Removed {Count} items from deleted libraries.", orphanedIds.Count);
+    }
+
+    private void CleanupStaleFileEntries(JellyfinDbContext context)
+    {
+        _logger.LogInformation("Starting cleanup of items with missing files...");
+
+        // Get all library media locations and partition into accessible vs inaccessible.
+        // This mirrors the scanner's safeguard: if a library root is inaccessible
+        // (e.g. NAS offline), we skip items under it to avoid false deletions.
+        var virtualFolders = _libraryManager.GetVirtualFolders();
+        var accessiblePaths = new List<string>();
+        var inaccessiblePaths = new List<string>();
+
+        foreach (var folder in virtualFolders)
+        {
+            foreach (var location in folder.Locations)
+            {
+                if (Directory.Exists(location) && Directory.EnumerateFileSystemEntries(location).Any())
+                {
+                    accessiblePaths.Add(location);
+                }
+                else
+                {
+                    inaccessiblePaths.Add(location);
+                    _logger.LogWarning(
+                        "Library location {Path} is inaccessible or empty, skipping file existence checks for items under this path.",
+                        location);
+                }
+            }
+        }
+
+        var allLibraryPaths = accessiblePaths.Concat(inaccessiblePaths).ToList();
+
+        // Get all non-folder, non-virtual items with paths from the DB
+        var itemsWithPaths = context.BaseItems
+            .Where(b => b.Path != null && b.Path != string.Empty)
+            .Where(b => !b.IsFolder && !b.IsVirtualItem)
+            .Select(b => new { b.Id, b.Path })
+            .ToList();
+
+        var internalMetadataPath = _appPaths.InternalMetadataPath;
+
+        var staleIds = new List<Guid>();
+        foreach (var item in itemsWithPaths)
+        {
+            // Expand virtual path placeholders (%AppDataPath%, %MetadataPath%) to real paths
+            var path = _appHost.ExpandVirtualPath(item.Path!);
+
+            // Skip items stored under internal metadata (images, subtitles, trickplay, etc.)
+            if (path.StartsWith(internalMetadataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (accessiblePaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+            {
+                // Item is under an accessible library location — check if the file still exists
+                if (!File.Exists(path))
+                {
+                    staleIds.Add(item.Id);
+                }
+            }
+            else if (!allLibraryPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+            {
+                // Item is not under ANY library location (accessible or not) —
+                // it's orphaned from all libraries (e.g. media path was removed from config)
+                staleIds.Add(item.Id);
+            }
+
+            // Otherwise: item is under an inaccessible location — skip (storage may be offline)
+        }
+
+        if (staleIds.Count == 0)
+        {
+            _logger.LogInformation("No stale items found.");
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} stale items to remove.", staleIds.Count);
+
+        foreach (var id in staleIds)
+        {
+            var item = _libraryManager.GetItemById(id);
+            if (item is not null)
+            {
+                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
+            }
+        }
+
+        _logger.LogInformation("Removed {Count} stale items.", staleIds.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)
