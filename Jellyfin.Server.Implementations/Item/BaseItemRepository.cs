@@ -716,12 +716,14 @@ public sealed class BaseItemRepository
         var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
 
         // Get the last watched episode ID per series (highest season/episode that is played)
-        var lastWatchedInfo = context.BaseItems
+        var lastWatchedBase = context.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == episodeTypeName)
             .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
             .Where(e => e.ParentIndexNumber != 0)
-            .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+            .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+        lastWatchedBase = ApplyAccessFiltering(context, lastWatchedBase, filter);
+        var lastWatchedInfo = lastWatchedBase
             .GroupBy(e => e.SeriesPresentationUniqueKey)
             .Select(g => new
             {
@@ -736,12 +738,14 @@ public sealed class BaseItemRepository
         Dictionary<string, Guid> lastWatchedByDateInfo = new();
         if (includeWatchedForRewatching)
         {
-            lastWatchedByDateInfo = context.BaseItems
+            var lastWatchedByDateBase = context.BaseItems
                 .AsNoTracking()
                 .Where(e => e.Type == episodeTypeName)
                 .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
                 .Where(e => e.ParentIndexNumber != 0)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            lastWatchedByDateBase = ApplyAccessFiltering(context, lastWatchedByDateBase, filter);
+            lastWatchedByDateInfo = lastWatchedByDateBase
                 .SelectMany(e => e.UserData!.Where(ud => ud.UserId == userId && ud.Played)
                     .Select(ud => new { Episode = e, ud.LastPlayedDate }))
                 .GroupBy(x => x.Episode.SeriesPresentationUniqueKey)
@@ -777,6 +781,7 @@ public sealed class BaseItemRepository
                 .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
                 .Where(e => e.ParentIndexNumber == 0)
                 .Where(e => !e.IsVirtualItem);
+            specialsQuery = ApplyAccessFiltering(context, specialsQuery, filter);
             specialsQuery = ApplyNavigations(specialsQuery, filter).AsSingleQuery();
 
             foreach (var special in specialsQuery)
@@ -808,13 +813,15 @@ public sealed class BaseItemRepository
         // Single query: fetch all unplayed non-virtual non-special episodes for all series.
         // Uses NOT EXISTS (via !Any) for the played check, which is more efficient than GroupJoin.
         // Only unplayed episodes are loaded (typically ~10% of total), keeping memory usage low.
-        var allUnplayedCandidates = context.BaseItems
+        var allUnplayedBase = context.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == episodeTypeName)
             .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
             .Where(e => e.ParentIndexNumber != 0)
             .Where(e => !e.IsVirtualItem)
-            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+        allUnplayedBase = ApplyAccessFiltering(context, allUnplayedBase, filter);
+        var allUnplayedCandidates = allUnplayedBase
             .Select(e => new
             {
                 e.Id,
@@ -856,13 +863,15 @@ public sealed class BaseItemRepository
         var seriesNextPlayedIdMap = new Dictionary<string, Guid>();
         if (includeWatchedForRewatching)
         {
-            var allPlayedCandidates = context.BaseItems
+            var allPlayedBase = context.BaseItems
                 .AsNoTracking()
                 .Where(e => e.Type == episodeTypeName)
                 .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
                 .Where(e => e.ParentIndexNumber != 0)
                 .Where(e => !e.IsVirtualItem)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            allPlayedBase = ApplyAccessFiltering(context, allPlayedBase, filter);
+            var allPlayedCandidates = allPlayedBase
                 .Select(e => new
                 {
                     e.Id,
@@ -3302,11 +3311,24 @@ public sealed class BaseItemRepository
             var max = filter.MaxParentalRating;
             var maxScore = max.Score;
             var maxSubScore = max.SubScore ?? 0;
+            var linkedChildren = context.LinkedChildren;
 
             maxParentalRatingFilter = e =>
-                e.InheritedParentalRatingValue == null ||
-                e.InheritedParentalRatingValue < maxScore ||
-                (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore);
+                // Item has a rating: check against limit
+                (e.InheritedParentalRatingValue != null
+                    && (e.InheritedParentalRatingValue < maxScore
+                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
+                // Item has no rating
+                || (e.InheritedParentalRatingValue == null
+                    && (
+                        // No linked children (not a BoxSet/Playlist): pass as unrated
+                        !linkedChildren.Any(lc => lc.ParentId == e.Id)
+                        // Has linked children: at least one child must be within limits
+                        || linkedChildren.Any(lc => lc.ParentId == e.Id
+                            && (lc.Child!.InheritedParentalRatingValue == null
+                                || lc.Child.InheritedParentalRatingValue < maxScore
+                                || (lc.Child.InheritedParentalRatingValue == maxScore
+                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
         }
 
         if (filter.HasParentalRating ?? false)
@@ -4084,9 +4106,21 @@ public sealed class BaseItemRepository
             var maxSubScore = filter.MaxParentalRating.SubScore ?? 0;
 
             baseQuery = baseQuery.Where(e =>
-                e.InheritedParentalRatingValue == null ||
-                e.InheritedParentalRatingValue < maxScore ||
-                (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore));
+                // Item has a rating: check against limit
+                (e.InheritedParentalRatingValue != null
+                    && (e.InheritedParentalRatingValue < maxScore
+                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
+                // Item has no rating
+                || (e.InheritedParentalRatingValue == null
+                    && (
+                        // No linked children (not a BoxSet/Playlist): pass as unrated
+                        !context.LinkedChildren.Any(lc => lc.ParentId == e.Id)
+                        // Has linked children: at least one child must be within limits
+                        || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
+                            && (lc.Child!.InheritedParentalRatingValue == null
+                                || lc.Child.InheritedParentalRatingValue < maxScore
+                                || (lc.Child.InheritedParentalRatingValue == maxScore
+                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))))));
         }
 
         // Apply block unrated items filtering

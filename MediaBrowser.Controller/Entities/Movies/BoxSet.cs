@@ -158,7 +158,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (!IsVisibleViaTags(user, skipAllowedTagsCheck))
+            if (!IsParentalAllowed(user, skipAllowedTagsCheck))
             {
                 return false;
             }
@@ -176,7 +176,22 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return true;
             }
 
-            return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
+            if (!userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i)))
+            {
+                return false;
+            }
+
+            // If user has parental controls, hide the BoxSet when all children are restricted
+            if (user.MaxParentalRatingScore.HasValue)
+            {
+                var linkedItems = GetLinkedChildren();
+                if (linkedItems.Count > 0 && linkedItems.All(child => !child.IsParentalAllowed(user, true)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public override bool IsVisibleStandalone(User user)
