@@ -435,5 +435,150 @@ namespace Jellyfin.Naming.Tests.Video
 
             Assert.Empty(result);
         }
+
+        // Episode multi-version tests
+
+        private List<VideoInfo> ResolveEpisodeVersions(string[] files, bool supportEpisodeGrouping = true)
+        {
+            return VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions,
+                true,
+                true,
+                string.Empty,
+                supportEpisodeGrouping).ToList();
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_RealWorldNaming()
+        {
+            var files = new[]
+            {
+                "/TV/Stranger Things (2016)/Season 01/Stranger Things (2016) [tvdbid-305288] - S01E01 - [Bluray-1080p][AC3 5.1][x264]-TayTO.mkv",
+                "/TV/Stranger Things (2016)/Season 01/Stranger Things (2016) [tvdbid-305288] - S01E01 - [Dolby Vision Compatibility][WEBDL-2160p][EAC3 5.1][DV HDR10][h265]-HONE.mp4",
+                "/TV/Stranger Things (2016)/Season 01/Stranger Things (2016) [tvdbid-305288] - S01E01 - [WEBDL-2160p][EAC3 5.1][DV HDR10][h265]-HONE.mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Single(result);
+            Assert.Equal(2, result[0].AlternateVersions.Count);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_DifferentEpisodesNotGrouped()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show - S01E01 - [1080p].mkv",
+                "/TV/Show/Season 01/Show - S01E01 - [2160p].mkv",
+                "/TV/Show/Season 01/Show - S01E02 - [1080p].mkv",
+                "/TV/Show/Season 01/Show - S01E02 - [2160p].mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Equal(2, result.Count);
+            Assert.Single(result[0].AlternateVersions);
+            Assert.Single(result[1].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_SingleEpisodeUnchanged()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show - S01E01.mkv",
+                "/TV/Show/Season 01/Show - S01E02.mkv",
+                "/TV/Show/Season 01/Show - S01E03.mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Equal(3, result.Count);
+            Assert.Empty(result[0].AlternateVersions);
+            Assert.Empty(result[1].AlternateVersions);
+            Assert.Empty(result[2].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_DifferentSeasonsNotGrouped()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Show - S01E01 - [1080p].mkv",
+                "/TV/Show/Show - S01E01 - [2160p].mkv",
+                "/TV/Show/Show - S02E01 - [1080p].mkv",
+                "/TV/Show/Show - S02E01 - [2160p].mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Equal(2, result.Count);
+            Assert.Single(result[0].AlternateVersions);
+            Assert.Single(result[1].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_DashSeparator()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show S01E01.mkv",
+                "/TV/Show/Season 01/Show S01E01 - 720p.mkv",
+                "/TV/Show/Season 01/Show S01E01 - 1080p.mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Single(result);
+            Assert.Equal("/TV/Show/Season 01/Show S01E01.mkv", result[0].Files[0].Path);
+            Assert.Equal(2, result[0].AlternateVersions.Count);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_NoGroupingWhenDisabled()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show S01E01 - [1080p].mkv",
+                "/TV/Show/Season 01/Show S01E01 - [2160p].mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files, supportEpisodeGrouping: false);
+
+            Assert.Equal(2, result.Count);
+            Assert.Empty(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_MultiEpisodeFile()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show S01E01-E03 - [1080p].mkv",
+                "/TV/Show/Season 01/Show S01E01-E03 - [2160p].mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void TestEpisodeMultiVersion_AlternativeVersionBeforeSquareBracket()
+        {
+            var files = new[]
+            {
+                "/TV/Show/Season 01/Show S01E01-E03 - [1080p].mkv",
+                "/TV/Show/Season 01/Show S01E01-E03 - IMAX [2160p].mkv",
+            };
+
+            var result = ResolveEpisodeVersions(files);
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
+        }
     }
 }
