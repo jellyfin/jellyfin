@@ -1226,6 +1226,24 @@ namespace MediaBrowser.Controller.Entities
                 if (HasLocalAlternateVersions)
                 {
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
+
+                    if (this.GetBaseItemKind() == Jellyfin.Data.Enums.BaseItemKind.Episode)
+                    {
+                        var grandparentContainingFolderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(ContainingFolderPath));
+                        if (!displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase) && displayName.StartsWith(grandparentContainingFolderName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            containingFolderName = grandparentContainingFolderName;
+                        }
+
+                        var episodeMatch = System.Text.RegularExpressions.Regex.Match(displayName, @"S\d+E\d+(-E\d+)*", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromSeconds(1));
+                        if (episodeMatch.Success)
+                        {
+                            displayName = string.Concat(
+                                displayName.AsSpan(0, containingFolderName.Length),
+                                displayName.AsSpan(episodeMatch.Index + episodeMatch.Length));
+                        }
+                    }
+
                     if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
                         var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', '-']);
