@@ -404,8 +404,9 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
             if (accessiblePaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
             {
-                // Item is under an accessible library location — check if the file still exists
-                if (!File.Exists(path))
+                // Item is under an accessible library location — check if it still exists
+                // Directory check covers BDMV/DVD items whose Path points to a folder
+                if (!File.Exists(path) && !Directory.Exists(path))
                 {
                     staleIds.Add(item.Id);
                 }
