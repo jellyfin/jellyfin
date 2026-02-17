@@ -164,6 +164,7 @@
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [ZachPhelan](https://github.com/ZachPhelan)
+ - [ZeusCraft10](https://github.com/ZeusCraft10)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
