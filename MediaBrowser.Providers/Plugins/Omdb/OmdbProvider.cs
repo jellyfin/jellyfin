@@ -321,10 +321,17 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<RootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            var tempPath = path + $".tmp-{Guid.NewGuid():N}";
+            FileStream jsonFileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (jsonFileStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Atomically move the file to avoid race with concurrent reader oder writer.
+            if (!_fileSystem.MoveFile(tempPath, path, true))
+            {
+                _fileSystem.DeleteFile(tempPath);
             }
 
             return path;
@@ -364,10 +371,17 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<SeasonRootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            var tempPath = path + $".tmp-{Guid.NewGuid():N}";
+            FileStream jsonFileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (jsonFileStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Atomically move the file to avoid race with concurrent reader oder writer.
+            if (!_fileSystem.MoveFile(tempPath, path, true))
+            {
+                _fileSystem.DeleteFile(tempPath);
             }
 
             return path;
