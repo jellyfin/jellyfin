@@ -71,6 +71,17 @@ namespace MediaBrowser.Model.Session
         /// <value>The position ticks.</value>
         public long? PositionTicks { get; set; }
 
+        /// <summary>
+        /// Gets or sets the generic progress state for complex media types.
+        /// </summary>
+        /// <remarks>
+        /// This field stores position information that cannot be represented as simple ticks,
+        /// such as EPUB CFI (Canonical Fragment Identifier) strings for precise ebook locations.
+        /// When set, this takes precedence over <see cref="PositionTicks"/> for media types that support it.
+        /// </remarks>
+        /// <value>The progress state string, or null if not applicable.</value>
+        public string ProgressState { get; set; }
+
         public long? PlaybackStartTimeTicks { get; set; }
 
         /// <summary>
