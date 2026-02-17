@@ -194,8 +194,9 @@ namespace Jellyfin.Server.Extensions
         /// Adds Swagger to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies.</param>
         /// <returns>The updated service collection.</returns>
-        public static IServiceCollection AddJellyfinApiSwagger(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJellyfinApiSwagger(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies)
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
@@ -230,6 +231,26 @@ namespace Jellyfin.Server.Extensions
                 foreach (var xmlFile in xmlFiles)
                 {
                     c.IncludeXmlComments(xmlFile);
+                }
+
+                // Add xml doc files from plugins.
+                foreach (var pluginAssembly in pluginAssemblies)
+                {
+                    var pluginDir = Path.GetDirectoryName(pluginAssembly.Location);
+                    if (string.IsNullOrEmpty(pluginDir))
+                    {
+                        continue;
+                    }
+
+                    var pluginXmlFiles = Directory.EnumerateFiles(
+                        pluginDir,
+                        "*.xml",
+                        SearchOption.TopDirectoryOnly);
+
+                    foreach (var xmlFile in pluginXmlFiles)
+                    {
+                        c.IncludeXmlComments(xmlFile);
+                    }
                 }
 
                 // Order actions by route path, then by http method.

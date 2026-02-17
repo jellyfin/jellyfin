@@ -66,9 +66,10 @@ namespace Jellyfin.Server
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
 
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
+            var pluginAssemblies = _serverApplicationHost.GetApiPluginAssemblies();
+            services.AddJellyfinApi(pluginAssemblies, _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
-            services.AddJellyfinApiSwagger();
+            services.AddJellyfinApiSwagger(pluginAssemblies);
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
