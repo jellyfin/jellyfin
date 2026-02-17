@@ -87,4 +87,8 @@
     <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageVersion Include="xunit" Version="2.9.3" />
   </ItemGroup>
+
+  <ItemGroup>
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.4.5" />
+  </ItemGroup>
 </Project>

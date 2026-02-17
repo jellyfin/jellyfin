@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
   </ItemGroup>
@@ -18,8 +19,6 @@
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="LrcParser" />
     <PackageReference Include="MetaBrainz.MusicBrainz" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="PlaylistsNET" />
     <PackageReference Include="z440.atl.core" />
