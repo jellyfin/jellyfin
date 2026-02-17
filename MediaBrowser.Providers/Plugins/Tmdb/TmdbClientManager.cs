@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -160,53 +159,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a tv show episode group from the TMDb API based on the show id and the display order.
+        /// Gets a tv show episode group from the TMDb API based on the episode group.
         /// </summary>
-        /// <param name="tvShowId">The tv show's TMDb id.</param>
-        /// <param name="displayOrder">The display order.</param>
+        /// <param name="episodeGroupId">The Tmdb episode group.</param>
+        /// <param name="seasonNumber">The season number of the episode group.</param>
         /// <param name="language">The tv show's language.</param>
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show episode group information or null if not found.</returns>
-        private async Task<TvGroupCollection?> GetSeriesGroupAsync(int tvShowId, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvGroup?> GetSeriesGroupAsync(string episodeGroupId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
-            TvGroupType? groupType =
-                string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
-                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
-                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
-                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
-                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
-                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
-                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
-                null;
-
-            if (groupType is null)
-            {
-                return null;
-            }
-
-            var key = $"group-{tvShowId.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvGroupCollection? group))
+            var key = $"group-{episodeGroupId}-{seasonNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
+            if (_memoryCache.TryGetValue(key, out TvGroup? group))
             {
                 return group;
             }
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
-            var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
-
-            if (episodeGroupId is null)
-            {
-                return null;
-            }
-
-            group = await _tmDbClient.GetTvEpisodeGroupsAsync(
+            var groups = await _tmDbClient.GetTvEpisodeGroupsAsync(
                 episodeGroupId,
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
+            group = groups?.Groups?.Find(s => s.Order == seasonNumber);
             if (group is not null)
             {
                 _memoryCache.Set(key, group, TimeSpan.FromHours(CacheDurationInHours));
@@ -252,20 +229,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a movie from the TMDb API based on the tv show's TMDb id.
+        /// Gets an episode from the TMDb API based on the tv show's TMDb id.
         /// </summary>
         /// <param name="tvShowId">The tv show's TMDb id.</param>
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="episodeNumber">The episode number.</param>
-        /// <param name="displayOrder">The display order.</param>
+        /// <param name="episodeGroup">The containing episode group.</param>
         /// <param name="language">The episode's language.</param>
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string? episodeGroup, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
-            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
+            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{episodeGroup}-{language}";
             if (_memoryCache.TryGetValue(key, out TvEpisode? episode))
             {
                 return episode;
@@ -273,12 +250,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
-            if (group is not null)
+            if (!string.IsNullOrWhiteSpace(episodeGroup))
             {
-                var season = group.Groups.Find(s => s.Order == seasonNumber);
-                // Episode order starts at 0
-                var ep = season?.Episodes.Find(e => e.Order == episodeNumber - 1);
+                var group = await GetSeriesGroupAsync(episodeGroup, seasonNumber, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
+                var ep = group?.Episodes.Find(e => e.Order == episodeNumber - 1);
                 if (ep is not null)
                 {
                     seasonNumber = ep.SeasonNumber;
