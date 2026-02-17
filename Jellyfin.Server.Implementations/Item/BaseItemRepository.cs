@@ -1371,31 +1371,31 @@ public sealed class BaseItemRepository
             var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
 
-            var resultQuery = query.Select(e => new
+            var countsByType = itemCountQuery!
+                .GroupBy(f => f.Type)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.Type, x => x.Count);
+
+            var itemCount = new ItemCounts()
             {
-                item = e,
-                // TODO: This is bad refactor!
-                itemCount = new ItemCounts()
-                {
-                    SeriesCount = itemCountQuery!.Count(f => f.Type == seriesTypeName),
-                    EpisodeCount = itemCountQuery!.Count(f => f.Type == episodeTypeName),
-                    MovieCount = itemCountQuery!.Count(f => f.Type == movieTypeName),
-                    AlbumCount = itemCountQuery!.Count(f => f.Type == musicAlbumTypeName),
-                    ArtistCount = itemCountQuery!.Count(f => f.Type == musicArtistTypeName),
-                    SongCount = itemCountQuery!.Count(f => f.Type == audioTypeName),
-                    TrailerCount = itemCountQuery!.Count(f => f.Type == trailerTypeName),
-                }
-            });
+                SeriesCount = countsByType.GetValueOrDefault(seriesTypeName),
+                EpisodeCount = countsByType.GetValueOrDefault(episodeTypeName),
+                MovieCount = countsByType.GetValueOrDefault(movieTypeName),
+                AlbumCount = countsByType.GetValueOrDefault(musicAlbumTypeName),
+                ArtistCount = countsByType.GetValueOrDefault(musicArtistTypeName),
+                SongCount = countsByType.GetValueOrDefault(audioTypeName),
+                TrailerCount = countsByType.GetValueOrDefault(trailerTypeName),
+            };
 
             result.StartIndex = filter.StartIndex ?? 0;
             result.Items =
             [
-                .. resultQuery
+                .. query
                     .AsEnumerable()
                     .Where(e => e is not null)
-                    .Select(e =>
+                        .Select<BaseItemEntity, (BaseItemDto, ItemCounts?)>(e =>
                     {
-                        return (DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount);
+                        return (DeserializeBaseItem(e, filter.SkipDeserialization), itemCount);
                     })
             ];
         }
