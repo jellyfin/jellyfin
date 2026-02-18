@@ -590,6 +590,14 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.MediaSegmentProvider
             }));
 
+            // Filesystem to metadata resolvers
+            var metadataResolverProviders = summary.Plugins.Select(p => p.Type == MetadataPluginType.MetadataResolver && p.Name != null ? p : null);
+            pluginList.AddRange(metadataResolverProviders.Select(i => new MetadataPlugin
+            {
+                Name = i?.Name,
+                Type = MetadataPluginType.MetadataResolver
+            }));
+
             summary.Plugins = pluginList.ToArray();
 
             var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
@@ -610,10 +618,10 @@ namespace MediaBrowser.Providers.Manager
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
 
             // Locals
-            list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
+            list.AddRange(providers.Where(i => i is IMetadataProvider && i is not IRemoteMetadataProvider && i is not ILocalMetadataProvider && i is not ICustomMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
-                Type = MetadataPluginType.LocalMetadataProvider
+                Type = MetadataPluginType.MetadataResolver
             }));
 
             // Fetchers

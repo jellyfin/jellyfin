@@ -671,6 +671,8 @@ namespace Emby.Server.Implementations
 
             _pluginManager.CreatePlugins();
 
+            Resolve<ILibraryManager>().AddScanners(GetExports<IScanner>());
+
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
