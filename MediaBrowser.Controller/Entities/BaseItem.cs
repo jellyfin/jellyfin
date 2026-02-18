@@ -1104,7 +1104,8 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return result.OrderBy(i =>
+            var mediaSourceOptions = ConfigurationManager.Configuration.MediaSourceOptions;
+            var sorted = result.OrderBy(i =>
             {
                 if (i.VideoType == VideoType.VideoFile)
                 {
@@ -1112,9 +1113,33 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return 1;
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i => i, new MediaSourceWidthComparator())
-            .ToArray();
+            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0);
+
+            // Apply preferred resolution if configured
+            if (mediaSourceOptions.PreferredVideoHeight.HasValue)
+            {
+                var preferredHeight = mediaSourceOptions.PreferredVideoHeight.Value;
+                sorted = sorted.ThenBy(i =>
+                {
+                    var height = i.VideoStream?.Height ?? 0;
+                    // Preferred resolution goes first (0), everything else goes after (1)
+                    return Math.Abs(height - preferredHeight) < 10 ? 0 : 1;
+                });
+            }
+
+            // Apply sort direction for remaining items
+            // Note: We sort by width since alternate versions have different paths
+            // and MediaSourceWidthComparator only compares items with the same path
+            if (mediaSourceOptions.SortOrder == Model.Configuration.MediaSourceSortOrder.Ascending)
+            {
+                sorted = sorted.ThenBy(i => i.VideoStream?.Width ?? 0);
+            }
+            else
+            {
+                sorted = sorted.ThenByDescending(i => i.VideoStream?.Width ?? 0);
+            }
+
+            return sorted.ToArray();
         }
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()

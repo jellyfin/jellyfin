@@ -285,6 +285,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
 
     /// <summary>
+    /// Gets or sets the media source options.
+    /// </summary>
+    /// <value>The media source options.</value>
+    public MediaSourceOptions MediaSourceOptions { get; set; } = new MediaSourceOptions();
+
+    /// <summary>
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; }
