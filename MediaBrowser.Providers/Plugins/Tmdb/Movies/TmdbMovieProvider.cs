@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.Find;
+using TMDbLib.Objects.General;
 using TMDbLib.Objects.Search;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
@@ -84,7 +85,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
                     remoteResult.TrySetProviderId(MetadataProvider.Imdb, movie.ImdbId);
 
-                    return new[] { remoteResult };
+                    return [remoteResult];
                 }
             }
 
@@ -116,6 +117,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movieResults = await _tmdbClientManager
                     .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken)
                     .ConfigureAwait(false);
+            }
+
+            if (movieResults is null)
+            {
+                return [];
             }
 
             var len = movieResults.Count;
@@ -158,7 +164,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults.Count > 0)
+                if (searchResults?.Count > 0)
                 {
                     tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
@@ -167,7 +173,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
             {
                 var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-                if (movieResultFromImdbId?.MovieResults.Count > 0)
+                if (movieResultFromImdbId?.MovieResults?.Count > 0)
                 {
                     tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
@@ -193,7 +199,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 OriginalTitle = movieResult.OriginalTitle,
                 Overview = movieResult.Overview?.Replace("\n\n", "\n", StringComparison.InvariantCulture),
                 Tagline = movieResult.Tagline,
-                ProductionLocations = movieResult.ProductionCountries.Select(pc => pc.Name).ToArray()
+                ProductionLocations = movieResult.ProductionCountries?.Select(pc => pc.Name).ToArray() ?? Array.Empty<string>()
             };
             var metadataResult = new MetadataResult<Movie>
             {
@@ -218,14 +224,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
 
-                if (ourRelease is not null)
+                if (ourRelease?.Certification is not null)
                 {
-                    movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(info.MetadataCountryCode, ourRelease.Certification);
                 }
                 else
                 {
                     var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
-                    if (usRelease is not null)
+                    if (usRelease?.Certification is not null)
                     {
                         movie.OfficialRating = usRelease.Certification;
                     }
@@ -242,16 +248,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var genres = movieResult.Genres;
 
-            foreach (var genre in genres.Select(g => g.Name).Trimmed())
+            if (genres is not null)
             {
-                movie.AddGenre(genre);
+                foreach (var genre in genres.Select(g => g.Name).Trimmed())
+                {
+                    movie.AddGenre(genre);
+                }
             }
 
             if (movieResult.Keywords?.Keywords is not null)
             {
-                for (var i = 0; i < movieResult.Keywords.Keywords.Count; i++)
+                foreach (var keyword in movieResult.Keywords.Keywords)
                 {
-                    movie.AddTag(movieResult.Keywords.Keywords[i].Name);
+                    var name = keyword.Name;
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        movie.AddTag(name);
+                    }
                 }
             }
 
