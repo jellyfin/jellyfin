@@ -112,6 +112,17 @@ public interface IItemRepository
 
     ItemCounts GetItemCounts(InternalItemsQuery filter);
 
+    /// <summary>
+    /// Gets item counts for a "by-name" item (Person, MusicArtist, Genre, MusicGenre, Studio, Year)
+    /// using an optimized query that starts from the mapping table instead of scanning all BaseItems.
+    /// </summary>
+    /// <param name="kind">The kind of the name item.</param>
+    /// <param name="id">The ID of the name item.</param>
+    /// <param name="relatedItemKinds">The item kinds to count.</param>
+    /// <param name="accessFilter">A pre-configured query with user access filtering settings.</param>
+    /// <returns>The item counts grouped by type.</returns>
+    ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter);
+
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
 
     QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);

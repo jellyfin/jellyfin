@@ -647,13 +647,13 @@ public class UserLibraryController : BaseJellyfinApiController
             var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
             var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
 
-            if (!hasMetadata)
+            if (performFullRefresh)
             {
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                 {
                     MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ForceSave = performFullRefresh
+                    ForceSave = true
                 };
 
                 await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);

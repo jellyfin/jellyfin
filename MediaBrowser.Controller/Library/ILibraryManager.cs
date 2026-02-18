@@ -707,6 +707,16 @@ namespace MediaBrowser.Controller.Library
         ItemCounts GetItemCounts(InternalItemsQuery query);
 
         /// <summary>
+        /// Gets item counts for a "by-name" item using an optimized query path.
+        /// </summary>
+        /// <param name="kind">The kind of the name item.</param>
+        /// <param name="id">The ID of the name item.</param>
+        /// <param name="relatedItemKinds">The item kinds to count.</param>
+        /// <param name="user">The user for access filtering.</param>
+        /// <returns>The item counts grouped by type.</returns>
+        ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, User? user);
+
+        /// <summary>
         /// Batch-fetches child counts for multiple parent folders.
         /// Returns the count of immediate children (non-recursive) for each parent.
         /// </summary>

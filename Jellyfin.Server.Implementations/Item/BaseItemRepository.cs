@@ -1343,6 +1343,141 @@ public sealed class BaseItemRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        // Look up the item's name/cleanname
+        var item = context.BaseItems.AsNoTracking()
+            .Where(e => e.Id == id)
+            .Select(e => new { e.Name, e.CleanName })
+            .FirstOrDefault();
+
+        if (item is null)
+        {
+            return new ItemCounts();
+        }
+
+        // Build the base query starting from the mapping table (flipped join order)
+        IQueryable<BaseItemEntity> baseQuery;
+        switch (kind)
+        {
+            case BaseItemKind.Person:
+                baseQuery = context.PeopleBaseItemMap
+                    .AsNoTracking()
+                    .Where(m => m.People.Name == item.Name)
+                    .Select(m => m.Item);
+                break;
+            case BaseItemKind.MusicArtist:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Genre:
+            case BaseItemKind.MusicGenre:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && ivm.ItemValue.Type == ItemValueType.Genre)
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Studio:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && ivm.ItemValue.Type == ItemValueType.Studios)
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Year:
+                if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
+                {
+                    baseQuery = context.BaseItems
+                        .AsNoTracking()
+                        .Where(e => e.ProductionYear == year);
+                }
+                else
+                {
+                    return new ItemCounts();
+                }
+
+                break;
+            default:
+                return new ItemCounts();
+        }
+
+        // Apply type filter
+        var typeNames = relatedItemKinds.Select(k => _itemTypeLookup.BaseItemKindNames[k]).ToArray();
+        baseQuery = baseQuery.Where(e => typeNames.Contains(e.Type));
+
+        // Apply access filtering (parental ratings, blocked/allowed tags, library access)
+        baseQuery = ApplyAccessFiltering(context, baseQuery, accessFilter);
+
+        // Group by type and count
+        var counts = baseQuery
+            .GroupBy(x => x.Type)
+            .Select(x => new { x.Key, Count = x.Count() })
+            .ToArray();
+
+        var lookup = _itemTypeLookup.BaseItemKindNames;
+        var result = new ItemCounts
+        {
+            ItemCount = counts.Sum(c => c.Count)
+        };
+
+        foreach (var count in counts)
+        {
+            if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
+            {
+                result.AlbumCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicArtist], StringComparison.Ordinal))
+            {
+                result.ArtistCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Episode], StringComparison.Ordinal))
+            {
+                result.EpisodeCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Movie], StringComparison.Ordinal))
+            {
+                result.MovieCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicVideo], StringComparison.Ordinal))
+            {
+                result.MusicVideoCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.LiveTvProgram], StringComparison.Ordinal))
+            {
+                result.ProgramCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Series], StringComparison.Ordinal))
+            {
+                result.SeriesCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Audio], StringComparison.Ordinal))
+            {
+                result.SongCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Trailer], StringComparison.Ordinal))
+            {
+                result.TrailerCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.BoxSet], StringComparison.Ordinal))
+            {
+                result.BoxSetCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Book], StringComparison.Ordinal))
+            {
+                result.BookCount = count.Count;
+            }
+        }
+
+        return result;
+    }
+
 #pragma warning disable CA1307 // Specify StringComparison for clarity
     /// <summary>
     /// Gets the type.

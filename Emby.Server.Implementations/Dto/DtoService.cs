@@ -418,37 +418,7 @@ namespace Emby.Server.Implementations.Dto
                 return;
             }
 
-            var query = new InternalItemsQuery(user)
-            {
-                Recursive = true,
-                DtoOptions = new DtoOptions(false) { EnableImages = false },
-                IncludeItemTypes = relatedItemKinds
-            };
-
-            switch (dto.Type)
-            {
-                case BaseItemKind.Genre:
-                case BaseItemKind.MusicGenre:
-                    query.GenreIds = [dto.Id];
-                    break;
-                case BaseItemKind.MusicArtist:
-                    query.ArtistIds = [dto.Id];
-                    break;
-                case BaseItemKind.Person:
-                    query.PersonIds = [dto.Id];
-                    break;
-                case BaseItemKind.Studio:
-                    query.StudioIds = [dto.Id];
-                    break;
-                case BaseItemKind.Year
-                    when int.TryParse(dto.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year):
-                    query.Years = [year];
-                    break;
-                default:
-                    return;
-            }
-
-            var counts = _libraryManager.GetItemCounts(query);
+            var counts = _libraryManager.GetItemCountsForNameItem(dto.Type, dto.Id, relatedItemKinds, user);
 
             dto.AlbumCount = counts.AlbumCount;
             dto.ArtistCount = counts.ArtistCount;
