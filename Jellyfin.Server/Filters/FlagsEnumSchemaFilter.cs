@@ -1,5 +1,5 @@
 using System;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters;
@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Filters;
 public class FlagsEnumSchemaFilter : ISchemaFilter
 {
     /// <inheritdoc />
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
         var type = context.Type.IsEnum ? context.Type : Nullable.GetUnderlyingType(context.Type);
         if (type is null || !type.IsEnum)
@@ -29,11 +29,16 @@ public class FlagsEnumSchemaFilter : ISchemaFilter
             return;
         }
 
+        if (schema is not OpenApiSchema concreteSchema)
+        {
+            return;
+        }
+
         if (context.MemberInfo is null)
         {
             // Processing the enum definition itself - ensure it's type "string" not "integer"
-            schema.Type = "string";
-            schema.Format = null;
+            concreteSchema.Type = JsonSchemaType.String;
+            concreteSchema.Format = null;
         }
         else
         {
@@ -43,11 +48,11 @@ public class FlagsEnumSchemaFilter : ISchemaFilter
 
             // Flags enums should be represented as arrays referencing the enum schema
             // since multiple values can be combined
-            schema.Type = "array";
-            schema.Format = null;
-            schema.Enum = null;
-            schema.AllOf = null;
-            schema.Items = enumSchema;
+            concreteSchema.Type = JsonSchemaType.Array;
+            concreteSchema.Format = null;
+            concreteSchema.Enum = null;
+            concreteSchema.AllOf = null;
+            concreteSchema.Items = enumSchema;
         }
     }
 }
