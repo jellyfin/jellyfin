@@ -465,7 +465,36 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         SqliteConnection.ClearAllPools();
 
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
-        File.Move(libraryDbPath, libraryDbPath + ".old", true);
+        var libraryDbBackupPath = libraryDbPath + ".old";
+
+        if (File.Exists(libraryDbBackupPath))
+        {
+            File.Delete(libraryDbBackupPath);
+        }
+
+        using (var source = new SqliteConnection($"Filename={libraryDbPath}"))
+        using (var destination = new SqliteConnection($"Filename={libraryDbBackupPath}"))
+        {
+            source.Open();
+            destination.Open();
+            source.BackupDatabase(destination);
+        }
+
+        SqliteConnection.ClearAllPools();
+
+        File.Delete(libraryDbPath);
+
+        var walPath = libraryDbPath + "-wal";
+        if (File.Exists(walPath))
+        {
+            File.Delete(walPath);
+        }
+
+        var shmPath = libraryDbPath + "-shm";
+        if (File.Exists(shmPath))
+        {
+            File.Delete(shmPath);
+        }
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
