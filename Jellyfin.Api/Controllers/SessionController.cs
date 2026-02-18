@@ -345,7 +345,7 @@ public class SessionController : BaseJellyfinApiController
     [HttpPost("Sessions/Capabilities")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> PostCapabilities(
+    public async Task<ActionResult> UpdateCapabilities(
         [FromQuery] string? id,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] playableMediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] GeneralCommandType[] supportedCommands,
@@ -377,7 +377,7 @@ public class SessionController : BaseJellyfinApiController
     [HttpPost("Sessions/Capabilities/Full")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> PostFullCapabilities(
+    public async Task<ActionResult> UpdateFullCapabilities(
         [FromQuery] string? id,
         [FromBody, Required] ClientCapabilitiesDto capabilities)
     {
