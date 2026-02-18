@@ -464,37 +464,18 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         SqliteConnection.ClearAllPools();
 
-        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
-        var libraryDbBackupPath = libraryDbPath + ".old";
-
-        if (File.Exists(libraryDbBackupPath))
+        using (var checkpointConnection = new SqliteConnection($"Filename={libraryDbPath}"))
         {
-            File.Delete(libraryDbBackupPath);
-        }
-
-        using (var source = new SqliteConnection($"Filename={libraryDbPath}"))
-        using (var destination = new SqliteConnection($"Filename={libraryDbBackupPath}"))
-        {
-            source.Open();
-            destination.Open();
-            source.BackupDatabase(destination);
+            checkpointConnection.Open();
+            using var cmd = checkpointConnection.CreateCommand();
+            cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            cmd.ExecuteNonQuery();
         }
 
         SqliteConnection.ClearAllPools();
 
-        File.Delete(libraryDbPath);
-
-        var walPath = libraryDbPath + "-wal";
-        if (File.Exists(walPath))
-        {
-            File.Delete(walPath);
-        }
-
-        var shmPath = libraryDbPath + "-shm";
-        if (File.Exists(shmPath))
-        {
-            File.Delete(shmPath);
-        }
+        _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
+        File.Move(libraryDbPath, libraryDbPath + ".old", true);
     }
 
     private DatabaseMigrationStep GetPreparedDbContext(string operationName)
