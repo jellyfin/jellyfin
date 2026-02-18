@@ -1,12 +1,11 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Database.Implementations.Entities;
@@ -78,7 +77,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> SupportedInputFormats =>
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        new[]
         {
             "tiff",
             "tif",
@@ -106,7 +105,7 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             "pkm",
             "wbmp",
             "avif"
-        };
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
     public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;

@@ -37,7 +37,7 @@ namespace Emby.Naming.AudioBook
             var extension = Path.GetExtension(path);
 
             // Check supported extensions
-            if (!_options.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            if (!_options.AudioFileExtensions.Contains(extension))
             {
                 return null;
             }

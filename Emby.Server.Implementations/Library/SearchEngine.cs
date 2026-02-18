@@ -53,12 +53,9 @@ namespace Emby.Server.Implementations.Library
                 results);
         }
 
-        private static void AddIfMissing(List<BaseItemKind> list, BaseItemKind value)
+        private static void AddIfMissing(HashSet<BaseItemKind> item, BaseItemKind value)
         {
-            if (!list.Contains(value))
-            {
-                list.Add(value);
-            }
+            item.Add(value);
         }
 
         /// <summary>
@@ -76,8 +73,8 @@ namespace Emby.Server.Implementations.Library
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();
 
-            var excludeItemTypes = query.ExcludeItemTypes.ToList();
-            var includeItemTypes = query.IncludeItemTypes.ToList();
+            var excludeItemTypes = query.ExcludeItemTypes.ToHashSet();
+            var includeItemTypes = query.IncludeItemTypes.ToHashSet();
 
             excludeItemTypes.Add(BaseItemKind.Year);
             excludeItemTypes.Add(BaseItemKind.Folder);

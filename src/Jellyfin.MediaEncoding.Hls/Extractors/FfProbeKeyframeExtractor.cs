@@ -36,7 +36,7 @@ public class FfProbeKeyframeExtractor : IKeyframeExtractor
     /// <inheritdoc />
     public bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
-        if (!_namingOptions.VideoFileExtensions.Contains(Path.GetExtension(filePath.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        if (!_namingOptions.VideoFileExtensions.Contains(Path.GetExtension(filePath)))
         {
             keyframeData = null;
             return false;

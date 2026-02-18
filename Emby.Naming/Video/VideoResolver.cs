@@ -59,10 +59,10 @@ namespace Emby.Naming.Video
 
             if (!isDirectory)
             {
-                var extension = Path.GetExtension(path.AsSpan());
+                var extension = Path.GetExtension(path);
 
                 // Check supported extensions
-                if (!namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                if (!namingOptions.VideoFileExtensions.Contains(extension))
                 {
                     // It's not supported. Check stub extensions
                     if (!StubResolver.TryResolveFile(path, namingOptions, out stubType))
@@ -118,8 +118,7 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file.</returns>
         public static bool IsVideoFile(string path, NamingOptions namingOptions)
         {
-            var extension = Path.GetExtension(path.AsSpan());
-            return namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
+            return namingOptions.VideoFileExtensions.Contains(Path.GetExtension(path));
         }
 
         /// <summary>
