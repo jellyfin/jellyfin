@@ -28,20 +28,24 @@ namespace Jellyfin.Server.Integration.Tests
             using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
+            return await AuthenticateUserByNameAsync(client, user!.Name!, user.Password!);
+        }
+
+        public static async Task<string> AuthenticateUserByNameAsync(HttpClient client, string username, string password)
+        {
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/Users/AuthenticateByName");
             httpRequest.Headers.TryAddWithoutValidation(AuthHeaderName, DummyAuthHeader);
             httpRequest.Content = JsonContent.Create(
                 new AuthenticateUserByName()
                 {
-                    Username = user!.Name,
-                    Pw = user.Password,
+                    Username = username,
+                    Pw = password,
                 },
-                options: jsonOptions);
+                options: JsonDefaults.Options);
 
             using var authResponse = await client.SendAsync(httpRequest);
             authResponse.EnsureSuccessStatusCode();
-
-            var auth = await authResponse.Content.ReadFromJsonAsync<AuthenticationResultDto>(jsonOptions);
+            var auth = await authResponse.Content.ReadFromJsonAsync<AuthenticationResultDto>(JsonDefaults.Options);
 
             return auth!.AccessToken;
         }
