@@ -321,7 +321,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(outputPath))
+                if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                 {
                     await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -423,9 +423,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
-            else if (!File.Exists(outputPath))
+            else if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
             {
                 failed = true;
+
+                try
+                {
+                    _logger.LogWarning("Deleting converted subtitle due to failure: {Path}", outputPath);
+                    _fileSystem.DeleteFile(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting converted subtitle {Path}", outputPath);
+                }
             }
 
             if (failed)
@@ -499,7 +512,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
-                    if (File.Exists(outputPath))
+                    if (File.Exists(outputPath) && _fileSystem.GetFileInfo(outputPath).Length > 0)
                     {
                         releaser.Dispose();
                         continue;
@@ -713,10 +726,24 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 foreach (var outputPath in outputPaths)
                 {
-                    if (!File.Exists(outputPath))
+                    if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                     {
                         _logger.LogError("ffmpeg subtitle extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
                         failed = true;
+
+                        try
+                        {
+                            _logger.LogWarning("Deleting extracted subtitle due to failure: {Path}", outputPath);
+                            _fileSystem.DeleteFile(outputPath);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
+                        }
+
                         continue;
                     }
 
@@ -755,7 +782,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(outputPath))
+                if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                 {
                     var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
@@ -857,9 +884,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
                 }
             }
-            else if (!File.Exists(outputPath))
+            else if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
             {
                 failed = true;
+
+                try
+                {
+                    _logger.LogWarning("Deleting extracted subtitle due to failure: {Path}", outputPath);
+                    _fileSystem.DeleteFile(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
+                }
             }
 
             if (failed)
