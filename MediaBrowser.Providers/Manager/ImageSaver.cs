@@ -360,7 +360,7 @@ namespace MediaBrowser.Providers.Manager
         /// </exception>
         private ItemImageInfo GetCurrentImage(BaseItem item, ImageType type, int imageIndex)
         {
-            return item.GetImageInfo(type, imageIndex);
+            return item.GetImageInfo(type, imageIndex, false);
         }
 
         /// <summary>
