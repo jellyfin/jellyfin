@@ -1,87 +1,20 @@
-﻿name: ABI Compatibility
+name: ABI Compatibility
+
 on:
-  pull_request_target:
+  workflow_run:
+    workflows: ["ABI Compatibility Build"]
+    types: [completed]
 
 permissions: {}
 
 jobs:
-  abi-head:
-    name: ABI - HEAD
-    runs-on: ubuntu-latest
-    permissions: read-all
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Build
-        run: |
-          dotnet build Jellyfin.Server -o ./out
-
-      - name: Upload Head
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: abi-head
-          retention-days: 14
-          if-no-files-found: error
-          path: out/
-
-  abi-base:
-    name: ABI - BASE
-    if: ${{ github.base_ref != '' }}
-    runs-on: ubuntu-latest
-    permissions: read-all
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Checkout common ancestor
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }}
-          git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
-          ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
-          git checkout --progress --force $ANCESTOR_REF
-
-      - name: Build
-        run: |
-          dotnet build Jellyfin.Server -o ./out
-
-      - name: Upload Head
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: abi-base
-          retention-days: 14
-          if-no-files-found: error
-          path: out/
-
   abi-diff:
     permissions:
-      pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
+      pull-requests: write
 
     name: ABI - Difference
-    if: ${{ github.event_name == 'pull_request_target' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
     runs-on: ubuntu-latest
-    needs:
-      - abi-head
-      - abi-base
 
     steps:
       - name: Download abi-head
@@ -89,12 +22,16 @@ jobs:
         with:
           name: abi-head
           path: abi-head
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download abi-base
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: abi-base
           path: abi-base
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup ApiCompat
         run: |
@@ -118,7 +55,7 @@ jobs:
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         id: find-comment
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.workflow_run.pull_requests[0].number }}
           direction: last
           body-includes: abi-diff-workflow-comment
 
@@ -126,7 +63,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: ${{ steps.diff.outputs.body != '' }}
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.workflow_run.pull_requests[0].number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -145,7 +82,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: ${{ steps.diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.workflow_run.pull_requests[0].number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
           token: ${{ secrets.JF_BOT_TOKEN }}
