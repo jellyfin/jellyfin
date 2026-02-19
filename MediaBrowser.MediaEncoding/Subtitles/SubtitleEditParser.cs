@@ -113,17 +113,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     var tempInstance = (SubtitleFormat)Activator.CreateInstance(type, true)!;
                     var extension = tempInstance.Extension.TrimStart('.');
+                    var alternateExtensions = tempInstance.AlternateExtensions.Select(e => e.TrimStart('.')).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+
                     if (!string.IsNullOrEmpty(extension))
                     {
-                        // Store only the type, we will instantiate from it later
-                        if (!subtitleFormatTypes.TryGetValue(extension, out var subtitleFormatTypesForExtension))
-                        {
-                            subtitleFormatTypes[extension] = [type];
-                        }
-                        else
-                        {
-                            subtitleFormatTypesForExtension.Add(type);
-                        }
+                        AddType(subtitleFormatTypes, extension, type);
+                    }
+
+                    foreach (var ext in alternateExtensions)
+                    {
+                        AddType(subtitleFormatTypes, ext, type);
                     }
                 }
                 catch (Exception ex)
@@ -133,6 +132,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             return subtitleFormatTypes;
+        }
+
+        private static void AddType(Dictionary<string, List<Type>> subtitleFormatTypes, string extension, Type type)
+        {
+            if (!subtitleFormatTypes.TryGetValue(extension, out var subtitleFormatTypesForExtension))
+            {
+                // Store only the type, we will instantiate from it later
+                subtitleFormatTypes[extension] = [type];
+            }
+            else
+            {
+                subtitleFormatTypesForExtension.Add(type);
+            }
         }
     }
 }

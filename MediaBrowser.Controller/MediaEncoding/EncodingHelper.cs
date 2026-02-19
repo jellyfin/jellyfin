@@ -1831,11 +1831,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ":fontsdir='{0}'",
                 _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
-            if (state.SubtitleStream.IsExternal)
+            var isTtml = string.Equals(state.SubtitleStream.Codec, "ttml", StringComparison.OrdinalIgnoreCase);
+
+            if (state.SubtitleStream.IsExternal || isTtml)
             {
+                var effectiveSubtitlePath = _subtitleEncoder.GetSubtitleFilePath(
+                    state.SubtitleStream,
+                    state.MediaSource,
+                    CancellationToken.None).GetAwaiter().GetResult();
+
                 var charsetParam = string.Empty;
 
-                if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
+                if (state.SubtitleStream.IsExternal && !string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
                     var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(
                             state.SubtitleStream,
@@ -1852,7 +1859,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "subtitles=f='{0}'{1}{2}{3}{4}{5}",
-                    _mediaEncoder.EscapeSubtitleFilterPath(state.SubtitleStream.Path),
+                    _mediaEncoder.EscapeSubtitleFilterPath(effectiveSubtitlePath),
                     charsetParam,
                     alphaParam,
                     sub2videoParam,
@@ -1861,9 +1868,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var subtitlePath = _subtitleEncoder.GetSubtitleFilePath(
-                    state.SubtitleStream,
-                    state.MediaSource,
-                    CancellationToken.None).GetAwaiter().GetResult();
+                state.SubtitleStream,
+                state.MediaSource,
+                CancellationToken.None).GetAwaiter().GetResult();
 
             return string.Format(
                 CultureInfo.InvariantCulture,
