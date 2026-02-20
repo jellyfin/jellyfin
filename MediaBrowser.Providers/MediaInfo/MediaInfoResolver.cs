@@ -305,6 +305,29 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
+        /// Returns the external chapter file infos for the given video.
+        /// </summary>
+        /// <param name="video">The <see cref="Video"/> object to search external files for.</param>
+        /// <returns>The external chapter file path.</returns>
+        public static string? GetExternalChapterFile(
+            Video video)
+        {
+            string? xmlFilePath = null;
+
+            // Look for the XML Chapter file.
+            string[] matchingFiles = Directory.GetFiles(video.ContainingFolderPath, "*.chapters.xml");
+            xmlFilePath = matchingFiles.FirstOrDefault(f =>
+            {
+                ReadOnlySpan<char> fileName = Path.GetFileName(f.AsSpan());
+                ReadOnlySpan<char> expectedFileName = video.FileNameWithoutExtension;
+                return fileName.StartsWith(expectedFileName, StringComparison.Ordinal)
+                    && fileName.Slice(expectedFileName.Length).SequenceEqual(".chapters.xml");
+            });
+
+            return xmlFilePath;
+        }
+
+        /// <summary>
         /// Returns the media info of the given file.
         /// </summary>
         /// <param name="path">The path to the file.</param>
