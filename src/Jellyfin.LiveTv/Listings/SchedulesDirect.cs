@@ -42,6 +42,7 @@ namespace Jellyfin.LiveTv.Listings
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
+        private bool _accountError;
         private bool _disposed = false;
 
         public SchedulesDirect(
@@ -546,7 +547,13 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
-            // Avoid hammering SD
+            // Permanent account error — SD is disabled for this server lifetime.
+            if (_accountError)
+            {
+                return null;
+            }
+
+            // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
             if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
             {
                 return null;
@@ -579,7 +586,13 @@ namespace Jellyfin.LiveTv.Listings
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
+                    // For 4xx errors not already handled by Request<T>'s SD code logic
+                    // (e.g. unparseable response from the /token endpoint), apply a
+                    // temporary backoff to avoid hammering SD.
+                    if (!_accountError
+                        && ex.StatusCode.HasValue
+                        && (int)ex.StatusCode.Value >= 400
+                        && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
                         _lastErrorResponse = DateTime.UtcNow;
@@ -605,27 +618,70 @@ namespace Jellyfin.LiveTv.Listings
                 return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!enableRetry || (int)response.StatusCode >= 500)
-            {
-                _logger.LogError(
-                    "Request to {Url} failed with response {Response}",
-                    message.RequestUri,
-                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                throw new HttpRequestException(
-                    string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
-                    null,
-                    response.StatusCode);
+            // Try to extract the Schedules Direct error code from the response body.
+            int? sdCode = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(responseBody);
+                if (doc.RootElement.TryGetProperty("code", out var codeProp) && codeProp.TryGetInt32(out var parsedCode))
+                {
+                    sdCode = parsedCode;
+                }
+            }
+            catch (JsonException)
+            {
+                // Response body is not valid JSON; sdCode stays null.
             }
 
-            _tokens.Clear();
-            using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
-            retryMessage.Content = message.Content;
-            retryMessage.Headers.TryAddWithoutValidation(
-                "token",
-                await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
+            _logger.LogError(
+                "Request to {Url} failed with HTTP {StatusCode}, SD code {SdCode}: {Response}",
+                message.RequestUri,
+                (int)response.StatusCode,
+                sdCode?.ToString(CultureInfo.InvariantCulture) ?? "N/A",
+                responseBody);
 
-            return await Request<T>(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            if (sdCode is 4001 or 4003 or 4004 or 4005 or 4008)
+            {
+                // Permanent account errors — disable SD for this server lifetime.
+                // 4001=invalid user
+                // 4003=invalid hash
+                // 4004=account locked/disabled
+                // 4005=account expired
+                // 4008=password required
+                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart", sdCode);
+                _tokens.Clear();
+                _accountError = true;
+            }
+            else if (sdCode is 4009 or 4010)
+            {
+                // Transient login errors — back off for 30 minutes, then allow retry.
+                // 4009=max login attempts
+                // 4010=temporary lockout
+                _tokens.Clear();
+                _lastErrorResponse = DateTime.UtcNow;
+            }
+            else if (enableRetry
+                && (int)response.StatusCode < 500
+                && (sdCode == 4006 || (response.StatusCode == HttpStatusCode.Forbidden && sdCode is null)))
+            {
+                // 4006 = token expired — clear tokens and retry with a fresh token.
+                // Also retry on 403 with no parseable SD code (legacy/unexpected auth failure).
+                _tokens.Clear();
+                using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
+                retryMessage.Content = message.Content;
+                retryMessage.Headers.TryAddWithoutValidation(
+                    "token",
+                    await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
+
+                return await Request<T>(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            }
+
+            throw new HttpRequestException(
+                string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
+                null,
+                response.StatusCode);
         }
 
         private async Task<string> GetTokenInternal(
@@ -700,13 +756,6 @@ namespace Jellyfin.LiveTv.Listings
                 if (ex.StatusCode is HttpStatusCode.BadRequest)
                 {
                     return false;
-                }
-
-                // Clear tokens on any client error to avoid hammering SD with stale credentials
-                if (ex.StatusCode.HasValue && (int)ex.StatusCode.Value >= 400 && (int)ex.StatusCode.Value < 500)
-                {
-                    _tokens.Clear();
-                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
