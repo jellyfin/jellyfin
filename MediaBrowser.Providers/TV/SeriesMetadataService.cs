@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -201,6 +202,26 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             false);
     }
 
+    private static bool NeedsVirtualSeason(Episode episode, HashSet<Guid> physicalSeasonIds, HashSet<string> physicalSeasonPaths)
+    {
+        // Episode has a known season number, needs a season
+        if (episode.ParentIndexNumber.HasValue)
+        {
+            return true;
+        }
+
+        // Not yet processed
+        if (episode.SeasonId.IsEmpty())
+        {
+            return false;
+        }
+
+        // Episode has been processed, only needs a virtual season if it isn't
+        // already linked to a known physical season by ID or path
+        return !physicalSeasonIds.Contains(episode.SeasonId)
+            && !physicalSeasonPaths.Contains(System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty);
+    }
+
     /// <summary>
     /// Creates seasons for all episodes if they don't exist.
     /// If no season number can be determined, a dummy season will be created.
@@ -212,8 +233,20 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
         var seasons = seriesChildren.OfType<Season>().ToList();
+
+        var physicalSeasonIds = seasons
+            .Where(e => e.LocationType != LocationType.Virtual)
+            .Select(e => e.Id)
+            .ToHashSet();
+
+        var physicalSeasonPathSet = seasons
+            .Where(e => e.LocationType != LocationType.Virtual && !string.IsNullOrEmpty(e.Path))
+            .Select(e => e.Path)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var uniqueSeasonNumbers = seriesChildren
             .OfType<Episode>()
+            .Where(e => NeedsVirtualSeason(e, physicalSeasonIds, physicalSeasonPathSet))
             .Select(e => e.ParentIndexNumber >= 0 ? e.ParentIndexNumber : null)
             .Distinct();
 
