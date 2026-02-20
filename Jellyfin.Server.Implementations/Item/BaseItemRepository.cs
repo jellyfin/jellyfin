@@ -375,29 +375,28 @@ public sealed class BaseItemRepository
         // Find the top N group keys ordered by most recent DateCreated.
         // Movies group by PresentationUniqueKey (alternate versions like 4K/1080p share a key).
         // Music groups by Album.
-        List<string> topGroupKeys;
+        Expression<Func<BaseItemEntity, bool>> groupKeyFilter;
+        Expression<Func<BaseItemEntity, string?>> groupKeySelector;
+
         if (collectionType is CollectionType.movies)
         {
-            topGroupKeys = baseQuery
-                .Where(e => e.PresentationUniqueKey != null)
-                .GroupBy(e => e.PresentationUniqueKey)
-                .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
-                .OrderByDescending(g => g.MaxDate)
-                .Take(limit)
-                .Select(g => g.GroupKey)
-                .ToList();
+            groupKeyFilter = e => e.PresentationUniqueKey != null;
+            groupKeySelector = e => e.PresentationUniqueKey;
         }
         else
         {
-            topGroupKeys = baseQuery
-                .Where(e => e.Album != null)
-                .GroupBy(e => e.Album)
-                .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
-                .OrderByDescending(g => g.MaxDate)
-                .Take(limit)
-                .Select(g => g.GroupKey)
-                .ToList();
+            groupKeyFilter = e => e.Album != null;
+            groupKeySelector = e => e.Album;
         }
+
+        var topGroupKeys = baseQuery
+            .Where(groupKeyFilter)
+            .GroupBy(groupKeySelector)
+            .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
+            .OrderByDescending(g => g.MaxDate)
+            .Take(limit)
+            .Select(g => g.GroupKey)
+            .ToList();
 
         // Get only the first (most recent) item ID per group using a lightweight projection,
         // then fetch full entities only for those items. This avoids loading all versions/tracks
@@ -1422,13 +1421,13 @@ public sealed class BaseItemRepository
             .ToArray();
 
         var lookup = _itemTypeLookup.BaseItemKindNames;
-        var result = new ItemCounts
-        {
-            ItemCount = counts.Sum(c => c.Count)
-        };
+        var result = new ItemCounts();
+        var totalCount = 0;
 
         foreach (var count in counts)
         {
+            totalCount += count.Count;
+
             if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
             {
                 result.AlbumCount = count.Count;
@@ -1474,6 +1473,8 @@ public sealed class BaseItemRepository
                 result.BookCount = count.Count;
             }
         }
+
+        result.ItemCount = totalCount;
 
         return result;
     }
