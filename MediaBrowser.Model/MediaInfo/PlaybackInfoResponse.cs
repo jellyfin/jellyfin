@@ -35,5 +35,12 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The error code.</value>
         public PlaybackErrorCode? ErrorCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optimal media source ID based on device capabilities and network conditions.
+        /// Clients should use this source for automatic playback when available.
+        /// </summary>
+        /// <value>The optimal media source identifier.</value>
+        public string? OptimalMediaSourceId { get; set; }
     }
 }

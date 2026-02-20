@@ -313,6 +313,20 @@ public class DynamicHlsHelper
             AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
         }
 
+        // Add variants for pre-encoded alternate versions (bitrate ladder support)
+        // This enables true ABR switching between different source files mid-stream
+        if (!isLiveStream && enableAdaptiveBitrateStreaming)
+        {
+            await AppendAlternateSourceVariants(
+                builder,
+                state,
+                streamingRequest,
+                baseUrl,
+                playlistQuery,
+                subtitleGroup,
+                cancellationTokenSource.Token).ConfigureAwait(false);
+        }
+
         if (!isLiveStream && (state.VideoRequest?.EnableTrickplay ?? false))
         {
             var sourceId = Guid.Parse(state.Request.MediaSourceId);
@@ -353,6 +367,245 @@ public class DynamicHlsHelper
         builder.Append(playlistBuilder);
 
         return playlistBuilder;
+    }
+
+    /// <summary>
+    /// Appends HLS variants for pre-encoded alternate versions of the media.
+    /// This enables true adaptive bitrate streaming by allowing clients to switch
+    /// between different pre-encoded source files mid-stream.
+    /// </summary>
+    /// <param name="builder">StringBuilder to append variants to.</param>
+    /// <param name="state">Current stream state.</param>
+    /// <param name="streamingRequest">Original streaming request.</param>
+    /// <param name="baseUrl">Base URL for variant playlists.</param>
+    /// <param name="baseQuery">Base query parameters.</param>
+    /// <param name="subtitleGroup">Subtitle group name if applicable.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    private async Task AppendAlternateSourceVariants(
+        StringBuilder builder,
+        StreamState state,
+        StreamingRequestDto streamingRequest,
+        string baseUrl,
+        Dictionary<string, Microsoft.Extensions.Primitives.StringValues> baseQuery,
+        string? subtitleGroup,
+        CancellationToken cancellationToken)
+    {
+        // Get the item to retrieve all available media sources
+        var item = _libraryManager.GetItemById<MediaBrowser.Controller.Entities.BaseItem>(streamingRequest.Id);
+        if (item is null)
+        {
+            return;
+        }
+
+        // Get all playback media sources for this item
+        var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(
+            item,
+            state.User,
+            allowMediaProbe: false,
+            enablePathSubstitution: true,
+            cancellationToken).ConfigureAwait(false);
+
+        // Skip if there's only one source (no alternates)
+        if (mediaSources.Count <= 1)
+        {
+            return;
+        }
+
+        var currentSourceId = state.MediaSource?.Id;
+
+        // Sort sources by bitrate descending for proper ABR ladder
+        var sortedSources = mediaSources
+            .Where(s => s.Id != currentSourceId) // Exclude current source (already added)
+            .Where(s => s.VideoStream is not null) // Only video sources
+            .OrderByDescending(s => s.Bitrate ?? 0)
+            .ToList();
+
+        foreach (var source in sortedSources)
+        {
+            var videoStream = source.VideoStream;
+            if (videoStream is null)
+            {
+                continue;
+            }
+
+            // Calculate total bitrate for this source
+            var videoBitrate = source.Bitrate ?? videoStream.BitRate ?? 0;
+            var audioBitrate = source.GetDefaultAudioStream(null)?.BitRate ?? 0;
+            var sourceTotalBitrate = (int)(videoBitrate > 0 ? videoBitrate : (audioBitrate * 5)); // Estimate if not available
+
+            if (sourceTotalBitrate <= 0)
+            {
+                continue;
+            }
+
+            // Build variant query with this source's MediaSourceId
+            var variantQuery = new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>(baseQuery)
+            {
+                ["MediaSourceId"] = source.Id
+            };
+
+            var variantUrl = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(baseUrl, variantQuery);
+
+            // Build the variant entry manually to use source's actual properties
+            AppendAlternateSourcePlaylistEntry(builder, source, videoStream, variantUrl, sourceTotalBitrate, subtitleGroup);
+        }
+    }
+
+    /// <summary>
+    /// Appends a single HLS variant entry for an alternate source.
+    /// </summary>
+    private void AppendAlternateSourcePlaylistEntry(
+        StringBuilder builder,
+        MediaBrowser.Model.Dto.MediaSourceInfo source,
+        MediaBrowser.Model.Entities.MediaStream videoStream,
+        string url,
+        int bitrate,
+        string? subtitleGroup)
+    {
+        var playlistBuilder = new StringBuilder();
+        playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+            .Append(",AVERAGE-BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture));
+
+        // Video range
+        if (videoStream.VideoRange != VideoRange.Unknown)
+        {
+            var videoRange = videoStream.VideoRange;
+            var videoRangeType = videoStream.VideoRangeType;
+
+            if (videoRange == VideoRange.SDR)
+            {
+                playlistBuilder.Append(",VIDEO-RANGE=SDR");
+            }
+            else if (videoRange == VideoRange.HDR)
+            {
+                switch (videoRangeType)
+                {
+                    case VideoRangeType.HLG:
+                    case VideoRangeType.DOVIWithHLG:
+                        playlistBuilder.Append(",VIDEO-RANGE=HLG");
+                        break;
+                    default:
+                        playlistBuilder.Append(",VIDEO-RANGE=PQ");
+                        break;
+                }
+            }
+        }
+
+        // Codecs - build from actual source properties
+        var codecString = GetCodecStringForSource(source, videoStream);
+        if (!string.IsNullOrEmpty(codecString))
+        {
+            playlistBuilder.Append(",CODECS=\"")
+                .Append(codecString)
+                .Append('"');
+        }
+
+        // Resolution
+        if (videoStream.Width.HasValue && videoStream.Height.HasValue)
+        {
+            playlistBuilder.Append(",RESOLUTION=")
+                .Append(videoStream.Width.Value.ToString(CultureInfo.InvariantCulture))
+                .Append('x')
+                .Append(videoStream.Height.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        // Frame rate
+        if (videoStream.RealFrameRate.HasValue)
+        {
+            playlistBuilder.Append(",FRAME-RATE=")
+                .Append(videoStream.RealFrameRate.Value.ToString("0.000", CultureInfo.InvariantCulture));
+        }
+
+        if (!string.IsNullOrWhiteSpace(subtitleGroup))
+        {
+            playlistBuilder.Append(",SUBTITLES=\"")
+                .Append(subtitleGroup)
+                .Append('"');
+        }
+
+        playlistBuilder.Append(Environment.NewLine);
+        playlistBuilder.AppendLine(url);
+        builder.Append(playlistBuilder);
+    }
+
+    /// <summary>
+    /// Builds an HLS codec string from source properties.
+    /// </summary>
+    private static string GetCodecStringForSource(
+        MediaBrowser.Model.Dto.MediaSourceInfo source,
+        MediaBrowser.Model.Entities.MediaStream videoStream)
+    {
+        var codecs = new List<string>();
+
+        // Video codec
+        var videoCodec = videoStream.Codec?.ToLowerInvariant();
+        if (!string.IsNullOrEmpty(videoCodec))
+        {
+            var profile = videoStream.Profile?.ToLowerInvariant() ?? "main";
+            var level = videoStream.Level ?? 40;
+
+            switch (videoCodec)
+            {
+                case "h264":
+                case "avc":
+                    // avc1.PPCCLL format
+                    var avcProfile = profile switch
+                    {
+                        "high" => "6400",
+                        "main" => "4D40",
+                        "baseline" => "4240",
+                        _ => "4D40"
+                    };
+                    codecs.Add($"avc1.{avcProfile}{level:X2}");
+                    break;
+
+                case "hevc":
+                case "h265":
+                    // hev1 or hvc1
+                    var hevcProfile = profile.Contains("main 10") ? "2" : "1";
+                    codecs.Add($"hev1.{hevcProfile}.4.L{level}.B0");
+                    break;
+
+                case "av1":
+                    // av01.P.LLM.DD
+                    var av1Profile = profile.Contains("high") ? "1" : "0";
+                    codecs.Add($"av01.{av1Profile}.{level:D2}M.08");
+                    break;
+
+                case "vp9":
+                    codecs.Add($"vp09.00.{level:D2}.08");
+                    break;
+            }
+        }
+
+        // Audio codec
+        var audioStream = source.GetDefaultAudioStream(null);
+        if (audioStream is not null)
+        {
+            var audioCodec = audioStream.Codec?.ToLowerInvariant();
+            switch (audioCodec)
+            {
+                case "aac":
+                    codecs.Add("mp4a.40.2");
+                    break;
+                case "ac3":
+                    codecs.Add("ac-3");
+                    break;
+                case "eac3":
+                    codecs.Add("ec-3");
+                    break;
+                case "opus":
+                    codecs.Add("opus");
+                    break;
+                case "flac":
+                    codecs.Add("fLaC");
+                    break;
+            }
+        }
+
+        return string.Join(",", codecs);
     }
 
     /// <summary>

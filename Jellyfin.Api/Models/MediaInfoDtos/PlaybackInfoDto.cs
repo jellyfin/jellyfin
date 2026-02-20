@@ -87,4 +87,16 @@ public class PlaybackInfoDto
     /// Gets or sets a value indicating whether always burn in subtitles when transcoding.
     /// </summary>
     public bool? AlwaysBurnInSubtitleWhenTranscoding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the media source selection mode.
+    /// Controls how the optimal media source is selected when multiple versions are available.
+    /// </summary>
+    public MediaSourceSelectionMode? MediaSourceSelectionMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the available network bandwidth in bits per second.
+    /// Used for network-aware media source selection.
+    /// </summary>
+    public long? AvailableBandwidth { get; set; }
 }
