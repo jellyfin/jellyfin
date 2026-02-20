@@ -19,6 +19,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Parsers;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
 
@@ -178,8 +179,9 @@ namespace MediaBrowser.Providers.MediaInfo
             var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
             var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
             var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
-            var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
-            var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
+
+            // Handle vinyl track numbers (A1, B2, etc.) and other non-standard formats
+            var (trackTrackNumber, trackDiscNumber) = ParseTrackNumber(track, mediaInfo, audio.Path);
 
             // Some users may use a misbehaved tag editor that writes a null character in the tag when not allowed by the standard.
             trackTitle = GetSanitizedStringTag(trackTitle, audio.Path);
@@ -513,6 +515,67 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return val;
+        }
+
+        /// <summary>
+        /// Parses track numbers from audio file metadata, supporting both standard and vinyl-style numbering formats.
+        /// Uses disc number to preserve side information (A=disc 1, B=disc 2, etc.).
+        /// </summary>
+        private (int? TrackNumber, int? DiscNumber) ParseTrackNumber(
+            Track track,
+            Model.MediaInfo.MediaInfo mediaInfo,
+            string filePath)
+        {
+            int? discNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
+            bool hasExistingDiscNumber = discNumber.HasValue && discNumber.Value > 0;
+
+            // PRIORITIZE VINYL FORMATS: Check TrackNumberStr first for vinyl/alphanumeric track numbers
+            if (!string.IsNullOrEmpty(track.TrackNumberStr))
+            {
+                // Try to parse as vinyl format
+                if (VinylTrackNumberParser.TryParseVinylTrackNumber(track.TrackNumberStr, out int parsedTrackNumber, out int parsedSide))
+                {
+                    // Only apply side mapping if no existing disc number
+                    if (!hasExistingDiscNumber)
+                    {
+                        discNumber = parsedSide;
+                    }
+
+                    return (parsedTrackNumber, discNumber);
+                }
+
+                // Fallback: try parsing TrackNumberStr as plain number
+                if (int.TryParse(track.TrackNumberStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out int plainTrackNumber))
+                {
+                    return (plainTrackNumber, discNumber);
+                }
+            }
+
+            // Check for vinyl-style track numbers in additional metadata fields
+            string? vinylTrackNumber = null;
+            if (TryGetSanitizedAdditionalFields(track, "TRACKNAME/POSITION", out vinylTrackNumber)
+                || TryGetSanitizedAdditionalFields(track, "TRACK", out vinylTrackNumber))
+            {
+                if (VinylTrackNumberParser.TryParseVinylTrackNumber(vinylTrackNumber, out int parsedTrackNumber, out int parsedSide))
+                {
+                    // Only apply side mapping if no existing disc number
+                    if (!hasExistingDiscNumber)
+                    {
+                        discNumber = parsedSide;
+                    }
+
+                    return (parsedTrackNumber, discNumber);
+                }
+            }
+
+            // FINAL FALLBACK: Use the standard track number field
+            if (track.TrackNumber.HasValue && track.TrackNumber.Value > 0)
+            {
+                return (track.TrackNumber, discNumber);
+            }
+
+            // Final fallback to mediaInfo index number from ffprobe
+            return (mediaInfo.IndexNumber, discNumber);
         }
 
         private string? GetSanitizedStringTag(string? tag, string filePath)
