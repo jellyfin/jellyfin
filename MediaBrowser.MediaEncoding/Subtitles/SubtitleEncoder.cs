@@ -943,7 +943,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            // For external subtitle files, determine protocol from the subtitle path itself,
+            // not from the media source protocol. This allows local subtitle files to be read
+            // correctly even when the media source is remote (e.g., HTTP URL).
+            var subtitleProtocol = subtitleStream.IsExternal && !string.IsNullOrEmpty(subtitleStream.Path)
+                ? (Uri.TryCreate(subtitleStream.Path, UriKind.Absolute, out var uri) &&
+                   (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                    ? MediaProtocol.Http
+                    : MediaProtocol.File)
+                : mediaSource.Protocol;
+
+            var result = await DetectCharset(path, subtitleProtocol, cancellationToken).ConfigureAwait(false);
             var charset = result.Detected?.EncodingName ?? string.Empty;
 
             // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
