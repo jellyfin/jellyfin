@@ -872,6 +872,18 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.MinUserRating.HasValue)
+            {
+                userData ??= userDataManager.GetUserData(user, item);
+
+                var val = query.MinUserRating.Value;
+
+                if (!(userData.Rating.HasValue && userData.Rating >= val))
+                {
+                    return false;
+                }
+            }
+
             if (query.MinIndexNumber.HasValue)
             {
                 var val = query.MinIndexNumber.Value;
