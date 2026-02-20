@@ -454,7 +454,7 @@ namespace Jellyfin.LiveTv.Listings
         {
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (programIds.Count == 0)
+            if (string.IsNullOrEmpty(token) || programIds.Count == 0)
             {
                 return [];
             }
@@ -795,7 +795,10 @@ namespace Jellyfin.LiveTv.Listings
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            ArgumentException.ThrowIfNullOrEmpty(token);
+            if (string.IsNullOrEmpty(token))
+            {
+                return [];
+            }
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);
