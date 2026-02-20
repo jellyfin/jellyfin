@@ -1562,6 +1562,16 @@ namespace MediaBrowser.Controller.Entities
             return lang;
         }
 
+        /// <summary>
+        /// Gets the preferred image languages as an array (e.g., ["en", "de", "fr", "nolang"]).
+        /// </summary>
+        /// <returns>Array of preferred image languages.</returns>
+        public string[] GetPreferredImageLanguages()
+        {
+            var libraryOptions = LibraryManager.GetLibraryOptions(this);
+            return libraryOptions.PreferredImageLanguages;
+        }
+
         public virtual bool IsSaveLocalMetadataEnabled()
         {
             if (SourceType == SourceType.Channel)
