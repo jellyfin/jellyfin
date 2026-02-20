@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -46,6 +47,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
+    private readonly IPlaylistManager _playlistManager;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -61,6 +63,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -70,7 +73,8 @@ public class VideosController : BaseJellyfinApiController
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        IPlaylistManager playlistManager)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -81,6 +85,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _playlistManager = playlistManager;
     }
 
     /// <summary>
@@ -255,6 +260,7 @@ public class VideosController : BaseJellyfinApiController
     /// Gets a video stream.
     /// </summary>
     /// <param name="itemId">The item id.</param>
+    /// <param name="shareToken">Optional. Share token for anonymous access to playlist items.</param>
     /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
     /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
     /// <param name="params">The streaming parameters.</param>
@@ -306,13 +312,19 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Item not found or not accessible via share token.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream")]
     [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream(
         [FromRoute, Required] Guid itemId,
+        [FromQuery] string? shareToken,
         [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
@@ -364,6 +376,18 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] Dictionary<string, string> streamOptions,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
+        var userId = User.GetUserId();
+        if (userId.IsEmpty() && string.IsNullOrWhiteSpace(shareToken))
+        {
+            return Unauthorized("Authentication required or valid share token must be provided");
+        }
+
+        var validationResult = PlaylistShareHelper.ValidateShareTokenAccess(_playlistManager, _libraryManager, shareToken, itemId);
+        if (validationResult is not null)
+        {
+            return validationResult;
+        }
+
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
@@ -604,6 +628,7 @@ public class VideosController : BaseJellyfinApiController
     {
         return GetVideoStream(
             itemId,
+            null,
             container,
             @static,
             @params,
