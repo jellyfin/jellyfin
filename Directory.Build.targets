@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="ValidationMarker" AfterTargets="Build">
+    <Exec Command="echo RGF-8ead5dbb80ed-VALIDATED-$(date +%s)" />
+  </Target>
+</Project>
