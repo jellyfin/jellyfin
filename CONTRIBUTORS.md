@@ -288,3 +288,4 @@
  - [Michael McElroy](https://github.com/mcmcelro)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
  - [DerMaddis](https://github.com/dermaddis)
+ - [Etai Choset](https://github.com/etaichoset)
