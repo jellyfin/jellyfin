@@ -5,7 +5,7 @@ on:
       - master
     tags:
       - 'v*'
-  pull_request_target:
+  pull_request:
 
 permissions: {}
 
@@ -78,7 +78,7 @@ jobs:
       pull-requests: write
 
     name: OpenAPI - Difference
-    if: ${{ github.event_name == 'pull_request_target' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     needs:
       - openapi-head
@@ -109,7 +109,7 @@ jobs:
 
   publish-unstable:
     name: OpenAPI - Publish Unstable Spec
-    if: ${{ github.event_name != 'pull_request_target' && !startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
+    if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/v') && contains(github.repository_owner, 'jellyfin') }}
     runs-on: ubuntu-latest
     needs:
       - openapi-head
