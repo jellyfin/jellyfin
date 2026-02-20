@@ -10,6 +10,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -19,6 +20,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -26,6 +28,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +49,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
+    private readonly ISessionManager _sessionManager;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -61,6 +65,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -70,7 +75,8 @@ public class VideosController : BaseJellyfinApiController
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        ISessionManager sessionManager)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -81,6 +87,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
+        _sessionManager = sessionManager;
     }
 
     /// <summary>
@@ -434,6 +441,30 @@ public class VideosController : BaseJellyfinApiController
                 _transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
+
+        // Check video stream limits before starting transcoding
+        if (state.IsOutputVideo)
+        {
+            var userId = HttpContext.User.GetUserId();
+            if (!userId.IsEmpty())
+            {
+                var user = _userManager.GetUserById(userId);
+                if (user is not null && user.MaxActiveVideoStreams > 0)
+                {
+                    var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                        s.UserId.Equals(user.Id) &&
+                        s.NowPlayingItem?.MediaType == MediaType.Video &&
+                        (s.TranscodingInfo != null ||
+                         (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
+                          (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
+
+                    if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                    {
+                        throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                    }
+                }
+            }
+        }
 
         if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
         {

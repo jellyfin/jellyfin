@@ -349,6 +349,7 @@ namespace Jellyfin.Server.Implementations.Users
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
                     MaxActiveSessions = user.MaxActiveSessions,
+                    MaxActiveVideoStreams = user.MaxActiveVideoStreams,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
@@ -671,6 +672,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
                 user.LoginAttemptsBeforeLockout = maxLoginAttempts;
                 user.MaxActiveSessions = policy.MaxActiveSessions;
+                user.MaxActiveVideoStreams = policy.MaxActiveVideoStreams;
                 user.SyncPlayAccess = policy.SyncPlayAccess;
                 user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
                 user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);

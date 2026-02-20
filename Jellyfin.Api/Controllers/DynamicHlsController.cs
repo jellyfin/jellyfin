@@ -19,6 +19,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
@@ -26,6 +27,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +62,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
     private readonly EncodingOptions _encodingOptions;
+    private readonly ISessionManager _sessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -75,6 +78,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="dynamicHlsPlaylistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/>.</param>
+    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     public DynamicHlsController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -86,7 +90,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         ILogger<DynamicHlsController> logger,
         DynamicHlsHelper dynamicHlsHelper,
         EncodingHelper encodingHelper,
-        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator)
+        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator,
+        ISessionManager sessionManager)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -99,6 +104,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         _dynamicHlsHelper = dynamicHlsHelper;
         _encodingHelper = encodingHelper;
         _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
+        _sessionManager = sessionManager;
 
         _encodingOptions = serverConfigurationManager.GetEncodingOptions();
     }
@@ -293,6 +299,30 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationToken)
             .ConfigureAwait(false);
+
+        // Check video stream limits before starting transcoding
+        if (state.IsOutputVideo)
+        {
+            var userId = HttpContext.User.GetUserId();
+            if (!userId.IsEmpty())
+            {
+                var user = _userManager.GetUserById(userId);
+                if (user is not null && user.MaxActiveVideoStreams > 0)
+                {
+                    var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                        s.UserId.Equals(user.Id) &&
+                        s.NowPlayingItem?.MediaType == MediaType.Video &&
+                        (s.TranscodingInfo != null ||
+                         (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
+                          (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
+
+                    if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                    {
+                        throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                    }
+                }
+            }
+        }
 
         TranscodingJob? job = null;
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
@@ -515,6 +545,27 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
+
+        // Check video stream limits before starting transcoding
+        var userId = HttpContext.User.GetUserId();
+        if (!userId.IsEmpty())
+        {
+            var user = _userManager.GetUserById(userId);
+            if (user is not null && user.MaxActiveVideoStreams > 0)
+            {
+                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                    s.UserId.Equals(user.Id) &&
+                    s.NowPlayingItem?.MediaType == MediaType.Video &&
+                    (s.TranscodingInfo != null ||
+                     (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
+                      (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
+
+                if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                {
+                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                }
+            }
+        }
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
@@ -852,6 +903,27 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
+
+        // Check video stream limits before starting transcoding
+        var userId = HttpContext.User.GetUserId();
+        if (!userId.IsEmpty())
+        {
+            var user = _userManager.GetUserById(userId);
+            if (user is not null && user.MaxActiveVideoStreams > 0)
+            {
+                var activeVideoStreams = _sessionManager.Sessions.Count(s =>
+                    s.UserId.Equals(user.Id) &&
+                    s.NowPlayingItem?.MediaType == MediaType.Video &&
+                    (s.TranscodingInfo != null ||
+                     (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
+                      (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
+
+                if (activeVideoStreams >= user.MaxActiveVideoStreams)
+                {
+                    throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
+                }
+            }
+        }
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
             .ConfigureAwait(false);
