@@ -210,6 +210,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     { HardwareAccelerationType.videotoolbox,         hwEncoder + "_videotoolbox" },
                     { HardwareAccelerationType.v4l2m2m,              hwEncoder + "_v4l2m2m" },
                     { HardwareAccelerationType.rkmpp,                hwEncoder + "_rkmpp" },
+                    { HardwareAccelerationType.nvmpi,                hwEncoder + "_nvmpi" },
                 };
 
                 if (hwType != HardwareAccelerationType.none
@@ -1198,6 +1199,20 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 args.Append(filterDevArgs);
             }
+            else if (optHwaccelType == HardwareAccelerationType.nvmpi)
+            {
+                if (!isLinux)
+                {
+                    return string.Empty;
+                }
+
+                var isNvmpiDecoder = vidDecoder.Contains("nvmpi", StringComparison.OrdinalIgnoreCase);
+                var isNvmpiEncoder = vidEncoder.Contains("nvmpi", StringComparison.OrdinalIgnoreCase);
+                if (!isNvmpiDecoder && !isNvmpiEncoder)
+                {
+                    return string.Empty;
+                }
+            }
 
             if (!string.IsNullOrEmpty(vidDecoder))
             {
@@ -1621,6 +1636,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return FormattableString.Invariant($" -b:v {bitrate} -qmin -1 -qmax -1");
             }
 
+            if (string.Equals(videoCodec, "h264_nvmpi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_nvmpi", StringComparison.OrdinalIgnoreCase))
+            {
+                return FormattableString.Invariant($" -rc cbr -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+            }
+
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
         }
 
@@ -1760,6 +1781,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                         EncoderPreset.slow => " -prio_speed 0",
                         EncoderPreset.medium => " -prio_speed 0",
                         _ => " -prio_speed 1"
+                };
+            }
+            else if (string.Equals(videoEncoder, "h264_nvmpi", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(videoEncoder, "hevc_nvmpi", StringComparison.OrdinalIgnoreCase))
+            {
+                param += " -preset ";
+
+                param += encoderPreset switch
+                {
+                        EncoderPreset.auto => EncoderPreset.medium.ToString().ToLowerInvariant(),
+                        EncoderPreset.veryslow => EncoderPreset.slow.ToString().ToLowerInvariant(),
+                        EncoderPreset.slower => EncoderPreset.slow.ToString().ToLowerInvariant(),
+                        EncoderPreset.veryfast => EncoderPreset.fast.ToString().ToLowerInvariant(),
+                        EncoderPreset.superfast => EncoderPreset.ultrafast.ToString().ToLowerInvariant(),
+                        _ => encoderPreset.ToString().ToLowerInvariant()
                 };
             }
 
@@ -1933,9 +1969,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h264_rkmpp", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "h264_nvmpi", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc_rkmpp", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc_nvmpi", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_nvenc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "av1_amf", StringComparison.OrdinalIgnoreCase)
@@ -2134,22 +2172,24 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = "constrained_baseline";
             }
 
-            // libx264, h264_{qsv,nvenc,rkmpp} does not support Constrained Baseline profile, force Baseline in this case.
+            // libx264, h264_{qsv,nvenc,rkmpp,nvmpi} does not support Constrained Baseline profile, force Baseline in this case.
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase))
+                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_nvmpi", StringComparison.OrdinalIgnoreCase))
                 && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "baseline";
             }
 
-            // libx264, h264_{qsv,nvenc,vaapi,rkmpp} does not support Constrained High profile, force High in this case.
+            // libx264, h264_{qsv,nvenc,vaapi,rkmpp,nvmpi} does not support Constrained High profile, force High in this case.
             if ((string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase))
+                 || string.Equals(videoEncoder, "h264_rkmpp", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(videoEncoder, "h264_nvmpi", StringComparison.OrdinalIgnoreCase))
                 && profile.Contains("high", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "high";
@@ -2249,6 +2289,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                          || string.Equals(videoEncoder, "hevc_rkmpp", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + level;
+                }
+                else if (string.Equals(videoEncoder, "h264_nvmpi", StringComparison.OrdinalIgnoreCase))
+                {
+                    param += " -level " + level;
+                }
+                else if (string.Equals(videoEncoder, "hevc_nvmpi", StringComparison.OrdinalIgnoreCase))
+                {
+                    // hevc_nvmpi use -level 51 instead of -level 153.
+                    if (double.TryParse(level, CultureInfo.InvariantCulture, out double hevcLevel))
+                    {
+                        param += " -level " + (hevcLevel / 3);
+                    }
                 }
                 else if (!string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
@@ -5857,6 +5909,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (null, null, null);
         }
 
+        /// <summary>
+        /// Gets the parameter of Jetson NVMPI filter chain.
+        /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="vidEncoder">Video encoder to use.</param>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetNvmpiVidFilterChain(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string vidEncoder)
+        {
+            // TODO
+            return (null, null, null);
+        }
+
         public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetRkmppVidFiltersPrefered(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -6139,6 +6207,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 HardwareAccelerationType.nvenc => GetNvidiaVidFilterChain(state, options, outputVideoCodec),
                 HardwareAccelerationType.videotoolbox => GetAppleVidFilterChain(state, options, outputVideoCodec),
                 HardwareAccelerationType.rkmpp => GetRkmppVidFilterChain(state, options, outputVideoCodec),
+                HardwareAccelerationType.nvmpi => GetNvmpiVidFilterChain(state, options, outputVideoCodec),
                 _ => GetSwVidFilterChain(state, options, outputVideoCodec),
             };
 
@@ -6381,6 +6450,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     HardwareAccelerationType.nvenc => GetNvdecVidDecoder(state, options, videoStream, bitDepth),
                     HardwareAccelerationType.videotoolbox => GetVideotoolboxVidDecoder(state, options, videoStream, bitDepth),
                     HardwareAccelerationType.rkmpp => GetRkmppVidDecoder(state, options, videoStream, bitDepth),
+                    HardwareAccelerationType.nvmpi => GetNvmpiVidDecoder(state, options, videoStream, bitDepth),
                     _ => string.Empty
                 };
 
@@ -6609,6 +6679,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && isCodecAvailable)
             {
                 return " -hwaccel rkmpp" + (outputHwSurface ? " -hwaccel_output_format drm_prime -noautorotate" + stripRotationDataArgs : string.Empty);
+            }
+
+            // Jetson nvmpi
+            if (hardwareAccelerationType == HardwareAccelerationType.nvmpi)
+            {
+                return " -threads 1";
             }
 
             return null;
@@ -7055,6 +7131,58 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     // there's an issue about AV1 AFBC on RK3588, disable it for now until it's fixed upstream
                     return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
+                }
+            }
+
+            return null;
+        }
+
+        public string GetNvmpiVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
+        {
+            var isLinux = OperatingSystem.IsLinux();
+
+            if (!isLinux
+                || options.HardwareAccelerationType != HardwareAccelerationType.nvmpi)
+            {
+                return null;
+            }
+
+            var hwSurface = _mediaEncoder.SupportsFilter("alphasrc");
+
+            var is8bitSwFormatsNvmpi = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
+
+            if (is8bitSwFormatsNvmpi)
+            {
+                if (string.Equals(videoStream.Codec, "avc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "h264", bitDepth, hwSurface) + GetHwDecoderName(options, "h264", "nvmpi", "h264", bitDepth);
+                }
+
+                if (string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "hevc", bitDepth, hwSurface) + GetHwDecoderName(options, "hevc", "cuvid", "hevc", bitDepth);
+                }
+
+                if (string.Equals(videoStream.Codec, "vp8", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "vp8", bitDepth, hwSurface);
+                }
+
+                if (string.Equals(videoStream.Codec, "vp9", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "vp9", bitDepth, hwSurface);
+                }
+
+                if (string.Equals(videoStream.Codec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "mpeg2video", bitDepth, hwSurface) + GetHwDecoderName(options, "mpeg2", "nvmpi", "mpeg2video", bitDepth);
+                }
+
+                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetHwaccelType(state, options, "mpeg4", bitDepth, hwSurface);
                 }
             }
 

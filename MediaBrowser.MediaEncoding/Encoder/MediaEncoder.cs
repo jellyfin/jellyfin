@@ -854,7 +854,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                            || (hardwareAccelerationType == HardwareAccelerationType.qsv && options.PreferSystemNativeHwDecoder)
                                            || hardwareAccelerationType == HardwareAccelerationType.vaapi
                                            || hardwareAccelerationType == HardwareAccelerationType.videotoolbox
-                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp;
+                                           || hardwareAccelerationType == HardwareAccelerationType.rkmpp
+                                           || hardwareAccelerationType == HardwareAccelerationType.nvmpi;
                 if (!supportsKeyFrameOnly)
                 {
                     // Disable hardware acceleration when the hardware decoder does not support keyframe only mode.
