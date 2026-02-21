@@ -3326,20 +3326,11 @@ public sealed class BaseItemRepository
             else if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
                 var boxSetIds = baseQuery.Select(e => e.Id).ToList();
-                var userId = filter.User!.Id;
-                var playedBoxSetIds = new List<Guid>(boxSetIds.Count);
-                foreach (var boxSetId in boxSetIds)
-                {
-                    var descendantIds = DescendantQueryHelper.GetAllDescendantIds(context, boxSetId);
-                    var leafItems = context.BaseItems
-                        .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem);
-
-                    if (leafItems.Any()
-                        && leafItems.All(f => f.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
-                    {
-                        playedBoxSetIds.Add(boxSetId);
-                    }
-                }
+                var playedCounts = GetPlayedAndTotalCountBatch(boxSetIds, filter.User!);
+                var playedBoxSetIds = playedCounts
+                    .Where(kvp => kvp.Value.Total > 0 && kvp.Value.Played == kvp.Value.Total)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
 
                 if (filter.IsPlayed.Value)
                 {
@@ -4113,33 +4104,66 @@ public sealed class BaseItemRepository
 
         using var dbContext = _dbProvider.CreateDbContext();
         var folderIdsArray = folderIds.ToArray();
-
-        // Build access filter from user preferences (parental ratings, blocked/allowed tags, etc.)
         var filter = new InternalItemsQuery(user);
+        var userId = user.Id;
 
-        // Get all non-folder, non-virtual descendants via AncestorIds table
-        var baseQuery = dbContext.BaseItems
-            .Where(b => dbContext.AncestorIds
-                .Any(a => folderIdsArray.Contains(a.ParentItemId) && a.ItemId == b.Id))
+        // Access-filtered leaf items (non-folder, non-virtual)
+        var leafItems = dbContext.BaseItems
             .Where(b => !b.IsFolder && !b.IsVirtualItem);
+        leafItems = ApplyAccessFiltering(dbContext, leafItems, filter);
 
-        // Apply the same access filtering as per-item path
-        baseQuery = ApplyAccessFiltering(dbContext, baseQuery, filter);
+        // Pre-compute played status to avoid repeating the subquery in each path
+        var playedLeafItems = leafItems
+            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
 
-        // Join back with AncestorIds to group by parent folder ID and compute counts
-        var results = dbContext.AncestorIds
-            .Where(a => folderIdsArray.Contains(a.ParentItemId))
+        // Descendants via AncestorIds (regular folders: Series → Episodes, etc.)
+        var ancestorLeaves = dbContext.AncestorIds
+            .WhereOneOrMany(folderIdsArray, a => a.ParentItemId)
             .Join(
-                baseQuery,
+                playedLeafItems,
                 a => a.ItemId,
                 b => b.Id,
-                (a, b) => new { a.ParentItemId, b.Id, b.UserData })
-            .GroupBy(x => x.ParentItemId)
+                (a, b) => new { FolderId = a.ParentItemId, b.Id, b.Played });
+
+        // Direct non-folder linked children (BoxSets → Movies, etc.)
+        var linkedLeaves = dbContext.LinkedChildren
+            .WhereOneOrMany(folderIdsArray, lc => lc.ParentId)
+            .Join(
+                playedLeafItems,
+                lc => lc.ChildId,
+                b => b.Id,
+                (lc, b) => new { FolderId = lc.ParentId, b.Id, b.Played });
+
+        // Linked folder children's descendants (BoxSets → Series → Episodes)
+        var linkedFolderLeaves = dbContext.LinkedChildren
+            .WhereOneOrMany(folderIdsArray, lc => lc.ParentId)
+            .Join(
+                dbContext.BaseItems.Where(b => b.IsFolder),
+                lc => lc.ChildId,
+                b => b.Id,
+                (lc, b) => new { lc.ParentId, FolderChildId = b.Id })
+            .Join(
+                dbContext.AncestorIds,
+                x => x.FolderChildId,
+                a => a.ParentItemId,
+                (x, a) => new { x.ParentId, DescendantId = a.ItemId })
+            .Join(
+                playedLeafItems,
+                x => x.DescendantId,
+                b => b.Id,
+                (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
+
+        // Union all paths and aggregate per folder
+        // Distinct counts ensure items reachable through multiple paths are counted once
+        var results = ancestorLeaves
+            .Union(linkedLeaves)
+            .Union(linkedFolderLeaves)
+            .GroupBy(x => x.FolderId)
             .Select(g => new
             {
                 FolderId = g.Key,
-                Total = g.Count(),
-                Played = g.Count(x => x.UserData!.Any(ud => ud.UserId == user.Id && ud.Played))
+                Total = g.Select(x => x.Id).Distinct().Count(),
+                Played = g.Where(x => x.Played).Select(x => x.Id).Distinct().Count()
             })
             .ToDictionary(x => x.FolderId, x => (x.Played, x.Total));
 

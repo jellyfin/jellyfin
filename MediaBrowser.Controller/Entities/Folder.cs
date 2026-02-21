@@ -880,14 +880,12 @@ namespace MediaBrowser.Controller.Entities
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
             IEnumerable<BaseItem> items;
 
             int totalItemCount = 0;
             if (query.User is null)
             {
-                items = Children.Where(filter);
+                items = UserViewBuilder.Filter(Children, user, query, UserDataManager, LibraryManager);
                 totalItemCount = items.Count();
             }
             else
@@ -902,7 +900,12 @@ namespace MediaBrowser.Controller.Entities
                     NameLessThan = query.NameLessThan
                 };
 
-                items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
+                items = UserViewBuilder.Filter(
+                    GetChildren(user, true, out totalItemCount, childQuery),
+                    user,
+                    query,
+                    UserDataManager,
+                    LibraryManager);
             }
 
             return PostFilterAndSort(items, query);
@@ -1337,8 +1340,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(e => e.IsVisible(user))
                 .ToArray();
 
-            var realChildren = visibleChildren
-                .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
+            var realChildren = UserViewBuilder.Filter(visibleChildren, query.User, query, UserDataManager, LibraryManager)
                 .ToArray();
 
             var childCount = realChildren.Length;
@@ -1722,15 +1724,14 @@ namespace MediaBrowser.Controller.Entities
                 int playedCount;
                 int totalCount;
 
-                if (precomputedCounts.HasValue && LinkedChildren.Length == 0)
+                if (precomputedCounts.HasValue)
                 {
                     // Use batch-fetched counts (avoids N+1 queries)
                     (playedCount, totalCount) = precomputedCounts.Value;
                 }
                 else
                 {
-                    // Fall back to per-item query for LinkedChildren items (BoxSets, Playlists)
-                    // or when no batch data is available
+                    // Fall back to per-item query when no batch data is available
                     var query = new InternalItemsQuery(user);
 
                     if (LinkedChildren.Length > 0)

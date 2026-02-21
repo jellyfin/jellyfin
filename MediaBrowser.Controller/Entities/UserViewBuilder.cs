@@ -414,14 +414,54 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query)
             where T : BaseItem
         {
-            items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager));
+            var filtered = Filter(items, query.User, query, _userDataManager, _libraryManager);
 
-            return SortAndPage(items, null, query, _libraryManager);
+            return SortAndPage(filtered, null, query, _libraryManager);
         }
 
-        public static bool FilterItem(BaseItem item, InternalItemsQuery query)
+        /// <summary>
+        /// Batch-aware filter that applies per-item checks.
+        /// </summary>
+        /// <param name="items">The items to filter.</param>
+        /// <param name="user">The user for filtering context.</param>
+        /// <param name="query">The query parameters.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <returns>The filtered items.</returns>
+        public static IEnumerable<BaseItem> Filter(
+            IEnumerable<BaseItem> items,
+            User user,
+            InternalItemsQuery query,
+            IUserDataManager userDataManager,
+            ILibraryManager libraryManager)
         {
-            return Filter(item, query.User, query, BaseItem.UserDataManager, BaseItem.LibraryManager);
+            var filtered = items.Where(i => Filter(i, user, query, userDataManager, libraryManager));
+
+            if (query.IsPlayed.HasValue && user is not null)
+            {
+                var itemList = filtered.ToList();
+                var folderIds = itemList.OfType<Folder>().Select(f => f.Id).ToList();
+
+                if (folderIds.Count > 0)
+                {
+                    var counts = libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
+                    var isPlayedValue = query.IsPlayed.Value;
+
+                    return itemList.Where(i =>
+                    {
+                        if (i.IsFolder && counts.TryGetValue(i.Id, out var c))
+                        {
+                            return (c.Total > 0 && c.Played == c.Total) == isPlayedValue;
+                        }
+
+                        return true;
+                    });
+                }
+
+                return itemList;
+            }
+
+            return filtered;
         }
 
         public static QueryResult<BaseItem> SortAndPage(
@@ -453,7 +493,7 @@ namespace MediaBrowser.Controller.Entities
                 itemsArray);
         }
 
-        public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        private static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             if (!string.IsNullOrEmpty(query.NameStartsWith) && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -541,10 +581,15 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                userData ??= userDataManager.GetUserData(user, item);
-                if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
+                // Folder.IsPlayed() hits the DB per-item (N+1 queries).
+                // Folders are batch-filtered by the collection Filter() overload.
+                if (!item.IsFolder)
                 {
-                    return false;
+                    userData ??= userDataManager.GetUserData(user, item);
+                    if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
+                    {
+                        return false;
+                    }
                 }
             }
 
