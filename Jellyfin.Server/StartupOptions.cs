@@ -8,6 +8,7 @@ namespace Jellyfin.Server
     /// <summary>
     /// Class used by CommandLine package when parsing the command line arguments.
     /// </summary>
+    [Verb("server", isDefault: true, HelpText = "Start Jellyfin server.")]
     public class StartupOptions : IStartupOptions
     {
         /// <summary>
