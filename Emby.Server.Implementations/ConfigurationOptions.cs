@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations
         {
             { HostWebClientKey, bool.TrueString },
             { DefaultRedirectKey, "web/" },
-            { FfmpegProbeSizeKey, "1G" },
+            { FfmpegProbeSizeKey, "500M" },
             { FfmpegAnalyzeDurationKey, "200M" },
             { BindToUnixSocketKey, bool.FalseString },
             { SqliteCacheSizeKey, "20000" },
