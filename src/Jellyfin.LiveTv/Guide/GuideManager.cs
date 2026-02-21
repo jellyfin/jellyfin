@@ -354,14 +354,15 @@ public class GuideManager : IGuideManager
 
                 if (item is not null)
                 {
-                    _libraryManager.DeleteItem(
+                    _libraryManager.DeleteItemAsync(
                         item,
                         new DeleteOptions
                         {
                             DeleteFileLocation = false,
                             DeleteFromExternalProvider = false
                         },
-                        false);
+                        false,
+                        cancellationToken).GetAwaiter().GetResult();
                 }
             }
 
