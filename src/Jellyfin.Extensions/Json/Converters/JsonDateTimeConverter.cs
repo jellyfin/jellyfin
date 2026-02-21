@@ -14,7 +14,22 @@ namespace Jellyfin.Extensions.Json.Converters
         /// <inheritdoc />
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return reader.GetDateTime();
+            if (reader.TryGetDateTime(out var result) )
+            {
+                return result;
+            }
+            else
+            {
+                // it failed, let's look at the string value, and if it looks like a zero date, return DateTime.MinValue
+                var text = reader.GetString();
+                if (text != null && System.Text.RegularExpressions.Regex.IsMatch(text, @"^0000-\d{2}-\d{2}"))
+                {
+                    return DateTime.MinValue;
+                }
+
+                // We tried. Let's just throw the original exception for backwards compatiblity.
+                return reader.GetDateTime();
+            }
         }
 
         /// <inheritdoc />
