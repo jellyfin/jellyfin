@@ -19,6 +19,7 @@ namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the list of data.
         /// </summary>
         [JsonPropertyName("data")]
+        [JsonConverter(typeof(ImageDataArrayConverter))]
         public IReadOnlyList<ImageDataDto> Data { get; set; } = Array.Empty<ImageDataDto>();
     }
 }
