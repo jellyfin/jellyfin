@@ -3323,6 +3323,33 @@ public sealed class BaseItemRepository
                     baseQuery = baseQuery.Where(s => !playedSeriesIdList.Contains(s.Id));
                 }
             }
+            else if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.BoxSet)
+            {
+                var boxSetIds = baseQuery.Select(e => e.Id).ToList();
+                var userId = filter.User!.Id;
+                var playedBoxSetIds = new List<Guid>(boxSetIds.Count);
+                foreach (var boxSetId in boxSetIds)
+                {
+                    var descendantIds = DescendantQueryHelper.GetAllDescendantIds(context, boxSetId);
+                    var leafItems = context.BaseItems
+                        .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem);
+
+                    if (leafItems.Any()
+                        && leafItems.All(f => f.UserData!.Any(ud => ud.UserId == userId && ud.Played)))
+                    {
+                        playedBoxSetIds.Add(boxSetId);
+                    }
+                }
+
+                if (filter.IsPlayed.Value)
+                {
+                    baseQuery = baseQuery.Where(s => playedBoxSetIds.Contains(s.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(s => !playedBoxSetIds.Contains(s.Id));
+                }
+            }
             else
             {
                 var playedItemIds = context.UserData

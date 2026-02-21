@@ -194,6 +194,34 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
+        public override void MarkPlayed(User user, DateTime? datePlayed, bool resetPosition)
+        {
+            if (IsLegacyBoxSet)
+            {
+                base.MarkPlayed(user, datePlayed, resetPosition);
+                return;
+            }
+
+            foreach (var item in GetLinkedChildren(user))
+            {
+                item.MarkPlayed(user, datePlayed, resetPosition);
+            }
+        }
+
+        public override void MarkUnplayed(User user)
+        {
+            if (IsLegacyBoxSet)
+            {
+                base.MarkUnplayed(user);
+                return;
+            }
+
+            foreach (var item in GetLinkedChildren(user))
+            {
+                item.MarkUnplayed(user);
+            }
+        }
+
         public override bool IsVisibleStandalone(User user)
         {
             if (IsLegacyBoxSet)

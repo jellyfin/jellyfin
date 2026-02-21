@@ -539,6 +539,15 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.IsPlayed.HasValue)
+            {
+                userData ??= userDataManager.GetUserData(user, item);
+                if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
+                {
+                    return false;
+                }
+            }
+
             if (query.IsLocked.HasValue)
             {
                 var val = query.IsLocked.Value;
