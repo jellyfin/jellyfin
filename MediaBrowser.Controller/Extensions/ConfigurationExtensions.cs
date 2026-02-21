@@ -75,6 +75,16 @@ namespace MediaBrowser.Controller.Extensions
         public const string DetectNetworkChangeKey = "DetectNetworkChange";
 
         /// <summary>
+        /// The key for the HTTP port override option.
+        /// </summary>
+        public const string HttpPortKey = "HttpPort";
+
+        /// <summary>
+        /// The key for the HTTPS port override option.
+        /// </summary>
+        public const string HttpsPortKey = "HttpsPort";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
