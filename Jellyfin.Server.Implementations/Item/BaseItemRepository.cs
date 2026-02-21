@@ -683,14 +683,15 @@ public sealed class BaseItemRepository
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
+
+        var types = allListedItemValues.Select(e => e.MagicNumber).Distinct().ToArray();
+        var values = allListedItemValues.Select(e => e.Value).Distinct().ToArray();
+        var allListedItemValuesSet = allListedItemValues.ToHashSet();
+
         var existingValues = context.ItemValues
-            .Select(e => new
-            {
-                item = e,
-                Key = e.Type + "+" + e.Value
-            })
-            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
-            .Select(e => e.item)
+            .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
+            .AsEnumerable()
+            .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
             .ToArray();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
@@ -1050,7 +1051,7 @@ public sealed class BaseItemRepository
         entity.TotalBitrate = dto.TotalBitrate;
         entity.ExternalId = dto.ExternalId;
         entity.Size = dto.Size;
-        entity.Genres = string.Join('|', dto.Genres);
+        entity.Genres = string.Join('|', dto.Genres.Distinct(StringComparer.OrdinalIgnoreCase));
         entity.DateCreated = dto.DateCreated == DateTime.MinValue ? null : dto.DateCreated;
         entity.DateModified = dto.DateModified == DateTime.MinValue ? null : dto.DateModified;
         entity.ChannelId = dto.ChannelId;
@@ -1077,9 +1078,9 @@ public sealed class BaseItemRepository
         }
 
         entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
-        entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p))) : null;
-        entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
-        entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
+        entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase)) : null;
+        entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
+        entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
             .Select(e => new BaseItemMetadataField()
             {
@@ -1122,12 +1123,12 @@ public sealed class BaseItemRepository
 
         if (dto is IHasArtist hasArtists)
         {
-            entity.Artists = hasArtists.Artists is not null ? string.Join('|', hasArtists.Artists) : null;
+            entity.Artists = hasArtists.Artists is not null ? string.Join('|', hasArtists.Artists.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         }
 
         if (dto is IHasAlbumArtist hasAlbumArtists)
         {
-            entity.AlbumArtists = hasAlbumArtists.AlbumArtists is not null ? string.Join('|', hasAlbumArtists.AlbumArtists) : null;
+            entity.AlbumArtists = hasAlbumArtists.AlbumArtists is not null ? string.Join('|', hasAlbumArtists.AlbumArtists.Distinct(StringComparer.OrdinalIgnoreCase)) : null;
         }
 
         if (dto is LiveTvProgram program)
