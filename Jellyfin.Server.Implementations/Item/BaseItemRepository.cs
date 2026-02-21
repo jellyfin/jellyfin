@@ -1244,21 +1244,23 @@ public sealed class BaseItemRepository
             .OrderBy(r => r)
             .ToArray();
 
-        // Tags via ItemValuesMap JOIN - uses subquery for matching items
+        // Tags via ItemValuesMap JOIN - uses subquery for matching items and dedupe based on CleanValue, but return the original Value for display
         var tags = context.ItemValuesMap
             .Where(ivm => ivm.ItemValue.Type == ItemValueType.Tags)
             .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue.CleanValue)
-            .Distinct()
+            .Select(ivm => ivm.ItemValue)
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
             .OrderBy(t => t)
             .ToArray();
 
-        // Genres via ItemValuesMap JOIN - uses subquery for matching items
+        // Genres via ItemValuesMap JOIN - uses subquery for matching items and dedupe based on CleanValue, but return the original Value for display
         var genres = context.ItemValuesMap
             .Where(ivm => ivm.ItemValue.Type == ItemValueType.Genre)
             .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
-            .Select(ivm => ivm.ItemValue.CleanValue)
-            .Distinct()
+            .Select(ivm => ivm.ItemValue)
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
             .OrderBy(g => g)
             .ToArray();
 
