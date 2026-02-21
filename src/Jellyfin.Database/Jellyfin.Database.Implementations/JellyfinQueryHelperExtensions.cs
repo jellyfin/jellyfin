@@ -1,4 +1,8 @@
 #pragma warning disable RS0030 // Do not use banned APIs
+// Do not enforce culture rules because EFCore cannot deal with cultures well.
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 using System;
 using System.Collections.Concurrent;
@@ -112,6 +116,124 @@ public static class JellyfinQueryHelperExtensions
     }
 
     /// <summary>
+    /// Builds a query that filters items by matching any of the specified provider ID/value pairs.
+    /// Uses string-based matching with Contains for EF Core translation.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to arrays of provider values to match.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereHasAnyProviderIds(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string[]> providerIds)
+    {
+        if (providerIds.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        var providerKeys = providerIds
+            .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
+            .ToList();
+
+        if (providerKeys.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        return baseQuery.Where(e => e.Provider!
+            .Select(p => p.ProviderId + ":" + p.ProviderValue)
+            .Any(key => providerKeys.Contains(key)));
+    }
+
+    /// <summary>
+    /// Builds a query that filters items by matching any of the specified provider ID/value pairs.
+    /// Uses string-based matching with Contains for EF Core translation.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to optional values. Empty/null values match any item with that provider.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereHasAnyProviderId(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string> providerIds)
+    {
+        if (providerIds.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        var existenceOnly = providerIds
+            .Where(e => string.IsNullOrEmpty(e.Value))
+            .Select(e => e.Key)
+            .ToList();
+
+        var specificValues = providerIds
+            .Where(e => !string.IsNullOrEmpty(e.Value))
+            .Select(e => $"{e.Key}:{e.Value}")
+            .ToList();
+
+        if (existenceOnly.Count > 0 && specificValues.Count > 0)
+        {
+            // Both existence checks and specific value checks
+            return baseQuery.Where(e =>
+                e.Provider!.Any(p => existenceOnly.Contains(p.ProviderId)) ||
+                e.Provider!.Select(p => p.ProviderId + ":" + p.ProviderValue).Any(key => specificValues.Contains(key)));
+        }
+        else if (existenceOnly.Count > 0)
+        {
+            // Only existence checks
+            return baseQuery.Where(e => e.Provider!.Any(p => existenceOnly.Contains(p.ProviderId)));
+        }
+        else
+        {
+            // Only specific value checks
+            return baseQuery.Where(e =>
+                e.Provider!.Select(p => p.ProviderId + ":" + p.ProviderValue).Any(key => specificValues.Contains(key)));
+        }
+    }
+
+    /// <summary>
+    /// Builds a query that excludes items matching the specified provider ID/value pairs.
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerIds">Dictionary mapping provider names to values to exclude.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereExcludeProviderIds(
+        this IQueryable<BaseItemEntity> baseQuery,
+        IReadOnlyDictionary<string, string> providerIds)
+    {
+        if (providerIds.Count == 0)
+        {
+            return baseQuery;
+        }
+
+        var excludeKeys = providerIds
+            .Select(e => $"{e.Key}:{e.Value}")
+            .ToList();
+
+        return baseQuery.Where(e =>
+            e.Provider!.Select(p => p.ProviderId + ":" + p.ProviderValue).All(key => !excludeKeys.Contains(key)));
+    }
+
+    /// <summary>
+    /// Builds a query that checks if items have a specific provider set (case-insensitive).
+    /// </summary>
+    /// <param name="baseQuery">The source query.</param>
+    /// <param name="providerName">The provider name to check for.</param>
+    /// <param name="hasProvider">True to include items with the provider, false to exclude them.</param>
+    /// <returns>A filtered query.</returns>
+    public static IQueryable<BaseItemEntity> WhereHasProvider(
+        this IQueryable<BaseItemEntity> baseQuery,
+        string providerName,
+        bool hasProvider)
+    {
+        var lowerProviderName = providerName.ToLowerInvariant();
+
+        return hasProvider
+            ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == lowerProviderName))
+            : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != lowerProviderName));
+    }
+
+    /// <summary>
     /// Builds an optimised query expression checking one property against a list of values while maintaining an optimal query.
     /// </summary>
     /// <typeparam name="TEntity">The entity.</typeparam>
@@ -138,13 +260,13 @@ public static class JellyfinQueryHelperExtensions
 
         var containsMethodInfo = _containsQueryCache.GetOrAdd(typeof(TProperty), static (key) => _containsMethodGenericCache.MakeGenericMethod(key));
 
-        if (oneOf.Count < 4) // arbitrary value choosen.
-        {
-            // if we have 3 or fewer values to check against its faster to do a IN(const,const,const) lookup
-            return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Constant(oneOf), property.Body), parameter);
-        }
-
-        return Expression.Lambda<Func<TEntity, bool>>(Expression.Call(null, containsMethodInfo, Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)), property.Body), parameter);
+        return Expression.Lambda<Func<TEntity, bool>>(
+            Expression.Call(
+                null,
+                containsMethodInfo,
+                Expression.Call(null, _efParameterInstruction.MakeGenericMethod(oneOf.GetType()), Expression.Constant(oneOf)),
+                property.Body),
+            parameter);
     }
 
     internal static class ParameterReplacer
