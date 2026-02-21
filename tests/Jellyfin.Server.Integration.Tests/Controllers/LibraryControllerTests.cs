@@ -23,6 +23,7 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
     [InlineData("Items/{0}/ThemeMedia")]
     [InlineData("Items/{0}/Ancestors")]
     [InlineData("Items/{0}/Download")]
+    [InlineData("Items/{0}/Collections")]
     [InlineData("Artists/{0}/Similar")]
     [InlineData("Items/{0}/Similar")]
     [InlineData("Albums/{0}/Similar")]
