@@ -97,6 +97,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
     /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
     /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
+    /// <param name="externalProvider">Optional Target a specific provider to search with externalProviderId.</param>
+    /// <param name="externalProviderId">Optional filter by any external provider id. You have to select a Provider with ExternalProvider field.</param>
     /// <param name="isMovie">Optional filter for live tv movies.</param>
     /// <param name="isSeries">Optional filter for live tv series.</param>
     /// <param name="isNews">Optional filter for live tv news.</param>
@@ -187,6 +189,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasImdbId,
         [FromQuery] bool? hasTmdbId,
         [FromQuery] bool? hasTvdbId,
+        [FromQuery] MetadataProvider? externalProvider,
+        [FromQuery] string? externalProviderId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
         [FromQuery] bool? isNews,
@@ -335,6 +339,8 @@ public class ItemsController : BaseJellyfinApiController
                 Is3D = is3D,
                 HasTvdbId = hasTvdbId,
                 HasTmdbId = hasTmdbId,
+                ExternalProvider = externalProvider,
+                ExternalProviderId = externalProviderId,
                 IsMovie = isMovie,
                 IsSeries = isSeries,
                 IsNews = isNews,
@@ -518,6 +524,14 @@ public class ItemsController : BaseJellyfinApiController
                 }
             }
 
+            // Filter by any externalProviderId
+            if (!string.IsNullOrWhiteSpace(externalProviderId) && externalProvider is not null)
+            {
+                query.IncludeItemTypes ??= [BaseItemKind.Movie, BaseItemKind.Series];
+                query.HasAnyProviderId = [];
+                query.HasAnyProviderId[((MetadataProvider)externalProvider).ToString()] = externalProviderId;
+            }
+
             query.Parent = null;
             result = folder.GetItems(query);
         }
@@ -562,6 +576,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
     /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
     /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
+    /// <param name="externalProvider">Optional Target a specific provider to search with externalProviderId.</param>
+    /// <param name="externalProviderId">Optional filter by any external provider id. You have to select a Provider with ExternalProvider field.</param>
     /// <param name="isMovie">Optional filter for live tv movies.</param>
     /// <param name="isSeries">Optional filter for live tv series.</param>
     /// <param name="isNews">Optional filter for live tv news.</param>
@@ -653,6 +669,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? hasImdbId,
         [FromQuery] bool? hasTmdbId,
         [FromQuery] bool? hasTvdbId,
+        [FromQuery] MetadataProvider? externalProvider,
+        [FromQuery] string? externalProviderId,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
         [FromQuery] bool? isNews,
@@ -740,6 +758,8 @@ public class ItemsController : BaseJellyfinApiController
             hasImdbId,
             hasTmdbId,
             hasTvdbId,
+            externalProvider,
+            externalProviderId,
             isMovie,
             isSeries,
             isNews,
