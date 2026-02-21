@@ -47,6 +47,7 @@ namespace Jellyfin.Api.Controllers;
 public class LibraryController : BaseJellyfinApiController
 {
     private readonly IProviderManager _providerManager;
+    private readonly ISimilarItemsManager _similarItemsManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
@@ -60,6 +61,7 @@ public class LibraryController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
     /// </summary>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="similarItemsManager">Instance of the <see cref="ISimilarItemsManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
@@ -70,6 +72,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
+        ISimilarItemsManager similarItemsManager,
         ILibraryManager libraryManager,
         IUserManager userManager,
         IDtoService dtoService,
@@ -80,6 +83,7 @@ public class LibraryController : BaseJellyfinApiController
         IServerConfigurationManager serverConfigurationManager)
     {
         _providerManager = providerManager;
+        _similarItemsManager = similarItemsManager;
         _libraryManager = libraryManager;
         _userManager = userManager;
         _dtoService = dtoService;
@@ -723,6 +727,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Similar items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
     [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists")]
@@ -733,12 +738,13 @@ public class LibraryController : BaseJellyfinApiController
     [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetSimilarItems(
         [FromRoute, Required] Guid itemId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        CancellationToken cancellationToken)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -761,57 +767,22 @@ public class LibraryController : BaseJellyfinApiController
 
         var dtoOptions = new DtoOptions { Fields = fields };
 
-        var program = item as IHasProgramAttributes;
-        bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
-        bool? isSeries = item is Series || (program is not null && program.IsSeries);
+        // Get library options for provider configuration
+        var libraryOptions = _libraryManager.GetLibraryOptions(item);
 
-        var includeItemTypes = new List<BaseItemKind>();
-        if (isMovie.Value)
-        {
-            includeItemTypes.Add(BaseItemKind.Movie);
-            if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
-            {
-                includeItemTypes.Add(BaseItemKind.Trailer);
-                includeItemTypes.Add(BaseItemKind.LiveTvProgram);
-            }
-        }
-        else if (isSeries.Value)
-        {
-            includeItemTypes.Add(BaseItemKind.Series);
-        }
-        else
-        {
-            // For non series and movie types these columns are typically null
-            // isSeries = null;
-            isMovie = null;
-            includeItemTypes.Add(item.GetBaseItemKind());
-        }
-
-        var query = new InternalItemsQuery(user)
-        {
-            Genres = item.Genres,
-            Tags = item.Tags,
-            Limit = limit,
-            IncludeItemTypes = includeItemTypes.ToArray(),
-            DtoOptions = dtoOptions,
-            EnableTotalRecordCount = !isMovie ?? true,
-            EnableGroupByMetadataKey = isMovie ?? false,
-            ExcludeItemIds = [itemId],
-            OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
-        };
-
-        // ExcludeArtistIds
-        if (excludeArtistIds.Length != 0)
-        {
-            query.ExcludeArtistIds = excludeArtistIds;
-        }
-
-        var itemsResult = _libraryManager.GetItemList(query);
+        var itemsResult = await _similarItemsManager.GetSimilarItemsAsync(
+            item,
+            excludeArtistIds,
+            user,
+            dtoOptions,
+            limit,
+            libraryOptions,
+            cancellationToken).ConfigureAwait(false);
 
         var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
 
         return new QueryResult<BaseItemDto>(
-            query.StartIndex,
+            0,
             itemsResult.Count,
             returnList);
     }
@@ -918,6 +889,17 @@ public class LibraryController : BaseJellyfinApiController
                     {
                         Name = i.Name,
                         DefaultEnabled = IsImageFetcherEnabledByDefault(i.Name, type, isNewLibrary)
+                    })
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+
+                SimilarItemProviders = plugins
+                    .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.LocalSimilarityProvider || p.Type == MetadataPluginType.SimilarityProvider))
+                    .Select(i => new LibraryOptionInfoDto
+                    {
+                        Name = i.Name,
+                        DefaultEnabled = i.Type == MetadataPluginType.LocalSimilarityProvider
                     })
                     .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray(),

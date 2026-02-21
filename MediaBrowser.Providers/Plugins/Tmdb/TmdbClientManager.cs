@@ -505,6 +505,54 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Gets a single page of similar movies for a movie from the TMDb API.
+        /// </summary>
+        /// <param name="tmdbId">The TMDb id of the movie.</param>
+        /// <param name="page">The page number to fetch (1-based).</param>
+        /// <param name="language">The language for results.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A tuple containing the list of similar movies and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        {
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            var searchResults = await _tmDbClient
+                .GetMovieSimilarAsync(tmdbId, language, page, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (searchResults?.Results is null || searchResults.Results.Count == 0)
+            {
+                return ([], 0);
+            }
+
+            return (searchResults.Results, searchResults.TotalPages);
+        }
+
+        /// <summary>
+        /// Gets a single page of similar TV shows for a series from the TMDb API.
+        /// </summary>
+        /// <param name="tmdbId">The TMDb id of the TV show.</param>
+        /// <param name="page">The page number to fetch (1-based).</param>
+        /// <param name="language">The language for results.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A tuple containing the list of similar TV shows and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        {
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            var searchResults = await _tmDbClient
+                .GetTvShowSimilarAsync(tmdbId, language, page, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (searchResults?.Results is null || searchResults.Results.Count == 0)
+            {
+                return ([], 0);
+            }
+
+            return (searchResults.Results, searchResults.TotalPages);
+        }
+
+        /// <summary>
         /// Handles bad path checking and builds the absolute url.
         /// </summary>
         /// <param name="size">The image size to fetch.</param>
