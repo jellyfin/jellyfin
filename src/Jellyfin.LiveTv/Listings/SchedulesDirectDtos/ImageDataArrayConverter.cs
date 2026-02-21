@@ -32,7 +32,7 @@ public sealed class ImageDataArrayConverter : JsonConverter<IReadOnlyList<ImageD
         }
 
         // Not an array (string error, null, object, etc.) — skip and return empty.
-        reader.Skip();
+        reader.TrySkip();
         return [];
     }
 
