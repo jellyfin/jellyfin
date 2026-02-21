@@ -23,6 +23,11 @@ namespace MediaBrowser.Model.SyncPlay
         /// <summary>
         /// The seek command. Instructs users to seek to a specified time.
         /// </summary>
-        Seek = 3
+        Seek = 3,
+
+        /// <summary>
+        /// The set playback speed command. Instructs users to change playback speed.
+        /// </summary>
+        SetPlaybackSpeed = 4
     }
 }
