@@ -646,25 +646,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetImageResolutionParameter()
         {
-            var imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
+            var target = _serverConfig.Configuration.ChapterImageResolution switch
             {
-                ImageResolution.P144 => "256x144",
-                ImageResolution.P240 => "426x240",
-                ImageResolution.P360 => "640x360",
-                ImageResolution.P480 => "854x480",
-                ImageResolution.P720 => "1280x720",
-                ImageResolution.P1080 => "1920x1080",
-                ImageResolution.P1440 => "2560x1440",
-                ImageResolution.P2160 => "3840x2160",
+                ImageResolution.P144 => "144",
+                ImageResolution.P240 => "240",
+                ImageResolution.P360 => "360",
+                ImageResolution.P480 => "480",
+                ImageResolution.P720 => "720",
+                ImageResolution.P1080 => "1080",
+                ImageResolution.P1440 => "1440",
+                ImageResolution.P2160 => "2160",
                 _ => string.Empty
             };
 
-            if (!string.IsNullOrEmpty(imageResolutionParameter))
-            {
-                imageResolutionParameter = " -s " + imageResolutionParameter;
-            }
-
-            return imageResolutionParameter;
+            return string.IsNullOrEmpty(target) ? string.Empty : $",scale=-2:min(ih\\,{target})";
         }
 
         private async Task<string> ExtractImageInternal(
