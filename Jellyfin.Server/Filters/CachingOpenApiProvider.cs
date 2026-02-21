@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -48,7 +48,7 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
     }
 
     /// <inheritdoc />
-    public OpenApiDocument GetSwagger(string documentName, string? host = null, string? basePath = null)
+    public OpenApiDocument GetSwagger(string documentName, string host, string basePath)
     {
         if (_memoryCache.TryGetValue(CacheKey, out OpenApiDocument? openApiDocument) && openApiDocument is not null)
         {
