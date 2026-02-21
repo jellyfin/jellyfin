@@ -17,42 +17,45 @@ namespace MediaBrowser.Controller.Entities
     {
         public InternalItemsQuery()
         {
-            AlbumArtistIds = Array.Empty<Guid>();
-            AlbumIds = Array.Empty<Guid>();
-            AncestorIds = Array.Empty<Guid>();
-            ArtistIds = Array.Empty<Guid>();
-            BlockUnratedItems = Array.Empty<UnratedItem>();
-            BoxSetLibraryFolders = Array.Empty<Guid>();
-            ChannelIds = Array.Empty<Guid>();
-            ContributingArtistIds = Array.Empty<Guid>();
+            AlbumArtistIds = [];
+            AlbumIds = [];
+            AncestorIds = [];
+            ArtistIds = [];
+            BlockUnratedItems = [];
+            BoxSetLibraryFolders = [];
+            ChannelIds = [];
+            ContributingArtistIds = [];
             DtoOptions = new DtoOptions();
             EnableTotalRecordCount = true;
-            ExcludeArtistIds = Array.Empty<Guid>();
-            ExcludeInheritedTags = Array.Empty<string>();
-            IncludeInheritedTags = Array.Empty<string>();
-            ExcludeItemIds = Array.Empty<Guid>();
-            ExcludeItemTypes = Array.Empty<BaseItemKind>();
-            ExcludeTags = Array.Empty<string>();
-            GenreIds = Array.Empty<Guid>();
-            Genres = Array.Empty<string>();
+            ExcludeArtistIds = [];
+            ExcludeInheritedTags = [];
+            IncludeInheritedTags = [];
+            ExcludeItemIds = [];
+            ExcludeItemTypes = [];
+            ExcludeTags = [];
+            GenreIds = [];
+            Genres = [];
             GroupByPresentationUniqueKey = true;
-            ImageTypes = Array.Empty<ImageType>();
-            IncludeItemTypes = Array.Empty<BaseItemKind>();
-            ItemIds = Array.Empty<Guid>();
-            MediaTypes = Array.Empty<MediaType>();
-            OfficialRatings = Array.Empty<string>();
-            OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
-            PersonIds = Array.Empty<Guid>();
-            PersonTypes = Array.Empty<string>();
-            PresetViews = Array.Empty<CollectionType?>();
-            SeriesStatuses = Array.Empty<SeriesStatus>();
-            SourceTypes = Array.Empty<SourceType>();
-            StudioIds = Array.Empty<Guid>();
-            Tags = Array.Empty<string>();
-            TopParentIds = Array.Empty<Guid>();
-            TrailerTypes = Array.Empty<TrailerType>();
-            VideoTypes = Array.Empty<VideoType>();
-            Years = Array.Empty<int>();
+            ImageTypes = [];
+            IncludeItemTypes = [];
+            ItemIds = [];
+            OwnerIds = [];
+            ExtraTypes = [];
+            MediaTypes = [];
+            OfficialRatings = [];
+            OrderBy = [];
+            OwnerIds = [];
+            PersonIds = [];
+            PersonTypes = [];
+            PresetViews = [];
+            SeriesStatuses = [];
+            SourceTypes = [];
+            StudioIds = [];
+            Tags = [];
+            TopParentIds = [];
+            TrailerTypes = [];
+            VideoTypes = [];
+            Years = [];
             SkipDeserialization = false;
         }
 
@@ -109,6 +112,12 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? CollapseBoxSetItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item types that should be collapsed into box sets.
+        /// When empty, all types are collapsed. When set, only items of these types are replaced by their parent box set.
+        /// </summary>
+        public BaseItemKind[] CollapseBoxSetItemTypes { get; set; } = [];
+
         public string? NameStartsWithOrGreater { get; set; }
 
         public string? NameStartsWith { get; set; }
@@ -132,6 +141,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid[] PersonIds { get; set; }
 
         public Guid[] ItemIds { get; set; }
+
+        public Guid[] OwnerIds { get; set; }
+
+        public ExtraType[] ExtraTypes { get; set; }
 
         public Guid[] ExcludeItemIds { get; set; }
 
@@ -362,6 +375,8 @@ namespace MediaBrowser.Controller.Entities
         public string? SeriesTimerId { get; set; }
 
         public bool SkipDeserialization { get; set; }
+
+        public bool IncludeExtras { get; set; }
 
         public void SetUser(User user)
         {

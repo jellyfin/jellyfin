@@ -96,7 +96,7 @@ public class BaseItemEntity
 
     public string? OriginalTitle { get; set; }
 
-    public string? PrimaryVersionId { get; set; }
+    public Guid? PrimaryVersionId { get; set; }
 
     public DateTime? DateLastMediaAdded { get; set; }
 
@@ -118,8 +118,6 @@ public class BaseItemEntity
 
     public string? ProductionLocations { get; set; }
 
-    public string? ExtraIds { get; set; }
-
     public int? TotalBitrate { get; set; }
 
     public BaseItemExtraType? ExtraType { get; set; }
@@ -134,7 +132,17 @@ public class BaseItemEntity
 
     public string? ShowId { get; set; }
 
-    public string? OwnerId { get; set; }
+    public Guid? OwnerId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the owner item (for extras like trailers, theme songs, etc.).
+    /// </summary>
+    public BaseItemEntity? Owner { get; set; }
+
+    /// <summary>
+    /// Gets or sets the extras owned by this item (trailers, theme songs, behind the scenes, etc.).
+    /// </summary>
+    public ICollection<BaseItemEntity>? Extras { get; set; }
 
     public int? Width { get; set; }
 
@@ -177,6 +185,16 @@ public class BaseItemEntity
     public ICollection<BaseItemTrailerType>? TrailerTypes { get; set; }
 
     public ICollection<BaseItemImageInfo>? Images { get; set; }
+
+    /// <summary>
+    /// Gets or sets the linked children (for BoxSets, Playlists, etc.).
+    /// </summary>
+    public ICollection<LinkedChildEntity>? LinkedChildEntities { get; set; }
+
+    /// <summary>
+    /// Gets or sets the items this entity is linked to as a child.
+    /// </summary>
+    public ICollection<LinkedChildEntity>? LinkedChildOfEntities { get; set; }
 
     // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
     // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }

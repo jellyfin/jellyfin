@@ -564,25 +564,35 @@ public class UserLibraryController : BaseJellyfinApiController
             },
             dtoOptions);
 
-        var dtos = list.Select(i =>
+        var resolvedItems = new BaseItem[list.Count];
+        var childCounts = new int[list.Count];
+        for (int i = 0; i < list.Count; i++)
         {
-            var item = i.Item2[0];
+            var tuple = list[i];
+            var item = tuple.Item2[0];
             var childCount = 0;
 
-            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum || i.Item1 is Series ))
+            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum || tuple.Item1 is Series))
             {
-                item = i.Item1;
-                childCount = i.Item2.Count;
+                item = tuple.Item1;
+                childCount = tuple.Item2.Count;
             }
 
-            var dto = _dtoService.GetBaseItemDto(item, dtoOptions, user);
+            resolvedItems[i] = item;
+            childCounts[i] = childCount;
+        }
 
-            dto.ChildCount = childCount;
+        // Fetch DTOs without visibility check since we've already done that in GetLatestItems and restore child counts afterwards
+        var dtos = _dtoService.GetBaseItemDtos(resolvedItems, dtoOptions, user, skipVisibilityCheck: true);
+        for (int i = 0; i < dtos.Count; i++)
+        {
+            if (childCounts[i] > 0)
+            {
+                dtos[i].ChildCount = childCounts[i];
+            }
+        }
 
-            return dto;
-        });
-
-        return Ok(dtos);
+        return Ok(dtos.AsEnumerable());
     }
 
     /// <summary>
@@ -637,13 +647,13 @@ public class UserLibraryController : BaseJellyfinApiController
             var hasMetadata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
             var performFullRefresh = !hasMetadata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
 
-            if (!hasMetadata)
+            if (performFullRefresh)
             {
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                 {
                     MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ForceSave = performFullRefresh
+                    ForceSave = true
                 };
 
                 await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);

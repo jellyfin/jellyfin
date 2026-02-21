@@ -19,6 +19,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -40,7 +41,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public string PrimaryVersionId { get; set; }
+        public Guid? PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
 
@@ -160,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
         public bool IsStacked => AdditionalParts.Length > 0;
 
         [JsonIgnore]
-        public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
+        public override bool HasLocalAlternateVersions => LibraryManager.GetLocalAlternateVersionIds(this).Any();
 
         public static IRecordingsManager RecordingsManager { get; set; }
 
@@ -253,14 +254,17 @@ namespace MediaBrowser.Controller.Entities
         private int GetMediaSourceCount(HashSet<Guid> callstack = null)
         {
             callstack ??= new();
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                var item = LibraryManager.GetItemById(PrimaryVersionId);
+                var item = LibraryManager.GetItemById(PrimaryVersionId.Value);
                 if (item is Video video)
                 {
                     if (callstack.Contains(video.Id))
                     {
-                        return video.LinkedAlternateVersions.Length + video.LocalAlternateVersions.Length + 1;
+                        // Count alternate versions using LibraryManager
+                        var linkedCount = LibraryManager.GetLinkedAlternateVersions(video).Count();
+                        var localCount = LibraryManager.GetLocalAlternateVersionIds(video).Count();
+                        return linkedCount + localCount + 1;
                     }
 
                     callstack.Add(video.Id);
@@ -268,7 +272,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return LinkedAlternateVersions.Length + LocalAlternateVersions.Length + 1;
+            // Count alternate versions using LibraryManager
+            var linkedVersionCount = LibraryManager.GetLinkedAlternateVersions(this).Count();
+            var localVersionCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
+            return linkedVersionCount + localVersionCount + 1;
         }
 
         public override List<string> GetUserDataKeys()
@@ -310,25 +317,17 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public void SetPrimaryVersionId(string id)
+        public void SetPrimaryVersionId(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                PrimaryVersionId = null;
-            }
-            else
-            {
-                PrimaryVersionId = id;
-            }
-
+            PrimaryVersionId = id;
             PresentationUniqueKey = CreatePresentationUniqueKey();
         }
 
         public override string CreatePresentationUniqueKey()
         {
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                return PrimaryVersionId;
+                return PrimaryVersionId.Value.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return base.CreatePresentationUniqueKey();
@@ -364,11 +363,6 @@ namespace MediaBrowser.Controller.Entities
             return AdditionalParts.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
         }
 
-        public IEnumerable<Guid> GetLocalAlternateVersionIds()
-        {
-            return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
-        }
-
         private string GetUserDataKey(string providerId)
         {
             var key = providerId + "-" + ExtraType.ToString().ToLowerInvariant();
@@ -380,15 +374,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return key;
-        }
-
-        public IEnumerable<Video> GetLinkedAlternateVersions()
-        {
-            return LinkedAlternateVersions
-                .Select(GetLinkedChild)
-                .Where(i => i is not null)
-                .OfType<Video>()
-                .OrderBy(i => i.SortName);
         }
 
         /// <summary>
@@ -436,6 +421,17 @@ namespace MediaBrowser.Controller.Entities
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
+            // Clean up LocalAlternateVersions - remove paths that no longer exist
+            if (LocalAlternateVersions.Length > 0)
+            {
+                var validPaths = LocalAlternateVersions.Where(FileSystem.FileExists).ToArray();
+                if (validPaths.Length != LocalAlternateVersions.Length)
+                {
+                    LocalAlternateVersions = validPaths;
+                    hasChanges = true;
+                }
+            }
+
             if (IsStacked)
             {
                 var tasks = AdditionalParts
@@ -449,30 +445,107 @@ namespace MediaBrowser.Controller.Entities
             // The additional parts won't have additional parts themselves
             if (IsFileProtocol && SupportsOwnedItems)
             {
-                if (!IsStacked)
+                // Check if LinkedChildren are in sync before processing
+                var existingVersionCount = LibraryManager.GetLocalAlternateVersionIds(this).Count();
+                var tasks = LocalAlternateVersions
+                    .Select(i => RefreshMetadataForVersions(options, false, i, cancellationToken));
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                if (existingVersionCount != LocalAlternateVersions.Length)
                 {
-                    RefreshLinkedAlternateVersions();
-
-                    var tasks = LocalAlternateVersions
-                        .Select(i => RefreshMetadataForOwnedVideo(options, false, i, cancellationToken));
-
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    hasChanges = true;
                 }
             }
 
             return hasChanges;
         }
 
-        private void RefreshLinkedAlternateVersions()
+        private async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
         {
-            foreach (var child in LinkedAlternateVersions)
+            // Ensure the alternate version exists with the correct type (e.g. Movie, not Video)
+            // before refreshing. This must happen here rather than in RefreshMetadataForOwnedVideo
+            // because that method is also used for stacked parts which should keep their resolved type.
+            var id = LibraryManager.GetNewItemId(path, GetType());
+            if (LibraryManager.GetItemById(id) is not Video && FileSystem.FileExists(path))
             {
-                // Reset the cached value
-                if (child.ItemId.IsNullOrEmpty())
+                var parentFolder = GetParent() as Folder;
+                var collectionType = LibraryManager.GetContentType(this);
+                var altVideo = LibraryManager.ResolveAlternateVersion(path, GetType(), parentFolder, collectionType);
+                if (altVideo is not null)
                 {
-                    child.ItemId = null;
+                    altVideo.OwnerId = Id;
+                    altVideo.SetPrimaryVersionId(Id);
+                    LibraryManager.CreateItem(altVideo, GetParent());
                 }
             }
+
+            await RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, cancellationToken).ConfigureAwait(false);
+
+            // Create LinkedChild entry for this local alternate version
+            // This ensures the relationship exists in the database even if the alternate version
+            // was created after the primary video was first saved
+            if (LibraryManager.GetItemById(id) is Video video)
+            {
+                LibraryManager.UpsertLinkedChild(Id, video.Id, LinkedChildType.LocalAlternateVersion);
+
+                // Ensure PrimaryVersionId is set for existing alternate versions that may not have it
+                if (!video.PrimaryVersionId.HasValue)
+                {
+                    video.SetPrimaryVersionId(Id);
+                    await video.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private new async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        {
+            var newOptions = new MetadataRefreshOptions(options)
+            {
+                SearchResult = null
+            };
+
+            var id = LibraryManager.GetNewItemId(path, GetType());
+
+            // Check if the file still exists
+            if (!FileSystem.FileExists(path))
+            {
+                // File was removed - clean up any orphaned database entry
+                if (LibraryManager.GetItemById(id) is Video orphanedVideo && orphanedVideo.OwnerId.Equals(Id))
+                {
+                    Logger.LogInformation("Owned video file no longer exists, removing orphaned item: {Path}", path);
+                    LibraryManager.DeleteItem(orphanedVideo, new DeleteOptions { DeleteFileLocation = false });
+                }
+
+                return;
+            }
+
+            if (LibraryManager.GetItemById(id) is not Video video)
+            {
+                var parentFolder = GetParent() as Folder;
+                var collectionType = LibraryManager.GetContentType(this);
+                video = LibraryManager.ResolvePath(
+                    FileSystem.GetFileSystemInfo(path),
+                    parentFolder,
+                    collectionType: collectionType) as Video;
+
+                if (video is null)
+                {
+                    return;
+                }
+
+                video.Id = id;
+                video.OwnerId = Id;
+                LibraryManager.CreateItem(video, parentFolder);
+                newOptions.ForceSave = true;
+            }
+
+            if (video.OwnerId.IsEmpty())
+            {
+                video.OwnerId = Id;
+            }
+
+            await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -480,7 +553,7 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
-            var localAlternates = GetLocalAlternateVersionIds()
+            var localAlternates = LibraryManager.GetLocalAlternateVersionIds(this)
                 .Select(i => LibraryManager.GetItemById(i))
                 .Where(i => i is not null);
 
@@ -537,22 +610,22 @@ namespace MediaBrowser.Controller.Entities
                 (this, MediaSourceType.Default)
             };
 
-            list.AddRange(GetLinkedAlternateVersions().Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
+            list.AddRange(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
-            if (!string.IsNullOrEmpty(PrimaryVersionId))
+            if (PrimaryVersionId.HasValue)
             {
-                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
+                if (LibraryManager.GetItemById(PrimaryVersionId.Value) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
                     list.Add((primary, MediaSourceType.Grouping));
-                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
+                    list.AddRange(LibraryManager.GetLinkedAlternateVersions(primary).Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
                 }
             }
 
             var localAlternates = list
                 .SelectMany(i =>
                 {
-                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
+                    return i.Item1 is Video video ? LibraryManager.GetLocalAlternateVersionIds(video) : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i is not null)

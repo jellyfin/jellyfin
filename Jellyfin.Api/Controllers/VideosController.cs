@@ -147,9 +147,9 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (item.LinkedAlternateVersions.Length == 0)
+        if (item.LinkedAlternateVersions.Length == 0 && item.PrimaryVersionId.HasValue)
         {
-            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
+            item = _libraryManager.GetItemById<Video>(item.PrimaryVersionId.Value);
         }
 
         if (item is null)
@@ -157,7 +157,7 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        foreach (var link in item.GetLinkedAlternateVersions())
+        foreach (var link in _libraryManager.GetLinkedAlternateVersions(item))
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -197,7 +197,7 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest("Please supply at least two videos to merge.");
         }
 
-        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
+        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && !i.PrimaryVersionId.HasValue);
         if (primaryVersion is null)
         {
             primaryVersion = items
@@ -218,22 +218,25 @@ public class VideosController : BaseJellyfinApiController
 
         foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
         {
-            item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
+            item.SetPrimaryVersionId(primaryVersion.Id);
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-            if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
+            // Re-route any playlist/collection references from this item to the primary
+            _libraryManager.RerouteLinkedChildReferences(item.Id, primaryVersion.Id);
+
+            if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
             {
                 alternateVersionsOfPrimary.Add(new LinkedChild
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
+                    ItemId = item.Id,
+                    Type = LinkedChildType.LinkedAlternateVersion
                 });
             }
 
             foreach (var linkedItem in item.LinkedAlternateVersions)
             {
-                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                if (linkedItem.ItemId.HasValue && !alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(linkedItem.ItemId.Value)))
                 {
                     alternateVersionsOfPrimary.Add(linkedItem);
                 }

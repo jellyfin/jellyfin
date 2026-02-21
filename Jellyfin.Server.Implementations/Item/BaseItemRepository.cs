@@ -1,6 +1,7 @@
 #pragma warning disable RS0030 // Do not use banned APIs
 // Do not enforce that because EFCore cannot deal with cultures well.
 #pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1309 // Use ordinal string comparison
 #pragma warning disable CA1311 // Specify a culture or use an invariant version
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
@@ -19,6 +20,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.MatchCriteria;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Implementations.Extensions;
@@ -31,6 +33,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -39,6 +42,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
+using DbLinkedChildType = Jellyfin.Database.Implementations.Entities.LinkedChildType;
+using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 
 namespace Jellyfin.Server.Implementations.Item;
 
@@ -77,6 +82,10 @@ public sealed class BaseItemRepository
     private static readonly IReadOnlyList<ItemValueType> _getGenreValueTypes = [ItemValueType.Genre];
     private static readonly IReadOnlyList<char> SearchWildcardTerms = ['%', '_', '[', ']', '^'];
 
+    private static readonly string ImdbProviderName = MetadataProvider.Imdb.ToString().ToLowerInvariant();
+    private static readonly string TmdbProviderName = MetadataProvider.Tmdb.ToString().ToLowerInvariant();
+    private static readonly string TvdbProviderName = MetadataProvider.Tvdb.ToString().ToLowerInvariant();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseItemRepository"/> class.
     /// </summary>
@@ -112,7 +121,25 @@ public sealed class BaseItemRepository
 
         var date = (DateTime?)DateTime.UtcNow;
 
-        var relatedItems = ids.SelectMany(f => TraverseHirachyDown(f, context)).ToArray();
+        // Use owned-only traversal (AncestorIds) to avoid deleting items that are merely
+        // linked via LinkedChildren (e.g. movies/series inside a BoxSet are associations, not owned children).
+        var descendantIds = ids.SelectMany(f => DescendantQueryHelper.GetOwnedDescendantIds(context, f)).ToHashSet();
+        foreach (var id in ids)
+        {
+            descendantIds.Add(id);
+        }
+
+        var extraIds = context.BaseItems
+            .Where(e => e.OwnerId.HasValue && descendantIds.Contains(e.OwnerId.Value))
+            .Select(e => e.Id)
+            .ToArray();
+
+        foreach (var extraId in extraIds)
+        {
+            descendantIds.Add(extraId);
+        }
+
+        var relatedItems = descendantIds.ToArray();
 
         // Remove any UserData entries for the placeholder item that would conflict with the UserData
         // being detached from the item being deleted. This is necessary because, during an update,
@@ -140,12 +167,14 @@ public sealed class BaseItemRepository
         context.BaseItemMetadataFields.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItemProviders.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.BaseItemTrailerTypes.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
-        context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.Chapters.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.CustomItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ParentId).ExecuteDelete();
+        context.LinkedChildren.WhereOneOrMany(relatedItems, e => e.ChildId).ExecuteDelete();
+        context.BaseItems.WhereOneOrMany(relatedItems, e => e.Id).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
@@ -250,7 +279,7 @@ public sealed class BaseItemRepository
     public QueryResult<BaseItemDto> GetItems(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        if (!filter.EnableTotalRecordCount || ((filter.Limit ?? 0) == 0 && (filter.StartIndex ?? 0) == 0))
+        if (!filter.EnableTotalRecordCount || (!filter.Limit.HasValue && (filter.StartIndex ?? 0) == 0))
         {
             var returnList = GetItemList(filter);
             return new QueryResult<BaseItemDto>(
@@ -306,6 +335,7 @@ public sealed class BaseItemRepository
             }
 
             var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+                .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
                 .Where(dto => dto is not null)
@@ -320,47 +350,316 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType)
+    public IReadOnlyList<BaseItemDto> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType)
     {
         ArgumentNullException.ThrowIfNull(filter);
         PrepareFilterQuery(filter);
 
-        // Early exit if collection type is not tvshows or music
-        if (collectionType != CollectionType.tvshows && collectionType != CollectionType.music)
+        // Early exit if collection type is not supported
+        if (collectionType is not CollectionType.movies and not CollectionType.tvshows and not CollectionType.music)
         {
-            return Array.Empty<BaseItem>();
+            return [];
         }
 
+        var limit = filter.Limit ?? 50;
         using var context = _dbProvider.CreateDbContext();
 
-        // Subquery to group by SeriesNames/Album and get the max Date Created for each group.
-        var subquery = PrepareItemQuery(context, filter);
-        subquery = TranslateQuery(subquery, context, filter);
-        var subqueryGrouped = subquery.GroupBy(g => collectionType == CollectionType.tvshows ? g.SeriesName : g.Album)
-            .Select(g => new
-            {
-                Key = g.Key,
-                MaxDateCreated = g.Max(a => a.DateCreated)
-            })
-            .OrderByDescending(g => g.MaxDateCreated)
-            .Select(g => g);
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
 
-        if (filter.Limit.HasValue && filter.Limit.Value > 0)
+        if (collectionType == CollectionType.tvshows)
         {
-            subqueryGrouped = subqueryGrouped.Take(filter.Limit.Value);
+            return GetLatestTvShowItems(context, baseQuery, filter, limit);
         }
 
-        filter.Limit = null;
+        // Find the top N group keys ordered by most recent DateCreated.
+        // Movies group by PresentationUniqueKey (alternate versions like 4K/1080p share a key).
+        // Music groups by Album.
+        Expression<Func<BaseItemEntity, bool>> groupKeyFilter;
+        Expression<Func<BaseItemEntity, string?>> groupKeySelector;
 
-        var mainquery = PrepareItemQuery(context, filter);
-        mainquery = TranslateQuery(mainquery, context, filter);
-        mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
-        mainquery = ApplyGroupingFilter(context, mainquery, filter);
-        mainquery = ApplyQueryPaging(mainquery, filter);
+        if (collectionType is CollectionType.movies)
+        {
+            groupKeyFilter = e => e.PresentationUniqueKey != null;
+            groupKeySelector = e => e.PresentationUniqueKey;
+        }
+        else
+        {
+            groupKeyFilter = e => e.Album != null;
+            groupKeySelector = e => e.Album;
+        }
 
-        mainquery = ApplyNavigations(mainquery, filter);
+        var topGroupKeys = baseQuery
+            .Where(groupKeyFilter)
+            .GroupBy(groupKeySelector)
+            .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
+            .OrderByDescending(g => g.MaxDate)
+            .Take(limit)
+            .Select(g => g.GroupKey)
+            .ToList();
 
-        return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
+        // Get only the first (most recent) item ID per group using a lightweight projection,
+        // then fetch full entities only for those items. This avoids loading all versions/tracks
+        // with expensive navigation properties just to discard duplicates.
+        var allItemsLite = collectionType switch
+        {
+            CollectionType.movies => baseQuery
+                .Where(e => e.PresentationUniqueKey != null && topGroupKeys.Contains(e.PresentationUniqueKey))
+                .OrderByDescending(e => e.DateCreated)
+                .ThenByDescending(e => e.Id)
+                .Select(e => new { e.Id, GroupKey = e.PresentationUniqueKey })
+                .ToList(),
+            _ => baseQuery
+                .Where(e => e.Album != null && topGroupKeys.Contains(e.Album))
+                .OrderByDescending(e => e.DateCreated)
+                .ThenByDescending(e => e.Id)
+                .Select(e => new { e.Id, GroupKey = e.Album })
+                .ToList()
+        };
+
+        var firstIds = allItemsLite
+            .DistinctBy(e => e.GroupKey)
+            .Select(e => e.Id)
+            .ToList();
+
+        var itemsQuery = context.BaseItems.AsNoTracking().Where(e => firstIds.Contains(e.Id));
+        itemsQuery = ApplyNavigations(itemsQuery, filter).AsSingleQuery();
+
+        return itemsQuery
+            .AsEnumerable()
+            .OrderByDescending(e => e.DateCreated)
+            .ThenByDescending(e => e.Id)
+            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+            .Where(dto => dto is not null)
+            .ToArray()!;
+    }
+
+    /// <summary>
+    /// Gets the latest TV show items with smart Season/Series container selection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method implements intelligent container selection for TV shows in the "Latest" section.
+    /// Instead of always showing individual episodes, it analyzes recent additions and may return
+    /// a Season or Series container when multiple related episodes were recently added.
+    /// </para>
+    /// <para>
+    /// The selection logic is:
+    /// <list type="bullet">
+    ///     <item>If recent episodes span multiple seasons → return the Series</item>
+    ///     <item>If multiple recent episodes are from one season AND the series has multiple seasons → return the Season</item>
+    ///     <item>If multiple recent episodes are from one season AND the series has only one season → return the Series</item>
+    ///     <item>Otherwise → return the most recent Episode</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="context">The database context.</param>
+    /// <param name="baseQuery">The base query with filters already applied.</param>
+    /// <param name="filter">The query filter options.</param>
+    /// <param name="limit">Maximum number of items to return.</param>
+    /// <returns>A list of BaseItemDto representing the latest TV content.</returns>
+    private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int limit)
+    {
+        // Episodes added within this window are considered "recently added together"
+        const double RecentAdditionWindowHours = 24.0;
+
+        // Step 1: Find the top N series with recently added content, ordered by most recent addition
+        var topSeriesWithDates = baseQuery
+            .Where(e => e.SeriesName != null)
+            .GroupBy(e => e.SeriesName)
+            .Select(g => new { SeriesName = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
+            .OrderByDescending(g => g.MaxDate)
+            .Take(limit)
+            .ToList();
+
+        var topSeriesNames = topSeriesWithDates.Select(g => g.SeriesName).ToList();
+
+        // Compute a global date cutoff: the oldest series' max date minus the window.
+        // Episodes before this cutoff cannot be in any series' "recent additions" window,
+        // so we can safely exclude them to avoid loading ancient episodes.
+        var globalCutoff = topSeriesWithDates.Count > 0
+            ? topSeriesWithDates.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
+            : null;
+
+        // Fetch only the columns needed for analysis (lightweight projection).
+        var episodeQuery = baseQuery
+            .Where(e => e.SeriesName != null && topSeriesNames.Contains(e.SeriesName));
+        if (globalCutoff is not null)
+        {
+            episodeQuery = episodeQuery.Where(e => e.DateCreated >= globalCutoff);
+        }
+
+        var allEpisodes = episodeQuery
+            .OrderByDescending(e => e.DateCreated)
+            .ThenByDescending(e => e.Id)
+            .Select(e => new { e.Id, e.SeriesName, e.DateCreated, e.SeasonId, e.SeriesId })
+            .ToList();
+
+        // Collect all season/series IDs we'll need to look up for count information
+        var allSeasonIds = new HashSet<Guid>();
+        var allSeriesIds = new HashSet<Guid>();
+
+        // Analysis data for each series: recent episode count, season IDs, and the most recent episode ID
+        var analysisData = new List<(
+            int RecentEpisodeCount,
+            List<Guid> SeasonIds,
+            Guid? FirstRecentSeriesId,
+            DateTime MaxDate,
+            Guid MostRecentEpisodeId)>();
+
+        // Step 3: Analyze each series to identify recent additions within the time window
+        foreach (var group in allEpisodes.GroupBy(e => e.SeriesName))
+        {
+            var episodes = group.ToList();
+            var mostRecentDate = episodes[0].DateCreated ?? DateTime.MinValue;
+            var recentCutoff = mostRecentDate.AddHours(-RecentAdditionWindowHours);
+
+            // Find episodes added within the recent window
+            var recentEpisodeCount = 0;
+            var seasonIdSet = new HashSet<Guid>();
+            Guid? firstRecentSeriesId = null;
+
+            foreach (var ep in episodes)
+            {
+                if (ep.DateCreated >= recentCutoff)
+                {
+                    recentEpisodeCount++;
+                    if (ep.SeasonId.HasValue)
+                    {
+                        seasonIdSet.Add(ep.SeasonId.Value);
+                    }
+
+                    firstRecentSeriesId ??= ep.SeriesId;
+                }
+            }
+
+            var seasonIds = seasonIdSet.ToList();
+            analysisData.Add((recentEpisodeCount, seasonIds, firstRecentSeriesId, mostRecentDate, episodes[0].Id));
+
+            // Track all unique season/series IDs for batch lookups
+            foreach (var sid in seasonIds)
+            {
+                allSeasonIds.Add(sid);
+            }
+
+            if (firstRecentSeriesId.HasValue)
+            {
+                allSeriesIds.Add(firstRecentSeriesId.Value);
+            }
+        }
+
+        // Step 4: Batch fetch counts - episodes per season and seasons per series
+        // These counts help determine whether to show Season or Series as the container
+        var episodeType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+        var seasonType = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Season];
+        var seasonEpisodeCounts = allSeasonIds.Count > 0
+            ? context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.SeasonId.HasValue && allSeasonIds.Contains(e.SeasonId.Value) && e.Type == episodeType)
+                .GroupBy(e => e.SeasonId!.Value)
+                .Select(g => new { SeasonId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.SeasonId, x => x.Count)
+            : [];
+
+        var seriesSeasonCounts = allSeriesIds.Count > 0
+            ? context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.SeriesId.HasValue && allSeriesIds.Contains(e.SeriesId.Value) && e.Type == seasonType)
+                .GroupBy(e => e.SeriesId!.Value)
+                .Select(g => new { SeriesId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.SeriesId, x => x.Count)
+            : [];
+
+        // Step 5: Apply the container selection logic for each series
+        var entitiesToFetch = new HashSet<Guid>();
+        var seriesResults = new List<(Guid? SeasonId, Guid? SeriesId, DateTime MaxDate, Guid MostRecentEpisodeId)>(analysisData.Count);
+
+        foreach (var (recentEpisodeCount, seasonIds, firstRecentSeriesId, maxDate, mostRecentEpisodeId) in analysisData)
+        {
+            Guid? seasonId = null;
+            Guid? seriesId = null;
+
+            if (seasonIds.Count == 1)
+            {
+                // All recent episodes are from a single season
+                var sid = seasonIds[0];
+                var totalEpisodes = seasonEpisodeCounts.GetValueOrDefault(sid, 0);
+                var totalSeasonsInSeries = firstRecentSeriesId.HasValue
+                    ? seriesSeasonCounts.GetValueOrDefault(firstRecentSeriesId.Value, 1)
+                    : 1;
+
+                // Check if multiple episodes were added, or if all episodes in the season were added
+                var hasMultipleOrAllEpisodes = recentEpisodeCount > 1 || recentEpisodeCount == totalEpisodes;
+
+                if (totalSeasonsInSeries > 1 && hasMultipleOrAllEpisodes)
+                {
+                    // Multi-season series with bulk additions: show the Season
+                    seasonId = sid;
+                    entitiesToFetch.Add(sid);
+                }
+                else if (hasMultipleOrAllEpisodes && firstRecentSeriesId.HasValue)
+                {
+                    // Single-season series with bulk additions: show the Series
+                    seriesId = firstRecentSeriesId;
+                    entitiesToFetch.Add(firstRecentSeriesId.Value);
+                }
+
+                // Otherwise: single episode, will fall through to show the Episode
+            }
+            else if (seasonIds.Count > 1 && firstRecentSeriesId.HasValue)
+            {
+                // Recent episodes span multiple seasons: show the Series
+                seriesId = firstRecentSeriesId;
+                entitiesToFetch.Add(seriesId!.Value);
+            }
+
+            if (seasonId is null && seriesId is null)
+            {
+                entitiesToFetch.Add(mostRecentEpisodeId);
+            }
+
+            seriesResults.Add((seasonId, seriesId, maxDate, mostRecentEpisodeId));
+        }
+
+        // Step 6: Fetch the Season/Series entities we decided to return
+        var entities = entitiesToFetch.Count > 0
+            ? ApplyNavigations(
+                    context.BaseItems.AsNoTracking().Where(e => entitiesToFetch.Contains(e.Id)),
+                    filter)
+                .AsSingleQuery()
+                .ToDictionary(e => e.Id)
+            : [];
+
+        // Step 7: Build final results, preferring Season > Series > Episode.
+        // All needed entities are already fetched in step 6 with navigation properties.
+        var results = new List<(BaseItemEntity Entity, DateTime MaxDate)>(seriesResults.Count);
+        foreach (var (seasonId, seriesId, maxDate, mostRecentEpisodeId) in seriesResults)
+        {
+            if (seasonId.HasValue && entities.TryGetValue(seasonId.Value, out var seasonEntity))
+            {
+                results.Add((seasonEntity, maxDate));
+                continue;
+            }
+
+            if (seriesId.HasValue && entities.TryGetValue(seriesId.Value, out var seriesEntity))
+            {
+                results.Add((seriesEntity, maxDate));
+                continue;
+            }
+
+            if (entities.TryGetValue(mostRecentEpisodeId, out var episodeEntity))
+            {
+                results.Add((episodeEntity, maxDate));
+            }
+        }
+
+        return results
+            .OrderByDescending(r => r.MaxDate)
+            .ThenByDescending(r => r.Entity.Id)
+            .Take(limit)
+            .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
+            .Where(dto => dto is not null)
+            .ToArray()!;
     }
 
     /// <inheritdoc />
@@ -378,7 +677,7 @@ public sealed class BaseItemRepository
             .Join(
                 context.UserData.AsNoTracking().Where(e => e.ItemId != EF.Constant(PlaceholderId)),
                 i => new { UserId = filter.User.Id, ItemId = i.Id },
-                u => new { UserId = u.UserId, ItemId = u.ItemId },
+                u => new { u.UserId, u.ItemId },
                 (entity, data) => new { Item = entity, UserData = data })
             .GroupBy(g => g.Item.SeriesPresentationUniqueKey)
             .Select(g => new { g.Key, LastPlayedDate = g.Max(u => u.UserData.LastPlayedDate) })
@@ -386,12 +685,294 @@ public sealed class BaseItemRepository
             .OrderByDescending(g => g.LastPlayedDate)
             .Select(g => g.Key!);
 
-        if (filter.Limit.HasValue && filter.Limit.Value > 0)
+        if (filter.Limit.HasValue)
         {
             query = query.Take(filter.Limit.Value);
         }
 
         return query.ToArray();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
+        InternalItemsQuery filter,
+        IReadOnlyList<string> seriesKeys,
+        bool includeSpecials,
+        bool includeWatchedForRewatching)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(filter.User);
+
+        if (seriesKeys.Count == 0)
+        {
+            return new Dictionary<string, NextUpEpisodeBatchResult>();
+        }
+
+        PrepareFilterQuery(filter);
+        using var context = _dbProvider.CreateDbContext();
+
+        var userId = filter.User.Id;
+        var episodeTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Episode];
+
+        // Get the last watched episode ID per series (highest season/episode that is played)
+        var lastWatchedBase = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Type == episodeTypeName)
+            .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+            .Where(e => e.ParentIndexNumber != 0)
+            .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+        lastWatchedBase = ApplyAccessFiltering(context, lastWatchedBase, filter);
+        var lastWatchedInfo = lastWatchedBase
+            .GroupBy(e => e.SeriesPresentationUniqueKey)
+            .Select(g => new
+            {
+                SeriesKey = g.Key!,
+                LastWatchedId = g.OrderByDescending(e => e.ParentIndexNumber)
+                                 .ThenByDescending(e => e.IndexNumber)
+                                 .Select(e => e.Id)
+                                 .FirstOrDefault()
+            })
+            .ToDictionary(x => x.SeriesKey, x => x.LastWatchedId);
+
+        Dictionary<string, Guid> lastWatchedByDateInfo = new();
+        if (includeWatchedForRewatching)
+        {
+            var lastWatchedByDateBase = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == episodeTypeName)
+                .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+                .Where(e => e.ParentIndexNumber != 0)
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            lastWatchedByDateBase = ApplyAccessFiltering(context, lastWatchedByDateBase, filter);
+            lastWatchedByDateInfo = lastWatchedByDateBase
+                .SelectMany(e => e.UserData!.Where(ud => ud.UserId == userId && ud.Played)
+                    .Select(ud => new { Episode = e, ud.LastPlayedDate }))
+                .GroupBy(x => x.Episode.SeriesPresentationUniqueKey)
+                .Select(g => new
+                {
+                    SeriesKey = g.Key!,
+                    LastWatchedId = g.OrderByDescending(x => x.LastPlayedDate)
+                                     .Select(x => x.Episode.Id)
+                                     .FirstOrDefault()
+                })
+                .ToDictionary(x => x.SeriesKey, x => x.LastWatchedId);
+        }
+
+        var allLastWatchedIds = lastWatchedInfo.Values
+            .Concat(lastWatchedByDateInfo.Values)
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+        var lastWatchedEpisodes = new Dictionary<Guid, BaseItemEntity>();
+        if (allLastWatchedIds.Count > 0)
+        {
+            var lwQuery = context.BaseItems.AsNoTracking().Where(e => allLastWatchedIds.Contains(e.Id));
+            lwQuery = ApplyNavigations(lwQuery, filter).AsSingleQuery();
+            lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
+        }
+
+        Dictionary<string, List<BaseItemEntity>> specialsBySeriesKey = new();
+        if (includeSpecials)
+        {
+            var specialsQuery = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == episodeTypeName)
+                .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+                .Where(e => e.ParentIndexNumber == 0)
+                .Where(e => !e.IsVirtualItem);
+            specialsQuery = ApplyAccessFiltering(context, specialsQuery, filter);
+            specialsQuery = ApplyNavigations(specialsQuery, filter).AsSingleQuery();
+
+            foreach (var special in specialsQuery)
+            {
+                var key = special.SeriesPresentationUniqueKey!;
+                if (!specialsBySeriesKey.TryGetValue(key, out var list))
+                {
+                    list = new List<BaseItemEntity>();
+                    specialsBySeriesKey[key] = list;
+                }
+
+                list.Add(special);
+            }
+        }
+
+        // Build position lookup from already-loaded last watched data
+        var positionLookup = new Dictionary<string, (int Season, int Episode)>();
+        foreach (var kvp in lastWatchedInfo)
+        {
+            if (kvp.Value != Guid.Empty
+                && lastWatchedEpisodes.TryGetValue(kvp.Value, out var lw)
+                && lw.ParentIndexNumber.HasValue
+                && lw.IndexNumber.HasValue)
+            {
+                positionLookup[kvp.Key] = (lw.ParentIndexNumber.Value, lw.IndexNumber.Value);
+            }
+        }
+
+        // Single query: fetch all unplayed non-virtual non-special episodes for all series.
+        // Uses NOT EXISTS (via !Any) for the played check, which is more efficient than GroupJoin.
+        // Only unplayed episodes are loaded (typically ~10% of total), keeping memory usage low.
+        var allUnplayedBase = context.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Type == episodeTypeName)
+            .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+            .Where(e => e.ParentIndexNumber != 0)
+            .Where(e => !e.IsVirtualItem)
+            .Where(e => !e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+        allUnplayedBase = ApplyAccessFiltering(context, allUnplayedBase, filter);
+        var allUnplayedCandidates = allUnplayedBase
+            .Select(e => new
+            {
+                e.Id,
+                e.SeriesPresentationUniqueKey,
+                e.ParentIndexNumber,
+                EpisodeNumber = e.IndexNumber
+            })
+            .ToList();
+
+        // In-memory: find the next unplayed episode per series, respecting last-watched position
+        var nextEpisodeIds = new HashSet<Guid>();
+        var seriesNextIdMap = new Dictionary<string, Guid>();
+
+        foreach (var seriesKey in seriesKeys)
+        {
+            var candidates = allUnplayedCandidates
+                .Where(c => c.SeriesPresentationUniqueKey == seriesKey);
+
+            if (positionLookup.TryGetValue(seriesKey, out var pos))
+            {
+                candidates = candidates.Where(c =>
+                    c.ParentIndexNumber > pos.Season
+                    || (c.ParentIndexNumber == pos.Season && c.EpisodeNumber > pos.Episode));
+            }
+
+            var nextCandidate = candidates
+                .OrderBy(c => c.ParentIndexNumber)
+                .ThenBy(c => c.EpisodeNumber)
+                .FirstOrDefault();
+
+            if (nextCandidate is not null && nextCandidate.Id != Guid.Empty)
+            {
+                nextEpisodeIds.Add(nextCandidate.Id);
+                seriesNextIdMap[seriesKey] = nextCandidate.Id;
+            }
+        }
+
+        // Find next played episode per series for rewatching mode
+        var seriesNextPlayedIdMap = new Dictionary<string, Guid>();
+        if (includeWatchedForRewatching)
+        {
+            var allPlayedBase = context.BaseItems
+                .AsNoTracking()
+                .Where(e => e.Type == episodeTypeName)
+                .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
+                .Where(e => e.ParentIndexNumber != 0)
+                .Where(e => !e.IsVirtualItem)
+                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+            allPlayedBase = ApplyAccessFiltering(context, allPlayedBase, filter);
+            var allPlayedCandidates = allPlayedBase
+                .Select(e => new
+                {
+                    e.Id,
+                    e.SeriesPresentationUniqueKey,
+                    e.ParentIndexNumber,
+                    EpisodeNumber = e.IndexNumber
+                })
+                .ToList();
+
+            foreach (var seriesKey in seriesKeys)
+            {
+                if (!lastWatchedByDateInfo.TryGetValue(seriesKey, out var lastByDateId))
+                {
+                    continue;
+                }
+
+                var lastByDateEntity = lastWatchedEpisodes.GetValueOrDefault(lastByDateId);
+                if (lastByDateEntity is null)
+                {
+                    continue;
+                }
+
+                var playedCandidates = allPlayedCandidates
+                    .Where(c => c.SeriesPresentationUniqueKey == seriesKey);
+
+                if (lastByDateEntity.ParentIndexNumber.HasValue && lastByDateEntity.IndexNumber.HasValue)
+                {
+                    var lastSeason = lastByDateEntity.ParentIndexNumber.Value;
+                    var lastEp = lastByDateEntity.IndexNumber.Value;
+                    playedCandidates = playedCandidates.Where(c =>
+                        c.ParentIndexNumber > lastSeason
+                        || (c.ParentIndexNumber == lastSeason && c.EpisodeNumber > lastEp));
+                }
+
+                var nextPlayedCandidate = playedCandidates
+                    .OrderBy(c => c.ParentIndexNumber)
+                    .ThenBy(c => c.EpisodeNumber)
+                    .FirstOrDefault();
+
+                if (nextPlayedCandidate is not null && nextPlayedCandidate.Id != Guid.Empty)
+                {
+                    nextEpisodeIds.Add(nextPlayedCandidate.Id);
+                    seriesNextPlayedIdMap[seriesKey] = nextPlayedCandidate.Id;
+                }
+            }
+        }
+
+        // Batch fetch all next episode entities with navigation properties
+        var nextEpisodes = new Dictionary<Guid, BaseItemEntity>();
+        if (nextEpisodeIds.Count > 0)
+        {
+            var nextQuery = context.BaseItems.AsNoTracking().Where(e => nextEpisodeIds.Contains(e.Id));
+            nextQuery = ApplyNavigations(nextQuery, filter).AsSingleQuery();
+            nextEpisodes = nextQuery.ToDictionary(e => e.Id);
+        }
+
+        var result = new Dictionary<string, NextUpEpisodeBatchResult>();
+        foreach (var seriesKey in seriesKeys)
+        {
+            var batchResult = new NextUpEpisodeBatchResult();
+
+            if (lastWatchedInfo.TryGetValue(seriesKey, out var lwId) && lwId != Guid.Empty)
+            {
+                if (lastWatchedEpisodes.TryGetValue(lwId, out var entity))
+                {
+                    batchResult.LastWatched = DeserializeBaseItem(entity, filter.SkipDeserialization);
+                }
+            }
+
+            if (seriesNextIdMap.TryGetValue(seriesKey, out var nextId) && nextEpisodes.TryGetValue(nextId, out var nextEntity))
+            {
+                batchResult.NextUp = DeserializeBaseItem(nextEntity, filter.SkipDeserialization);
+            }
+
+            if (includeSpecials && specialsBySeriesKey.TryGetValue(seriesKey, out var specials))
+            {
+                batchResult.Specials = specials.Select(s => DeserializeBaseItem(s, filter.SkipDeserialization)!).ToList();
+            }
+            else
+            {
+                batchResult.Specials = Array.Empty<BaseItemDto>();
+            }
+
+            if (includeWatchedForRewatching)
+            {
+                if (lastWatchedByDateInfo.TryGetValue(seriesKey, out var lastByDateId) &&
+                    lastWatchedEpisodes.TryGetValue(lastByDateId, out var lastByDateEntity))
+                {
+                    batchResult.LastWatchedForRewatching = DeserializeBaseItem(lastByDateEntity, filter.SkipDeserialization);
+                }
+
+                if (seriesNextPlayedIdMap.TryGetValue(seriesKey, out var nextPlayedId) &&
+                    nextEpisodes.TryGetValue(nextPlayedId, out var nextPlayedEntity))
+                {
+                    batchResult.NextPlayedForRewatching = DeserializeBaseItem(nextPlayedEntity, filter.SkipDeserialization);
+                }
+            }
+
+            result[seriesKey] = batchResult;
+        }
+
+        return result;
     }
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -404,17 +985,17 @@ public sealed class BaseItemRepository
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else
@@ -422,7 +1003,112 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Distinct();
         }
 
+        if (filter.CollapseBoxSetItems == true)
+        {
+            dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
+
+            // Apply name-range filters after collapse so BoxSets are filtered by their own name,
+            // not by their children's names.
+            dbQuery = ApplyNameFilters(dbQuery, filter);
+        }
+
         dbQuery = ApplyOrder(dbQuery, filter, context);
+
+        return dbQuery;
+    }
+
+    private IQueryable<BaseItemEntity> ApplyBoxSetCollapsing(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> dbQuery,
+        BaseItemKind[] collapsibleTypes)
+    {
+        var boxSetTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.BoxSet];
+
+        var currentIds = dbQuery.Select(e => e.Id);
+
+        if (collapsibleTypes.Length == 0)
+        {
+            // Collapse all item types into box sets
+            return ApplyBoxSetCollapsingAll(context, currentIds, boxSetTypeName);
+        }
+
+        // Only collapse specific item types, keep others untouched
+        var collapsibleTypeNames = collapsibleTypes.Select(t => _itemTypeLookup.BaseItemKindNames[t]).ToList();
+
+        // Items whose type is NOT collapsible (always kept in results)
+        var nonCollapsibleIds = currentIds
+            .Where(id => !context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type)));
+
+        // Collapsible items that are NOT in any box set (kept in results)
+        var collapsibleNotInBoxSet = currentIds
+            .Where(id =>
+                context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type))
+                && !context.BaseItems.Any(bs => bs.Id == id && bs.Type == boxSetTypeName)
+                && !context.LinkedChildren.Any(lc =>
+                    lc.ChildId == id
+                    && lc.ChildType == DbLinkedChildType.Manual
+                    && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
+
+        // Box set IDs containing at least one accessible collapsible child item
+        var boxSetIds = context.LinkedChildren
+            .Where(lc =>
+                lc.ChildType == DbLinkedChildType.Manual
+                && currentIds.Contains(lc.ChildId)
+                && context.BaseItems.Any(bi => bi.Id == lc.ChildId && collapsibleTypeNames.Contains(bi.Type))
+                && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName))
+            .Select(lc => lc.ParentId)
+            .Distinct();
+
+        var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
+        return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyBoxSetCollapsingAll(
+        JellyfinDbContext context,
+        IQueryable<Guid> currentIds,
+        string boxSetTypeName)
+    {
+        // Items that are NOT box sets and NOT in any box set
+        var notInBoxSet = currentIds
+            .Where(id =>
+                !context.BaseItems.Any(bs => bs.Id == id && bs.Type == boxSetTypeName)
+                && !context.LinkedChildren.Any(lc =>
+                    lc.ChildId == id
+                    && lc.ChildType == DbLinkedChildType.Manual
+                    && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
+
+        // Box set IDs containing at least one accessible child item
+        var boxSetIds = context.LinkedChildren
+            .Where(lc =>
+                lc.ChildType == DbLinkedChildType.Manual
+                && currentIds.Contains(lc.ChildId)
+                && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName))
+            .Select(lc => lc.ParentId)
+            .Distinct();
+
+        var collapsedIds = notInBoxSet.Union(boxSetIds);
+        return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+    }
+
+    private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        {
+            var nameStartsWithLower = filter.NameStartsWith.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        {
+            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(startsOrGreaterLower) >= 0);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
+        {
+            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
+        }
 
         return dbQuery;
     }
@@ -454,19 +1140,46 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Include(e => e.Images);
         }
 
+        // Include LinkedChildEntities for container types and videos that use them
+        // (BoxSet, Playlist, CollectionFolder for manual linking; Video, Movie for alternate versions).
+        // When IncludeItemTypes is empty (any type may be returned), always include them to ensure
+        // LinkedChildren are loaded before items are saved back, preventing accidental deletion.
+        var linkedChildTypes = new[]
+        {
+            BaseItemKind.BoxSet,
+            BaseItemKind.Playlist,
+            BaseItemKind.CollectionFolder,
+            BaseItemKind.Video,
+            BaseItemKind.Movie
+        };
+        if (filter.IncludeItemTypes.Length == 0 || filter.IncludeItemTypes.Any(linkedChildTypes.Contains))
+        {
+            dbQuery = dbQuery.Include(e => e.LinkedChildEntities);
+        }
+
+        if (filter.IncludeExtras)
+        {
+            dbQuery = dbQuery.Include(e => e.Extras);
+        }
+
         return dbQuery;
     }
 
     private IQueryable<BaseItemEntity> ApplyQueryPaging(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
-            dbQuery = dbQuery.Skip(filter.StartIndex.Value);
-        }
+            var offset = filter.StartIndex ?? 0;
 
-        if (filter.Limit.HasValue && filter.Limit.Value > 0)
-        {
-            dbQuery = dbQuery.Take(filter.Limit.Value);
+            if (offset > 0)
+            {
+                dbQuery = dbQuery.Skip(offset);
+            }
+
+            if (filter.Limit.HasValue)
+            {
+                dbQuery = dbQuery.Take(filter.Limit.Value);
+            }
         }
 
         return dbQuery;
@@ -503,6 +1216,64 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc />
+    public QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+
+        // Get matching item IDs as a subquery (not materialized)
+        var matchingItemIds = baseQuery.Select(e => e.Id);
+
+        // Query distinct years directly from the database
+        var years = baseQuery
+            .Where(e => e.ProductionYear != null && e.ProductionYear > 0)
+            .Select(e => e.ProductionYear!.Value)
+            .Distinct()
+            .OrderBy(y => y)
+            .ToArray();
+
+        // Query distinct official ratings directly from the database
+        var officialRatings = baseQuery
+            .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty)
+            .Select(e => e.OfficialRating!)
+            .Distinct()
+            .OrderBy(r => r)
+            .ToArray();
+
+        // Tags via ItemValuesMap JOIN - uses subquery for matching items and dedupe based on CleanValue, but return the original Value for display
+        var tags = context.ItemValuesMap
+            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Tags)
+            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
+            .Select(ivm => ivm.ItemValue)
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
+            .OrderBy(t => t)
+            .ToArray();
+
+        // Genres via ItemValuesMap JOIN - uses subquery for matching items and dedupe based on CleanValue, but return the original Value for display
+        var genres = context.ItemValuesMap
+            .Where(ivm => ivm.ItemValue.Type == ItemValueType.Genre)
+            .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
+            .Select(ivm => ivm.ItemValue)
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
+            .OrderBy(g => g)
+            .ToArray();
+
+        return new QueryFiltersLegacy
+        {
+            Years = years,
+            OfficialRatings = officialRatings,
+            Tags = tags,
+            Genres = genres
+        };
+    }
+
+    /// <inheritdoc />
     public ItemCounts GetItemCounts(InternalItemsQuery filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -518,7 +1289,10 @@ public sealed class BaseItemRepository
             .ToArray();
 
         var lookup = _itemTypeLookup.BaseItemKindNames;
-        var result = new ItemCounts();
+        var result = new ItemCounts
+        {
+            ItemCount = counts.Sum(c => c.Count)
+        };
         foreach (var count in counts)
         {
             if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
@@ -557,7 +1331,152 @@ public sealed class BaseItemRepository
             {
                 result.TrailerCount = count.Count;
             }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.BoxSet], StringComparison.Ordinal))
+            {
+                result.BoxSetCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Book], StringComparison.Ordinal))
+            {
+                result.BookCount = count.Count;
+            }
         }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        // Look up the item's name/cleanname
+        var item = context.BaseItems.AsNoTracking()
+            .Where(e => e.Id == id)
+            .Select(e => new { e.Name, e.CleanName })
+            .FirstOrDefault();
+
+        if (item is null)
+        {
+            return new ItemCounts();
+        }
+
+        // Build the base query starting from the mapping table (flipped join order)
+        IQueryable<BaseItemEntity> baseQuery;
+        switch (kind)
+        {
+            case BaseItemKind.Person:
+                baseQuery = context.PeopleBaseItemMap
+                    .AsNoTracking()
+                    .Where(m => m.People.Name == item.Name)
+                    .Select(m => m.Item);
+                break;
+            case BaseItemKind.MusicArtist:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && (ivm.ItemValue.Type == ItemValueType.Artist || ivm.ItemValue.Type == ItemValueType.AlbumArtist))
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Genre:
+            case BaseItemKind.MusicGenre:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && ivm.ItemValue.Type == ItemValueType.Genre)
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Studio:
+                baseQuery = context.ItemValuesMap
+                    .AsNoTracking()
+                    .Where(ivm => ivm.ItemValue.CleanValue == item.CleanName
+                        && ivm.ItemValue.Type == ItemValueType.Studios)
+                    .Select(ivm => ivm.Item);
+                break;
+            case BaseItemKind.Year:
+                if (int.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
+                {
+                    baseQuery = context.BaseItems
+                        .AsNoTracking()
+                        .Where(e => e.ProductionYear == year);
+                }
+                else
+                {
+                    return new ItemCounts();
+                }
+
+                break;
+            default:
+                return new ItemCounts();
+        }
+
+        // Apply type filter
+        var typeNames = relatedItemKinds.Select(k => _itemTypeLookup.BaseItemKindNames[k]).ToArray();
+        baseQuery = baseQuery.Where(e => typeNames.Contains(e.Type));
+
+        // Apply access filtering (parental ratings, blocked/allowed tags, library access)
+        baseQuery = ApplyAccessFiltering(context, baseQuery, accessFilter);
+
+        // Group by type and count
+        var counts = baseQuery
+            .GroupBy(x => x.Type)
+            .Select(x => new { x.Key, Count = x.Count() })
+            .ToArray();
+
+        var lookup = _itemTypeLookup.BaseItemKindNames;
+        var result = new ItemCounts();
+        var totalCount = 0;
+
+        foreach (var count in counts)
+        {
+            totalCount += count.Count;
+
+            if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
+            {
+                result.AlbumCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicArtist], StringComparison.Ordinal))
+            {
+                result.ArtistCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Episode], StringComparison.Ordinal))
+            {
+                result.EpisodeCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Movie], StringComparison.Ordinal))
+            {
+                result.MovieCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.MusicVideo], StringComparison.Ordinal))
+            {
+                result.MusicVideoCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.LiveTvProgram], StringComparison.Ordinal))
+            {
+                result.ProgramCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Series], StringComparison.Ordinal))
+            {
+                result.SeriesCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Audio], StringComparison.Ordinal))
+            {
+                result.SongCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Trailer], StringComparison.Ordinal))
+            {
+                result.TrailerCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.BoxSet], StringComparison.Ordinal))
+            {
+                result.BoxSetCount = count.Count;
+            }
+            else if (string.Equals(count.Key, lookup[BaseItemKind.Book], StringComparison.Ordinal))
+            {
+                result.BookCount = count.Count;
+            }
+        }
+
+        result.ItemCount = totalCount;
 
         return result;
     }
@@ -581,7 +1500,13 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
-    public async Task SaveImagesAsync(BaseItemDto item, CancellationToken cancellationToken = default)
+    public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
+    {
+        UpdateOrInsertItems(items, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -609,12 +1534,6 @@ public sealed class BaseItemRepository
 
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-    }
-
-    /// <inheritdoc  />
-    public void SaveItems(IReadOnlyList<BaseItemDto> items, CancellationToken cancellationToken)
-    {
-        UpdateOrInsertItems(items, cancellationToken);
     }
 
     /// <inheritdoc cref="IItemRepository"/>
@@ -674,8 +1593,6 @@ public sealed class BaseItemRepository
             }
         }
 
-        context.SaveChanges();
-
         var itemValueMaps = tuples
             .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
             .ToArray();
@@ -694,13 +1611,12 @@ public sealed class BaseItemRepository
             .ToArray();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
-            CleanValue = GetCleanValue(f.Value),
+            CleanValue = f.Value.GetCleanValue(),
             ItemValueId = Guid.NewGuid(),
             Type = f.MagicNumber,
             Value = f.Value
         }).ToArray();
         context.ItemValues.AddRange(missingItemValues);
-        context.SaveChanges();
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
         var valueMap = itemValueMaps
@@ -736,14 +1652,38 @@ public sealed class BaseItemRepository
             context.ItemValuesMap.RemoveRange(itemMappedValues);
         }
 
-        context.SaveChanges();
+        var itemsWithAncestors = tuples
+            .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var allExistingAncestorIds = itemsWithAncestors.Count > 0
+            ? context.AncestorIds
+                .Where(e => itemsWithAncestors.Contains(e.ItemId))
+                .ToList()
+                .GroupBy(e => e.ItemId)
+                .ToDictionary(g => g.Key, g => g.ToList())
+            : new Dictionary<Guid, List<AncestorId>>();
+
+        var allRequestedAncestorIds = tuples
+            .Where(t => t.Item.SupportsAncestors && t.AncestorIds != null)
+            .SelectMany(t => t.AncestorIds!)
+            .Distinct()
+            .ToList();
+
+        var validAncestorIdsSet = allRequestedAncestorIds.Count > 0
+            ? context.BaseItems
+                .Where(e => allRequestedAncestorIds.Contains(e.Id))
+                .Select(f => f.Id)
+                .ToHashSet()
+            : new HashSet<Guid>();
 
         foreach (var item in tuples)
         {
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
-                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
+                var existingAncestorIds = allExistingAncestorIds.GetValueOrDefault(item.Item.Id) ?? new List<AncestorId>();
+                var validAncestorIds = item.AncestorIds.Where(id => validAncestorIdsSet.Contains(id)).ToArray();
                 foreach (var ancestorId in validAncestorIds)
                 {
                     var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
@@ -767,11 +1707,270 @@ public sealed class BaseItemRepository
             }
         }
 
+        // This is necessary because LocalAlternateVersions resolution queries the database by path,
+        // and newly imported alternate version items need to exist before we can link them
+        context.SaveChanges();
+
+        var folderIds = tuples
+            .Where(t => t.Item is Folder)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var videoIds = tuples
+            .Where(t => t.Item is Video)
+            .Select(t => t.Item.Id)
+            .ToList();
+
+        var allLinkedChildrenByParent = new Dictionary<Guid, List<LinkedChildEntity>>();
+        if (folderIds.Count > 0 || videoIds.Count > 0)
+        {
+            var allParentIds = folderIds.Concat(videoIds).Distinct().ToList();
+            var allLinkedChildren = context.LinkedChildren
+                .Where(e => allParentIds.Contains(e.ParentId))
+                .ToList();
+
+            allLinkedChildrenByParent = allLinkedChildren
+                .GroupBy(e => e.ParentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+        }
+
+        foreach (var item in tuples)
+        {
+            if (item.Item is Folder folder)
+            {
+                var existingLinkedChildren = allLinkedChildrenByParent.GetValueOrDefault(item.Item.Id)?.ToList() ?? new List<LinkedChildEntity>();
+                if (folder.LinkedChildren.Length > 0)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete - legacy path resolution for old data
+                    var pathsToResolve = folder.LinkedChildren
+                        .Where(lc => (!lc.ItemId.HasValue || lc.ItemId.Value.IsEmpty()) && !string.IsNullOrEmpty(lc.Path))
+                        .Select(lc => lc.Path)
+                        .Distinct()
+                        .ToList();
+
+                    var pathToIdMap = pathsToResolve.Count > 0
+                        ? context.BaseItems
+                            .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
+                            .Select(e => new { e.Path, e.Id })
+                            .AsEnumerable()
+                            .GroupBy(e => e.Path!)
+                            .ToDictionary(g => g.Key, g => g.First().Id)
+                        : [];
+
+                    var resolvedChildren = new List<(LinkedChild Child, Guid ChildId)>();
+                    foreach (var linkedChild in folder.LinkedChildren)
+                    {
+                        var childItemId = linkedChild.ItemId;
+                        if (!childItemId.HasValue || childItemId.Value.IsEmpty())
+                        {
+                            if (!string.IsNullOrEmpty(linkedChild.Path) && pathToIdMap.TryGetValue(linkedChild.Path, out var resolvedId))
+                            {
+                                childItemId = resolvedId;
+                            }
+                        }
+#pragma warning restore CS0618
+
+                        if (childItemId.HasValue && !childItemId.Value.IsEmpty())
+                        {
+                            resolvedChildren.Add((linkedChild, childItemId.Value));
+                        }
+                    }
+
+                    // Deduplicate by ChildId, keeping the last occurrence (for playlist ordering)
+                    resolvedChildren = resolvedChildren
+                        .GroupBy(c => c.ChildId)
+                        .Select(g => g.Last())
+                        .ToList();
+
+                    var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).ToList();
+                    var existingChildIds = childIdsToCheck.Count > 0
+                        ? context.BaseItems
+                            .Where(e => childIdsToCheck.Contains(e.Id))
+                            .Select(e => e.Id)
+                            .ToHashSet()
+                        : [];
+
+                    var isPlaylist = folder is Playlist;
+                    var sortOrder = 0;
+                    foreach (var (linkedChild, childId) in resolvedChildren)
+                    {
+                        if (!existingChildIds.Contains(childId))
+                        {
+                            _logger.LogWarning(
+                                "Skipping LinkedChild for parent {ParentName} ({ParentId}): child item {ChildId} does not exist in database",
+                                item.Item.Name,
+                                item.Item.Id,
+                                childId);
+                            continue;
+                        }
+
+                        var existingLink = existingLinkedChildren.FirstOrDefault(e => e.ChildId == childId);
+                        if (existingLink is null)
+                        {
+                            context.LinkedChildren.Add(new LinkedChildEntity()
+                            {
+                                ParentId = item.Item.Id,
+                                ChildId = childId,
+                                ChildType = (DbLinkedChildType)linkedChild.Type,
+                                SortOrder = isPlaylist ? sortOrder : null
+                            });
+                        }
+                        else
+                        {
+                            existingLink.SortOrder = isPlaylist ? sortOrder : null;
+                            existingLink.ChildType = (DbLinkedChildType)linkedChild.Type;
+                            existingLinkedChildren.Remove(existingLink);
+                        }
+
+                        sortOrder++;
+                    }
+                }
+
+                if (existingLinkedChildren.Count > 0)
+                {
+                    context.LinkedChildren.RemoveRange(existingLinkedChildren);
+                }
+            }
+
+            // Handle Video alternate versions
+            if (item.Item is Video video)
+            {
+                // Use batch-fetched data and filter for alternate version types (2 = LocalAlternateVersion, 3 = LinkedAlternateVersion)
+                var existingLinkedChildren = (allLinkedChildrenByParent.GetValueOrDefault(video.Id) ?? new List<LinkedChildEntity>())
+                    .Where(e => (int)e.ChildType == 2 || (int)e.ChildType == 3)
+                    .ToList();
+
+                var newLinkedChildren = new List<(Guid ChildId, LinkedChildType Type)>();
+
+                // Process LocalAlternateVersions (path-based alternate versions)
+                if (video.LocalAlternateVersions.Length > 0)
+                {
+                    var pathsToResolve = video.LocalAlternateVersions.Where(p => !string.IsNullOrEmpty(p)).ToList();
+                    if (pathsToResolve.Count > 0)
+                    {
+                        var pathToIdMap = context.BaseItems
+                            .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
+                            .Select(e => new { e.Path, e.Id })
+                            .AsEnumerable()
+                            .GroupBy(e => e.Path!)
+                            .ToDictionary(g => g.Key, g => g.First().Id);
+
+                        foreach (var path in pathsToResolve)
+                        {
+                            if (pathToIdMap.TryGetValue(path, out var childId))
+                            {
+                                newLinkedChildren.Add((childId, LinkedChildType.LocalAlternateVersion));
+                            }
+                        }
+                    }
+                }
+
+                // Process LinkedAlternateVersions (ID-based alternate versions)
+                if (video.LinkedAlternateVersions.Length > 0)
+                {
+                    foreach (var linkedChild in video.LinkedAlternateVersions)
+                    {
+                        if (linkedChild.ItemId.HasValue && !linkedChild.ItemId.Value.IsEmpty())
+                        {
+                            newLinkedChildren.Add((linkedChild.ItemId.Value, LinkedChildType.LinkedAlternateVersion));
+                        }
+                    }
+                }
+
+                // Deduplicate by ChildId, keeping the last occurrence
+                newLinkedChildren = newLinkedChildren
+                    .GroupBy(c => c.ChildId)
+                    .Select(g => g.Last())
+                    .ToList();
+
+                // Validate that all child items exist
+                var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).ToList();
+                var existingChildIds = childIdsToCheck.Count > 0
+                    ? context.BaseItems
+                        .Where(e => childIdsToCheck.Contains(e.Id))
+                        .Select(e => e.Id)
+                        .ToHashSet()
+                    : [];
+
+                // Add or update LinkedChildren entries
+                int sortOrder = 0;
+                foreach (var (childId, childType) in newLinkedChildren)
+                {
+                    if (!existingChildIds.Contains(childId))
+                    {
+                        _logger.LogWarning(
+                            "Skipping alternate version for video {VideoName} ({VideoId}): child item {ChildId} does not exist in database",
+                            video.Name,
+                            video.Id,
+                            childId);
+                        continue;
+                    }
+
+                    var existingLink = existingLinkedChildren.FirstOrDefault(e => e.ChildId == childId);
+                    if (existingLink is null)
+                    {
+                        context.LinkedChildren.Add(new LinkedChildEntity
+                        {
+                            ParentId = video.Id,
+                            ChildId = childId,
+                            ChildType = (DbLinkedChildType)childType,
+                            SortOrder = sortOrder
+                        });
+                    }
+                    else
+                    {
+                        existingLink.ChildType = (DbLinkedChildType)childType;
+                        existingLink.SortOrder = sortOrder;
+                        existingLinkedChildren.Remove(existingLink);
+                    }
+
+                    sortOrder++;
+                }
+
+                // Remove orphaned alternate version links and their items
+                if (existingLinkedChildren.Count > 0)
+                {
+                    // Get the child IDs of LocalAlternateVersions that are being removed
+                    // These items should be deleted as they are owned by this video
+                    var orphanedLocalVersionIds = existingLinkedChildren
+                        .Where(e => e.ChildType == DbLinkedChildType.LocalAlternateVersion)
+                        .Select(e => e.ChildId)
+                        .ToList();
+
+                    context.LinkedChildren.RemoveRange(existingLinkedChildren);
+
+                    // Delete the orphaned LocalAlternateVersion items themselves
+                    if (orphanedLocalVersionIds.Count > 0)
+                    {
+                        var orphanedItems = context.BaseItems
+                            .Where(e => orphanedLocalVersionIds.Contains(e.Id) && e.OwnerId == video.Id)
+                            .ToList();
+
+                        if (orphanedItems.Count > 0)
+                        {
+                            _logger.LogInformation(
+                                "Deleting {Count} orphaned LocalAlternateVersion items for video {VideoName} ({VideoId})",
+                                orphanedItems.Count,
+                                video.Name,
+                                video.Id);
+                            context.BaseItems.RemoveRange(orphanedItems);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Phase 2 commit: Save LinkedChildren changes
         context.SaveChanges();
         transaction.Commit();
     }
 
-    /// <inheritdoc  />
+    /// <summary>
+    /// Reattaches user data entries that were incorrectly associated with a different item.
+    /// </summary>
+    /// <param name="item">The item DTO to reattach user data for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ReattachUserDataAsync(BaseItemDto item, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -828,7 +2027,9 @@ public sealed class BaseItemRepository
             .Include(e => e.Provider)
             .Include(e => e.LockedFields)
             .Include(e => e.UserData)
-            .Include(e => e.Images);
+            .Include(e => e.Images)
+            .Include(e => e.LinkedChildEntities)
+            .AsSingleQuery();
 
         var item = dbQuery.FirstOrDefault(e => e.Id == id);
         if (item is null)
@@ -889,7 +2090,7 @@ public sealed class BaseItemRepository
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
         dto.DateLastRefreshed = entity.DateLastRefreshed ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.DateLastSaved = entity.DateLastSaved ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
-        dto.OwnerId = string.IsNullOrWhiteSpace(entity.OwnerId) ? Guid.Empty : (Guid.TryParse(entity.OwnerId, out var ownerId) ? ownerId : Guid.Empty);
+        dto.OwnerId = entity.OwnerId ?? Guid.Empty;
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
         dto.UserData = entity.UserData;
@@ -914,7 +2115,6 @@ public sealed class BaseItemRepository
             dto.Audio = (ProgramAudio)entity.Audio;
         }
 
-        dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
         dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
@@ -992,6 +2192,17 @@ public sealed class BaseItemRepository
         if (dto is Folder folder)
         {
             folder.DateLastMediaAdded = entity.DateLastMediaAdded ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+            if (entity.LinkedChildEntities is not null && entity.LinkedChildEntities.Count > 0)
+            {
+                folder.LinkedChildren = entity.LinkedChildEntities
+                    .OrderBy(e => e.SortOrder)
+                    .Select(e => new LinkedChild
+                    {
+                        ItemId = e.ChildId,
+                        Type = (LinkedChildType)e.ChildType
+                    })
+                    .ToArray();
+            }
         }
 
         return dto;
@@ -1024,7 +2235,7 @@ public sealed class BaseItemRepository
         entity.IndexNumber = dto.IndexNumber;
         entity.IsLocked = dto.IsLocked;
         entity.Name = dto.Name;
-        entity.CleanName = GetCleanValue(dto.Name);
+        entity.CleanName = dto.Name.GetCleanValue();
         entity.OfficialRating = dto.OfficialRating;
         entity.Overview = dto.Overview;
         entity.ParentIndexNumber = dto.ParentIndexNumber;
@@ -1056,7 +2267,7 @@ public sealed class BaseItemRepository
         entity.ChannelId = dto.ChannelId;
         entity.DateLastRefreshed = dto.DateLastRefreshed == DateTime.MinValue ? null : dto.DateLastRefreshed;
         entity.DateLastSaved = dto.DateLastSaved == DateTime.MinValue ? null : dto.DateLastSaved;
-        entity.OwnerId = dto.OwnerId.ToString();
+        entity.OwnerId = dto.OwnerId == Guid.Empty ? null : dto.OwnerId;
         entity.Width = dto.Width;
         entity.Height = dto.Height;
         entity.Provider = dto.ProviderIds.Select(e => new BaseItemProvider()
@@ -1076,7 +2287,6 @@ public sealed class BaseItemRepository
             entity.ExtraType = (BaseItemExtraType)dto.ExtraType;
         }
 
-        entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p))) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
@@ -1178,7 +2388,7 @@ public sealed class BaseItemRepository
 
         var query = context.ItemValuesMap
             .AsNoTracking()
-            .Where(e => itemValueTypes.Any(w => (ItemValueType)w == e.ItemValue.Type));
+            .Where(e => itemValueTypes.Any(w => w == e.ItemValue.Type));
         if (withItemTypes.Count > 0)
         {
             query = query.Where(e => withItemTypes.Contains(e.Item.Type));
@@ -1192,7 +2402,7 @@ public sealed class BaseItemRepository
         // query = query.DistinctBy(e => e.CleanValue);
         return query.Select(e => e.ItemValue)
             .GroupBy(e => e.CleanValue)
-            .Select(e => e.First().Value)
+            .Select(e => e.OrderBy(v => v.Value).First().Value)
             .ToArray();
     }
 
@@ -1262,7 +2472,7 @@ public sealed class BaseItemRepository
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (!(filter.Limit.HasValue && filter.Limit.Value > 0))
+        if (!filter.Limit.HasValue)
         {
             filter.EnableTotalRecordCount = false;
         }
@@ -1285,15 +2495,13 @@ public sealed class BaseItemRepository
             IsNews = filter.IsNews,
             IsSeries = filter.IsSeries
         });
-
-        var itemValuesQuery = context.ItemValues
-            .Where(f => itemValueTypes.Contains(f.Type))
-            .SelectMany(f => f.BaseItemsMap!, (f, w) => new { f, w })
+        var itemValuesQuery = context.ItemValuesMap
+            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
             .Join(
                 innerQueryFilter,
-                fw => fw.w.ItemId,
+                ivm => ivm.ItemId,
                 g => g.Id,
-                (fw, g) => fw.f.CleanValue);
+                (ivm, g) => ivm.ItemValue.CleanValue);
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
@@ -1322,7 +2530,7 @@ public sealed class BaseItemRepository
 
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
             .GroupBy(e => e.PresentationUniqueKey)
-            .Select(e => e.FirstOrDefault())
+            .Select(e => e.OrderBy(x => x.Id).FirstOrDefault())
             .Select(e => e!.Id);
 
         var query = context.BaseItems
@@ -1330,6 +2538,7 @@ public sealed class BaseItemRepository
             .Include(e => e.Provider)
             .Include(e => e.LockedFields)
             .Include(e => e.Images)
+            .Include(e => e.LinkedChildEntities)
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
@@ -1341,22 +2550,23 @@ public sealed class BaseItemRepository
             result.TotalRecordCount = query.Count();
         }
 
-        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
+        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
         {
-            query = query.Skip(filter.StartIndex.Value);
-        }
+            var offset = filter.StartIndex ?? 0;
 
-        if (filter.Limit.HasValue && filter.Limit.Value > 0)
-        {
-            query = query.Take(filter.Limit.Value);
-        }
+            if (offset > 0)
+            {
+                query = query.Skip(offset);
+            }
 
-        IQueryable<BaseItemEntity>? itemCountQuery = null;
+            if (filter.Limit.HasValue)
+            {
+                query = query.Take(filter.Limit.Value);
+            }
+        }
 
         if (filter.IncludeItemTypes.Length > 0)
         {
-            // if we are to include more then one type, sub query those items beforehand.
-
             var typeSubQuery = new InternalItemsQuery(filter.User)
             {
                 ExcludeItemTypes = filter.ExcludeItemTypes,
@@ -1370,7 +2580,7 @@ public sealed class BaseItemRepository
                 IsPlayed = filter.IsPlayed
             };
 
-            itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
+            var itemCountQuery = TranslateQuery(context.BaseItems.AsNoTracking().Where(e => e.Id != EF.Constant(PlaceholderId)), context, typeSubQuery)
                 .Where(e => e.ItemValues!.Any(f => itemValueTypes!.Contains(f.ItemValue.Type)));
 
             var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
@@ -1381,31 +2591,49 @@ public sealed class BaseItemRepository
             var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
 
-            var resultQuery = query.Select(e => new
-            {
-                item = e,
-                // TODO: This is bad refactor!
-                itemCount = new ItemCounts()
-                {
-                    SeriesCount = itemCountQuery!.Count(f => f.Type == seriesTypeName),
-                    EpisodeCount = itemCountQuery!.Count(f => f.Type == episodeTypeName),
-                    MovieCount = itemCountQuery!.Count(f => f.Type == movieTypeName),
-                    AlbumCount = itemCountQuery!.Count(f => f.Type == musicAlbumTypeName),
-                    ArtistCount = itemCountQuery!.Count(f => f.Type == musicArtistTypeName),
-                    SongCount = itemCountQuery!.Count(f => f.Type == audioTypeName),
-                    TrailerCount = itemCountQuery!.Count(f => f.Type == trailerTypeName),
-                }
-            });
+            // Get the IDs from itemCountQuery to use in the join
+            var itemIds = itemCountQuery.Select(e => e.Id);
+
+            // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
+            // Instead, start from ItemValueMaps and join with BaseItems
+            var countsByCleanName = context.ItemValuesMap
+                .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
+                .Where(ivm => itemIds.Contains(ivm.ItemId))
+                .Join(
+                    context.BaseItems,
+                    ivm => ivm.ItemId,
+                    e => e.Id,
+                    (ivm, e) => new { CleanName = ivm.ItemValue.CleanValue, e.Type })
+                .GroupBy(x => new { x.CleanName, x.Type })
+                .Select(g => new { g.Key.CleanName, g.Key.Type, Count = g.Count() })
+                .GroupBy(x => x.CleanName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => new ItemCounts
+                    {
+                        SeriesCount = g.Where(x => x.Type == seriesTypeName).Sum(x => x.Count),
+                        EpisodeCount = g.Where(x => x.Type == episodeTypeName).Sum(x => x.Count),
+                        MovieCount = g.Where(x => x.Type == movieTypeName).Sum(x => x.Count),
+                        AlbumCount = g.Where(x => x.Type == musicAlbumTypeName).Sum(x => x.Count),
+                        ArtistCount = g.Where(x => x.Type == musicArtistTypeName).Sum(x => x.Count),
+                        SongCount = g.Where(x => x.Type == audioTypeName).Sum(x => x.Count),
+                        TrailerCount = g.Where(x => x.Type == trailerTypeName).Sum(x => x.Count),
+                    });
 
             result.StartIndex = filter.StartIndex ?? 0;
             result.Items =
             [
-                .. resultQuery
+                .. query
                     .AsEnumerable()
                     .Where(e => e is not null)
-                    .Select(e => (Item: DeserializeBaseItem(e.item, filter.SkipDeserialization), e.itemCount))
-                    .Where(e => e.Item is not null)
-                    .Select(e => (e.Item!, e.itemCount))
+                    .Select(e =>
+                    {
+                        var item = DeserializeBaseItem(e, filter.SkipDeserialization);
+                        countsByCleanName.TryGetValue(e.CleanName ?? string.Empty, out var itemCount);
+                        return (item, itemCount);
+                    })
+                    .Where(x => x.item is not null)
+                    .Select(x => (x.item!, x.itemCount))
             ];
         }
         else
@@ -1416,9 +2644,9 @@ public sealed class BaseItemRepository
                 .. query
                     .AsEnumerable()
                     .Where(e => e is not null)
-                    .Select(e => (Item: DeserializeBaseItem(e, filter.SkipDeserialization), ItemCounts: (ItemCounts?)null))
-                    .Where(e => e.Item is not null)
-                    .Select(e => (e.Item!, e.ItemCounts))
+                    .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
+                    .Where(item => item is not null)
+                    .Select(item => (item!, (ItemCounts?)null))
             ];
         }
 
@@ -1427,7 +2655,7 @@ public sealed class BaseItemRepository
 
     private static void PrepareFilterQuery(InternalItemsQuery query)
     {
-        if (query.Limit.HasValue && query.Limit.Value > 0 && query.EnableGroupByMetadataKey)
+        if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
         {
             query.Limit = query.Limit.Value + 4;
         }
@@ -1436,56 +2664,6 @@ public sealed class BaseItemRepository
         {
             query.IsVirtualItem = false;
         }
-    }
-
-    /// <summary>
-    /// Gets the clean value for search and sorting purposes.
-    /// </summary>
-    /// <param name="value">The value to clean.</param>
-    /// <returns>The cleaned value.</returns>
-    public static string GetCleanValue(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return value;
-        }
-
-        var noDiacritics = value.RemoveDiacritics();
-
-        // Build a string where any punctuation or symbol is treated as a separator (space).
-        var sb = new StringBuilder(noDiacritics.Length);
-        var previousWasSpace = false;
-        foreach (var ch in noDiacritics)
-        {
-            char outCh;
-            if (char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch))
-            {
-                outCh = ch;
-            }
-            else
-            {
-                outCh = ' ';
-            }
-
-            // normalize any whitespace character to a single ASCII space.
-            if (char.IsWhiteSpace(outCh))
-            {
-                if (!previousWasSpace)
-                {
-                    sb.Append(' ');
-                    previousWasSpace = true;
-                }
-            }
-            else
-            {
-                sb.Append(outCh);
-                previousWasSpace = false;
-            }
-        }
-
-        // trim leading/trailing spaces that may have been added.
-        var collapsed = sb.ToString().Trim();
-        return collapsed.ToLowerInvariant();
     }
 
     private List<(ItemValueType MagicNumber, string Value)> GetItemValuesToSave(BaseItemDto item, List<string> inheritedTags)
@@ -1637,37 +2815,27 @@ public sealed class BaseItemRepository
         var orderBy = filter.OrderBy.Where(e => e.OrderBy != ItemSortBy.Default).ToArray();
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
 
-        if (hasSearch)
-        {
-            orderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
-        }
-        else if (orderBy.Length == 0)
-        {
-            return query.OrderBy(e => e.SortName);
-        }
-
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
-        // When searching, prioritize by match quality: exact match > prefix match > contains
         if (hasSearch)
         {
-            orderedQuery = query.OrderBy(OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!));
+            var relevanceExpression = OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!);
+            orderedQuery = query.OrderBy(relevanceExpression);
         }
 
-        var firstOrdering = orderBy.FirstOrDefault();
-        if (firstOrdering != default)
+        if (orderBy.Length > 0)
         {
+            var firstOrdering = orderBy[0];
             var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
+
             if (orderedQuery is null)
             {
-                // No search relevance ordering, start fresh
                 orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
                     ? query.OrderBy(expression)
                     : query.OrderByDescending(expression);
             }
             else
             {
-                // Search relevance ordering already applied, chain with ThenBy
                 orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
                     ? orderedQuery.ThenBy(expression)
                     : orderedQuery.ThenByDescending(expression);
@@ -1675,26 +2843,32 @@ public sealed class BaseItemRepository
 
             if (firstOrdering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
             {
-                orderedQuery = firstOrdering.SortOrder is SortOrder.Ascending
+                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
                     ? orderedQuery.ThenBy(e => e.Name)
                     : orderedQuery.ThenByDescending(e => e.Name);
             }
+
+            foreach (var item in orderBy.Skip(1))
+            {
+                expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
+                orderedQuery = item.SortOrder == SortOrder.Ascending
+                    ? orderedQuery.ThenBy(expression)
+                    : orderedQuery.ThenByDescending(expression);
+            }
         }
 
-        foreach (var item in orderBy.Skip(1))
+        if (orderedQuery is null)
         {
-            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
-            if (item.SortOrder == SortOrder.Ascending)
-            {
-                orderedQuery = orderedQuery!.ThenBy(expression);
-            }
-            else
-            {
-                orderedQuery = orderedQuery!.ThenByDescending(expression);
-            }
+            return query.OrderBy(e => e.SortName);
         }
 
-        return orderedQuery ?? query;
+        // Add SortName as final tiebreaker
+        if (!hasSearch && (orderBy.Length == 0 || orderBy.All(o => o.OrderBy is not ItemSortBy.SortName and not ItemSortBy.Name)))
+        {
+            orderedQuery = orderedQuery.ThenBy(e => e.SortName);
+        }
+
+        return orderedQuery;
     }
 
     private IQueryable<BaseItemEntity> TranslateQuery(
@@ -1821,16 +2995,18 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
-            var originalSearchTerm = filter.SearchTerm.ToLower();
+            var cleanedSearchTerm = filter.SearchTerm.GetCleanValue();
+            var originalSearchTerm = filter.SearchTerm;
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), originalSearchTerm)));
+                var likeSearchTerm = $"%{originalSearchTerm.Trim('%')}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(originalSearchTerm)));
+                var likeSearchTerm = $"%{originalSearchTerm}%";
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeSearchTerm)));
             }
         }
 
@@ -1987,7 +3163,7 @@ public sealed class BaseItemRepository
         if (filter.TrailerTypes.Length > 0)
         {
             var trailerTypes = filter.TrailerTypes.Select(e => (int)e).ToArray();
-            baseQuery = baseQuery.Where(e => trailerTypes.Any(f => e.TrailerTypes!.Any(w => w.Id == f)));
+            baseQuery = baseQuery.Where(e => e.TrailerTypes!.Any(w => trailerTypes.Contains(w.Id)));
         }
 
         if (filter.IsAiring.HasValue)
@@ -2048,7 +3224,7 @@ public sealed class BaseItemRepository
             }
             else
             {
-                var cleanName = GetCleanValue(filter.Name);
+                var cleanName = filter.Name.GetCleanValue();
                 baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
             }
         }
@@ -2064,52 +3240,62 @@ public sealed class BaseItemRepository
             }
             else
             {
+                var likeNameContains = $"%{nameContains}%";
                 baseQuery = baseQuery.Where(e =>
                                     e.CleanName!.Contains(nameContains)
-                                    || e.OriginalTitle!.ToLower().Contains(nameContains!));
+                                    || EF.Functions.Like(e.OriginalTitle, likeNameContains));
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        // When box set collapsing is active, defer name-range filters to after the collapse.
+        // Otherwise, items are filtered by their own name but then collapsed into a BoxSet
+        // whose name may fall in a different range (e.g. "21 Jump Street" is under "#"
+        // but its BoxSet "Jump Street Collection" should appear under "J").
+        if (filter.CollapseBoxSetItems != true)
         {
-            var startsWithLower = filter.NameStartsWith.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(startsWithLower));
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
-        {
-            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(startsOrGreaterLower) >= 0);
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
-        {
-            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
+            baseQuery = ApplyNameFilters(baseQuery, filter);
         }
 
         if (filter.ImageTypes.Length > 0)
         {
             var imgTypes = filter.ImageTypes.Select(e => (ImageInfoImageType)e).ToArray();
-            baseQuery = baseQuery.Where(e => imgTypes.Any(f => e.Images!.Any(w => w.ImageType == f)));
+            baseQuery = baseQuery.Where(e => e.Images!.Any(w => imgTypes.Contains(w.ImageType)));
         }
 
         if (filter.IsLiked.HasValue)
         {
             baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Rating >= UserItemData.MinLikeValue);
+                .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.Rating >= UserItemData.MinLikeValue));
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavoriteOrLiked);
+            var favoriteItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
+            if (filter.IsFavoriteOrLiked.Value)
+            {
+                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
+            }
         }
 
         if (filter.IsFavorite.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.IsFavorite == filter.IsFavorite);
+            var favoriteItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
+                .Select(ud => ud.ItemId);
+            if (filter.IsFavorite.Value)
+            {
+                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
+            }
         }
 
         if (filter.IsPlayed.HasValue)
@@ -2117,35 +3303,74 @@ public sealed class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                baseQuery = baseQuery.Where(e => context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId))
-                    .Where(e => e.IsFolder == false && e.IsVirtualItem == false)
-                    .Where(f => f.UserData!.FirstOrDefault(e => e.UserId == filter.User!.Id && e.Played)!.Played)
-                    .Any(f => f.SeriesPresentationUniqueKey == e.PresentationUniqueKey) == filter.IsPlayed);
+                // Get played series IDs by joining episodes to UserData via SeriesId (Guid foreign key).
+                // Don't filter episodes by TopParentIds here - the series will be filtered by baseQuery anyway.
+                // This allows the materialized list to be reused across library-scoped queries.
+                var playedSeriesIdList = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
+                    .Join(
+                        context.UserData.Where(ud => ud.UserId == filter.User!.Id && ud.Played),
+                        episode => episode.Id,
+                        ud => ud.ItemId,
+                        (episode, ud) => episode.SeriesId!.Value)
+                    .Distinct()
+                    .ToList();
+
+                if (filter.IsPlayed.Value)
+                {
+                    baseQuery = baseQuery.Where(s => playedSeriesIdList.Contains(s.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(s => !playedSeriesIdList.Contains(s.Id));
+                }
+            }
+            else if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.BoxSet)
+            {
+                var boxSetIds = baseQuery.Select(e => e.Id).ToList();
+                var playedCounts = GetPlayedAndTotalCountBatch(boxSetIds, filter.User!);
+                var playedBoxSetIds = playedCounts
+                    .Where(kvp => kvp.Value.Total > 0 && kvp.Value.Played == kvp.Value.Total)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                if (filter.IsPlayed.Value)
+                {
+                    baseQuery = baseQuery.Where(s => playedBoxSetIds.Contains(s.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(s => !playedBoxSetIds.Contains(s.Id));
+                }
             }
             else
             {
-                baseQuery = baseQuery
-                    .Select(e => new
-                    {
-                        IsPlayed = e.UserData!.Where(f => f.UserId == filter.User!.Id).Select(f => (bool?)f.Played).FirstOrDefault() ?? false,
-                        Item = e
-                    })
-                    .Where(e => e.IsPlayed == filter.IsPlayed)
-                    .Select(f => f.Item);
+                var playedItemIds = context.UserData
+                    .Where(ud => ud.UserId == filter.User!.Id && ud.Played)
+                    .Select(ud => ud.ItemId);
+                if (filter.IsPlayed.Value)
+                {
+                    baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(e => !playedItemIds.Contains(e.Id));
+                }
             }
         }
 
         if (filter.IsResumable.HasValue)
         {
+            var resumableItemIds = context.UserData
+                .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
+                .Select(ud => ud.ItemId);
             if (filter.IsResumable.Value)
             {
-                baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks > 0);
+                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id));
             }
             else
             {
-                baseQuery = baseQuery
-                       .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.PlaybackPositionTicks == 0);
+                baseQuery = baseQuery.Where(e => !resumableItemIds.Contains(e.Id));
             }
         }
 
@@ -2193,21 +3418,21 @@ public sealed class BaseItemRepository
 
         if (filter.Genres.Count > 0)
         {
-            var cleanGenres = filter.Genres.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanGenres = filter.Genres.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Genre).Any(cleanGenres));
         }
 
         if (tags.Count > 0)
         {
-            var cleanValues = tags.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = tags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
         }
 
         if (excludeTags.Count > 0)
         {
-            var cleanValues = excludeTags.Select(e => GetCleanValue(e)).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
+            var cleanValues = excludeTags.Select(e => e.GetCleanValue()).ToArray().OneOrManyExpressionBuilder<ItemValueMap, string>(f => f.ItemValue.CleanValue);
             baseQuery = baseQuery
                     .Where(e => !e.ItemValues!.AsQueryable().Where(f => f.ItemValue.Type == ItemValueType.Tags).Any(cleanValues));
         }
@@ -2219,8 +3444,8 @@ public sealed class BaseItemRepository
 
         if (filter.OfficialRatings.Length > 0)
         {
-            baseQuery = baseQuery
-                   .Where(e => filter.OfficialRatings.Contains(e.OfficialRating));
+            var ratings = filter.OfficialRatings;
+            baseQuery = baseQuery.WhereItemOrDescendantMatches(context, e => ratings.Contains(e.OfficialRating));
         }
 
         Expression<Func<BaseItemEntity, bool>>? minParentalRatingFilter = null;
@@ -2242,11 +3467,24 @@ public sealed class BaseItemRepository
             var max = filter.MaxParentalRating;
             var maxScore = max.Score;
             var maxSubScore = max.SubScore ?? 0;
+            var linkedChildren = context.LinkedChildren;
 
             maxParentalRatingFilter = e =>
-                e.InheritedParentalRatingValue == null ||
-                e.InheritedParentalRatingValue < maxScore ||
-                (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore);
+                // Item has a rating: check against limit
+                (e.InheritedParentalRatingValue != null
+                    && (e.InheritedParentalRatingValue < maxScore
+                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
+                // Item has no rating
+                || (e.InheritedParentalRatingValue == null
+                    && (
+                        // No linked children (not a BoxSet/Playlist): pass as unrated
+                        !linkedChildren.Any(lc => lc.ParentId == e.Id)
+                        // Has linked children: at least one child must be within limits
+                        || linkedChildren.Any(lc => lc.ParentId == e.Id
+                            && (lc.Child!.InheritedParentalRatingValue == null
+                                || lc.Child.InheritedParentalRatingValue < maxScore
+                                || (lc.Child.InheritedParentalRatingValue == maxScore
+                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
         }
 
         if (filter.HasParentalRating ?? false)
@@ -2303,16 +3541,12 @@ public sealed class BaseItemRepository
 
         if (filter.HasOfficialRating.HasValue)
         {
-            if (filter.HasOfficialRating.Value)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty);
-            }
-            else
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.OfficialRating == null || e.OfficialRating == string.Empty);
-            }
+            Expression<Func<BaseItemEntity, bool>> hasRating =
+                e => e.OfficialRating != null && e.OfficialRating != string.Empty;
+
+            baseQuery = filter.HasOfficialRating.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, hasRating)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, hasRating);
         }
 
         if (filter.HasOverview.HasValue)
@@ -2342,41 +3576,108 @@ public sealed class BaseItemRepository
                     .Where(e => e.OwnerId == null);
             }
         }
+        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0)
+        {
+            // Exclude alternate versions from general queries. Alternate versions have
+            // OwnerId set (pointing to their primary) but no ExtraType.
+            // Extras (trailers, etc.) also have OwnerId but DO have ExtraType set - keep those.
+            baseQuery = baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null);
+        }
+
+        if (filter.OwnerIds.Length > 0)
+        {
+            baseQuery = baseQuery.Where(e => e.OwnerId != null && filter.OwnerIds.Contains(e.OwnerId.Value));
+        }
+
+        if (filter.ExtraTypes.Length > 0)
+        {
+            // Convert ExtraType enum to BaseItemExtraType enum via int cast (same underlying values)
+            var extraTypeValues = filter.ExtraTypes.Select(e => (BaseItemExtraType?)(int)e).ToArray();
+            baseQuery = baseQuery.Where(e => e.ExtraType != null && extraTypeValues.Contains(e.ExtraType));
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
+            var lang = filter.HasNoAudioTrackWithLanguage;
+            var foldersWithAudio = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Audio, lang));
+
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && f.Language == filter.HasNoAudioTrackWithLanguage));
+                .Where(e =>
+                    (!e.IsFolder && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Audio && ms.Language == lang))
+                    || (e.IsFolder && !foldersWithAudio.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
+            var lang = filter.HasNoInternalSubtitleTrackWithLanguage;
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: false));
+
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && !f.IsExternal && f.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
+                .Where(e =>
+                    (!e.IsFolder && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle && !ms.IsExternal && ms.Language == lang))
+                    || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
+            var lang = filter.HasNoExternalSubtitleTrackWithLanguage;
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang, IsExternal: true));
+
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.IsExternal && f.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
+                .Where(e =>
+                    (!e.IsFolder && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle && ms.IsExternal && ms.Language == lang))
+                    || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
+            var lang = filter.HasNoSubtitleTrackWithLanguage;
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, lang));
+
             baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.Language == filter.HasNoSubtitleTrackWithLanguage));
+                .Where(e =>
+                    (!e.IsFolder && !e.MediaStreams!.Any(ms => ms.StreamType == MediaStreamTypeEntity.Subtitle && ms.Language == lang))
+                    || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
         }
 
         if (filter.HasSubtitles.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle) == filter.HasSubtitles.Value);
+            var hasSubtitles = filter.HasSubtitles.Value;
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasSubtitles());
+            if (hasSubtitles)
+            {
+                baseQuery = baseQuery
+                    .Where(e =>
+                        (!e.IsFolder && e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle))
+                        || (e.IsFolder && foldersWithSubtitles.Contains(e.Id)));
+            }
+            else
+            {
+                baseQuery = baseQuery
+                    .Where(e =>
+                        (!e.IsFolder && !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle))
+                        || (e.IsFolder && !foldersWithSubtitles.Contains(e.Id)));
+            }
         }
 
         if (filter.HasChapterImages.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.Chapters!.Any(f => f.ImagePath != null) == filter.HasChapterImages.Value);
+            var hasChapterImages = filter.HasChapterImages.Value;
+            var foldersWithChapterImages = DescendantQueryHelper.GetFolderIdsMatching(context, new HasChapterImages());
+            if (hasChapterImages)
+            {
+                baseQuery = baseQuery
+                    .Where(e =>
+                        (!e.IsFolder && e.Chapters!.Any(f => f.ImagePath != null))
+                        || (e.IsFolder && foldersWithChapterImages.Contains(e.Id)));
+            }
+            else
+            {
+                baseQuery = baseQuery
+                    .Where(e =>
+                        (!e.IsFolder && !e.Chapters!.Any(f => f.ImagePath != null))
+                        || (e.IsFolder && !foldersWithChapterImages.Contains(e.Id)));
+            }
         }
 
         if (filter.HasDeadParentId.HasValue && filter.HasDeadParentId.Value)
@@ -2491,22 +3792,22 @@ public sealed class BaseItemRepository
         if (filter.HasImdbId.HasValue)
         {
             baseQuery = filter.HasImdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Imdb.ToString().ToLower()))
-                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Imdb.ToString().ToLower()));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == ImdbProviderName))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != ImdbProviderName));
         }
 
         if (filter.HasTmdbId.HasValue)
         {
             baseQuery = filter.HasTmdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tmdb.ToString().ToLower()))
-                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tmdb.ToString().ToLower()));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == TmdbProviderName))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != TmdbProviderName));
         }
 
         if (filter.HasTvdbId.HasValue)
         {
             baseQuery = filter.HasTvdbId.Value
-                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == MetadataProvider.Tvdb.ToString().ToLower()))
-                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != MetadataProvider.Tvdb.ToString().ToLower()));
+                ? baseQuery.Where(e => e.Provider!.Any(f => f.ProviderId.ToLower() == TvdbProviderName))
+                : baseQuery.Where(e => e.Provider!.All(f => f.ProviderId.ToLower() != TvdbProviderName));
         }
 
         var queryTopParentIds = filter.TopParentIds;
@@ -2527,7 +3828,8 @@ public sealed class BaseItemRepository
 
         if (filter.AncestorIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => e.Parents!.Any(f => filter.AncestorIds.Contains(f.ParentItemId)));
+            var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
+            baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
@@ -2544,21 +3846,29 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            var excludedTags = filter.ExcludeInheritedTags;
+            var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             baseQuery = baseQuery.Where(e =>
-                !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
-                && (!e.SeriesId.HasValue || !context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))));
+                !context.ItemValuesMap.Any(f =>
+                    f.ItemValue.Type == ItemValueType.Tags
+                    && excludedTags.Contains(f.ItemValue.CleanValue)
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            var includeTags = filter.IncludeInheritedTags;
+            var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
             var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
             baseQuery = baseQuery.Where(e =>
-                e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
-
-                // For seasons and episodes, we also need to check the parent series' tags.
-                || (e.SeriesId.HasValue && context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue)))
+                context.ItemValuesMap.Any(f =>
+                    f.ItemValue.Type == ItemValueType.Tags
+                    && includeTags.Contains(f.ItemValue.CleanValue)
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value)))
 
                 // A playlist should be accessible to its owner regardless of allowed tags
                 || (isPlaylistOnlyQuery && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
@@ -2580,64 +3890,131 @@ public sealed class BaseItemRepository
 
         if (filter.VideoTypes.Length > 0)
         {
-            var videoTypeBs = filter.VideoTypes.Select(e => $"\"VideoType\":\"{e}\"");
-            baseQuery = baseQuery
-                .Where(e => videoTypeBs.Any(f => e.Data!.Contains(f)));
+            var videoTypeBs = filter.VideoTypes.Select(vt => $"\"VideoType\":\"{vt}\"").ToArray();
+            Expression<Func<BaseItemEntity, bool>> hasVideoType = e => videoTypeBs.Any(f => e.Data!.Contains(f));
+            baseQuery = baseQuery.WhereItemOrDescendantMatches(context, hasVideoType);
         }
 
         if (filter.Is3D.HasValue)
         {
-            if (filter.Is3D.Value)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.Data!.Contains("Video3DFormat"));
-            }
-            else
-            {
-                baseQuery = baseQuery
-                    .Where(e => !e.Data!.Contains("Video3DFormat"));
-            }
+            Expression<Func<BaseItemEntity, bool>> is3D = e => e.Data!.Contains("Video3DFormat");
+
+            baseQuery = filter.Is3D.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, is3D)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, is3D);
         }
 
         if (filter.IsPlaceHolder.HasValue)
         {
-            if (filter.IsPlaceHolder.Value)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.Data!.Contains("IsPlaceHolder\":true"));
-            }
-            else
-            {
-                baseQuery = baseQuery
-                    .Where(e => !e.Data!.Contains("IsPlaceHolder\":true"));
-            }
+            Expression<Func<BaseItemEntity, bool>> isPlaceHolder = e => e.Data!.Contains("IsPlaceHolder\":true");
+
+            baseQuery = filter.IsPlaceHolder.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, isPlaceHolder)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, isPlaceHolder);
         }
 
         if (filter.HasSpecialFeature.HasValue)
         {
-            if (filter.HasSpecialFeature.Value)
+            var itemsWithExtras = context.BaseItems
+                .Where(extra => extra.OwnerId != null)
+                .Select(extra => extra.OwnerId!.Value)
+                .Distinct();
+
+            Expression<Func<BaseItemEntity, bool>> hasExtras = e => itemsWithExtras.Contains(e.Id);
+
+            baseQuery = filter.HasSpecialFeature.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, hasExtras)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, hasExtras);
+        }
+
+        if (filter.HasTrailer.HasValue)
+        {
+            var trailerOwnerIds = context.BaseItems
+                .Where(extra => extra.ExtraType == BaseItemExtraType.Trailer && extra.OwnerId != null)
+                .Select(extra => extra.OwnerId!.Value);
+
+            Expression<Func<BaseItemEntity, bool>> hasTrailer = e => trailerOwnerIds.Contains(e.Id);
+
+            baseQuery = filter.HasTrailer.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, hasTrailer)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, hasTrailer);
+        }
+
+        if (filter.HasThemeSong.HasValue)
+        {
+            var themeSongOwnerIds = context.BaseItems
+                .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeSong && extra.OwnerId != null)
+                .Select(extra => extra.OwnerId!.Value);
+
+            Expression<Func<BaseItemEntity, bool>> hasThemeSong = e => themeSongOwnerIds.Contains(e.Id);
+
+            baseQuery = filter.HasThemeSong.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, hasThemeSong)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, hasThemeSong);
+        }
+
+        if (filter.HasThemeVideo.HasValue)
+        {
+            var themeVideoOwnerIds = context.BaseItems
+                .Where(extra => extra.ExtraType == BaseItemExtraType.ThemeVideo && extra.OwnerId != null)
+                .Select(extra => extra.OwnerId!.Value);
+
+            Expression<Func<BaseItemEntity, bool>> hasThemeVideo = e => themeVideoOwnerIds.Contains(e.Id);
+
+            baseQuery = filter.HasThemeVideo.Value
+                ? baseQuery.WhereItemOrDescendantMatches(context, hasThemeVideo)
+                : baseQuery.WhereNeitherItemNorDescendantMatches(context, hasThemeVideo);
+        }
+
+        if (filter.AiredDuringSeason.HasValue)
+        {
+            var seasonNumber = filter.AiredDuringSeason.Value;
+            if (seasonNumber < 1)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ExtraIds != null);
+                baseQuery = baseQuery.Where(e => e.ParentIndexNumber == seasonNumber);
             }
             else
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ExtraIds == null);
+                var seasonStr = seasonNumber.ToString(CultureInfo.InvariantCulture);
+                baseQuery = baseQuery.Where(e =>
+                    e.ParentIndexNumber == seasonNumber
+                    || (e.Data != null && (
+                        e.Data.Contains("\"AirsAfterSeasonNumber\":" + seasonStr)
+                        || e.Data.Contains("\"AirsBeforeSeasonNumber\":" + seasonStr))));
             }
         }
 
-        if (filter.HasTrailer.HasValue || filter.HasThemeSong.HasValue || filter.HasThemeVideo.HasValue)
+        if (filter.AdjacentTo.HasValue && !filter.AdjacentTo.Value.IsEmpty())
         {
-            if (filter.HasTrailer.GetValueOrDefault() || filter.HasThemeSong.GetValueOrDefault() || filter.HasThemeVideo.GetValueOrDefault())
+            var adjacentToId = filter.AdjacentTo.Value;
+            var targetItem = context.BaseItems.Where(e => e.Id == adjacentToId).Select(e => new { e.SortName, e.Id }).FirstOrDefault();
+            if (targetItem is not null)
             {
-                baseQuery = baseQuery
-                    .Where(e => e.ExtraIds != null);
-            }
-            else
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.ExtraIds == null);
+                var targetSortName = targetItem.SortName ?? string.Empty;
+                var prevId = context.BaseItems
+                    .Where(e => string.Compare(e.SortName, targetSortName) < 0)
+                    .OrderByDescending(e => e.SortName)
+                    .Select(e => e.Id)
+                    .FirstOrDefault();
+
+                var nextId = context.BaseItems
+                    .Where(e => string.Compare(e.SortName, targetSortName) > 0)
+                    .OrderBy(e => e.SortName)
+                    .Select(e => e.Id)
+                    .FirstOrDefault();
+
+                var adjacentIds = new List<Guid> { adjacentToId };
+                if (prevId != Guid.Empty)
+                {
+                    adjacentIds.Add(prevId);
+                }
+
+                if (nextId != Guid.Empty)
+                {
+                    adjacentIds.Add(nextId);
+                }
+
+                baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
             }
         }
 
@@ -2661,49 +4038,317 @@ public sealed class BaseItemRepository
 
         if (recursive)
         {
-            var folderList = TraverseHirachyDown(id, dbContext, item => (item.IsFolder || item.IsVirtualItem));
+            var descendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, id);
 
             return dbContext.BaseItems
-                    .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder && !e.IsVirtualItem)
+                    .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem)
                     .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
         }
 
         return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
     }
 
-    private static HashSet<Guid> TraverseHirachyDown(Guid parentId, JellyfinDbContext dbContext, Expression<Func<BaseItemEntity, bool>>? filter = null)
+    /// <inheritdoc/>
+    public int GetPlayedCount(InternalItemsQuery filter, Guid ancestorId)
     {
-        var folderStack = new HashSet<Guid>()
-            {
-                parentId
-            };
-        var folderList = new HashSet<Guid>()
-            {
-                parentId
-            };
+        ArgumentNullException.ThrowIfNull(filter.User);
+        using var dbContext = _dbProvider.CreateDbContext();
 
-        while (folderStack.Count != 0)
+        var baseQuery = BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        return baseQuery.Count(b => b.UserData!.Any(u => u.UserId == filter.User.Id && u.Played));
+    }
+
+    /// <inheritdoc/>
+    public int GetTotalCount(InternalItemsQuery filter, Guid ancestorId)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var baseQuery = BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        return baseQuery.Count();
+    }
+
+    /// <inheritdoc/>
+    public (int Played, int Total) GetPlayedAndTotalCount(InternalItemsQuery filter, Guid ancestorId)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(filter.User);
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var baseQuery = BuildAccessFilteredDescendantsQuery(dbContext, filter, ancestorId);
+        return GetPlayedAndTotalCountFromQuery(baseQuery, filter.User.Id);
+    }
+
+    /// <inheritdoc/>
+    public (int Played, int Total) GetPlayedAndTotalCountFromLinkedChildren(InternalItemsQuery filter, Guid parentId)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(filter.User);
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, parentId);
+        var baseQuery = dbContext.BaseItems
+            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+        baseQuery = ApplyAccessFiltering(dbContext, baseQuery, filter);
+
+        return GetPlayedAndTotalCountFromQuery(baseQuery, filter.User.Id);
+    }
+
+    /// <inheritdoc/>
+    public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
+    {
+        ArgumentNullException.ThrowIfNull(folderIds);
+        ArgumentNullException.ThrowIfNull(user);
+
+        if (folderIds.Count == 0)
         {
-            var items = folderStack.ToArray();
-            folderStack.Clear();
-            var query = dbContext.BaseItems
-                .WhereOneOrMany(items, e => e.ParentId!.Value);
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-
-            foreach (var item in query.Select(e => e.Id).ToArray())
-            {
-                if (folderList.Add(item))
-                {
-                    folderStack.Add(item);
-                }
-            }
+            return new Dictionary<Guid, (int Played, int Total)>();
         }
 
-        return folderList;
+        using var dbContext = _dbProvider.CreateDbContext();
+        var folderIdsArray = folderIds.ToArray();
+        var filter = new InternalItemsQuery(user);
+        var userId = user.Id;
+
+        // Access-filtered leaf items (non-folder, non-virtual)
+        var leafItems = dbContext.BaseItems
+            .Where(b => !b.IsFolder && !b.IsVirtualItem);
+        leafItems = ApplyAccessFiltering(dbContext, leafItems, filter);
+
+        // Pre-compute played status to avoid repeating the subquery in each path
+        var playedLeafItems = leafItems
+            .Select(b => new { b.Id, Played = b.UserData!.Any(ud => ud.UserId == userId && ud.Played) });
+
+        // Descendants via AncestorIds (regular folders: Series → Episodes, etc.)
+        var ancestorLeaves = dbContext.AncestorIds
+            .WhereOneOrMany(folderIdsArray, a => a.ParentItemId)
+            .Join(
+                playedLeafItems,
+                a => a.ItemId,
+                b => b.Id,
+                (a, b) => new { FolderId = a.ParentItemId, b.Id, b.Played });
+
+        // Direct non-folder linked children (BoxSets → Movies, etc.)
+        var linkedLeaves = dbContext.LinkedChildren
+            .WhereOneOrMany(folderIdsArray, lc => lc.ParentId)
+            .Join(
+                playedLeafItems,
+                lc => lc.ChildId,
+                b => b.Id,
+                (lc, b) => new { FolderId = lc.ParentId, b.Id, b.Played });
+
+        // Linked folder children's descendants (BoxSets → Series → Episodes)
+        var linkedFolderLeaves = dbContext.LinkedChildren
+            .WhereOneOrMany(folderIdsArray, lc => lc.ParentId)
+            .Join(
+                dbContext.BaseItems.Where(b => b.IsFolder),
+                lc => lc.ChildId,
+                b => b.Id,
+                (lc, b) => new { lc.ParentId, FolderChildId = b.Id })
+            .Join(
+                dbContext.AncestorIds,
+                x => x.FolderChildId,
+                a => a.ParentItemId,
+                (x, a) => new { x.ParentId, DescendantId = a.ItemId })
+            .Join(
+                playedLeafItems,
+                x => x.DescendantId,
+                b => b.Id,
+                (x, b) => new { FolderId = x.ParentId, b.Id, b.Played });
+
+        // Union all paths and aggregate per folder
+        // Distinct counts ensure items reachable through multiple paths are counted once
+        var results = ancestorLeaves
+            .Union(linkedLeaves)
+            .Union(linkedFolderLeaves)
+            .GroupBy(x => x.FolderId)
+            .Select(g => new
+            {
+                FolderId = g.Key,
+                Total = g.Select(x => x.Id).Distinct().Count(),
+                Played = g.Where(x => x.Played).Select(x => x.Id).Distinct().Count()
+            })
+            .ToDictionary(x => x.FolderId, x => (x.Played, x.Total));
+
+        return results;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, int? childType = null)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        var query = dbContext.LinkedChildren
+            .Where(lc => lc.ParentId.Equals(parentId));
+
+        if (childType.HasValue)
+        {
+            query = query.Where(lc => (int)lc.ChildType == childType.Value);
+        }
+
+        return query
+            .OrderBy(lc => lc.SortOrder)
+            .Select(lc => lc.ChildId)
+            .ToList();
+    }
+
+    private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)
+    {
+        // GroupBy with a constant key aggregates all rows into a single group for server-side counting.
+        // OrderBy is required before FirstOrDefault to avoid EF Core warnings about unpredictable results.
+        var result = query
+            .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
+            .GroupBy(_ => 1)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Played = g.Count(isPlayed => isPlayed)
+            })
+            .OrderBy(_ => 1)
+            .FirstOrDefault();
+
+        return result is null ? (0, 0) : (result.Played, result.Total);
+    }
+
+    /// <inheritdoc/>
+    public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
+    {
+        ArgumentNullException.ThrowIfNull(parentIds);
+
+        if (parentIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        // Convert to array for EF Core Contains support
+        var parentIdsArray = parentIds.ToArray();
+
+        // Count hierarchical children (immediate children via ParentId)
+        var hierarchicalCounts = dbContext.BaseItems
+            .Where(b => b.ParentId.HasValue && parentIdsArray.Contains(b.ParentId.Value))
+            .GroupBy(b => b.ParentId!.Value)
+            .Select(g => new { ParentId = g.Key, Count = g.Count() })
+            .ToDictionary(x => x.ParentId, x => x.Count);
+
+        // Count linked children (BoxSets, Playlists, etc.)
+        var linkedCounts = dbContext.LinkedChildren
+            .Where(lc => parentIdsArray.Contains(lc.ParentId))
+            .GroupBy(lc => lc.ParentId)
+            .Select(g => new { ParentId = g.Key, Count = g.Count() })
+            .ToDictionary(x => x.ParentId, x => x.Count);
+
+        // Merge results
+        var result = new Dictionary<Guid, int>();
+        foreach (var parentId in parentIds)
+        {
+            var hierarchicalCount = hierarchicalCounts.GetValueOrDefault(parentId, 0);
+            var linkedCount = linkedCounts.GetValueOrDefault(parentId, 0);
+
+            // If there are linked children, use that count (matches Folder.GetChildCount logic)
+            // Otherwise use hierarchical count
+            result[parentId] = linkedCount > 0 ? linkedCount : hierarchicalCount;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Builds a query for descendants of an ancestor with user access filtering applied.
+    /// Uses recursive CTE to traverse both hierarchical (AncestorIds) and linked (LinkedChildren) relationships.
+    /// </summary>
+    private IQueryable<BaseItemEntity> BuildAccessFilteredDescendantsQuery(
+        JellyfinDbContext context,
+        InternalItemsQuery filter,
+        Guid ancestorId)
+    {
+        // Use recursive CTE to get all descendants (hierarchical and linked)
+        var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(context, ancestorId);
+
+        var baseQuery = context.BaseItems
+            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+
+        return ApplyAccessFiltering(context, baseQuery, filter);
+    }
+
+    /// <summary>
+    /// Applies user access filtering to a query.
+    /// Includes TopParentIds, parental rating, and tag filtering.
+    /// </summary>
+    private IQueryable<BaseItemEntity> ApplyAccessFiltering(
+        JellyfinDbContext context,
+        IQueryable<BaseItemEntity> baseQuery,
+        InternalItemsQuery filter)
+    {
+        // Apply TopParentIds filtering (library folder access)
+        if (filter.TopParentIds.Length > 0)
+        {
+            var topParentIds = filter.TopParentIds;
+            baseQuery = baseQuery.Where(e => topParentIds.Contains(e.TopParentId!.Value));
+        }
+
+        // Apply parental rating filtering
+        if (filter.MaxParentalRating is not null)
+        {
+            var maxScore = filter.MaxParentalRating.Score;
+            var maxSubScore = filter.MaxParentalRating.SubScore ?? 0;
+
+            baseQuery = baseQuery.Where(e =>
+                // Item has a rating: check against limit
+                (e.InheritedParentalRatingValue != null
+                    && (e.InheritedParentalRatingValue < maxScore
+                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
+                // Item has no rating
+                || (e.InheritedParentalRatingValue == null
+                    && (
+                        // No linked children (not a BoxSet/Playlist): pass as unrated
+                        !context.LinkedChildren.Any(lc => lc.ParentId == e.Id)
+                        // Has linked children: at least one child must be within limits
+                        || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
+                            && (lc.Child!.InheritedParentalRatingValue == null
+                                || lc.Child.InheritedParentalRatingValue < maxScore
+                                || (lc.Child.InheritedParentalRatingValue == maxScore
+                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))))));
+        }
+
+        // Apply block unrated items filtering
+        if (filter.BlockUnratedItems.Length > 0)
+        {
+            var unratedItemTypes = filter.BlockUnratedItems.Select(f => f.ToString()).ToArray();
+            baseQuery = baseQuery.Where(e =>
+                e.InheritedParentalRatingValue != null || !unratedItemTypes.Contains(e.UnratedType));
+        }
+
+        // Apply excluded tags filtering (blocked tags)
+        if (filter.ExcludeInheritedTags.Length > 0)
+        {
+            var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            baseQuery = baseQuery.Where(e =>
+                !context.ItemValuesMap.Any(f =>
+                    f.ItemValue.Type == ItemValueType.Tags
+                    && excludedTags.Contains(f.ItemValue.CleanValue)
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
+        }
+
+        // Apply included tags filtering (allowed tags - item must have at least one)
+        if (filter.IncludeInheritedTags.Length > 0)
+        {
+            var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            baseQuery = baseQuery.Where(e =>
+                context.ItemValuesMap.Any(f =>
+                    f.ItemValue.Type == ItemValueType.Tags
+                    && includeTags.Contains(f.ItemValue.CleanValue)
+                    && (f.ItemId == e.Id
+                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
+                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
+                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
+        }
+
+        return baseQuery;
     }
 
     /// <inheritdoc/>
@@ -2731,5 +4376,71 @@ public sealed class BaseItemRepository
         }
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        return context.LinkedChildren
+            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public int RerouteLinkedChildren(Guid fromChildId, Guid toChildId)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        // Get parents that already reference toChildId (to avoid duplicates)
+        var parentsWithTarget = context.LinkedChildren
+            .Where(lc => lc.ChildId == toChildId && lc.ChildType == DbLinkedChildType.Manual)
+            .Select(lc => lc.ParentId)
+            .ToHashSet();
+
+        // Update references that won't create duplicates
+        var updated = context.LinkedChildren
+            .Where(lc => lc.ChildId == fromChildId
+                && lc.ChildType == DbLinkedChildType.Manual
+                && !parentsWithTarget.Contains(lc.ParentId))
+            .ExecuteUpdate(s => s.SetProperty(e => e.ChildId, toChildId));
+
+        // Remove references that would be duplicates
+        context.LinkedChildren
+            .Where(lc => lc.ChildId == fromChildId
+                && lc.ChildType == DbLinkedChildType.Manual
+                && parentsWithTarget.Contains(lc.ParentId))
+            .ExecuteDelete();
+
+        return updated;
+    }
+
+    /// <inheritdoc/>
+    public void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType)
+    {
+        using var context = _dbProvider.CreateDbContext();
+
+        var dbChildType = (DbLinkedChildType)childType;
+        var existingLink = context.LinkedChildren
+            .FirstOrDefault(lc => lc.ParentId == parentId && lc.ChildId == childId);
+
+        if (existingLink is null)
+        {
+            context.LinkedChildren.Add(new LinkedChildEntity
+            {
+                ParentId = parentId,
+                ChildId = childId,
+                ChildType = dbChildType,
+                SortOrder = null
+            });
+        }
+        else
+        {
+            existingLink.ChildType = dbChildType;
+        }
+
+        context.SaveChanges();
     }
 }

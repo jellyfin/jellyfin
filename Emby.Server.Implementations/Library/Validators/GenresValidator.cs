@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -48,17 +49,40 @@ public class GenresValidator
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var names = _itemRepo.GetGenreNames();
+        var existingGenreIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Genre]
+        }).ToHashSet();
+
+        var existingGenres = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Genre]
+        }).Cast<Genre>()
+        .GroupBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
         var numComplete = 0;
         var count = names.Count;
+        var refreshed = 0;
 
         foreach (var name in names)
         {
             try
             {
-                var item = _libraryManager.GetGenre(name);
+                Genre? item = null;
+                if (existingGenres.TryGetValue(name, out var existingGenre))
+                {
+                    item = existingGenre;
+                }
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                // Fall back to GetGenre if not found (creates new item if needed)
+                item ??= _libraryManager.GetGenre(name);
+
+                if (!existingGenreIds.Contains(item.Id))
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    refreshed++;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -77,6 +101,8 @@ public class GenresValidator
 
             progress.Report(percent);
         }
+
+        _logger.LogInformation("Refreshed metadata for {RefreshedCount} new genres out of {TotalCount} total", refreshed, count);
 
         var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
         {
