@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -369,6 +370,14 @@ namespace Emby.Server.Implementations.Dto
             }
 
             return dto;
+        }
+
+        /// <inheritdoc />
+        public SyncPlayQueueItemDto GetSyncPlayQueueItemDto(SyncPlayQueueItem syncPlayQueueItem)
+        {
+            var baseItem = _libraryManager.GetItemById(syncPlayQueueItem.ItemId);
+            var baseItemDto = baseItem == null ? null : GetBaseItemDto(baseItem, new DtoOptions());
+            return new SyncPlayQueueItemDto(syncPlayQueueItem.ItemId, syncPlayQueueItem.PlaylistItemId, baseItemDto);
         }
 
         private void SetItemByNameInfo(BaseItemDto dto, User? user)

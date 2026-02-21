@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
@@ -69,16 +70,19 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="userManager">The user manager.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="dtoService">The dto service.</param>
         public Group(
             ILoggerFactory loggerFactory,
             IUserManager userManager,
             ISessionManager sessionManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IDtoService dtoService)
         {
             _loggerFactory = loggerFactory;
             _userManager = userManager;
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
+            PlayQueue = new PlayQueueManager(dtoService);
             _logger = loggerFactory.CreateLogger<Group>();
 
             _state = new IdleGroupState(loggerFactory);
@@ -118,7 +122,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
-        public PlayQueueManager PlayQueue { get; } = new PlayQueueManager();
+        public PlayQueueManager PlayQueue { get; init; }
 
         /// <summary>
         /// Gets the runtime ticks of current playing item.
@@ -668,7 +672,7 @@ namespace Emby.Server.Implementations.SyncPlay
             return new PlayQueueUpdate(
                 reason,
                 PlayQueue.LastChange,
-                PlayQueue.GetPlaylist(),
+                PlayQueue.GetPlaylistDto(),
                 PlayQueue.PlayingItemIndex,
                 startPositionTicks,
                 isPlaying,
