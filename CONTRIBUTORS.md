@@ -202,6 +202,7 @@
  - [revam](https://github.com/revam)
  - [allesmi](https://github.com/allesmi)
  - [ThunderClapLP](https://github.com/ThunderClapLP)
+ - [theshoeshiner](https://github.com/theshoeshiner)
  - [Shoham Peller](https://github.com/spellr)
  - [theshoeshiner](https://github.com/theshoeshiner)
  - [TokerX](https://github.com/TokerX)
