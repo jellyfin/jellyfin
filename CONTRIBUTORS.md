@@ -210,6 +210,7 @@
  - [bjorntp](https://github.com/bjorntp)
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
+ - [Lampan-git](https://github.com/Lampan-git)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
 
 # Emby Contributors
