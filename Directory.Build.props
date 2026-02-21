@@ -3,11 +3,13 @@
 
   <PropertyGroup>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsNotAsErrors>NU1902;NU1903</WarningsNotAsErrors>
+    <NoWarn>$(NoWarn);CS1591;CS1570;CS1584;CS1658</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -21,7 +23,7 @@
 
   <!-- Custom Analyzers -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Jellyfin.CodeAnalysis' AND '$(Configuration)' == 'Debug' ">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)src/Jellyfin.CodeAnalysis/Jellyfin.CodeAnalysis.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src/Jellyfin.CodeAnalysis/Jellyfin.CodeAnalysis.csproj" OutputItemType="Analyzer" TreatAsUsed="true" />
   </ItemGroup>
 
 </Project>
