@@ -225,6 +225,7 @@ namespace Emby.Naming.Common
                 ".afc",
                 ".amf",
                 ".aif",
+                ".aifc",
                 ".aiff",
                 ".alac",
                 ".amr",
