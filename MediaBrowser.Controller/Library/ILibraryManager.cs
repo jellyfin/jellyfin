@@ -158,6 +158,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
 
+        /// <summary>
+        /// Clears the cached ignore rule directory lookups.
+        /// Call this before triggering a library scan or item refresh to ensure
+        /// any changes to .ignore files are picked up.
+        /// </summary>
+        void ClearIgnoreRuleCache();
+
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
