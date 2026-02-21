@@ -3,8 +3,10 @@
     "image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
     "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "containerUser": "vscode",
+    "postCreateCommand": "sudo chown -R vscode:vscode /workspaces/",
     // restores nuget packages, installs the dotnet workloads and installs the dev https certificate
-    "postStartCommand": "sudo dotnet restore; sudo dotnet workload update; sudo dotnet dev-certs https --trust; sudo bash \"./.devcontainer/install-ffmpeg.sh\"",
+    "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust; bash \"./.devcontainer/install-ffmpeg.sh\"",
     // The previous way of installing extensions via the vs command dont work on selfhosted devcontainers
     "customizations": {
         "vscode": {
@@ -36,8 +38,7 @@
         "ghcr.io/devcontainers/features/docker-in-docker:2": {
             "dockerDashComposeVersion": "v2"
         },
-        "ghcr.io/devcontainers/features/github-cli:1": {},
-        "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "hostRequirements": {
         "memory": "8gb",
