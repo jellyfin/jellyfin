@@ -466,7 +466,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 var batch = programIds.Skip(i).Take(BatchSize);
 
-                using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
+                using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs/");
                 message.Headers.TryAddWithoutValidation("token", token);
                 message.Content = JsonContent.Create(batch, options: _jsonOptions);
 
