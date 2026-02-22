@@ -50,7 +50,8 @@ namespace Jellyfin.LiveTv.Listings
         private bool _disposed = false;
 
         private byte[] _countriesCache;
-        private DateTime? _dailyLimitHitDate;
+        private DateTime? _imageLimitHitDate;
+        private DateTime? _metadataLimitHitDate;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
@@ -60,13 +61,16 @@ namespace Jellyfin.LiveTv.Listings
             _logger = logger;
             _httpClientFactory = httpClientFactory;
             _appPaths = appPaths;
-            _dailyLimitHitDate = LoadDailyLimitHitDate();
+            _imageLimitHitDate = LoadDailyLimitFile(ImageLimitFilePath);
+            _metadataLimitHitDate = LoadDailyLimitFile(MetadataLimitFilePath);
         }
 
         /// <inheritdoc />
         public string Name => "Schedules Direct";
 
-        private string DailyLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-daily-limit.txt");
+        private string ImageLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-image-limit.txt");
+
+        private string MetadataLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-metadata-limit.txt");
 
         /// <inheritdoc />
         public string Type => nameof(SchedulesDirect);
@@ -89,6 +93,11 @@ namespace Jellyfin.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (IsDailyLimitActive(ref _metadataLimitHitDate, MetadataLimitFilePath))
+            {
+                return [];
+            }
+
             ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             // Normalize incoming input
@@ -464,6 +473,11 @@ namespace Jellyfin.LiveTv.Listings
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
+            if (IsDailyLimitActive(ref _imageLimitHitDate, ImageLimitFilePath))
+            {
+                return [];
+            }
+
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token) || programIds.Count == 0)
@@ -563,19 +577,6 @@ namespace Jellyfin.LiveTv.Listings
             if (_accountError)
             {
                 return null;
-            }
-
-            // Daily usage limit hit (e.g. 5003) — wait until the SD counter resets at 00:00 UTC.
-            if (_dailyLimitHitDate.HasValue)
-            {
-                if (_dailyLimitHitDate.Value.Date < DateTime.UtcNow.Date)
-                {
-                    ClearDailyLimitHitDate();
-                }
-                else
-                {
-                    return null;
-                }
             }
 
             // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
@@ -687,12 +688,15 @@ namespace Jellyfin.LiveTv.Listings
                 _tokens.Clear();
                 _lastErrorResponse = DateTime.UtcNow;
             }
-            else if (sdCode is 5002 or 5003)
+            else if (sdCode is 5002)
             {
-                // Daily usage limits — stop requests until SD resets at 00:00 UTC.
-                // 5002=max image downloads
-                // 5003=max schedule/metadata requests
-                SetDailyLimitHitDate();
+                // Max image downloads — stop image requests until SD resets at 00:00 UTC.
+                SetDailyLimitHitDate(ref _imageLimitHitDate, ImageLimitFilePath);
+            }
+            else if (sdCode is 5003)
+            {
+                // Max schedule/metadata requests — stop metadata requests until SD resets at 00:00 UTC.
+                SetDailyLimitHitDate(ref _metadataLimitHitDate, MetadataLimitFilePath);
             }
             else if (enableRetry
                 && (int)response.StatusCode < 500
@@ -831,9 +835,8 @@ namespace Jellyfin.LiveTv.Listings
             return bytes;
         }
 
-        private DateTime? LoadDailyLimitHitDate()
+        private static DateTime? LoadDailyLimitFile(string path)
         {
-            var path = DailyLimitFilePath;
             if (!File.Exists(path))
             {
                 return null;
@@ -863,6 +866,37 @@ namespace Jellyfin.LiveTv.Listings
             return null;
         }
 
+        private bool IsDailyLimitActive(ref DateTime? hitDate, string filePath)
+        {
+            if (!hitDate.HasValue)
+            {
+                return false;
+            }
+
+            if (hitDate.Value.Date < DateTime.UtcNow.Date)
+            {
+                hitDate = null;
+                TryDeleteFile(filePath);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SetDailyLimitHitDate(ref DateTime? hitDate, string filePath)
+        {
+            hitDate = DateTime.UtcNow;
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                File.WriteAllText(filePath, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to persist SD daily limit to {Path}", filePath);
+            }
+        }
+
         private static void TryDeleteFile(string path)
         {
             try
@@ -873,26 +907,6 @@ namespace Jellyfin.LiveTv.Listings
             {
                 // Best effort.
             }
-        }
-
-        private void SetDailyLimitHitDate()
-        {
-            _dailyLimitHitDate = DateTime.UtcNow;
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(DailyLimitFilePath)!);
-                File.WriteAllText(DailyLimitFilePath, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-            }
-            catch (IOException ex)
-            {
-                _logger.LogWarning(ex, "Failed to persist SD daily limit hit date");
-            }
-        }
-
-        private void ClearDailyLimitHitDate()
-        {
-            _dailyLimitHitDate = null;
-            TryDeleteFile(DailyLimitFilePath);
         }
 
         public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
