@@ -103,6 +103,9 @@ namespace Jellyfin.Server
                 })
                 .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
 
+            // Register the HomeSectionManager
+            services.AddScoped<MediaBrowser.Controller.IHomeSectionManager, Jellyfin.Server.Implementations.Users.HomeSectionManager>();
+
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
