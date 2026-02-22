@@ -742,9 +742,13 @@ public class GuideManager : IGuideManager
 
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
+        var sdLimitActive = IsSdImageLimitActive();
+
         await Parallel.ForEachAsync(
             programs
                 .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
+                .Where(p => !sdLimitActive || !p.ImageInfos.All(
+                    img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
                 .DistinctBy(p => p.Id),
             _cacheParallelOptions,
             async (program, cancellationToken) =>
