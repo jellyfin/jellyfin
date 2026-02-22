@@ -40,6 +40,11 @@ public class GuideManager : IGuideManager
     private readonly LiveTvDtoService _tvDtoService;
 
     /// <summary>
+    /// UTC date when the SD image download limit was hit. Cleared after 00:00 UTC rollover.
+    /// </summary>
+    private DateTime? _sdImageLimitHitDate;
+
+    /// <summary>
     /// Amount of days images are pre-cached from external sources.
     /// </summary>
     public const int MaxCacheDays = 2;
@@ -721,11 +726,29 @@ public class GuideManager : IGuideManager
         return false;
     }
 
+    private bool IsSdImageLimitActive()
+    {
+        // The SD image counter resets daily at 00:00 UTC.
+        // If we recorded a limit hit on a previous UTC date, clear it.
+        var hitDate = _sdImageLimitHitDate;
+        if (hitDate.HasValue && hitDate.Value.Date < DateTime.UtcNow.Date)
+        {
+            _sdImageLimitHitDate = null;
+            return false;
+        }
+
+        return hitDate.HasValue;
+    }
+
     private async Task PreCacheImages(IReadOnlyList<BaseItem> programs, DateTime maxCacheDate)
     {
+        var sdLimitActive = IsSdImageLimitActive();
+
         await Parallel.ForEachAsync(
             programs
                 .Where(p => p.EndDate.HasValue && p.EndDate.Value < maxCacheDate)
+                .Where(p => !sdLimitActive || !p.ImageInfos.All(
+                    img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
                 .DistinctBy(p => p.Id),
             _cacheParallelOptions,
             async (program, cancellationToken) =>
@@ -738,19 +761,39 @@ public class GuideManager : IGuideManager
                     }
 
                     var imageInfo = program.ImageInfos[i];
-                    if (!imageInfo.IsLocalFile)
+                    if (imageInfo.IsLocalFile)
                     {
-                        _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
-                        try
+                        continue;
+                    }
+
+                    // Skip SD downloads once the daily limit has been hit.
+                    if (imageInfo.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)
+                        && IsSdImageLimitActive())
+                    {
+                        continue;
+                    }
+
+                    _logger.LogDebug("Caching image locally: {Url}", imageInfo.Path);
+                    try
+                    {
+                        program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
+                                program,
+                                imageInfo,
+                                imageIndex: 0,
+                                removeOnFailure: false)
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (imageInfo.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)
+                            && !_sdImageLimitHitDate.HasValue)
                         {
-                            program.ImageInfos[i] = await _libraryManager.ConvertImageToLocal(
-                                    program,
-                                    imageInfo,
-                                    imageIndex: 0,
-                                    removeOnFailure: false)
-                                .ConfigureAwait(false);
+                            _sdImageLimitHitDate = DateTime.UtcNow;
+                            _logger.LogWarning(
+                                "Schedules Direct image download failed for {Url}. Daily download limit may have been reached (resets at 00:00 UTC). Skipping remaining SD images until reset",
+                                imageInfo.Path);
                         }
-                        catch (Exception ex)
+                        else if (!imageInfo.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase))
                         {
                             _logger.LogWarning(ex, "Unable to pre-cache {Url}", imageInfo.Path);
                         }
