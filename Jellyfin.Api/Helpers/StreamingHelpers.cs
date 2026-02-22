@@ -144,7 +144,10 @@ public static class StreamingHelpers
         {
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
             mediaSource = liveStreamInfo.Item1;
+
+#pragma warning disable CS0618
             state.DirectStreamProvider = liveStreamInfo.Item2;
+#pragma warning restore CS0618
 
             // Cap the max bitrate when it is too high. This is usually due to ffmpeg is unable to probe the source liveTV streams' bitrate.
             if (mediaSource.FallbackMaxStreamingBitrate is not null && streamingRequest.VideoBitRate is not null)

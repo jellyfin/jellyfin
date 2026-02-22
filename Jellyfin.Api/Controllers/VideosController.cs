@@ -435,6 +435,7 @@ public class VideosController : BaseJellyfinApiController
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
+#pragma warning disable CS0618
         if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
         {
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
@@ -447,6 +448,7 @@ public class VideosController : BaseJellyfinApiController
             // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
             return File(liveStream, MimeTypes.GetMimeType("file.ts"));
         }
+#pragma warning restore CS0618
 
         // Static remote stream
         if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)

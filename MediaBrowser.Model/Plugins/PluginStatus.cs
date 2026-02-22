@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Plugins
 {
     /// <summary>
@@ -39,8 +41,9 @@ namespace MediaBrowser.Model.Plugins
         Superseded = -4,
 
         /// <summary>
-        /// [DEPRECATED] See Superseded.
+        /// This plugin has been superseded by another version.
         /// </summary>
+        [Obsolete("See Superseded")]
         Superceded = -4,
 
         /// <summary>

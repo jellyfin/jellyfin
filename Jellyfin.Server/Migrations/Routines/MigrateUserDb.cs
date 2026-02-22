@@ -125,7 +125,6 @@ public class MigrateUserDb : IMigrationRoutine
                     InternalId = entry.GetInt64(0),
                     MaxParentalRatingScore = policy.MaxParentalRating,
                     MaxParentalRatingSubScore = null,
-                    EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
                     InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = maxLoginAttempts,
