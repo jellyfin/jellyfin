@@ -1,6 +1,6 @@
 {
     "Albums": "Album",
-    "AppDeviceValues": "App:{0}, Enhet: {1}",
+    "AppDeviceValues": "App: {0}, Enhet: {1}",
     "Application": "Program",
     "Artists": "Artister",
     "AuthenticationSucceededWithUserName": "{0} har logget inn",
@@ -30,7 +30,7 @@
     "ItemAddedWithName": "{0} ble lagt til i biblioteket",
     "ItemRemovedWithName": "{0} ble fjernet fra biblioteket",
     "LabelIpAddressValue": "IP-adresse: {0}",
-    "LabelRunningTimeValue": "Spilletid {0}",
+    "LabelRunningTimeValue": "Spilletid: {0}",
     "Latest": "Siste",
     "MessageApplicationUpdated": "Jellyfin-serveren har blitt oppdatert",
     "MessageApplicationUpdatedTo": "Jellyfin-serveren ble oppdatert til {0}",
@@ -73,7 +73,6 @@
     "Shows": "Serier",
     "Songs": "Sanger",
     "StartupEmbyServerIsLoading": "Jellyfin Server laster. Prøv igjen snart.",
-    "SubtitleDownloadFailureForItem": "En feil oppstå under nedlasting av undertekster for  {0}",
     "SubtitleDownloadFailureFromForItem": "Kunne ikke laste ned undertekster fra {0} for {1}",
     "Sync": "Synkroniser",
     "System": "System",
@@ -135,6 +134,8 @@
     "TaskDownloadMissingLyricsDescription": "Last ned sangtekster",
     "TaskExtractMediaSegments": "Skann mediasegment",
     "TaskMoveTrickplayImages": "Migrer bildeplassering for Trickplay",
-    "TaskMoveTrickplayImagesDescription": "Flytter eksisterende Trickplay-filer i henhold til bibliotekseinstillingene.",
-    "TaskExtractMediaSegmentsDescription": "Trekker ut eller henter mediasegmenter fra plugins som støtter MediaSegment."
+    "TaskMoveTrickplayImagesDescription": "Flytter eksisterende Trickplay-filer i henhold til biblioteksinstillingene.",
+    "TaskExtractMediaSegmentsDescription": "Trekker ut eller henter mediasegmenter fra plugins som støtter MediaSegment.",
+    "CleanupUserDataTaskDescription": "Sletter all brukerdata (avspillings-status, favoritter osv.) fra innhold som har vært utilgjengelig i minst 90 dager.",
+    "CleanupUserDataTask": "Oppgave for opprydding av brukerdata"
 }

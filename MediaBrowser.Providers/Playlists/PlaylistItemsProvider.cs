@@ -99,7 +99,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
                             .OfType<CollectionFolder>()
                             .Where(f => f.CollectionType.HasValue && !_ignoredCollections.Contains(f.CollectionType.Value))
                             .SelectMany(f => f.PhysicalLocations)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .Distinct()
                             .ToList();
 
         using (var stream = File.OpenRead(path))
@@ -215,7 +215,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
         if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
         {
             var file = directoryService.GetFile(path);
-            if (file is not null && file.LastWriteTimeUtc != item.DateModified)
+            if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
             {
                 _logger.LogDebug("Refreshing {Path} due to date modified timestamp change.", path);
                 return true;

@@ -21,9 +21,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public ExternalIdMediaType? Type => ExternalIdMediaType.Movie;
 
         /// <inheritdoc />
-        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
-
-        /// <inheritdoc />
         public bool Supports(IHasProviderIds item)
         {
             // Supports images for tv movies

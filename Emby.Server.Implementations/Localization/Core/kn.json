@@ -25,7 +25,7 @@
     "DeviceOfflineWithName": "{0} ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ",
     "DeviceOnlineWithName": "{0} ಸಂಪರ್ಕಗೊಂಡಿದೆ",
     "External": "ಹೊರಗಿನ",
-    "FailedLoginAttemptWithUserName": "{0} ರಿಂದ ವಿಫಲ ಲಾಗಿನ್ ಪ್ರಯತ್ನ",
+    "FailedLoginAttemptWithUserName": "ವಿಫಲ ಲಾಗಿನ್ ಪ್ರಯತ್ನ ಸಂಖ್ಯೆ {0}",
     "Favorites": "ಮೆಚ್ಚಿನವುಗಳು",
     "Folders": "ಫೋಲ್ಡರ್‌ಗಳು",
     "Forced": "ಬಲವಂತವಾಗಿ",
@@ -123,5 +123,13 @@
     "TaskUpdatePlugins": "ಪ್ಲಗಿನ್‌ಗಳನ್ನು ನವೀಕರಿಸಿ",
     "TaskCleanTranscode": "ಟ್ರಾನ್ಸ್‌ಕೋಡ್ ಡೈರೆಕ್ಟರಿಯನ್ನು ಸ್ವಚ್ಛಗೊಳಿಸಿ",
     "TaskRefreshChannels": "ಚಾನಲ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ",
-    "TaskRefreshChannelsDescription": "ಇಂಟರ್ನೆಟ್ ಚಾನಲ್ ಮಾಹಿತಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡುತ್ತದೆ."
+    "TaskRefreshChannelsDescription": "ಇಂಟರ್ನೆಟ್ ಚಾನಲ್ ಮಾಹಿತಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡುತ್ತದೆ.",
+    "TaskAudioNormalizationDescription": "ಧ್ವನಿ ಸಾಮಾನ್ಯೀಕರಣ ಮಾಹಿತಿಗಾಗಿ ಕಡತ‌ಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡುತ್ತದೆ.",
+    "TaskDownloadMissingLyricsDescription": "ಹಾಡುಗಳಿಗೆ ಸಾಹಿತ್ಯ ಪಡೆಯಿರಿ",
+    "TaskExtractMediaSegments": "ಮಾಧ್ಯಮ ವಿಭಾಗದ ಹುಡುಕು",
+    "TaskDownloadMissingLyrics": "ಇಲ್ಲದ ಸಾಹಿತ್ಯವನ್ನು ಪಡೆಯಿರಿ",
+    "TaskAudioNormalization": "ಧ್ವನಿ ಸಾಮಾನ್ಯೀಕರಣ",
+    "TaskRefreshTrickplayImages": "ಟ್ರಿಕ್‌ಪ್ಲೇ ಚಿತ್ರಗಳನ್ನು ರಚಿಸಿ",
+    "TaskCleanCollectionsAndPlaylists": "ಸಂಗ್ರಹಗಳು ಮತ್ತು ಪ್ಲೇಪಟ್ಟಿಗಳನ್ನು ಸ್ವಚ್ಛಗೊಳಿಸಿ",
+    "TaskCleanCollectionsAndPlaylistsDescription": "ಇಲ್ಲದ ಸಂಗ್ರಹಗಳು ಮತ್ತು ಪ್ಲೇಪಟ್ಟಿಗಳಿಂದ ವಸ್ತುಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."
 }

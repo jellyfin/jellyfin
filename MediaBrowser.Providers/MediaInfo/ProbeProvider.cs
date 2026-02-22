@@ -55,33 +55,33 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="blurayExaminer">Instance of the <see cref="IBlurayExaminer"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-        /// <param name="encodingManager">Instance of the <see cref="IEncodingManager"/> interface.</param>
+        /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="subtitleManager">Instance of the <see cref="ISubtitleManager"/> interface.</param>
-        /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
+        /// <param name="mediaAttachmentRepository">Instance of the <see cref="IMediaAttachmentRepository"/> interface.</param>
+        /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/> interface.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepo,
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
-            IEncodingManager encodingManager,
+            IChapterManager chapterManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
-            IChapterManager chapterManager,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILoggerFactory loggerFactory,
             NamingOptions namingOptions,
-            ILyricManager lyricManager)
+            ILyricManager lyricManager,
+            IMediaAttachmentRepository mediaAttachmentRepository,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
@@ -92,25 +92,25 @@ namespace MediaBrowser.Providers.MediaInfo
                 loggerFactory.CreateLogger<FFProbeVideoInfo>(),
                 mediaSourceManager,
                 mediaEncoder,
-                itemRepo,
                 blurayExaminer,
                 localization,
-                encodingManager,
+                chapterManager,
                 config,
                 subtitleManager,
-                chapterManager,
                 libraryManager,
                 _audioResolver,
-                _subtitleResolver);
+                _subtitleResolver,
+                mediaAttachmentRepository,
+                mediaStreamRepository);
 
             _audioProber = new AudioFileProber(
                 loggerFactory.CreateLogger<AudioFileProber>(),
                 mediaSourceManager,
                 mediaEncoder,
-                itemRepo,
                 libraryManager,
                 _lyricResolver,
-                lyricManager);
+                lyricManager,
+                mediaStreamRepository);
         }
 
         /// <inheritdoc />
@@ -130,9 +130,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file is not null && file.LastWriteTimeUtc != item.DateModified)
+                    if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
                     {
-                        _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
+                        _logger.LogDebug("Refreshing {ItemPath} due to file system modification.", path);
                         return true;
                     }
                 }

@@ -12,10 +12,4 @@ public class StartupRemoteAccessDto
     /// </summary>
     [Required]
     public bool EnableRemoteAccess { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether enable automatic port mapping.
-    /// </summary>
-    [Required]
-    public bool EnableAutomaticPortMapping { get; set; }
 }

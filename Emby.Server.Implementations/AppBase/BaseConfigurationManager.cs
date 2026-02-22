@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
@@ -19,7 +20,7 @@ namespace Emby.Server.Implementations.AppBase
     public abstract class BaseConfigurationManager : IConfigurationManager
     {
         private readonly ConcurrentDictionary<string, object> _configurations = new();
-        private readonly object _configurationSyncLock = new();
+        private readonly Lock _configurationSyncLock = new();
 
         private ConfigurationStore[] _configurationStores = Array.Empty<ConfigurationStore>();
         private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
@@ -226,6 +227,7 @@ namespace Emby.Server.Implementations.AppBase
 
             Logger.LogInformation("Setting cache path: {Path}", cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
+            CommonApplicationPaths.CreateAndCheckMarker(((BaseApplicationPaths)CommonApplicationPaths).CachePath, "cache");
         }
 
         /// <summary>

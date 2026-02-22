@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -73,13 +73,13 @@ public class StudiosController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
         [FromQuery] Guid? parentId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] excludeItemTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery] bool? isFavorite,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] Guid? userId,
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
@@ -89,7 +89,6 @@ public class StudiosController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         User? user = userId.IsNullOrEmpty()
@@ -142,7 +141,7 @@ public class StudiosController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetStudio([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         var item = _libraryManager.GetStudio(name);
         if (!userId.IsNullOrEmpty())

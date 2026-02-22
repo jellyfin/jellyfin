@@ -6,6 +6,11 @@ namespace Jellyfin.Api.Models.StartupDtos;
 public class StartupConfigurationDto
 {
     /// <summary>
+    /// Gets or sets the server name.
+    /// </summary>
+    public string? ServerName { get; set; }
+
+    /// <summary>
     /// Gets or sets UI language culture.
     /// </summary>
     public string? UICulture { get; set; }

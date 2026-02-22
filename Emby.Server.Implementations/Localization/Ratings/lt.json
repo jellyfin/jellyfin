@@ -1,0 +1,41 @@
+{
+    "countryCode": "lt",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["V"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["N-7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["N-13"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["N-16"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["N-18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

@@ -73,7 +73,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         /// <summary>
-        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// Gets a value indicating whether URLs after a closing XML tag are supported.
         /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
@@ -107,6 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // Additional Mappings
             _validProviderIds.Add("collectionnumber", "TmdbCollection");
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("tmdbcol", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
 
             Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
@@ -312,8 +313,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.Played = played;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.Played = played;
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
+                            }
                         }
                     }
 
@@ -326,8 +334,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.PlayCount = count;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.PlayCount = count;
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
+                            }
                         }
                     }
 
@@ -340,8 +355,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (user is not null)
                         {
                             userData = _userDataManager.GetUserData(user, item);
-                            userData.LastPlayedDate = lastPlayed;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                            if (userData is not null)
+                            {
+                                userData.LastPlayedDate = lastPlayed;
+
+                                if (!item.Id.IsEmpty())
+                                {
+                                    _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                                }
+                            }
                         }
                     }
 
@@ -581,7 +603,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     var provider = reader.GetAttribute("type");
                     var providerId = reader.ReadElementContentAsString();
-                    item.TrySetProviderId(provider, providerId);
+
+                    if (!string.IsNullOrEmpty(provider))
+                    {
+                        if (_validProviderIds.TryGetValue(provider, out string? normalizedProvider))
+                        {
+                            item.TrySetProviderId(normalizedProvider, providerId);
+                        }
+                        else
+                        {
+                            item.TrySetProviderId(provider, providerId);
+                        }
+                    }
 
                     break;
                 case "thumb":
@@ -663,7 +696,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
-                // non existing file returns null
+                // nonexistent file returns null
                 if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);

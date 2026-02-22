@@ -122,7 +122,7 @@ public class SessionController : BaseJellyfinApiController
     public async Task<ActionResult> Play(
         [FromRoute, Required] string sessionId,
         [FromQuery, Required] PlayCommand playCommand,
-        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
+        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] itemIds,
         [FromQuery] long? startPositionTicks,
         [FromQuery] string? mediaSourceId,
         [FromQuery] int? audioStreamIndex,
@@ -347,8 +347,8 @@ public class SessionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> PostCapabilities(
         [FromQuery] string? id,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] playableMediaTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] playableMediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] GeneralCommandType[] supportedCommands,
         [FromQuery] bool supportsMediaControl = false,
         [FromQuery] bool supportsPersistentIdentifier = true)
     {

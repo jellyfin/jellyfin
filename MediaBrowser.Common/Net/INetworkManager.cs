@@ -95,12 +95,6 @@ namespace MediaBrowser.Common.Net
         string GetBindAddress(string source, out int? port);
 
         /// <summary>
-        /// Get a list of all the MAC addresses associated with active interfaces.
-        /// </summary>
-        /// <returns>List of MAC addresses.</returns>
-        IReadOnlyList<PhysicalAddress> GetMacAddresses();
-
-        /// <summary>
         /// Returns true if the address is part of the user defined LAN.
         /// </summary>
         /// <param name="address">IP to check.</param>
@@ -133,7 +127,7 @@ namespace MediaBrowser.Common.Net
         /// Checks if <paramref name="remoteIP"/> has access to the server.
         /// </summary>
         /// <param name="remoteIP">IP address of the client.</param>
-        /// <returns><b>True</b> if it has access, otherwise <b>false</b>.</returns>
-        bool HasRemoteAccess(IPAddress remoteIP);
+        /// <returns>The result of evaluating the access policy, <c>Allow</c> if it should be allowed.</returns>
+        RemoteAccessPolicyResult ShouldAllowServerAccess(IPAddress remoteIP);
     }
 }

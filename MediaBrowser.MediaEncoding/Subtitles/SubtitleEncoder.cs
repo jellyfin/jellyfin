@@ -16,7 +16,9 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
@@ -31,12 +33,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     public sealed class SubtitleEncoder : ISubtitleEncoder, IDisposable
     {
         private readonly ILogger<SubtitleEncoder> _logger;
-        private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
+        private readonly IPathManager _pathManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -49,23 +52,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public SubtitleEncoder(
             ILogger<SubtitleEncoder> logger,
-            IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
-            ISubtitleParser subtitleParser)
+            ISubtitleParser subtitleParser,
+            IPathManager pathManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
+            _pathManager = pathManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
-
-        private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
 
         private MemoryStream ConvertSubtitles(
             Stream stream,
@@ -169,21 +172,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task<Stream> GetSubtitleStream(SubtitleInfo fileInfo, CancellationToken cancellationToken)
         {
-            if (fileInfo.IsExternal)
+            if (fileInfo.Protocol == MediaProtocol.Http)
             {
-                using (var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false))
+                var result = await DetectCharset(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+                var detected = result.Detected;
+
+                if (detected is not null)
                 {
-                    var result = CharsetDetector.DetectFromStream(stream).Detected;
-                    stream.Position = 0;
+                    _logger.LogDebug("charset {CharSet} detected for {Path}", detected.EncodingName, fileInfo.Path);
 
-                    if (result is not null)
+                    using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetStreamAsync(new Uri(fileInfo.Path), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await using (stream.ConfigureAwait(false))
                     {
-                        _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
+                      using var reader = new StreamReader(stream, detected.Encoding);
+                      var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                        using var reader = new StreamReader(stream, result.Encoding);
-                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-
-                        return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                      return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
             }
@@ -213,7 +220,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 };
             }
 
-            var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
+            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
                 .TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
@@ -394,7 +401,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -477,13 +485,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Extracts all extractable subtitles (text and pgs).
-        /// </summary>
-        /// <param name="mediaSource">The mediaSource.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var locks = new List<IDisposable>();
             var extractableStreams = new List<MediaStream>();
@@ -491,10 +494,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 var subtitleStreams = mediaSource.MediaStreams
-                    .Where(stream => stream is { IsExtractableSubtitleStream: true, SupportsExternalStream: true, IsExternal: false });
+                    .Where(stream => stream is { IsExtractableSubtitleStream: true, SupportsExternalStream: true });
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
+                    if (subtitleStream.IsExternal && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
@@ -512,6 +520,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 if (extractableStreams.Count > 0)
                 {
                     await ExtractAllExtractableSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
+                    await ExtractAllExtractableSubtitlesMKS(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -521,6 +530,72 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             finally
             {
                 locks.ForEach(x => x.Dispose());
+            }
+        }
+
+        private async Task ExtractAllExtractableSubtitlesMKS(
+           MediaSourceInfo mediaSource,
+           List<MediaStream> subtitleStreams,
+           CancellationToken cancellationToken)
+        {
+            var mksFiles = new List<string>();
+
+            foreach (var subtitleStream in subtitleStreams)
+            {
+                if (string.IsNullOrEmpty(subtitleStream.Path) || !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!mksFiles.Contains(subtitleStream.Path))
+                {
+                    mksFiles.Add(subtitleStream.Path);
+                }
+            }
+
+            if (mksFiles.Count == 0)
+            {
+                return;
+            }
+
+            foreach (string mksFile in mksFiles)
+            {
+                var inputPath = _mediaEncoder.GetInputArgument(mksFile, mediaSource);
+                var outputPaths = new List<string>();
+                var args = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-i {0} -copyts",
+                    inputPath);
+
+                foreach (var subtitleStream in subtitleStreams)
+                {
+                    if (!subtitleStream.Path.Equals(mksFile, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                    var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                    var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
+                    if (streamIndex == -1)
+                    {
+                        _logger.LogError("Cannot find subtitle stream index for {InputPath} ({Index}), skipping this stream", inputPath, subtitleStream.Index);
+                        continue;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
+
+                    outputPaths.Add(outputPath);
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
+                        streamIndex,
+                        outputCodec,
+                        outputPath);
+                }
+
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -538,6 +613,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var subtitleStream in subtitleStreams)
             {
+                if (!string.IsNullOrEmpty(subtitleStream.Path) && subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("Subtitle {Index} for file {InputPath} is part in an MKS file. Skipping", inputPath, subtitleStream.Index);
+                    continue;
+                }
+
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
@@ -559,6 +640,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPath);
             }
 
+            if (outputPaths.Count == 0)
+            {
+                return;
+            }
+
+            await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task ExtractSubtitlesForFile(
+            string inputPath,
+            string args,
+            List<string> outputPaths,
+            CancellationToken cancellationToken)
+        {
             int exitCode;
 
             using (var process = new Process
@@ -590,7 +685,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -741,7 +837,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    var timeoutMinutes = _serverConfigurationManager.GetEncodingOptions().SubtitleExtractionTimeoutMinutes;
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(timeoutMinutes)).ConfigureAwait(false);
                     exitCode = process.ExitCode;
                 }
                 catch (OperationCanceledException)
@@ -830,26 +927,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private string GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
         {
-            if (mediaSource.Protocol == MediaProtocol.File)
-            {
-                var ticksParam = string.Empty;
-
-                var date = _fileSystem.GetLastWriteTimeUtc(mediaSource.Path);
-
-                ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
-
-                var prefix = filename.Slice(0, 1);
-
-                return Path.Join(SubtitleCachePath, prefix, filename);
-            }
-            else
-            {
-                ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
-
-                var prefix = filename.Slice(0, 1);
-
-                return Path.Join(SubtitleCachePath, prefix, filename);
-            }
+            return _pathManager.GetSubtitlePath(mediaSource.Id, subtitleStreamIndex, outputSubtitleExtension);
         }
 
         /// <inheritdoc />
@@ -865,40 +943,44 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
+            var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var charset = result.Detected?.EncodingName ?? string.Empty;
+
+            // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
+            if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
+                && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
             {
-                var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName ?? string.Empty;
-
-                // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
-                    && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
-                {
-                    charset = string.Empty;
-                }
-
-                _logger.LogDebug("charset {0} detected for {Path}", charset, path);
-
-                return charset;
+                charset = string.Empty;
             }
+
+            _logger.LogDebug("charset {0} detected for {Path}", charset, path);
+
+            return charset;
         }
 
-        private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)
+        private async Task<DetectionResult> DetectCharset(string path, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                    {
-                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                            .GetAsync(new Uri(path), cancellationToken)
-                            .ConfigureAwait(false);
-                        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                {
+                    using var stream = await _httpClientFactory
+                      .CreateClient(NamedClient.Default)
+                      .GetStreamAsync(new Uri(path), cancellationToken)
+                      .ConfigureAwait(false);
+
+                    return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                }
 
                 case MediaProtocol.File:
-                    return AsyncFile.OpenRead(path);
+                {
+                    return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
+                                          .ConfigureAwait(false);
+                }
+
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(protocol));
+                    throw new ArgumentOutOfRangeException(nameof(protocol), protocol, "Unsupported protocol");
             }
         }
 

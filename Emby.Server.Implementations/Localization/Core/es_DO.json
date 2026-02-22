@@ -125,5 +125,11 @@
     "Undefined": "Sin definir",
     "TaskCleanActivityLogDescription": "Elimina las entradas del registro de actividad anteriores al periodo configurado.",
     "TaskCleanCacheDescription": "Elimina archivos caché que ya no son necesarios para el sistema.",
-    "TaskCleanLogsDescription": "Elimina archivos de registro con más de {0} días de antigüedad."
+    "TaskCleanLogsDescription": "Elimina archivos de registro con más de {0} días de antigüedad.",
+    "NotificationOptionApplicationUpdateAvailable": "actualización disponible",
+    "TaskDownloadMissingLyrics": "Descargue letras desaparecidas",
+    "TaskDownloadMissingLyricsDescription": "Decarga letras para canciones",
+    "TaskMoveTrickplayImages": "Mover localización de foto vista previa",
+    "NotificationOptionApplicationUpdateInstalled": "Aplicación actualización disponible",
+    "CleanupUserDataTask": "Tarea de limpieza de los datos del usuario"
 }

@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
 
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new();
-        private readonly object _syncLock = new();
+        private readonly Lock _syncLock = new();
 
         private Timer? _updateTimer;
 
@@ -144,9 +144,15 @@ namespace Emby.Server.Implementations.EntryPoints
                     .Select(i =>
                     {
                         var dto = _userDataManager.GetUserDataDto(i, user);
+                        if (dto is null)
+                        {
+                            return null!;
+                        }
+
                         dto.ItemId = i.Id;
                         return dto;
                     })
+                    .Where(e => e is not null)
                     .ToArray()
             };
         }

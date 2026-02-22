@@ -12,8 +12,8 @@ namespace MediaBrowser.Controller.MediaEncoding;
 public sealed class TranscodingJob : IDisposable
 {
     private readonly ILogger<TranscodingJob> _logger;
-    private readonly object _processLock = new();
-    private readonly object _timerLock = new();
+    private readonly Lock _processLock = new();
+    private readonly Lock _timerLock = new();
 
     private Timer? _killTimer;
 

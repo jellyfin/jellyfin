@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 if (personResult is not null)
                 {
@@ -56,13 +56,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     }
 
                     result.SetProviderId(MetadataProvider.Tmdb, personResult.Id.ToString(CultureInfo.InvariantCulture));
-                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
+                    result.TrySetProviderId(MetadataProvider.Imdb, personResult.ExternalIds?.ImdbId);
 
-                    return new[] { result };
+                    return [result];
                 }
             }
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
+            if (personSearchResult is null)
+            {
+                return [];
+            }
 
             var remoteSearchResults = new RemoteSearchResult[personSearchResult.Count];
             for (var i = 0; i < personSearchResult.Count; i++)
@@ -91,7 +95,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (personTmdbId <= 0)
             {
                 var personSearchResults = await _tmdbClientManager.SearchPersonAsync(info.Name, cancellationToken).ConfigureAwait(false);
-                if (personSearchResults.Count > 0)
+                if (personSearchResults?.Count > 0)
                 {
                     personTmdbId = personSearchResults[0].Id;
                 }
@@ -101,7 +105,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 if (person is null)
                 {
                     return result;

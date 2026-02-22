@@ -117,7 +117,8 @@ public class LyricScheduledTask : IScheduledTask
                                         MediaPath = audioItem.Path,
                                         SongName = audioItem.Name,
                                         AlbumName = audioItem.Album,
-                                        ArtistNames = audioItem.GetAllArtists().ToList(),
+                                        AlbumArtistsNames = audioItem.AlbumArtists,
+                                        ArtistNames = audioItem.Artists,
                                         Duration = audioItem.RunTimeTicks,
                                         IsAutomated = true,
                                         DisabledLyricFetchers = libraryOptions.DisabledLyricFetchers,
@@ -162,7 +163,7 @@ public class LyricScheduledTask : IScheduledTask
         [
             new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerInterval,
+                Type = TaskTriggerInfoType.IntervalTrigger,
                 IntervalTicks = TimeSpan.FromHours(24).Ticks
             }
         ];

@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 var path = args.Path;
 
-                var seasonParserResult = SeasonPathParser.Parse(path, true, true);
+                var seasonParserResult = SeasonPathParser.Parse(path, series.ContainingFolderPath, true, true);
 
                 var season = new Season
                 {

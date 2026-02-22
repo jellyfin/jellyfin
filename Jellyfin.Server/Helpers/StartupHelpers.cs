@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
+using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.Helpers;
@@ -257,11 +258,14 @@ public static class StartupHelpers
     {
         try
         {
+            var startupLogger = new LoggerProviderCollection();
+            startupLogger.AddProvider(new SetupServer.SetupLoggerFactory());
             // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
+                .WriteTo.Async(e => e.Providers(startupLogger))
                 .CreateLogger();
         }
         catch (Exception ex)
@@ -292,13 +296,5 @@ public static class StartupHelpers
         // Make sure we have all the code pages we can get
         // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // Increase the max http request limit
-        // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-        ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
-        // Disable the "Expect: 100-Continue" header by default
-        // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-        ServicePointManager.Expect100Continue = false;
     }
 }

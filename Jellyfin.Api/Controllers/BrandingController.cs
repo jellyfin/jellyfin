@@ -29,9 +29,18 @@ public class BrandingController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the branding configuration.</returns>
     [HttpGet("Configuration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<BrandingOptions> GetBrandingOptions()
+    public ActionResult<BrandingOptionsDto> GetBrandingOptions()
     {
-        return _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+        var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+
+        var brandingOptionsDto = new BrandingOptionsDto
+        {
+            LoginDisclaimer = brandingOptions.LoginDisclaimer,
+            CustomCss = brandingOptions.CustomCss,
+            SplashscreenEnabled = brandingOptions.SplashscreenEnabled
+        };
+
+        return brandingOptionsDto;
     }
 
     /// <summary>

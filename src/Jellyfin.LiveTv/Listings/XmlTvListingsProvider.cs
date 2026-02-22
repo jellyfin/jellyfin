@@ -84,10 +84,11 @@ namespace Jellyfin.LiveTv.Listings
                 _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
+                var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
                 var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 await using (stream.ConfigureAwait(false))
                 {
-                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
                 }
             }
             else
@@ -112,7 +113,8 @@ namespace Jellyfin.LiveTv.Listings
 
             await using (fileStream.ConfigureAwait(false))
             {
-                if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase))
+                if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gzip", StringComparison.OrdinalIgnoreCase))
                 {
                     try
                     {

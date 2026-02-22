@@ -73,7 +73,6 @@
     "Shows": "Series",
     "Songs": "Canciones",
     "StartupEmbyServerIsLoading": "Jellyfin Server se está cargando. Vuelve a intentarlo en breve.",
-    "SubtitleDownloadFailureForItem": "Error al descargar subtítulos para {0}",
     "SubtitleDownloadFailureFromForItem": "Fallo en la descarga de subtítulos desde {0} para {1}",
     "Sync": "Sincronizar",
     "System": "Sistema",
@@ -136,5 +135,7 @@
     "TaskMoveTrickplayImagesDescription": "Mueve archivos de trickplay existentes según la configuración de la biblioteca.",
     "TaskExtractMediaSegments": "Escaneo de segmentos de medios",
     "TaskExtractMediaSegmentsDescription": "Extrae u obtiene segmentos de medios de plugins habilitados para MediaSegment.",
-    "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay"
+    "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay",
+    "CleanupUserDataTask": "Tarea de limpieza de datos del usuario",
+    "CleanupUserDataTaskDescription": "Limpia todos los datos del usuario (estado de visualización, favoritos, etc.) de los medios que ya no están disponibles desde hace al menos 90 días."
 }

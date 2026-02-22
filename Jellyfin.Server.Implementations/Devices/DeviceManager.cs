@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data;
 using Jellyfin.Data.Dtos;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Security;
-using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Entities.Security;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
@@ -156,7 +158,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 devices = devices.Skip(query.Skip.Value);
             }
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 devices = devices.Take(query.Limit.Value);
             }

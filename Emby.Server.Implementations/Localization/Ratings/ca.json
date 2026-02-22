@@ -1,0 +1,90 @@
+{
+    "countryCode": "ca",
+    "supportsSubScores": true,
+    "ratings": [
+        {
+            "ratingStrings": ["E", "G", "TV-Y", "TV-G"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-Y7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-Y7-FV"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["PG", "TV-PG"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["14A"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["TV-14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["16+"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["NC-17"],
+            "ratingScore": {
+                "score": 17,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["18A"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["18+", "TV-MA", "R"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": 1
+            }
+        },
+        {
+            "ratingStrings": ["A"],
+            "ratingScore": {
+                "score": 1000,
+                "subScore": 0
+            }
+        },
+        {
+            "ratingStrings": ["Prohibited"],
+            "ratingScore": {
+                "score": 1001,
+                "subScore": 0
+            }
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 name: Issue Report
 description: File an issue report
 labels: [bug, triage]
+type: Bug
 body:
   - type: markdown
     id: introduction
@@ -14,7 +15,7 @@ body:
       label: "This issue respects the following points:"
       description: All conditions are **required**. Failure to comply with any of these conditions may cause your issue to be closed without comment.
       options:
-        - label: This is a **bug**, not a question or a configuration issue; Please visit our forum or chat rooms first to troubleshoot with volunteers, before creating a report. The links can be found [here](https://jellyfin.org/contact/).
+        - label: This is a **bug**, not a question or a configuration issue; Please visit our [forum or chat rooms](https://jellyfin.org/contact/) first to troubleshoot with volunteers, before creating a report.
           required: true
         - label: This issue is **not** already reported on [GitHub](https://github.com/jellyfin/jellyfin/issues?q=is%3Aopen+is%3Aissue) _(I've searched it)_.
           required: true
@@ -86,7 +87,13 @@ body:
       label: Jellyfin Server version
       description: What version of Jellyfin are you using?
       options:
-        - 10.9.11+
+        - 10.11.6
+        - 10.11.5
+        - 10.11.4
+        - 10.11.3
+        - 10.11.2
+        - 10.11.1
+        - 10.11.0
         - Master
         - Unstable
         - Older*
@@ -135,12 +142,15 @@ body:
         - **FFmpeg Version**: [e.g. 5.1.2-Jellyfin]
         - **Playback**: [Direct Play, Remux, Direct Stream, Transcode]
         - **Hardware Acceleration**: [e.g. none, VAAPI, NVENC, etc.]
+        - **CPU Model**: [e.g. AMD Ryzen 5 9600X, Intel Core i7-8565U, etc.]
         - **GPU Model**: [e.g. none, UHD630, GTX1050, etc.]
         - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
         - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
         - **Base URL**: [e.g. none, yes: /example]
         - **Networking**: [e.g. Host, Bridge/NAT]
-        - **Storage**: [e.g. local, NFS, cloud]
+        - **Jellyfin Data Storage & Filesystem**: [e.g. local SATA SSD - ext4, local HDD - NTFS]
+        - **Media Storage & Filesystem**: [e.g. Local HDD - ext4, SMB Share]
+        - **External Integrations**: [e.g. Jellystat, Jellyseerr]
       value: |
         - OS:
         - Linux Kernel:
@@ -150,12 +160,15 @@ body:
         - FFmpeg Version:
         - Playback Method:
         - Hardware Acceleration:
+        - CPU Model:
         - GPU Model:
         - Plugins:
         - Reverse Proxy:
         - Base URL:
         - Networking:
-        - Storage:
+        - Jellyfin Data Storage & Filesystem:
+        - Media Storage & Filesystem:
+        - External Integrations:
       render: markdown
     validations:
       required: true

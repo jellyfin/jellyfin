@@ -37,15 +37,25 @@ namespace Emby.Server.Implementations.Library
             while (attributeIndex > -1 && attributeIndex < maxIndex)
             {
                 var attributeEnd = attributeIndex + attribute.Length;
-                if (attributeIndex > 0
-                    && str[attributeIndex - 1] == '['
-                    && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
+                if (attributeIndex > 0)
                 {
-                    var closingIndex = str[attributeEnd..].IndexOf(']');
-                    // Must be at least 1 character before the closing bracket.
-                    if (closingIndex > 1)
+                    var attributeOpener = str[attributeIndex - 1];
+                    var attributeCloser = attributeOpener switch
                     {
-                        return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
+                        '[' => ']',
+                        '(' => ')',
+                        '{' => '}',
+                         _ => '\0'
+                    };
+                    if (attributeCloser != '\0' && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
+                    {
+                        var closingIndex = str[attributeEnd..].IndexOf(attributeCloser);
+
+                        // Must be at least 1 character before the closing bracket.
+                        if (closingIndex > 1)
+                        {
+                            return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
+                        }
                     }
                 }
 

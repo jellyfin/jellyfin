@@ -14,13 +14,14 @@ public static class ContainerHelper
     /// in <paramref name="profileContainers"/>.
     /// </summary>
     /// <param name="profileContainers">The comma-delimited string being searched.
-    /// If the parameter begins with the <c>-</c> character, the operation is reversed.</param>
+    /// If the parameter begins with the <c>-</c> character, the operation is reversed.
+    /// If the parameter is empty or null, all containers in <paramref name="inputContainer"/> will be accepted.</param>
     /// <param name="inputContainer">The comma-delimited string being matched.</param>
     /// <returns>The result of the operation.</returns>
     public static bool ContainsContainer(string? profileContainers, string? inputContainer)
     {
         var isNegativeList = false;
-        if (profileContainers != null && profileContainers.StartsWith('-'))
+        if (profileContainers is not null && profileContainers.StartsWith('-'))
         {
             isNegativeList = true;
             profileContainers = profileContainers[1..];
@@ -34,13 +35,14 @@ public static class ContainerHelper
     /// in <paramref name="profileContainers"/>.
     /// </summary>
     /// <param name="profileContainers">The comma-delimited string being searched.
-    /// If the parameter begins with the <c>-</c> character, the operation is reversed.</param>
+    /// If the parameter begins with the <c>-</c> character, the operation is reversed.
+    /// If the parameter is empty or null, all containers in <paramref name="inputContainer"/> will be accepted.</param>
     /// <param name="inputContainer">The comma-delimited string being matched.</param>
     /// <returns>The result of the operation.</returns>
     public static bool ContainsContainer(string? profileContainers, ReadOnlySpan<char> inputContainer)
     {
         var isNegativeList = false;
-        if (profileContainers != null && profileContainers.StartsWith('-'))
+        if (profileContainers is not null && profileContainers.StartsWith('-'))
         {
             isNegativeList = true;
             profileContainers = profileContainers[1..];
@@ -53,7 +55,8 @@ public static class ContainerHelper
     /// Compares two containers, returning <paramref name="isNegativeList"/> if an item in <paramref name="inputContainer"/>
     /// does not exist in <paramref name="profileContainers"/>.
     /// </summary>
-    /// <param name="profileContainers">The comma-delimited string being searched.</param>
+    /// <param name="profileContainers">The comma-delimited string being searched.
+    /// If the parameter is empty or null, all containers in <paramref name="inputContainer"/> will be accepted.</param>
     /// <param name="isNegativeList">The boolean result to return if a match is not found.</param>
     /// <param name="inputContainer">The comma-delimited string being matched.</param>
     /// <returns>The result of the operation.</returns>
@@ -71,7 +74,8 @@ public static class ContainerHelper
     /// Compares two containers, returning <paramref name="isNegativeList"/> if an item in <paramref name="inputContainer"/>
     /// does not exist in <paramref name="profileContainers"/>.
     /// </summary>
-    /// <param name="profileContainers">The comma-delimited string being searched.</param>
+    /// <param name="profileContainers">The comma-delimited string being searched.
+    /// If the parameter is empty or null, all containers in <paramref name="inputContainer"/> will be accepted.</param>
     /// <param name="isNegativeList">The boolean result to return if a match is not found.</param>
     /// <param name="inputContainer">The comma-delimited string being matched.</param>
     /// <returns>The result of the operation.</returns>
@@ -106,7 +110,8 @@ public static class ContainerHelper
     /// Compares two containers, returning <paramref name="isNegativeList"/> if an item in <paramref name="inputContainer"/>
     /// does not exist in <paramref name="profileContainers"/>.
     /// </summary>
-    /// <param name="profileContainers">The profile containers being matched searched.</param>
+    /// <param name="profileContainers">The profile containers being matched searched.
+    /// If the parameter is empty or null, all containers in <paramref name="inputContainer"/> will be accepted.</param>
     /// <param name="isNegativeList">The boolean result to return if a match is not found.</param>
     /// <param name="inputContainer">The comma-delimited string being matched.</param>
     /// <returns>The result of the operation.</returns>

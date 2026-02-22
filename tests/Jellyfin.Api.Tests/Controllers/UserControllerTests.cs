@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using Jellyfin.Api.Controllers;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -87,7 +87,7 @@ public class UserControllerTests
         Assert.Contains(
             Validate(userPolicy), v =>
                 v.MemberNames.Contains("PasswordResetProviderId") &&
-                v.ErrorMessage != null &&
+                v.ErrorMessage is not null &&
                 v.ErrorMessage.Contains("required", StringComparison.CurrentCultureIgnoreCase));
     }
 
@@ -105,7 +105,7 @@ public class UserControllerTests
 
         Assert.Contains(Validate(userPolicy), v =>
             v.MemberNames.Contains("AuthenticationProviderId") &&
-            v.ErrorMessage != null &&
+            v.ErrorMessage is not null &&
             v.ErrorMessage.Contains("required", StringComparison.CurrentCultureIgnoreCase));
     }
 

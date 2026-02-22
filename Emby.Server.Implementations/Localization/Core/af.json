@@ -129,5 +129,11 @@
     "TaskAudioNormalizationDescription": "Skandeer lêers vir oudio-normaliseringsdata.",
     "TaskAudioNormalization": "Odio Normalisering",
     "TaskCleanCollectionsAndPlaylists": "Maak versamelings en snitlyste skoon",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Verwyder items uit versamelings en snitlyste wat nie meer bestaan nie."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Verwyder items uit versamelings en snitlyste wat nie meer bestaan nie.",
+    "TaskDownloadMissingLyrics": "Laai tekorte lirieke af",
+    "TaskDownloadMissingLyricsDescription": "Laai lirieke af vir liedjies",
+    "TaskExtractMediaSegments": "Media Segment Skandeer",
+    "TaskExtractMediaSegmentsDescription": "Onttrek of verkry mediasegmente van MediaSegment-geaktiveerde inproppe.",
+    "TaskMoveTrickplayImages": "Migreer Trickplay Beeldligging",
+    "TaskMoveTrickplayImagesDescription": "Skuif ontstaande trickplay lêers volgens die biblioteekinstellings."
 }

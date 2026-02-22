@@ -29,6 +29,7 @@ namespace Jellyfin.Providers.Tests.Tmdb
         [InlineData("fr-CA", "fr-BE", "fr-CA")]
         [InlineData("fr-CA", "fr", "fr-CA")]
         [InlineData("de", "en-US", "de")]
+        [InlineData("", "en-US", "")]
         public static void AdjustImageLanguage_Valid_Success(string imageLanguage, string requestLanguage, string? expected)
         {
             Assert.Equal(expected, TmdbUtils.AdjustImageLanguage(imageLanguage, requestLanguage));

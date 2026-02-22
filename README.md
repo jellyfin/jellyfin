@@ -39,7 +39,9 @@
 
 ---
 
-Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: just a team who want to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. It is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET platform to enable full cross-platform support.
+
+There are no strings attached, no premium licenses or features, and no hidden agendas: just a team that wants to build something better and work together to achieve it. We welcome anyone who is interested in joining us in our quest!
 
 For further details, please see [our documentation page](https://jellyfin.org/docs/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://jellyfin.org/docs/general/getting-help). For more information about the project, please see our [about page](https://jellyfin.org/docs/general/about).
 
@@ -74,7 +76,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
+Before the project can be built, you must first install the [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
@@ -131,7 +133,7 @@ A second option is to build the project and then run the resulting executable fi
 
 ```bash
 dotnet build                       # Build the project
-cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
+cd Jellyfin.Server/bin/Debug/net10.0 # Change into the build output directory
 ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.

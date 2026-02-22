@@ -138,6 +138,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             var item = itemResult.Item;
+            item.IndexNumber = episodeNumber;
+            item.ParentIndexNumber = seasonNumber;
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
@@ -421,7 +423,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Director,
+                    Name = result.Director.Trim(),
                     Type = PersonKind.Director
                 };
 
@@ -432,7 +434,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Writer,
+                    Name = result.Writer.Trim(),
                     Type = PersonKind.Writer
                 };
 

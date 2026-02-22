@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrWhiteSpace(result.strArtist))
             {
-                item.AlbumArtists = new string[] { result.strArtist };
+                item.AlbumArtists = [result.strArtist];
             }
 
             if (!string.IsNullOrEmpty(result.intYearReleased))
@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
-                item.Genres = new[] { result.strGenre };
+                item.Genres = [result.strGenre];
             }
 
             item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
@@ -148,21 +148,19 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
+        internal async Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
             var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
-            if (fileInfo.Exists)
+            if (fileInfo.Exists
+                && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
-                {
-                    return Task.CompletedTask;
-                }
+                return;
             }
 
-            return DownloadInfo(musicBrainzReleaseGroupId, cancellationToken);
+            await DownloadInfo(musicBrainzReleaseGroupId, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task DownloadInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
@@ -172,6 +170,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+            {
+                return;
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 

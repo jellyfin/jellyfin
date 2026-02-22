@@ -76,5 +76,14 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The item count.</value>
         public int ItemCount { get; set; }
+
+        /// <summary>
+        /// Adds all counts.
+        /// </summary>
+        /// <returns>The total of the counts.</returns>
+        public int TotalItemCount()
+        {
+            return MovieCount + SeriesCount + EpisodeCount + ArtistCount + ProgramCount + TrailerCount + SongCount + AlbumCount + MusicVideoCount + BoxSetCount + BookCount;
+        }
     }
 }

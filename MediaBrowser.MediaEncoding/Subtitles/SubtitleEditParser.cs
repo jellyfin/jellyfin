@@ -17,7 +17,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     public class SubtitleEditParser : ISubtitleParser
     {
         private readonly ILogger<SubtitleEditParser> _logger;
-        private readonly Dictionary<string, SubtitleFormat[]> _subtitleFormats;
+        private readonly Dictionary<string, List<Type>> _subtitleFormatTypes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleEditParser"/> class.
@@ -26,10 +26,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public SubtitleEditParser(ILogger<SubtitleEditParser> logger)
         {
             _logger = logger;
-            _subtitleFormats = GetSubtitleFormats()
-                .Where(subtitleFormat => !string.IsNullOrEmpty(subtitleFormat.Extension))
-                .GroupBy(subtitleFormat => subtitleFormat.Extension.TrimStart('.'), StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
+            _subtitleFormatTypes = GetSubtitleFormatTypes();
         }
 
         /// <inheritdoc />
@@ -38,13 +35,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitle = new Subtitle();
             var lines = stream.ReadAllLines().ToList();
 
-            if (!_subtitleFormats.TryGetValue(fileExtension, out var subtitleFormats))
+            if (!_subtitleFormatTypes.TryGetValue(fileExtension, out var subtitleFormatTypesForExtension))
             {
                 throw new ArgumentException($"Unsupported file extension: {fileExtension}", nameof(fileExtension));
             }
 
-            foreach (var subtitleFormat in subtitleFormats)
+            foreach (var subtitleFormatType in subtitleFormatTypesForExtension)
             {
+                var subtitleFormat = (SubtitleFormat)Activator.CreateInstance(subtitleFormatType, true)!;
                 _logger.LogDebug(
                     "Trying to parse '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser",
                     fileExtension,
@@ -97,11 +95,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         /// <inheritdoc />
         public bool SupportsFileExtension(string fileExtension)
-            => _subtitleFormats.ContainsKey(fileExtension);
+            => _subtitleFormatTypes.ContainsKey(fileExtension);
 
-        private List<SubtitleFormat> GetSubtitleFormats()
+        private Dictionary<string, List<Type>> GetSubtitleFormatTypes()
         {
-            var subtitleFormats = new List<SubtitleFormat>();
+            var subtitleFormatTypes = new Dictionary<string, List<Type>>(StringComparer.OrdinalIgnoreCase);
             var assembly = typeof(SubtitleFormat).Assembly;
 
             foreach (var type in assembly.GetTypes())
@@ -113,9 +111,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 try
                 {
-                    // It shouldn't be null, but the exception is caught if it is
-                    var subtitleFormat = (SubtitleFormat)Activator.CreateInstance(type, true)!;
-                    subtitleFormats.Add(subtitleFormat);
+                    var tempInstance = (SubtitleFormat)Activator.CreateInstance(type, true)!;
+                    var extension = tempInstance.Extension.TrimStart('.');
+                    if (!string.IsNullOrEmpty(extension))
+                    {
+                        // Store only the type, we will instantiate from it later
+                        if (!subtitleFormatTypes.TryGetValue(extension, out var subtitleFormatTypesForExtension))
+                        {
+                            subtitleFormatTypes[extension] = [type];
+                        }
+                        else
+                        {
+                            subtitleFormatTypesForExtension.Add(type);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -123,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return subtitleFormats;
+            return subtitleFormatTypes;
         }
     }
 }

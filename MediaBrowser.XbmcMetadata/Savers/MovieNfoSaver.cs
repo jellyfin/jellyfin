@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -91,16 +92,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
-            var imdb = item.GetProviderId(MetadataProvider.Imdb);
-
-            if (!string.IsNullOrEmpty(imdb))
+            if (item.TryGetProviderId(MetadataProvider.Imdb, out var imdb))
             {
                 writer.WriteElementString("id", imdb);
             }
 
             if (item is MusicVideo musicVideo)
             {
-                foreach (var artist in musicVideo.Artists)
+                foreach (var artist in musicVideo.Artists.Trimmed().OrderBy(artist => artist))
                 {
                     writer.WriteElementString("artist", artist);
                 }
@@ -115,7 +114,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (!string.IsNullOrEmpty(movie.CollectionName))
                 {
-                    writer.WriteElementString("set", movie.CollectionName);
+                    writer.WriteStartElement("set");
+                    writer.WriteElementString("name", movie.CollectionName);
+                    writer.WriteEndElement();
                 }
             }
         }

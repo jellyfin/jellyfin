@@ -9,30 +9,10 @@ namespace MediaBrowser.Model.Tasks
     public class TaskTriggerInfo
     {
         /// <summary>
-        /// The daily trigger.
-        /// </summary>
-        public const string TriggerDaily = "DailyTrigger";
-
-        /// <summary>
-        /// The weekly trigger.
-        /// </summary>
-        public const string TriggerWeekly = "WeeklyTrigger";
-
-        /// <summary>
-        /// The interval trigger.
-        /// </summary>
-        public const string TriggerInterval = "IntervalTrigger";
-
-        /// <summary>
-        /// The startup trigger.
-        /// </summary>
-        public const string TriggerStartup = "StartupTrigger";
-
-        /// <summary>
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
-        public string Type { get; set; }
+        public TaskTriggerInfoType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the time of day.

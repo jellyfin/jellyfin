@@ -1,22 +1,23 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
@@ -37,10 +38,80 @@ namespace Emby.Server.Implementations.Dto
 {
     public class DtoService : IDtoService
     {
+        private static readonly FrozenDictionary<BaseItemKind, BaseItemKind[]> _relatedItemKinds = new Dictionary<BaseItemKind, BaseItemKind[]>
+        {
+            {
+                BaseItemKind.Genre, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.MusicArtist, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicVideo
+                ]
+            },
+            {
+                BaseItemKind.MusicGenre, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo
+                ]
+            },
+            {
+                BaseItemKind.Person, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.Studio, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            },
+            {
+                BaseItemKind.Year, [
+                    BaseItemKind.Audio,
+                    BaseItemKind.Episode,
+                    BaseItemKind.Movie,
+                    BaseItemKind.LiveTvProgram,
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicArtist,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Series,
+                    BaseItemKind.Trailer
+                ]
+            }
+        }.ToFrozenDictionary();
+
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
-        private readonly IItemRepository _itemRepo;
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
@@ -51,24 +122,24 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
+        private readonly IChapterManager _chapterManager;
 
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
             IUserDataManager userDataRepository,
-            IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
             IRecordingsManager recordingsManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ITrickplayManager trickplayManager)
+            ITrickplayManager trickplayManager,
+            IChapterManager chapterManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
-            _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
             _recordingsManager = recordingsManager;
@@ -76,6 +147,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
+            _chapterManager = chapterManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -95,28 +167,16 @@ namespace Emby.Server.Implementations.Dto
 
                 if (item is LiveTvChannel tvChannel)
                 {
-                    (channelTuples ??= new()).Add((dto, tvChannel));
+                    (channelTuples ??= []).Add((dto, tvChannel));
                 }
                 else if (item is LiveTvProgram)
                 {
-                    (programTuples ??= new()).Add((item, dto));
+                    (programTuples ??= []).Add((item, dto));
                 }
 
-                if (item is IItemByName byName)
+                if (options.ContainsField(ItemFields.ItemCounts))
                 {
-                    if (options.ContainsField(ItemFields.ItemCounts))
-                    {
-                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
-                        {
-                            Recursive = true,
-                            DtoOptions = new DtoOptions(false)
-                            {
-                                EnableImages = false
-                            }
-                        });
-
-                        SetItemByNameInfo(item, dto, libraryItems);
-                    }
+                    SetItemByNameInfo(dto, user);
                 }
 
                 returnItems[index] = dto;
@@ -147,32 +207,12 @@ namespace Emby.Server.Implementations.Dto
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (item is IItemByName itemByName
-                && options.ContainsField(ItemFields.ItemCounts))
+            if (options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(
-                    item,
-                    dto,
-                    GetTaggedItems(
-                        itemByName,
-                        user,
-                        new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        }));
+                SetItemByNameInfo(dto, user);
             }
 
             return dto;
-        }
-
-        private static IList<BaseItem> GetTaggedItems(IItemByName byName, User? user, DtoOptions options)
-        {
-            return byName.GetTaggedItems(
-                new InternalItemsQuery(user)
-                {
-                    Recursive = true,
-                    DtoOptions = options
-                });
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
@@ -315,11 +355,15 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <inheritdoc />
+        /// TODO refactor this to use the new SetItemByNameInfo.
+        /// Some callers already have the counts extracted so no reason to retrieve them again.
         public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem>? taggedItems, User? user = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            if (taggedItems is not null && options.ContainsField(ItemFields.ItemCounts))
+            if (options.ContainsField(ItemFields.ItemCounts)
+                && taggedItems is not null
+                && taggedItems.Count != 0)
             {
                 SetItemByNameInfo(item, dto, taggedItems);
             }
@@ -327,7 +371,58 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems)
+        private void SetItemByNameInfo(BaseItemDto dto, User? user)
+        {
+            if (!_relatedItemKinds.TryGetValue(dto.Type, out var relatedItemKinds))
+            {
+                return;
+            }
+
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                DtoOptions = new DtoOptions(false) { EnableImages = false },
+                IncludeItemTypes = relatedItemKinds
+            };
+
+            switch (dto.Type)
+            {
+                case BaseItemKind.Genre:
+                case BaseItemKind.MusicGenre:
+                    query.GenreIds = [dto.Id];
+                    break;
+                case BaseItemKind.MusicArtist:
+                    query.ArtistIds = [dto.Id];
+                    break;
+                case BaseItemKind.Person:
+                    query.PersonIds = [dto.Id];
+                    break;
+                case BaseItemKind.Studio:
+                    query.StudioIds = [dto.Id];
+                    break;
+                case BaseItemKind.Year
+                    when int.TryParse(dto.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year):
+                    query.Years = [year];
+                    break;
+                default:
+                    return;
+            }
+
+            var counts = _libraryManager.GetItemCounts(query);
+
+            dto.AlbumCount = counts.AlbumCount;
+            dto.ArtistCount = counts.ArtistCount;
+            dto.EpisodeCount = counts.EpisodeCount;
+            dto.MovieCount = counts.MovieCount;
+            dto.MusicVideoCount = counts.MusicVideoCount;
+            dto.ProgramCount = counts.ProgramCount;
+            dto.SeriesCount = counts.SeriesCount;
+            dto.SongCount = counts.SongCount;
+            dto.TrailerCount = counts.TrailerCount;
+            dto.ChildCount = counts.TotalItemCount();
+        }
+
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IReadOnlyList<BaseItem> taggedItems)
         {
             if (item is MusicArtist)
             {
@@ -586,12 +681,12 @@ namespace Emby.Server.Implementations.Dto
                     if (dto.ImageBlurHashes is not null)
                     {
                         // Only add BlurHash for the person's image.
-                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        baseItemPerson.ImageBlurHashes = [];
                         foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
                         {
                             if (blurHash is not null)
                             {
-                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                baseItemPerson.ImageBlurHashes[imageType] = [];
                                 foreach (var (imageId, blurHashValue) in blurHash)
                                 {
                                     if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
@@ -670,11 +765,11 @@ namespace Emby.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(image.BlurHash))
             {
-                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
+                dto.ImageBlurHashes ??= [];
 
                 if (!dto.ImageBlurHashes.TryGetValue(image.Type, out var value))
                 {
-                    value = new Dictionary<string, string>();
+                    value = [];
                     dto.ImageBlurHashes[image.Type] = value;
                 }
 
@@ -705,7 +800,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (hashes.Count > 0)
             {
-                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
+                dto.ImageBlurHashes ??= [];
 
                 dto.ImageBlurHashes[imageType] = hashes;
             }
@@ -752,7 +847,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+            dto.ImageBlurHashes = [];
 
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
             if (backdropLimit > 0)
@@ -768,7 +863,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.EnableImages)
             {
-                dto.ImageTags = new Dictionary<ImageType, string>();
+                dto.ImageTags = [];
 
                 // Prevent implicitly captured closure
                 var currentItem = item;
@@ -956,31 +1051,16 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
                 dto.ArtistItems = hasArtist.Artists
-                    // .Except(foundArtists, new DistinctNameComparer())
-                    .Select(i =>
-                    {
-                        // This should not be necessary but we're seeing some cases of it
-                        if (string.IsNullOrEmpty(i))
-                        {
-                            return null;
-                        }
-
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
-                        if (artist is not null)
-                        {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
-                        }
-
-                        return null;
-                    }).Where(i => i is not null).ToArray();
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct()
+                    .Select(name => artistsLookup.TryGetValue(name, out var artists) && artists.Length > 0
+                        ? new NameGuidPair { Name = name, Id = artists[0].Id }
+                        : null)
+                    .Where(item => item is not null)
+                    .ToArray();
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
@@ -1005,31 +1085,16 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
+                var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
-                    // .Except(foundArtists, new DistinctNameComparer())
-                    .Select(i =>
-                    {
-                        // This should not be necessary but we're seeing some cases of it
-                        if (string.IsNullOrEmpty(i))
-                        {
-                            return null;
-                        }
-
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
-                        if (artist is not null)
-                        {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
-                        }
-
-                        return null;
-                    }).Where(i => i is not null).ToArray();
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct()
+                    .Select(name => albumArtistsLookup.TryGetValue(name, out var albumArtists) && albumArtists.Length > 0
+                        ? new NameGuidPair { Name = name, Id = albumArtists[0].Id }
+                        : null)
+                    .Where(item => item is not null)
+                    .ToArray();
             }
 
             // Add video info
@@ -1060,12 +1125,17 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _itemRepo.GetChapters(item);
+                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
-                    dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
+                    var trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
+                    dto.Trickplay = trickplay.ToDictionary(
+                        mediaStream => mediaStream.Key,
+                        mediaStream => mediaStream.Value.ToDictionary(
+                            width => width.Key,
+                            width => new TrickplayInfoDto(width.Value)));
                 }
 
                 dto.ExtraType = video.ExtraType;

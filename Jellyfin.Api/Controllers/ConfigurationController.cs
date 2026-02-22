@@ -3,12 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text.Json;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
-using Jellyfin.Api.Models.ConfigurationDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -120,20 +119,26 @@ public class ConfigurationController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Updates the path to the media encoder.
+    /// Updates branding configuration.
     /// </summary>
-    /// <param name="mediaEncoderPath">Media encoder path form body.</param>
-    /// <response code="204">Media encoder path updated.</response>
-    /// <returns>Status.</returns>
-    [Obsolete("This endpoint is obsolete.")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpPost("MediaEncoder/Path")]
-    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+    /// <param name="configuration">Branding configuration.</param>
+    /// <response code="204">Branding configuration updated.</response>
+    /// <returns>Update status.</returns>
+    [HttpPost("Configuration/Branding")]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public ActionResult UpdateMediaEncoderPath([FromBody, Required] MediaEncoderPathDto mediaEncoderPath)
+    public ActionResult UpdateBrandingConfiguration([FromBody, Required] BrandingOptionsDto configuration)
     {
-        // API ENDPOINT DISABLED (NOOP) FOR SECURITY PURPOSES
-        // _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
+        // Get the current branding configuration to preserve SplashscreenLocation
+        var currentBranding = (BrandingOptions)_configurationManager.GetConfiguration("branding");
+
+        // Update only the properties from BrandingOptionsDto
+        currentBranding.LoginDisclaimer = configuration.LoginDisclaimer;
+        currentBranding.CustomCss = configuration.CustomCss;
+        currentBranding.SplashscreenEnabled = configuration.SplashscreenEnabled;
+
+        _configurationManager.SaveConfiguration("branding", currentBranding);
+
         return NoContent();
     }
 }

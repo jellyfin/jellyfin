@@ -1,0 +1,55 @@
+{
+    "countryCode": "se",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["0+", "Alla", "Barntillåten", "Btl"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["7"],
+            "ratingScore": {
+                "score": 7,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["9+"],
+            "ratingScore": {
+                "score": 9,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["10+"],
+            "ratingScore": {
+                "score": 10,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["11"],
+            "ratingScore": {
+                "score": 11,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["14"],
+            "ratingScore": {
+                "score": 14,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        }
+    ]
+}

@@ -15,6 +15,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -159,17 +160,16 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? isDisliked,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableUserData,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] SortOrder? sortOrder,
         [FromQuery] bool enableFavoriteSorting = false,
         [FromQuery] bool addCurrentProgram = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var channelResult = _liveTvManager.GetInternalChannels(
@@ -241,8 +241,7 @@ public class LiveTvController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions()
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
 
@@ -283,8 +282,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] string? seriesTimerId,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableUserData,
         [FromQuery] bool? isMovie,
         [FromQuery] bool? isSeries,
@@ -296,7 +295,6 @@ public class LiveTvController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         return await _liveTvManager.GetRecordingsAsync(
@@ -371,8 +369,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] string? seriesTimerId,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableUserData,
         [FromQuery] bool enableTotalRecordCount = true)
     {
@@ -443,8 +441,7 @@ public class LiveTvController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var dtoOptions = new DtoOptions()
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
@@ -566,7 +563,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] channelIds,
         [FromQuery] Guid? userId,
         [FromQuery] DateTime? minStartDate,
         [FromQuery] bool? hasAired,
@@ -581,17 +578,17 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? isSports,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
-        [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] genres,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] string? seriesTimerId,
         [FromQuery] Guid? librarySeriesId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool enableTotalRecordCount = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -634,7 +631,6 @@ public class LiveTvController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
     }
@@ -689,7 +685,6 @@ public class LiveTvController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = body.Fields ?? [] }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes ?? []);
         return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
     }
@@ -698,6 +693,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// Gets recommended live tv epgs.
     /// </summary>
     /// <param name="userId">Optional. filter by user id.</param>
+    /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="isAiring">Optional. Filter by programs that are currently airing, or not.</param>
     /// <param name="hasAired">Optional. Filter by programs that have completed airing, or not.</param>
@@ -720,6 +716,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
         [FromQuery] Guid? userId,
+        [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] bool? isAiring,
         [FromQuery] bool? hasAired,
@@ -730,9 +727,9 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? isSports,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] genreIds,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? enableUserData,
         [FromQuery] bool enableTotalRecordCount = true)
     {
@@ -744,6 +741,7 @@ public class LiveTvController : BaseJellyfinApiController
         var query = new InternalItemsQuery(user)
         {
             IsAiring = isAiring,
+            StartIndex = startIndex,
             Limit = limit,
             HasAired = hasAired,
             IsSeries = isSeries,
@@ -756,7 +754,6 @@ public class LiveTvController : BaseJellyfinApiController
         };
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
     }
@@ -962,9 +959,9 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get guid info.
+    /// Get guide info.
     /// </summary>
-    /// <response code="200">Guid info returned.</response>
+    /// <response code="200">Guide info returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the guide info.</returns>
     [HttpGet("GuideInfo")]
     [Authorize(Policy = Policies.LiveTvAccess)]
@@ -1186,7 +1183,9 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
-    public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
+    public ActionResult GetLiveStreamFile(
+        [FromRoute, Required] string streamId,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
     {
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)

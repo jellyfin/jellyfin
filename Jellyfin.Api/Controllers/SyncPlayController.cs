@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SyncPlayDtos;
 using MediaBrowser.Common.Api;
@@ -50,17 +50,16 @@ public class SyncPlayController : BaseJellyfinApiController
     /// </summary>
     /// <param name="requestData">The settings of the new group.</param>
     /// <response code="204">New group created.</response>
-    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    /// <returns>An <see cref="GroupInfoDto"/> for the created group.</returns>
     [HttpPost("New")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.SyncPlayCreateGroup)]
-    public async Task<ActionResult> SyncPlayCreateGroup(
+    public async Task<ActionResult<GroupInfoDto>> SyncPlayCreateGroup(
         [FromBody, Required] NewGroupRequestDto requestData)
     {
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var syncPlayRequest = new NewGroupRequest(requestData.GroupName);
-        _syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None);
-        return NoContent();
+        return Ok(_syncPlayManager.NewGroup(currentSession, syncPlayRequest, CancellationToken.None));
     }
 
     /// <summary>
@@ -110,6 +109,23 @@ public class SyncPlayController : BaseJellyfinApiController
         var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var syncPlayRequest = new ListGroupsRequest();
         return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest).AsEnumerable());
+    }
+
+    /// <summary>
+    /// Gets a SyncPlay group by id.
+    /// </summary>
+    /// <param name="id">The id of the group.</param>
+    /// <response code="200">Group returned.</response>
+    /// <returns>An <see cref="GroupInfoDto"/> for the requested group.</returns>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = Policies.SyncPlayJoinGroup)]
+    public async Task<ActionResult<GroupInfoDto>> SyncPlayGetGroup([FromRoute] Guid id)
+    {
+        var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        var group = _syncPlayManager.GetGroup(currentSession, id);
+        return group is null ? NotFound() : Ok(group);
     }
 
     /// <summary>

@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Dto
             EnableUserData = true;
             AddCurrentProgram = true;
 
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
+            Fields = allFields ? AllItemFields : [];
             ImageTypes = AllImageTypes;
         }
 

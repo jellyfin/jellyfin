@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities.Security;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities.Security;
 using MediaBrowser.Controller.Security;
 using Microsoft.EntityFrameworkCore;
 

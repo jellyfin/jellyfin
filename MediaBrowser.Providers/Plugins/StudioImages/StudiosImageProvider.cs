@@ -101,11 +101,11 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", GetRepositoryUrl(), image, filename);
         }
 
-        private Task EnsureThumbsList(string file, CancellationToken cancellationToken)
+        private async Task EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
 
-            return EnsureList(url, file, _fileSystem, cancellationToken);
+            await EnsureList(url, file, _fileSystem, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

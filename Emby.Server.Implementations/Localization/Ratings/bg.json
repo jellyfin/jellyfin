@@ -1,0 +1,34 @@
+{
+    "countryCode": "bg",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["A","B"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["C"],
+            "ratingScore": {
+                "score": 12,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["D"],
+            "ratingScore": {
+                "score": 16,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["X"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

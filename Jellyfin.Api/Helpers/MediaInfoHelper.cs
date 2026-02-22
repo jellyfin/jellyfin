@@ -7,8 +7,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -127,6 +129,13 @@ public class MediaInfoHelper
             var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
             if (mediaSourcesClone is not null)
             {
+                // Carry over the default audio index source.
+                // This field is not intended to be exposed to API clients, but it is used internally by the server
+                for (int i = 0; i < mediaSourcesClone.Length && i < mediaSources.Length; i++)
+                {
+                    mediaSourcesClone[i].DefaultAudioIndexSource = mediaSources[i].DefaultAudioIndexSource;
+                }
+
                 result.MediaSources = mediaSourcesClone;
             }
 
@@ -288,9 +297,7 @@ public class MediaInfoHelper
                 mediaSource.SupportsDirectPlay = false;
                 mediaSource.SupportsDirectStream = false;
 
-                mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
-                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken(), "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
                 mediaSource.TranscodingContainer = streamInfo.Container;
                 mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 if (streamInfo.AlwaysBurnInSubtitleWhenTranscoding)
@@ -303,7 +310,7 @@ public class MediaInfoHelper
                 if (!mediaSource.SupportsDirectPlay && (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream))
                 {
                     streamInfo.PlayMethod = PlayMethod.Transcode;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl(null, claimsPrincipal.GetToken(), null);
 
                     if (!allowVideoStreamCopy)
                     {

@@ -131,5 +131,6 @@
     "TaskRefreshTrickplayImages": "Генерирај слики за прегледување (Trickplay)",
     "TaskAudioNormalization": "Нормализација на звукот",
     "TaskRefreshTrickplayImagesDescription": "Креира трикплеј прегледи за видеа во овозможените библиотеки.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Отстранува ставки од колекциите и плејлистите што веќе не постојат."
+    "TaskCleanCollectionsAndPlaylistsDescription": "Отстранува ставки од колекциите и плејлистите што веќе не постојат.",
+    "TaskExtractMediaSegments": "Скенирање на сегменти на содржина"
 }

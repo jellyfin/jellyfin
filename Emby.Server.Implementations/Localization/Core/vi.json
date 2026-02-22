@@ -39,7 +39,7 @@
     "TasksMaintenanceCategory": "Bảo Trì",
     "VersionNumber": "Phiên Bản {0}",
     "ValueHasBeenAddedToLibrary": "{0} đã được thêm vào thư viện của bạn",
-    "UserStoppedPlayingItemWithValues": "{0} đã phát xong {1} trên {2}",
+    "UserStoppedPlayingItemWithValues": "{0} đã kết thúc phát {1} trên {2}",
     "UserStartedPlayingItemWithValues": "{0} đang phát {1} trên {2}",
     "UserPolicyUpdatedWithName": "Chính sách người dùng đã được cập nhật cho {0}",
     "UserPasswordChangedWithName": "Mật khẩu đã được thay đổi cho người dùng {0}",
@@ -135,5 +135,7 @@
     "TaskExtractMediaSegmentsDescription": "Trích xuất hoặc lấy các phân đoạn phương tiện từ các plugin hỗ trợ MediaSegment.",
     "TaskMoveTrickplayImages": "Di chuyển vị trí hình ảnh Trickplay",
     "TaskMoveTrickplayImagesDescription": "Di chuyển các tập tin trickplay hiện có theo cài đặt thư viện.",
-    "TaskExtractMediaSegments": "Quét Phân Đoạn Phương Tiện"
+    "TaskExtractMediaSegments": "Quét Phân Đoạn Phương Tiện",
+    "CleanupUserDataTask": "Tác vụ dọn dẹp dữ liệu người dùng",
+    "CleanupUserDataTaskDescription": "Làm sạch tất cả dữ liệu người dùng (trạng thái xem, trạng thái yêu thích, v.v.) từ phương tiện không còn có mặt trong ít nhất 90 ngày."
 }

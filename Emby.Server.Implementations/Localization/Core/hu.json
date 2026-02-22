@@ -1,6 +1,6 @@
 {
     "Albums": "Albumok",
-    "AppDeviceValues": "Program: {0}, eszköz: {1}",
+    "AppDeviceValues": "Program: {0}, Eszköz: {1}",
     "Application": "Alkalmazás",
     "Artists": "Előadók",
     "AuthenticationSucceededWithUserName": "{0} sikeresen hitelesítve",
@@ -13,7 +13,7 @@
     "DeviceOnlineWithName": "{0} belépett",
     "FailedLoginAttemptWithUserName": "Sikertelen bejelentkezési kísérlet innen: {0}",
     "Favorites": "Kedvencek",
-    "Folders": "Könyvtárak",
+    "Folders": "Mappák",
     "Genres": "Műfajok",
     "HeaderAlbumArtists": "Albumelőadók",
     "HeaderContinueWatching": "Megtekintés folytatása",
@@ -55,7 +55,7 @@
     "NotificationOptionPluginInstalled": "Bővítmény telepítve",
     "NotificationOptionPluginUninstalled": "Bővítmény eltávolítva",
     "NotificationOptionPluginUpdateInstalled": "Bővítményfrissítés telepítve",
-    "NotificationOptionServerRestartRequired": "A kiszolgáló újraindítása szükséges",
+    "NotificationOptionServerRestartRequired": "A szerver újraindítása szükséges",
     "NotificationOptionTaskFailed": "Hiba az ütemezett feladatban",
     "NotificationOptionUserLockedOut": "Felhasználó tiltva",
     "NotificationOptionVideoPlayback": "Videólejátszás elkezdve",
@@ -73,7 +73,6 @@
     "Shows": "Sorozatok",
     "Songs": "Számok",
     "StartupEmbyServerIsLoading": "A Jellyfin kiszolgáló betöltődik. Próbálja újra hamarosan.",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Nem sikerült a felirat letöltése innen: {0}, ehhez: {1}",
     "Sync": "Szinkronizálás",
     "System": "Rendszer",
@@ -136,5 +135,7 @@
     "TaskDownloadMissingLyricsDescription": "Zenék szövegének letöltése",
     "TaskMoveTrickplayImages": "Trickplay képek helyének átköltöztetése",
     "TaskMoveTrickplayImagesDescription": "A médiatár-beállításoknak megfelelően áthelyezi a meglévő trickplay fájlokat.",
-    "TaskExtractMediaSegmentsDescription": "Kinyeri vagy megszerzi a médiaszegmenseket a MediaSegment támogatással rendelkező bővítményekből."
+    "TaskExtractMediaSegmentsDescription": "Kinyeri vagy megszerzi a médiaszegmenseket a MediaSegment támogatással rendelkező bővítményekből.",
+    "CleanupUserDataTaskDescription": "Legalább 90 napja nem elérhető médiákhoz kapcsolódó összes felhasználói adat (pl. megtekintési állapot, kedvencek) törlése.",
+    "CleanupUserDataTask": "Felhasználói adatok tisztítása feladat"
 }

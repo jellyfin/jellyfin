@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DotNet.Globbing;
 
 namespace Emby.Server.Implementations.Library
@@ -49,6 +48,12 @@ namespace Emby.Server.Implementations.Library
             "**/.wd_tv",
             "**/lost+found/**",
             "**/lost+found",
+            "**/subs/**",
+            "**/subs",
+            "**/.snapshots/**",
+            "**/.snapshots",
+            "**/.snapshot/**",
+            "**/.snapshot",
 
             // Trickplay files
             "**/*.trickplay",

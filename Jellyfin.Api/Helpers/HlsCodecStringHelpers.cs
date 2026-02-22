@@ -42,6 +42,11 @@ public static class HlsCodecStringHelpers
     public const string OPUS = "Opus";
 
     /// <summary>
+    /// Codec name for TRUEHD.
+    /// </summary>
+    public const string TRUEHD = "mlpa";
+
+    /// <summary>
     /// Gets a MP3 codec string.
     /// </summary>
     /// <returns>MP3 codec string.</returns>
@@ -59,7 +64,7 @@ public static class HlsCodecStringHelpers
     {
         StringBuilder result = new StringBuilder("mp4a", 9);
 
-        if (string.Equals(profile, "HE", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(profile, "HE-AAC", StringComparison.OrdinalIgnoreCase))
         {
             result.Append(".40.5");
         }
@@ -115,6 +120,46 @@ public static class HlsCodecStringHelpers
     public static string GetOPUSString()
     {
         return OPUS;
+    }
+
+    /// <summary>
+    /// Gets an TRUEHD codec string.
+    /// </summary>
+    /// <returns>TRUEHD codec string.</returns>
+    public static string GetTRUEHDString()
+    {
+        return TRUEHD;
+    }
+
+    /// <summary>
+    /// Gets an DTS codec string.
+    /// </summary>
+    /// <param name="profile">DTS profile.</param>
+    /// <returns>DTS codec string.</returns>
+    public static string GetDTSString(string? profile)
+    {
+        if (string.Equals(profile, "DTS", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(profile, "DTS-ES", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(profile, "DTS 96/24", StringComparison.OrdinalIgnoreCase))
+        {
+            return "dtsc";
+        }
+
+        if (string.Equals(profile, "DTS-HD HRA", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(profile, "DTS-HD MA", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(profile, "DTS-HD MA + DTS:X", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(profile, "DTS-HD MA + DTS:X IMAX", StringComparison.OrdinalIgnoreCase))
+        {
+            return "dtsh";
+        }
+
+        if (string.Equals(profile, "DTS Express", StringComparison.OrdinalIgnoreCase))
+        {
+            return "dtse";
+        }
+
+        // Default to DTS core if profile is invalid
+        return "dtsc";
     }
 
     /// <summary>

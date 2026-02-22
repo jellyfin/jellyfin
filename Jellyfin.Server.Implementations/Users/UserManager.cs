@@ -7,10 +7,13 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
+using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -113,7 +116,7 @@ namespace Jellyfin.Server.Implementations.Users
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
         // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex(@"^[\w\ \-'._@]+$")]
+        [GeneratedRegex(@"^(?!\s)[\w\ \-'._@+]+(?<!\s)$")]
         private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
@@ -154,8 +157,11 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
                 if (await dbContext.Users
-                        .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
+                        .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && !u.Id.Equals(user.Id))
                         .ConfigureAwait(false))
                 {
                     throw new ArgumentException(string.Format(
@@ -163,6 +169,9 @@ namespace Jellyfin.Server.Implementations.Users
                         "A user with the name '{0}' already exists.",
                         newName));
                 }
+#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                 user.Username = newName;
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
@@ -201,8 +210,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.AddDefaultPermissions();
             user.AddDefaultPreferences();
 
-            _users.Add(user.Id, user);
-
             return user;
         }
 
@@ -227,6 +234,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -264,6 +272,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                dbContext.Users.Attach(user);
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -297,15 +306,12 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
-            var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
             var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = hasPassword,
-                HasConfiguredPassword = hasPassword,
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -334,7 +340,8 @@ namespace Jellyfin.Server.Implementations.Users
                 },
                 Policy = new UserPolicy
                 {
-                    MaxParentalRating = user.MaxParentalAgeRating,
+                    MaxParentalRating = user.MaxParentalRatingScore,
+                    MaxParentalSubRating = user.MaxParentalRatingSubScore,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
                     AuthenticationProviderId = user.AuthenticationProviderId,
@@ -498,23 +505,18 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
+            var passwordResetProvider = GetPasswordResetProvider(user);
+
+            var result = await passwordResetProvider
+                .StartForgotPasswordProcess(user, enteredUsername, isInNetwork)
+                .ConfigureAwait(false);
 
             if (user is not null && isInNetwork)
             {
-                var passwordResetProvider = GetPasswordResetProvider(user);
-                var result = await passwordResetProvider
-                    .StartForgotPasswordProcess(user, isInNetwork)
-                    .ConfigureAwait(false);
-
                 await UpdateUserAsync(user).ConfigureAwait(false);
-                return result;
             }
 
-            return new ForgotPasswordResult
-            {
-                Action = ForgotPasswordAction.InNetworkRequired,
-                PinFile = string.Empty
-            };
+            return result;
         }
 
         /// <inheritdoc/>
@@ -560,6 +562,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                _users.Add(newUser.Id, newUser);
             }
         }
 
@@ -659,7 +662,8 @@ namespace Jellyfin.Server.Implementations.Users
                     _ => policy.LoginAttemptsBeforeLockout
                 };
 
-                user.MaxParentalAgeRating = policy.MaxParentalRating;
+                user.MaxParentalRatingScore = policy.MaxParentalRating;
+                user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
                 user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
                 user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
                 user.AuthenticationProviderId = policy.AuthenticationProviderId;
@@ -748,8 +752,13 @@ namespace Jellyfin.Server.Implementations.Users
             return GetAuthenticationProviders(user)[0];
         }
 
-        private IPasswordResetProvider GetPasswordResetProvider(User user)
+        private IPasswordResetProvider GetPasswordResetProvider(User? user)
         {
+            if (user is null)
+            {
+                return _defaultPasswordResetProvider;
+            }
+
             return GetPasswordResetProviders(user)[0];
         }
 
@@ -876,7 +885,8 @@ namespace Jellyfin.Server.Implementations.Users
 
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
-            dbContext.Users.Update(user);
+            dbContext.Users.Attach(user);
+            dbContext.Entry(user).State = EntityState.Modified;
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }

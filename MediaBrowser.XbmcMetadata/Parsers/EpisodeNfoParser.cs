@@ -95,7 +95,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         originalTitle.Append(" / ").Append(additionalEpisode.Item.OriginalTitle);
                     }
 
-                    if (additionalEpisode.Item.IndexNumber != null)
+                    if (additionalEpisode.Item.IndexNumber is not null)
                     {
                         item.Item.IndexNumberEnd = Math.Max((int)additionalEpisode.Item.IndexNumber, item.Item.IndexNumberEnd ?? (int)additionalEpisode.Item.IndexNumber);
                     }

@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
-        private readonly object _progressLock = new();
+        private readonly Lock _progressLock = new();
         private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
 
@@ -286,7 +286,7 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Gets or sets the playlist item id.
         /// </summary>
-        /// <value>The splaylist item id.</value>
+        /// <value>The playlist item id.</value>
         public string PlaylistItemId { get; set; }
 
         /// <summary>

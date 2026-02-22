@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -119,13 +120,10 @@ namespace MediaBrowser.Controller.LiveTv
             return "TvChannel";
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems()
-            => Enumerable.Empty<BaseItem>();
+        public IEnumerable<BaseItem> GetTaggedItems() => [];
 
-        public override List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        public override IReadOnlyList<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
-            var list = new List<MediaSourceInfo>();
-
             var info = new MediaSourceInfo
             {
                 Id = Id.ToString("N", CultureInfo.InvariantCulture),
@@ -138,14 +136,12 @@ namespace MediaBrowser.Controller.LiveTv
                 IsInfiniteStream = RunTimeTicks is null
             };
 
-            list.Add(info);
-
-            return list;
+            return [info];
         }
 
-        public override List<MediaStream> GetMediaStreams()
+        public override IReadOnlyList<MediaStream> GetMediaStreams()
         {
-            return new List<MediaStream>();
+            return [];
         }
 
         protected override string GetInternalMetadataPath(string basePath)

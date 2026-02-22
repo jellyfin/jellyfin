@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.IO
                 .Where(IsLibraryMonitorEnabled)
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Distinct()
                 .Order();
 
             foreach (var path in paths)
@@ -348,6 +348,12 @@ namespace Emby.Server.Implementations.IO
             ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (IgnorePatterns.ShouldIgnore(path))
+            {
+                return;
+            }
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
             {
                 return;
             }

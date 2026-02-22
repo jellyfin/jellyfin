@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface IItemByName
     {
-        IList<BaseItem> GetTaggedItems(InternalItemsQuery query);
+        IReadOnlyList<BaseItem> GetTaggedItems(InternalItemsQuery query);
     }
 
     public interface IHasDualAccess : IItemByName

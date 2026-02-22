@@ -1,5 +1,6 @@
 using System;
-using Jellyfin.Data.Enums;
+using System.ComponentModel;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace MediaBrowser.Model.MediaSegments;
 
@@ -21,6 +22,7 @@ public class MediaSegmentDto
     /// <summary>
     /// Gets or sets the type of content this segment defines.
     /// </summary>
+    [DefaultValue(MediaSegmentType.Unknown)]
     public MediaSegmentType Type { get; set; }
 
     /// <summary>

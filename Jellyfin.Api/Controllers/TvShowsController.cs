@@ -6,6 +6,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -67,7 +68,6 @@ public class TvShowsController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. Include user data.</param>
     /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
     /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
-    /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
     /// <param name="enableResumable">Whether to include resumable episodes in next up results.</param>
     /// <param name="enableRewatching">Whether to include watched episodes in next up results.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
@@ -77,16 +77,15 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] Guid? seriesId,
         [FromQuery] Guid? parentId,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] DateTime? nextUpDateCutoff,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery] bool disableFirstEpisode = false,
         [FromQuery] bool enableResumable = true,
         [FromQuery] bool enableRewatching = false)
     {
@@ -97,7 +96,6 @@ public class TvShowsController : BaseJellyfinApiController
         }
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var result = _tvSeriesManager.GetNextUp(
@@ -109,7 +107,6 @@ public class TvShowsController : BaseJellyfinApiController
                 StartIndex = startIndex,
                 User = user,
                 EnableTotalRecordCount = enableTotalRecordCount,
-                DisableFirstEpisode = disableFirstEpisode,
                 NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
                 EnableResumable = enableResumable,
                 EnableRewatching = enableRewatching
@@ -143,11 +140,11 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] Guid? parentId,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -160,7 +157,6 @@ public class TvShowsController : BaseJellyfinApiController
         var parentIdGuid = parentId ?? Guid.Empty;
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -208,7 +204,7 @@ public class TvShowsController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
         [FromRoute, Required] Guid seriesId,
         [FromQuery] Guid? userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] int? season,
         [FromQuery] Guid? seasonId,
         [FromQuery] bool? isMissing,
@@ -218,7 +214,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] ItemSortBy? sortBy)
     {
@@ -230,7 +226,6 @@ public class TvShowsController : BaseJellyfinApiController
         List<BaseItem> episodes;
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var shouldIncludeMissingEpisodes = (user is not null && user.DisplayMissingEpisodes) || User.GetIsApiKey();
 
@@ -332,13 +327,13 @@ public class TvShowsController : BaseJellyfinApiController
     public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
         [FromRoute, Required] Guid seriesId,
         [FromQuery] Guid? userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery] bool? isSpecialSeason,
         [FromQuery] bool? isMissing,
         [FromQuery] Guid? adjacentTo,
         [FromQuery] bool? enableImages,
         [FromQuery] int? imageTypeLimit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -359,7 +354,6 @@ public class TvShowsController : BaseJellyfinApiController
         });
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);

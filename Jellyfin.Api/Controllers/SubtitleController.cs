@@ -395,7 +395,7 @@ public class SubtitleController : BaseJellyfinApiController
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
+                "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&ApiKey={2}",
                 positionTicks.ToString(CultureInfo.InvariantCulture),
                 endPositionTicks.ToString(CultureInfo.InvariantCulture),
                 accessToken);

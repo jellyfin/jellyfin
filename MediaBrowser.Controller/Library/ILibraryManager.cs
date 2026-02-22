@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -219,13 +220,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="postScanTasks">The post scan tasks.</param>
         void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postscanTasks);
+            IEnumerable<ILibraryPostScanTask> postScanTasks);
 
         /// <summary>
         /// Sorts the specified items.
@@ -281,6 +282,14 @@ namespace MediaBrowser.Controller.Library
         Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Reattaches the user data to the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+        Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
@@ -334,6 +343,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">Item to delete.</param>
         /// <param name="options">Options to use for deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options);
+
+        /// <summary>
+        /// Deletes items that are not having any children like Actors.
+        /// </summary>
+        /// <param name="items">Items to delete.</param>
+        /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
+        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items);
 
         /// <summary>
         /// Deletes the item.
@@ -426,8 +442,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="parentId">The parent id.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromPath(string path);
+        int? GetSeasonNumberFromPath(string path, Guid? parentId);
 
         /// <summary>
         /// Fills the missing episode numbers from path.
@@ -483,21 +500,21 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List&lt;PersonInfo&gt;.</returns>
-        List<PersonInfo> GetPeople(BaseItem item);
+        IReadOnlyList<PersonInfo> GetPeople(BaseItem item);
 
         /// <summary>
         /// Gets the people.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;PersonInfo&gt;.</returns>
-        List<PersonInfo> GetPeople(InternalPeopleQuery query);
+        IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query);
 
         /// <summary>
         /// Gets the people items.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Person&gt;.</returns>
-        List<Person> GetPeopleItems(InternalPeopleQuery query);
+        IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.
@@ -513,21 +530,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="people">The people.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The async task.</returns>
-        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
+        Task UpdatePeopleAsync(BaseItem item, IReadOnlyList<PersonInfo> people, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Guid&gt;.</returns>
-        List<Guid> GetItemIds(InternalItemsQuery query);
+        IReadOnlyList<Guid> GetItemIds(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the people names.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
-        List<string> GetPeopleNames(InternalPeopleQuery query);
+        IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
         /// Queries the items.
@@ -553,9 +570,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        List<BaseItem> GetItemList(InternalItemsQuery query);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query);
 
-        List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
 
         /// <summary>
         /// Gets the items.
@@ -563,7 +580,25 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query to use.</param>
         /// <param name="parents">Items to use for query.</param>
         /// <returns>List of items.</returns>
-        List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+        IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
+
+        /// <summary>
+        /// Gets the TVShow/Album items for Latest api.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="collectionType">Collection Type.</param>
+        /// <returns>List of items.</returns>
+        IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType collectionType);
+
+        /// <summary>
+        /// Gets the list of series presentation keys for next up.
+        /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
+        /// <returns>List of series presentation keys.</returns>
+        IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff);
 
         /// <summary>
         /// Gets the items result.
@@ -573,11 +608,11 @@ namespace MediaBrowser.Controller.Library
         QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query);
 
         /// <summary>
-        /// Ignores the file.
+        /// Checks if the file is ignored.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="parent">The parent.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
         Guid GetStudioId(string name);
@@ -604,11 +639,15 @@ namespace MediaBrowser.Controller.Library
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
+        IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names);
+
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         int GetCount(InternalItemsQuery query);
+
+        ItemCounts GetItemCounts(InternalItemsQuery query);
 
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
@@ -621,5 +660,12 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        /// <summary>
+        /// Add mblink file for a media path.
+        /// </summary>
+        /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
+        /// <param name="pathInfo">The new virtualfolder.</param>
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
     }
 }

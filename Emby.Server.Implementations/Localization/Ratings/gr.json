@@ -1,0 +1,34 @@
+{
+    "countryCode": "gr",
+    "supportsSubScores": false,
+    "ratings": [
+        {
+            "ratingStrings": ["K"],
+            "ratingScore": {
+                "score": 0,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K12"],
+            "ratingScore": {
+                "score": 13,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K15"],
+            "ratingScore": {
+                "score": 15,
+                "subScore": null
+            }
+        },
+        {
+            "ratingStrings": ["K18"],
+            "ratingScore": {
+                "score": 18,
+                "subScore": null
+            }
+        }
+    ]
+}

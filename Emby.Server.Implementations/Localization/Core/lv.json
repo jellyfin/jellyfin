@@ -123,11 +123,19 @@
     "External": "Ārējais",
     "HearingImpaired": "Ar dzirdes traucējumiem",
     "TaskKeyframeExtractor": "Atslēgkadru ekstraktors",
-    "TaskKeyframeExtractorDescription": "Ekstraktē atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs.",
+    "TaskKeyframeExtractorDescription": "Izvelk atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs.",
     "TaskRefreshTrickplayImages": "Ģenerēt partīšanas attēlus",
     "TaskRefreshTrickplayImagesDescription": "Izveido priekšskatījumus videoklipu pārtīšanai iespējotajās bibliotēkās.",
     "TaskAudioNormalization": "Audio normalizācija",
     "TaskCleanCollectionsAndPlaylistsDescription": "Noņem vairs neeksistējošus vienumus no kolekcijām un atskaņošanas sarakstiem.",
     "TaskAudioNormalizationDescription": "Skanē failus priekš audio normālizācijas informācijas.",
-    "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un atskaņošanas sarakstus"
+    "TaskCleanCollectionsAndPlaylists": "Notīrīt kolekcijas un atskaņošanas sarakstus",
+    "TaskExtractMediaSegments": "Multivides segmenta skenēšana",
+    "TaskExtractMediaSegmentsDescription": "Izvelk vai iegūst multivides segmentus no MediaSegment iespējotiem spraudņiem.",
+    "TaskMoveTrickplayImages": "Trickplay attēlu pārvietošana",
+    "TaskMoveTrickplayImagesDescription": "Pārvieto esošos trickplay failus atbilstoši bibliotēkas iestatījumiem.",
+    "TaskDownloadMissingLyrics": "Lejupielādēt trūkstošos vārdus",
+    "TaskDownloadMissingLyricsDescription": "Lejupielādēt vārdus dziesmām",
+    "CleanupUserDataTask": "Lietotāju datu tīrīšanas uzdevums",
+    "CleanupUserDataTaskDescription": "Notīra visus lietotāja datus (skatīšanās stāvokļus, favorītu statusi utt.) no medijiem, kas vairs nav pieejami vismaz 90 dienas."
 }

@@ -344,15 +344,12 @@ public class RecordingsMetadataManager
                     await writer.WriteElementStringAsync(null, "credits", null, person).ConfigureAwait(false);
                 }
 
-                var tmdbCollection = item.GetProviderId(MetadataProvider.TmdbCollection);
-
-                if (!string.IsNullOrEmpty(tmdbCollection))
+                if (item.TryGetProviderId(MetadataProvider.TmdbCollection, out var tmdbCollection))
                 {
                     await writer.WriteElementStringAsync(null, "collectionnumber", null, tmdbCollection).ConfigureAwait(false);
                 }
 
-                var imdb = item.GetProviderId(MetadataProvider.Imdb);
-                if (!string.IsNullOrEmpty(imdb))
+                if (item.TryGetProviderId(MetadataProvider.Imdb, out var imdb))
                 {
                     if (!isSeriesEpisode)
                     {
@@ -365,8 +362,7 @@ public class RecordingsMetadataManager
                     lockData = false;
                 }
 
-                var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
-                if (!string.IsNullOrEmpty(tvdb))
+                if (item.TryGetProviderId(MetadataProvider.Tvdb, out var tvdb))
                 {
                     await writer.WriteElementStringAsync(null, "tvdbid", null, tvdb).ConfigureAwait(false);
 
@@ -374,8 +370,7 @@ public class RecordingsMetadataManager
                     lockData = false;
                 }
 
-                var tmdb = item.GetProviderId(MetadataProvider.Tmdb);
-                if (!string.IsNullOrEmpty(tmdb))
+                if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdb))
                 {
                     await writer.WriteElementStringAsync(null, "tmdbid", null, tmdb).ConfigureAwait(false);
 

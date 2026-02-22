@@ -1,3 +1,16 @@
 {
-    "Books": "کتابیں"
+    "Books": "کتابیں",
+    "AppDeviceValues": "ایپ: {0}، ڈیوائس: {1}",
+    "Albums": "البمز",
+    "Application": "ایپلی کیشن",
+    "Artists": "فنکار",
+    "AuthenticationSucceededWithUserName": "{0} کی کامیابی سے تصدیق ہو چکی ہے",
+    "CameraImageUploadedFrom": "ایک نئی کیمرے کی تصویر {0} سے اپ لوڈ کی گئی ہے",
+    "Channels": "چینلز",
+    "ChapterNameValue": "باب {0}",
+    "Collections": "مجموعے",
+    "Default": "ڈیفالٹ",
+    "DeviceOfflineWithName": "{0} نے رابطہ منقطع کر دیا ہے",
+    "DeviceOnlineWithName": "{0} منسلک ہے",
+    "External": "بیرونی"
 }

@@ -56,7 +56,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
         if (item.IsFileProtocol)
         {
             var file = directoryService.GetFile(item.Path);
-            if (file is not null && item.DateModified != file.LastWriteTimeUtc)
+            if (file is not null && item.HasChanged(file.LastWriteTimeUtc))
             {
                 return true;
             }
@@ -101,7 +101,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
         bool? enableDuringScan = libraryOptions?.ExtractTrickplayImagesDuringLibraryScan;
         bool replace = options.RegenerateTrickplay && options.MetadataRefreshMode > MetadataRefreshMode.Default;
 
-        if (!enableDuringScan.GetValueOrDefault(false))
+        if (libraryOptions is null || !enableDuringScan.GetValueOrDefault(false))
         {
             return ItemUpdateType.None;
         }

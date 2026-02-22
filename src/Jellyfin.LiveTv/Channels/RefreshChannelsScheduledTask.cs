@@ -79,7 +79,7 @@ namespace Jellyfin.LiveTv.Channels
                 // Every so often
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks
+                    Type = TaskTriggerInfoType.IntervalTrigger, IntervalTicks = TimeSpan.FromHours(24).Ticks
                 }
             };
         }

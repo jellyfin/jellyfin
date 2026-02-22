@@ -12,7 +12,7 @@ namespace MediaBrowser.Common.Extensions
         /// Checks the origin of the HTTP context.
         /// </summary>
         /// <param name="context">The incoming HTTP context.</param>
-        /// <returns><c>true</c> if the request is coming from LAN, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the request is coming from the same machine as is running the server, <c>false</c> otherwise.</returns>
         public static bool IsLocal(this HttpContext context)
         {
             return (context.Connection.LocalIpAddress is null

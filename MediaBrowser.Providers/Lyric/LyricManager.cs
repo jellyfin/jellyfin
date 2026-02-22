@@ -78,7 +78,8 @@ public class LyricManager : ILyricManager
             MediaPath = audio.Path,
             SongName = audio.Name,
             AlbumName = audio.Album,
-            ArtistNames = audio.GetAllArtists().ToList(),
+            AlbumArtistsNames = audio.AlbumArtists,
+            ArtistNames = audio.Artists,
             Duration = audio.RunTimeTicks,
             IsAutomated = isAutomated
         };

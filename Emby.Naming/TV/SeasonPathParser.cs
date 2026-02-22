@@ -1,43 +1,40 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Emby.Naming.TV
 {
     /// <summary>
     /// Class to parse season paths.
     /// </summary>
-    public static class SeasonPathParser
+    public static partial class SeasonPathParser
     {
-        /// <summary>
-        /// A season folder must contain one of these somewhere in the name.
-        /// </summary>
-        private static readonly string[] _seasonFolderNames =
-        {
-            "season",
-            "sæson",
-            "temporada",
-            "saison",
-            "staffel",
-            "series",
-            "сезон",
-            "stagione"
-        };
+        private static readonly Regex CleanNameRegex = new(@"[ ._\-\[\]]", RegexOptions.Compiled);
 
-        private static readonly char[] _splitChars = ['.', '_', ' ', '-'];
+        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        private static partial Regex ProcessPre();
+
+        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        private static partial Regex ProcessPost();
+
+        [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]
+        private static partial Regex SeasonPrefix();
 
         /// <summary>
         /// Attempts to parse season number from path.
         /// </summary>
         /// <param name="path">Path to season.</param>
+        /// <param name="parentPath">Folder name of the parent.</param>
         /// <param name="supportSpecialAliases">Support special aliases when parsing.</param>
         /// <param name="supportNumericSeasonFolders">Support numeric season folders when parsing.</param>
         /// <returns>Returns <see cref="SeasonPathParserResult"/> object.</returns>
-        public static SeasonPathParserResult Parse(string path, bool supportSpecialAliases, bool supportNumericSeasonFolders)
+        public static SeasonPathParserResult Parse(string path, string? parentPath, bool supportSpecialAliases, bool supportNumericSeasonFolders)
         {
             var result = new SeasonPathParserResult();
+            var parentFolderName = parentPath is null ? null : new DirectoryInfo(parentPath).Name;
 
-            var (seasonNumber, isSeasonFolder) = GetSeasonNumberFromPath(path, supportSpecialAliases, supportNumericSeasonFolders);
+            var (seasonNumber, isSeasonFolder) = GetSeasonNumberFromPath(path, parentFolderName, supportSpecialAliases, supportNumericSeasonFolders);
 
             result.SeasonNumber = seasonNumber;
 
@@ -54,84 +51,70 @@ namespace Emby.Naming.TV
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="parentFolderName">The parent folder name.</param>
         /// <param name="supportSpecialAliases">if set to <c>true</c> [support special aliases].</param>
         /// <param name="supportNumericSeasonFolders">if set to <c>true</c> [support numeric season folders].</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
         private static (int? SeasonNumber, bool IsSeasonFolder) GetSeasonNumberFromPath(
             string path,
+            string? parentFolderName,
             bool supportSpecialAliases,
             bool supportNumericSeasonFolders)
         {
-            string filename = Path.GetFileName(path);
+            var fileName = Path.GetFileName(path);
 
-            if (supportSpecialAliases)
+            var seasonPrefixMatch = SeasonPrefix().Match(fileName);
+            if (seasonPrefixMatch.Success &&
+                int.TryParse(seasonPrefixMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
             {
-                if (string.Equals(filename, "specials", StringComparison.OrdinalIgnoreCase))
-                {
-                    return (0, true);
-                }
-
-                if (string.Equals(filename, "extras", StringComparison.OrdinalIgnoreCase))
-                {
-                    return (0, true);
-                }
+                return (val, true);
             }
 
-            if (supportNumericSeasonFolders)
+            string filename = CleanNameRegex.Replace(fileName, string.Empty);
+
+            if (parentFolderName is not null)
             {
-                if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                {
-                    return (val, true);
-                }
+                var cleanParent = CleanNameRegex.Replace(parentFolderName, string.Empty);
+                filename = filename.Replace(cleanParent, string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 
-            if (TryGetSeasonNumberFromPart(filename, out int seasonNumber))
+            if (supportSpecialAliases &&
+                (filename.Equals("specials", StringComparison.OrdinalIgnoreCase) ||
+                 filename.Equals("extras", StringComparison.OrdinalIgnoreCase)))
             {
-                return (seasonNumber, true);
+                return (0, true);
             }
 
-            // Look for one of the season folder names
-            foreach (var name in _seasonFolderNames)
+            if (supportNumericSeasonFolders &&
+                int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out val))
             {
-                if (filename.Contains(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    var result = GetSeasonNumberFromPathSubstring(filename.Replace(name, " ", StringComparison.OrdinalIgnoreCase));
-                    if (result.SeasonNumber.HasValue)
-                    {
-                        return result;
-                    }
-
-                    break;
-                }
+                return (val, true);
             }
 
-            var parts = filename.Split(_splitChars, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in parts)
+            var preMatch = ProcessPre().Match(filename);
+            if (preMatch.Success)
             {
-                if (TryGetSeasonNumberFromPart(part, out seasonNumber))
+                return CheckMatch(preMatch);
+            }
+            else
+            {
+                var postMatch = ProcessPost().Match(filename);
+                return CheckMatch(postMatch);
+            }
+        }
+
+        private static (int? SeasonNumber, bool IsSeasonFolder) CheckMatch(Match match)
+        {
+            var numberString = match.Groups["seasonnumber"];
+            if (numberString.Success)
+            {
+                if (int.TryParse(numberString.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber))
                 {
                     return (seasonNumber, true);
                 }
             }
 
-            return (null, true);
-        }
-
-        private static bool TryGetSeasonNumberFromPart(ReadOnlySpan<char> part, out int seasonNumber)
-        {
-            seasonNumber = 0;
-            if (part.Length < 2 || !part.StartsWith("s", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (int.TryParse(part.Slice(1), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-            {
-                seasonNumber = value;
-                return true;
-            }
-
-            return false;
+            return (null, false);
         }
 
         /// <summary>

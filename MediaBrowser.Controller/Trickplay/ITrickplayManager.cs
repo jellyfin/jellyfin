@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 
@@ -21,7 +21,7 @@ public interface ITrickplayManager
     /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
-    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
+    Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates trickplay tiles out of individual thumbnails.
@@ -59,6 +59,14 @@ public interface ITrickplayManager
     Task SaveTrickplayInfo(TrickplayInfo info);
 
     /// <summary>
+    /// Deletes all trickplay info for an item.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task.</returns>
+    Task DeleteTrickplayDataAsync(Guid itemId, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets all trickplay infos for all media streams of an item.
     /// </summary>
     /// <param name="item">The item.</param>
@@ -93,7 +101,7 @@ public interface ITrickplayManager
     /// <param name="libraryOptions">The library options.</param>
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
-    Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions? libraryOptions, CancellationToken cancellationToken);
+    Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the trickplay HLS playlist.

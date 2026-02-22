@@ -15,13 +15,13 @@ public class ClientCapabilitiesDto
     /// <summary>
     /// Gets or sets the list of playable media types.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<MediaType> PlayableMediaTypes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of supported commands.
     /// </summary>
-    [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+    [JsonConverter(typeof(JsonCommaDelimitedCollectionConverterFactory))]
     public IReadOnlyList<GeneralCommandType> SupportedCommands { get; set; } = [];
 
     /// <summary>

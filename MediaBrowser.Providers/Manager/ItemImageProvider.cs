@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -87,7 +88,15 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            singular.AddRange(item.GetImages(ImageType.Backdrop));
+            foreach (var backdrop in item.GetImages(ImageType.Backdrop))
+            {
+                var imageInMetadataFolder = backdrop.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                {
+                    singular.Add(backdrop);
+                }
+            }
+
             PruneImages(item, singular);
 
             return singular.Count > 0;
@@ -229,9 +238,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = AsyncFile.OpenRead(response.Path);
-
-                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                    await _providerManager.SaveImage(item, response.Path, mimeType, imageType, null, null, cancellationToken).ConfigureAwait(false);
                                 }
                             }
 
@@ -378,6 +385,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         // Nothing to do, already gone
                     }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // Nothing to do, already gone
+                    }
                     catch (UnauthorizedAccessException ex)
                     {
                         _logger.LogWarning(ex, "Unable to delete {Image}", image.Path);
@@ -387,8 +398,8 @@ namespace MediaBrowser.Providers.Manager
 
             item.RemoveImages(images);
 
-            // Cleanup old metadata directory for episodes if empty
-            if (item is Episode)
+            // Cleanup old metadata directory for episodes if empty, as long as it's not a virtual item
+            if (item is Episode && !item.IsVirtualItem)
             {
                 var oldLocalMetadataDirectory = Path.Combine(item.ContainingFolderPath, "metadata");
                 if (_fileSystem.DirectoryExists(oldLocalMetadataDirectory) && !_fileSystem.GetFiles(oldLocalMetadataDirectory).Any())
@@ -463,10 +474,36 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (UpdateMultiImages(item, images, ImageType.Backdrop))
+            bool hasBackdrop = false;
+            bool backdropStoredWithMedia = false;
+
+            foreach (var image in images)
             {
-                changed = true;
-                foundImageTypes.Add(ImageType.Backdrop);
+                if (image.Type != ImageType.Backdrop)
+                {
+                    continue;
+                }
+
+                hasBackdrop = true;
+
+                if (item.ContainingFolderPath is not null && item.ContainingFolderPath.Contains(Path.GetDirectoryName(image.FileInfo.FullName), StringComparison.OrdinalIgnoreCase))
+                {
+                    backdropStoredWithMedia = true;
+                    break;
+                }
+            }
+
+            if (hasBackdrop)
+            {
+                if (UpdateMultiImages(item, images, ImageType.Backdrop))
+                {
+                    changed = true;
+                }
+
+                if (backdropStoredWithMedia)
+                {
+                    foundImageTypes.Add(ImageType.Backdrop);
+                }
             }
 
             if (foundImageTypes.Count > 0)
@@ -553,10 +590,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             type,
                             null,
                             cancellationToken).ConfigureAwait(false);
@@ -679,10 +722,16 @@ namespace MediaBrowser.Providers.Manager
                     var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using (stream.ConfigureAwait(false))
                     {
+                        var mimetype = response.Content.Headers.ContentType?.MediaType;
+                        if (mimetype is null || mimetype.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mimetype = MimeTypes.GetMimeType(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path));
+                        }
+
                         await _providerManager.SaveImage(
                             item,
                             stream,
-                            response.Content.Headers.ContentType?.MediaType,
+                            mimetype,
                             imageType,
                             null,
                             cancellationToken).ConfigureAwait(false);

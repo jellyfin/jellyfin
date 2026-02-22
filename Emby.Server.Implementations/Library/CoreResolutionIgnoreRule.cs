@@ -37,46 +37,33 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            // Don't ignore top level folders
-            if (fileInfo.IsDirectory && parent is AggregateFolder)
-            {
-                return false;
-            }
-
             if (IgnorePatterns.ShouldIgnore(fileInfo.FullName))
             {
                 return true;
             }
 
-            var filename = fileInfo.Name;
+            // Don't ignore top level folders
+            if (fileInfo.IsDirectory
+                && (parent is AggregateFolder || (parent?.IsTopParent ?? false)))
+            {
+                return false;
+            }
+
+            if (parent is null)
+            {
+                return false;
+            }
 
             if (fileInfo.IsDirectory)
             {
-                if (parent is not null)
-                {
-                    // Ignore extras folders but allow it at the collection level
-                    if (_namingOptions.AllExtrasTypesFolderNames.ContainsKey(filename)
-                        && parent is not AggregateFolder
-                        && parent is not UserRootFolder)
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                if (parent is not null)
-                {
-                    // Don't resolve these into audio files
-                    if (Path.GetFileNameWithoutExtension(filename.AsSpan()).Equals(BaseItem.ThemeSongFileName, StringComparison.Ordinal)
-                        && AudioFileParser.IsAudioFile(filename, _namingOptions))
-                    {
-                        return true;
-                    }
-                }
+                // Ignore extras for unsupported types
+                return _namingOptions.AllExtrasTypesFolderNames.ContainsKey(fileInfo.Name)
+                    && parent is not UserRootFolder;
             }
 
-            return false;
+            // Don't resolve theme songs
+            return Path.GetFileNameWithoutExtension(fileInfo.Name.AsSpan()).Equals(BaseItem.ThemeSongFileName, StringComparison.Ordinal)
+                && AudioFileParser.IsAudioFile(fileInfo.Name, _namingOptions);
         }
     }
 }

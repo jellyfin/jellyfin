@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace Emby.Server.Implementations.Devices
     {
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger<DeviceId> _logger;
-        private readonly object _syncLock = new object();
+        private readonly Lock _syncLock = new();
 
         private string? _id;
 

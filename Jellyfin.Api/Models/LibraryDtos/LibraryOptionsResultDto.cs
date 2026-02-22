@@ -29,6 +29,11 @@ public class LibraryOptionsResultDto
     public IReadOnlyList<LibraryOptionInfoDto> LyricFetchers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
     /// <summary>
+    /// Gets or sets the list of MediaSegment Providers.
+    /// </summary>
+    public IReadOnlyList<LibraryOptionInfoDto> MediaSegmentProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+
+    /// <summary>
     /// Gets or sets the type options.
     /// </summary>
     public IReadOnlyList<LibraryTypeOptionsDto> TypeOptions { get; set; } = Array.Empty<LibraryTypeOptionsDto>();

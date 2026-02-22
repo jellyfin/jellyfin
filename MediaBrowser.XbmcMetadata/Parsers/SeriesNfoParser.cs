@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Xml;
 using Emby.Naming.TV;
@@ -48,16 +49,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        item.TrySetProviderId(MetadataProvider.Imdb, reader.GetAttribute("IMDB"));
+                        // Get ids from attributes
                         item.TrySetProviderId(MetadataProvider.Tmdb, reader.GetAttribute("TMDB"));
+                        item.TrySetProviderId(MetadataProvider.Tvdb, reader.GetAttribute("TVDB"));
+                        string? imdbId = reader.GetAttribute("IMDB");
 
-                        string? tvdbId = reader.GetAttribute("TVDB");
-                        if (string.IsNullOrWhiteSpace(tvdbId))
+                        // Read id from content
+                        // Content can be arbitrary according to Kodi wiki, so only parse if we are sure it matches a provider-specific schema
+                        var contentId = reader.ReadElementContentAsString();
+                        if (string.IsNullOrEmpty(imdbId) && contentId.StartsWith("tt", StringComparison.Ordinal))
                         {
-                            tvdbId = reader.ReadElementContentAsString();
+                            imdbId = contentId;
                         }
 
-                        item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
+                        item.TrySetProviderId(MetadataProvider.Imdb, imdbId);
 
                         break;
                     }
