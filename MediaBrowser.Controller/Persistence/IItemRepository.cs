@@ -80,6 +80,15 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
 
     /// <summary>
+    /// Gets the latest items grouped by their container (Album for music, Series for TV).
+    /// Movies use themselves as both container and item.
+    /// </summary>
+    /// <param name="filter">The query parameters.</param>
+    /// <param name="collectionType">Collection Type.</param>
+    /// <returns>List of container-items tuples.</returns>
+    IReadOnlyList<(BaseItem Container, IReadOnlyList<BaseItem> Items)> GetLatestItemsGrouped(InternalItemsQuery filter, CollectionType? collectionType);
+
+    /// <summary>
     /// Gets the list of series presentation keys for next up.
     /// </summary>
     /// <param name="filter">The query.</param>
