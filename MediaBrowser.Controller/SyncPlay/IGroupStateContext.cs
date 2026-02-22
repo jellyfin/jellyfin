@@ -46,6 +46,12 @@ namespace MediaBrowser.Controller.SyncPlay
         long PositionTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback rate.
+        /// </summary>
+        /// <value>The playback rate.</value>
+        float PlaybackRate { get; set; }
+
+        /// <summary>
         /// Gets or sets the last activity.
         /// </summary>
         /// <value>The last activity.</value>
@@ -97,6 +103,13 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="positionTicks">The PositionTicks.</param>
         /// <returns>The sanitized position ticks.</returns>
         long SanitizePositionTicks(long? positionTicks);
+
+        /// <summary>
+        /// Sanitizes the playback rate.
+        /// </summary>
+        /// <param name="playbackRate">The playback rate.</param>
+        /// <returns>The sanitized playback rate.</returns>
+        float SanitizePlaybackRate(float? playbackRate);
 
         /// <summary>
         /// Updates the ping of a session, in milliseconds.

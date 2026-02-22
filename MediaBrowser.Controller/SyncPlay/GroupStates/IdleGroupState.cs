@@ -83,6 +83,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         }
 
         /// <inheritdoc />
+        public override void HandleRequest(SetPlaybackRateRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
+        {
+            SendStopCommand(context, prevState, session, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public override void HandleRequest(BufferGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
             SendStopCommand(context, prevState, session, cancellationToken);
