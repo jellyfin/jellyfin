@@ -586,11 +586,10 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
-    public void SaveImages(BaseItemDto item)
+    public void SaveImages(BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var images = item.ImageInfos.Select(e => Map(item.Id, e));
         using var context = _dbProvider.CreateDbContext();
 
         if (!context.BaseItems.Any(bi => bi.Id == item.Id))
@@ -599,9 +598,116 @@ public sealed class BaseItemRepository
             return;
         }
 
+        using var transaction = context.Database.BeginTransaction();
+
+        // Load existing images to preserve user-customized SortOrder (via SwapImages)
+        var existingImagesList = context.BaseItemImageInfos
+            .Where(e => e.ItemId == item.Id)
+            .ToList();
+
+        var existingImages = existingImagesList.ToDictionary(e => e.Path, StringComparer.OrdinalIgnoreCase);
+
+        // Track maximum SortOrder per image type to append new images at the end
+        var maxSortOrderByType = existingImagesList
+            .GroupBy(e => e.ImageType)
+            .ToDictionary(g => g.Key, g => g.Max(e => e.SortOrder));
+
+        // Delete existing images - we'll recreate them with correct SortOrder
         context.BaseItemImageInfos.Where(e => e.ItemId == item.Id).ExecuteDelete();
-        context.BaseItemImageInfos.AddRange(images);
+
+        // For each image, preserve existing SortOrder if it exists (user may have swapped)
+        // For new images, append at the end of existing images of the same type
+        var imagesToSave = new List<BaseItemImageInfo>();
+
+        foreach (var imageInfo in item.ImageInfos)
+        {
+            var imageType = (ImageInfoImageType)imageInfo.Type;
+
+            // Check if this image path already existed with a SortOrder
+            if (existingImages.TryGetValue(imageInfo.Path, out var existingImage))
+            {
+                // Preserve the existing SortOrder (maintains user swaps)
+                imagesToSave.Add(Map(item.Id, imageInfo, existingImage.SortOrder));
+            }
+            else
+            {
+                // New image: assign SortOrder after all existing images of this type
+                var newSortOrder = maxSortOrderByType.TryGetValue(imageType, out var maxSortOrder)
+                    ? maxSortOrder + 1
+                    : 0;
+
+                imagesToSave.Add(Map(item.Id, imageInfo, newSortOrder));
+                maxSortOrderByType[imageType] = newSortOrder; // Update max for next new image
+            }
+        }
+
+        context.BaseItemImageInfos.AddRange(imagesToSave);
         context.SaveChanges();
+        transaction.Commit();
+    }
+
+    /// <inheritdoc  />
+    public void SwapImageSortOrder(Guid itemId, ImageType imageType, int index1, int index2)
+    {
+        // Early return if swapping the same index (no-op)
+        if (index1 == index2)
+        {
+            return;
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+
+        var imageTypeDb = (ImageInfoImageType)imageType;
+        var images = context.BaseItemImageInfos
+            .Where(e => e.ItemId == itemId && e.ImageType == imageTypeDb)
+            .OrderBy(e => e.SortOrder)
+            .ThenBy(e => e.Path)
+            .ToList();
+
+        if (index1 < 0 || index1 >= images.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index1), "First image index out of range");
+        }
+
+        if (index2 < 0 || index2 >= images.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index2), "Second image index out of range");
+        }
+
+        using var transaction = context.Database.BeginTransaction();
+
+        // Normalize SortOrder to contiguous values if duplicates exist
+        // This handles the case where migration set all SortOrder to 0
+        bool needsNormalization = false;
+        for (int i = 0; i < images.Count; i++)
+        {
+            if (images[i].SortOrder != i)
+            {
+                images[i].SortOrder = i;
+                needsNormalization = true;
+            }
+        }
+
+        if (needsNormalization)
+        {
+            context.SaveChanges();
+            // Reload images after normalization to ensure fresh data
+            images = context.BaseItemImageInfos
+                .Where(e => e.ItemId == itemId && e.ImageType == imageTypeDb)
+                .OrderBy(e => e.SortOrder)
+                .ThenBy(e => e.Path)
+                .ToList();
+        }
+
+        // Perform swap using EF Core
+        var sort1 = images[index1].SortOrder;
+        var sort2 = images[index2].SortOrder;
+
+        images[index1].SortOrder = sort2;
+        images[index2].SortOrder = sort1;
+
+        context.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc  />
@@ -965,7 +1071,12 @@ public sealed class BaseItemRepository
 
         if (entity.Images is not null)
         {
-            dto.ImageInfos = entity.Images.Select(e => Map(e, appHost)).ToArray();
+            // Order images by SortOrder (calculated during SaveImages based on LocalImageProvider discovery order)
+            dto.ImageInfos = entity.Images
+                .OrderBy(e => e.SortOrder)
+                .ThenBy(e => e.Path, StringComparer.OrdinalIgnoreCase)
+                .Select(e => Map(e, appHost))
+                .ToArray();
         }
 
         // dto.Type = entity.Type;
@@ -1130,7 +1241,9 @@ public sealed class BaseItemRepository
 
         if (dto.ImageInfos is not null)
         {
-            entity.Images = dto.ImageInfos.Select(f => Map(dto.Id, f)).ToArray();
+            entity.Images = dto.ImageInfos
+                .Select(f => Map(dto.Id, f, f.SortOrder))
+                .ToArray();
         }
 
         if (dto is Trailer trailer)
@@ -1468,7 +1581,7 @@ public sealed class BaseItemRepository
         return list;
     }
 
-    private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e)
+    private static BaseItemImageInfo Map(Guid baseItemId, ItemImageInfo e, int sortOrder = 0)
     {
         return new BaseItemImageInfo()
         {
@@ -1480,7 +1593,8 @@ public sealed class BaseItemRepository
             Height = e.Height,
             Width = e.Width,
             ImageType = (ImageInfoImageType)e.Type,
-            Item = null!
+            Item = null!,
+            SortOrder = sortOrder
         };
     }
 
@@ -1493,7 +1607,8 @@ public sealed class BaseItemRepository
             DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
             Height = e.Height,
             Width = e.Width,
-            Type = (ImageType)e.ImageType
+            Type = (ImageType)e.ImageType,
+            SortOrder = e.SortOrder
         };
     }
 

@@ -29,6 +29,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Utilities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -1991,7 +1992,20 @@ namespace MediaBrowser.Controller.Entities
 
             if (image is null)
             {
-                AddImage(GetImageInfo(file, type));
+                var newImage = GetImageInfo(file, type);
+
+                if (AllowsMultipleImages(type))
+                {
+                    var maxSortOrder = ImageInfos
+                        .Where(i => i.Type == type)
+                        .Select(i => i.SortOrder)
+                        .DefaultIfEmpty(-1)
+                        .Max();
+
+                    newImage.SortOrder = maxSortOrder + 1;
+                }
+
+                AddImage(newImage);
             }
             else
             {
@@ -2042,7 +2056,38 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
-            ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+            var removed = deletedImages?.ToArray();
+            if (removed is null || removed.Length == 0)
+            {
+                return;
+            }
+
+            ImageInfos = ImageInfos.Except(removed).ToArray();
+
+            var typesToNormalize = removed
+                .Select(i => i.Type)
+                .Where(type => AllowsMultipleImages(type) && type != ImageType.Chapter)
+                .Distinct()
+                .ToList();
+
+            if (typesToNormalize.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var type in typesToNormalize)
+            {
+                var orderedTypeImages = GetImages(type)
+                    .OrderBy(i => i.SortOrder)
+                    .ThenBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Path))
+                    .ThenBy(i => i.Path, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                for (int i = 0; i < orderedTypeImages.Count; i++)
+                {
+                    orderedTypeImages[i].SortOrder = i;
+                }
+            }
         }
 
         public void AddImage(ItemImageInfo image)
@@ -2254,7 +2299,33 @@ namespace MediaBrowser.Controller.Entities
 
             if (newImageList.Count > 0)
             {
-                ImageInfos = ImageInfos.Concat(newImageList.Select(i => GetImageInfo(i, imageType))).ToArray();
+                // Normalize existing sort order so we can append deterministically
+                var orderedExistingImages = existingImages
+                    .OrderBy(i => i.SortOrder)
+                    .ThenBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Path))
+                    .ThenBy(i => i.Path, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                for (int i = 0; i < orderedExistingImages.Count; i++)
+                {
+                    orderedExistingImages[i].SortOrder = i;
+                }
+
+                var nextSortOrder = orderedExistingImages.Count;
+                var newImages = newImageList
+                    .Select(fileInfo =>
+                    {
+                        var imageInfo = GetImageInfo(fileInfo, imageType);
+                        imageInfo.SortOrder = nextSortOrder++;
+                        return imageInfo;
+                    })
+                    .ToList();
+
+                ImageInfos = ImageInfos
+                    .Where(i => i.Type != imageType)
+                    .Concat(orderedExistingImages)
+                    .Concat(newImages)
+                    .ToArray();
             }
 
             return imageUpdated || newImageList.Count > 0;
@@ -2317,25 +2388,30 @@ namespace MediaBrowser.Controller.Entities
                 return Task.CompletedTask;
             }
 
-            if (!info1.IsLocalFile || !info2.IsLocalFile)
+            // Swap the SortOrder in the database instead of swapping physical files
+            ItemRepository.SwapImageSortOrder(Id, type, index1, index2);
+
+            // Swap the in-memory ImageInfos to reflect the new order
+            var images = ImageInfos.Where(i => i.Type == type).ToList();
+            if (index1 < images.Count && index2 < images.Count)
             {
-                // TODO: Not supported  yet
-                return Task.CompletedTask;
+                var imageIndex1 = Array.IndexOf(ImageInfos, images[index1]);
+                var imageIndex2 = Array.IndexOf(ImageInfos, images[index2]);
+
+                if (imageIndex1 >= 0 && imageIndex2 >= 0)
+                {
+                    (ImageInfos[imageIndex1], ImageInfos[imageIndex2]) = (ImageInfos[imageIndex2], ImageInfos[imageIndex1]);
+                }
+
+                if (type != ImageType.Chapter)
+                {
+                    var orderedTypeImages = GetImages(type).ToList();
+                    for (int i = 0; i < orderedTypeImages.Count; i++)
+                    {
+                        orderedTypeImages[i].SortOrder = i;
+                    }
+                }
             }
-
-            var path1 = info1.Path;
-            var path2 = info2.Path;
-
-            FileSystem.SwapFiles(path1, path2);
-
-            // Refresh these values
-            info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
-            info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
-
-            info1.Width = 0;
-            info1.Height = 0;
-            info2.Width = 0;
-            info2.Height = 0;
 
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }

@@ -55,4 +55,12 @@ public class BaseItemImageInfo
     /// Gets or Sets the referenced Item.
     /// </summary>
     public required BaseItemEntity Item { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort order for this image.
+    /// Lower values indicate higher priority and reflect the discovery order from LocalImageProvider.
+    /// Values are non-negative integers (0...n) calculated during SaveImages based on filename patterns.
+    /// When multiple images have the same SortOrder, ordering falls back to Path for deterministic results.
+    /// </summary>
+    public int SortOrder { get; set; }
 }

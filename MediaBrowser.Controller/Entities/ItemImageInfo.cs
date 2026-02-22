@@ -26,6 +26,13 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sort order for this image within its type.
+        /// Lower values indicate higher priority (e.g., 0 is highest priority).
+        /// </summary>
+        /// <value>The sort order.</value>
+        public int SortOrder { get; set; }
+
         public int Width { get; set; }
 
         public int Height { get; set; }

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Utilities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
@@ -348,7 +349,14 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var imageFiles = _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, false);
 
-            images.AddRange(imageFiles.Where(i => i.Length > 0).Select(i => new LocalImageInfo
+            // Sort files by numeric index extracted from filename to maintain correct order
+            // (e.g., fanart1.jpg, fanart2.jpg, ..., fanart10.jpg instead of alphabetical fanart1, fanart10, fanart2)
+            var sortedFiles = imageFiles
+                .Where(i => i.Length > 0)
+                .OrderBy(i => ImageOrderingUtilities.GetNumericImageIndex(i.Name))
+                .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase);
+
+            images.AddRange(sortedFiles.Select(i => new LocalImageInfo
             {
                 FileInfo = i,
                 Type = ImageType.Backdrop
@@ -456,6 +464,12 @@ namespace MediaBrowser.LocalMetadata.Images
             var image = GetImage(files, name, prefix);
 
             if (image is null)
+            {
+                return false;
+            }
+
+            // Check if this image file has already been added to prevent duplicates
+            if (images.Any(i => string.Equals(i.FileInfo.FullName, image.FullName, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

@@ -11,6 +11,7 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
@@ -42,6 +43,15 @@ public interface IItemRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous reattachment operation.</returns>
     Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Swaps the sort order of two images for the specified item.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="imageType">The image type.</param>
+    /// <param name="index1">The first image index.</param>
+    /// <param name="index2">The second image index.</param>
+    void SwapImageSortOrder(Guid itemId, ImageType imageType, int index1, int index2);
 
     /// <summary>
     /// Retrieves the item.
