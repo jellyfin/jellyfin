@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +22,7 @@ using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.LiveTv;
@@ -31,12 +33,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.Listings
 {
-    public class SchedulesDirect : IListingsProvider, IDisposable
+    public class SchedulesDirect : IListingsProvider, ISchedulesDirectService, IDisposable
     {
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
+        private const int CountryCacheDays = 7;
 
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IApplicationPaths _appPaths;
         private readonly AsyncNonKeyedLocker _tokenLock = new(1);
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
@@ -45,16 +49,24 @@ namespace Jellyfin.LiveTv.Listings
         private bool _accountError;
         private bool _disposed = false;
 
+        private byte[] _countriesCache;
+        private DateTime? _dailyLimitHitDate;
+
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IApplicationPaths appPaths)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _appPaths = appPaths;
+            _dailyLimitHitDate = LoadDailyLimitHitDate();
         }
 
         /// <inheritdoc />
         public string Name => "Schedules Direct";
+
+        private string DailyLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-daily-limit.txt");
 
         /// <inheritdoc />
         public string Type => nameof(SchedulesDirect);
@@ -553,6 +565,19 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
+            // Daily usage limit hit (e.g. 5003) — wait until the SD counter resets at 00:00 UTC.
+            if (_dailyLimitHitDate.HasValue)
+            {
+                if (_dailyLimitHitDate.Value.Date < DateTime.UtcNow.Date)
+                {
+                    ClearDailyLimitHitDate();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
             if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
             {
@@ -662,6 +687,13 @@ namespace Jellyfin.LiveTv.Listings
                 _tokens.Clear();
                 _lastErrorResponse = DateTime.UtcNow;
             }
+            else if (sdCode is 5002 or 5003)
+            {
+                // Daily usage limits — stop requests until SD resets at 00:00 UTC.
+                // 5002=max image downloads
+                // 5003=max schedule/metadata requests
+                SetDailyLimitHitDate();
+            }
             else if (enableRetry
                 && (int)response.StatusCode < 500
                 && (sdCode == 4006 || (response.StatusCode == HttpStatusCode.Forbidden && sdCode is null)))
@@ -760,6 +792,107 @@ namespace Jellyfin.LiveTv.Listings
 
                 throw;
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<byte[]> GetAvailableCountries(CancellationToken cancellationToken)
+        {
+            if (_countriesCache is not null)
+            {
+                return _countriesCache;
+            }
+
+            var cachePath = Path.Combine(_appPaths.CachePath, "sd-countries.json");
+
+            if (File.Exists(cachePath)
+                && DateTime.UtcNow - File.GetLastWriteTimeUtc(cachePath) < TimeSpan.FromDays(CountryCacheDays))
+            {
+                try
+                {
+                    _countriesCache = await File.ReadAllBytesAsync(cachePath, cancellationToken).ConfigureAwait(false);
+                    return _countriesCache;
+                }
+                catch (IOException)
+                {
+                    // Corrupt or unreadable — delete and re-fetch.
+                    TryDeleteFile(cachePath);
+                }
+            }
+
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            using var response = await client.GetAsync(new Uri(ApiUrl + "/available/countries"), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+            await File.WriteAllBytesAsync(cachePath, bytes, cancellationToken).ConfigureAwait(false);
+
+            _countriesCache = bytes;
+            return bytes;
+        }
+
+        private DateTime? LoadDailyLimitHitDate()
+        {
+            var path = DailyLimitFilePath;
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                var text = File.ReadAllText(path).Trim();
+                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var date))
+                {
+                    if (date.Date < DateTime.UtcNow.Date)
+                    {
+                        // Expired — clean up.
+                        File.Delete(path);
+                        return null;
+                    }
+
+                    return date;
+                }
+            }
+            catch (IOException)
+            {
+                // Corrupt or unreadable — delete and reset.
+                TryDeleteFile(path);
+            }
+
+            return null;
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (IOException)
+            {
+                // Best effort.
+            }
+        }
+
+        private void SetDailyLimitHitDate()
+        {
+            _dailyLimitHitDate = DateTime.UtcNow;
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(DailyLimitFilePath)!);
+                File.WriteAllText(DailyLimitFilePath, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to persist SD daily limit hit date");
+            }
+        }
+
+        private void ClearDailyLimitHitDate()
+        {
+            _dailyLimitHitDate = null;
+            TryDeleteFile(DailyLimitFilePath);
         }
 
         public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
