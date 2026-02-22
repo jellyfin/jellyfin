@@ -115,7 +115,6 @@ public class MediaSegmentManager : IMediaSegmentManager
                         continue;
                     }
 
-
                     if (!forceOverwrite)
                     {
                         var existingSegmentsList = existingSegments.ToArray(); // Cannot use requestItem's list, as the provider might tamper with its items.
@@ -216,7 +215,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem? item, IEnumerable<MediaSegmentType>? typeFilter, LibraryOptions libraryOptions, bool filterByProvider = true)
+    public async Task<IEnumerable<MediaSegmentDto>> GetSegmentsAsync(BaseItem? item, IEnumerable<MediaSegmentType>? typeFilter, LibraryOptions libraryOptions, bool filterDuplicates, bool filterByProvider = true)
     {
         if (item is null)
         {
@@ -254,13 +253,40 @@ public class MediaSegmentManager : IMediaSegmentManager
                 query = query.Where(e => typeFilter.Contains(e.Type));
             }
 
-            return query
+            var result = query
                 .OrderBy(e => e.StartTicks)
                 .AsNoTracking()
-                .AsEnumerable()
-                .Select(Map)
-                .ToArray();
+                .AsEnumerable();
+
+            if (filterDuplicates)
+            {
+                // filter those segments that are close to each other and of the same type.
+                var filteredList = new List<MediaSegment>();
+                var typedSegments = new List<MediaSegment>();
+
+                // yes this can be made with linq queries, no this is no longer readable.
+                foreach (var segment in result.GroupBy(e => e.Type))
+                {
+                    foreach (var typedSegment in segment)
+                    {
+                        if (filteredList.Any(f => Math.Abs(typedSegment.StartTicks - f.StartTicks) > 10_000_000 || Math.Abs(typedSegment.EndTicks - f.EndTicks) > 10_000_000))
+                        {
+                            continue;
+                        }
+
+                        typedSegments.Add(typedSegment);
+                    }
+
+                    filteredList.AddRange(typedSegments);
+                    typedSegments.Clear();
+                }
+
+                return [.. filteredList.Select(Map)];
+            }
+
+            return [.. result.Select(Map)];
         }
+    }
 
     private static MediaSegmentDto Map(MediaSegment segment)
     {
