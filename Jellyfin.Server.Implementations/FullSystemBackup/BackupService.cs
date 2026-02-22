@@ -41,6 +41,8 @@ public class BackupService : IBackupService
 
     private readonly Version _backupEngineVersion = new Version(0, 2, 0);
 
+    private static readonly ReaderWriterLockSlim _manifestFileLock = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BackupService"/> class.
     /// </summary>
@@ -287,6 +289,7 @@ public class BackupService : IBackupService
 
         try
         {
+            _manifestFileLock.EnterWriteLock();
             _logger.LogInformation("Attempting to create a new backup at {BackupPath}", backupPath);
             var fileStream = File.OpenWrite(backupPath);
             await using (fileStream.ConfigureAwait(false))
@@ -432,6 +435,10 @@ public class BackupService : IBackupService
 
             throw;
         }
+        finally
+        {
+            _manifestFileLock.ExitWriteLock();
+        }
     }
 
     /// <inheritdoc/>
@@ -495,21 +502,29 @@ public class BackupService : IBackupService
 
     private static async ValueTask<BackupManifest?> GetManifest(string archivePath)
     {
-        var archiveStream = File.OpenRead(archivePath);
-        await using (archiveStream.ConfigureAwait(false))
+        try
         {
-            using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
-            var manifestEntry = zipStream.GetEntry(ManifestEntryName);
-            if (manifestEntry is null)
+            _manifestFileLock.EnterReadLock();
+            var archiveStream = File.OpenRead(archivePath);
+            await using (archiveStream.ConfigureAwait(false))
             {
-                return null;
-            }
+                using var zipStream = new ZipArchive(archiveStream, ZipArchiveMode.Read);
+                var manifestEntry = zipStream.GetEntry(ManifestEntryName);
+                if (manifestEntry is null)
+                {
+                    return null;
+                }
 
-            var manifestStream = manifestEntry.Open();
-            await using (manifestStream.ConfigureAwait(false))
-            {
-                return await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                var manifestStream = manifestEntry.Open();
+                await using (manifestStream.ConfigureAwait(false))
+                {
+                    return await JsonSerializer.DeserializeAsync<BackupManifest>(manifestStream, _serializerSettings).ConfigureAwait(false);
+                }
             }
+        }
+        finally
+        {
+            _manifestFileLock.ExitReadLock();
         }
     }
 
