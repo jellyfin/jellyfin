@@ -342,7 +342,6 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     MaxParentalRating = user.MaxParentalRatingScore,
                     MaxParentalSubRating = user.MaxParentalRatingSubScore,
-                    EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
                     AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
@@ -664,7 +663,6 @@ namespace Jellyfin.Server.Implementations.Users
 
                 user.MaxParentalRatingScore = policy.MaxParentalRating;
                 user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
-                user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
                 user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
                 user.AuthenticationProviderId = policy.AuthenticationProviderId;
                 user.PasswordResetProviderId = policy.PasswordResetProviderId;
