@@ -246,9 +246,9 @@ public class MediaInfoHelper
 
         options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
 
-        if (!options.ForceDirectStream)
+        if (!options.ForceDirectStream && !mediaSource.IsInfiniteStream)
         {
-            // direct-stream http streaming is currently broken
+            // this was purposefully disabled in PR 7325 in 2022. It's unclear as to why other than "its currently broken".
             options.EnableDirectStream = false;
         }
 
