@@ -135,16 +135,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             return (originalImagePath, mimeType, dateModified);
         }
 
-        var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
-        originalImagePath = supportedImageInfo.Path;
-
-        // Original file doesn't exist, or original file is gif.
-        if (!File.Exists(originalImagePath) || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
-        {
-            return (originalImagePath, mimeType, dateModified);
-        }
-
-        dateModified = supportedImageInfo.DateModified;
         bool requiresTransparency = _transparentImageTypes.Contains(Path.GetExtension(originalImagePath));
 
         bool autoOrient = false;
@@ -197,6 +187,13 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             if (!File.Exists(cacheFilePath))
             {
+                // Only access source filesystem on cache miss
+                if (!File.Exists(originalImagePath)
+                    || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
+                {
+                    return (originalImagePath, mimeType, dateModified);
+                }
+
                 string resultPath;
 
                 // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
