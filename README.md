@@ -96,7 +96,7 @@ The server is configured to host the static files required for the [web client](
 
 Note that it is recommended for development to [host the web client separately](#hosting-the-web-client-separately) from the web server with some additional configuration, in which case you can skip this step.
 
-There are three options to get the files for the web client.
+There are two options to get the files for the web client.
 
 1. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 2. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
