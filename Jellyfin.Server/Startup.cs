@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Asp.Versioning.ApiExplorer;
 using Emby.Server.Implementations.EntryPoints;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
@@ -140,10 +141,12 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
+        /// <param name="apiVersionDescriptionProvider">The API version description provider.</param>
         /// <param name="appConfig">The application config.</param>
         public void Configure(
             IApplicationBuilder app,
             IWebHostEnvironment env,
+            IApiVersionDescriptionProvider apiVersionDescriptionProvider,
             IConfiguration appConfig)
         {
             app.UseBaseUrlRedirection();
@@ -204,7 +207,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseStaticFiles();
                 mainApp.UseAuthentication();
-                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseJellyfinApiSwagger(apiVersionDescriptionProvider, _serverConfigurationManager);
                 mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
