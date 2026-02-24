@@ -1267,6 +1267,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
+                // Use analyzeduration also for subtitle streams to fix detection issues with streams inside MKS files
+                arg.Append(" -analyzeduration 200M -probesize 128M");
+
                 // Also seek the external subtitles stream.
                 var seekSubParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
                 if (!string.IsNullOrEmpty(seekSubParam))
