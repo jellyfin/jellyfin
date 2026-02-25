@@ -165,14 +165,14 @@ namespace Jellyfin.Server.Extensions
             serviceCollection
                 .AddApiVersioning(options =>
                 {
+                    options.DefaultApiVersion = ApiVersions.Parse(ApiVersions.V1200);
                     options.ApiVersionReader = new HeaderApiVersionReader("Api-Version");
-                    options.DefaultApiVersion = ApiVersions.Parse(ApiVersions.V1020260224);
                     options.ReportApiVersions = true;
                     options.AssumeDefaultVersionWhenUnspecified = true;
                 })
                 .AddApiExplorer(options =>
                 {
-                    options.GroupNameFormat = "'v'VVV";
+                    options.GroupNameFormat = "'v'VVVV";
                     options.SubstituteApiVersionInUrl = true;
                 })
                 .AddMvc(options =>
@@ -187,7 +187,7 @@ namespace Jellyfin.Server.Extensions
                     {
                         if (controller.GetCustomAttributes(typeof(ApiVersionAttribute), true).Length == 0)
                         {
-                            foreach (var version in new[] { ApiVersions.V1020260224, ApiVersions.V1220260224 })
+                            foreach (var version in new[] { ApiVersions.V1200 })
                             {
                                 options.Conventions.Controller(controller).HasApiVersion(ApiVersions.Parse(version));
                             }

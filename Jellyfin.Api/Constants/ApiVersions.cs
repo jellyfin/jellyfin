@@ -6,19 +6,13 @@ namespace Jellyfin.Api.Constants;
 /// <summary>
 /// API versions available for use in the current server binary.
 /// As a general rule only N - 1 versions are supported and changes are only made in major releases.
-/// Format is major version followed by release type and the date of publication.
 /// </summary>
 public static class ApiVersions
 {
     /// <summary>
-    /// Version 10 published on 2026-02-24 as a stable release.
+    /// Version 12.0 of the Jellyfin API specification.
     /// </summary>
-    public const string V1020260224 = "10-stable20260224";
-
-    /// <summary>
-    /// Version 12 published on 2026-02-24 as a stable release.
-    /// </summary>
-    public const string V1220260224 = "12-stable20260224";
+    public const string V1200 = "12.0";
 
     /// <summary>
     /// Returns a new instance of the <see cref="ApiVersion"/> class.
@@ -27,8 +21,8 @@ public static class ApiVersions
     /// <returns>An <see cref="ApiVersion"/> instance.</returns>
     public static ApiVersion Parse(string version)
     {
-        var parts = version.Split("-", 2);
+        var parts = version.Split(".", 2);
 
-        return new ApiVersion(int.Parse(parts[0], CultureInfo.InvariantCulture), 0, parts[1]);
+        return new ApiVersion(int.Parse(parts[0], CultureInfo.InvariantCulture), int.Parse(parts[1], CultureInfo.InvariantCulture));
     }
 }

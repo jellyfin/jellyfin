@@ -71,7 +71,7 @@ namespace Jellyfin.Server.Extensions
                 .UseReDoc(c =>
                 {
                     c.DocumentTitle = "Jellyfin API";
-                    c.SpecUrl($"/{baseUrl}api-docs/v{ApiVersions.V1020260224}/openapi.json");
+                    c.SpecUrl($"/{baseUrl}api-docs/v{ApiVersions.V1200}/openapi.json");
                     c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
                     c.RoutePrefix = "api-docs/redoc";
                 });
