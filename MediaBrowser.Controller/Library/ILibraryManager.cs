@@ -767,8 +767,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fromChildId">The child ID to re-route from.</param>
         /// <param name="toChildId">The child ID to re-route to.</param>
-        /// <returns>Number of references updated.</returns>
-        int RerouteLinkedChildReferences(Guid fromChildId, Guid toChildId);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task RerouteLinkedChildReferencesAsync(Guid fromChildId, Guid toChildId);
 
         /// <summary>
         /// Gets legacy query filters for filtering UI.

@@ -254,8 +254,8 @@ public interface IItemRepository
     /// </summary>
     /// <param name="fromChildId">The child ID to re-route from.</param>
     /// <param name="toChildId">The child ID to re-route to.</param>
-    /// <returns>Number of references updated.</returns>
-    int RerouteLinkedChildren(Guid fromChildId, Guid toChildId);
+    /// <returns>List of parent item IDs whose LinkedChildren were modified.</returns>
+    IReadOnlyList<Guid> RerouteLinkedChildren(Guid fromChildId, Guid toChildId);
 
     /// <summary>
     /// Creates or updates a LinkedChild entry linking a parent to a child item.

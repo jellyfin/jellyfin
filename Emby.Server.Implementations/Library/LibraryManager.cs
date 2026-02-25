@@ -441,7 +441,7 @@ namespace Emby.Server.Implementations.Library
                     newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
 
                     // Re-route playlist/collection references from deleted primary to new primary
-                    _itemRepository.RerouteLinkedChildren(video.Id, newPrimary.Id);
+                    RerouteLinkedChildReferencesAsync(video.Id, newPrimary.Id).GetAwaiter().GetResult();
 
                     // Update remaining alternates to point to new primary
                     foreach (var alternate in alternateVersions.Skip(1))
@@ -455,7 +455,7 @@ namespace Emby.Server.Implementations.Library
             else if (item is Video alternateVideo && alternateVideo.PrimaryVersionId.HasValue)
             {
                 // If deleting an alternate version, re-route references to its primary
-                _itemRepository.RerouteLinkedChildren(alternateVideo.Id, alternateVideo.PrimaryVersionId.Value);
+                RerouteLinkedChildReferencesAsync(alternateVideo.Id, alternateVideo.PrimaryVersionId.Value).GetAwaiter().GetResult();
             }
 
             var children = item.IsFolder
@@ -3655,9 +3655,26 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public int RerouteLinkedChildReferences(Guid fromChildId, Guid toChildId)
+        public async Task RerouteLinkedChildReferencesAsync(Guid fromChildId, Guid toChildId)
         {
-            return _itemRepository.RerouteLinkedChildren(fromChildId, toChildId);
+            var affectedParentIds = _itemRepository.RerouteLinkedChildren(fromChildId, toChildId);
+
+            // Update in-memory LinkedChildren and re-save metadata (NFO) for affected parents
+            foreach (var parentId in affectedParentIds)
+            {
+                if (GetItemById(parentId) is Folder parent)
+                {
+                    foreach (var lc in parent.LinkedChildren)
+                    {
+                        if (lc.ItemId.HasValue && lc.ItemId.Value.Equals(fromChildId))
+                        {
+                            lc.ItemId = toChildId;
+                        }
+                    }
+
+                    await RunMetadataSavers(parent, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <inheritdoc />

@@ -4439,9 +4439,21 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc/>
-    public int RerouteLinkedChildren(Guid fromChildId, Guid toChildId)
+    public IReadOnlyList<Guid> RerouteLinkedChildren(Guid fromChildId, Guid toChildId)
     {
         using var context = _dbProvider.CreateDbContext();
+
+        // Collect all affected parent IDs before modifying
+        var affectedParentIds = context.LinkedChildren
+            .Where(lc => lc.ChildId == fromChildId && lc.ChildType == DbLinkedChildType.Manual)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToList();
+
+        if (affectedParentIds.Count == 0)
+        {
+            return affectedParentIds;
+        }
 
         // Get parents that already reference toChildId (to avoid duplicates)
         var parentsWithTarget = context.LinkedChildren
@@ -4450,7 +4462,7 @@ public sealed class BaseItemRepository
             .ToHashSet();
 
         // Update references that won't create duplicates
-        var updated = context.LinkedChildren
+        context.LinkedChildren
             .Where(lc => lc.ChildId == fromChildId
                 && lc.ChildType == DbLinkedChildType.Manual
                 && !parentsWithTarget.Contains(lc.ParentId))
@@ -4463,7 +4475,7 @@ public sealed class BaseItemRepository
                 && parentsWithTarget.Contains(lc.ParentId))
             .ExecuteDelete();
 
-        return updated;
+        return affectedParentIds;
     }
 
     /// <inheritdoc/>

@@ -590,7 +590,7 @@ namespace MediaBrowser.Controller.Entities
                     await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
 
                     // Re-route playlist/collection references from old primary to new primary
-                    LibraryManager.RerouteLinkedChildReferences(oldPrimary.Id, newPrimary.Id);
+                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
                 }
 
                 // After removing items, reattach any detached user data to remaining children
