@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Asp.Versioning.ApiExplorer;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -16,10 +18,12 @@ namespace Jellyfin.Server.Extensions
         /// Adds swagger and swagger UI to the application pipeline.
         /// </summary>
         /// <param name="applicationBuilder">The application builder.</param>
+        /// <param name="apiVersionDescriptionProvider">The API version description provider.</param>
         /// <param name="serverConfigurationManager">The server configuration.</param>
         /// <returns>The updated application builder.</returns>
         public static IApplicationBuilder UseJellyfinApiSwagger(
             this IApplicationBuilder applicationBuilder,
+            IApiVersionDescriptionProvider apiVersionDescriptionProvider,
             IServerConfigurationManager serverConfigurationManager)
         {
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
@@ -32,11 +36,22 @@ namespace Jellyfin.Server.Extensions
                 baseUrl += '/';
             }
 
+            foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+            {
+                applicationBuilder.UseReDoc(c =>
+                {
+                    c.DocumentTitle = "Jellyfin API";
+                    c.SpecUrl($"/{baseUrl}api-docs/{description.GroupName}/openapi.json");
+                    c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
+                    c.RoutePrefix = $"api-docs/redoc/{description.GroupName}";
+                });
+            }
+
             return applicationBuilder
                 .UseSwagger(c =>
                 {
                     // Custom path requires {documentName}, SwaggerDoc documentName is 'api-docs'
-                    c.RouteTemplate = "{documentName}/openapi.json";
+                    c.RouteTemplate = "api-docs/{documentName}/openapi.json";
                     c.PreSerializeFilters.Add((swagger, httpReq) =>
                     {
                         swagger.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{apiDocBaseUrl}" } };
@@ -44,15 +59,19 @@ namespace Jellyfin.Server.Extensions
                 })
                 .UseSwaggerUI(c =>
                 {
+                    foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+                    {
+                        c.SwaggerEndpoint($"/{baseUrl}api-docs/{description.GroupName}/openapi.json", $"Jellyfin API {description.GroupName}");
+                    }
+
                     c.DocumentTitle = "Jellyfin API";
-                    c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
                     c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                     c.RoutePrefix = "api-docs/swagger";
                 })
                 .UseReDoc(c =>
                 {
                     c.DocumentTitle = "Jellyfin API";
-                    c.SpecUrl($"/{baseUrl}api-docs/openapi.json");
+                    c.SpecUrl($"/{baseUrl}api-docs/v{ApiVersions.V1200}/openapi.json");
                     c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
                     c.RoutePrefix = "api-docs/redoc";
                 });

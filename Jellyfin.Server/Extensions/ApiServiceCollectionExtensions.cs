@@ -6,7 +6,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Claims;
-using Emby.Server.Implementations;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
@@ -26,16 +27,14 @@ using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -163,6 +162,39 @@ namespace Jellyfin.Server.Extensions
                 mvcBuilder.AddApplicationPart(pluginAssembly);
             }
 
+            serviceCollection
+                .AddApiVersioning(options =>
+                {
+                    options.DefaultApiVersion = ApiVersions.Parse(ApiVersions.V1200);
+                    options.ApiVersionReader = new HeaderApiVersionReader("Api-Version");
+                    options.ReportApiVersions = true;
+                    options.AssumeDefaultVersionWhenUnspecified = true;
+                })
+                .AddApiExplorer(options =>
+                {
+                    options.GroupNameFormat = "'v'VVVV";
+                    options.SubstituteApiVersionInUrl = true;
+                })
+                .AddMvc(options =>
+                {
+                    var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Jellyfin.Api");
+                    if (assembly == null)
+                    {
+                        return;
+                    }
+
+                    foreach (var controller in assembly.GetTypes().Where(t => typeof(ControllerBase).IsAssignableFrom(t) && !t.IsAbstract))
+                    {
+                        if (controller.GetCustomAttributes(typeof(ApiVersionAttribute), true).Length == 0)
+                        {
+                            foreach (var version in new[] { ApiVersions.V1200 })
+                            {
+                                options.Conventions.Controller(controller).HasApiVersion(ApiVersions.Parse(version));
+                            }
+                        }
+                    }
+                });
+
             return mvcBuilder.AddControllersAsServices();
         }
 
@@ -199,19 +231,14 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
-                c.SwaggerDoc("api-docs", new OpenApiInfo
+                foreach (var description in serviceCollection.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>().ApiVersionDescriptions)
                 {
-                    Title = "Jellyfin API",
-                    Version = version,
-                    Extensions = new Dictionary<string, IOpenApiExtension>
+                    c.SwaggerDoc(description.GroupName, new OpenApiInfo
                     {
-                        {
-                            "x-jellyfin-version",
-                            new OpenApiString(version)
-                        }
-                    }
-                });
+                        Title = "Jellyfin API",
+                        Version = description.GroupName
+                    });
+                }
 
                 c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
                 {
