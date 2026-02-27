@@ -3096,7 +3096,8 @@ namespace Emby.Server.Implementations.Library
         {
             // Apply .ignore rules
             var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
-            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
+            var isFolder = owner.IsFolder || (owner is Video video && (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd));
+            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, isFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
                 yield break;
