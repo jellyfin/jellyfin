@@ -513,19 +513,6 @@ namespace MediaBrowser.Controller.Entities
                             // Check if path is in LocalAlternateVersions of any valid child
                             if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
                             {
-                                // If this was a primary (no PrimaryVersionId, no OwnerId), it needs demotion
-                                if (video.OwnerId.IsEmpty())
-                                {
-                                    var newPrimary = newItems
-                                        .OfType<Video>()
-                                        .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
-                                            .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
-                                    if (newPrimary is not null)
-                                    {
-                                        oldPrimariesToDemote.Add((video, newPrimary));
-                                    }
-                                }
-
                                 Logger.LogDebug("Item path matches an alternate version, skipping deletion: {Path}", item.Path);
                                 continue;
                             }
@@ -538,6 +525,27 @@ namespace MediaBrowser.Controller.Entities
                             actuallyRemoved.Add(item);
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                        }
+                    }
+
+                    // Detect items that need demotion AFTER all deletions have run.
+                    // DeleteItem may promote an alternate to primary (clearing its OwnerId),
+                    // so we must check OwnerId after the deletion loop to see the updated state.
+                    foreach (var item in itemsRemoved.Except(actuallyRemoved))
+                    {
+                        if (item is Video video
+                            && video.OwnerId.IsEmpty()
+                            && !string.IsNullOrEmpty(item.Path)
+                            && alternateVersionPaths.Contains(item.Path))
+                        {
+                            var newPrimary = newItems
+                                .OfType<Video>()
+                                .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                    .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
+                            if (newPrimary is not null)
+                            {
+                                oldPrimariesToDemote.Add((video, newPrimary));
+                            }
                         }
                     }
                 }
