@@ -410,7 +410,8 @@ namespace Emby.Server.Implementations.Library
             // OwnerId check: items with OwnerId set are alternate versions or extras, not primaries
             if (item is Video video && !video.PrimaryVersionId.HasValue && video.OwnerId.IsEmpty())
             {
-                var alternateVersions = GetLocalAlternateVersionIds(video)
+                var localAlternateIds = GetLocalAlternateVersionIds(video).ToHashSet();
+                var alternateVersions = localAlternateIds
                     .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
                     .Distinct()
                     .Select(id => GetItemById(id))
@@ -447,7 +448,8 @@ namespace Emby.Server.Implementations.Library
                     foreach (var alternate in alternateVersions.Skip(1))
                     {
                         alternate.SetPrimaryVersionId(newPrimary.Id);
-                        alternate.OwnerId = Guid.Empty;
+                        // Only set OwnerId for local alternates; linked alternates are independent items
+                        alternate.OwnerId = localAlternateIds.Contains(alternate.Id) ? newPrimary.Id : Guid.Empty;
                         alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                     }
                 }
