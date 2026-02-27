@@ -456,6 +456,15 @@ namespace Emby.Server.Implementations.Library
             {
                 // If deleting an alternate version, re-route references to its primary
                 RerouteLinkedChildReferencesAsync(alternateVideo.Id, alternateVideo.PrimaryVersionId.Value).GetAwaiter().GetResult();
+
+                // Remove deleted alternate from primary's LinkedAlternateVersions
+                if (GetItemById(alternateVideo.PrimaryVersionId.Value) is Video primaryVideo)
+                {
+                    primaryVideo.LinkedAlternateVersions = primaryVideo.LinkedAlternateVersions
+                        .Where(lc => !lc.ItemId.HasValue || !lc.ItemId.Value.Equals(alternateVideo.Id))
+                        .ToArray();
+                    primaryVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                }
             }
 
             var children = item.IsFolder

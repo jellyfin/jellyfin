@@ -510,13 +510,6 @@ namespace MediaBrowser.Controller.Entities
                         // Skip items that are alternate versions of another video
                         if (item is Video video)
                         {
-                            // Check via PrimaryVersionId
-                            if (video.PrimaryVersionId.HasValue)
-                            {
-                                Logger.LogDebug("Item is an alternate version (via PrimaryVersionId), skipping deletion: {Path}", item.Path ?? item.Name);
-                                continue;
-                            }
-
                             // Check if path is in LocalAlternateVersions of any valid child
                             if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
                             {
