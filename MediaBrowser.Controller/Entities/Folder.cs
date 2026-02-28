@@ -486,8 +486,8 @@ namespace MediaBrowser.Controller.Entities
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
                 // If it's an AggregateFolder, don't remove
-                // Collect old primaries that need demotion to alternates of newly created primaries
-                var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
+                // Collect replaced primaries for deferred deletion (after CreateItems)
+                var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
 
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
@@ -518,6 +518,29 @@ namespace MediaBrowser.Controller.Entities
                             }
                         }
 
+                        // Defer deletion if this primary video is being replaced by a new primary
+                        // that takes over its alternates. Deleting now would trigger premature
+                        // promotion inside DeleteItem and write stale paths to collection NFOs.
+                        if (item is Video primaryVideo
+                            && !primaryVideo.PrimaryVersionId.HasValue
+                            && primaryVideo.OwnerId.IsEmpty()
+                            && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
+                        {
+                            var newPrimary = newItems
+                                .OfType<Video>()
+                                .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                    .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
+                                        .Any(op => string.Equals(op, p, StringComparison.OrdinalIgnoreCase))));
+                            if (newPrimary is not null)
+                            {
+                                Logger.LogDebug("Deferring deletion of replaced primary: {Path}", item.Path);
+                                replacedPrimaries.Add((primaryVideo, newPrimary));
+                                actuallyRemoved.Add(item);
+                                item.SetParent(null);
+                                continue;
+                            }
+                        }
+
                         if (item.IsFileProtocol)
                         {
                             Logger.LogDebug("Removed item: {Path}", item.Path);
@@ -527,27 +550,6 @@ namespace MediaBrowser.Controller.Entities
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
                     }
-
-                    // Detect items that need demotion AFTER all deletions have run.
-                    // DeleteItem may promote an alternate to primary (clearing its OwnerId),
-                    // so we must check OwnerId after the deletion loop to see the updated state.
-                    foreach (var item in itemsRemoved.Except(actuallyRemoved))
-                    {
-                        if (item is Video video
-                            && video.OwnerId.IsEmpty()
-                            && !string.IsNullOrEmpty(item.Path)
-                            && alternateVersionPaths.Contains(item.Path))
-                        {
-                            var newPrimary = newItems
-                                .OfType<Video>()
-                                .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
-                                    .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
-                            if (newPrimary is not null)
-                            {
-                                oldPrimariesToDemote.Add((video, newPrimary));
-                            }
-                        }
-                    }
                 }
 
                 if (newItems.Count > 0)
@@ -555,43 +557,43 @@ namespace MediaBrowser.Controller.Entities
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
                 }
 
-                // Demote old primaries that are now alternate versions of newly created primaries
-                foreach (var (oldPrimary, newPrimary) in oldPrimariesToDemote)
+                // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.
+                // This avoids the premature promotion that would occur if DeleteItem ran before CreateItems.
+                foreach (var (oldPrimary, newPrimary) in replacedPrimaries)
                 {
                     Logger.LogInformation(
-                        "Demoting old primary {OldName} ({OldId}) to alternate of new primary {NewName} ({NewId})",
+                        "Processing deferred deletion of replaced primary {OldName} ({OldId}), new primary {NewName} ({NewId})",
                         oldPrimary.Name,
                         oldPrimary.Id,
                         newPrimary.Name,
                         newPrimary.Id);
 
-                    // First: update old primary's alternate items to point to new primary.
-                    // Order matters — update alternates FIRST so they don't get orphan-deleted
-                    // when old primary's arrays are cleared.
-                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                    // Reroute collection/playlist references from old primary to new primary
+                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+
+                    // Transfer alternates from old primary to new primary
+                    var localAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                    var allAlternateIds = localAlternateIds
                         .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
                         .Distinct()
                         .ToList();
 
-                    foreach (var altId in oldAlternateIds)
+                    foreach (var altId in allAlternateIds)
                     {
                         if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
                         {
                             altVideo.SetPrimaryVersionId(newPrimary.Id);
-                            altVideo.OwnerId = newPrimary.Id;
+                            altVideo.OwnerId = localAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
                             await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                         }
                     }
 
-                    // Then: demote old primary — clear its arrays and set it as alternate of new primary
+                    // Clear alternate arrays so DeleteItem won't trigger promotion
                     oldPrimary.LocalAlternateVersions = [];
                     oldPrimary.LinkedAlternateVersions = [];
-                    oldPrimary.SetPrimaryVersionId(newPrimary.Id);
-                    oldPrimary.OwnerId = newPrimary.Id;
-                    await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
 
-                    // Re-route playlist/collection references from old primary to new primary
-                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+                    // Safe to delete now — no promotion will happen
+                    LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
                 }
 
                 // After removing items, reattach any detached user data to remaining children
