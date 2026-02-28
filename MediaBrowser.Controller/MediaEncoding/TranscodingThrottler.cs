@@ -20,6 +20,7 @@ public class TranscodingThrottler : IDisposable
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
     private bool _isPaused;
+    private int _timerActive;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscodingThrottler"/> class.
@@ -107,21 +108,33 @@ public class TranscodingThrottler : IDisposable
 
     private async void TimerCallback(object? state)
     {
-        if (_job.HasExited)
+        if (Interlocked.CompareExchange(ref _timerActive, 1, 0) != 0)
         {
-            DisposeTimer();
             return;
         }
 
-        var options = GetOptions();
+        try
+        {
+            if (_job.HasExited)
+            {
+                DisposeTimer();
+                return;
+            }
 
-        if (options.EnableThrottling && IsThrottleAllowed(_job, Math.Max(options.ThrottleDelaySeconds, 60)))
-        {
-            await PauseTranscoding().ConfigureAwait(false);
+            var options = GetOptions();
+
+            if (options.EnableThrottling && IsThrottleAllowed(_job, Math.Max(options.ThrottleDelaySeconds, 60)))
+            {
+                await PauseTranscoding().ConfigureAwait(false);
+            }
+            else
+            {
+                await UnpauseTranscoding().ConfigureAwait(false);
+            }
         }
-        else
+        finally
         {
-            await UnpauseTranscoding().ConfigureAwait(false);
+            Interlocked.Exchange(ref _timerActive, 0);
         }
     }
 

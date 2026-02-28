@@ -1915,6 +1915,15 @@ public class DynamicHlsController : BaseJellyfinApiController
         TranscodingJob? transcodingJob,
         CancellationToken cancellationToken)
     {
+        // Update the download position to reflect the client's current demand.
+        // This prevents the TranscodingThrottler from re-pausing FFmpeg while
+        // we are actively waiting for this segment to be produced.
+        if (transcodingJob is not null)
+        {
+            var requestedPositionTicks = state.Request.CurrentRuntimeTicks;
+            transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? requestedPositionTicks, requestedPositionTicks);
+        }
+
         var segmentExists = System.IO.File.Exists(segmentPath);
         if (segmentExists)
         {
@@ -1938,6 +1947,9 @@ public class DynamicHlsController : BaseJellyfinApiController
         var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
         if (transcodingJob is not null)
         {
+            var waitStartTime = Environment.TickCount64;
+            const int SegmentWaitTimeoutMs = 60000;
+
             while (!cancellationToken.IsCancellationRequested && !transcodingJob.HasExited)
             {
                 // To be considered ready, the segment file has to exist AND
@@ -1957,6 +1969,12 @@ public class DynamicHlsController : BaseJellyfinApiController
                     {
                         continue; // avoid unnecessary waiting if segment just became available
                     }
+                }
+
+                if (Environment.TickCount64 - waitStartTime > SegmentWaitTimeoutMs)
+                {
+                    _logger.LogWarning("Timed out waiting for segment {SegmentPath} after {TimeoutMs}ms", segmentPath, SegmentWaitTimeoutMs);
+                    break;
                 }
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
