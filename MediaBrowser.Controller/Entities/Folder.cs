@@ -489,16 +489,16 @@ namespace MediaBrowser.Controller.Entities
                 // Collect replaced primaries for deferred deletion (after CreateItems)
                 var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
 
+                // Build a set of paths that are alternate versions of valid children
+                // These items should not be deleted - they're managed by their primary video
+                var alternateVersionPaths = validChildren
+                    .OfType<Video>()
+                    .SelectMany(v => v.LocalAlternateVersions ?? [])
+                    .Where(p => !string.IsNullOrEmpty(p))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
-                    // Build a set of paths that are alternate versions of valid children
-                    // These items should not be deleted - they're managed by their primary video
-                    var alternateVersionPaths = validChildren
-                        .OfType<Video>()
-                        .SelectMany(v => v.LocalAlternateVersions ?? [])
-                        .Where(p => !string.IsNullOrEmpty(p))
-                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
                     foreach (var item in itemsRemoved)
                     {
                         if (!item.CanDelete())
@@ -594,6 +594,67 @@ namespace MediaBrowser.Controller.Entities
 
                     // Safe to delete now — no promotion will happen
                     LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                }
+
+                // Demote old primaries that are now alternate versions of newly created primaries.
+                // This handles the case where a new file is added that becomes the new primary
+                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+                // Items in replacedPrimaries are excluded (already in actuallyRemoved).
+                var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
+                foreach (var item in itemsRemoved.Except(actuallyRemoved))
+                {
+                    if (item is Video video
+                        && video.OwnerId.IsEmpty()
+                        && !string.IsNullOrEmpty(item.Path)
+                        && alternateVersionPaths.Contains(item.Path))
+                    {
+                        var newPrimary = newItems
+                            .OfType<Video>()
+                            .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
+                        if (newPrimary is not null)
+                        {
+                            oldPrimariesToDemote.Add((video, newPrimary));
+                        }
+                    }
+                }
+
+                foreach (var (oldPrimary, newPrimary) in oldPrimariesToDemote)
+                {
+                    Logger.LogInformation(
+                        "Demoting old primary {OldName} ({OldId}) to alternate of new primary {NewName} ({NewId})",
+                        oldPrimary.Name,
+                        oldPrimary.Id,
+                        newPrimary.Name,
+                        newPrimary.Id);
+
+                    // First: update old primary's alternate items to point to new primary.
+                    // Order matters — update alternates FIRST so they don't get orphan-deleted
+                    // when old primary's arrays are cleared.
+                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var altId in oldAlternateIds)
+                    {
+                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
+                        {
+                            altVideo.SetPrimaryVersionId(newPrimary.Id);
+                            altVideo.OwnerId = newPrimary.Id;
+                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+
+                    // Then: demote old primary — clear its arrays and set it as alternate of new primary
+                    oldPrimary.LocalAlternateVersions = [];
+                    oldPrimary.LinkedAlternateVersions = [];
+                    oldPrimary.SetPrimaryVersionId(newPrimary.Id);
+                    oldPrimary.OwnerId = newPrimary.Id;
+                    await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+
+                    // Re-route playlist/collection references from old primary to new primary
+                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
                 }
 
                 // After removing items, reattach any detached user data to remaining children
