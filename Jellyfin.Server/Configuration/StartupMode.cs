@@ -13,12 +13,12 @@ public enum StartupMode
     MediaServer = 0,
 
     /// <summary>
-    /// Attempts to Migrate the selected database only then shuts down.
+    /// Attempts to Migrate the system only then shuts down.
     /// </summary>
-    MigrateDatabase = 1,
+    MigrateSystem = 1,
 
     /// <summary>
     /// Runs the Database seed function regardless of <see cref="BaseApplicationConfiguration.IsStartupWizardCompleted"/> state.
     /// </summary>
-    SeedDatabase = 2
+    SeedSystem = 2
 }
