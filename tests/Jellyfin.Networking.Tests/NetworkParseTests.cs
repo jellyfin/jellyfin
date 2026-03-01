@@ -377,6 +377,8 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "192.168.1.209", "10.0.0.1")] // LAN not bound, so return external.
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "8.8.8.8", "10.0.0.1")] // return external bind address
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "192.168.1.210", "192.168.1.208")] // return LAN bind address
+        // Cross-subnet IPv4 request should return IPv4, not IPv6 (Issue #15898)
+        [InlineData("192.168.1.208/24,-16,eth16|fd00::1/64,10,eth7", "192.168.1.0/24", "", "192.168.2.100", "192.168.1.208")]
         public void GetBindInterface_ValidSourceGiven_Success(string interfaces, string lan, string bind, string source, string result)
         {
             var conf = new NetworkConfiguration
