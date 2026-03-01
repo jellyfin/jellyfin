@@ -102,6 +102,7 @@
  - [OancaAndrei](https://github.com/OancaAndrei)
  - [obradovichv](https://github.com/obradovichv)
  - [oddstr13](https://github.com/oddstr13)
+ - [Olwë](https://github.com/olwe1)
  - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
  - [Phlogi](https://github.com/Phlogi)
