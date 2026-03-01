@@ -251,7 +251,11 @@ namespace Jellyfin.Server
                 if (_setupServer!.IsAlive && !configurationCompleted)
                 {
                     _setupServer!.SoftStop();
-                    await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+                    if (options.StartupMode is null or Configuration.StartupMode.MediaServer)
+                    {
+                        await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+                    }
+
                     await _setupServer!.StopAsync().ConfigureAwait(false);
                 }
             }
