@@ -33,7 +33,7 @@ public static class OrderMapper
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
             (ItemSortBy.DatePlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.LastPlayedDate,
             (ItemSortBy.PlayCount, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.PlayCount,
-            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.IsFavorite,
+            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
