@@ -1161,6 +1161,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// A 1% tolerance safely covers encoder rounding artifacts while preserving detection
         /// of genuine anamorphic content (closest standard is PAL 4:3 at 16:15 = 6.67% off).
         /// </summary>
+        /// <param name="sar">The sample aspect ratio string in "N:D" format.</param>
+        /// <returns><c>true</c> if the SAR is within 1% of 1:1; otherwise <c>false</c>.</returns>
         internal static bool IsNearSquarePixelSar(string sar)
         {
             if (string.IsNullOrEmpty(sar))
