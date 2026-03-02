@@ -345,33 +345,68 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // Try splitting by : to handle "Germany: FSK-18"
-            if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
+            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18"
+            if (TryGetRatingScoreBySeparator(rating, ':', out var result)
+                || TryGetRatingScoreBySeparator(rating, '-', out result))
             {
-                var ratingLevelRightPart = rating.AsSpan().RightPart(':');
-                if (ratingLevelRightPart.Length != 0)
-                {
-                    return GetRatingScore(ratingLevelRightPart.ToString());
-                }
-            }
-
-            // Handle prefix country code to handle "DE-18"
-            if (rating.Contains('-', StringComparison.OrdinalIgnoreCase))
-            {
-                var ratingSpan = rating.AsSpan();
-
-                // Extract culture from country prefix
-                var culture = FindLanguageInfo(ratingSpan.LeftPart('-').ToString());
-
-                var ratingLevelRightPart = ratingSpan.RightPart('-');
-                if (ratingLevelRightPart.Length != 0)
-                {
-                    // Check rating system of culture
-                    return GetRatingScore(ratingLevelRightPart.ToString(), culture?.TwoLetterISOLanguageName);
-                }
+                return result;
             }
 
             return null;
+        }
+
+        private bool TryGetRatingScoreBySeparator(string rating, char separator, out ParentalRatingScore? result)
+        {
+            result = null;
+
+            if (rating.IndexOf(separator, StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            var ratingSpan = rating.AsSpan();
+            var countryPart = ratingSpan.LeftPart(separator).Trim().ToString();
+            var ratingPart = ratingSpan.RightPart(separator).Trim().ToString();
+            if (ratingPart.Length == 0)
+            {
+                return false;
+            }
+
+            string? resolvedCountryCode = null;
+
+            if (_allParentalRatings.ContainsKey(countryPart))
+            {
+                resolvedCountryCode = countryPart;
+            }
+            else
+            {
+                var culture = FindLanguageInfo(countryPart);
+                if (culture is not null)
+                {
+                    resolvedCountryCode = culture.TwoLetterISOLanguageName;
+                }
+            }
+
+            if (resolvedCountryCode is not null
+                && _allParentalRatings.TryGetValue(resolvedCountryCode, out var countryRatings))
+            {
+                if (countryRatings.TryGetValue(ratingPart, out result))
+                {
+                    return true;
+                }
+
+                _logger.LogWarning(
+                    "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
+                    rating,
+                    resolvedCountryCode);
+
+                return true;
+            }
+
+            // Country not identified or no rating data available, try recursive lookup
+            result = GetRatingScore(ratingPart, resolvedCountryCode);
+
+            return true;
         }
 
         /// <inheritdoc />
