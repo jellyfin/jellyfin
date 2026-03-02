@@ -69,20 +69,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The Jellyfin person type.</returns>
         public static PersonKind MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("directing", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Equals("director", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(crew.Department, "directing", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(crew.Job, "director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Director;
             }
 
-            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
-                && crew.Job.Equals("producer", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(crew.Department, "production", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(crew.Job, "producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonKind.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase)
-                && (crew.Job.Equals("writer", StringComparison.OrdinalIgnoreCase) || crew.Job.Equals("screenplay", StringComparison.OrdinalIgnoreCase)))
+            if (string.Equals(crew.Department, "writing", StringComparison.OrdinalIgnoreCase)
+                && (string.Equals(crew.Job, "writer", StringComparison.OrdinalIgnoreCase) || string.Equals(crew.Job, "screenplay", StringComparison.OrdinalIgnoreCase)))
             {
                 return PersonKind.Writer;
             }
@@ -97,9 +97,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>A boolean indicating whether the video is a trailer.</returns>
         public static bool IsTrailerType(Video video)
         {
-            return video.Site.Equals("youtube", StringComparison.OrdinalIgnoreCase)
-                   && (video.Type.Equals("trailer", StringComparison.OrdinalIgnoreCase)
-                       || video.Type.Equals("teaser", StringComparison.OrdinalIgnoreCase));
+            return string.Equals(video.Site, "youtube", StringComparison.OrdinalIgnoreCase)
+                   && (string.Equals(video.Type, "trailer", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(video.Type, "teaser", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -177,10 +177,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguage">The image's actual language code.</param>
         /// <param name="requestLanguage">The requested language code.</param>
         /// <returns>The language code.</returns>
-        public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
+        public static string AdjustImageLanguage(string? imageLanguage, string requestLanguage)
         {
-            if (!string.IsNullOrEmpty(imageLanguage)
-                && !string.IsNullOrEmpty(requestLanguage)
+            if (string.IsNullOrEmpty(imageLanguage))
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(requestLanguage)
                 && requestLanguage.Length > 2
                 && imageLanguage.Length == 2
                 && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
