@@ -435,7 +435,7 @@ namespace MediaBrowser.Controller.Entities
             if (IsStacked)
             {
                 var tasks = AdditionalParts
-                    .Select(i => RefreshMetadataForOwnedVideo(options, true, i, cancellationToken));
+                    .Select(i => RefreshMetadataForOwnedVideo(options, true, i, typeof(Video), cancellationToken));
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
@@ -498,14 +498,17 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private new async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        private new Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+            => RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, GetType(), cancellationToken);
+
+        private async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, Type itemType, CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
             {
                 SearchResult = null
             };
 
-            var id = LibraryManager.GetNewItemId(path, GetType());
+            var id = LibraryManager.GetNewItemId(path, itemType);
 
             // Check if the file still exists
             if (!FileSystem.FileExists(path))
