@@ -1278,7 +1278,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
                 if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
                 {
-                    arg.Append(' ').Append(ffmpegProbeSizeArgument);
+                    arg.Append(ffmpegProbeSizeArgument);
                 }
 
                 // Also seek the external subtitles stream.
