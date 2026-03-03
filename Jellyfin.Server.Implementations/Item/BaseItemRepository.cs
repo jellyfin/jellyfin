@@ -1898,6 +1898,12 @@ public sealed class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.CommunityRating >= filter.MinCommunityRating);
         }
 
+        if (filter.MinUserRating.HasValue)
+        {
+            baseQuery = baseQuery
+                .Where(e => e.UserData!.FirstOrDefault(f => f.UserId == filter.User!.Id)!.Rating >= filter.MinUserRating);
+        }
+
         if (filter.MinIndexNumber.HasValue)
         {
             baseQuery = baseQuery.Where(e => e.IndexNumber >= filter.MinIndexNumber);
