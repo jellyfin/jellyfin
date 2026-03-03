@@ -3308,37 +3308,37 @@ public sealed class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
-            baseQuery = baseQuery
-                .Where(e => e.UserData!.Any(f => f.UserId == filter.User!.Id && f.Rating >= UserItemData.MinLikeValue));
+            if (filter.IsLiked.Value)
+            {
+                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue));
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue));
+            }
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
-            var favoriteItemIds = context.UserData
-                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
-                .Select(ud => ud.ItemId);
             if (filter.IsFavoriteOrLiked.Value)
             {
-                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
             }
         }
 
         if (filter.IsFavorite.HasValue)
         {
-            var favoriteItemIds = context.UserData
-                .Where(ud => ud.UserId == filter.User!.Id && ud.IsFavorite)
-                .Select(ud => ud.ItemId);
             if (filter.IsFavorite.Value)
             {
-                baseQuery = baseQuery.Where(e => favoriteItemIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => !favoriteItemIds.Contains(e.Id));
+                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
             }
         }
 
