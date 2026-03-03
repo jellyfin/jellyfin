@@ -1271,14 +1271,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var analyzeDurationArgument = GetFfmpegAnalyzeDurationArg(state);
                 if (!string.IsNullOrEmpty(analyzeDurationArgument))
                 {
-                    arg.Append(analyzeDurationArgument);
+                    arg.Append(' ').Append(analyzeDurationArgument);
                 }
 
                 // Apply probesize, too, if configured
                 var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
                 if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
                 {
-                    arg.Append(ffmpegProbeSizeArgument);
+                    arg.Append(' ').Append(ffmpegProbeSizeArgument);
                 }
 
                 // Also seek the external subtitles stream.
