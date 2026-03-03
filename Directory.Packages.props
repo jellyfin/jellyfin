@@ -18,7 +18,7 @@
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
     <PackageVersion Include="FsCheck.Xunit" Version="3.3.2" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.3" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
     <PackageVersion Include="Ignore" Version="0.2.1" />
@@ -69,9 +69,9 @@
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.2.0" />
     <!-- Pinned to 3.116.1 because https://github.com/jellyfin/jellyfin/pull/14255 -->
-    <PackageVersion Include="SkiaSharp" Version="[3.116.1]" />
-    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="[3.116.1]" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="[3.116.1]" />
+    <PackageVersion Include="SkiaSharp" Version="[3.119.2]" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="[3.119.2]" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="[3.119.2]" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="Svg.Skia" Version="3.4.1" />
