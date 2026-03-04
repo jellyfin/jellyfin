@@ -346,6 +346,10 @@ public class BackupService : IBackupService
                                             using var document = JsonSerializer.SerializeToDocument(item, _serializerSettings);
                                             document.WriteTo(jsonSerializer);
                                         }
+                                        catch (FormatException ex)
+                                        {
+                                            _logger.LogWarning(ex, "Skipping entity with invalid data format in {Table}: {Entity}", entityType.SourceName, item);
+                                        }
                                         catch (Exception ex)
                                         {
                                             _logger.LogError(ex, "Could not load entity {Entity}", item);
