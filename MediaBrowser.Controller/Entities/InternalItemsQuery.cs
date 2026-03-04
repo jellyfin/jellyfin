@@ -157,6 +157,10 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? HasTvdbId { get; set; }
 
+        public MetadataProvider? ExternalProvider { get; set; }
+
+        public string? ExternalProviderId { get; set; }
+
         public bool? HasThemeSong { get; set; }
 
         public bool? HasThemeVideo { get; set; }
