@@ -36,7 +36,7 @@ public static class OrderMapper
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
             (ItemSortBy.DatePlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.LastPlayedDate,
             (ItemSortBy.PlayCount, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.PlayCount,
-            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.IsFavorite,
+            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
             (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
