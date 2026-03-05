@@ -50,6 +50,33 @@ public static class DescendantQueryHelper
     }
 
     /// <summary>
+    /// Gets all owned descendant IDs for multiple parent items in a single traversal.
+    /// More efficient than calling <see cref="GetOwnedDescendantIds"/> per parent because
+    /// it performs one traversal for all seeds instead of N separate traversals.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="parentIds">Parent item IDs.</param>
+    /// <returns>Set of all owned descendant item IDs (excluding the parent IDs themselves).</returns>
+    public static HashSet<Guid> GetOwnedDescendantIdsBatch(JellyfinDbContext context, IReadOnlyList<Guid> parentIds)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(parentIds);
+
+        if (parentIds.Count == 0)
+        {
+            return [];
+        }
+
+        var seedSet = new HashSet<Guid>(parentIds);
+        var descendants = TraverseHierarchyDownOwned(context, seedSet);
+
+        // Remove the seed IDs — callers want only descendants
+        descendants.ExceptWith(seedSet);
+
+        return descendants;
+    }
+
+    /// <summary>
     /// Gets a queryable of all folder IDs that have any descendant matching the specified criteria.
     /// Can be used in LINQ .Contains() expressions.
     /// </summary>

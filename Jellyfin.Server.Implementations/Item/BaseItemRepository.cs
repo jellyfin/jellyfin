@@ -123,7 +123,7 @@ public sealed class BaseItemRepository
 
         // Use owned-only traversal (AncestorIds) to avoid deleting items that are merely
         // linked via LinkedChildren (e.g. movies/series inside a BoxSet are associations, not owned children).
-        var descendantIds = ids.SelectMany(f => DescendantQueryHelper.GetOwnedDescendantIds(context, f)).ToHashSet();
+        var descendantIds = DescendantQueryHelper.GetOwnedDescendantIdsBatch(context, ids);
         foreach (var id in ids)
         {
             descendantIds.Add(id);
@@ -306,7 +306,7 @@ public sealed class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
+        result.Items = dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -335,10 +335,9 @@ public sealed class BaseItemRepository
             }
 
             var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
-                .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-                .Where(dto => dto is not null)
+                .Where(dto => dto != null)
                 .ToDictionary(i => i!.Id);
 
             return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
@@ -346,7 +345,7 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto is not null).ToArray()!;
+        return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
     }
 
     /// <inheritdoc/>
@@ -361,7 +360,7 @@ public sealed class BaseItemRepository
             return [];
         }
 
-        var limit = filter.Limit ?? 50;
+        var limit = filter.Limit;
         using var context = _dbProvider.CreateDbContext();
 
         var baseQuery = PrepareItemQuery(context, filter);
@@ -393,44 +392,52 @@ public sealed class BaseItemRepository
             .Where(groupKeyFilter)
             .GroupBy(groupKeySelector)
             .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
-            .OrderByDescending(g => g.MaxDate)
-            .Take(limit)
-            .Select(g => g.GroupKey)
-            .ToList();
+            .OrderByDescending(g => g.MaxDate);
+
+        if (filter.Limit.HasValue)
+        {
+            topGroupKeys = topGroupKeys.Take(filter.Limit.Value).OrderByDescending(g => g.MaxDate);
+        }
 
         // Get only the first (most recent) item ID per group using a lightweight projection,
         // then fetch full entities only for those items. This avoids loading all versions/tracks
         // with expensive navigation properties just to discard duplicates.
+        var topGroupKeyList = topGroupKeys.Select(g => g.GroupKey).ToList();
+        // ThenByDescending(Id) is a tiebreaker for deterministic ordering when multiple items
+        // share the same DateCreated timestamp — without it, SQL returns arbitrary order across queries.
         var allItemsLite = collectionType switch
         {
             CollectionType.movies => baseQuery
-                .Where(e => e.PresentationUniqueKey != null && topGroupKeys.Contains(e.PresentationUniqueKey))
+                .Where(e => e.PresentationUniqueKey != null && topGroupKeyList.Contains(e.PresentationUniqueKey))
                 .OrderByDescending(e => e.DateCreated)
                 .ThenByDescending(e => e.Id)
                 .Select(e => new { e.Id, GroupKey = e.PresentationUniqueKey })
-                .ToList(),
+                .AsEnumerable(),
             _ => baseQuery
-                .Where(e => e.Album != null && topGroupKeys.Contains(e.Album))
+                .Where(e => e.Album != null && topGroupKeyList.Contains(e.Album))
                 .OrderByDescending(e => e.DateCreated)
                 .ThenByDescending(e => e.Id)
                 .Select(e => new { e.Id, GroupKey = e.Album })
-                .ToList()
+                .AsEnumerable()
         };
 
+        // Client-side DistinctBy: EF Core/SQLite cannot reliably translate
+        // GroupBy(...).Select(g => g.First()) to SQL. The projection is lightweight
+        // (only Id + GroupKey for ~50 items), so client-side dedup is negligible.
         var firstIds = allItemsLite
             .DistinctBy(e => e.GroupKey)
             .Select(e => e.Id)
-            .ToList();
+            .AsEnumerable();
 
         var itemsQuery = context.BaseItems.AsNoTracking().Where(e => firstIds.Contains(e.Id));
-        itemsQuery = ApplyNavigations(itemsQuery, filter).AsSingleQuery();
+        itemsQuery = ApplyNavigations(itemsQuery, filter);
 
         return itemsQuery
-            .AsEnumerable()
             .OrderByDescending(e => e.DateCreated)
             .ThenByDescending(e => e.Id)
+            .AsEnumerable()
             .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-            .Where(dto => dto is not null)
+            .Where(dto => dto != null)
             .ToArray()!;
     }
 
@@ -458,7 +465,7 @@ public sealed class BaseItemRepository
     /// <param name="filter">The query filter options.</param>
     /// <param name="limit">Maximum number of items to return.</param>
     /// <returns>A list of BaseItemDto representing the latest TV content.</returns>
-    private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int limit)
+    private IReadOnlyList<BaseItemDto> GetLatestTvShowItems(JellyfinDbContext context, IQueryable<BaseItemEntity> baseQuery, InternalItemsQuery filter, int? limit)
     {
         // Episodes added within this window are considered "recently added together"
         const double RecentAdditionWindowHours = 24.0;
@@ -468,22 +475,24 @@ public sealed class BaseItemRepository
             .Where(e => e.SeriesName != null)
             .GroupBy(e => e.SeriesName)
             .Select(g => new { SeriesName = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
-            .OrderByDescending(g => g.MaxDate)
-            .Take(limit)
-            .ToList();
+            .OrderByDescending(g => g.MaxDate);
 
-        var topSeriesNames = topSeriesWithDates.Select(g => g.SeriesName).ToList();
+        if (limit.HasValue)
+        {
+            topSeriesWithDates = topSeriesWithDates.Take(limit.Value).OrderByDescending(g => g.MaxDate);
+        }
+
+        var topSeriesNames = topSeriesWithDates.Select(g => g.SeriesName).AsEnumerable();
 
         // Compute a global date cutoff: the oldest series' max date minus the window.
         // Episodes before this cutoff cannot be in any series' "recent additions" window,
         // so we can safely exclude them to avoid loading ancient episodes.
-        var globalCutoff = topSeriesWithDates.Count > 0
+        var globalCutoff = topSeriesWithDates.Any()
             ? topSeriesWithDates.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
             : null;
 
         // Fetch only the columns needed for analysis (lightweight projection).
-        var episodeQuery = baseQuery
-            .Where(e => e.SeriesName != null && topSeriesNames.Contains(e.SeriesName));
+        var episodeQuery = baseQuery.Where(e => e.SeriesName != null && topSeriesNames.Contains(e.SeriesName));
         if (globalCutoff is not null)
         {
             episodeQuery = episodeQuery.Where(e => e.DateCreated >= globalCutoff);
@@ -493,7 +502,7 @@ public sealed class BaseItemRepository
             .OrderByDescending(e => e.DateCreated)
             .ThenByDescending(e => e.Id)
             .Select(e => new { e.Id, e.SeriesName, e.DateCreated, e.SeasonId, e.SeriesId })
-            .ToList();
+            .AsEnumerable();
 
         // Collect all season/series IDs we'll need to look up for count information
         var allSeasonIds = new HashSet<Guid>();
@@ -570,7 +579,12 @@ public sealed class BaseItemRepository
                 .ToDictionary(x => x.SeriesId, x => x.Count)
             : [];
 
-        // Step 5: Apply the container selection logic for each series
+        // Step 5: Apply the container selection logic for each series.
+        // For each series, decide which entity best represents the recent additions:
+        //   - 1 episode added → show the Episode itself
+        //   - Multiple episodes in 1 season (multi-season series) → show the Season
+        //   - Multiple episodes in 1 season (single-season series) → show the Series
+        //   - Episodes across multiple seasons → show the Series
         var entitiesToFetch = new HashSet<Guid>();
         var seriesResults = new List<(Guid? SeasonId, Guid? SeriesId, DateTime MaxDate, Guid MostRecentEpisodeId)>(analysisData.Count);
 
@@ -653,10 +667,19 @@ public sealed class BaseItemRepository
             }
         }
 
-        return results
+        var finalResults = results
             .OrderByDescending(r => r.MaxDate)
-            .ThenByDescending(r => r.Entity.Id)
-            .Take(limit)
+            .ThenByDescending(r => r.Entity.Id);
+
+        if (limit.HasValue)
+        {
+            finalResults = finalResults
+            .Take(limit.Value)
+            .OrderByDescending(r => r.MaxDate)
+            .ThenByDescending(r => r.Entity.Id);
+        }
+
+        return finalResults
             .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
             .Where(dto => dto is not null)
             .ToArray()!;
@@ -758,6 +781,12 @@ public sealed class BaseItemRepository
                 .ToDictionary(x => x.SeriesKey, x => x.LastWatchedId);
         }
 
+        // Two-query pattern: The queries above use GroupBy(...).Select(g => g.OrderBy(...).First())
+        // to pick the single best episode ID per series. EF Core ignores .Include() calls when the
+        // query shape changes through GroupBy/Select projections (see dotnet/efcore#13450),
+        // so navigation properties (Images, Providers, etc.) cannot be loaded in that query.
+        // We first identify which episode IDs we need, then fetch full entities with nav props
+        // only for those few items (~1 per series).
         var allLastWatchedIds = lastWatchedInfo.Values
             .Concat(lastWatchedByDateInfo.Values)
             .Where(id => id != Guid.Empty)
@@ -767,7 +796,7 @@ public sealed class BaseItemRepository
         if (allLastWatchedIds.Count > 0)
         {
             var lwQuery = context.BaseItems.AsNoTracking().Where(e => allLastWatchedIds.Contains(e.Id));
-            lwQuery = ApplyNavigations(lwQuery, filter).AsSingleQuery();
+            lwQuery = ApplyNavigations(lwQuery, filter);
             lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
         }
 
@@ -1752,7 +1781,6 @@ public sealed class BaseItemRepository
                         ? context.BaseItems
                             .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
                             .Select(e => new { e.Path, e.Id })
-                            .AsEnumerable()
                             .GroupBy(e => e.Path!)
                             .ToDictionary(g => g.Key, g => g.First().Id)
                         : [];
@@ -1851,7 +1879,6 @@ public sealed class BaseItemRepository
                         var pathToIdMap = context.BaseItems
                             .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
                             .Select(e => new { e.Path, e.Id })
-                            .AsEnumerable()
                             .GroupBy(e => e.Path!)
                             .ToDictionary(g => g.Key, g => g.First().Id);
 
@@ -2643,9 +2670,9 @@ public sealed class BaseItemRepository
             [
                 .. query
                     .AsEnumerable()
-                    .Where(e => e is not null)
+                    .Where(e => e != null)
                     .Select(e => DeserializeBaseItem(e, filter.SkipDeserialization))
-                    .Where(item => item is not null)
+                    .Where(item => item != null)
                     .Select(item => (item!, (ItemCounts?)null))
             ];
         }
@@ -3308,38 +3335,20 @@ public sealed class BaseItemRepository
 
         if (filter.IsLiked.HasValue)
         {
-            if (filter.IsLiked.Value)
-            {
-                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue));
-            }
-            else
-            {
-                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue));
-            }
+            var isLiked = filter.IsLiked.Value;
+            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.Rating >= UserItemData.MinLikeValue) == isLiked);
         }
 
         if (filter.IsFavoriteOrLiked.HasValue)
         {
-            if (filter.IsFavoriteOrLiked.Value)
-            {
-                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
-            }
-            else
-            {
-                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
-            }
+            var isFavoriteOrLiked = filter.IsFavoriteOrLiked.Value;
+            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavoriteOrLiked);
         }
 
         if (filter.IsFavorite.HasValue)
         {
-            if (filter.IsFavorite.Value)
-            {
-                baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
-            }
-            else
-            {
-                baseQuery = baseQuery.Where(e => !e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite));
-            }
+            var isFavorite = filter.IsFavorite.Value;
+            baseQuery = baseQuery.Where(e => e.UserData!.Any(ud => ud.UserId == filter.User!.Id && ud.IsFavorite) == isFavorite);
         }
 
         if (filter.IsPlayed.HasValue)
@@ -3357,17 +3366,10 @@ public sealed class BaseItemRepository
                         episode => episode.Id,
                         ud => ud.ItemId,
                         (episode, ud) => episode.SeriesId!.Value)
-                    .Distinct()
-                    .ToList();
+                    .Distinct();
 
-                if (filter.IsPlayed.Value)
-                {
-                    baseQuery = baseQuery.Where(s => playedSeriesIdList.Contains(s.Id));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(s => !playedSeriesIdList.Contains(s.Id));
-                }
+                var isPlayed = filter.IsPlayed.Value;
+                baseQuery = baseQuery.Where(s => playedSeriesIdList.Contains(s.Id) == isPlayed);
             }
             else if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
@@ -3375,31 +3377,18 @@ public sealed class BaseItemRepository
                 var playedCounts = GetPlayedAndTotalCountBatch(boxSetIds, filter.User!);
                 var playedBoxSetIds = playedCounts
                     .Where(kvp => kvp.Value.Total > 0 && kvp.Value.Played == kvp.Value.Total)
-                    .Select(kvp => kvp.Key)
-                    .ToList();
+                    .Select(kvp => kvp.Key);
 
-                if (filter.IsPlayed.Value)
-                {
-                    baseQuery = baseQuery.Where(s => playedBoxSetIds.Contains(s.Id));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(s => !playedBoxSetIds.Contains(s.Id));
-                }
+                var isPlayedBoxSet = filter.IsPlayed.Value;
+                baseQuery = baseQuery.Where(s => playedBoxSetIds.Contains(s.Id) == isPlayedBoxSet);
             }
             else
             {
                 var playedItemIds = context.UserData
                     .Where(ud => ud.UserId == filter.User!.Id && ud.Played)
                     .Select(ud => ud.ItemId);
-                if (filter.IsPlayed.Value)
-                {
-                    baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id));
-                }
-                else
-                {
-                    baseQuery = baseQuery.Where(e => !playedItemIds.Contains(e.Id));
-                }
+                var isPlayedItem = filter.IsPlayed.Value;
+                baseQuery = baseQuery.Where(e => playedItemIds.Contains(e.Id) == isPlayedItem);
             }
         }
 
@@ -3408,14 +3397,8 @@ public sealed class BaseItemRepository
             var resumableItemIds = context.UserData
                 .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
                 .Select(ud => ud.ItemId);
-            if (filter.IsResumable.Value)
-            {
-                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id));
-            }
-            else
-            {
-                baseQuery = baseQuery.Where(e => !resumableItemIds.Contains(e.Id));
-            }
+            var isResumable = filter.IsResumable.Value;
+            baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
         }
 
         if (filter.ArtistIds.Length > 0)
@@ -3508,27 +3491,7 @@ public sealed class BaseItemRepository
         Expression<Func<BaseItemEntity, bool>>? maxParentalRatingFilter = null;
         if (filter.MaxParentalRating != null)
         {
-            var max = filter.MaxParentalRating;
-            var maxScore = max.Score;
-            var maxSubScore = max.SubScore ?? 0;
-            var linkedChildren = context.LinkedChildren;
-
-            maxParentalRatingFilter = e =>
-                // Item has a rating: check against limit
-                (e.InheritedParentalRatingValue != null
-                    && (e.InheritedParentalRatingValue < maxScore
-                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
-                // Item has no rating
-                || (e.InheritedParentalRatingValue == null
-                    && (
-                        // No linked children (not a BoxSet/Playlist): pass as unrated
-                        !linkedChildren.Any(lc => lc.ParentId == e.Id)
-                        // Has linked children: at least one child must be within limits
-                        || linkedChildren.Any(lc => lc.ParentId == e.Id
-                            && (lc.Child!.InheritedParentalRatingValue == null
-                                || lc.Child.InheritedParentalRatingValue < maxScore
-                                || (lc.Child.InheritedParentalRatingValue == maxScore
-                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
+            maxParentalRatingFilter = BuildMaxParentalRatingFilter(context, filter.MaxParentalRating);
         }
 
         if (filter.HasParentalRating ?? false)
@@ -4040,29 +4003,22 @@ public sealed class BaseItemRepository
             if (targetItem is not null)
             {
                 var targetSortName = targetItem.SortName ?? string.Empty;
-                var prevId = context.BaseItems
+
+                // Fetch both prev and next adjacent items in a single query using Concat (UNION ALL).
+                var adjacentIds = context.BaseItems
                     .Where(e => string.Compare(e.SortName, targetSortName) < 0)
                     .OrderByDescending(e => e.SortName)
                     .Select(e => e.Id)
-                    .FirstOrDefault();
+                    .Take(1)
+                    .Concat(
+                        context.BaseItems
+                            .Where(e => string.Compare(e.SortName, targetSortName) > 0)
+                            .OrderBy(e => e.SortName)
+                            .Select(e => e.Id)
+                            .Take(1))
+                    .ToList();
 
-                var nextId = context.BaseItems
-                    .Where(e => string.Compare(e.SortName, targetSortName) > 0)
-                    .OrderBy(e => e.SortName)
-                    .Select(e => e.Id)
-                    .FirstOrDefault();
-
-                var adjacentIds = new List<Guid> { adjacentToId };
-                if (prevId != Guid.Empty)
-                {
-                    adjacentIds.Add(prevId);
-                }
-
-                if (nextId != Guid.Empty)
-                {
-                    adjacentIds.Add(nextId);
-                }
-
+                adjacentIds.Add(adjacentToId);
                 baseQuery = baseQuery.Where(e => adjacentIds.Contains(e.Id));
             }
         }
@@ -4243,7 +4199,8 @@ public sealed class BaseItemRepository
     private static (int Played, int Total) GetPlayedAndTotalCountFromQuery(IQueryable<BaseItemEntity> query, Guid userId)
     {
         // GroupBy with a constant key aggregates all rows into a single group for server-side counting.
-        // OrderBy is required before FirstOrDefault to avoid EF Core warnings about unpredictable results.
+        // OrderBy(g => g.Key) is required before FirstOrDefault to suppress EF Core warnings
+        // about unpredictable results when using FirstOrDefault without an explicit ordering.
         var result = query
             .Select(b => b.UserData!.Any(u => u.UserId == userId && u.Played))
             .GroupBy(_ => 1)
@@ -4253,7 +4210,6 @@ public sealed class BaseItemRepository
                 Total = g.Count(),
                 Played = g.Count(isPlayed => isPlayed)
             })
-            .OrderBy(_ => 1)
             .FirstOrDefault();
 
         return result is null ? (0, 0) : (result.Played, result.Total);
@@ -4340,25 +4296,7 @@ public sealed class BaseItemRepository
         // Apply parental rating filtering
         if (filter.MaxParentalRating is not null)
         {
-            var maxScore = filter.MaxParentalRating.Score;
-            var maxSubScore = filter.MaxParentalRating.SubScore ?? 0;
-
-            baseQuery = baseQuery.Where(e =>
-                // Item has a rating: check against limit
-                (e.InheritedParentalRatingValue != null
-                    && (e.InheritedParentalRatingValue < maxScore
-                        || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
-                // Item has no rating
-                || (e.InheritedParentalRatingValue == null
-                    && (
-                        // No linked children (not a BoxSet/Playlist): pass as unrated
-                        !context.LinkedChildren.Any(lc => lc.ParentId == e.Id)
-                        // Has linked children: at least one child must be within limits
-                        || context.LinkedChildren.Any(lc => lc.ParentId == e.Id
-                            && (lc.Child!.InheritedParentalRatingValue == null
-                                || lc.Child.InheritedParentalRatingValue < maxScore
-                                || (lc.Child.InheritedParentalRatingValue == maxScore
-                                    && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore))))));
+            baseQuery = baseQuery.Where(BuildMaxParentalRatingFilter(context, filter.MaxParentalRating));
         }
 
         // Apply block unrated items filtering
@@ -4503,5 +4441,35 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
+    }
+
+    /// <summary>
+    /// Builds a filter expression for max parental rating that handles both rated items
+    /// and unrated BoxSets/Playlists (which check linked children's ratings).
+    /// </summary>
+    private static Expression<Func<BaseItemEntity, bool>> BuildMaxParentalRatingFilter(
+        JellyfinDbContext context,
+        ParentalRatingScore maxRating)
+    {
+        var maxScore = maxRating.Score;
+        var maxSubScore = maxRating.SubScore ?? 0;
+        var linkedChildren = context.LinkedChildren;
+
+        return e =>
+            // Item has a rating: check against limit
+            (e.InheritedParentalRatingValue != null
+                && (e.InheritedParentalRatingValue < maxScore
+                    || (e.InheritedParentalRatingValue == maxScore && (e.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))
+            // Item has no rating
+            || (e.InheritedParentalRatingValue == null
+                && (
+                    // No linked children (not a BoxSet/Playlist): pass as unrated
+                    !linkedChildren.Any(lc => lc.ParentId == e.Id)
+                    // Has linked children: at least one child must be within limits
+                    || linkedChildren.Any(lc => lc.ParentId == e.Id
+                        && (lc.Child!.InheritedParentalRatingValue == null
+                            || lc.Child.InheritedParentalRatingValue < maxScore
+                            || (lc.Child.InheritedParentalRatingValue == maxScore
+                                && (lc.Child.InheritedParentalRatingSubValue ?? 0) <= maxSubScore)))));
     }
 }
