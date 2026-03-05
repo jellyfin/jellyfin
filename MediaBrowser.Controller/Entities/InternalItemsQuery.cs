@@ -360,6 +360,12 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? HasOwnerId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include items with an OwnerId
+        /// (additional parts, alternate versions) that are normally excluded from general queries.
+        /// </summary>
+        public bool IncludeOwnedItems { get; set; }
+
         public bool? Is4K { get; set; }
 
         public int? MaxHeight { get; set; }

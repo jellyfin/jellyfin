@@ -3583,7 +3583,7 @@ public sealed class BaseItemRepository
                     .Where(e => e.OwnerId == null);
             }
         }
-        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0)
+        else if (filter.OwnerIds.Length == 0 && filter.ExtraTypes.Length == 0 && !filter.IncludeOwnedItems)
         {
             // Exclude alternate versions from general queries. Alternate versions have
             // OwnerId set (pointing to their primary) but no ExtraType.
