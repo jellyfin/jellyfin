@@ -537,6 +537,17 @@ namespace MediaBrowser.Controller.Entities
                     return;
                 }
 
+                // Ensure parts use the expected base type (e.g. Video, not Movie)
+                if (video.GetType() != itemType && Activator.CreateInstance(itemType) is Video correctVideo)
+                {
+                    correctVideo.Path = video.Path;
+                    correctVideo.Name = video.Name;
+                    correctVideo.VideoType = video.VideoType;
+                    correctVideo.ProductionYear = video.ProductionYear;
+                    correctVideo.ExtraType = video.ExtraType;
+                    video = correctVideo;
+                }
+
                 video.Id = id;
                 video.OwnerId = Id;
                 LibraryManager.CreateItem(video, parentFolder);
