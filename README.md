@@ -179,6 +179,10 @@ This repository also includes unit tests that are used to validate functionality
 
 The following sections describe some more advanced scenarios for running the server from source that build upon the standard instructions above.
 
+#### Playback Inhibitors
+
+The server can prevent system shutdown, sleep, and suspend during active playback when enabled in the admin dashboard. This feature is supported on Windows, Linux (via systemd-inhibit), and macOS (via IOPMAssertion). Other platforms will log a warning and skip inhibitor activation.
+
 #### Hosting The Web Client Separately
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.

@@ -69,6 +69,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// </summary>
     public bool EnableMetrics { get; set; } = false;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether playback should inhibit system shutdown, sleep, and suspend.
+    /// </summary>
+    public bool EnablePlaybackInhibitors { get; set; } = false;
+
     public bool EnableNormalizedItemByNameIds { get; set; } = true;
 
     /// <summary>

@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.Power;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
 using Jellyfin.LiveTv.Extensions;
@@ -133,6 +134,7 @@ namespace Jellyfin.Server
             services.AddHostedService<LibraryChangedNotifier>();
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
+            services.AddHostedService<PlaybackInhibitorService>();
         }
 
         /// <summary>
