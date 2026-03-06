@@ -3,14 +3,14 @@
     "supportsSubScores": true,
     "ratings": [
         {
-            "ratingStrings": ["E", "G", "TV-Y", "TV-G"],
+            "ratingStrings": ["C", "E", "G", "TV-Y", "TV-G"],
             "ratingScore": {
                 "score": 0,
                 "subScore": 0
             }
         },
         {
-            "ratingStrings": ["TV-Y7"],
+            "ratingStrings": ["C8", "TV-Y7"],
             "ratingScore": {
                 "score": 7,
                 "subScore": 0

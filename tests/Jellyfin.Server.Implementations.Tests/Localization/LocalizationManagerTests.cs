@@ -134,6 +134,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        [InlineData("CA-C", "CA", 0, 0)]
+        [InlineData("CA-C8", "CA", 7, 0)]
+        [InlineData("CA-G", "CA", 0, 0)]
+        [InlineData("CA-PG", "CA", 9, 0)]
+        [InlineData("CA-14A", "CA", 14, 0)]
+        [InlineData("CA-18A", "CA", 18, 0)]
         [InlineData("CA-R", "CA", 18, 1)]
         [InlineData("FSK-16", "DE", 16, null)]
         [InlineData("FSK-18", "DE", 18, null)]
