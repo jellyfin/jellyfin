@@ -74,9 +74,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     /// <inheritdoc />
     public void UpdatePeople(Guid itemId, IReadOnlyList<PersonInfo> people)
     {
-        foreach (var item in people.Where(e => e.Role is null))
+        foreach (var person in people)
         {
-            item.Role = string.Empty;
+            person.Name = person.Name.Trim();
+            person.Role = person.Role?.Trim() ?? string.Empty;
         }
 
         // multiple metadata providers can provide the _same_ person

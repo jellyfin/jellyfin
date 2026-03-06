@@ -104,7 +104,7 @@
     "TaskCleanLogsDescription": "Esborra els registres que tinguin més de {0} dies.",
     "TaskCleanLogs": "Neteja dels registres",
     "TaskRefreshLibraryDescription": "Escaneja les mediateques, a la cerca de fitxers nous i refresca les metadades.",
-    "TaskRefreshLibrary": "Escaneig de les mediateques",
+    "TaskRefreshLibrary": "Escaneja la mediateca",
     "TaskRefreshChapterImagesDescription": "Creació de les miniatures dels vídeos que tinguin capítols.",
     "TaskRefreshChapterImages": "Extracció de les imatges dels capítols",
     "TaskCleanCacheDescription": "Eliminació de la memòria cau no necessària per al servidor.",

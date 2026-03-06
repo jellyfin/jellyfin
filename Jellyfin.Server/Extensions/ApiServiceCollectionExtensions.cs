@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
@@ -26,7 +26,6 @@ using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -34,9 +33,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
@@ -208,7 +205,7 @@ namespace Jellyfin.Server.Extensions
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(version)
+                            new JsonNodeExtension(JsonValue.Create(version))
                         }
                     }
                 });
@@ -262,6 +259,7 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
+                c.DocumentFilter<SecuritySchemeReferenceFixupFilter>();
             })
             .Replace(ServiceDescriptor.Transient<ISwaggerProvider, CachingOpenApiProvider>());
         }
@@ -333,10 +331,10 @@ namespace Jellyfin.Server.Extensions
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
-                    Type = "object",
+                    Type = JsonSchemaType.Object,
                     AdditionalProperties = new OpenApiSchema
                     {
-                        Type = "string"
+                        Type = JsonSchemaType.String
                     }
                 });
 
@@ -344,18 +342,17 @@ namespace Jellyfin.Server.Extensions
             options.MapType<Dictionary<string, string?>>(() =>
                 new OpenApiSchema
                 {
-                    Type = "object",
+                    Type = JsonSchemaType.Object,
                     AdditionalProperties = new OpenApiSchema
                     {
-                        Type = "string",
-                        Nullable = true
+                        Type = JsonSchemaType.String | JsonSchemaType.Null
                     }
                 });
 
             // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.
             options.MapType<Version>(() => new OpenApiSchema
             {
-                Type = "string"
+                Type = JsonSchemaType.String
             });
         }
     }

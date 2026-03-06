@@ -464,6 +464,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         SqliteConnection.ClearAllPools();
 
+        using (var checkpointConnection = new SqliteConnection($"Filename={libraryDbPath}"))
+        {
+            checkpointConnection.Open();
+            using var cmd = checkpointConnection.CreateCommand();
+            cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            cmd.ExecuteNonQuery();
+        }
+
+        SqliteConnection.ClearAllPools();
+
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
     }
@@ -1163,7 +1173,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 Item = null!,
                 ProviderId = e[0],
                 ProviderValue = string.Join('|', e.Skip(1))
-            }).ToArray();
+            })
+            .DistinctBy(e => e.ProviderId)
+            .ToArray();
         }
 
         if (reader.TryGetString(index++, out var imageInfos))

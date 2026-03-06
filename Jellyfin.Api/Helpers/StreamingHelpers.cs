@@ -268,7 +268,7 @@ public static class StreamingHelpers
         Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
         foreach (var param in queryString)
         {
-            if (char.IsLower(param.Key[0]))
+            if (param.Key.Length > 0 && char.IsLower(param.Key[0]))
             {
                 // This was probably not parsed initially and should be a StreamOptions
                 // or the generated URL should correctly serialize it

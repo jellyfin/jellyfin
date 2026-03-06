@@ -39,6 +39,23 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         public void GetFrameRate_Success(string value, float? expected)
             => Assert.Equal(expected, ProbeResultNormalizer.GetFrameRate(value));
 
+        [Theory]
+        [InlineData("1:1", true)]
+        [InlineData("3201:3200", true)]
+        [InlineData("1215:1216", true)]
+        [InlineData("1001:1000", true)]
+        [InlineData("16:15", false)]
+        [InlineData("8:9", false)]
+        [InlineData("32:27", false)]
+        [InlineData("10:11", false)]
+        [InlineData("64:45", false)]
+        [InlineData("4:3", false)]
+        [InlineData("0:1", false)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        public void IsNearSquarePixelSar_DetectsCorrectly(string? sar, bool expected)
+            => Assert.Equal(expected, ProbeResultNormalizer.IsNearSquarePixelSar(sar));
+
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
@@ -123,6 +140,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(358, res.VideoStream.Height);
             Assert.Equal(720, res.VideoStream.Width);
             Assert.Equal("2.40:1", res.VideoStream.AspectRatio);
+            Assert.True(res.VideoStream.IsAnamorphic); // SAR 32:27 — genuinely anamorphic NTSC DVD 16:9
             Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
             Assert.Equal(31d, res.VideoStream.Level);
             Assert.Equal(1, res.VideoStream.RefFrames);
