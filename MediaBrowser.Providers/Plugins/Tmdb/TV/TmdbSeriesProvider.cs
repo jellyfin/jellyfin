@@ -426,14 +426,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private static TvGroupType? MapDisplayOrderToTvGroupType(string? displayOrder)
         {
-            return string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
-                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
-                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
-                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
-                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
-                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
-                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
-                null;
+            return displayOrder switch
+            {
+                "originalAirDate" => TvGroupType.OriginalAirDate,
+                "absolute" => TvGroupType.Absolute,
+                "dvd" => TvGroupType.DVD,
+                "digital" => TvGroupType.Digital,
+                "storyArc" => TvGroupType.StoryArc,
+                "production" => TvGroupType.Production,
+                "tv" => TvGroupType.TV,
+                _ => null,
+            };
         }
 
         private static void WithDisplayOrder(TvShow searchResult, IHasProviderIds providerIds, SeriesInfo search)
