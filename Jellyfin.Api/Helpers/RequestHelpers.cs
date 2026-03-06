@@ -152,6 +152,69 @@ public static class RequestHelpers
         return session.Id;
     }
 
+    /// <summary>
+    /// Applies <see cref="ItemFilter"/> values to an <see cref="InternalItemsQuery"/>.
+    /// When contradictory filters are present (e.g. both <see cref="ItemFilter.IsFolder"/>
+    /// and <see cref="ItemFilter.IsNotFolder"/>), the conflicting constraint is left unset
+    /// so that neither side wins and all items are returned regardless of folder status.
+    /// </summary>
+    /// <param name="query">The query to apply filters to.</param>
+    /// <param name="filters">The filters to apply.</param>
+    internal static void ApplyItemFilterConstraints(InternalItemsQuery query, IReadOnlyList<ItemFilter> filters)
+    {
+        // Pre-scan for contradictory pairs so we can skip them.
+        var hasIsFolder = false;
+        var hasIsNotFolder = false;
+
+        for (var i = 0; i < filters.Count; i++)
+        {
+            if (filters[i] == ItemFilter.IsFolder)
+            {
+                hasIsFolder = true;
+            }
+            else if (filters[i] == ItemFilter.IsNotFolder)
+            {
+                hasIsNotFolder = true;
+            }
+        }
+
+        var skipFolderFilter = hasIsFolder && hasIsNotFolder;
+
+        for (var i = 0; i < filters.Count; i++)
+        {
+            switch (filters[i])
+            {
+                case ItemFilter.Dislikes:
+                    query.IsLiked = false;
+                    break;
+                case ItemFilter.IsFavorite:
+                    query.IsFavorite = true;
+                    break;
+                case ItemFilter.IsFavoriteOrLikes:
+                    query.IsFavoriteOrLiked = true;
+                    break;
+                case ItemFilter.IsFolder when !skipFolderFilter:
+                    query.IsFolder = true;
+                    break;
+                case ItemFilter.IsNotFolder when !skipFolderFilter:
+                    query.IsFolder = false;
+                    break;
+                case ItemFilter.IsPlayed:
+                    query.IsPlayed = true;
+                    break;
+                case ItemFilter.IsResumable:
+                    query.IsResumable = true;
+                    break;
+                case ItemFilter.IsUnplayed:
+                    query.IsPlayed = false;
+                    break;
+                case ItemFilter.Likes:
+                    query.IsLiked = true;
+                    break;
+            }
+        }
+    }
+
     internal static QueryResult<BaseItemDto> CreateQueryResult(
         QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result,
         DtoOptions dtoOptions,

@@ -6,7 +6,9 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Querying;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -94,6 +96,91 @@ namespace Jellyfin.Api.Tests.Helpers
             var principal = new ClaimsPrincipal(identity);
 
             Assert.Throws<SecurityException>(() => RequestHelpers.GetUserId(principal, requestUserId));
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_IsFolderOnly_SetsIsFolderTrue()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsFolder };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.True(query.IsFolder);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_IsNotFolderOnly_SetsIsFolderFalse()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsNotFolder };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.False(query.IsFolder);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_BothIsFolderAndIsNotFolder_LeavesIsFolderNull()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsFolder, ItemFilter.IsNotFolder };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.Null(query.IsFolder);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_BothIsFolderAndIsNotFolder_ReversedOrder_LeavesIsFolderNull()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsNotFolder, ItemFilter.IsFolder };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.Null(query.IsFolder);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_ContradictoryFolderFilters_OtherFiltersStillApplied()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsFolder, ItemFilter.IsNotFolder, ItemFilter.IsFavorite, ItemFilter.IsPlayed };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.Null(query.IsFolder);
+            Assert.True(query.IsFavorite);
+            Assert.True(query.IsPlayed);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_NoFilters_LeavesQueryUnchanged()
+        {
+            var query = new InternalItemsQuery();
+            var filters = Array.Empty<ItemFilter>();
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.Null(query.IsFolder);
+            Assert.Null(query.IsFavorite);
+            Assert.Null(query.IsPlayed);
+            Assert.Null(query.IsLiked);
+        }
+
+        [Fact]
+        public static void ApplyItemFilterConstraints_AllNonContradictoryFilters_AppliedCorrectly()
+        {
+            var query = new InternalItemsQuery();
+            var filters = new[] { ItemFilter.IsFavorite, ItemFilter.IsResumable, ItemFilter.Likes };
+
+            RequestHelpers.ApplyItemFilterConstraints(query, filters);
+
+            Assert.True(query.IsFavorite);
+            Assert.True(query.IsResumable);
+            Assert.True(query.IsLiked);
+            Assert.Null(query.IsFolder);
         }
 
         public static TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]> GetOrderBy_Success_TestData()
