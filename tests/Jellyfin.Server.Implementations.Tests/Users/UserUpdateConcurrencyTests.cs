@@ -133,13 +133,20 @@ public sealed class UserUpdateConcurrencyTests : IDisposable
         }
 
         // Step 3: simulate LogSessionActivity's UpdateUserAsync
-        user.LastActivityDate = DateTime.UtcNow;
+        var expectedDate = DateTime.UtcNow;
+        user.LastActivityDate = expectedDate;
         await using (var ctx2 = CreateDbContext())
         {
             ctx2.Users.Attach(user);
             ctx2.Entry(user).State = EntityState.Modified;
             await ctx2.SaveChangesAsync();
         }
+
+        // Verify the final update was persisted.
+        await using var verifyCtx = CreateDbContext();
+        var savedUser = await verifyCtx.Users.FindAsync(user.Id);
+        Assert.NotNull(savedUser);
+        Assert.Equal(expectedDate, savedUser!.LastActivityDate);
     }
 
     /// <summary>
