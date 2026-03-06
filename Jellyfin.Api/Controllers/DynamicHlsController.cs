@@ -1837,13 +1837,26 @@ public class DynamicHlsController : BaseJellyfinApiController
         // See if we can save come cpu cycles by avoiding encoding.
         if (EncodingHelper.IsCopyCodec(codec))
         {
-            // If h264_mp4toannexb is ever added, do not use it for live tv.
             if (state.VideoStream is not null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
             {
-                string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state, MediaStreamType.Video);
-                if (!string.IsNullOrEmpty(bitStreamArgs))
+                if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
                 {
-                    args += " " + bitStreamArgs;
+                    // TS segments require Annex B NAL format; apply format conversion and optional metadata removal.
+                    string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state, MediaStreamType.Video);
+                    if (!string.IsNullOrEmpty(bitStreamArgs))
+                    {
+                        args += " " + bitStreamArgs;
+                    }
+                }
+                else
+                {
+                    // fMP4 segments use MP4 NAL format natively, no format conversion needed.
+                    // Still apply metadata removal if the client cannot handle DoVi or HDR10+.
+                    string metadataRemovalArgs = _encodingHelper.GetDynamicHdrMetadataRemovalBitStreamArgs(state);
+                    if (!string.IsNullOrEmpty(metadataRemovalArgs))
+                    {
+                        args += " " + metadataRemovalArgs;
+                    }
                 }
             }
 
