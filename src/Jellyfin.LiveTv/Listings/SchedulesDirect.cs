@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +22,7 @@ using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.LiveTv.Guide;
 using Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.LiveTv;
@@ -31,29 +33,44 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.LiveTv.Listings
 {
-    public class SchedulesDirect : IListingsProvider, IDisposable
+    public class SchedulesDirect : IListingsProvider, ISchedulesDirectService, IDisposable
     {
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
+        private const int CountryCacheDays = 7;
 
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IApplicationPaths _appPaths;
         private readonly AsyncNonKeyedLocker _tokenLock = new(1);
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
+        private bool _accountError;
         private bool _disposed = false;
+
+        private byte[] _countriesCache;
+        private DateOnly? _imageLimitHitDate;
+        private DateOnly? _metadataLimitHitDate;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IApplicationPaths appPaths)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _appPaths = appPaths;
+            _imageLimitHitDate = LoadDailyLimitDate(ImageLimitFilePath);
+            _metadataLimitHitDate = LoadDailyLimitDate(MetadataLimitFilePath);
         }
 
         /// <inheritdoc />
         public string Name => "Schedules Direct";
+
+        private string ImageLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-image-limit.txt");
+
+        private string MetadataLimitFilePath => Path.Combine(_appPaths.CachePath, "sd-metadata-limit.txt");
 
         /// <inheritdoc />
         public string Type => nameof(SchedulesDirect);
@@ -76,6 +93,11 @@ namespace Jellyfin.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (IsMetadataLimitActive())
+            {
+                return [];
+            }
+
             ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             // Normalize incoming input
@@ -149,7 +171,8 @@ namespace Jellyfin.LiveTv.Listings
                 var willBeCached = endDate.HasValue && endDate.Value < DateTime.UtcNow.AddDays(GuideManager.MaxCacheDays);
                 if (willBeCached && images is not null)
                 {
-                    var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId[..10]);
+                    var imageIndex = images.FindIndex(i =>
+                        i.ProgramId is not null && schedule.ProgramId.StartsWith(i.ProgramId, StringComparison.Ordinal));
                     if (imageIndex > -1)
                     {
                         var programEntry = programDict[schedule.ProgramId];
@@ -451,39 +474,57 @@ namespace Jellyfin.LiveTv.Listings
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
+            if (IsImageDailyLimitActive())
+            {
+                return [];
+            }
+
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (programIds.Count == 0)
+            if (string.IsNullOrEmpty(token) || programIds.Count == 0)
             {
                 return [];
             }
 
-            StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
-            foreach (var i in programIds)
+            // SD API accepts max 500 program IDs per request
+            const int BatchSize = 500;
+            var results = new List<ShowImagesDto>();
+            for (int i = 0; i < programIds.Count; i += BatchSize)
             {
-                str.Append('"')
-                    .Append(i[..10])
-                    .Append("\",");
+                var batch = programIds.Skip(i).Take(BatchSize);
+
+                using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs/");
+                message.Headers.TryAddWithoutValidation("token", token);
+                message.Content = JsonContent.Create(batch, options: _jsonOptions);
+
+                try
+                {
+                    var batchResult = await Request<IReadOnlyList<ShowImagesDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
+                    if (batchResult is not null)
+                    {
+                        foreach (var entry in batchResult)
+                        {
+                            if (entry.Code.HasValue)
+                            {
+                                _logger.LogWarning(
+                                    "Schedules Direct returned error for program {ProgramId}: code={Code}, message={Message}",
+                                    entry.ProgramId,
+                                    entry.Code,
+                                    entry.Message);
+                                continue;
+                            }
+
+                            results.Add(entry);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting image info from schedules direct");
+                }
             }
 
-            // Remove last ,
-            str.Length--;
-            str.Append(']');
-
-            using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs");
-            message.Headers.TryAddWithoutValidation("token", token);
-            message.Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json);
-
-            try
-            {
-                return await Request<IReadOnlyList<ShowImagesDto>>(message, true, info, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting image info from schedules direct");
-
-                return [];
-            }
+            return results;
         }
 
         public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
@@ -546,8 +587,14 @@ namespace Jellyfin.LiveTv.Listings
                 return null;
             }
 
-            // Avoid hammering SD
-            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 1)
+            // Permanent account error — SD is disabled for this server lifetime.
+            if (_accountError)
+            {
+                return null;
+            }
+
+            // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
+            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
             {
                 return null;
             }
@@ -579,7 +626,13 @@ namespace Jellyfin.LiveTv.Listings
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                    // For 4xx errors not already handled by Request<T>'s SD code logic
+                    // (e.g. unparseable response from the /token endpoint), apply a
+                    // temporary backoff to avoid hammering SD.
+                    if (!_accountError
+                        && ex.StatusCode.HasValue
+                        && (int)ex.StatusCode.Value >= 400
+                        && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
                         _lastErrorResponse = DateTime.UtcNow;
@@ -605,27 +658,75 @@ namespace Jellyfin.LiveTv.Listings
                 return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!enableRetry || (int)response.StatusCode >= 500)
-            {
-                _logger.LogError(
-                    "Request to {Url} failed with response {Response}",
-                    message.RequestUri,
-                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                throw new HttpRequestException(
-                    string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
-                    null,
-                    response.StatusCode);
+            // Try to extract the Schedules Direct error code from the response body.
+            SdErrorCode? sdCode = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(responseBody);
+                if (doc.RootElement.TryGetProperty("code", out var codeProp)
+                    && codeProp.TryGetInt32(out var parsedCode)
+                    && Enum.IsDefined((SdErrorCode)parsedCode))
+                {
+                    sdCode = (SdErrorCode)parsedCode;
+                }
+            }
+            catch (JsonException)
+            {
+                // Response body is not valid JSON; sdCode stays null.
             }
 
-            _tokens.Clear();
-            using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
-            retryMessage.Content = message.Content;
-            retryMessage.Headers.TryAddWithoutValidation(
-                "token",
-                await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
+            _logger.LogError(
+                "Request to {Url} failed with HTTP {StatusCode}, SD code {SdCode}: {Response}",
+                message.RequestUri,
+                (int)response.StatusCode,
+                sdCode?.ToString() ?? "N/A",
+                responseBody);
 
-            return await Request<T>(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            if (sdCode is SdErrorCode.InvalidUser or SdErrorCode.InvalidHash or SdErrorCode.AccountLocked or SdErrorCode.AccountExpired or SdErrorCode.PasswordRequired)
+            {
+                // Permanent account errors — disable SD for this server lifetime.
+                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart", sdCode);
+                _tokens.Clear();
+                _accountError = true;
+            }
+            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.TemporaryLockout)
+            {
+                // Transient login errors — back off for 30 minutes, then allow retry.
+                _tokens.Clear();
+                _lastErrorResponse = DateTime.UtcNow;
+            }
+            else if (sdCode is SdErrorCode.MaxImageDownloads)
+            {
+                // Max image downloads — stop image requests until SD resets at 00:00 UTC.
+                SetImageLimitHit();
+            }
+            else if (sdCode is SdErrorCode.MaxScheduleRequests)
+            {
+                // Max schedule/metadata requests — stop metadata requests until SD resets at 00:00 UTC.
+                SetMetadataLimitHit();
+            }
+            else if (enableRetry
+                && (int)response.StatusCode < 500
+                && (sdCode == SdErrorCode.TokenExpired || (response.StatusCode == HttpStatusCode.Forbidden && sdCode is null)))
+            {
+                // Token expired — clear tokens and retry with a fresh token.
+                // Also retry on 403 with no parseable SD code (legacy/unexpected auth failure).
+                _tokens.Clear();
+                using var retryMessage = new HttpRequestMessage(message.Method, message.RequestUri);
+                retryMessage.Content = message.Content;
+                retryMessage.Headers.TryAddWithoutValidation(
+                    "token",
+                    await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
+
+                return await Request<T>(retryMessage, false, providerInfo, cancellationToken).ConfigureAwait(false);
+            }
+
+            throw new HttpRequestException(
+                string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
+                null,
+                response.StatusCode);
         }
 
         private async Task<string> GetTokenInternal(
@@ -706,6 +807,147 @@ namespace Jellyfin.LiveTv.Listings
             }
         }
 
+        /// <inheritdoc />
+        public async Task<Stream> GetAvailableCountries(CancellationToken cancellationToken)
+        {
+            if (_countriesCache is not null)
+            {
+                return new MemoryStream(_countriesCache, writable: false);
+            }
+
+            var cachePath = Path.Combine(_appPaths.CachePath, "sd-countries.json");
+
+            if (File.Exists(cachePath)
+                && DateTime.UtcNow - File.GetLastWriteTimeUtc(cachePath) < TimeSpan.FromDays(CountryCacheDays))
+            {
+                try
+                {
+                    _countriesCache = await File.ReadAllBytesAsync(cachePath, cancellationToken).ConfigureAwait(false);
+                    return new MemoryStream(_countriesCache, writable: false);
+                }
+                catch (IOException)
+                {
+                    // Corrupt or unreadable — delete and re-fetch.
+                    TryDeleteFile(cachePath);
+                }
+            }
+
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            using var response = await client.GetAsync(new Uri(ApiUrl + "/available/countries"), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+            await File.WriteAllBytesAsync(cachePath, bytes, cancellationToken).ConfigureAwait(false);
+
+            _countriesCache = bytes;
+            return new MemoryStream(bytes, writable: false);
+        }
+
+        private static DateOnly? LoadDailyLimitDate(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                var text = File.ReadAllText(path).Trim();
+                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var date))
+                {
+                    var dateOnly = DateOnly.FromDateTime(date);
+                    if (dateOnly < DateOnly.FromDateTime(DateTime.UtcNow))
+                    {
+                        // Expired — clean up.
+                        File.Delete(path);
+                        return null;
+                    }
+
+                    return dateOnly;
+                }
+            }
+            catch (IOException)
+            {
+                // Corrupt or unreadable — delete and reset.
+                TryDeleteFile(path);
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc />
+        public bool IsImageDailyLimitActive()
+        {
+            if (!_imageLimitHitDate.HasValue)
+            {
+                return false;
+            }
+
+            if (_imageLimitHitDate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                _imageLimitHitDate = null;
+                TryDeleteFile(ImageLimitFilePath);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsMetadataLimitActive()
+        {
+            if (!_metadataLimitHitDate.HasValue)
+            {
+                return false;
+            }
+
+            if (_metadataLimitHitDate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                _metadataLimitHitDate = null;
+                TryDeleteFile(MetadataLimitFilePath);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SetImageLimitHit()
+        {
+            _imageLimitHitDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            PersistDailyLimitFile(ImageLimitFilePath);
+        }
+
+        private void SetMetadataLimitHit()
+        {
+            _metadataLimitHitDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            PersistDailyLimitFile(MetadataLimitFilePath);
+        }
+
+        private void PersistDailyLimitFile(string filePath)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                File.WriteAllText(filePath, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to persist SD daily limit to {Path}", filePath);
+            }
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (IOException)
+            {
+                // Best effort.
+            }
+        }
+
         public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
             if (validateLogin)
@@ -735,11 +977,17 @@ namespace Jellyfin.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var listingsId = info.ListingsId;
-            ArgumentException.ThrowIfNullOrEmpty(listingsId);
+            if (string.IsNullOrEmpty(listingsId))
+            {
+                return [];
+            }
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            ArgumentException.ThrowIfNullOrEmpty(token);
+            if (string.IsNullOrEmpty(token))
+            {
+                return [];
+            }
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);

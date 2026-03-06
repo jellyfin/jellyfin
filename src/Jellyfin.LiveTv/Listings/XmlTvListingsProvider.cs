@@ -79,25 +79,39 @@ namespace Jellyfin.LiveTv.Listings
                 Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
             }
 
-            if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
-
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
-                var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                await using (stream.ConfigureAwait(false))
+                if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
+
+                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
+                    var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    var stream = AsyncFile.OpenRead(info.Path);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                var stream = AsyncFile.OpenRead(info.Path);
-                await using (stream.ConfigureAwait(false))
+                _logger.LogError(ex, "Error downloading or processing XMLTV file from {Path}", info.Path);
+
+                if (File.Exists(cacheFile))
                 {
-                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    File.Delete(cacheFile);
                 }
+
+                throw;
             }
         }
 
@@ -130,9 +144,20 @@ namespace Jellyfin.LiveTv.Listings
                 {
                     await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
-
-                return file;
             }
+
+            var fileInfo = new FileInfo(file);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                if (fileInfo.Exists)
+                {
+                    File.Delete(file);
+                }
+
+                throw new InvalidOperationException("Downloaded XMLTV file is empty: " + originalUrl);
+            }
+
+            return file;
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
