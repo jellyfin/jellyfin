@@ -1025,14 +1025,21 @@ namespace Emby.Server.Implementations.Session
 
             ArgumentNullException.ThrowIfNull(info);
 
-            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
-            }
-
             var session = GetSession(info.SessionId);
 
             session.StopAutomaticProgress();
+
+            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
+            {
+                // Ensure live stream is cleaned up before throwing, to prevent tuner
+                // resource leaks when stalled clients report a negative PositionTicks.
+                if (!string.IsNullOrEmpty(info.LiveStreamId))
+                {
+                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
+            }
 
             var libraryItem = info.ItemId.IsEmpty()
                 ? null
