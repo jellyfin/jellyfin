@@ -208,6 +208,11 @@ namespace Emby.Server.Implementations.TV
                         sortedEpisodes = sortedEpisodes.SkipWhile(episode => !episode.Id.Equals(lastWatchedEpisode.Id)).Skip(1);
                     }
 
+                    if (!includePlayed)
+                    {
+                        sortedEpisodes = sortedEpisodes.Where(episode => _userDataManager.GetUserData(user, episode) is not { Played: true });
+                    }
+
                     nextEpisode = sortedEpisodes.FirstOrDefault();
                 }
             }
