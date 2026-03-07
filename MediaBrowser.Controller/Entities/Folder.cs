@@ -707,6 +707,8 @@ namespace MediaBrowser.Controller.Entities
                 IsVirtualItem = false,
                 EnableTotalRecordCount = true,
                 Limit = 0,
+                ForceDirect = true,
+                GroupByPresentationUniqueKey = false,
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -1817,6 +1819,8 @@ namespace MediaBrowser.Controller.Entities
                     EnableTotalRecordCount = true,
                     Limit = 0,
                     IsPlayed = false,
+                    ForceDirect = true,
+                    GroupByPresentationUniqueKey = false,
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false
