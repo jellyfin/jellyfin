@@ -36,6 +36,7 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
     /// <param name="dbContextFactory">The database context factory.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="itemRepository">The item repository.</param>
+    /// <param name="itemCountService">The item count service.</param>
     /// <param name="channelManager">The channel manager.</param>
     /// <param name="recordingsManager">The recordings manager.</param>
     /// <param name="mediaSourceManager">The media source manager.</param>
@@ -46,6 +47,7 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         ILibraryManager libraryManager,
         IItemRepository itemRepository,
+        IItemCountService itemCountService,
         IChannelManager channelManager,
         IRecordingsManager recordingsManager,
         IMediaSourceManager mediaSourceManager,
@@ -57,6 +59,7 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         _libraryManager = libraryManager;
         BaseItem.LibraryManager ??= libraryManager;
         BaseItem.ItemRepository ??= itemRepository;
+        BaseItem.ItemCountService ??= itemCountService;
         BaseItem.ChannelManager ??= channelManager;
         BaseItem.MediaSourceManager ??= mediaSourceManager;
         BaseItem.MediaSegmentManager ??= mediaSegmentManager;

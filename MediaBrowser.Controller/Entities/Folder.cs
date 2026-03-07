@@ -1883,11 +1883,11 @@ namespace MediaBrowser.Controller.Entities
 
                     if (LinkedChildren.Length > 0)
                     {
-                        (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCountFromLinkedChildren(query, Id);
+                        (playedCount, totalCount) = ItemCountService.GetPlayedAndTotalCountFromLinkedChildren(query, Id);
                     }
                     else
                     {
-                        (playedCount, totalCount) = ItemRepository.GetPlayedAndTotalCount(query, Id);
+                        (playedCount, totalCount) = ItemCountService.GetPlayedAndTotalCount(query, Id);
                     }
                 }
 

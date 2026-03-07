@@ -489,6 +489,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static IItemRepository ItemRepository { get; set; }
 
+        public static IItemCountService ItemCountService { get; set; }
+
         public static IChapterManager ChapterManager { get; set; }
 
         public static IFileSystem FileSystem { get; set; }

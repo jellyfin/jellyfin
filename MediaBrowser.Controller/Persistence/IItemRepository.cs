@@ -1,18 +1,13 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
-using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 
 namespace MediaBrowser.Controller.Persistence;
 
@@ -21,29 +16,6 @@ namespace MediaBrowser.Controller.Persistence;
 /// </summary>
 public interface IItemRepository
 {
-    /// <summary>
-    /// Deletes the item.
-    /// </summary>
-    /// <param name="ids">The identifier to delete.</param>
-    void DeleteItem(params IReadOnlyList<Guid> ids);
-
-    /// <summary>
-    /// Saves the items.
-    /// </summary>
-    /// <param name="items">The items.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
-
-    Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Reattaches the user data to the item.
-    /// </summary>
-    /// <param name="item">The item.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous reattachment operation.</returns>
-    Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
-
     /// <summary>
     /// Retrieves the item.
     /// </summary>
@@ -81,69 +53,6 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
 
     /// <summary>
-    /// Gets the list of series presentation keys for next up.
-    /// </summary>
-    /// <param name="filter">The query.</param>
-    /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
-    /// <returns>The list of keys.</returns>
-    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff);
-
-    /// <summary>
-    /// Gets next up episodes for multiple series in a single batched query.
-    /// Returns the last watched episode, next unwatched episode, specials, and next played episode for each series.
-    /// </summary>
-    /// <param name="filter">The query filter.</param>
-    /// <param name="seriesKeys">The series presentation unique keys to query.</param>
-    /// <param name="includeSpecials">Whether to include specials (ParentIndexNumber = 0) in the results.</param>
-    /// <param name="includeWatchedForRewatching">Whether to include watched episodes for rewatching mode.</param>
-    /// <returns>A dictionary mapping series key to batch result containing episodes needed for NextUp calculation.</returns>
-    IReadOnlyDictionary<string, NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
-        InternalItemsQuery filter,
-        IReadOnlyList<string> seriesKeys,
-        bool includeSpecials,
-        bool includeWatchedForRewatching);
-
-    /// <summary>
-    /// Updates the inherited values.
-    /// </summary>
-    void UpdateInheritedValues();
-
-    int GetCount(InternalItemsQuery filter);
-
-    ItemCounts GetItemCounts(InternalItemsQuery filter);
-
-    /// <summary>
-    /// Gets item counts for a "by-name" item (Person, MusicArtist, Genre, MusicGenre, Studio, Year)
-    /// using an optimized query that starts from the mapping table instead of scanning all BaseItems.
-    /// </summary>
-    /// <param name="kind">The kind of the name item.</param>
-    /// <param name="id">The ID of the name item.</param>
-    /// <param name="relatedItemKinds">The item kinds to count.</param>
-    /// <param name="accessFilter">A pre-configured query with user access filtering settings.</param>
-    /// <returns>The item counts grouped by type.</returns>
-    ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, InternalItemsQuery accessFilter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
-
-    IReadOnlyList<string> GetMusicGenreNames();
-
-    IReadOnlyList<string> GetStudioNames();
-
-    IReadOnlyList<string> GetGenreNames();
-
-    IReadOnlyList<string> GetAllArtistNames();
-
-    /// <summary>
     /// Checks if an item has been persisted to the database.
     /// </summary>
     /// <param name="id">The id to check.</param>
@@ -151,118 +60,84 @@ public interface IItemRepository
     Task<bool> ItemExistsAsync(Guid id);
 
     /// <summary>
-    /// Gets a value indicating wherever all children of the requested Id has been played.
+    /// Gets genres with item counts.
     /// </summary>
-    /// <param name="user">The userdata to check against.</param>
-    /// <param name="id">The Top id to check.</param>
-    /// <param name="recursive">Whever the check should be done recursive. Warning expensive operation.</param>
-    /// <returns>A value indicating whever all children has been played.</returns>
-    bool GetIsPlayed(User user, Guid id, bool recursive);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets the count of played items that are descendants of the specified ancestor.
-    /// Uses the AncestorIds table for efficient recursive lookup.
-    /// Applies user access filtering (library access, parental controls, tags).
+    /// Gets music genres with item counts.
     /// </summary>
-    /// <param name="filter">The query filter containing user access settings.</param>
-    /// <param name="ancestorId">The ancestor item id.</param>
-    /// <returns>The count of played descendant items.</returns>
-    int GetPlayedCount(InternalItemsQuery filter, Guid ancestorId);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The music genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets the total count of items that are descendants of the specified ancestor.
-    /// Uses the AncestorIds table for efficient recursive lookup.
-    /// Applies user access filtering (library access, parental controls, tags).
+    /// Gets studios with item counts.
     /// </summary>
-    /// <param name="filter">The query filter containing user access settings.</param>
-    /// <param name="ancestorId">The ancestor item id.</param>
-    /// <returns>The total count of descendant items.</returns>
-    int GetTotalCount(InternalItemsQuery filter, Guid ancestorId);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The studios and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets both the played count and total count of items that are descendants of the specified ancestor.
-    /// Uses the AncestorIds table for efficient recursive lookup.
-    /// Applies user access filtering (library access, parental controls, tags).
+    /// Gets artists with item counts.
     /// </summary>
-    /// <param name="filter">The query filter containing user access settings.</param>
-    /// <param name="ancestorId">The ancestor item id.</param>
-    /// <returns>A tuple containing (Played count, Total count).</returns>
-    (int Played, int Total) GetPlayedAndTotalCount(InternalItemsQuery filter, Guid ancestorId);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets both the played count and total count of items that are linked children of the specified parent.
-    /// Uses the LinkedChildren table for BoxSets, Playlists, etc.
-    /// Applies user access filtering (library access, parental controls, tags).
+    /// Gets album artists with item counts.
     /// </summary>
-    /// <param name="filter">The query filter containing user access settings.</param>
-    /// <param name="parentId">The parent item id (BoxSet, Playlist, etc.).</param>
-    /// <returns>A tuple containing (Played count, Total count).</returns>
-    (int Played, int Total) GetPlayedAndTotalCountFromLinkedChildren(InternalItemsQuery filter, Guid parentId);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The album artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
 
     /// <summary>
-    /// Batch-fetches played and total counts for multiple folder items using the AncestorIds table.
-    /// This avoids N+1 queries when building DTOs for lists of folder items (Series, Seasons, etc.).
-    /// Applies user access filtering (parental controls, tags).
+    /// Gets all artists with item counts.
     /// </summary>
-    /// <param name="folderIds">The list of folder item IDs to get counts for.</param>
-    /// <param name="user">The user for access filtering and played status.</param>
-    /// <returns>Dictionary mapping folder ID to (Played count, Total count).</returns>
-    Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>All artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets the IDs of linked children for the specified parent.
+    /// Gets all music genre names.
     /// </summary>
-    /// <param name="parentId">The parent item ID.</param>
-    /// <param name="childType">Optional child type filter (e.g., LocalAlternateVersion, LinkedAlternateVersion).</param>
-    /// <returns>List of child item IDs.</returns>
-    IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, int? childType = null);
+    /// <returns>The list of music genre names.</returns>
+    IReadOnlyList<string> GetMusicGenreNames();
 
     /// <summary>
-    /// Gets all artist matches from the db.
+    /// Gets all studio names.
     /// </summary>
-    /// <param name="artistNames">The names of the artists.</param>
-    /// <returns>A map of the artist name and the potential matches.</returns>
-    IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames);
+    /// <returns>The list of studio names.</returns>
+    IReadOnlyList<string> GetStudioNames();
 
     /// <summary>
-    /// Batch-fetches child counts for multiple parent folders.
-    /// Returns the count of immediate children (non-recursive) for each parent.
+    /// Gets all genre names.
     /// </summary>
-    /// <param name="parentIds">The list of parent folder IDs.</param>
-    /// <param name="userId">The user ID for access filtering.</param>
-    /// <returns>Dictionary mapping parent ID to child count.</returns>
-    Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId);
+    /// <returns>The list of genre names.</returns>
+    IReadOnlyList<string> GetGenreNames();
 
     /// <summary>
-    /// Gets parent IDs (Playlists/BoxSets) that reference the specified child with LinkedChildType.Manual.
+    /// Gets all artist names.
     /// </summary>
-    /// <param name="childId">The child item ID.</param>
-    /// <returns>List of parent IDs that reference the child.</returns>
-    IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId);
+    /// <returns>The list of artist names.</returns>
+    IReadOnlyList<string> GetAllArtistNames();
 
     /// <summary>
-    /// Gets legacy query filters (Years, Genres, Tags, OfficialRatings) aggregated directly from the database.
+    /// Gets legacy query filters aggregated from the database.
     /// </summary>
     /// <param name="filter">The query filter.</param>
     /// <returns>Aggregated filter values.</returns>
     QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
 
     /// <summary>
-    /// Updates LinkedChildren references from one child to another, preserving SortOrder.
-    /// Handles duplicates: if parent already references toChildId, removes the old reference instead.
-    /// Used when video versions change to maintain collection integrity.
+    /// Gets whether all children of the requested item have been played.
     /// </summary>
-    /// <param name="fromChildId">The child ID to re-route from.</param>
-    /// <param name="toChildId">The child ID to re-route to.</param>
-    /// <returns>List of parent item IDs whose LinkedChildren were modified.</returns>
-    IReadOnlyList<Guid> RerouteLinkedChildren(Guid fromChildId, Guid toChildId);
-
-    /// <summary>
-    /// Creates or updates a LinkedChild entry linking a parent to a child item.
-    /// If the link already exists, updates the child type.
-    /// </summary>
-    /// <param name="parentId">The parent item ID.</param>
-    /// <param name="childId">The child item ID.</param>
-    /// <param name="childType">The type of linked child relationship.</param>
-    void UpsertLinkedChild(Guid parentId, Guid childId, LinkedChildType childType);
+    /// <param name="user">The user to check against.</param>
+    /// <param name="id">The top item id to check.</param>
+    /// <param name="recursive">Whether the check should be done recursively.</param>
+    /// <returns>A value indicating whether all children have been played.</returns>
+    bool GetIsPlayed(User user, Guid id, bool recursive);
 }

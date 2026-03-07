@@ -24,7 +24,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
     private readonly IStartupLogger<FixIncorrectOwnerIdRelationships> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly ILibraryManager _libraryManager;
-    private readonly IItemRepository _itemRepository;
+    private readonly IItemPersistenceService _persistenceService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FixIncorrectOwnerIdRelationships"/> class.
@@ -32,17 +32,17 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
     /// <param name="logger">The startup logger.</param>
     /// <param name="dbContextFactory">The database context factory.</param>
     /// <param name="libraryManager">The library manager.</param>
-    /// <param name="itemRepository">The item repository.</param>
+    /// <param name="persistenceService">The item persistence service.</param>
     public FixIncorrectOwnerIdRelationships(
         IStartupLogger<FixIncorrectOwnerIdRelationships> logger,
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         ILibraryManager libraryManager,
-        IItemRepository itemRepository)
+        IItemPersistenceService persistenceService)
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
         _libraryManager = libraryManager;
-        _itemRepository = itemRepository;
+        _persistenceService = persistenceService;
     }
 
     /// <inheritdoc/>
@@ -157,7 +157,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
                     {
                         try
                         {
-                            _itemRepository.DeleteItem([itemId]);
+                            _persistenceService.DeleteItem([itemId]);
                             deletedCount++;
                             _logger.LogInformation("Successfully deleted duplicate item {ItemId} at path {Path} via direct database deletion", itemId, path);
                         }

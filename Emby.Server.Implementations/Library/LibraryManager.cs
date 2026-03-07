@@ -77,6 +77,10 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
+        private readonly IItemPersistenceService _persistenceService;
+        private readonly INextUpService _nextUpService;
+        private readonly IItemCountService _countService;
+        private readonly ILinkedChildrenService _linkedChildrenService;
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
         private readonly IPeopleRepository _peopleRepository;
@@ -115,6 +119,10 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userViewManagerFactory">The user view manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
+        /// <param name="persistenceService">The item persistence service.</param>
+        /// <param name="nextUpService">The next up service.</param>
+        /// <param name="countService">The item count service.</param>
+        /// <param name="linkedChildrenService">The linked children service.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
@@ -133,6 +141,10 @@ namespace Emby.Server.Implementations.Library
             Lazy<IUserViewManager> userViewManagerFactory,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
+            IItemPersistenceService persistenceService,
+            INextUpService nextUpService,
+            IItemCountService countService,
+            ILinkedChildrenService linkedChildrenService,
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
             IDirectoryService directoryService,
@@ -151,6 +163,10 @@ namespace Emby.Server.Implementations.Library
             _userViewManagerFactory = userViewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
+            _persistenceService = persistenceService;
+            _nextUpService = nextUpService;
+            _countService = countService;
+            _linkedChildrenService = linkedChildrenService;
             _imageProcessor = imageProcessor;
 
             _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
@@ -363,7 +379,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+            _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
@@ -513,7 +529,7 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
+            _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
@@ -1158,7 +1174,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names)
         {
-            return _itemRepository.FindArtists(names);
+            return _linkedChildrenService.FindArtists(names);
         }
 
         public MusicArtist GetArtist(string name, DtoOptions options)
@@ -1303,7 +1319,7 @@ namespace Emby.Server.Implementations.Library
 
             if (toDelete.Count > 0)
             {
-                _itemRepository.DeleteItem(toDelete.ToArray());
+                _persistenceService.DeleteItem(toDelete.ToArray());
             }
         }
 
@@ -1379,7 +1395,7 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
-            _itemRepository.UpdateInheritedValues();
+            _persistenceService.UpdateInheritedValues();
 
             progress.Report(100);
         }
@@ -1562,7 +1578,7 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return _itemRepository.GetCount(query);
+            return _countService.GetCount(query);
         }
 
         public ItemCounts GetItemCounts(InternalItemsQuery query)
@@ -1581,7 +1597,7 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return _itemRepository.GetItemCounts(query);
+            return _countService.GetItemCounts(query);
         }
 
         /// <inheritdoc/>
@@ -1593,18 +1609,18 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, user);
             }
 
-            return _itemRepository.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
+            return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
         }
 
         public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
         {
-            return _itemRepository.GetChildCountBatch(parentIds, userId);
+            return _countService.GetChildCountBatch(parentIds, userId);
         }
 
         /// <inheritdoc/>
         public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
         {
-            return _itemRepository.GetPlayedAndTotalCountBatch(folderIds, user);
+            return _countService.GetPlayedAndTotalCountBatch(folderIds, user);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
@@ -1649,7 +1665,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
+            return _nextUpService.GetNextUpSeriesKeys(query, dateCutoff);
         }
 
         /// <inheritdoc />
@@ -1659,7 +1675,7 @@ namespace Emby.Server.Implementations.Library
             bool includeSpecials,
             bool includeWatchedForRewatching)
         {
-            return _itemRepository.GetNextUpEpisodesBatch(query, seriesKeys, includeSpecials, includeWatchedForRewatching);
+            return _nextUpService.GetNextUpEpisodesBatch(query, seriesKeys, includeSpecials, includeWatchedForRewatching);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -2051,7 +2067,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(video);
 
-            var linkedIds = _itemRepository.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LocalAlternateVersion);
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LocalAlternateVersion);
             if (linkedIds.Count > 0)
             {
                 return linkedIds;
@@ -2065,7 +2081,7 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(video);
 
-            var linkedIds = _itemRepository.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
             if (linkedIds.Count > 0)
             {
                 return linkedIds
@@ -2081,7 +2097,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void UpsertLinkedChild(Guid parentId, Guid childId, MediaBrowser.Controller.Entities.LinkedChildType childType)
         {
-            _itemRepository.UpsertLinkedChild(parentId, childId, childType);
+            _linkedChildrenService.UpsertLinkedChild(parentId, childId, childType);
         }
 
         /// <inheritdoc />
@@ -2223,7 +2239,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.SaveItems(allItems, cancellationToken);
+            _persistenceService.SaveItems(allItems, cancellationToken);
 
             foreach (var item in allItems)
             {
@@ -2374,7 +2390,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
+            await _persistenceService.SaveImagesAsync(item).ConfigureAwait(false);
 
             RegisterItem(item);
         }
@@ -2426,7 +2442,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.SaveItems(allItems, cancellationToken);
+            _persistenceService.SaveItems(allItems, cancellationToken);
 
             foreach (var item in allItems)
             {
@@ -2478,7 +2494,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
         {
-            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
+            await _persistenceService.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
@@ -3669,7 +3685,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task RerouteLinkedChildReferencesAsync(Guid fromChildId, Guid toChildId)
         {
-            var affectedParentIds = _itemRepository.RerouteLinkedChildren(fromChildId, toChildId);
+            var affectedParentIds = _linkedChildrenService.RerouteLinkedChildren(fromChildId, toChildId);
 
             // Update in-memory LinkedChildren and re-save metadata (NFO) for affected parents
             foreach (var parentId in affectedParentIds)
