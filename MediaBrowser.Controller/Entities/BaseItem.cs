@@ -1426,10 +1426,10 @@ namespace MediaBrowser.Controller.Entities
                 });
                 foreach (var removedExtra in removedExtras)
                 {
-                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
-                    {
-                        DeleteFileLocation = false
-                    });
+                    await LibraryManager.DeleteItemAsync(
+                        removedExtra,
+                        new DeleteOptions() { DeleteFileLocation = false },
+                        cancellationToken).ConfigureAwait(false);
                 }
             }
 
