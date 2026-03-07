@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -42,6 +44,7 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
     /// <param name="mediaSourceManager">The media source manager.</param>
     /// <param name="mediaSegmentManager">The media segments manager.</param>
     /// <param name="configurationManager">The configuration manager.</param>
+    /// <param name="fileSystem">The file system.</param>
     public CleanupOrphanedExtras(
         IStartupLogger<CleanupOrphanedExtras> logger,
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
@@ -52,7 +55,8 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         IRecordingsManager recordingsManager,
         IMediaSourceManager mediaSourceManager,
         IMediaSegmentManager mediaSegmentManager,
-        IServerConfigurationManager configurationManager)
+        IServerConfigurationManager configurationManager,
+        IFileSystem fileSystem)
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
@@ -64,6 +68,7 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         BaseItem.MediaSourceManager ??= mediaSourceManager;
         BaseItem.MediaSegmentManager ??= mediaSegmentManager;
         BaseItem.ConfigurationManager ??= configurationManager;
+        BaseItem.FileSystem ??= fileSystem;
         Video.RecordingsManager ??= recordingsManager;
     }
 
@@ -88,35 +93,20 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
 
             _logger.LogInformation("Found {Count} orphaned extras to remove", orphanedItemIds.Count);
 
-            var deleteOptions = new DeleteOptions
-            {
-                DeleteFileLocation = false // Extras don't have their own media files
-            };
-
-            var deletedCount = 0;
+            // Batch-resolve items for metadata path cleanup, then delete all at once
+            var itemsToDelete = new List<BaseItem>();
             foreach (var itemId in orphanedItemIds)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 var item = _libraryManager.GetItemById(itemId);
-                if (item is null)
+                if (item is not null)
                 {
-                    _logger.LogDebug("Item {ItemId} not found in library, may have been already deleted", itemId);
-                    continue;
-                }
-
-                try
-                {
-                    _libraryManager.DeleteItem(item, deleteOptions, notifyParentItem: false);
-                    deletedCount++;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to delete orphaned item {ItemId} ({ItemName})", item.Id, item.Name);
+                    itemsToDelete.Add(item);
                 }
             }
 
-            _logger.LogInformation("Successfully removed {Count} orphaned extras", deletedCount);
+            _libraryManager.DeleteItemsUnsafeFast(itemsToDelete);
+
+            _logger.LogInformation("Successfully removed {Count} orphaned extras", itemsToDelete.Count);
         }
     }
 }

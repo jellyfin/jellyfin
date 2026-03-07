@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,12 +85,8 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
         _logger.LogInformation("Found {Count} paths with duplicate database entries", duplicatePaths.Count);
 
-        var deleteOptions = new DeleteOptions
-        {
-            DeleteFileLocation = false // Don't delete the actual file, just the database entry
-        };
-
-        var deletedCount = 0;
+        // Collect all duplicate IDs to delete in one batch
+        var allIdsToDelete = new List<Guid>();
         foreach (var path in duplicatePaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -125,52 +122,28 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
                 continue;
             }
 
-            // Delete all other items with this path
-            var itemsToDelete = itemsWithPath.Where(i => !i.Id.Equals(itemToKeep.Id)).Select(i => i.Id).ToList();
-            foreach (var itemId in itemsToDelete)
-            {
-                var item = _libraryManager.GetItemById(itemId);
-                if (item is not null)
-                {
-                    var deleted = false;
-                    try
-                    {
-                        _libraryManager.DeleteItem(item, deleteOptions, notifyParentItem: false);
-                        deletedCount++;
-                        deleted = true;
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to delete duplicate item {ItemId} at path {Path}", itemId, path);
-                    }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to delete duplicate item {ItemId} at path {Path}", itemId, path);
-                    }
-                    catch (NullReferenceException ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to delete duplicate item {ItemId} at path {Path} via LibraryManager - falling back to direct database deletion", itemId, path);
-                    }
+            allIdsToDelete.AddRange(itemsWithPath.Where(i => !i.Id.Equals(itemToKeep.Id)).Select(i => i.Id));
+        }
 
-                    // If LibraryManager.DeleteItem failed, delete directly from database
-                    if (!deleted)
-                    {
-                        try
-                        {
-                            _persistenceService.DeleteItem([itemId]);
-                            deletedCount++;
-                            _logger.LogInformation("Successfully deleted duplicate item {ItemId} at path {Path} via direct database deletion", itemId, path);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Failed to delete duplicate item {ItemId} at path {Path} via direct database deletion", itemId, path);
-                        }
-                    }
-                }
+        if (allIdsToDelete.Count > 0)
+        {
+            // Batch-resolve items for metadata path cleanup, then delete all at once
+            var itemsToDelete = allIdsToDelete
+                .Select(id => _libraryManager.GetItemById(id))
+                .Where(item => item is not null)
+                .ToList();
+            _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
+
+            // Fall back to direct DB deletion for any items that couldn't be resolved via LibraryManager
+            var deletedIds = itemsToDelete.Select(i => i!.Id).ToHashSet();
+            var unresolvedIds = allIdsToDelete.Where(id => !deletedIds.Contains(id)).ToList();
+            if (unresolvedIds.Count > 0)
+            {
+                _persistenceService.DeleteItem(unresolvedIds);
             }
         }
 
-        _logger.LogInformation("Successfully removed {Count} duplicate database entries", deletedCount);
+        _logger.LogInformation("Successfully removed {Count} duplicate database entries", allIdsToDelete.Count);
     }
 
     private async Task ClearIncorrectOwnerIdsAsync(JellyfinDbContext context, CancellationToken cancellationToken)
@@ -236,39 +209,56 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
         _logger.LogInformation("Found {Count} orphaned extras to reassign", orphanedExtras.Count);
 
+        // Build a lookup of directory -> first video/movie item for parent resolution
+        var extraDirectories = orphanedExtras
+            .Where(e => !string.IsNullOrEmpty(e.Path))
+            .Select(e => System.IO.Path.GetDirectoryName(e.Path))
+            .Where(d => !string.IsNullOrEmpty(d))
+            .Distinct()
+            .ToList();
+
+        // Load all potential parent video/movies with paths in one query
+        var videoTypes = new[]
+        {
+            "MediaBrowser.Controller.Entities.Video",
+            "MediaBrowser.Controller.Entities.Movies.Movie"
+        };
+        var potentialParents = await context.BaseItems
+            .Where(b => b.Path != null && videoTypes.Contains(b.Type))
+            .Select(b => new { b.Id, b.Path })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        // Build directory -> parent ID mapping
+        var dirToParent = new Dictionary<string, Guid>();
+        foreach (var dir in extraDirectories)
+        {
+            var parent = potentialParents
+                .Where(p => p.Path!.StartsWith(dir!, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(p => p.Id)
+                .FirstOrDefault();
+            if (parent is not null)
+            {
+                dirToParent[dir!] = parent.Id;
+            }
+        }
+
         var reassignedCount = 0;
         foreach (var extra in orphanedExtras)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Find the parent path from the extra's path (extras are usually in same directory as parent)
             if (string.IsNullOrEmpty(extra.Path))
             {
                 continue;
             }
 
             var extraDirectory = System.IO.Path.GetDirectoryName(extra.Path);
-            if (string.IsNullOrEmpty(extraDirectory))
+            if (!string.IsNullOrEmpty(extraDirectory) && dirToParent.TryGetValue(extraDirectory, out var parentId))
             {
-                continue;
-            }
-
-            // Find potential parent in same directory
-            var potentialParent = await context.BaseItems
-                .Where(b => b.Path != null && b.Path.StartsWith(extraDirectory))
-                .Where(b => b.Type == "MediaBrowser.Controller.Entities.Video" || b.Type == "MediaBrowser.Controller.Entities.Movies.Movie")
-                .OrderBy(b => b.Id)
-                .FirstOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            if (potentialParent is not null)
-            {
-                extra.OwnerId = potentialParent.Id;
+                extra.OwnerId = parentId;
                 reassignedCount++;
             }
             else
             {
-                // Can't find a parent, clear the OwnerId
                 extra.OwnerId = null;
             }
         }
@@ -301,16 +291,17 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
         _logger.LogInformation("Found {Count} alternate version items that need PrimaryVersionId populated", alternateVersionLinks.Count);
 
+        // Batch-load all child items in a single query
+        var childIds = alternateVersionLinks.Select(l => l.ChildId).Distinct().ToList();
+        var childItems = await context.BaseItems
+            .Where(b => childIds.Contains(b.Id))
+            .ToDictionaryAsync(b => b.Id, cancellationToken)
+            .ConfigureAwait(false);
+
         var updatedCount = 0;
         foreach (var link in alternateVersionLinks)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var childItem = await context.BaseItems
-                .FirstOrDefaultAsync(b => b.Id.Equals(link.ChildId), cancellationToken)
-                .ConfigureAwait(false);
-
-            if (childItem is not null)
+            if (childItems.TryGetValue(link.ChildId, out var childItem))
             {
                 childItem.PrimaryVersionId = link.ParentId;
                 updatedCount++;

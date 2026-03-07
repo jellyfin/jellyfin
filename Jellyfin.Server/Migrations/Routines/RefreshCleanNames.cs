@@ -1,13 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
-using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
-using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.ServerSetupApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -40,7 +37,7 @@ public class RefreshCleanNames : IAsyncMigrationRoutine
     /// <inheritdoc />
     public async Task PerformAsync(CancellationToken cancellationToken)
     {
-        const int Limit = 1000;
+        const int Limit = 10000;
         int itemCount = 0;
 
         var sw = Stopwatch.StartNew();

@@ -272,16 +272,13 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} wrong-type alternate version items to remove.", wrongTypeChildIds.Count);
 
-        foreach (var childId in wrongTypeChildIds)
-        {
-            var item = _libraryManager.GetItemById(childId);
-            if (item is not null)
-            {
-                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
-            }
-        }
+        var itemsToDelete = wrongTypeChildIds
+            .Select(id => _libraryManager.GetItemById(id))
+            .Where(item => item is not null)
+            .ToList();
+        _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
 
-        _logger.LogInformation("Removed {Count} wrong-type alternate version items. They will be recreated with the correct type on next library scan.", wrongTypeChildIds.Count);
+        _logger.LogInformation("Removed {Count} wrong-type alternate version items. They will be recreated with the correct type on next library scan.", itemsToDelete.Count);
     }
 
     private void CleanupOrphanedAlternateVersionBaseItems(JellyfinDbContext context)
@@ -306,16 +303,13 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} orphaned alternate version BaseItems to remove.", orphanedVersionIds.Count);
 
-        foreach (var id in orphanedVersionIds)
-        {
-            var item = _libraryManager.GetItemById(id);
-            if (item is not null)
-            {
-                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
-            }
-        }
+        var itemsToDelete = orphanedVersionIds
+            .Select(id => _libraryManager.GetItemById(id))
+            .Where(item => item is not null)
+            .ToList();
+        _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
 
-        _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", orphanedVersionIds.Count);
+        _logger.LogInformation("Removed {Count} orphaned alternate version BaseItems.", itemsToDelete.Count);
     }
 
     private void CleanupItemsFromDeletedLibraries(JellyfinDbContext context)
@@ -338,16 +332,13 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} items from deleted libraries to remove.", orphanedIds.Count);
 
-        foreach (var id in orphanedIds)
-        {
-            var item = _libraryManager.GetItemById(id);
-            if (item is not null)
-            {
-                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
-            }
-        }
+        var itemsToDelete = orphanedIds
+            .Select(id => _libraryManager.GetItemById(id))
+            .Where(item => item is not null)
+            .ToList();
+        _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
 
-        _logger.LogInformation("Removed {Count} items from deleted libraries.", orphanedIds.Count);
+        _logger.LogInformation("Removed {Count} items from deleted libraries.", itemsToDelete.Count);
     }
 
     private void CleanupStaleFileEntries(JellyfinDbContext context)
@@ -429,16 +420,13 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Found {Count} stale items to remove.", staleIds.Count);
 
-        foreach (var id in staleIds)
-        {
-            var item = _libraryManager.GetItemById(id);
-            if (item is not null)
-            {
-                _libraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false });
-            }
-        }
+        var itemsToDelete = staleIds
+            .Select(id => _libraryManager.GetItemById(id))
+            .Where(item => item is not null)
+            .ToList();
+        _libraryManager.DeleteItemsUnsafeFast(itemsToDelete!);
 
-        _logger.LogInformation("Removed {Count} stale items.", staleIds.Count);
+        _logger.LogInformation("Removed {Count} stale items.", itemsToDelete.Count);
     }
 
     private void CleanupOrphanedLinkedChildren(JellyfinDbContext context)
