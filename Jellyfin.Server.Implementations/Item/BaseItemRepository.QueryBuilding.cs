@@ -68,19 +68,21 @@ public sealed partial class BaseItemRepository
         // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
 
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
+        // Use Min(Id) instead of OrderBy(Id).FirstOrDefault() to avoid EF Core generating
+        // a correlated scalar subquery per group.
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.OrderBy(x => x.Id).FirstOrDefault()).Select(e => e!.Id);
+            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
         }
         else
