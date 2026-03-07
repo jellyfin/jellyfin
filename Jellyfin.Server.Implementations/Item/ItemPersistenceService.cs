@@ -77,16 +77,42 @@ public class ItemPersistenceService : IItemPersistenceService
 
         var relatedItems = descendantIds.ToArray();
 
+        // When batch-deleting, multiple items may have UserData for the same (UserId, CustomDataKey).
+        // Moving all of them to PlaceholderId would violate the UNIQUE constraint.
+        // Deduplicate by loading keys client-side, keeping the best row per group.
+        var batchUserData = context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId);
+
+        var allRows = batchUserData
+            .Select(ud => new { ud.ItemId, ud.UserId, ud.CustomDataKey, ud.LastPlayedDate, ud.PlayCount })
+            .ToList();
+
+        var duplicateRows = allRows
+            .GroupBy(ud => new { ud.UserId, ud.CustomDataKey })
+            .Where(g => g.Count() > 1)
+            .SelectMany(g => g
+                .OrderByDescending(ud => ud.LastPlayedDate)
+                .ThenByDescending(ud => ud.PlayCount)
+                .Skip(1))
+            .ToList();
+
+        foreach (var dup in duplicateRows)
+        {
+            context.UserData
+                .Where(ud => ud.ItemId == dup.ItemId && ud.UserId == dup.UserId && ud.CustomDataKey == dup.CustomDataKey)
+                .ExecuteDelete();
+        }
+
+        // Delete existing placeholder rows that would conflict with the incoming ones
         context.UserData
             .Join(
-                context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId),
+                batchUserData,
                 placeholder => new { placeholder.UserId, placeholder.CustomDataKey },
                 userData => new { userData.UserId, userData.CustomDataKey },
                 (placeholder, userData) => placeholder)
             .Where(e => e.ItemId == BaseItemRepository.PlaceholderId)
             .ExecuteDelete();
 
-        context.UserData.WhereOneOrMany(relatedItems, e => e.ItemId)
+        batchUserData
             .ExecuteUpdate(e => e
                 .SetProperty(f => f.RetentionDate, date)
                 .SetProperty(f => f.ItemId, BaseItemRepository.PlaceholderId));
