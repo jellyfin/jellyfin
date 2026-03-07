@@ -49,6 +49,12 @@ namespace MediaBrowser.Controller.Entities
         public const string ThemeSongFileName = "theme";
 
         /// <summary>
+        /// Cache for user collection folder IDs to avoid repeated visibility checks during library scans.
+        /// </summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (List<Guid> FolderIds, DateTime CachedAt)> _userCollectionFolderCache = new();
+        private static readonly TimeSpan _cacheExpiry = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
@@ -1351,7 +1357,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemCollectionFolders.Count > 0)
                 {
-                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true).Select(i => i.Id).ToList();
+                    var userCollectionFolders = GetCachedUserCollectionFolders(user);
                     if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
                     {
                         return false;
@@ -1360,6 +1366,30 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the cached list of collection folder IDs visible to the user.
+        /// This avoids repeated visibility checks on root folders during library scans.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>List of collection folder IDs visible to the user.</returns>
+        private List<Guid> GetCachedUserCollectionFolders(User user)
+        {
+            var now = DateTime.UtcNow;
+            if (_userCollectionFolderCache.TryGetValue(user.Id, out var cached)
+                && now - cached.CachedAt < _cacheExpiry)
+            {
+                return cached.FolderIds;
+            }
+
+            var folderIds = LibraryManager.GetUserRootFolder()
+                .GetChildren(user, true)
+                .Select(i => i.Id)
+                .ToList();
+
+            _userCollectionFolderCache[user.Id] = (folderIds, now);
+            return folderIds;
         }
 
         public void SetParent(Folder parent)
