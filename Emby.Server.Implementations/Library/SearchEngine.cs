@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
@@ -167,7 +168,8 @@ namespace Emby.Server.Implementations.Library
                         ItemFields.AirTime,
                         ItemFields.DateCreated,
                         ItemFields.ChannelInfo,
-                        ItemFields.ParentId
+                        ItemFields.ParentId,
+                        ItemFields.ProviderIds
                     }
                 }
             };
@@ -191,10 +193,36 @@ namespace Emby.Server.Implementations.Library
                 mediaItems = _libraryManager.GetItemList(searchQuery);
             }
 
+            // Deduplicate cross-library series/season/episode results
+            mediaItems = mediaItems.DistinctBy(GetSearchDedupKey).ToList();
+
             return mediaItems.Select(i => new SearchHintInfo
             {
                 Item = i
             }).ToList();
+        }
+
+        private string GetSearchDedupKey(BaseItem item)
+        {
+            Series? series = item switch
+            {
+                Series s => s,
+                Season s => s.Series,
+                Episode e => e.Series,
+                _ => null
+            };
+
+            if (series is not null
+                && _libraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging)
+            {
+                var keys = item.GetUserDataKeys();
+                if (keys.Count > 1)
+                {
+                    return keys[0];
+                }
+            }
+
+            return item.PresentationUniqueKey ?? item.Id.ToString("N");
         }
     }
 }

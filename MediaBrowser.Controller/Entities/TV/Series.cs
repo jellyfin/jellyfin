@@ -113,9 +113,28 @@ namespace MediaBrowser.Controller.Entities.TV
             return key + "-" + string.Join('-', folders);
         }
 
-        private static string GetUniqueSeriesKey(BaseItem series)
+        private static string GetUniqueSeriesKey(BaseItem item)
         {
-            return series.GetPresentationUniqueKey();
+            if (item is Series series)
+            {
+                return LibraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging
+                    ? series.GetCrossLibraryKey()
+                    : series.GetPresentationUniqueKey();
+            }
+
+            return item.GetPresentationUniqueKey();
+        }
+
+        /// <summary>
+        /// Gets the raw provider-based key for cross-library series matching.
+        /// Returns the first provider ID (e.g. "tvdb-81189") or falls back to PresentationUniqueKey
+        /// if no provider IDs exist.
+        /// </summary>
+        /// <returns>The cross-library matching key.</returns>
+        internal string GetCrossLibraryKey()
+        {
+            var keys = GetUserDataKeys();
+            return keys.Count > 1 ? keys[0] : PresentationUniqueKey;
         }
 
         public override int GetChildCount(User user)
@@ -204,7 +223,14 @@ namespace MediaBrowser.Controller.Entities.TV
 
             SetSeasonQueryOptions(query, user);
 
-            return LibraryManager.GetItemList(query);
+            var items = LibraryManager.GetItemList(query);
+
+            if (LibraryManager.GetLibraryOptions(this).EnableCrossLibrarySeriesMerging)
+            {
+                return items.DistinctBy(i => i.PresentationUniqueKey).ToList();
+            }
+
+            return items;
         }
 
         private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
@@ -258,12 +284,23 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
 
                 query.IsVirtualItem = false;
-                return LibraryManager.GetItemsResult(query);
+                return DedupCrossLibraryResult(LibraryManager.GetItemsResult(query));
             }
 
             SetSeasonQueryOptions(query, user);
 
-            return LibraryManager.GetItemsResult(query);
+            return DedupCrossLibraryResult(LibraryManager.GetItemsResult(query));
+        }
+
+        private QueryResult<BaseItem> DedupCrossLibraryResult(QueryResult<BaseItem> result)
+        {
+            if (!LibraryManager.GetLibraryOptions(this).EnableCrossLibrarySeriesMerging)
+            {
+                return result;
+            }
+
+            var deduped = result.Items.DistinctBy(i => i.PresentationUniqueKey).ToArray();
+            return new QueryResult<BaseItem>(result.StartIndex, deduped.Length, deduped);
         }
 
         public IEnumerable<BaseItem> GetEpisodes(User user, DtoOptions options, bool shouldIncludeMissingEpisodes)
@@ -288,7 +325,13 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
 
-            var allEpisodes = allItems.OfType<Season>()
+            var seasons = (IEnumerable<Season>)allItems.OfType<Season>();
+            if (LibraryManager.GetLibraryOptions(this).EnableCrossLibrarySeriesMerging)
+            {
+                seasons = seasons.DistinctBy(s => s.PresentationUniqueKey);
+            }
+
+            var allEpisodes = seasons
                 .SelectMany(i => i.GetEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes))
                 .Reverse();
 
@@ -419,6 +462,11 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons);
+
+            if (LibraryManager.GetLibraryOptions(this).EnableCrossLibrarySeriesMerging)
+            {
+                episodes = episodes.DistinctBy(e => e.IndexNumber);
+            }
 
             var sortBy = (parentSeason.IndexNumber ?? -1) == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
 
