@@ -946,12 +946,15 @@ namespace Emby.Server.Implementations.Library
                 Path = path,
                 IsFolder = isFolder,
                 OrderBy = [(ItemSortBy.DateCreated, SortOrder.Descending)],
-                Limit = 1,
                 DtoOptions = new DtoOptions(true)
             };
 
-            return GetItemList(query)
-                .FirstOrDefault();
+            var items = GetItemList(query);
+
+            // When multiple items exist at the same path with different types
+            // (e.g. both a Series and a Folder), prefer the more specific type.
+            return items.FirstOrDefault(i => i.GetType() != typeof(Folder))
+                ?? items.FirstOrDefault();
         }
 
         /// <inheritdoc />
