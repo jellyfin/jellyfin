@@ -89,7 +89,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="200">Users returned.</response>
     /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = UserRoles.Administrator)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<UserDto>> GetUsers(
         [FromQuery] bool? isHidden,
