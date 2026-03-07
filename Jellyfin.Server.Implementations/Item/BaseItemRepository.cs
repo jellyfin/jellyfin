@@ -1822,15 +1822,18 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
             var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
-            var originalSearchTerm = filter.SearchTerm.ToLower();
+            var lowerSearchTerm = filter.SearchTerm.ToLowerInvariant();
             if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
                 cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), originalSearchTerm)));
+                var lowerWildcard = $"%{lowerSearchTerm.Trim('%')}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null &&
+                    EF.Functions.Like(JellyfinDbContext.CleanValue(e.OriginalTitle)!, lowerWildcard)));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(originalSearchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null &&
+                    JellyfinDbContext.CleanValue(e.OriginalTitle)!.Contains(lowerSearchTerm)));
             }
         }
 
