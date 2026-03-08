@@ -43,6 +43,7 @@ public class EncodingOptions
         VppTonemappingContrast = 1;
         H264Crf = 23;
         H265Crf = 28;
+        TranscodeBitrateLimit = 0;
         DeinterlaceDoubleRate = false;
         DeinterlaceMethod = DeinterlaceMethod.yadif;
         EnableDecodingColorDepth10Hevc = true;
@@ -213,6 +214,11 @@ public class EncodingOptions
     /// Gets or sets the H265 CRF.
     /// </summary>
     public int H265Crf { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Transcoding bitrate limit.
+    /// </summary>
+    public int TranscodeBitrateLimit { get; set; }
 
     /// <summary>
     /// Gets or sets the encoder preset.
