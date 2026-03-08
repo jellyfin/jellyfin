@@ -133,6 +133,22 @@ public interface IItemRepository
     bool GetIsPlayed(User user, Guid id, bool recursive);
 
     /// <summary>
+    /// Gets the count of unplayed leaf items under a folder using ParentId-based tree traversal.
+    /// Much faster than the AncestorIds join approach for folders with many descendants.
+    /// </summary>
+    /// <param name="user">The user to check play status for.</param>
+    /// <param name="folderId">The folder to count unplayed items under.</param>
+    /// <returns>The number of unplayed non-folder, non-virtual items.</returns>
+    int GetRecursiveUnplayedCount(User user, Guid folderId);
+
+    /// <summary>
+    /// Gets the count of leaf items under a folder using ParentId-based tree traversal.
+    /// </summary>
+    /// <param name="folderId">The folder to count items under.</param>
+    /// <returns>The number of non-folder, non-virtual items.</returns>
+    int GetRecursiveLeafCount(Guid folderId);
+
+    /// <summary>
     /// Gets all artist matches from the db.
     /// </summary>
     /// <param name="artistNames">The names of the artists.</param>

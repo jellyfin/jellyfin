@@ -2671,6 +2671,27 @@ public sealed class BaseItemRepository
         return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
     }
 
+    /// <inheritdoc/>
+    public int GetRecursiveUnplayedCount(User user, Guid folderId)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+        var folderList = TraverseHirachyDown(folderId, dbContext, item => (item.IsFolder || item.IsVirtualItem));
+
+        return dbContext.BaseItems
+            .Where(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder && !e.IsVirtualItem)
+            .Count(f => !f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+    }
+
+    /// <inheritdoc/>
+    public int GetRecursiveLeafCount(Guid folderId)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+        var folderList = TraverseHirachyDown(folderId, dbContext, item => (item.IsFolder || item.IsVirtualItem));
+
+        return dbContext.BaseItems
+            .Count(e => folderList.Contains(e.ParentId!.Value) && !e.IsFolder && !e.IsVirtualItem);
+    }
+
     private static HashSet<Guid> TraverseHirachyDown(Guid parentId, JellyfinDbContext dbContext, Expression<Func<BaseItemEntity, bool>>? filter = null)
     {
         var folderStack = new HashSet<Guid>()
