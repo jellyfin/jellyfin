@@ -518,6 +518,12 @@ public class ItemsController : BaseJellyfinApiController
                 }
             }
 
+            if (folder is CollectionFolder collectionFolder
+                && collectionFolder.CollectionType == CollectionType.books)
+            {
+                query.GroupByPresentationUniqueKey = false;
+            }
+
             query.Parent = null;
             result = folder.GetItems(query);
         }
