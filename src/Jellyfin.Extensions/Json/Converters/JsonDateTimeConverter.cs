@@ -27,7 +27,7 @@ namespace Jellyfin.Extensions.Json.Converters
             }
             else
             {
-                writer.WriteStringValue(value);
+                writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fffffffZ", CultureInfo.InvariantCulture));
             }
         }
     }
