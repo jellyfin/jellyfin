@@ -11,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -270,6 +271,12 @@ public class ItemsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        // Ensure ProviderIds are loaded when searching, needed for cross-library series dedup
+        if (!string.IsNullOrWhiteSpace(searchTerm) && !dtoOptions.Fields.Contains(ItemFields.ProviderIds))
+        {
+            dtoOptions.Fields = [.. dtoOptions.Fields, ItemFields.ProviderIds];
+        }
+
         if (includeItemTypes.Length == 1
             && includeItemTypes[0] == BaseItemKind.BoxSet)
         {
@@ -525,6 +532,20 @@ public class ItemsController : BaseJellyfinApiController
         {
             var itemsArray = folder.GetChildren(user, true);
             result = new QueryResult<BaseItem>(itemsArray);
+        }
+
+        // Deduplicate cross-library series/season/episode results when searching
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var originalCount = result.Items.Count;
+            var dedupedItems = result.Items.DistinctBy(GetCrossLibraryDedupKey).ToArray();
+            if (dedupedItems.Length < originalCount)
+            {
+                result = new QueryResult<BaseItem>(
+                    result.StartIndex,
+                    result.TotalRecordCount - (originalCount - dedupedItems.Length),
+                    dedupedItems);
+            }
         }
 
         return new QueryResult<BaseItemDto>(
@@ -1069,4 +1090,27 @@ public class ItemsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromBody, Required] UpdateUserItemDataDto userDataDto)
         => UpdateItemUserData(userId, itemId, userDataDto);
+
+    private string GetCrossLibraryDedupKey(BaseItem item)
+    {
+        Series? series = item switch
+        {
+            Series s => s,
+            Season s => s.Series,
+            Episode e => e.Series,
+            _ => null
+        };
+
+        if (series is not null
+            && _libraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging)
+        {
+            var keys = item.GetUserDataKeys();
+            if (keys.Count > 1)
+            {
+                return keys[0];
+            }
+        }
+
+        return item.PresentationUniqueKey ?? item.Id.ToString("N");
+    }
 }
