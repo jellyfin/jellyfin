@@ -146,10 +146,10 @@ public class ChannelsController : BaseJellyfinApiController
         {
             switch (filter)
             {
-                case ItemFilter.IsFolder:
+                case ItemFilter.IsFolder when !filters.Contains(ItemFilter.IsNotFolder):
                     query.IsFolder = true;
                     break;
-                case ItemFilter.IsNotFolder:
+                case ItemFilter.IsNotFolder when !filters.Contains(ItemFilter.IsFolder):
                     query.IsFolder = false;
                     break;
                 case ItemFilter.IsUnplayed:
@@ -219,10 +219,10 @@ public class ChannelsController : BaseJellyfinApiController
         {
             switch (filter)
             {
-                case ItemFilter.IsFolder:
+                case ItemFilter.IsFolder when !filters.Contains(ItemFilter.IsNotFolder):
                     query.IsFolder = true;
                     break;
-                case ItemFilter.IsNotFolder:
+                case ItemFilter.IsNotFolder when !filters.Contains(ItemFilter.IsFolder):
                     query.IsFolder = false;
                     break;
                 case ItemFilter.IsUnplayed:
