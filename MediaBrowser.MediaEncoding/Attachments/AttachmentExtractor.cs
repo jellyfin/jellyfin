@@ -115,7 +115,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 await ExtractAllAttachmentsInternal(
                     inputFile,
                     mediaSource,
-                    false,
                     cancellationToken).ConfigureAwait(false);
             }
         }
@@ -123,7 +122,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private async Task ExtractAllAttachmentsInternal(
             string inputFile,
             MediaSourceInfo mediaSource,
-            bool isExternal,
             CancellationToken cancellationToken)
         {
             var inputPath = _mediaEncoder.GetInputArgument(inputFile, mediaSource);
@@ -142,11 +140,24 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     return;
                 }
 
-                var processArgs = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "-dump_attachment:t \"\" -y {0} -i {1} -t 0 -f null null",
-                    inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
-                    inputPath);
+                // Files without video/audio streams (e.g. MKS subtitle files) don't need a dummy
+                // output since there are no streams to process. Omit "-t 0 -f null null" so ffmpeg
+                // doesn't fail trying to open an output with no streams. It will exit with code 1
+                // ("at least one output file must be specified") which is expected and harmless
+                // since we only need the -dump_attachment side effect.
+                var hasVideoOrAudioStream = mediaSource.MediaStreams
+                    .Any(s => s.Type == MediaStreamType.Video || s.Type == MediaStreamType.Audio);
+                var processArgs = hasVideoOrAudioStream
+                    ? string.Format(
+                        CultureInfo.InvariantCulture,
+                        "-dump_attachment:t \"\" -y {0} -i {1} -t 0 -f null null",
+                        inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
+                        inputPath)
+                    : string.Format(
+                        CultureInfo.InvariantCulture,
+                        "-dump_attachment:t \"\" -y {0} -i {1}",
+                        inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
+                        inputPath);
 
                 int exitCode;
 
@@ -185,12 +196,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 if (exitCode != 0)
                 {
-                    if (isExternal && exitCode == 1)
-                    {
-                        // ffmpeg returns exitCode 1 because there is no video or audio stream
-                        // this can be ignored
-                    }
-                    else
+                    if (hasVideoOrAudioStream || exitCode != 1)
                     {
                         failed = true;
 
@@ -205,7 +211,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         }
                     }
                 }
-                else if (!Directory.Exists(outputFolder))
+
+                if (!failed && !Directory.Exists(outputFolder))
                 {
                     failed = true;
                 }
@@ -246,6 +253,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 {
                     await ExtractAttachmentInternal(
                         _mediaEncoder.GetInputArgument(inputFile, mediaSource),
+                        mediaSource,
                         mediaAttachment.Index,
                         attachmentPath,
                         cancellationToken).ConfigureAwait(false);
@@ -257,6 +265,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private async Task ExtractAttachmentInternal(
             string inputPath,
+            MediaSourceInfo mediaSource,
             int attachmentStreamIndex,
             string outputPath,
             CancellationToken cancellationToken)
@@ -267,12 +276,21 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputPath)));
 
-            var processArgs = string.Format(
-                CultureInfo.InvariantCulture,
-                "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
-                inputPath,
-                attachmentStreamIndex,
-                EncodingUtils.NormalizePath(outputPath));
+            var hasVideoOrAudioStream = mediaSource.MediaStreams
+                .Any(s => s.Type == MediaStreamType.Video || s.Type == MediaStreamType.Audio);
+            var processArgs = hasVideoOrAudioStream
+                ? string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
+                    inputPath,
+                    attachmentStreamIndex,
+                    EncodingUtils.NormalizePath(outputPath))
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-dump_attachment:{1} \"{2}\" -i {0}",
+                    inputPath,
+                    attachmentStreamIndex,
+                    EncodingUtils.NormalizePath(outputPath));
 
             int exitCode;
 
@@ -310,22 +328,26 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (exitCode != 0)
             {
-                failed = true;
-
-                _logger.LogWarning("Deleting extracted attachment {Path} due to failure: {ExitCode}", outputPath, exitCode);
-                try
+                if (hasVideoOrAudioStream || exitCode != 1)
                 {
-                    if (File.Exists(outputPath))
+                    failed = true;
+
+                    _logger.LogWarning("Deleting extracted attachment {Path} due to failure: {ExitCode}", outputPath, exitCode);
+                    try
                     {
-                        _fileSystem.DeleteFile(outputPath);
+                        if (File.Exists(outputPath))
+                        {
+                            _fileSystem.DeleteFile(outputPath);
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting extracted attachment {Path}", outputPath);
                     }
                 }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting extracted attachment {Path}", outputPath);
-                }
             }
-            else if (!File.Exists(outputPath))
+
+            if (!failed && !File.Exists(outputPath))
             {
                 failed = true;
             }
