@@ -113,20 +113,23 @@ public class SimilarItemsManager : ISimilarItemsManager
             dtoOptions.Fields = dtoOptions.Fields.Concat([ItemFields.ProviderIds]).ToArray();
         }
 
-        var localProviders = _similarItemsProviders.OfType<ILocalSimilarItemsProvider<T>>().Cast<ISimilarItemsProvider>();
+        // Local providers are always enabled. Remote providers must be explicitly enabled.
+        var localProviders = _similarItemsProviders.OfType<ILocalSimilarItemsProvider<T>>().Cast<ISimilarItemsProvider>().ToList();
         var remoteProviders = _similarItemsProviders.OfType<IRemoteSimilarItemsProvider<T>>().Cast<ISimilarItemsProvider>();
-        var matchingProviders = localProviders.Concat(remoteProviders).ToList();
+        var matchingProviders = new List<ISimilarItemsProvider>(localProviders);
 
         var typeOptions = libraryOptions?.GetTypeOptions(typeof(T).Name);
         if (typeOptions?.SimilarItemProviders?.Length > 0)
         {
-            matchingProviders = matchingProviders
-                .Where(p => typeOptions.SimilarItemProviders.Contains(p.Name, StringComparer.OrdinalIgnoreCase))
-                .ToList();
+            matchingProviders.AddRange(remoteProviders
+                .Where(p => typeOptions.SimilarItemProviders.Contains(p.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
+        var orderConfig = typeOptions?.SimilarItemProviderOrder is { Length: > 0 } order
+            ? order
+            : typeOptions?.SimilarItemProviders;
         var orderedProviders = matchingProviders
-            .OrderBy(p => GetConfiguredSimilarProviderOrder(typeOptions?.SimilarItemProviderOrder, p.Name))
+            .OrderBy(p => GetConfiguredSimilarProviderOrder(orderConfig, p.Name))
             .ToList();
 
         var allResults = new List<(BaseItem Item, float Score)>();
@@ -138,82 +141,97 @@ public class SimilarItemsManager : ISimilarItemsManager
                 break;
             }
 
-            if (provider is ILocalSimilarItemsProvider<T> localProvider)
+            try
             {
-                var query = new SimilarItemsQuery
+                if (provider is ILocalSimilarItemsProvider<T> localProvider)
                 {
-                    User = user,
-                    Limit = requestedLimit - allResults.Count,
-                    DtoOptions = dtoOptions,
-                    ExcludeItemIds = [.. excludeIds],
-                    ExcludeArtistIds = excludeArtistIds
-                };
-
-                var items = await localProvider.GetSimilarItemsAsync(item, query, cancellationToken).ConfigureAwait(false);
-
-                foreach (var (position, resultItem) in items.Index())
-                {
-                    if (excludeIds.Add(resultItem.Id))
+                    var query = new SimilarItemsQuery
                     {
-                        var score = CalculateScore(null, providerOrder, position);
-                        allResults.Add((resultItem, score));
-                    }
-                }
-            }
-            else if (provider is IRemoteSimilarItemsProvider<T> remoteProvider)
-            {
-                var cachePath = GetSimilarItemsCachePath(provider.Name, typeof(T).Name, item.Id);
+                        User = user,
+                        Limit = requestedLimit - allResults.Count,
+                        DtoOptions = dtoOptions,
+                        ExcludeItemIds = [.. excludeIds],
+                        ExcludeArtistIds = excludeArtistIds
+                    };
 
-                var cachedReferences = await TryReadSimilarItemsCacheAsync(cachePath, cancellationToken).ConfigureAwait(false);
-                if (cachedReferences is not null)
-                {
-                    var resolvedItems = ResolveRemoteReferences(cachedReferences, providerOrder, user, dtoOptions, itemKind, excludeIds);
-                    allResults.AddRange(resolvedItems);
-                    continue;
-                }
+                    var items = await localProvider.GetSimilarItemsAsync(item, query, cancellationToken).ConfigureAwait(false);
 
-                var query = new SimilarItemsQuery
-                {
-                    User = user,
-                    Limit = requestedLimit - allResults.Count,
-                    DtoOptions = dtoOptions,
-                    ExcludeItemIds = [.. excludeIds],
-                    ExcludeArtistIds = excludeArtistIds
-                };
-
-                var batchSize = 20;
-                var collectedReferences = new List<SimilarItemReference>();
-                var pendingBatch = new List<SimilarItemReference>();
-
-                await foreach (var reference in remoteProvider.GetSimilarItemsAsync(item, query, cancellationToken).ConfigureAwait(false))
-                {
-                    collectedReferences.Add(reference);
-                    pendingBatch.Add(reference);
-
-                    // Resolve batch when full to check if we have enough local matches
-                    if (pendingBatch.Count >= batchSize)
+                    foreach (var (position, resultItem) in items.Index())
                     {
-                        var batchResults = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
-                        allResults.AddRange(batchResults);
-                        pendingBatch.Clear();
-
-                        if (allResults.Count >= requestedLimit)
+                        if (excludeIds.Add(resultItem.Id))
                         {
-                            break;
+                            var score = CalculateScore(null, providerOrder, position);
+                            allResults.Add((resultItem, score));
                         }
                     }
                 }
-
-                if (pendingBatch.Count > 0)
+                else if (provider is IRemoteSimilarItemsProvider<T> remoteProvider)
                 {
-                    var batchResults = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
-                    allResults.AddRange(batchResults);
-                }
+                    var cachePath = GetSimilarItemsCachePath(provider.Name, typeof(T).Name, item.Id);
 
-                if (collectedReferences.Count > 0 && provider.CacheDuration is not null)
-                {
-                    await SaveSimilarItemsCacheAsync(cachePath, collectedReferences, provider.CacheDuration.Value, cancellationToken).ConfigureAwait(false);
+                    var cachedReferences = await TryReadSimilarItemsCacheAsync(cachePath, cancellationToken).ConfigureAwait(false);
+                    if (cachedReferences is not null)
+                    {
+                        var resolvedItems = ResolveRemoteReferences(cachedReferences, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                        allResults.AddRange(resolvedItems);
+                        continue;
+                    }
+
+                    var query = new SimilarItemsQuery
+                    {
+                        User = user,
+                        Limit = requestedLimit - allResults.Count,
+                        DtoOptions = dtoOptions,
+                        ExcludeItemIds = [.. excludeIds],
+                        ExcludeArtistIds = excludeArtistIds
+                    };
+
+                    // Collect references in batches and resolve against local library.
+                    // Stop fetching once we have enough resolved local items.
+                    const int BatchSize = 20;
+                    var remaining = requestedLimit - allResults.Count;
+                    var collectedReferences = new List<SimilarItemReference>();
+                    var pendingBatch = new List<SimilarItemReference>();
+
+                    await foreach (var reference in remoteProvider.GetSimilarItemsAsync(item, query, cancellationToken).ConfigureAwait(false))
+                    {
+                        collectedReferences.Add(reference);
+                        pendingBatch.Add(reference);
+
+                        if (pendingBatch.Count >= BatchSize)
+                        {
+                            var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                            allResults.AddRange(resolvedItems);
+                            remaining -= resolvedItems.Count;
+                            pendingBatch.Clear();
+
+                            if (remaining <= 0)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Resolve any remaining references in the last partial batch
+                    if (pendingBatch.Count > 0)
+                    {
+                        var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                        allResults.AddRange(resolvedItems);
+                    }
+
+                    if (collectedReferences.Count > 0 && provider.CacheDuration is not null)
+                    {
+                        await SaveSimilarItemsCacheAsync(cachePath, collectedReferences, provider.CacheDuration.Value, cancellationToken).ConfigureAwait(false);
+                    }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Similar items provider {ProviderName} failed for item {ItemId}", provider.Name, item.Id);
             }
         }
 
