@@ -68,22 +68,24 @@ public sealed partial class BaseItemRepository
         // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
 
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        // Use Min(Id) instead of OrderBy(Id).FirstOrDefault() to avoid EF Core generating
-        // a correlated scalar subquery per group.
+        // Materialize GroupBy IDs first to split the complex expression tree.
+        // This runs the filter+GroupBy+Min as one simple SQL query, then the downstream
+        // Order/Paging/Navigations work on a flat WHERE Id IN (...) list, avoiding
+        // EF Core having to compile a deeply nested expression tree.
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id)).ToList();
+            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id)).ToList();
+            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var tempQuery = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => tempQuery.Contains(e.Id));
+            var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id)).ToList();
+            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else
         {

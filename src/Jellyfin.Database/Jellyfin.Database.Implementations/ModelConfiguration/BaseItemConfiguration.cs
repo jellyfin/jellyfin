@@ -65,6 +65,8 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => new { e.Type, e.TopParentId, e.SortName });
         // NextUp: per-series episode ordering (index seek + range scan on season/episode)
         builder.HasIndex(e => new { e.Type, e.SeriesPresentationUniqueKey, e.ParentIndexNumber, e.IndexNumber });
+        // ByName queries: WHERE Type = X AND CleanName IN (...)
+        builder.HasIndex(e => new { e.Type, e.CleanName });
         // Latest TV: GROUP BY SeriesName
         builder.HasIndex(e => e.SeriesName);
         // Latest TV: episode count per season, season count per series

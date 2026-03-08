@@ -181,7 +181,7 @@ public sealed partial class BaseItemRepository
         var firstIds = allItemsLite
             .DistinctBy(e => e.GroupKey)
             .Select(e => e.Id)
-            .AsEnumerable();
+            .ToList();
 
         var itemsQuery = context.BaseItems.AsNoTracking().Where(e => firstIds.Contains(e.Id));
         itemsQuery = ApplyNavigations(itemsQuery, filter);
@@ -236,13 +236,18 @@ public sealed partial class BaseItemRepository
             topSeriesWithDates = topSeriesWithDates.Take(limit.Value).OrderByDescending(g => g.MaxDate);
         }
 
-        var topSeriesNames = topSeriesWithDates.Select(g => g.SeriesName).AsEnumerable();
+        // Materialize series names and cutoff to avoid embedding the GroupBy+OrderBy
+        // expression tree as a subquery inside the episode query.
+        var topSeriesData = topSeriesWithDates
+            .Select(g => new { g.SeriesName, g.MaxDate })
+            .ToList();
+        var topSeriesNames = topSeriesData.Select(g => g.SeriesName).ToList();
 
         // Compute a global date cutoff: the oldest series' max date minus the window.
         // Episodes before this cutoff cannot be in any series' "recent additions" window,
         // so we can safely exclude them to avoid loading ancient episodes.
-        var globalCutoff = topSeriesWithDates.Any()
-            ? topSeriesWithDates.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
+        var globalCutoff = topSeriesData.Count > 0
+            ? topSeriesData.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
             : null;
 
         // Fetch only the columns needed for analysis (lightweight projection).
@@ -530,7 +535,7 @@ public sealed partial class BaseItemRepository
             .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
             .Select(ivm => ivm.ItemValue)
             .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
+            .Select(g => g.Min(iv => iv.Value))
             .OrderBy(t => t)
             .ToArray();
 
@@ -539,7 +544,7 @@ public sealed partial class BaseItemRepository
             .Where(ivm => matchingItemIds.Contains(ivm.ItemId))
             .Select(ivm => ivm.ItemValue)
             .GroupBy(iv => iv.CleanValue)
-            .Select(g => g.OrderBy(iv => iv.Value).First().Value)
+            .Select(g => g.Min(iv => iv.Value))
             .OrderBy(g => g)
             .ToArray();
 

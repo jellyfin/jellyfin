@@ -380,6 +380,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("TopParentId", "Id");
 
+                    b.HasIndex("Type", "CleanName");
+
                     b.HasIndex("Type", "TopParentId", "Id");
 
                     b.HasIndex("Type", "TopParentId", "PresentationUniqueKey");

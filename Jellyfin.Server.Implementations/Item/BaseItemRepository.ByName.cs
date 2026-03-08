@@ -99,10 +99,9 @@ public sealed partial class BaseItemRepository
             query = query.Where(e => !excludeItemTypes.Contains(e.Item.Type));
         }
 
-        // query = query.DistinctBy(e => e.CleanValue);
         return query.Select(e => e.ItemValue)
             .GroupBy(e => e.CleanValue)
-            .Select(e => e.OrderBy(v => v.Value).First().Value)
+            .Select(g => g.Min(v => v.Value)!)
             .ToArray();
     }
 
@@ -133,17 +132,22 @@ public sealed partial class BaseItemRepository
             IsNews = filter.IsNews,
             IsSeries = filter.IsSeries
         });
-        var itemValuesQuery = context.ItemValuesMap
+
+        // Materialize the matching CleanValues early. This splits one massive expression tree
+        // into two simpler queries, dramatically reducing EF Core expression compilation time.
+        var matchingCleanValues = context.ItemValuesMap
             .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
             .Join(
                 innerQueryFilter,
                 ivm => ivm.ItemId,
                 g => g.Id,
-                (ivm, g) => ivm.ItemValue.CleanValue);
+                (ivm, g) => ivm.ItemValue.CleanValue)
+            .Distinct()
+            .ToList();
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
-            .Where(e => itemValuesQuery.Contains(e.CleanName));
+            .Where(e => matchingCleanValues.Contains(e.CleanName!));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
@@ -166,42 +170,39 @@ public sealed partial class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
-        var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
+        // Materialize the matching IDs first. This keeps the complex nested subquery
+        // (inner filter + ItemValues join + search + GroupBy) as a single simple SQL statement,
+        // and then the entity load with Includes uses a flat WHERE Id IN (...) list.
+        // This avoids EF having to compile the entire nested expression tree into the final query.
+        var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter);
+
+        var orderedMasterQuery = ApplyOrder(masterQuery, filter, context)
             .GroupBy(e => e.PresentationUniqueKey)
-            .Select(e => e.OrderBy(x => x.Id).FirstOrDefault())
-            .Select(e => e!.Id);
-
-        var query = context.BaseItems
-            .Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields)
-            .Include(e => e.Images)
-            .Include(e => e.LinkedChildEntities)
-            .AsSingleQuery()
-            .Where(e => masterQuery.Contains(e.Id));
-
-        query = ApplyOrder(query, filter, context);
+            .Select(g => g.Min(e => e.Id));
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
         {
-            result.TotalRecordCount = query.Count();
+            result.TotalRecordCount = orderedMasterQuery.Count();
         }
 
-        if (filter.Limit.HasValue || filter.StartIndex.HasValue)
+        if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
         {
-            var offset = filter.StartIndex ?? 0;
-
-            if (offset > 0)
-            {
-                query = query.Skip(offset);
-            }
-
-            if (filter.Limit.HasValue)
-            {
-                query = query.Take(filter.Limit.Value);
-            }
+            orderedMasterQuery = orderedMasterQuery.Skip(filter.StartIndex.Value);
         }
+
+        if (filter.Limit.HasValue)
+        {
+            orderedMasterQuery = orderedMasterQuery.Take(filter.Limit.Value);
+        }
+
+        var masterIds = orderedMasterQuery.ToList();
+
+        var query = ApplyNavigations(
+                context.BaseItems.AsSingleQuery().Where(e => masterIds.Contains(e.Id)),
+                filter);
+
+        query = ApplyOrder(query, filter, context);
 
         if (filter.IncludeItemTypes.Length > 0)
         {
@@ -229,8 +230,8 @@ public sealed partial class BaseItemRepository
             var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
 
-            // Get the IDs from itemCountQuery to use in the join
-            var itemIds = itemCountQuery.Select(e => e.Id);
+            // Materialize the matching IDs to avoid nested subquery in the counts expression tree.
+            var itemIds = itemCountQuery.Select(e => e.Id).ToList();
 
             // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
             // Instead, start from ItemValueMaps and join with BaseItems

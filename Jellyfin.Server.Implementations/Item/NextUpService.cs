@@ -97,17 +97,28 @@ public class NextUpService : INextUpService
             .Where(e => e.ParentIndexNumber != 0)
             .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
         lastWatchedBase = _queryHelpers.ApplyAccessFiltering(context, lastWatchedBase, filter);
-        var lastWatchedInfo = lastWatchedBase
-            .GroupBy(e => e.SeriesPresentationUniqueKey)
-            .Select(g => new
+
+        // Use lightweight projection + client-side grouping to avoid correlated scalar subquery
+        // per group that EF generates for GroupBy+OrderByDescending+FirstOrDefault.
+        var allPlayedLite = lastWatchedBase
+            .Select(e => new
             {
-                SeriesKey = g.Key!,
-                LastWatchedId = g.OrderByDescending(e => e.ParentIndexNumber)
-                                 .ThenByDescending(e => e.IndexNumber)
-                                 .Select(e => e.Id)
-                                 .FirstOrDefault()
+                e.Id,
+                e.SeriesPresentationUniqueKey,
+                e.ParentIndexNumber,
+                e.IndexNumber
             })
-            .ToDictionary(x => x.SeriesKey, x => x.LastWatchedId);
+            .ToList();
+
+        var lastWatchedInfo = new Dictionary<string, Guid>();
+        foreach (var group in allPlayedLite.GroupBy(e => e.SeriesPresentationUniqueKey))
+        {
+            var lastWatched = group
+                .OrderByDescending(e => e.ParentIndexNumber)
+                .ThenByDescending(e => e.IndexNumber)
+                .First();
+            lastWatchedInfo[group.Key!] = lastWatched.Id;
+        }
 
         Dictionary<string, Guid> lastWatchedByDateInfo = new();
         if (includeWatchedForRewatching)
@@ -119,18 +130,19 @@ public class NextUpService : INextUpService
                 .Where(e => e.ParentIndexNumber != 0)
                 .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
             lastWatchedByDateBase = _queryHelpers.ApplyAccessFiltering(context, lastWatchedByDateBase, filter);
-            lastWatchedByDateInfo = lastWatchedByDateBase
+
+            // Use lightweight projection + client-side grouping instead of
+            // SelectMany+GroupBy+OrderByDescending+FirstOrDefault (correlated subquery).
+            var playedWithDates = lastWatchedByDateBase
                 .SelectMany(e => e.UserData!.Where(ud => ud.UserId == userId && ud.Played)
-                    .Select(ud => new { Episode = e, ud.LastPlayedDate }))
-                .GroupBy(x => x.Episode.SeriesPresentationUniqueKey)
-                .Select(g => new
-                {
-                    SeriesKey = g.Key!,
-                    LastWatchedId = g.OrderByDescending(x => x.LastPlayedDate)
-                                     .Select(x => x.Episode.Id)
-                                     .FirstOrDefault()
-                })
-                .ToDictionary(x => x.SeriesKey, x => x.LastWatchedId);
+                    .Select(ud => new { EpisodeId = e.Id, e.SeriesPresentationUniqueKey, ud.LastPlayedDate }))
+                .ToList();
+
+            foreach (var group in playedWithDates.GroupBy(x => x.SeriesPresentationUniqueKey))
+            {
+                var mostRecent = group.OrderByDescending(x => x.LastPlayedDate).First();
+                lastWatchedByDateInfo[group.Key!] = mostRecent.EpisodeId;
+            }
         }
 
         var allLastWatchedIds = lastWatchedInfo.Values
