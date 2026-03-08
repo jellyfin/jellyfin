@@ -152,6 +152,12 @@ public sealed class TranscodingJob : IDisposable
     public int PingTimeout { get; set; }
 
     /// <summary>
+    /// Gets or sets the segment index at which the current transcode started.
+    /// Used to distinguish stale segment files from previous transcodes.
+    /// </summary>
+    public int TranscodeStartSegment { get; set; }
+
+    /// <summary>
     /// Stop kill timer.
     /// </summary>
     public void StopKillTimer()

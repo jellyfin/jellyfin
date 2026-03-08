@@ -1459,9 +1459,25 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (System.IO.File.Exists(segmentPath))
         {
-            job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-            _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            var existingJob = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType);
+
+            // No active transcode — all files on disk are final and safe to serve
+            if (existingJob is null || existingJob.HasExited)
+            {
+                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                _logger.LogDebug("returning {0} [it exists, no active transcode]", segmentPath);
+                return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Segment predates the current transcode's start — written by a previous run, still valid
+            if (segmentId < existingJob.TranscodeStartSegment)
+            {
+                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                _logger.LogDebug("returning {0} [it exists, before current transcode start {1}]", segmentPath, existingJob.TranscodeStartSegment);
+                return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Segment index overlaps with current transcode range — could be stale, must go through lock
         }
 
         using (await _transcodeManager.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
@@ -1469,9 +1485,25 @@ public class DynamicHlsController : BaseJellyfinApiController
             var startTranscoding = false;
             if (System.IO.File.Exists(segmentPath))
             {
-                job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
-                return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+                var existingJob = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType);
+
+                // No active transcode — all files on disk are final and safe to serve
+                if (existingJob is null || existingJob.HasExited)
+                {
+                    job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                    _logger.LogDebug("returning {0} [it exists, no active transcode]", segmentPath);
+                    return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+                }
+
+                // Segment predates the current transcode's start — written by a previous run, still valid
+                if (segmentId < existingJob.TranscodeStartSegment)
+                {
+                    job = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                    _logger.LogDebug("returning {0} [it exists, before current transcode start {1}]", segmentPath, existingJob.TranscodeStartSegment);
+                    return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+                }
+
+                // Segment index overlaps with current transcode range — could be stale, fall through to startTranscoding decision
             }
 
             var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
@@ -1522,6 +1554,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                         Request.HttpContext.User.GetUserId(),
                         TranscodingJobType,
                         cancellationTokenSource).ConfigureAwait(false);
+                    job.TranscodeStartSegment = segmentId;
                 }
                 catch
                 {
