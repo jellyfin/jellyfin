@@ -146,14 +146,6 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                // Plain organizational folders and box sets trigger per-folder recursive
-                // DB queries that are prohibitively expensive (N+1 pattern).
-                // Specialized types that genuinely need it (Season, MusicAlbum) are not affected.
-                if (GetType() == typeof(Folder) || this is Movies.BoxSet)
-                {
-                    return false;
-                }
-
                 if (this is UserView)
                 {
                     return false;
