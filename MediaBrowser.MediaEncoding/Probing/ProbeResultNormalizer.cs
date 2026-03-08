@@ -968,55 +968,43 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            // Get stream bitrate
-            var bitrate = 0;
+            int bitrate = 0;
 
-            if (int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
+            // Extract bitrate from "BPS" tag (FFPROBE per-stream data rate), only for Matroska.
+            if ((streamInfo.CodecType == CodecType.Audio || streamInfo.CodecType == CodecType.Video)
+                && formatInfo?.FormatName is not null
+                && formatInfo.FormatName.Contains("matroska", StringComparison.OrdinalIgnoreCase))
             {
-                bitrate = value;
+                bitrate = GetBPSFromTags(streamInfo);
             }
 
-            // The bitrate info of FLAC musics and some videos is included in formatInfo.
-            if (bitrate == 0
-                && formatInfo is not null
-                && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
+            // Use the standard stream bitrate field
+            if (bitrate <= 0 && int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var streamVal))
             {
-                // If the stream info doesn't have a bitrate get the value from the media format info
-                if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out value))
+                bitrate = streamVal;
+            }
+
+            // FALLBACK Calculate BPS from total bytes and duration tags
+            if (bitrate <= 0)
+            {
+                var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
+                var bytes = GetNumberOfBytesFromTags(streamInfo);
+
+                if (durationInSeconds is { } dur && dur >= 1 && bytes is { } totalBytes)
                 {
-                    bitrate = value;
+                    bitrate = Convert.ToInt32(totalBytes * 8 / dur, CultureInfo.InvariantCulture);
                 }
+            }
+
+            // Use the global format info (useful for FLAC or single-stream containers)
+            if (bitrate <= 0 && formatInfo != null && int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out var formatVal))
+            {
+                bitrate = formatVal;
             }
 
             if (bitrate > 0)
             {
                 stream.BitRate = bitrate;
-            }
-
-            // Extract bitrate info from tag "BPS" if possible.
-            if (!stream.BitRate.HasValue
-                && (streamInfo.CodecType == CodecType.Audio
-                    || streamInfo.CodecType == CodecType.Video))
-            {
-                var bps = GetBPSFromTags(streamInfo);
-                if (bps > 0)
-                {
-                    stream.BitRate = bps;
-                }
-                else
-                {
-                    // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
-                    var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
-                    var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
-                    {
-                        bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
-                        if (bps > 0)
-                        {
-                            stream.BitRate = bps;
-                        }
-                    }
-                }
             }
 
             var disposition = streamInfo.Disposition;
@@ -1235,20 +1223,21 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private static int? GetBPSFromTags(MediaStreamInfo streamInfo)
+        private static int GetBPSFromTags(MediaStreamInfo streamInfo)
         {
             if (streamInfo?.Tags is null)
             {
-                return null;
+                return 0;
             }
 
             var bps = GetDictionaryValue(streamInfo.Tags, "BPS-eng") ?? GetDictionaryValue(streamInfo.Tags, "BPS");
+
             if (int.TryParse(bps, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedBps))
             {
                 return parsedBps;
             }
 
-            return null;
+            return 0;
         }
 
         private static double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
