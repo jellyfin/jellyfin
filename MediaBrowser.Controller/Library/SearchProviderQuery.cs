@@ -1,5 +1,6 @@
 using System;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Dto;
 
 namespace MediaBrowser.Controller.Library;
 
@@ -49,4 +50,10 @@ public class SearchProviderQuery
     /// (excluding user-specific data like play state, favorites, etc.).
     /// </summary>
     public bool IncludeItemData { get; init; }
+
+    /// <summary>
+    /// Gets the DTO options to use when loading items.
+    /// When set, providers should use these options to load items with the correct fields.
+    /// </summary>
+    public DtoOptions? DtoOptions { get; init; }
 }

@@ -66,7 +66,8 @@ public class SqlSearchProvider : IInternalSearchProvider
             Recursive = true,
             IncludeItemsByName = !query.ParentId.HasValue,
             ParentId = query.ParentId ?? Guid.Empty,
-            DtoOptions = new DtoOptions(false)
+            DtoOptions = query.DtoOptions ?? new DtoOptions(false),
+            SkipDeserialization = true
         };
 
         var items = _libraryManager.GetItemList(internalQuery);

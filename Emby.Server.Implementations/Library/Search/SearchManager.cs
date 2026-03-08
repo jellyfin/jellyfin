@@ -81,7 +81,8 @@ public class SearchManager : ISearchManager
             MediaTypes = query.MediaTypes,
             Limit = query.Limit,
             ParentId = query.ParentId,
-            IncludeItemData = true
+            IncludeItemData = true,
+            DtoOptions = query.DtoOptions
         };
 
         var candidates = await GetResultsWithDataFromProvidersAsync(_externalProviders, queryWithItems, searchTerm, cancellationToken).ConfigureAwait(false);
