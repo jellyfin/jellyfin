@@ -1552,21 +1552,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             int bitrate = state.OutputVideoBitrate.Value;
 
-            // Bit rate under 1000k is not allowed in h264_qsv
+            // Bit rate under 1000k is not allowed in h264_qsv.
+            // Also cap to 50 Mbps: H.264 Level 4.2 (most common for 1080p QSV) has a CPB
+            // limit of 62.5 Mbit, so 50 Mbps keeps derived values within spec. HEVC/AV1
+            // encoders have much higher level limits and are not affected by this cap.
             if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                bitrate = Math.Max(bitrate, 1000);
-            }
-
-            // h264_qsv is typically used with H.264 Level 4.2, whose VBV/CPB limits
-            // are far lower than other codec families. Cap the bitrate to 50 Mbps to
-            // prevent the downstream rate-control parameters (especially bitrate * 4 for
-            // bufsize) from overflowing int32 or exceeding spec limits when the source
-            // reports an absurdly high bitrate (e.g. Live TV with no bitrate metadata).
-            // HEVC/AV1 encoders have much higher level limits and are not affected.
-            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-            {
-                bitrate = Math.Min(bitrate, 50_000_000);
+                bitrate = Math.Clamp(bitrate, 1000, 50_000_000);
             }
 
             // Currently use the same buffer size for all non-QSV encoders.
@@ -1588,45 +1580,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || string.Equals(videoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoCodec, "av1_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // TODO: probe QSV encoders' capabilities and enable more tuning options
-                // See also https://github.com/intel/media-delivery/blob/master/doc/quality.rst
-
-                // Enable MacroBlock level bitrate control for better subjective visual quality
-                var mbbrcOpt = string.Empty;
-                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(videoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
-                {
-                    mbbrcOpt = " -mbbrc 1";
-                }
-
-                // Set (maxrate == bitrate + 1) to trigger VBR for better bitrate allocation
-                // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
-                // Use long arithmetic and clamp to int.MaxValue to prevent int32 overflow
-                // (e.g. bitrate * 4 wraps to a negative value for bitrates above ~537 million)
-                long qsvMaxrate = Math.Min((long)bitrate + 1, int.MaxValue);
-                long qsvInitOcc = Math.Min((long)bitrate * 2, int.MaxValue);
-                long qsvBufsize = Math.Min((long)bitrate * 4, int.MaxValue);
-
-                // For h264_qsv, clamp bufsize, rc_init_occupancy and maxrate to the H.264
-                // level's max CPB size. Sending values that exceed the spec limit is incorrect
-                // and may cause issues on strict encoder implementations. For example, with
-                // bitrate = 50 Mbps and Level 4.2, bufsize would be 200 Mbit, well above the
-                // Level 4.2 CPB limit of 62.5 Mbit.
-                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Level is stored under the codec name "h264", not the encoder
-                    // name "h264_qsv" — GetRequestedLevel checks BaseRequest.Level first.
-                    var levelStr = state.GetRequestedLevel("h264");
-                    if (!string.IsNullOrEmpty(levelStr))
-                    {
-                        long maxCpb = GetH264HighProfileMaxCpbBits(levelStr);
-                        qsvBufsize = Math.Min(qsvBufsize, maxCpb);
-                        qsvInitOcc = Math.Min(qsvInitOcc, qsvBufsize);
-                        qsvMaxrate = Math.Min(qsvMaxrate, maxCpb);
-                    }
-                }
-
-                return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {qsvMaxrate} -rc_init_occupancy {qsvInitOcc} -bufsize {qsvBufsize}");
+                return GetQsvRateControlParams(state, videoCodec, bitrate);
             }
 
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
@@ -1659,6 +1613,63 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+        }
+
+        /// <summary>
+        /// Builds the QSV-specific rate-control parameters for h264_qsv, hevc_qsv and av1_qsv.
+        /// Extracted from <see cref="GetVideoBitrateParam"/> to reduce cognitive complexity.
+        /// </summary>
+        private string GetQsvRateControlParams(EncodingJobInfo state, string videoCodec, int bitrate)
+        {
+            // TODO: probe QSV encoders' capabilities and enable more tuning options
+            // See also https://github.com/intel/media-delivery/blob/master/doc/quality.rst
+
+            // Enable MacroBlock level bitrate control for better subjective visual quality
+            var mbbrcOpt = string.Empty;
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                mbbrcOpt = " -mbbrc 1";
+            }
+
+            // Set (maxrate == bitrate + 1) to trigger VBR for better bitrate allocation
+            // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
+            // Use long arithmetic and clamp to int.MaxValue to prevent int32 overflow
+            // (e.g. bitrate * 4 wraps to a negative value for bitrates above ~537 million)
+            long qsvMaxrate = Math.Min((long)bitrate + 1, int.MaxValue);
+            long qsvInitOcc = Math.Min((long)bitrate * 2, int.MaxValue);
+            long qsvBufsize = Math.Min((long)bitrate * 4, int.MaxValue);
+
+            // For h264_qsv, clamp bufsize, rc_init_occupancy and maxrate to the H.264
+            // level's max CPB size. Sending values that exceed the spec limit is incorrect
+            // and may cause issues on strict encoder implementations. For example, with
+            // bitrate = 50 Mbps and Level 4.2, bufsize would be 200 Mbit, well above the
+            // Level 4.2 CPB limit of 62.5 Mbit.
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                ClampQsvParamsToCpb(state, ref qsvMaxrate, ref qsvInitOcc, ref qsvBufsize);
+            }
+
+            return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {qsvMaxrate} -rc_init_occupancy {qsvInitOcc} -bufsize {qsvBufsize}");
+        }
+
+        /// <summary>
+        /// Clamps QSV rate-control values to the H.264 level's max CPB size when the level is known.
+        /// </summary>
+        private static void ClampQsvParamsToCpb(EncodingJobInfo state, ref long qsvMaxrate, ref long qsvInitOcc, ref long qsvBufsize)
+        {
+            // Level is stored under the codec name "h264", not the encoder
+            // name "h264_qsv" — GetRequestedLevel checks BaseRequest.Level first.
+            var levelStr = state.GetRequestedLevel("h264");
+            if (string.IsNullOrEmpty(levelStr))
+            {
+                return;
+            }
+
+            long maxCpb = GetH264HighProfileMaxCpbBits(levelStr);
+            qsvBufsize = Math.Min(qsvBufsize, maxCpb);
+            qsvInitOcc = Math.Min(qsvInitOcc, qsvBufsize);
+            qsvMaxrate = Math.Min(qsvMaxrate, maxCpb);
         }
 
         private string GetEncoderParam(EncoderPreset? preset, EncoderPreset defaultPreset, EncodingOptions encodingOptions, string videoEncoder, bool isLibX265)
