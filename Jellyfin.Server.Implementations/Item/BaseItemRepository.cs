@@ -1322,7 +1322,7 @@ public sealed class BaseItemRepository
 
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter)
             .GroupBy(e => e.PresentationUniqueKey)
-            .Select(e => e.FirstOrDefault())
+            .Select(e => e.OrderBy(x => x.Id).FirstOrDefault())
             .Select(e => e!.Id);
 
         var query = context.BaseItems
