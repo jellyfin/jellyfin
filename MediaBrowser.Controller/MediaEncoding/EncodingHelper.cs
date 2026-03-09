@@ -1543,7 +1543,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return ".ts";
         }
 
-        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
+        internal string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
             if (state.OutputVideoBitrate is null)
             {
@@ -1558,8 +1558,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                 bitrate = Math.Max(bitrate, 1000);
             }
 
-            // Currently use the same buffer size for all encoders
-            int bufsize = bitrate * 2;
+            // h264_qsv is typically used with H.264 Level 4.2, whose VBV/CPB limits
+            // are far lower than other codec families. Cap the bitrate to 50 Mbps to
+            // prevent the downstream rate-control parameters (especially bitrate * 4 for
+            // bufsize) from overflowing int32 or exceeding spec limits when the source
+            // reports an absurdly high bitrate (e.g. Live TV with no bitrate metadata).
+            // HEVC/AV1 encoders have much higher level limits and are not affected.
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                bitrate = Math.Min(bitrate, 50_000_000);
+            }
+
+            // Currently use the same buffer size for all non-QSV encoders.
+            // Use long arithmetic to prevent int32 overflow for very high bitrate values.
+            int bufsize = (int)Math.Min((long)bitrate * 2, int.MaxValue);
 
             if (string.Equals(videoCodec, "libsvtav1", StringComparison.OrdinalIgnoreCase))
             {
@@ -1589,7 +1601,32 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // Set (maxrate == bitrate + 1) to trigger VBR for better bitrate allocation
                 // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
-                return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {bitrate + 1} -rc_init_occupancy {bitrate * 2} -bufsize {bitrate * 4}");
+                // Use long arithmetic and clamp to int.MaxValue to prevent int32 overflow
+                // (e.g. bitrate * 4 wraps to a negative value for bitrates above ~537 million)
+                long qsvMaxrate = Math.Min((long)bitrate + 1, int.MaxValue);
+                long qsvInitOcc = Math.Min((long)bitrate * 2, int.MaxValue);
+                long qsvBufsize = Math.Min((long)bitrate * 4, int.MaxValue);
+
+                // For h264_qsv, clamp bufsize, rc_init_occupancy and maxrate to the H.264
+                // level's max CPB size. Sending values that exceed the spec limit is incorrect
+                // and may cause issues on strict encoder implementations. For example, with
+                // bitrate = 50 Mbps and Level 4.2, bufsize would be 200 Mbit, well above the
+                // Level 4.2 CPB limit of 62.5 Mbit.
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Level is stored under the codec name "h264", not the encoder
+                    // name "h264_qsv" — GetRequestedLevel checks BaseRequest.Level first.
+                    var levelStr = state.GetRequestedLevel("h264");
+                    if (!string.IsNullOrEmpty(levelStr))
+                    {
+                        long maxCpb = GetH264HighProfileMaxCpbBits(levelStr);
+                        qsvBufsize = Math.Min(qsvBufsize, maxCpb);
+                        qsvInitOcc = Math.Min(qsvInitOcc, qsvBufsize);
+                        qsvMaxrate = Math.Min(qsvMaxrate, maxCpb);
+                    }
+                }
+
+                return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {qsvMaxrate} -rc_init_occupancy {qsvInitOcc} -bufsize {qsvBufsize}");
             }
 
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
@@ -7813,6 +7850,42 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // -vsync is deprecated in FFmpeg 5.1 and will be removed in the future.
             return $" -vsync {videoSync}";
+        }
+
+        /// <summary>
+        /// Returns the maximum CPB (Coded Picture Buffer) size in bits for a given H.264 level,
+        /// based on ITU-T H.264 Table A-1. Values are the base-profile MaxCPB (in kbits × 1000).
+        /// For High profile the actual limit is 25% higher, so these act as conservative lower bounds.
+        /// </summary>
+        /// <param name="level">H.264 level in FFmpeg integer notation (e.g. "42" for Level 4.2).</param>
+        /// <returns>MaxCPB in bits, or <see cref="long.MaxValue"/> if the level is not recognized.</returns>
+        internal static long GetH264HighProfileMaxCpbBits(string level)
+        {
+            // H.264 Table A-1 MaxCPB in kbits (× 1000 for bits). These are base-profile
+            // values; High profile allows 1.25× more, so capping here is conservative.
+            return level switch
+            {
+                "10" => 175_000,
+                "11" => 500_000,
+                "12" => 1_000_000,
+                "13" => 2_000_000,
+                "20" => 2_000_000,
+                "21" => 4_000_000,
+                "22" => 4_000_000,
+                "30" => 10_000_000,
+                "31" => 14_000_000,
+                "32" => 20_000_000,
+                "40" => 25_000_000,
+                "41" => 62_500_000,
+                "42" => 62_500_000,
+                "50" => 168_750_000,
+                "51" => 168_750_000,
+                "52" => 168_750_000,
+                "60" => 800_000_000,
+                "61" => 800_000_000,
+                "62" => 800_000_000,
+                _ => long.MaxValue
+            };
         }
     }
 }
