@@ -447,6 +447,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.CanSeek = info.CanSeek;
             session.PlayState.IsMuted = info.IsMuted;
             session.PlayState.VolumeLevel = info.VolumeLevel;
+            session.PlayState.Speed = info.Speed;
             session.PlayState.AudioStreamIndex = info.AudioStreamIndex;
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;

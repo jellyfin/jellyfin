@@ -81,6 +81,12 @@ namespace MediaBrowser.Model.Session
 
         public int? Brightness { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed. 1.0 is normal speed.</value>
+        public float? Speed { get; set; }
+
         public string AspectRatio { get; set; }
 
         /// <summary>

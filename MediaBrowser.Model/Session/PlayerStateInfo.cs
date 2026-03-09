@@ -54,6 +54,12 @@ namespace MediaBrowser.Model.Session
         public string MediaSourceId { get; set; }
 
         /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed. 1.0 is normal speed.</value>
+        public float? Speed { get; set; }
+
+        /// <summary>
         /// Gets or sets the play method.
         /// </summary>
         /// <value>The play method.</value>

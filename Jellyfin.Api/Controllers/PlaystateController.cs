@@ -347,6 +347,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="repeatMode">The repeat mode.</param>
     /// <param name="isPaused">Indicates if the player is paused.</param>
     /// <param name="isMuted">Indicates if the player is muted.</param>
+    /// <param name="speed">The playback speed.</param>
     /// <response code="204">Play progress recorded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("PlayingItems/{itemId}/Progress")]
@@ -364,7 +365,8 @@ public class PlaystateController : BaseJellyfinApiController
         [FromQuery] string? playSessionId,
         [FromQuery] RepeatMode? repeatMode,
         [FromQuery] bool isPaused = false,
-        [FromQuery] bool isMuted = false)
+        [FromQuery] bool isMuted = false,
+        [FromQuery] float? speed = null)
     {
         var playbackProgressInfo = new PlaybackProgressInfo
         {
@@ -376,6 +378,7 @@ public class PlaystateController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             SubtitleStreamIndex = subtitleStreamIndex,
             VolumeLevel = volumeLevel,
+            Speed = speed,
             PlayMethod = playMethod ?? PlayMethod.Transcode,
             PlaySessionId = playSessionId,
             LiveStreamId = liveStreamId,
@@ -404,6 +407,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="repeatMode">The repeat mode.</param>
     /// <param name="isPaused">Indicates if the player is paused.</param>
     /// <param name="isMuted">Indicates if the player is muted.</param>
+    /// <param name="speed">The playback speed.</param>
     /// <response code="204">Play progress recorded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/PlayingItems/{itemId}/Progress")]
@@ -424,8 +428,9 @@ public class PlaystateController : BaseJellyfinApiController
         [FromQuery] string? playSessionId,
         [FromQuery] RepeatMode? repeatMode,
         [FromQuery] bool isPaused = false,
-        [FromQuery] bool isMuted = false)
-        => OnPlaybackProgress(itemId, mediaSourceId, positionTicks, audioStreamIndex, subtitleStreamIndex, volumeLevel, playMethod, liveStreamId, playSessionId, repeatMode, isPaused, isMuted);
+        [FromQuery] bool isMuted = false,
+        [FromQuery] float? speed = null)
+        => OnPlaybackProgress(itemId, mediaSourceId, positionTicks, audioStreamIndex, subtitleStreamIndex, volumeLevel, playMethod, liveStreamId, playSessionId, repeatMode, isPaused, isMuted, speed);
 
     /// <summary>
     /// Reports that a session has stopped playing an item.
