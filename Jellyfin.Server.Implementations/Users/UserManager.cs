@@ -886,7 +886,7 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             const int MaxRetries = 3;
-            for (int attempt = 0; attempt < MaxRetries; attempt++)
+            for (int attempt = 1; attempt <= MaxRetries; attempt++)
             {
                 try
                 {
@@ -901,8 +901,9 @@ namespace Jellyfin.Server.Implementations.Users
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     return;
                 }
-                catch (DbUpdateConcurrencyException) when (attempt < MaxRetries - 1)
+                catch (DbUpdateConcurrencyException ex) when (attempt < MaxRetries)
                 {
+                    _logger.LogWarning(ex, "DbUpdateConcurrencyException on attempt {Attempt} of {MaxRetries} for user {UserId}. Retrying.", attempt, MaxRetries, user.Id);
                     // Another concurrent operation modified the User row, causing the RowVersion
                     // concurrency check to fail. Refresh the original values from the database
                     // while preserving our in-memory property changes (last-writer-wins).
