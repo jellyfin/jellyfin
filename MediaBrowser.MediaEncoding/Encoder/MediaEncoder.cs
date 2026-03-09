@@ -888,6 +888,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
+            // For interlaced content, the reported frame rate may be the field rate (e.g. 50 for 25fps interlaced).
+            // Discounting the field rate avoids producing trickplay images with incorrect timestamps.
+            if (imageStream.IsInterlaced)
+            {
+                if (imageStream.AverageFrameRate.HasValue)
+                {
+                    imageStream.AverageFrameRate /= 2;
+                }
+
+                if (imageStream.RealFrameRate.HasValue)
+                {
+                    imageStream.RealFrameRate /= 2;
+                }
+            }
+
             var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
             var jobState = new EncodingJobInfo(TranscodingJobType.Progressive)
             {
