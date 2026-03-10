@@ -194,20 +194,23 @@ public sealed partial class BaseItemRepository
     {
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            var nameStartsWithLower = filter.NameStartsWith.ToLowerInvariant();
-            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().StartsWith(nameStartsWithLower));
+            var paddedPrefix = BaseItem.NormalizeSortNameFilter(filter.NameStartsWith);
+            var rawPrefix = filter.NameStartsWith.ToLowerInvariant();
+            dbQuery = dbQuery.Where(e =>
+                e.SortName!.ToLower().StartsWith(paddedPrefix)
+                || e.SortName!.ToLower().TrimStart('0').StartsWith(rawPrefix));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
-            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(startsOrGreaterLower) >= 0);
+            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameStartsWithOrGreater);
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(paddedValue) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(lessThanLower) < 0);
+            var paddedValue = BaseItem.NormalizeSortNameFilter(filter.NameLessThan);
+            dbQuery = dbQuery.Where(e => e.SortName!.ToLower().CompareTo(paddedValue) < 0);
         }
 
         return dbQuery;
