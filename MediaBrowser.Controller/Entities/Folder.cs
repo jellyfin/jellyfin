@@ -1031,17 +1031,22 @@ namespace MediaBrowser.Controller.Entities
 #pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
+                var paddedValue = BaseItem.NormalizeSortNameFilter(query.NameStartsWithOrGreater);
+                items = items.Where(i => string.Compare(paddedValue, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
             }
 
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
+                var paddedPrefix = BaseItem.NormalizeSortNameFilter(query.NameStartsWith);
+                items = items.Where(i =>
+                    i.SortName.StartsWith(paddedPrefix, StringComparison.InvariantCultureIgnoreCase)
+                    || i.SortName.TrimStart('0').StartsWith(query.NameStartsWith!, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
+                var paddedValue = BaseItem.NormalizeSortNameFilter(query.NameLessThan);
+                items = items.Where(i => string.Compare(paddedValue, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
 #pragma warning restore CA1309
 

@@ -960,7 +960,22 @@ namespace MediaBrowser.Controller.Entities
             return ModifySortChunks(sortable);
         }
 
-        internal static string ModifySortChunks(ReadOnlySpan<char> name)
+        /// <summary>
+        /// Normalizes a user-provided name filter value to match against <see cref="SortName"/>.
+        /// Applies the same zero-padding, diacritics removal, and transliteration as sort name generation.
+        /// </summary>
+        /// <param name="input">The raw filter value from the API.</param>
+        /// <returns>The normalized value suitable for comparison against SortName.</returns>
+        public static string NormalizeSortNameFilter(string input)
+            => ModifySortChunks(input).ToLowerInvariant();
+
+        /// <summary>
+        /// Processes a name by zero-padding numeric chunks to 10 digits for natural sort order,
+        /// removing diacritics, and transliterating non-ASCII characters.
+        /// </summary>
+        /// <param name="name">The input name to process.</param>
+        /// <returns>The processed string with padded numeric chunks.</returns>
+        public static string ModifySortChunks(ReadOnlySpan<char> name)
         {
             static void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
             {
