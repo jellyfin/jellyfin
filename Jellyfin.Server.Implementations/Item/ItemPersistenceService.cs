@@ -290,14 +290,15 @@ public class ItemPersistenceService : IItemPersistenceService
             .SelectMany(f => f.Values)
             .Distinct()
             .ToArray();
+
+        var types = allListedItemValues.Select(e => e.MagicNumber).Distinct().ToArray();
+        var values = allListedItemValues.Select(e => e.Value).Distinct().ToArray();
+        var allListedItemValuesSet = allListedItemValues.ToHashSet();
+
         var existingValues = context.ItemValues
-            .Select(e => new
-            {
-                item = e,
-                Key = e.Type + "+" + e.Value
-            })
-            .Where(f => allListedItemValues.Select(e => $"{(int)e.MagicNumber}+{e.Value}").Contains(f.Key))
-            .Select(e => e.item)
+            .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
+            .AsEnumerable()
+            .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
             .ToArray();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {

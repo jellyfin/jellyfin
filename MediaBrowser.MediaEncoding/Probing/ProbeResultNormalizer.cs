@@ -863,7 +863,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.IsAnamorphic = false;
                 }
-                else if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
+                else if (IsNearSquarePixelSar(streamInfo.SampleAspectRatio))
                 {
                     stream.IsAnamorphic = false;
                 }
@@ -1152,6 +1152,34 @@ namespace MediaBrowser.MediaEncoding.Probing
         private static bool IsClose(double d1, double d2, double variance = .005)
         {
             return Math.Abs(d1 - d2) <= variance;
+        }
+
+        /// <summary>
+        /// Determines whether a sample aspect ratio represents square (or near-square) pixels.
+        /// Some encoders produce SARs like 3201:3200 for content that is effectively 1:1,
+        /// which would be falsely classified as anamorphic by an exact string comparison.
+        /// A 1% tolerance safely covers encoder rounding artifacts while preserving detection
+        /// of genuine anamorphic content (closest standard is PAL 4:3 at 16:15 = 6.67% off).
+        /// </summary>
+        /// <param name="sar">The sample aspect ratio string in "N:D" format.</param>
+        /// <returns><c>true</c> if the SAR is within 1% of 1:1; otherwise <c>false</c>.</returns>
+        internal static bool IsNearSquarePixelSar(string sar)
+        {
+            if (string.IsNullOrEmpty(sar))
+            {
+                return false;
+            }
+
+            var parts = sar.Split(':');
+            if (parts.Length == 2
+                && double.TryParse(parts[0], CultureInfo.InvariantCulture, out var num)
+                && double.TryParse(parts[1], CultureInfo.InvariantCulture, out var den)
+                && den > 0)
+            {
+                return IsClose(num / den, 1.0, 0.01);
+            }
+
+            return string.Equals(sar, "1:1", StringComparison.Ordinal);
         }
 
         /// <summary>
