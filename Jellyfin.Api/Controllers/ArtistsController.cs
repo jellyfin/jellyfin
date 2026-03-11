@@ -187,39 +187,7 @@ public class ArtistsController : BaseJellyfinApiController
             }).Where(i => i is not null).Select(i => i!.Id).ToArray();
         }
 
-        foreach (var filter in filters)
-        {
-            switch (filter)
-            {
-                case ItemFilter.Dislikes:
-                    query.IsLiked = false;
-                    break;
-                case ItemFilter.IsFavorite:
-                    query.IsFavorite = true;
-                    break;
-                case ItemFilter.IsFavoriteOrLikes:
-                    query.IsFavoriteOrLiked = true;
-                    break;
-                case ItemFilter.IsFolder:
-                    query.IsFolder = true;
-                    break;
-                case ItemFilter.IsNotFolder:
-                    query.IsFolder = false;
-                    break;
-                case ItemFilter.IsPlayed:
-                    query.IsPlayed = true;
-                    break;
-                case ItemFilter.IsResumable:
-                    query.IsResumable = true;
-                    break;
-                case ItemFilter.IsUnplayed:
-                    query.IsPlayed = false;
-                    break;
-                case ItemFilter.Likes:
-                    query.IsLiked = true;
-                    break;
-            }
-        }
+        query.ApplyFilters(filters);
 
         var result = _libraryManager.GetArtists(query);
 
@@ -390,39 +358,7 @@ public class ArtistsController : BaseJellyfinApiController
             }).Where(i => i is not null).Select(i => i!.Id).ToArray();
         }
 
-        foreach (var filter in filters)
-        {
-            switch (filter)
-            {
-                case ItemFilter.Dislikes:
-                    query.IsLiked = false;
-                    break;
-                case ItemFilter.IsFavorite:
-                    query.IsFavorite = true;
-                    break;
-                case ItemFilter.IsFavoriteOrLikes:
-                    query.IsFavoriteOrLiked = true;
-                    break;
-                case ItemFilter.IsFolder:
-                    query.IsFolder = true;
-                    break;
-                case ItemFilter.IsNotFolder:
-                    query.IsFolder = false;
-                    break;
-                case ItemFilter.IsPlayed:
-                    query.IsPlayed = true;
-                    break;
-                case ItemFilter.IsResumable:
-                    query.IsResumable = true;
-                    break;
-                case ItemFilter.IsUnplayed:
-                    query.IsPlayed = false;
-                    break;
-                case ItemFilter.Likes:
-                    query.IsLiked = true;
-                    break;
-            }
-        }
+        query.ApplyFilters(filters);
 
         var result = _libraryManager.GetAlbumArtists(query);
 
