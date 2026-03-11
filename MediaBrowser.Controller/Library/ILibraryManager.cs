@@ -391,8 +391,9 @@ namespace MediaBrowser.Controller.Library
         /// Deletes items that are not having any children like Actors.
         /// </summary>
         /// <param name="items">Items to delete.</param>
+        /// <param name="deleteSourceFiles">Whether to delete source media files on disk. Defaults to false.</param>
         /// <remarks>In comparison to <see cref="DeleteItem(BaseItem, DeleteOptions, BaseItem, bool)"/> this method skips a lot of steps assuming there are no children to recusively delete nor does it define the special handling for channels and alike.</remarks>
-        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items);
+        public void DeleteItemsUnsafeFast(IReadOnlyCollection<BaseItem> items, bool deleteSourceFiles = false);
 
         /// <summary>
         /// Deletes the item.

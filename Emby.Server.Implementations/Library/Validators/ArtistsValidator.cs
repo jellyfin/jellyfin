@@ -104,25 +104,16 @@ public class ArtistsValidator
             IncludeItemTypes = [BaseItemKind.MusicArtist],
             IsDeadArtist = true,
             IsLocked = false
-        }).Cast<MusicArtist>().ToList();
+        }).Cast<MusicArtist>()
+        .Where(item => item.IsAccessedByName)
+        .ToList();
 
         foreach (var item in deadEntities)
         {
-            if (!item.IsAccessedByName)
-            {
-                continue;
-            }
-
             _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
-
-            _libraryManager.DeleteItem(
-                item,
-                new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                },
-                false);
         }
+
+        _libraryManager.DeleteItemsUnsafeFast(deadEntities, deleteSourceFiles: true);
 
         progress.Report(100);
     }

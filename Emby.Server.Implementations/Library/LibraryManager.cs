@@ -34,14 +34,11 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -343,9 +340,12 @@ namespace Emby.Server.Implementations.Library
             DeleteItem(item, options, parent, notifyParentItem);
         }
 
-        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items)
+        public void DeleteItemsUnsafeFast(IReadOnlyCollection<BaseItem> items, bool deleteSourceFiles = false)
         {
-            var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();
+            var pathMaps = items.Select(e =>
+                (Item: e,
+                InternalPath: GetInternalMetadataPaths(e),
+                DeletePaths: deleteSourceFiles ? e.GetDeletePaths() : [])).ToArray();
 
             foreach (var (item, internalPaths, pathsToDelete) in pathMaps)
             {

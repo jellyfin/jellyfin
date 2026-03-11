@@ -115,15 +115,9 @@ public class StudiosValidator
         foreach (var item in deadEntities)
         {
             _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
-
-            _libraryManager.DeleteItem(
-                item,
-                new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                },
-                false);
         }
+
+        _libraryManager.DeleteItemsUnsafeFast(deadEntities, deleteSourceFiles: true);
 
         progress.Report(100);
     }
