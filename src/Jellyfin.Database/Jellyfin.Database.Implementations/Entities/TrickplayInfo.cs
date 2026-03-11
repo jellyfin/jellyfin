@@ -71,4 +71,13 @@ public class TrickplayInfo
     /// Required.
     /// </remarks>
     public int Bandwidth { get; set; }
+
+    /// <summary>
+    /// Gets or sets the aspect ratio detected by black bar analysis of trickplay thumbnails.
+    /// </summary>
+    /// <remarks>
+    /// Optional. Null if analysis has not been performed.
+    /// Stored as a decimal string (e.g. "2.35", "1.778").
+    /// </remarks>
+    public string? DetectedAspectRatio { get; set; }
 }
