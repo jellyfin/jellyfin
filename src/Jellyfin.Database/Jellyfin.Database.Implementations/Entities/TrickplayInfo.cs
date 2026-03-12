@@ -76,8 +76,9 @@ public class TrickplayInfo
     /// Gets or sets the aspect ratio detected by black bar analysis of trickplay thumbnails.
     /// </summary>
     /// <remarks>
-    /// Optional. Null if analysis has not been performed.
-    /// Stored as a decimal string (e.g. "2.35", "1.778").
+    /// Null if analysis has not been performed.
+    /// "0" if analysis ran but no black bars were detected.
+    /// Otherwise stored as a decimal string (e.g. "2.35", "1.778").
     /// </remarks>
     public string? DetectedAspectRatio { get; set; }
 }

@@ -705,7 +705,7 @@ public class TrickplayManager : ITrickplayManager
         try
         {
             var resolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
-            if (!resolutions.TryGetValue(width, out var trickplayInfo) || trickplayInfo.DetectedAspectRatio is not null)
+            if (!resolutions.TryGetValue(width, out var trickplayInfo) || !string.IsNullOrEmpty(trickplayInfo.DetectedAspectRatio))
             {
                 return;
             }
@@ -741,20 +741,20 @@ public class TrickplayManager : ITrickplayManager
                 trickplayInfo.Height,
                 totalThumbnails);
 
-            // Store result (even null means "analyzed, no bars found" — use empty string to distinguish from "not yet analyzed")
+            // Store result: null means "not yet analyzed", "0" means "analyzed, no black bars found"
             foreach (var (_, info) in resolutions)
             {
-                info.DetectedAspectRatio = detectedRatio ?? string.Empty;
+                info.DetectedAspectRatio = detectedRatio ?? "0";
                 await SaveTrickplayInfo(info).ConfigureAwait(false);
             }
 
-            if (!string.IsNullOrEmpty(detectedRatio))
+            if (detectedRatio is not null)
             {
                 _logger.LogInformation("Detected content aspect ratio {Ratio} for {ItemName}", detectedRatio, video.Name);
             }
             else
             {
-                _logger.LogDebug("No significant black bars detected for {ItemName}", video.Name);
+                _logger.LogInformation("No significant black bars detected for {ItemName}", video.Name);
             }
         }
         catch (Exception ex)
