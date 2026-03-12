@@ -840,6 +840,15 @@ public class LibraryController : BaseJellyfinApiController
             .OrderBy(i => typesList.IndexOf(i.ItemType))
             .ToList();
 
+        result.MetadataResolvers = plugins
+            .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MetadataResolver))
+            .Select(i => new LibraryOptionInfoDto
+            {
+                Name = i.Name
+            })
+            .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
         result.MetadataSavers = plugins
             .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MetadataSaver))
             .Select(i => new LibraryOptionInfoDto
@@ -899,6 +908,16 @@ public class LibraryController : BaseJellyfinApiController
             typeOptions.Add(new LibraryTypeOptionsDto
             {
                 Type = type,
+                MetadataResolvers = plugins
+                    .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MetadataResolver))
+                    .Select(i => new LibraryOptionInfoDto
+                    {
+                        Name = i.Name,
+                        DefaultEnabled = false // TODO(Malik): implement IsDefault check
+                    })
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
 
                 MetadataFetchers = plugins
                     .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
