@@ -1278,7 +1278,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
                 if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
                 {
-                    arg.Append(ffmpegProbeSizeArgument);
+                    arg.Append(' ').Append(ffmpegProbeSizeArgument);
                 }
 
                 // Also seek the external subtitles stream.
@@ -7158,7 +7158,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(ffmpegProbeSize))
             {
-                return $" -probesize {ffmpegProbeSize}";
+                return $"-probesize {ffmpegProbeSize}";
             }
 
             return string.Empty;
@@ -7181,7 +7181,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
             {
-                inputModifier += ffmpegProbeSizeArgument;
+                inputModifier += " " + ffmpegProbeSizeArgument;
             }
 
             var userAgentParam = GetUserAgentParam(state);
