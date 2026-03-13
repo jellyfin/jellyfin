@@ -88,10 +88,10 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
                 }
 
                 // Delete item
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                });
+                await _libraryManager.DeleteItemAsync(
+                    item,
+                    new DeleteOptions { DeleteFileLocation = false },
+                    cancellationToken).ConfigureAwait(false);
             }
 
             numComplete++;
