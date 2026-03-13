@@ -98,6 +98,35 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             var subtitleEncoder = fixture.Create<SubtitleEncoder>();
             var result = await subtitleEncoder.GetReadableFile(mediaSource, subtitleStream, CancellationToken.None);
+
+        [Fact]
+        public async Task GetSubtitleFileCharacterSet_RemoteMediaSource_WithLocalSubtitleFile_UsesFileProtocol()
+        {
+            // Arrange - remote HTTP media source with local subtitle file
+            var mediaSource = new MediaSourceInfo()
+            {
+                Protocol = MediaProtocol.Http,
+                Path = "http://example.com/video.mkv"
+            };
+
+            var subtitleStream = new MediaStream()
+            {
+                Path = "/app/strm/shows/subtitle.srt",
+                IsExternal = true,
+                Codec = "subrip",
+                Language = "eng"
+            };
+
+            var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            var subtitleEncoder = fixture.Create<SubtitleEncoder>();
+
+            // Act - should not throw NotSupportedException about 'file' scheme
+            var exception = await Record.ExceptionAsync(async () =>
+                await subtitleEncoder.GetSubtitleFileCharacterSet(subtitleStream, "eng", mediaSource, CancellationToken.None));
+
+            // Assert - no exception should be thrown (charset detection should work with File protocol)
+            Assert.Null(exception);
+        }
             Assert.Equal(subtitleInfo.Path, result.Path);
             Assert.Equal(subtitleInfo.Protocol, result.Protocol);
             Assert.Equal(subtitleInfo.Format, result.Format);
