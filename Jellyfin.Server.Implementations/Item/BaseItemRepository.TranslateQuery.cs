@@ -446,20 +446,29 @@ public sealed partial class BaseItemRepository
             // We should probably figure this out for all folders, but for right now, this is the only place where we need it
             if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
             {
-                // Get played series IDs by joining episodes to UserData via SeriesId (Guid foreign key).
-                // Don't filter episodes by TopParentIds here - the series will be filtered by baseQuery anyway.
-                // This allows the materialized list to be reused across library-scoped queries.
-                var playedSeriesIdList = context.BaseItems
+                var userId = filter.User!.Id;
+                var seriesWithEpisodes = context.BaseItems
                     .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue)
-                    .Join(
-                        context.UserData.Where(ud => ud.UserId == filter.User!.Id && ud.Played),
-                        episode => episode.Id,
-                        ud => ud.ItemId,
-                        (episode, ud) => episode.SeriesId!.Value)
+                    .Select(e => e.SeriesId!.Value)
+                    .Distinct();
+
+                var seriesWithUnplayedEpisodes = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue
+                        && !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+                    .Select(e => e.SeriesId!.Value)
                     .Distinct();
 
                 var isPlayed = filter.IsPlayed.Value;
-                baseQuery = baseQuery.Where(s => playedSeriesIdList.Contains(s.Id) == isPlayed);
+                if (isPlayed)
+                {
+                    baseQuery = baseQuery.Where(s =>
+                        seriesWithEpisodes.Contains(s.Id) && !seriesWithUnplayedEpisodes.Contains(s.Id));
+                }
+                else
+                {
+                    baseQuery = baseQuery.Where(s =>
+                        !seriesWithEpisodes.Contains(s.Id) || seriesWithUnplayedEpisodes.Contains(s.Id));
+                }
             }
             else if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
@@ -484,11 +493,48 @@ public sealed partial class BaseItemRepository
 
         if (filter.IsResumable.HasValue)
         {
-            var resumableItemIds = context.UserData
-                .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
-                .Select(ud => ud.ItemId);
-            var isResumable = filter.IsResumable.Value;
-            baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+            if (filter.IncludeItemTypes.Length == 1 && filter.IncludeItemTypes[0] == BaseItemKind.Series)
+            {
+                var userId = filter.User!.Id;
+
+                // Series with at least one in-progress episode.
+                var seriesWithInProgressEpisodes = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue
+                        && e.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
+                    .Select(e => e.SeriesId!.Value)
+                    .Distinct();
+
+                // Series with at least one played episode.
+                var seriesWithPlayedEpisodes = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue
+                        && e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+                    .Select(e => e.SeriesId!.Value)
+                    .Distinct();
+
+                // Series with at least one unplayed episode.
+                var seriesWithUnplayedEpisodes = context.BaseItems
+                    .Where(e => !e.IsFolder && !e.IsVirtualItem && e.SeriesId.HasValue
+                        && !e.UserData!.Any(ud => ud.UserId == userId && ud.Played))
+                    .Select(e => e.SeriesId!.Value)
+                    .Distinct();
+
+                var isResumable = filter.IsResumable.Value;
+
+                // A series is resumable if it has an in-progress episode,
+                // or if it has both played and unplayed episodes (partially watched).
+                baseQuery = baseQuery.Where(s =>
+                    (seriesWithInProgressEpisodes.Contains(s.Id)
+                        || (seriesWithPlayedEpisodes.Contains(s.Id) && seriesWithUnplayedEpisodes.Contains(s.Id)))
+                    == isResumable);
+            }
+            else
+            {
+                var resumableItemIds = context.UserData
+                    .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
+                    .Select(ud => ud.ItemId);
+                var isResumable = filter.IsResumable.Value;
+                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+            }
         }
 
         if (filter.ArtistIds.Length > 0)
