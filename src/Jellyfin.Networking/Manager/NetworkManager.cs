@@ -869,7 +869,20 @@ public class NetworkManager : INetworkManager, IDisposable
         if (availableInterfaces.Count == 0)
         {
             // There isn't any others, so we'll use the loopback.
-            result = IsIPv4Enabled && !IsIPv6Enabled ? "127.0.0.1" : "::1";
+            // Prefer loopback address matching the source's address family
+            if (source is not null && source.AddressFamily == AddressFamily.InterNetwork && IsIPv4Enabled)
+            {
+                result = "127.0.0.1";
+            }
+            else if (source is not null && source.AddressFamily == AddressFamily.InterNetworkV6 && IsIPv6Enabled)
+            {
+                result = "::1";
+            }
+            else
+            {
+                result = IsIPv4Enabled ? "127.0.0.1" : "::1";
+            }
+
             _logger.LogWarning("{Source}: Only loopback {Result} returned, using that as bind address.", source, result);
             return result;
         }
@@ -894,9 +907,19 @@ public class NetworkManager : INetworkManager, IDisposable
             }
         }
 
-        // Fallback to first available interface
+        // Fallback to an interface matching the source's address family, or first available
+        var preferredInterface = availableInterfaces
+            .FirstOrDefault(x => x.Address.AddressFamily == source.AddressFamily);
+
+        if (preferredInterface is not null)
+        {
+            result = NetworkUtils.FormatIPString(preferredInterface.Address);
+            _logger.LogDebug("{Source}: No matching subnet found, using interface with matching address family: {Result}", source, result);
+            return result;
+        }
+
         result = NetworkUtils.FormatIPString(availableInterfaces[0].Address);
-        _logger.LogDebug("{Source}: No matching interfaces found, using preferred interface as bind address: {Result}", source, result);
+        _logger.LogDebug("{Source}: No matching interfaces found, using first available interface as bind address: {Result}", source, result);
         return result;
     }
 
