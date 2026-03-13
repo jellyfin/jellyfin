@@ -27,6 +27,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private readonly IPlaylistManager _playlistManager;
     private readonly ILogger<CleanupCollectionAndPlaylistPathsTask> _logger;
     private readonly IProviderManager _providerManager;
+    private readonly ILibraryManager _libraryManager;
+    private readonly IFileSystem _fileSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanupCollectionAndPlaylistPathsTask"/> class.
@@ -36,18 +38,24 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public CleanupCollectionAndPlaylistPathsTask(
         ILocalizationManager localization,
         ICollectionManager collectionManager,
         IPlaylistManager playlistManager,
         ILogger<CleanupCollectionAndPlaylistPathsTask> logger,
-        IProviderManager providerManager)
+        IProviderManager providerManager,
+        ILibraryManager libraryManager,
+        IFileSystem fileSystem)
     {
         _localization = localization;
         _collectionManager = collectionManager;
         _playlistManager = playlistManager;
         _logger = logger;
         _providerManager = providerManager;
+        _libraryManager = libraryManager;
+        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc />
@@ -66,6 +74,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var collectionsFolder = await _collectionManager.GetCollectionsFolder(false).ConfigureAwait(false);
+        var userRootFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
         if (collectionsFolder is null)
         {
             _logger.LogDebug("There is no collections folder to be found");
@@ -80,7 +89,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                 var collection = collections[index];
                 _logger.LogDebug("Checking boxset {CollectionName}", collection.Name);
 
-                await CleanupLinkedChildrenAsync(collection, cancellationToken).ConfigureAwait(false);
+                await CleanupLinkedChildrenAsync(collection, userRootFolders, cancellationToken).ConfigureAwait(false);
                 progress.Report(50D / collections.Length * (index + 1));
             }
         }
@@ -100,19 +109,19 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             var playlist = playlists[index];
             _logger.LogDebug("Checking playlist {PlaylistName}", playlist.Name);
 
-            await CleanupLinkedChildrenAsync(playlist, cancellationToken).ConfigureAwait(false);
+            await CleanupLinkedChildrenAsync(playlist, userRootFolders, cancellationToken).ConfigureAwait(false);
             progress.Report(50D / playlists.Length * (index + 1));
         }
     }
 
-    private async Task CleanupLinkedChildrenAsync<T>(T folder, CancellationToken cancellationToken)
+    private async Task CleanupLinkedChildrenAsync<T>(T folder, IReadOnlyCollection<Folder> userRootFolders, CancellationToken cancellationToken)
         where T : Folder
     {
         List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
             var path = linkedChild.Path;
-            if (!File.Exists(path) && !Directory.Exists(path))
+            if (IsItemInCollectionNotValid(linkedChild, userRootFolders))
             {
                 _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, path);
                 (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
@@ -126,6 +135,67 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
             await _providerManager.SaveMetadataAsync(folder, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
             await folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private bool IsItemInCollectionNotValid(LinkedChild linkedChild, IReadOnlyCollection<Folder> userRootFolders)
+    {
+        var path = linkedChild.Path;
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            var isDir = Directory.Exists(path);
+            if (!isDir && !File.Exists(path))
+            {
+                return true;
+            }
+
+            var linkedItem = _libraryManager.FindByPath(path, isDir);
+            if (linkedItem is not null)
+            {
+                return _libraryManager.GetCollectionFolders(linkedItem, userRootFolders).Count == 0;
+            }
+
+            return !IsPathInActiveLibrary(path, userRootFolders);
+        }
+
+        var linkedItemById = GetLinkedChildById(linkedChild);
+        return linkedItemById is null || _libraryManager.GetCollectionFolders(linkedItemById, userRootFolders).Count == 0;
+    }
+
+    private BaseItem? GetLinkedChildById(LinkedChild linkedChild)
+    {
+        if (linkedChild.ItemId.HasValue)
+        {
+            return _libraryManager.GetItemById(linkedChild.ItemId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(linkedChild.LibraryItemId)
+            && Guid.TryParse(linkedChild.LibraryItemId, out var libraryItemId))
+        {
+            return _libraryManager.GetItemById(libraryItemId);
+        }
+
+        return null;
+    }
+
+    private bool IsPathInActiveLibrary(string path, IReadOnlyCollection<Folder> userRootFolders)
+    {
+        foreach (var rootFolder in userRootFolders)
+        {
+            if (_fileSystem.AreEqual(rootFolder.Path, path) || _fileSystem.ContainsSubPath(rootFolder.Path, path))
+            {
+                return true;
+            }
+
+            foreach (var location in rootFolder.PhysicalLocations)
+            {
+                if (_fileSystem.AreEqual(location, path) || _fileSystem.ContainsSubPath(location, path))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <inheritdoc />
