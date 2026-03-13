@@ -85,12 +85,20 @@ namespace Emby.Server.Implementations.Library
             "**/.grab/**",
             "**/.grab",
 
-            // Unix hidden files
-            "**/.*",
-
-            // Mac - if you ever remove the above.
-            // "**/._*",
-            // "**/.DS_Store",
+            // Unix/Mac system and junk files (specific blocklist instead of blanket **/.*)
+            // See: https://github.com/jellyfin/jellyfin/issues/15891
+            "**/.DS_Store",
+            "**/._*",
+            "**/.Spotlight-V100",
+            "**/.Spotlight-V100/**",
+            "**/.Trashes",
+            "**/.Trashes/**",
+            "**/.fseventsd",
+            "**/.fseventsd/**",
+            "**/.AppleDouble",
+            "**/.AppleDouble/**",
+            "**/.TemporaryItems",
+            "**/.TemporaryItems/**",
 
             // thumbs.db
             "**/thumbs.db",
