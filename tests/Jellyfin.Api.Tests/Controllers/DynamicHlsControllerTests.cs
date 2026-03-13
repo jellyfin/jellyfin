@@ -1,11 +1,53 @@
 using System;
 using Jellyfin.Api.Controllers;
+using MediaBrowser.Controller.MediaEncoding;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
 {
     public class DynamicHlsControllerTests
     {
+        [Fact]
+        public void UpdateDownloadPosition_SetsPosition_WhenPreviouslyNull()
+        {
+            var job = new TranscodingJob(new NullLogger<TranscodingJob>());
+            var requestedTicks = TimeSpan.FromMinutes(5).Ticks;
+
+            DynamicHlsController.UpdateDownloadPosition(job, requestedTicks);
+
+            Assert.Equal(requestedTicks, job.DownloadPositionTicks);
+        }
+
+        [Fact]
+        public void UpdateDownloadPosition_AdvancesPosition_WhenRequestIsAhead()
+        {
+            var job = new TranscodingJob(new NullLogger<TranscodingJob>())
+            {
+                DownloadPositionTicks = TimeSpan.FromMinutes(2).Ticks
+            };
+            var requestedTicks = TimeSpan.FromMinutes(5).Ticks;
+
+            DynamicHlsController.UpdateDownloadPosition(job, requestedTicks);
+
+            Assert.Equal(requestedTicks, job.DownloadPositionTicks);
+        }
+
+        [Fact]
+        public void UpdateDownloadPosition_DoesNotRegress_WhenRequestIsBehind()
+        {
+            var existingTicks = TimeSpan.FromMinutes(5).Ticks;
+            var job = new TranscodingJob(new NullLogger<TranscodingJob>())
+            {
+                DownloadPositionTicks = existingTicks
+            };
+            var requestedTicks = TimeSpan.FromMinutes(2).Ticks;
+
+            DynamicHlsController.UpdateDownloadPosition(job, requestedTicks);
+
+            Assert.Equal(existingTicks, job.DownloadPositionTicks);
+        }
+
         [Theory]
         [MemberData(nameof(GetSegmentLengths_Success_TestData))]
         public void GetSegmentLengths_Success(long runtimeTicks, int segmentlength, double[] expected)

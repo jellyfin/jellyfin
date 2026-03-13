@@ -1915,13 +1915,9 @@ public class DynamicHlsController : BaseJellyfinApiController
         TranscodingJob? transcodingJob,
         CancellationToken cancellationToken)
     {
-        // Update the download position to reflect the client's current demand.
-        // This prevents the TranscodingThrottler from re-pausing FFmpeg while
-        // we are actively waiting for this segment to be produced.
         if (transcodingJob is not null)
         {
-            var requestedPositionTicks = state.Request.CurrentRuntimeTicks;
-            transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? requestedPositionTicks, requestedPositionTicks);
+            UpdateDownloadPosition(transcodingJob, state.Request.CurrentRuntimeTicks);
         }
 
         var segmentExists = System.IO.File.Exists(segmentPath);
@@ -2095,5 +2091,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
         }
+    }
+
+    internal static void UpdateDownloadPosition(TranscodingJob job, long requestedPositionTicks)
+    {
+        job.DownloadPositionTicks = Math.Max(job.DownloadPositionTicks ?? requestedPositionTicks, requestedPositionTicks);
     }
 }
