@@ -1267,6 +1267,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
+                // Use analyzeduration also for subtitle streams to improve resolution detection  with streams inside MKS files
+                var analyzeDurationArgument = GetFfmpegAnalyzeDurationArg(state);
+                if (!string.IsNullOrEmpty(analyzeDurationArgument))
+                {
+                    arg.Append(' ').Append(analyzeDurationArgument);
+                }
+
+                // Apply probesize, too, if configured
+                var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
+                if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
+                {
+                    arg.Append(' ').Append(ffmpegProbeSizeArgument);
+                }
+
                 // Also seek the external subtitles stream.
                 var seekSubParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
                 if (!string.IsNullOrEmpty(seekSubParam))
@@ -7123,9 +7137,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
+        private string GetFfmpegAnalyzeDurationArg(EncodingJobInfo state)
         {
-            var inputModifier = string.Empty;
             var analyzeDurationArgument = string.Empty;
 
             // Apply -analyzeduration as per the environment variable,
@@ -7141,6 +7154,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
+            return analyzeDurationArgument;
+        }
+
+        private string GetFfmpegProbesizeArg()
+        {
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                return $"-probesize {ffmpegProbeSize}";
+            }
+
+            return string.Empty;
+        }
+
+        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
+        {
+            var inputModifier = string.Empty;
+            var analyzeDurationArgument = GetFfmpegAnalyzeDurationArg(state);
+
             if (!string.IsNullOrEmpty(analyzeDurationArgument))
             {
                 inputModifier += " " + analyzeDurationArgument;
@@ -7149,11 +7182,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             inputModifier = inputModifier.Trim();
 
             // Apply -probesize if configured
-            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+            var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
 
-            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
             {
-                inputModifier += $" -probesize {ffmpegProbeSize}";
+                inputModifier += " " + ffmpegProbeSizeArgument;
             }
 
             var userAgentParam = GetUserAgentParam(state);
