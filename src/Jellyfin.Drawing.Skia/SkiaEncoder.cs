@@ -865,36 +865,74 @@ public class SkiaEncoder : IImageEncoder
         // brief aspect ratio changes (opening logos, IMAX sequences, etc.)
         int quorumThreshold = (int)Math.Ceiling(thumbsProcessed * 0.05);
 
-        int minX = thumbWidth;
-        int maxX = 0;
-        int minY = thumbHeight;
-        int maxY = 0;
+        // Use a row/column fill-ratio approach instead of a pure bounding box.
+        // A row/column is "content" if a significant fraction of its pixels are lit.
+        // This is robust against JPEG compression artifacts that contaminate thin
+        // black bar regions with a few bright pixels.
+        const double rowFillThreshold = 0.25;
 
+        int firstContentRow = -1;
+        int lastContentRow = -1;
+        int firstContentCol = -1;
+        int lastContentCol = -1;
+
+        // Classify rows
         for (int row = 0; row < thumbHeight; row++)
         {
+            int litPixels = 0;
             for (int col = 0; col < thumbWidth; col++)
             {
                 if (nonBlackCount[row, col] >= quorumThreshold)
                 {
-                    minX = Math.Min(minX, col);
-                    maxX = Math.Max(maxX, col);
-                    minY = Math.Min(minY, row);
-                    maxY = Math.Max(maxY, row);
+                    litPixels++;
                 }
+            }
+
+            if ((double)litPixels / thumbWidth >= rowFillThreshold)
+            {
+                if (firstContentRow < 0)
+                {
+                    firstContentRow = row;
+                }
+
+                lastContentRow = row;
             }
         }
 
-        if (maxX <= minX || maxY <= minY)
+        // Classify columns
+        for (int col = 0; col < thumbWidth; col++)
+        {
+            int litPixels = 0;
+            for (int row = 0; row < thumbHeight; row++)
+            {
+                if (nonBlackCount[row, col] >= quorumThreshold)
+                {
+                    litPixels++;
+                }
+            }
+
+            if ((double)litPixels / thumbHeight >= rowFillThreshold)
+            {
+                if (firstContentCol < 0)
+                {
+                    firstContentCol = col;
+                }
+
+                lastContentCol = col;
+            }
+        }
+
+        if (firstContentRow < 0 || firstContentCol < 0)
         {
             return null;
         }
 
-        int contentWidth = maxX - minX + 1;
-        int contentHeight = maxY - minY + 1;
+        int contentWidth = lastContentCol - firstContentCol + 1;
+        int contentHeight = lastContentRow - firstContentRow + 1;
 
         double widthRatio = (double)contentWidth / thumbWidth;
         double heightRatio = (double)contentHeight / thumbHeight;
-        const double marginThreshold = 0.95;
+        const double marginThreshold = 0.98;
 
         if (widthRatio > marginThreshold && heightRatio > marginThreshold)
         {
