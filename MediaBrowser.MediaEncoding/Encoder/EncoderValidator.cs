@@ -693,7 +693,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         [GeneratedRegex("^\\s\\S{6}\\s(?<codec>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
         private static partial Regex CodecRegex();
 
-        [GeneratedRegex("^\\s\\S{3}\\s(?<filter>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
+        [GeneratedRegex("^\\s\\S{2,3}\\s(?<filter>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
         private static partial Regex FilterRegex();
     }
 }
