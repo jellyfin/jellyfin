@@ -110,5 +110,28 @@ namespace MediaBrowser.Controller.Playlists
         /// </summary>
         /// <param name="item">The playlist.</param>
         void SavePlaylistFile(Playlist item);
+
+        /// <summary>
+        /// Generates a share token for a playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier (must be the owner).</param>
+        /// <returns>Task containing the generated share token.</returns>
+        Task<string> GenerateShareToken(Guid playlistId, Guid userId);
+
+        /// <summary>
+        /// Revokes the share token for a playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="userId">The user identifier (must be the owner).</param>
+        /// <returns>Task.</returns>
+        Task RevokeShareToken(Guid playlistId, Guid userId);
+
+        /// <summary>
+        /// Gets a playlist by its share token.
+        /// </summary>
+        /// <param name="shareToken">The share token.</param>
+        /// <returns>The playlist if found, null otherwise.</returns>
+        Playlist? GetPlaylistByShareToken(string shareToken);
     }
 }
