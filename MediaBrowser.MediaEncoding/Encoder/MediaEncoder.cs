@@ -1331,8 +1331,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            // TODO is there ever a case when a subtitle can't be extracted??
-            return true;
+            return _configurationManager.GetEncodingOptions().EnableSubtitleExtraction;
         }
 
         private sealed class ProcessWrapper : IDisposable
