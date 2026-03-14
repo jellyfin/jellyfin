@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Controller.Waveform;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Waveform;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +26,8 @@ namespace Jellyfin.Api.Controllers;
 public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
+    private readonly ILibraryManager _libraryManager;
+    private readonly IWaveformManager _waveformManager;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -26,9 +35,47 @@ public class AudioController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="AudioController"/> class.
     /// </summary>
     /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
-    public AudioController(AudioHelper audioHelper)
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="waveformManager">Instance of the <see cref="IWaveformManager"/> interface.</param>
+    public AudioController(
+        AudioHelper audioHelper,
+        ILibraryManager libraryManager,
+        IWaveformManager waveformManager)
     {
         _audioHelper = audioHelper;
+        _libraryManager = libraryManager;
+        _waveformManager = waveformManager;
+    }
+
+    /// <summary>
+    /// Gets the waveform data for an audio item.
+    /// </summary>
+    /// <param name="itemId">Item id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="200">Waveform data returned.</response>
+    /// <response code="404">Item not found or waveform generation failed.</response>
+    /// <returns>An <see cref="OkResult"/> containing the waveform data.</returns>
+    [HttpGet("{itemId}/Waveform")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<WaveformDto>> GetWaveform(
+        [FromRoute, Required] Guid itemId,
+        CancellationToken cancellationToken)
+    {
+        var item = _libraryManager.GetItemById<Audio>(itemId, User.GetUserId());
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var result = await _waveformManager.GetWaveformAsync(itemId, cancellationToken).ConfigureAwait(false);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
     }
 
     /// <summary>
