@@ -432,12 +432,42 @@ namespace Emby.Server.Implementations.Library
             if (item is Video video && !video.PrimaryVersionId.HasValue && video.OwnerId.IsEmpty())
             {
                 var localAlternateIds = GetLocalAlternateVersionIds(video).ToHashSet();
-                var alternateVersions = localAlternateIds
+                var allAlternateVersions = localAlternateIds
                     .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
                     .Distinct()
                     .Select(id => GetItemById(id))
                     .OfType<Video>()
                     .ToList();
+
+                // Partition alternates by whether their files still exist on disk
+                var alternateVersions = new List<Video>();
+                var missingAlternates = new List<Video>();
+                foreach (var alt in allAlternateVersions)
+                {
+                    if (!string.IsNullOrEmpty(alt.Path) && !_fileSystem.FileExists(alt.Path))
+                    {
+                        missingAlternates.Add(alt);
+                    }
+                    else
+                    {
+                        alternateVersions.Add(alt);
+                    }
+                }
+
+                // Delete alternates whose files no longer exist to avoid ghost items.
+                // Clear PrimaryVersionId first so DeleteItem doesn't try to update the primary being deleted.
+                foreach (var missing in missingAlternates)
+                {
+                    _logger.LogInformation(
+                        "Deleting missing alternate version {Name} ({Path})",
+                        missing.Name ?? "Unknown name",
+                        missing.Path ?? string.Empty);
+                    missing.SetPrimaryVersionId(null);
+                    missing.OwnerId = Guid.Empty;
+                    missing.LocalAlternateVersions = [];
+                    missing.LinkedAlternateVersions = [];
+                    DeleteItem(missing, new DeleteOptions { DeleteFileLocation = false }, false);
+                }
 
                 if (alternateVersions.Count > 0)
                 {
