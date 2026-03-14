@@ -1504,6 +1504,24 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetLatestItemList(query, collectionType);
         }
 
+        public IReadOnlyList<(BaseItem Container, IReadOnlyList<BaseItem> Items)> GetLatestItemsGrouped(InternalItemsQuery query, IReadOnlyList<BaseItem> parents, CollectionType? collectionType)
+        {
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User is not null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            // IItemRepository has #nullable disable, so we need to assert non-null here
+            return _itemRepository.GetLatestItemsGrouped(query, collectionType)
+                .Select(g => (g.Container!, g.Items))
+                .ToArray();
+        }
+
         public IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents, DateTime dateCutoff)
         {
             SetTopParentIdsOrAncestors(query, parents);
