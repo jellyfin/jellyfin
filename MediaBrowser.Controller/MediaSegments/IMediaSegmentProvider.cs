@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -31,4 +32,16 @@ public interface IMediaSegmentProvider
     /// <param name="item">The base item to extract segments from.</param>
     /// <returns>True if item is supported, otherwise false.</returns>
     ValueTask<bool> Supports(BaseItem item);
+
+    /// <summary>
+    /// Called when extracted segment data for an item is being pruned.
+    /// Providers should delete any cached analysis data they hold for the given item.
+    /// </summary>
+    /// <param name="itemId">The item whose data is being pruned.</param>
+    /// <param name="cancellationToken">Abort token.</param>
+    /// <returns>A task representing the asynchronous cleanup operation.</returns>
+    Task CleanupExtractedData(Guid itemId, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 }
