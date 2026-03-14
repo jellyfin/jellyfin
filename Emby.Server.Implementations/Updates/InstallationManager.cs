@@ -533,8 +533,9 @@ namespace Emby.Server.Implementations.Updates
 #pragma warning disable CA5351
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
-            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
+            var expectedHash = ParseChecksum(package.Checksum, out var hashAlgorithmName);
+            var hash = await ComputeHashAsync(stream, hashAlgorithmName, cancellationToken).ConfigureAwait(false);
+            if (!string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
                     "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
@@ -568,6 +569,78 @@ namespace Emby.Server.Implementations.Updates
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
 
             _pluginManager.ImportPluginFrom(targetDir);
+        }
+
+        private static string ParseChecksum(string checksum, out string hashAlgorithmName)
+        {
+            if (string.IsNullOrWhiteSpace(checksum))
+            {
+                throw new InvalidDataException("Checksum is missing.");
+            }
+
+            var separator = checksum.IndexOf(':', StringComparison.Ordinal);
+            if (separator < 0)
+            {
+                hashAlgorithmName = "md5";
+                ValidateHex(checksum, hashAlgorithmName);
+                return checksum;
+            }
+
+            if (separator == 0 || separator == checksum.Length - 1)
+            {
+                throw new InvalidDataException("Checksum format is invalid. Expected algorithm:hex.");
+            }
+
+            hashAlgorithmName = checksum[..separator].ToLowerInvariant();
+            if (!IsSupportedDigestAlgorithm(hashAlgorithmName))
+            {
+                throw new InvalidDataException($"Checksum algorithm '{hashAlgorithmName}' is not supported.");
+            }
+
+            var hex = checksum[(separator + 1)..];
+            ValidateHex(hex, hashAlgorithmName);
+            return hex;
+        }
+
+        private static bool IsSupportedDigestAlgorithm(string algorithm)
+            => algorithm is "md5" or "sha256" or "sha512";
+
+        private static async Task<string> ComputeHashAsync(Stream stream, string hashAlgorithmName, CancellationToken cancellationToken)
+        {
+            byte[] hash = hashAlgorithmName switch
+            {
+                // CA5351: Do Not Use Broken Cryptographic Algorithms
+                "md5" => await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false),
+                "sha256" => await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false),
+                "sha512" => await SHA512.HashDataAsync(stream, cancellationToken).ConfigureAwait(false),
+                _ => throw new InvalidDataException($"Checksum algorithm '{hashAlgorithmName}' is not supported.")
+            };
+
+            return Convert.ToHexString(hash);
+        }
+
+        private static void ValidateHex(string hex, string algorithm)
+        {
+            int expectedLength = algorithm switch
+            {
+                "md5" => 32,
+                "sha256" => 64,
+                "sha512" => 128,
+                _ => throw new InvalidDataException($"Checksum algorithm '{algorithm}' is not supported.")
+            };
+
+            if (hex.Length != expectedLength)
+            {
+                throw new InvalidDataException($"Checksum has invalid length for {algorithm}.");
+            }
+
+            foreach (var c in hex)
+            {
+                if (!Uri.IsHexDigit(c))
+                {
+                    throw new InvalidDataException("Checksum contains non-hex characters.");
+                }
+            }
         }
 
         private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
