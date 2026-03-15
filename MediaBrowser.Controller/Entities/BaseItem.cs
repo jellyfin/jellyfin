@@ -106,7 +106,6 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = Array.Empty<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
-            ExtraIds = Array.Empty<Guid>();
             UserData = [];
         }
 
@@ -397,8 +396,6 @@ namespace MediaBrowser.Controller.Entities
 
         public int Height { get; set; }
 
-        public Guid[] ExtraIds { get; set; }
-
         /// <summary>
         /// Gets the primary image path.
         /// </summary>
@@ -490,6 +487,8 @@ namespace MediaBrowser.Controller.Entities
         public static ILocalizationManager LocalizationManager { get; set; }
 
         public static IItemRepository ItemRepository { get; set; }
+
+        public static IItemCountService ItemCountService { get; set; }
 
         public static IChapterManager ChapterManager { get; set; }
 
@@ -1333,6 +1332,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var parents = GetParents().ToList();
             if (GetParents().Any(i => !i.IsVisible(user, true)))
             {
                 return false;
@@ -1340,7 +1340,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (checkFolders)
             {
-                var topParent = GetParents().LastOrDefault() ?? this;
+                var topParent = parents.Count > 0 ? parents[^1] : this;
 
                 if (string.IsNullOrEmpty(topParent.Path))
                 {
@@ -1351,8 +1351,27 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemCollectionFolders.Count > 0)
                 {
-                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true).Select(i => i.Id).ToList();
-                    if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                    var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
+                    IEnumerable<Guid> userCollectionFolderIds;
+                    if (blockedMediaFolders.Length > 0)
+                    {
+                        // User has blocked folders - get all library folders and exclude blocked ones
+                        userCollectionFolderIds = LibraryManager.GetUserRootFolder().Children
+                            .Select(i => i.Id)
+                            .Where(id => !blockedMediaFolders.Contains(id));
+                    }
+                    else if (user.HasPermission(PermissionKind.EnableAllFolders))
+                    {
+                        // User can access all folders - no need to filter
+                        return true;
+                    }
+                    else
+                    {
+                        // User has specific enabled folders
+                        userCollectionFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders);
+                    }
+
+                    if (!itemCollectionFolders.Any(userCollectionFolderIds.Contains))
                     {
                         return false;
                     }
@@ -1394,7 +1413,13 @@ namespace MediaBrowser.Controller.Entities
         {
             var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = Array.ConvertAll(extras, x => x.Id);
-            var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
+
+            var currentExtraIds = LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [item.Id]
+            }).Select(e => e.Id).ToArray();
+
+            var extrasChanged = !currentExtraIds.OrderBy(x => x).SequenceEqual(newExtraIds.OrderBy(x => x));
 
             if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
@@ -1408,16 +1433,15 @@ namespace MediaBrowser.Controller.Entities
                 var subOptions = new MetadataRefreshOptions(options);
                 if (!i.OwnerId.Equals(ownerId) || !i.ParentId.IsEmpty())
                 {
-                    i.OwnerId = ownerId;
-                    i.ParentId = Guid.Empty;
                     subOptions.ForceSave = true;
                 }
 
+                i.OwnerId = ownerId;
+                i.ParentId = Guid.Empty;
                 return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
-            // Cleanup removed extras
-            var removedExtraIds = item.ExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
+            var removedExtraIds = currentExtraIds.Where(e => !newExtraIds.Contains(e)).ToArray();
             if (removedExtraIds.Length > 0)
             {
                 var removedExtras = LibraryManager.GetItemList(new InternalItemsQuery()
@@ -1426,16 +1450,19 @@ namespace MediaBrowser.Controller.Entities
                 });
                 foreach (var removedExtra in removedExtras)
                 {
-                    LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                    // Only delete items that are actual extras (have ExtraType set)
+                    // Items with OwnerId but no ExtraType might be alternate versions, not extras
+                    if (removedExtra.ExtraType.HasValue)
                     {
-                        DeleteFileLocation = false
-                    });
+                        LibraryManager.DeleteItem(removedExtra, new DeleteOptions()
+                        {
+                            DeleteFileLocation = false
+                        });
+                    }
                 }
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            item.ExtraIds = newExtraIds;
 
             return true;
         }
@@ -1667,10 +1694,28 @@ namespace MediaBrowser.Controller.Entities
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
+        protected bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
-            var allTags = GetInheritedTags();
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            var blockedTags = user.GetPreference(PreferenceKind.BlockedTags);
+            var allowedTags = user.GetPreference(PreferenceKind.AllowedTags);
+
+            if (blockedTags.Length == 0 && allowedTags.Length == 0)
+            {
+                return true;
+            }
+
+            // Normalize tags using the same logic as database queries
+            var normalizedBlockedTags = blockedTags
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.GetCleanValue())
+                .ToHashSet(StringComparer.Ordinal);
+
+            var normalizedItemTags = GetInheritedTags()
+                .Select(t => t.GetCleanValue())
+                .ToHashSet(StringComparer.Ordinal);
+
+            // Check blocked tags - item is hidden if it has any blocked tag
+            if (normalizedBlockedTags.Overlaps(normalizedItemTags))
             {
                 return false;
             }
@@ -1681,10 +1726,18 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (!skipAllowedTagsCheck && allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            // Check allowed tags - item must have at least one allowed tag
+            if (!skipAllowedTagsCheck && allowedTags.Length > 0)
             {
-                return false;
+                var normalizedAllowedTags = allowedTags
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Select(t => t.GetCleanValue())
+                    .ToHashSet(StringComparer.Ordinal);
+
+                if (!normalizedAllowedTags.Overlaps(normalizedItemTags))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -1797,10 +1850,23 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete - fallback for legacy LinkedChild data
         private BaseItem FindLinkedChild(LinkedChild info)
         {
-            var path = info.Path;
+            // First try to find by ItemId (new preferred method)
+            if (info.ItemId.HasValue && !info.ItemId.Value.Equals(Guid.Empty))
+            {
+                var item = LibraryManager.GetItemById(info.ItemId.Value);
+                if (item is not null)
+                {
+                    return item;
+                }
 
+                Logger.LogWarning("Unable to find linked item by ItemId {0}", info.ItemId);
+            }
+
+            // Fall back to Path (legacy method)
+            var path = info.Path;
             if (!string.IsNullOrEmpty(path))
             {
                 path = FileSystem.MakeAbsolutePath(ContainingFolderPath, path);
@@ -1815,13 +1881,14 @@ namespace MediaBrowser.Controller.Entities
                 return itemByPath;
             }
 
+            // Fall back to LibraryItemId (legacy method)
             if (!string.IsNullOrEmpty(info.LibraryItemId))
             {
                 var item = LibraryManager.GetItemById(info.LibraryItemId);
 
                 if (item is null)
                 {
-                    Logger.LogWarning("Unable to find linked item at path {0}", info.Path);
+                    Logger.LogWarning("Unable to find linked item by LibraryItemId {0}", info.LibraryItemId);
                 }
 
                 return item;
@@ -1829,6 +1896,7 @@ namespace MediaBrowser.Controller.Entities
 
             return null;
         }
+#pragma warning restore CS0618
 
         /// <summary>
         /// Adds a studio to the item.
@@ -2409,7 +2477,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields, (int Played, int Total)? precomputedCounts = null)
         {
             if (RunTimeTicks.HasValue)
             {
@@ -2648,10 +2716,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>An enumerable containing the items.</returns>
         public IEnumerable<BaseItem> GetExtras()
         {
-            return ExtraIds
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i is not null)
-                .OrderBy(i => i.SortName);
+            return LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [Id],
+                OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
+            });
         }
 
         /// <summary>
@@ -2661,11 +2730,12 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>An enumerable containing the extras.</returns>
         public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
         {
-            return ExtraIds
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i is not null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
-                .OrderBy(i => i.SortName);
+            return LibraryManager.GetItemList(new InternalItemsQuery()
+            {
+                OwnerIds = [Id],
+                ExtraTypes = extraTypes.ToArray(),
+                OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
+            });
         }
 
         public virtual long GetRunTimeTicksForPlayState()

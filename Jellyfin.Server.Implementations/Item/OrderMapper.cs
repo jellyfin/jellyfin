@@ -1,4 +1,7 @@
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
 using System;
 using System.Linq;
@@ -31,16 +34,16 @@ public static class OrderMapper
             (ItemSortBy.AirTime, _) => e => e.SortName, // TODO
             (ItemSortBy.Runtime, _) => e => e.RunTimeTicks,
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
-            (ItemSortBy.DatePlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.LastPlayedDate,
-            (ItemSortBy.PlayCount, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.PlayCount,
-            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.IsFavorite,
+            (ItemSortBy.DatePlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.LastPlayedDate,
+            (ItemSortBy.PlayCount, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.PlayCount,
+            (ItemSortBy.IsFavoriteOrLiked, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).Select(f => (bool?)f.IsFavorite).FirstOrDefault() ?? false,
             (ItemSortBy.IsFolder, _) => e => e.IsFolder,
-            (ItemSortBy.IsPlayed, _) => e => e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
-            (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.FirstOrDefault(f => f.UserId.Equals(query.User!.Id))!.Played,
+            (ItemSortBy.IsPlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
+            (ItemSortBy.IsUnplayed, _) => e => !e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.Played,
             (ItemSortBy.DateLastContentAdded, _) => e => e.DateLastMediaAdded,
-            (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
-            (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
-            (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.Artist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Artist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.AlbumArtist, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.AlbumArtist).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
+            (ItemSortBy.Studio, _) => e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.Studios).OrderBy(f => f.ItemValue.CleanValue).Select(f => f.ItemValue.CleanValue).FirstOrDefault(),
             (ItemSortBy.OfficialRating, _) => e => e.InheritedParentalRatingValue,
             (ItemSortBy.SeriesSortName, _) => e => e.SeriesName,
             (ItemSortBy.Album, _) => e => e.Album,
@@ -54,18 +57,16 @@ public static class OrderMapper
             (ItemSortBy.VideoBitRate, _) => e => e.TotalBitrate,
             (ItemSortBy.ParentIndexNumber, _) => e => e.ParentIndexNumber,
             (ItemSortBy.IndexNumber, _) => e => e.IndexNumber,
+            // SeriesDatePlayed is normally handled via pre-aggregated join in ApplySeriesDatePlayedOrder.
+            // This correlated subquery fallback is only reached when combined with search.
             (ItemSortBy.SeriesDatePlayed, not null) => e =>
-                            jellyfinDbContext.BaseItems
-                                .Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .Join(jellyfinDbContext.UserData.Where(w => w.UserId == query.User.Id && w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
-                                .Max(f => f),
-            (ItemSortBy.SeriesDatePlayed, null) => e => jellyfinDbContext.BaseItems.Where(w => w.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
-                                .Join(jellyfinDbContext.UserData.Where(w => w.Played), f => f.Id, f => f.ItemId, (item, userData) => userData.LastPlayedDate)
-                                .Max(f => f),
-            // ItemSortBy.SeriesDatePlayed => e => jellyfinDbContext.UserData
-            //     .Where(u => u.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey && u.Played)
-            //     .Max(f => f.LastPlayedDate),
-            // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
+                jellyfinDbContext.UserData
+                    .Where(w => w.UserId == query.User.Id && w.Played && w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Max(f => f.LastPlayedDate),
+            (ItemSortBy.SeriesDatePlayed, null) => e =>
+                jellyfinDbContext.UserData
+                    .Where(w => w.Played && w.Item!.SeriesPresentationUniqueKey == e.PresentationUniqueKey)
+                    .Max(f => f.LastPlayedDate),
             _ => e => e.SortName
         };
     }
@@ -73,6 +74,7 @@ public static class OrderMapper
     /// <summary>
     /// Creates an expression to order search results by match quality.
     /// Prioritizes: exact match (0) > prefix match with word boundary (1) > prefix match (2) > contains (3).
+    /// Considers both CleanName and OriginalTitle for matching.
     /// </summary>
     /// <param name="searchTerm">The search term to match against.</param>
     /// <returns>An expression that returns an integer representing match quality (lower is better).</returns>
@@ -80,10 +82,15 @@ public static class OrderMapper
     {
         var cleanSearchTerm = GetCleanValue(searchTerm);
         var searchPrefix = cleanSearchTerm + " ";
+        var originalSearchLower = searchTerm.ToLowerInvariant();
+        var originalSearchPrefix = originalSearchLower + " ";
         return e =>
-            e.CleanName == cleanSearchTerm ? 0 :
-            e.CleanName!.StartsWith(searchPrefix) ? 1 :
-            e.CleanName!.StartsWith(cleanSearchTerm) ? 2 : 3;
+            // Exact match on CleanName or OriginalTitle
+            (e.CleanName == cleanSearchTerm || (e.OriginalTitle != null && e.OriginalTitle.ToLower() == originalSearchLower)) ? 0 :
+            // Prefix match with word boundary
+            (e.CleanName!.StartsWith(searchPrefix) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchPrefix))) ? 1 :
+            // Prefix match
+            (e.CleanName!.StartsWith(cleanSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().StartsWith(originalSearchLower))) ? 2 : 3;
     }
 
     private static string GetCleanValue(string value)

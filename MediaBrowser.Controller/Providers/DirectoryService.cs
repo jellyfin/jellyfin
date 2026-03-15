@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
 
@@ -26,7 +27,20 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+            return _cache.GetOrAdd(
+                path,
+                static (p, fileSystem) =>
+                {
+                    try
+                    {
+                        return fileSystem.GetFileSystemEntries(p).ToArray();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return [];
+                    }
+                },
+                _fileSystem);
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -98,7 +112,20 @@ namespace MediaBrowser.Controller.Providers
                 _filePathCache.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+            var filePaths = _filePathCache.GetOrAdd(
+                path,
+                static (p, fileSystem) =>
+                {
+                    try
+                    {
+                        return fileSystem.GetFilePaths(p).ToList();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return [];
+                    }
+                },
+                _fileSystem);
 
             if (sort)
             {
