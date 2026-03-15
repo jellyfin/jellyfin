@@ -285,6 +285,10 @@ public class TrickplayManager : ITrickplayManager
                         if (hasTrickplayResolution)
                         {
                             _logger.LogDebug("Found existing trickplay files for {ItemId}.", video.Id);
+
+                            // Run black bar analysis if not yet performed
+                            await RunBlackBarAnalysisIfNeeded(video, actualWidth, saveWithMedia, cancellationToken).ConfigureAwait(false);
+
                             return;
                         }
 
@@ -359,6 +363,9 @@ public class TrickplayManager : ITrickplayManager
                         await SaveTrickplayInfo(trickplayInfo).ConfigureAwait(false);
 
                         _logger.LogInformation("Finished creation of trickplay files for {0}", mediaPath);
+
+                        // Run black bar analysis on freshly generated tiles
+                        await RunBlackBarAnalysisIfNeeded(video, actualWidth, saveWithMedia, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
@@ -690,6 +697,69 @@ public class TrickplayManager : ITrickplayManager
                 .Where(i => i.ItemId.Equals(itemId))
                 .AnyAsync(i => i.Width == width)
                 .ConfigureAwait(false);
+        }
+    }
+
+    private async Task RunBlackBarAnalysisIfNeeded(Video video, int width, bool saveWithMedia, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var resolutions = await GetTrickplayResolutions(video.Id).ConfigureAwait(false);
+            if (!resolutions.TryGetValue(width, out var trickplayInfo) || !string.IsNullOrEmpty(trickplayInfo.DetectedAspectRatio))
+            {
+                return;
+            }
+
+            var tileDir = GetTrickplayDirectory(video, trickplayInfo.TileWidth, trickplayInfo.TileHeight, width, saveWithMedia);
+            if (!Directory.Exists(tileDir))
+            {
+                return;
+            }
+
+            var tilePaths = Directory.GetFiles(tileDir, "*.jpg")
+                .OrderBy(f => int.TryParse(Path.GetFileNameWithoutExtension(f), out var n) ? n : int.MaxValue)
+                .ToList();
+
+            if (tilePaths.Count == 0)
+            {
+                return;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _logger.LogInformation("Running black bar analysis for {ItemName} at {Width}px width", video.Name, width);
+
+            // ThumbnailCount in the DB is actually the number of tile *files*, not individual thumbnails.
+            // Compute the real upper bound of individual thumbnails across all tiles.
+            var totalThumbnails = tilePaths.Count * trickplayInfo.TileWidth * trickplayInfo.TileHeight;
+
+            var detectedRatio = _imageEncoder.DetectContentAspectRatio(
+                tilePaths,
+                trickplayInfo.TileWidth,
+                trickplayInfo.TileHeight,
+                trickplayInfo.Width,
+                trickplayInfo.Height,
+                totalThumbnails);
+
+            // Store result: null means "not yet analyzed", "0" means "analyzed, no black bars found"
+            foreach (var (_, info) in resolutions)
+            {
+                info.DetectedAspectRatio = detectedRatio ?? "0";
+                await SaveTrickplayInfo(info).ConfigureAwait(false);
+            }
+
+            if (detectedRatio is not null)
+            {
+                _logger.LogInformation("Detected content aspect ratio {Ratio} for {ItemName}", detectedRatio, video.Name);
+            }
+            else
+            {
+                _logger.LogInformation("No significant black bars detected for {ItemName}", video.Name);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during black bar analysis for {ItemName}", video.Name);
         }
     }
 }

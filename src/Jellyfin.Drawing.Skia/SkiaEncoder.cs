@@ -778,6 +778,171 @@ public class SkiaEncoder : IImageEncoder
         return imgHeight.Value;
     }
 
+    /// <inheritdoc />
+    public string? DetectContentAspectRatio(IReadOnlyList<string> tilePaths, int tileWidth, int tileHeight, int thumbWidth, int thumbHeight, int thumbnailCount)
+    {
+        if (tilePaths.Count == 0 || thumbnailCount == 0)
+        {
+            return null;
+        }
+
+        int[,] nonBlackCount = new int[thumbHeight, thumbWidth];
+        int thumbsProcessed = 0;
+
+        foreach (string tilePath in tilePaths)
+        {
+            using SKBitmap? tile = Decode(tilePath, false, null, out _);
+            if (tile is null)
+            {
+                _logger.LogWarning("Failed to decode trickplay tile: {Path}", tilePath);
+                continue;
+            }
+
+            AccumulateTileNonBlackCounts(tile, tileWidth, tileHeight, thumbWidth, thumbHeight, thumbnailCount, nonBlackCount, ref thumbsProcessed);
+        }
+
+        if (thumbsProcessed == 0)
+        {
+            return null;
+        }
+
+        return ComputeAspectRatioFromNonBlackCounts(nonBlackCount, thumbWidth, thumbHeight, thumbsProcessed);
+    }
+
+    private static void AccumulateTileNonBlackCounts(
+        SKBitmap tile,
+        int tileWidth,
+        int tileHeight,
+        int thumbWidth,
+        int thumbHeight,
+        int thumbnailCount,
+        int[,] nonBlackCount,
+        ref int thumbsProcessed)
+    {
+        // Luminance threshold tolerant of JPEG compression artifacts
+        const float blackThreshold = 15f;
+
+        for (int tileRow = 0; tileRow < tileHeight && thumbsProcessed < thumbnailCount; tileRow++)
+        {
+            for (int tileCol = 0; tileCol < tileWidth && thumbsProcessed < thumbnailCount; tileCol++)
+            {
+                int originX = tileCol * thumbWidth;
+                int originY = tileRow * thumbHeight;
+
+                for (int row = 0; row < thumbHeight; row++)
+                {
+                    int absoluteY = originY + row;
+                    if (absoluteY >= tile.Height)
+                    {
+                        break;
+                    }
+
+                    for (int col = 0; col < thumbWidth; col++)
+                    {
+                        int absoluteX = originX + col;
+                        if (absoluteX >= tile.Width)
+                        {
+                            break;
+                        }
+
+                        SKColor pixel = tile.GetPixel(absoluteX, absoluteY);
+                        float luminance = (0.299f * pixel.Red) + (0.587f * pixel.Green) + (0.114f * pixel.Blue);
+                        if (luminance > blackThreshold)
+                        {
+                            nonBlackCount[row, col]++;
+                        }
+                    }
+                }
+
+                thumbsProcessed++;
+            }
+        }
+    }
+
+    private static string? ComputeAspectRatioFromNonBlackCounts(int[,] nonBlackCount, int thumbWidth, int thumbHeight, int thumbsProcessed)
+    {
+        // A pixel is "content" only if lit in >5% of thumbnails, filtering out
+        // brief aspect ratio changes (opening logos, IMAX sequences, etc.)
+        int quorumThreshold = (int)Math.Ceiling(thumbsProcessed * 0.05);
+
+        // Use a row/column fill-ratio approach instead of a pure bounding box.
+        // A row/column is "content" if a significant fraction of its pixels are lit.
+        // This is robust against JPEG compression artifacts that contaminate thin
+        // black bar regions with a few bright pixels.
+        const double rowFillThreshold = 0.25;
+
+        int firstContentRow = -1;
+        int lastContentRow = -1;
+        int firstContentCol = -1;
+        int lastContentCol = -1;
+
+        // Classify rows
+        for (int row = 0; row < thumbHeight; row++)
+        {
+            int litPixels = 0;
+            for (int col = 0; col < thumbWidth; col++)
+            {
+                if (nonBlackCount[row, col] >= quorumThreshold)
+                {
+                    litPixels++;
+                }
+            }
+
+            if ((double)litPixels / thumbWidth >= rowFillThreshold)
+            {
+                if (firstContentRow < 0)
+                {
+                    firstContentRow = row;
+                }
+
+                lastContentRow = row;
+            }
+        }
+
+        // Classify columns
+        for (int col = 0; col < thumbWidth; col++)
+        {
+            int litPixels = 0;
+            for (int row = 0; row < thumbHeight; row++)
+            {
+                if (nonBlackCount[row, col] >= quorumThreshold)
+                {
+                    litPixels++;
+                }
+            }
+
+            if ((double)litPixels / thumbHeight >= rowFillThreshold)
+            {
+                if (firstContentCol < 0)
+                {
+                    firstContentCol = col;
+                }
+
+                lastContentCol = col;
+            }
+        }
+
+        if (firstContentRow < 0 || firstContentCol < 0)
+        {
+            return null;
+        }
+
+        int contentWidth = lastContentCol - firstContentCol + 1;
+        int contentHeight = lastContentRow - firstContentRow + 1;
+
+        double widthRatio = (double)contentWidth / thumbWidth;
+        double heightRatio = (double)contentHeight / thumbHeight;
+        const double marginThreshold = 0.98;
+
+        if (widthRatio > marginThreshold && heightRatio > marginThreshold)
+        {
+            return null;
+        }
+
+        double aspectRatio = (double)contentWidth / contentHeight;
+        return AspectRatioLookup.Format(aspectRatio);
+    }
+
     private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
     {
         try
