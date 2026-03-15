@@ -89,9 +89,8 @@ public static class RequestHelpers
     /// </summary>
     /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>
     /// <param name="user">The user id.</param>
-    /// <param name="restrictUserPreferences">Whether to restrict the user preferences.</param>
     /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
-    internal static bool AssertCanUpdateUser(ClaimsPrincipal claimsPrincipal, User user, bool restrictUserPreferences)
+    internal static bool AssertCanUpdateUser(ClaimsPrincipal claimsPrincipal, User user)
     {
         var authenticatedUserId = claimsPrincipal.GetUserId();
         var isAdministrator = claimsPrincipal.IsInRole(UserRoles.Administrator);
@@ -102,13 +101,7 @@ public static class RequestHelpers
             return false;
         }
 
-        // TODO the EnableUserPreferenceAccess policy does not seem to be used elsewhere
-        if (!restrictUserPreferences || isAdministrator)
-        {
-            return true;
-        }
-
-        return user.EnableUserPreferenceAccess;
+        return isAdministrator;
     }
 
     /// <summary>
