@@ -184,7 +184,14 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public string FindSeriesPresentationUniqueKey()
-            => Series?.PresentationUniqueKey;
+        {
+            var series = Series;
+            return series is null
+                ? null
+                : LibraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging
+                    ? series.GetCrossLibraryKey()
+                    : series.PresentationUniqueKey;
+        }
 
         public string FindSeasonName()
         {

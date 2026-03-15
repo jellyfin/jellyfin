@@ -135,7 +135,10 @@ namespace MediaBrowser.Controller.Entities.TV
                 var series = Series;
                 if (series is not null)
                 {
-                    return series.PresentationUniqueKey + "-" + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
+                    var seriesKey = LibraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging
+                        ? series.GetCrossLibraryKey()
+                        : series.PresentationUniqueKey;
+                    return seriesKey + "-" + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
                 }
             }
 
@@ -233,7 +236,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series is null ? null : series.PresentationUniqueKey;
+            return series is null
+                ? null
+                : LibraryManager.GetLibraryOptions(series).EnableCrossLibrarySeriesMerging
+                    ? series.GetCrossLibraryKey()
+                    : series.PresentationUniqueKey;
         }
 
         public string FindSeriesName()
