@@ -177,7 +177,6 @@ namespace MediaBrowser.Providers.MediaInfo
             // To properly handle fallback values, we make a clone of those fields when valid.
             var trackTitle = (string.IsNullOrEmpty(track.Title) ? mediaInfo.Name : track.Title)?.Trim();
             var trackAlbum = (string.IsNullOrEmpty(track.Album) ? mediaInfo.Album : track.Album)?.Trim();
-            var trackYear = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
             var trackTrackNumber = track.TrackNumber is null or 0 ? mediaInfo.IndexNumber : track.TrackNumber;
             var trackDiscNumber = track.DiscNumber is null or 0 ? mediaInfo.ParentIndexNumber : track.DiscNumber;
 
@@ -318,27 +317,49 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ParentIndexNumber ??= trackDiscNumber;
             }
 
-            if (track.Date.HasValue)
+            if (libraryOptions.PreferOriginalReleaseDate)
             {
-                audio.PremiereDate = track.Date;
+                if (track.OriginalReleaseDate.HasValue && track.OriginalReleaseDate != DateTime.MinValue)
+                {
+                    audio.PremiereDate = track.OriginalReleaseDate.Value;
+                }
+                else if (track.PublishingDate.HasValue && track.PublishingDate.Value != DateTime.MinValue)
+                {
+                    audio.PremiereDate = track.PublishingDate.Value;
+                }
+                else if (track.Date.HasValue && track.Date.Value != DateTime.MinValue)
+                {
+                    audio.PremiereDate = track.Date.Value;
+                }
+            }
+            else
+            {
+                if (track.Date.HasValue && track.Date.Value != DateTime.MinValue)
+                {
+                    audio.PremiereDate = track.Date.Value;
+                }
             }
 
-            if (trackYear.HasValue)
+            if (audio.PremiereDate.HasValue)
             {
-                var year = trackYear.Value;
+                var year = audio.PremiereDate.Value.Year;
                 audio.ProductionYear = year;
+            }
+            else
+            {
+                var year = track.Year is null or 0 ? mediaInfo.ProductionYear : track.Year;
 
-                // ATL library handles such fallback this with its own internal logic, but we also need to handle it here for the ffprobe fallbacks.
-                if (!audio.PremiereDate.HasValue)
+                try
                 {
-                    try
+                    if (year.HasValue)
                     {
-                        audio.PremiereDate = new DateTime(year, 01, 01);
+                        audio.ProductionYear = year;
+                        audio.PremiereDate = new DateTime(year.Value, 01, 01);
                     }
-                    catch (ArgumentOutOfRangeException ex)
-                    {
-                        _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, trackYear);
-                    }
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    _logger.LogError(ex, "Error parsing YEAR tag in {File}. '{TagValue}' is an invalid year", audio.Path, year);
                 }
             }
 
