@@ -346,4 +346,23 @@ public static class HlsCodecStringHelpers
 
         return result.ToString();
     }
+
+    /// <summary>
+    /// Gets a Dolby Vision codec string.
+    /// </summary>
+    /// <param name="dvProfile">Dolby Vision profile number.</param>
+    /// <param name="dvLevel">Dolby Vision level number.</param>
+    /// <returns>Dolby Vision codec string.</returns>
+    public static string GetDoviString(int dvProfile, int dvLevel)
+    {
+        // FORMAT: dvh1.[profile].[level] (out-of-band parameter sets, recommended by Apple HLS spec Rule 1.10)
+        StringBuilder result = new StringBuilder("dvh1", 12);
+
+        result.Append('.')
+            .AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", dvProfile)
+            .Append('.')
+            .AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", dvLevel);
+
+        return result.ToString();
+    }
 }
