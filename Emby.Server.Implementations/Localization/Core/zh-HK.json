@@ -117,10 +117,10 @@
     "Undefined": "未定義",
     "Forced": "強制",
     "Default": "預設",
-    "TaskOptimizeDatabaseDescription": "壓縮數據庫及釋放可用空間。完成任何會修改數據庫的工作（例如掃描媒體庫）後，執行此工作或可提升伺服器速度。",
+    "TaskOptimizeDatabaseDescription": "壓縮數據庫並釋放剩餘空間。喺掃描媒體庫或者做咗一啲會修改數據庫嘅操作之後行呢個任務，或者可以提升效能。",
     "TaskOptimizeDatabase": "最佳化數據庫",
     "TaskCleanActivityLogDescription": "刪除早於設定時間的活動記錄。",
-    "TaskKeyframeExtractorDescription": "提取關鍵影格（Keyframe）以建立更準確的 HLS playlist。此工作可能需要使用較長時間來完成。",
+    "TaskKeyframeExtractorDescription": "提取關鍵影格（Keyframe）嚟建立更準確嘅 HLS 播放列表。呢個任務可能要行好耐。",
     "TaskKeyframeExtractor": "關鍵影格提取器",
     "External": "外部",
     "HearingImpaired": "聽力障礙",
@@ -137,5 +137,5 @@
     "TaskMoveTrickplayImagesDescription": "根據媒體庫設定移動現有的 Trickplay 檔案。",
     "TaskMoveTrickplayImages": "轉移 Trickplay 影像位置",
     "CleanupUserDataTask": "用戶資料清理工作",
-    "CleanupUserDataTaskDescription": "從用戶數據中清除已經被刪除超過 90 日的媒體相關資料。"
+    "CleanupUserDataTaskDescription": "從用戶數據入面清除嗰啲已經被刪除咗超過 90 日嘅媒體相關資料。"
 }
