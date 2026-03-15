@@ -1529,6 +1529,48 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        public string GetDynamicHdrMetadataRemovalBitStreamArgs(EncodingJobInfo state)
+        {
+            if (state?.VideoStream is null)
+            {
+                return null;
+            }
+
+            var stream = state.VideoStream;
+
+            if (IsH265(stream))
+            {
+                switch (ShouldRemoveDynamicHdrMetadata(state))
+                {
+                    case DynamicHdrMetadataRemovalPlan.RemoveDovi:
+                        return _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.HevcMetadataRemoveDovi)
+                            ? "-bsf:v hevc_metadata=remove_dovi=1"
+                            : "-bsf:v dovi_rpu=strip=1";
+                    case DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus:
+                        return "-bsf:v hevc_metadata=remove_hdr10plus=1";
+                    default:
+                        return null;
+                }
+            }
+
+            if (IsAv1(stream))
+            {
+                switch (ShouldRemoveDynamicHdrMetadata(state))
+                {
+                    case DynamicHdrMetadataRemovalPlan.RemoveDovi:
+                        return _mediaEncoder.SupportsBitStreamFilterWithOption(BitStreamFilterOptionType.Av1MetadataRemoveDovi)
+                            ? "-bsf:v av1_metadata=remove_dovi=1"
+                            : "-bsf:v dovi_rpu=strip=1";
+                    case DynamicHdrMetadataRemovalPlan.RemoveHdr10Plus:
+                        return "-bsf:v av1_metadata=remove_hdr10plus=1";
+                    default:
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
         public string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
         {
             var bitStreamArgs = string.Empty;
