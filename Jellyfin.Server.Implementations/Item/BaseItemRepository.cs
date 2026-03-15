@@ -2073,20 +2073,27 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            var startsWithLower = filter.NameStartsWith.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(startsWithLower));
+            var paddedPrefix = BaseItem.NormalizeSortNameFilter(filter.NameStartsWith);
+            var plainPrefix = filter.NameStartsWith.ToLowerInvariant();
+            // The first condition uses the index on SortName for alphabetic prefixes.
+            // The second condition handles numeric prefixes (e.g. "1" matching "0000000012...")
+            // by stripping the zero-padding via LTRIM — this cannot use the index but only
+            // runs when the first condition doesn't match.
+            baseQuery = baseQuery.Where(e =>
+                e.SortName!.StartsWith(paddedPrefix)
+                || e.SortName!.TrimStart('0').StartsWith(plainPrefix));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            var startsOrGreaterLower = BaseItem.NormalizeSortNameFilter(filter.NameStartsWithOrGreater);
             baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(startsOrGreaterLower) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
+            var lessThanLower = BaseItem.NormalizeSortNameFilter(filter.NameLessThan);
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower) < 0);
         }
 
         if (filter.ImageTypes.Length > 0)
