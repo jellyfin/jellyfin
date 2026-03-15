@@ -145,7 +145,7 @@ namespace Jellyfin.LiveTv.TunerHosts
         {
             var path = channel.Path;
 
-            var supportsDirectPlay = !info.EnableStreamLooping && info.TunerCount == 0;
+            var supportsDirectPlay = !info.EnableStreamLooping;
             var supportsDirectStream = !info.EnableStreamLooping;
 
             var protocol = _mediaSourceManager.GetPathProtocol(path);
