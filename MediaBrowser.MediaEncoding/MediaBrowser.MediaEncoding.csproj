@@ -25,7 +25,6 @@
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="BDInfo" />
     <PackageReference Include="libse" />
-    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="UTF.Unknown" />
   </ItemGroup>
 
