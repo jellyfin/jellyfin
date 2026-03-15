@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
-            = [".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif", ".svg"];
+            = [".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif", ".svg", ".avif"];
 
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
         {
