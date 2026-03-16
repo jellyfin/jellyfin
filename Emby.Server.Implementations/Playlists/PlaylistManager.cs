@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Playlists
             _providerManager = providerManager;
             _appConfig = appConfig;
 
-            _libraryManager.ItemRemoved += OnLibraryItemRemoved;
+            _libraryManager.ItemUpdated += OnLibraryItemUpdated;
         }
 
         /// <inheritdoc />
@@ -76,17 +76,29 @@ namespace Emby.Server.Implementations.Playlists
         {
             if (disposing)
             {
-                _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
+                _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
             }
         }
 
         /// <summary>
-        /// Removes a deleted library item from every playlist that references it.
-        /// Fired by <see cref="ILibraryManager.ItemRemoved"/>.
+        /// When a library item's path or metadata changes (same Guid), updates the cached
+        /// <see cref="LinkedChild.Path"/> in every playlist that references it so playback
+        /// remains seamless after an in-place file rename or re-download.
+        ///
+        /// Items that are removed from the library are intentionally NOT auto-removed from
+        /// playlists.  They stay as missing slots so the user can decide what to do —
+        /// either re-add a replacement or call <see cref="PurgeBrokenItemsAsync"/> to clean
+        /// them up in bulk.
         /// </summary>
-        private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemUpdated(object sender, ItemChangeEventArgs e)
         {
-            var removedId = e.Item.Id;
+            var updatedItem = e.Item;
+            if (string.IsNullOrEmpty(updatedItem.Path))
+            {
+                return;
+            }
+
+            var updatedIdStr = updatedItem.Id.ToString("N", CultureInfo.InvariantCulture);
 
             var playlists = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -97,41 +109,43 @@ namespace Emby.Server.Implementations.Playlists
 
             foreach (var playlist in playlists)
             {
-                var before = playlist.LinkedChildren.Length;
-                var updated = playlist.LinkedChildren
-                    .Where(c =>
+                var changed = false;
+                foreach (var child in playlist.LinkedChildren)
+                {
+                    // Match by cached ItemId (preferred)
+                    var matchById = child.ItemId.HasValue
+                        && !child.ItemId.Value.IsEmpty()
+                        && child.ItemId.Value.Equals(updatedItem.Id);
+
+                    // Match by LibraryItemId string (legacy entries)
+                    var matchByLibraryId = !matchById
+                        && !string.IsNullOrEmpty(child.LibraryItemId)
+                        && string.Equals(child.LibraryItemId, updatedIdStr, StringComparison.OrdinalIgnoreCase);
+
+                    if (!matchById && !matchByLibraryId)
                     {
-                        // Match by cached ItemId
-                        if (c.ItemId.HasValue && !c.ItemId.Value.IsEmpty())
-                        {
-                            return !c.ItemId.Value.Equals(removedId);
-                        }
+                        continue;
+                    }
 
-                        // Match by LibraryItemId string (legacy entries without eager ItemId)
-                        if (!string.IsNullOrEmpty(c.LibraryItemId))
-                        {
-                            return !string.Equals(
-                                c.LibraryItemId,
-                                removedId.ToString("N", CultureInfo.InvariantCulture),
-                                StringComparison.OrdinalIgnoreCase);
-                        }
+                    if (!string.Equals(child.Path, updatedItem.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation(
+                            "Healing playlist '{Playlist}': item {ItemId} path changed from '{OldPath}' to '{NewPath}'.",
+                            playlist.Name,
+                            updatedItem.Id,
+                            child.Path,
+                            updatedItem.Path);
 
-                        return true;
-                    })
-                    .ToArray();
+                        child.Path = updatedItem.Path;
+                        changed = true;
+                    }
+                }
 
-                if (updated.Length == before)
+                if (!changed)
                 {
                     continue;
                 }
 
-                _logger.LogInformation(
-                    "Removing {Count} reference(s) to deleted item {ItemId} from playlist '{Playlist}'.",
-                    before - updated.Length,
-                    removedId,
-                    playlist.Name);
-
-                playlist.LinkedChildren = updated;
                 playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None)
                     .GetAwaiter().GetResult();
 
