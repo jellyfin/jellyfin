@@ -194,12 +194,10 @@ internal sealed class ClipFfmpegRunner
         }
 
         var timeStr = line.AsSpan(start, 11); // "HH:MM:SS.ff" = 11 chars
-        if (TimeSpan.TryParseExact(timeStr, @"hh\:mm\:ss\.ff", CultureInfo.InvariantCulture, out var elapsed))
+        if (TimeSpan.TryParseExact(timeStr, @"hh\:mm\:ss\.ff", CultureInfo.InvariantCulture, out var elapsed)
+            && durationSeconds > 0)
         {
-            if (durationSeconds > 0)
-            {
-                clipJob.ProgressPercent = Math.Min(99.9, elapsed.TotalSeconds / durationSeconds * 100.0);
-            }
+            clipJob.ProgressPercent = Math.Min(99.9, elapsed.TotalSeconds / durationSeconds * 100.0);
         }
     }
 
