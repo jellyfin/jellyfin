@@ -31,7 +31,7 @@ using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Playlists
 {
-    public class PlaylistManager : IPlaylistManager
+    public class PlaylistManager : IPlaylistManager, IDisposable
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
@@ -57,6 +57,89 @@ namespace Emby.Server.Implementations.Playlists
             _userManager = userManager;
             _providerManager = providerManager;
             _appConfig = appConfig;
+
+            _libraryManager.ItemRemoved += OnLibraryItemRemoved;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases managed resources.
+        /// </summary>
+        /// <param name="disposing">Whether called from <see cref="Dispose()"/>.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
+            }
+        }
+
+        /// <summary>
+        /// Removes a deleted library item from every playlist that references it.
+        /// Fired by <see cref="ILibraryManager.ItemRemoved"/>.
+        /// </summary>
+        private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
+        {
+            var removedId = e.Item.Id;
+
+            var playlists = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [Jellyfin.Data.Enums.BaseItemKind.Playlist],
+                Recursive = true,
+                DtoOptions = new DtoOptions(false)
+            }).Cast<Playlist>();
+
+            foreach (var playlist in playlists)
+            {
+                var before = playlist.LinkedChildren.Length;
+                var updated = playlist.LinkedChildren
+                    .Where(c =>
+                    {
+                        // Match by cached ItemId
+                        if (c.ItemId.HasValue && !c.ItemId.Value.IsEmpty())
+                        {
+                            return !c.ItemId.Value.Equals(removedId);
+                        }
+
+                        // Match by LibraryItemId string (legacy entries without eager ItemId)
+                        if (!string.IsNullOrEmpty(c.LibraryItemId))
+                        {
+                            return !string.Equals(
+                                c.LibraryItemId,
+                                removedId.ToString("N", CultureInfo.InvariantCulture),
+                                StringComparison.OrdinalIgnoreCase);
+                        }
+
+                        return true;
+                    })
+                    .ToArray();
+
+                if (updated.Length == before)
+                {
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Removing {Count} reference(s) to deleted item {ItemId} from playlist '{Playlist}'.",
+                    before - updated.Length,
+                    removedId,
+                    playlist.Name);
+
+                playlist.LinkedChildren = updated;
+                playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                if (playlist.IsFile)
+                {
+                    SavePlaylistFile(playlist);
+                }
+            }
         }
 
         public Playlist GetPlaylistForUser(Guid playlistId, Guid userId)
@@ -335,8 +418,21 @@ namespace Emby.Server.Implementations.Playlists
             var children = playlist.GetManageableItems().ToList();
             var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
 
-            var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
-            var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            if (accessibleChildren.Length == 0)
+            {
+                return;
+            }
+
+            // Clamp newIndex to the valid range [0, accessibleChildren.Length - 1]
+            newIndex = Math.Clamp(newIndex, 0, accessibleChildren.Length - 1);
+
+            var oldIndexAccessible = Array.FindIndex(accessibleChildren, i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+
+            if (oldIndexAccessible < 0)
+            {
+                _logger.LogWarning("Modified item not found in accessible playlist items. EntryId: {EntryId}, PlaylistId: {PlaylistId}", entryId, playlistId);
+                return;
+            }
 
             if (oldIndexAccessible == newIndex)
             {
@@ -351,15 +447,14 @@ namespace Emby.Server.Implementations.Playlists
             var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
             if (item is null)
             {
-                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", entryId, playlistId);
-
+                _logger.LogWarning("Modified item not found in playlist LinkedChildren. EntryId: {EntryId}, PlaylistId: {PlaylistId}", entryId, playlistId);
                 return;
             }
 
             var newList = playlist.LinkedChildren.ToList();
             newList.Remove(item);
 
-            if (newIndex >= newList.Count)
+            if (adjustedNewIndex >= newList.Count)
             {
                 newList.Add(item);
             }
@@ -672,6 +767,115 @@ namespace Emby.Server.Implementations.Playlists
             var shares = playlist.Shares.ToList();
             shares.Remove(share);
             playlist.Shares = shares;
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task PurgeBrokenItemsAsync(Guid playlistId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var before = playlist.LinkedChildren.Length;
+            var working = playlist.LinkedChildren.ToList();
+
+            // Identify which entries cannot be resolved
+            var broken = working
+                .Where(c =>
+                {
+                    // Eagerly-set ItemId that is now empty means resolution previously failed
+                    if (c.ItemId.HasValue && c.ItemId.Value.IsEmpty())
+                    {
+                        return true;
+                    }
+
+                    // If ItemId is set and still resolves, it's fine
+                    if (c.ItemId.HasValue && !c.ItemId.Value.IsEmpty())
+                    {
+                        return _libraryManager.GetItemById(c.ItemId.Value) is null;
+                    }
+
+                    // No ItemId cached yet — try resolving by other means
+                    if (!string.IsNullOrEmpty(c.LibraryItemId))
+                    {
+                        return _libraryManager.GetItemById(c.LibraryItemId) is null;
+                    }
+
+                    if (!string.IsNullOrEmpty(c.Path))
+                    {
+                        return _libraryManager.FindByPath(c.Path, false) is null;
+                    }
+
+                    return true;
+                })
+                .ToHashSet();
+
+            if (broken.Count == 0)
+            {
+                return;
+            }
+
+            playlist.LinkedChildren = working.Where(c => !broken.Contains(c)).ToArray();
+
+            _logger.LogInformation(
+                "Purged {Count} broken item(s) from playlist '{Playlist}'.",
+                broken.Count,
+                playlist.Name);
+
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+
+            _providerManager.QueueRefresh(
+                playlist.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true },
+                RefreshPriority.High);
+        }
+
+        /// <inheritdoc />
+        public async Task ReorderItemsAsync(Guid playlistId, IReadOnlyList<string> orderedEntryIds, Guid callingUserId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            // Build a lookup from PlaylistItemId → LinkedChild
+            var lookup = new Dictionary<string, LinkedChild>(StringComparer.OrdinalIgnoreCase);
+            foreach (var child in playlist.LinkedChildren)
+            {
+                var key = child.ItemId?.ToString("N", CultureInfo.InvariantCulture);
+                if (!string.IsNullOrEmpty(key) && !lookup.ContainsKey(key))
+                {
+                    lookup[key] = child;
+                }
+            }
+
+            // Build the new order: supplied IDs first (in the given order), then any remainder
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var reordered = new List<LinkedChild>(playlist.LinkedChildren.Length);
+
+            foreach (var entryId in orderedEntryIds)
+            {
+                if (lookup.TryGetValue(entryId, out var child) && seen.Add(entryId))
+                {
+                    reordered.Add(child);
+                }
+            }
+
+            // Append any entries that were not mentioned in the supplied order
+            foreach (var child in playlist.LinkedChildren)
+            {
+                var key = child.ItemId?.ToString("N", CultureInfo.InvariantCulture) ?? string.Empty;
+                if (!seen.Contains(key))
+                {
+                    reordered.Add(child);
+                    seen.Add(key);
+                }
+            }
+
+            playlist.LinkedChildren = [.. reordered];
+
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
         }
 

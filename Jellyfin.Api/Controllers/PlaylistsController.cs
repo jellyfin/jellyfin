@@ -502,7 +502,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Original playlist returned.</response>
-    /// <response code="404">Access forbidden.</response>
+    /// <response code="403">Access forbidden.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>The original playlist items.</returns>
     [HttpGet("{playlistId}/Items")]
@@ -537,17 +537,18 @@ public class PlaylistsController : BaseJellyfinApiController
         }
 
         var user = _userManager.GetUserById(callingUserId);
-        var items = playlist.GetManageableItems().Where(i => i.Item2.IsVisible(user)).ToArray();
-        var count = items.Length;
-        if (startIndex.HasValue)
-        {
-            items = items.Skip(startIndex.Value).ToArray();
-        }
 
-        if (limit.HasValue)
-        {
-            items = items.Take(limit.Value).ToArray();
-        }
+        // Use the raw LinkedChildren count for total — avoids resolving every item just to count.
+        var count = playlist.LinkedChildren.Length;
+
+        // Slice at the LinkedChild array level before resolving so we only hit the DB for
+        // the items actually needed for this page.
+        var effectiveStart = startIndex ?? 0;
+        var effectiveLimit = limit ?? int.MaxValue;
+        var items = playlist
+            .GetManageableItems(effectiveStart, effectiveLimit)
+            .Where(i => i.Item2.IsVisible(user))
+            .ToArray();
 
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -558,11 +559,136 @@ public class PlaylistsController : BaseJellyfinApiController
             dtos[index].PlaylistItemId = items[index].Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture);
         }
 
-        var result = new QueryResult<BaseItemDto>(
-            startIndex,
-            count,
-            dtos);
+        return new QueryResult<BaseItemDto>(startIndex, count, dtos);
+    }
 
-        return result;
+    /// <summary>
+    /// Lists playlist entries whose underlying library item can no longer be resolved.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Broken items returned.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>A list of PlaylistItemId strings for entries that are broken.</returns>
+    [HttpGet("{playlistId}/Items/Broken")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IReadOnlyList<string>> GetBrokenPlaylistItems(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        var brokenEntryIds = playlist.LinkedChildren
+            .Where(c =>
+            {
+                if (c.ItemId.HasValue && c.ItemId.Value.IsEmpty())
+                {
+                    return true;
+                }
+
+                if (c.ItemId.HasValue)
+                {
+                    return _libraryManager.GetItemById(c.ItemId.Value) is null;
+                }
+
+                return false;
+            })
+            .Select(c => c.ItemId?.ToString("N", CultureInfo.InvariantCulture) ?? string.Empty)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        return brokenEntryIds;
+    }
+
+    /// <summary>
+    /// Removes all broken playlist entries (items whose underlying library item no longer exists).
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Broken items removed.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>An <see cref="NoContentResult"/> on success.</returns>
+    [HttpDelete("{playlistId}/Items/Broken")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> PurgeBrokenPlaylistItems(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        await _playlistManager.PurgeBrokenItemsAsync(playlistId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Reorders all items in a playlist in a single request, enabling drag-and-drop
+    /// reordering from clients without issuing one move call per item.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="reorderRequest">The new desired item order.</param>
+    /// <response code="204">Playlist reordered.</response>
+    /// <response code="400">Bad request — EntryIds list is empty.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>An <see cref="NoContentResult"/> on success.</returns>
+    [HttpPost("{playlistId}/Items/Order")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ReorderPlaylistItems(
+        [FromRoute, Required] Guid playlistId,
+        [FromBody, Required] Models.PlaylistDtos.ReorderPlaylistItemsDto reorderRequest)
+    {
+        if (reorderRequest.EntryIds.Count == 0)
+        {
+            return BadRequest("EntryIds must not be empty.");
+        }
+
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        await _playlistManager.ReorderItemsAsync(playlistId, reorderRequest.EntryIds, callingUserId).ConfigureAwait(false);
+        return NoContent();
     }
 }

@@ -161,6 +161,23 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
+        /// <summary>
+        /// Gets a paged slice of manageable items by slicing <see cref="Folder.LinkedChildren"/>
+        /// before resolving each entry, so only items actually needed for the page hit the DB.
+        /// </summary>
+        /// <param name="startIndex">0-based offset into the raw linked-children array.</param>
+        /// <param name="maxCount">Maximum number of entries to resolve.</param>
+        /// <returns>Resolved (LinkedChild, BaseItem) pairs for the requested slice, with null items filtered out.</returns>
+        public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetManageableItems(int startIndex, int maxCount)
+        {
+            return LinkedChildren
+                .Skip(startIndex)
+                .Take(maxCount)
+                .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
+                .Where(i => i.Item2 is not null)
+                .ToArray();
+        }
+
         private IReadOnlyList<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
             query ??= new InternalItemsQuery(user);

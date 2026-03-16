@@ -110,5 +110,23 @@ namespace MediaBrowser.Controller.Playlists
         /// </summary>
         /// <param name="item">The playlist.</param>
         void SavePlaylistFile(Playlist item);
+
+        /// <summary>
+        /// Removes all LinkedChild entries whose underlying library item can no longer be resolved.
+        /// </summary>
+        /// <param name="playlistId">The playlist to clean up.</param>
+        /// <returns>Task.</returns>
+        Task PurgeBrokenItemsAsync(Guid playlistId);
+
+        /// <summary>
+        /// Reorders all items in a playlist to match the supplied entry-id sequence.
+        /// Entry IDs not present in the playlist are ignored; entries present in the playlist
+        /// but absent from the supplied list are moved to the end in their original relative order.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="orderedEntryIds">The desired order, expressed as PlaylistItemId (ItemId "N" format) strings.</param>
+        /// <param name="callingUserId">The user requesting the change.</param>
+        /// <returns>Task.</returns>
+        Task ReorderItemsAsync(Guid playlistId, IReadOnlyList<string> orderedEntryIds, Guid callingUserId);
     }
 }

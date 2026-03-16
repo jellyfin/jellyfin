@@ -31,7 +31,10 @@ namespace MediaBrowser.Controller.Entities
             var child = new LinkedChild
             {
                 Path = item.Path,
-                Type = LinkedChildType.Manual
+                Type = LinkedChildType.Manual,
+                // Cache the ID eagerly so PlaylistItemId is always stable and unique
+                // without requiring a lazy resolution round-trip on first access.
+                ItemId = item.Id
             };
 
             if (string.IsNullOrEmpty(child.Path))
