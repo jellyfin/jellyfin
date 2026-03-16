@@ -174,15 +174,17 @@ public class ClipFfmpegArgsBuilderTests
         int? audioBitRate = 192_000,
         string container = "mp4",
         int audioStreamIndex = 0)
-        => ClipFfmpegArgsBuilder.Build(
-            inputPath,
-            outputPath,
-            startSeconds,
-            durationSeconds,
-            videoEncoder,
-            audioEncoder,
-            videoBitRate,
-            audioBitRate,
-            container,
-            audioStreamIndex);
+        => ClipFfmpegArgsBuilder.Build(new ClipFfmpegOptions
+        {
+            InputPath = inputPath,
+            OutputPath = outputPath,
+            StartSeconds = startSeconds,
+            DurationSeconds = durationSeconds,
+            VideoEncoder = videoEncoder,
+            AudioEncoder = audioEncoder,
+            VideoBitRate = videoBitRate,
+            AudioBitRate = audioBitRate,
+            Container = container,
+            AudioStreamIndex = audioStreamIndex
+        });
 }

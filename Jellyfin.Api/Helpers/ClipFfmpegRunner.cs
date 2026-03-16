@@ -67,71 +67,17 @@ internal sealed class ClipFfmpegRunner
         {
             process.Start();
 
-            var stderr = process.StandardError;
-            var buffer = new char[4096];
-
-            var line = new StringBuilder();
-            var fullStderr = new StringBuilder();
-            while (!process.HasExited)
-            {
-                var read = await stderr.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-                if (read == 0)
-                {
-                    break;
-                }
-
-                for (var i = 0; i < read; i++)
-                {
-                    var ch = buffer[i];
-                    fullStderr.Append(ch);
-                    if (ch == '\r' || ch == '\n')
-                    {
-                        ParseLine(line.ToString(), clipJob, durationSeconds);
-                        line.Clear();
-                    }
-                    else
-                    {
-                        line.Append(ch);
-                    }
-                }
-            }
-
-            if (line.Length > 0)
-            {
-                ParseLine(line.ToString(), clipJob, durationSeconds);
-            }
+            var fullStderr = await ReadStderrAsync(process, clipJob, durationSeconds, cancellationToken).ConfigureAwait(false);
 
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (process.ExitCode == 0)
-            {
-                clipJob.ProgressPercent = 100;
-                clipJob.IsComplete = true;
-                _logger.LogInformation("Clip extraction complete: {ClipId} -> {OutputPath}", clipJob.ClipId, clipJob.OutputPath);
-                ScheduleCompletedJobCleanup(clipJob.ClipId, clipJob.OutputPath, jobs);
-            }
-            else
-            {
-                clipJob.HasError = true;
-                clipJob.ErrorMessage = $"FFmpeg exited with code {process.ExitCode}";
-                _logger.LogError(
-                    "Clip extraction failed: {ClipId}, exit code {ExitCode}\nFFmpeg stderr:\n{Stderr}",
-                    clipJob.ClipId,
-                    process.ExitCode,
-                    fullStderr.ToString());
-                ScheduleErrorJobCleanup(clipJob.ClipId, jobs);
-            }
+            HandleExitCode(process.ExitCode, clipJob, fullStderr, jobs);
         }
         catch (OperationCanceledException)
         {
             clipJob.HasError = true;
             clipJob.ErrorMessage = "Clip extraction was cancelled.";
-            if (!process.HasExited)
-            {
-                process.Kill();
-                await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-
+            await KillProcessIfRunningAsync(process).ConfigureAwait(false);
             ScheduleErrorJobCleanup(clipJob.ClipId, jobs);
         }
         catch (Exception ex)
@@ -144,6 +90,84 @@ internal sealed class ClipFfmpegRunner
         finally
         {
             semaphore.Release();
+        }
+    }
+
+    private static async Task<string> ReadStderrAsync(
+        Process process,
+        ClipJob clipJob,
+        double durationSeconds,
+        CancellationToken cancellationToken)
+    {
+        var stderr = process.StandardError;
+        var buffer = new char[4096];
+        var line = new StringBuilder();
+        var fullStderr = new StringBuilder();
+
+        while (!process.HasExited)
+        {
+            var read = await stderr.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            for (var i = 0; i < read; i++)
+            {
+                var ch = buffer[i];
+                fullStderr.Append(ch);
+                if (ch == '\r' || ch == '\n')
+                {
+                    ParseLine(line.ToString(), clipJob, durationSeconds);
+                    line.Clear();
+                }
+                else
+                {
+                    line.Append(ch);
+                }
+            }
+        }
+
+        if (line.Length > 0)
+        {
+            ParseLine(line.ToString(), clipJob, durationSeconds);
+        }
+
+        return fullStderr.ToString();
+    }
+
+    private void HandleExitCode(
+        int exitCode,
+        ClipJob clipJob,
+        string fullStderr,
+        ConcurrentDictionary<string, ClipJob> jobs)
+    {
+        if (exitCode == 0)
+        {
+            clipJob.ProgressPercent = 100;
+            clipJob.IsComplete = true;
+            _logger.LogInformation("Clip extraction complete: {ClipId} -> {OutputPath}", clipJob.ClipId, clipJob.OutputPath);
+            ScheduleCompletedJobCleanup(clipJob.ClipId, clipJob.OutputPath, jobs);
+        }
+        else
+        {
+            clipJob.HasError = true;
+            clipJob.ErrorMessage = $"FFmpeg exited with code {exitCode}";
+            _logger.LogError(
+                "Clip extraction failed: {ClipId}, exit code {ExitCode}\nFFmpeg stderr:\n{Stderr}",
+                clipJob.ClipId,
+                exitCode,
+                fullStderr);
+            ScheduleErrorJobCleanup(clipJob.ClipId, jobs);
+        }
+    }
+
+    private static async Task KillProcessIfRunningAsync(Process process)
+    {
+        if (!process.HasExited)
+        {
+            process.Kill();
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
         }
     }
 
@@ -210,13 +234,17 @@ internal sealed class ClipFfmpegRunner
                     if (jobs.TryRemove(clipId, out var job))
                     {
                         job.CancellationTokenSource.Dispose();
-
-                        if (!string.IsNullOrEmpty(job.OutputPath))
-                        {
-                            File.Delete(job.OutputPath);
-                        }
+                        TryDeleteFile(job.OutputPath);
                     }
                 },
                 TaskScheduler.Default);
+    }
+
+    private static void TryDeleteFile(string? path)
+    {
+        if (!string.IsNullOrEmpty(path))
+        {
+            File.Delete(path);
+        }
     }
 }

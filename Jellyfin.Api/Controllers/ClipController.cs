@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.ClipDtos;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
@@ -103,88 +104,54 @@ public class ClipController : BaseJellyfinApiController
             return BadRequest("endTimeTicks must be greater than startTimeTicks.");
         }
 
-        if (!EncodingSemaphore.Wait(0))
+        if (!await EncodingSemaphore.WaitAsync(0).ConfigureAwait(false))
         {
             return StatusCode(StatusCodes.Status429TooManyRequests, "An encoding job is already in progress.");
         }
 
+        try
+        {
+            return await CreateClipInternal(itemId, startTimeTicks, endTimeTicks, mediaSourceId, audioStreamIndex, videoCodec).ConfigureAwait(false);
+        }
+        catch
+        {
+            EncodingSemaphore.Release();
+            throw;
+        }
+    }
+
+    private async Task<ActionResult> CreateClipInternal(
+        Guid itemId,
+        long startTimeTicks,
+        long endTimeTicks,
+        string? mediaSourceId,
+        int? audioStreamIndex,
+        string? videoCodec)
+    {
         var userId = User.GetUserId();
         var user = userId.IsEmpty() ? null : _userManager.GetUserById(userId);
         var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         if (item is null)
         {
-            EncodingSemaphore.Release();
             return NotFound();
         }
 
-        // Resolve the media source to get stream metadata
-        var mediaSources = await _mediaSourceManager
-            .GetPlaybackMediaSources(item, user, true, false, CancellationToken.None)
-            .ConfigureAwait(false);
-
-        var source = string.IsNullOrEmpty(mediaSourceId)
-            ? mediaSources.Count > 0 ? mediaSources[0] : null
-            : mediaSources.FirstOrDefault(s => string.Equals(s.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
-
+        var source = await ResolveMediaSourceAsync(item, user, mediaSourceId).ConfigureAwait(false);
         if (source is null)
         {
-            EncodingSemaphore.Release();
             return NotFound("Media source not found.");
         }
 
         var inputPath = source.Path;
         if (string.IsNullOrEmpty(inputPath))
         {
-            EncodingSemaphore.Release();
             return BadRequest("Media source has no path.");
         }
 
-        // Find first video stream and all audio streams
-        MediaStream? videoStream = null;
-        MediaStream? selectedAudioStream = null;
-        var ffmpegAudioIndex = 0;
-        var audioCounter = 0;
-
-        foreach (var stream in source.MediaStreams)
-        {
-            if (videoStream is null && stream.Type == MediaStreamType.Video)
-            {
-                videoStream = stream;
-            }
-
-            if (stream.Type == MediaStreamType.Audio)
-            {
-                // Track the first audio stream as fallback
-                if (selectedAudioStream is null)
-                {
-                    selectedAudioStream = stream;
-                    ffmpegAudioIndex = 0;
-                }
-
-                // Match by Jellyfin MediaStream.Index (not audio-only counter)
-                if (audioStreamIndex.HasValue && stream.Index == audioStreamIndex.Value)
-                {
-                    selectedAudioStream = stream;
-                    ffmpegAudioIndex = audioCounter;
-                }
-
-                audioCounter++;
-            }
-        }
-
-        if (audioStreamIndex.HasValue
-            && selectedAudioStream is not null
-            && selectedAudioStream.Index != audioStreamIndex.Value)
-        {
-            _logger.LogWarning(
-                "Audio stream index {Requested} not found in source, falling back to first audio stream (index {Fallback}).",
-                audioStreamIndex.Value,
-                selectedAudioStream.Index);
-        }
+        var (videoStream, selectedAudioStream, ffmpegAudioIndex) = FindStreams(source, audioStreamIndex);
 
         if (videoStream is null)
         {
-            EncodingSemaphore.Release();
             return BadRequest("No video stream found in media source.");
         }
 
@@ -201,17 +168,19 @@ public class ClipController : BaseJellyfinApiController
         var startSeconds = startTimeTicks / 10_000_000.0;
         var durationSeconds = (endTimeTicks - startTimeTicks) / 10_000_000.0;
 
-        var ffmpegArgs = ClipFfmpegArgsBuilder.Build(
-            inputPath,
-            outputPath,
-            startSeconds,
-            durationSeconds,
-            videoEncoder,
-            audioEncoder,
-            videoStream.BitRate,
-            selectedAudioStream?.BitRate,
-            container,
-            ffmpegAudioIndex);
+        var ffmpegArgs = ClipFfmpegArgsBuilder.Build(new ClipFfmpegOptions
+        {
+            InputPath = inputPath,
+            OutputPath = outputPath,
+            StartSeconds = startSeconds,
+            DurationSeconds = durationSeconds,
+            VideoEncoder = videoEncoder,
+            AudioEncoder = audioEncoder,
+            VideoBitRate = videoStream.BitRate,
+            AudioBitRate = selectedAudioStream?.BitRate,
+            Container = container,
+            AudioStreamIndex = ffmpegAudioIndex
+        });
 
         _logger.LogInformation(
             "Clip extraction starting: {ClipId} for item {ItemId} ({Start} -> {End}), codec={VideoEncoder}, container={Container}",
@@ -248,6 +217,66 @@ public class ClipController : BaseJellyfinApiController
             ClipId = clipId,
             EstimatedDurationSeconds = durationSeconds
         });
+    }
+
+    private async Task<MediaSourceInfo?> ResolveMediaSourceAsync(
+        BaseItem item,
+        User? user,
+        string? mediaSourceId)
+    {
+        var mediaSources = await _mediaSourceManager
+            .GetPlaybackMediaSources(item, user, true, false, CancellationToken.None)
+            .ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(mediaSourceId))
+        {
+            return mediaSources.Count > 0 ? mediaSources[0] : null;
+        }
+
+        return mediaSources.FirstOrDefault(s => string.Equals(s.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private (MediaStream? VideoStream, MediaStream? AudioStream, int FfmpegAudioIndex) FindStreams(
+        MediaSourceInfo source,
+        int? audioStreamIndex)
+    {
+        MediaStream? videoStream = null;
+        MediaStream? selectedAudioStream = null;
+        var ffmpegAudioIndex = 0;
+        var audioCounter = 0;
+
+        foreach (var stream in source.MediaStreams)
+        {
+            if (videoStream is null && stream.Type == MediaStreamType.Video)
+            {
+                videoStream = stream;
+            }
+
+            if (stream.Type == MediaStreamType.Audio)
+            {
+                selectedAudioStream ??= stream;
+
+                if (audioStreamIndex.HasValue && stream.Index == audioStreamIndex.Value)
+                {
+                    selectedAudioStream = stream;
+                    ffmpegAudioIndex = audioCounter;
+                }
+
+                audioCounter++;
+            }
+        }
+
+        if (audioStreamIndex.HasValue
+            && selectedAudioStream is not null
+            && selectedAudioStream.Index != audioStreamIndex.Value)
+        {
+            _logger.LogWarning(
+                "Audio stream index {Requested} not found in source, falling back to first audio stream (index {Fallback}).",
+                audioStreamIndex.Value,
+                selectedAudioStream.Index);
+        }
+
+        return (videoStream, selectedAudioStream, ffmpegAudioIndex);
     }
 
     /// <summary>
