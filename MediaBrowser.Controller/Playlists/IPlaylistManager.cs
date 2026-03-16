@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -128,5 +129,65 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="callingUserId">The user requesting the change.</param>
         /// <returns>Task.</returns>
         Task ReorderItemsAsync(Guid playlistId, IReadOnlyList<string> orderedEntryIds, Guid callingUserId);
+
+        /// <summary>
+        /// Exports the playlist as an extended M3U8 string using absolute file paths.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <returns>Extended M3U8 content as a string.</returns>
+        Task<string> ExportAsM3u8Async(Guid playlistId);
+
+        /// <summary>
+        /// Exports the playlist as a portable Jellyfin JSON export, using provider IDs
+        /// (IMDB, TMDB, TVDB, etc.) so it can be re-imported on any server with the same content.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <returns>A <see cref="PlaylistExportDto"/> describing all exported items.</returns>
+        Task<PlaylistExportDto> ExportAsJsonAsync(Guid playlistId);
+
+        /// <summary>
+        /// Creates a new playlist by importing an uploaded playlist file.
+        /// Supports M3U/M3U8/PLS/WPL/ZPL (matched by file path) and Jellyfin JSON exports
+        /// (matched by provider IDs, with a title+year fallback).
+        /// Items that cannot be matched against the local library are silently skipped.
+        /// </summary>
+        /// <param name="fileStream">The uploaded file content.</param>
+        /// <param name="fileName">The original filename including extension, used to detect the format.</param>
+        /// <param name="userId">The user who will own the new playlist.</param>
+        /// <param name="nameOverride">Optional name override; if null, the filename without extension is used.</param>
+        /// <returns>The creation result containing the new playlist ID.</returns>
+        Task<PlaylistCreationResult> ImportPlaylistAsync(Stream fileStream, string fileName, Guid userId, string? nameOverride = null);
+
+        /// <summary>
+        /// Creates a copy of an existing playlist owned by the calling user.
+        /// </summary>
+        /// <param name="sourcePlaylistId">The playlist to copy.</param>
+        /// <param name="userId">The user who will own the clone.</param>
+        /// <param name="newName">Optional name for the clone; defaults to "{original name} (Copy)".</param>
+        /// <returns>The creation result containing the new playlist ID.</returns>
+        Task<PlaylistCreationResult> ClonePlaylistAsync(Guid sourcePlaylistId, Guid userId, string? newName = null);
+
+        /// <summary>
+        /// Randomises the stored item order for a playlist using a Fisher-Yates shuffle.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="callingUserId">The user requesting the shuffle.</param>
+        /// <returns>Task.</returns>
+        Task ShuffleItemsAsync(Guid playlistId, Guid callingUserId);
+
+        /// <summary>
+        /// Returns the PlaylistItemIds of all duplicate entries.
+        /// The first occurrence of each item is canonical and is not included in the returned list.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <returns>PlaylistItemId strings for entries that are duplicates of an earlier entry.</returns>
+        IReadOnlyList<string> GetDuplicateEntryIds(Guid playlistId);
+
+        /// <summary>
+        /// Removes all duplicate entries from the playlist, keeping the first occurrence of each item.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <returns>Task.</returns>
+        Task RemoveDuplicatesAsync(Guid playlistId);
     }
 }

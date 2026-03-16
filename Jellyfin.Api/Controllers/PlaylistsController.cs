@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
@@ -31,6 +34,13 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class PlaylistsController : BaseJellyfinApiController
 {
+    private static readonly JsonSerializerOptions PlaylistExportJsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private readonly IPlaylistManager _playlistManager;
     private readonly IDtoService _dtoService;
     private readonly IUserManager _userManager;
@@ -689,6 +699,246 @@ public class PlaylistsController : BaseJellyfinApiController
         }
 
         await _playlistManager.ReorderItemsAsync(playlistId, reorderRequest.EntryIds, callingUserId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Exports a playlist as a downloadable file.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <param name="format">Export format: <c>m3u8</c> (default) for an extended M3U8 file, or <c>json</c> for a
+    /// portable Jellyfin JSON export that can be re-imported on any server.</param>
+    /// <response code="200">File download returned.</response>
+    /// <response code="400">Unsupported format.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>The playlist file.</returns>
+    [HttpGet("{playlistId}/Export")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ExportPlaylist(
+        [FromRoute, Required] Guid playlistId,
+        [FromQuery] string format = "m3u8")
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OpenAccess
+            || playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        // Sanitise the playlist name for use as a filename.
+        var safeName = string.Concat(playlist.Name.Split(System.IO.Path.GetInvalidFileNameChars()));
+
+        if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
+        {
+            var dto = await _playlistManager.ExportAsJsonAsync(playlistId).ConfigureAwait(false);
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(dto, PlaylistExportJsonOptions);
+            return File(bytes, "application/json", string.Concat(safeName, ".json"));
+        }
+
+        if (string.Equals(format, "m3u8", StringComparison.OrdinalIgnoreCase))
+        {
+            var content = await _playlistManager.ExportAsM3u8Async(playlistId).ConfigureAwait(false);
+            return File(Encoding.UTF8.GetBytes(content), "audio/x-mpegurl", string.Concat(safeName, ".m3u8"));
+        }
+
+        return BadRequest(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                "Unsupported export format '{0}'. Supported formats: m3u8, json.",
+                format));
+    }
+
+    /// <summary>
+    /// Imports a playlist from an uploaded file, creating a new playlist.
+    /// Supports M3U, M3U8, PLS, WPL, ZPL (matched by path) and Jellyfin JSON exports (matched by provider IDs).
+    /// Items that cannot be matched to the local library are silently skipped.
+    /// </summary>
+    /// <param name="file">The playlist file to import.</param>
+    /// <param name="userId">The user who will own the created playlist.</param>
+    /// <param name="name">Optional name override; defaults to the uploaded filename without extension.</param>
+    /// <response code="200">Playlist created.</response>
+    /// <response code="400">Empty file or unsupported format.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>The new playlist creation result.</returns>
+    [HttpPost("Import")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PlaylistCreationResult>> ImportPlaylist(
+        [FromForm, Required] IFormFile file,
+        [FromQuery] Guid? userId,
+        [FromQuery] string? name)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+
+        if (file.Length == 0)
+        {
+            return BadRequest("File is empty.");
+        }
+
+        using var stream = file.OpenReadStream();
+        try
+        {
+            var result = await _playlistManager
+                .ImportPlaylistAsync(stream, file.FileName, userId.Value, name)
+                .ConfigureAwait(false);
+            return result;
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Creates a copy of an existing playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist to clone.</param>
+    /// <param name="newName">Optional name for the copy; defaults to "{original name} (Copy)".</param>
+    /// <response code="200">Clone created.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>The creation result for the cloned playlist.</returns>
+    [HttpPost("{playlistId}/Clone")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PlaylistCreationResult>> ClonePlaylist(
+        [FromRoute, Required] Guid playlistId,
+        [FromQuery] string? newName)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OpenAccess
+            || playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        return await _playlistManager.ClonePlaylistAsync(playlistId, callingUserId, newName).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Shuffles the stored order of all items in a playlist.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Playlist shuffled.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>An <see cref="NoContentResult"/> on success.</returns>
+    [HttpPost("{playlistId}/Items/Shuffle")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ShufflePlaylistItems(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        await _playlistManager.ShuffleItemsAsync(playlistId, callingUserId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Lists duplicate playlist entries (same underlying item appearing more than once).
+    /// The first occurrence is considered canonical and is not included in the returned list.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="200">Duplicate entry ids returned.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>PlaylistItemId strings for all duplicate entries.</returns>
+    [HttpGet("{playlistId}/Items/Duplicates")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IReadOnlyList<string>> GetDuplicatePlaylistItems(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OpenAccess
+            || playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        return _playlistManager.GetDuplicateEntryIds(playlistId).ToList();
+    }
+
+    /// <summary>
+    /// Removes all duplicate entries from a playlist, keeping the first occurrence of each item.
+    /// </summary>
+    /// <param name="playlistId">The playlist id.</param>
+    /// <response code="204">Duplicates removed.</response>
+    /// <response code="403">Access forbidden.</response>
+    /// <response code="404">Playlist not found.</response>
+    /// <returns>An <see cref="NoContentResult"/> on success.</returns>
+    [HttpDelete("{playlistId}/Items/Duplicates")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> RemoveDuplicatePlaylistItems(
+        [FromRoute, Required] Guid playlistId)
+    {
+        var callingUserId = User.GetUserId();
+        var playlist = _playlistManager.GetPlaylistForUser(playlistId, callingUserId);
+        if (playlist is null)
+        {
+            return NotFound("Playlist not found");
+        }
+
+        var isPermitted = playlist.OwnerUserId.Equals(callingUserId)
+            || playlist.Shares.Any(s => s.CanEdit && s.UserId.Equals(callingUserId));
+
+        if (!isPermitted)
+        {
+            return Forbid();
+        }
+
+        await _playlistManager.RemoveDuplicatesAsync(playlistId).ConfigureAwait(false);
         return NoContent();
     }
 }

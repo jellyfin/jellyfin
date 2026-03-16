@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -15,6 +17,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -33,6 +36,14 @@ namespace Emby.Server.Implementations.Playlists
 {
     public class PlaylistManager : IPlaylistManager, IDisposable
     {
+        private static readonly JsonSerializerOptions PlaylistJsonOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
@@ -891,6 +902,398 @@ namespace Emby.Server.Implementations.Playlists
             playlist.LinkedChildren = [.. reordered];
 
             await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public Task<string> ExportAsM3u8Async(Guid playlistId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var m3uPlaylist = new M3uPlaylist { IsExtended = true };
+            foreach (var child in playlist.GetLinkedChildren())
+            {
+                var entry = new M3uPlaylistEntry
+                {
+                    Path = child.Path ?? string.Empty,
+                    Title = child.Name,
+                    Album = child.Album
+                };
+
+                if (child is IHasAlbumArtist hasAlbumArtist && hasAlbumArtist.AlbumArtists.Count > 0)
+                {
+                    entry.AlbumArtist = hasAlbumArtist.AlbumArtists[0];
+                }
+
+                if (child.RunTimeTicks.HasValue)
+                {
+                    entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
+                }
+
+                m3uPlaylist.PlaylistEntries.Add(entry);
+            }
+
+            return Task.FromResult(new M3uContent().ToText(m3uPlaylist));
+        }
+
+        /// <inheritdoc />
+        public Task<PlaylistExportDto> ExportAsJsonAsync(Guid playlistId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            // Resolve items with full fields (including ProviderIds) for cross-server portability.
+            var resolvedById = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                ItemIds = playlist.LinkedChildren
+                    .Where(c => c.ItemId.HasValue && !c.ItemId.Value.IsEmpty())
+                    .Select(c => c.ItemId!.Value)
+                    .ToArray(),
+                DtoOptions = new DtoOptions(true)
+            }).ToDictionary(i => i.Id);
+
+            var exportItems = new List<PlaylistExportItem>(playlist.LinkedChildren.Length);
+            foreach (var child in playlist.LinkedChildren)
+            {
+                if (!child.ItemId.HasValue || child.ItemId.Value.IsEmpty())
+                {
+                    continue;
+                }
+
+                if (!resolvedById.TryGetValue(child.ItemId.Value, out var item))
+                {
+                    continue;
+                }
+
+                var exportItem = new PlaylistExportItem
+                {
+                    Name = item.Name,
+                    Year = item.ProductionYear,
+                    ItemType = item.GetType().Name,
+                    ProviderIds = item.ProviderIds.Count > 0
+                        ? new Dictionary<string, string>(item.ProviderIds, StringComparer.OrdinalIgnoreCase)
+                        : null,
+                    RunTimeTicks = item.RunTimeTicks
+                };
+
+                if (item is Episode episode)
+                {
+                    exportItem.SeriesName = episode.SeriesName;
+                    exportItem.SeasonNumber = episode.ParentIndexNumber;
+                    exportItem.EpisodeNumber = episode.IndexNumber;
+                }
+
+                if (item is IHasAlbumArtist hasAlbumArtist)
+                {
+                    exportItem.Album = item.Album;
+                    exportItem.Artists = string.Join(", ", hasAlbumArtist.AlbumArtists);
+                }
+
+                exportItems.Add(exportItem);
+            }
+
+            return Task.FromResult(new PlaylistExportDto
+            {
+                Name = playlist.Name,
+                MediaType = playlist.PlaylistMediaType.ToString(),
+                ExportVersion = "1",
+                ExportedAt = DateTime.UtcNow,
+                Items = exportItems
+            });
+        }
+
+        /// <inheritdoc />
+        public async Task<PlaylistCreationResult> ImportPlaylistAsync(
+            Stream fileStream,
+            string fileName,
+            Guid userId,
+            string nameOverride = null)
+        {
+            var extension = Path.GetExtension(fileName);
+            var playlistName = nameOverride ?? Path.GetFileNameWithoutExtension(fileName);
+
+            List<Guid> itemIds;
+            MediaType? mediaType = null;
+
+            if (string.Equals(extension, ".json", StringComparison.OrdinalIgnoreCase))
+            {
+                (itemIds, mediaType) = await ImportFromJsonStreamAsync(fileStream).ConfigureAwait(false);
+            }
+            else if (extension.Equals(".m3u", StringComparison.OrdinalIgnoreCase)
+                  || extension.Equals(".m3u8", StringComparison.OrdinalIgnoreCase)
+                  || extension.Equals(".pls", StringComparison.OrdinalIgnoreCase)
+                  || extension.Equals(".wpl", StringComparison.OrdinalIgnoreCase)
+                  || extension.Equals(".zpl", StringComparison.OrdinalIgnoreCase))
+            {
+                itemIds = ImportFromPlaylistFileStream(fileStream, extension);
+            }
+            else
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "Unsupported playlist format: {0}", extension));
+            }
+
+            return await CreatePlaylist(new PlaylistCreationRequest
+            {
+                Name = playlistName,
+                ItemIdList = itemIds,
+                UserId = userId,
+                MediaType = mediaType
+            }).ConfigureAwait(false);
+        }
+
+        private List<Guid> ImportFromPlaylistFileStream(Stream stream, string extension)
+        {
+            IEnumerable<string> paths;
+
+            if (extension.Equals(".pls", StringComparison.OrdinalIgnoreCase))
+            {
+                paths = new PlsContent().GetFromStream(stream).PlaylistEntries.Select(e => e.Path);
+            }
+            else if (extension.Equals(".wpl", StringComparison.OrdinalIgnoreCase))
+            {
+                paths = new WplContent().GetFromStream(stream).PlaylistEntries.Select(e => e.Path);
+            }
+            else if (extension.Equals(".zpl", StringComparison.OrdinalIgnoreCase))
+            {
+                paths = new ZplContent().GetFromStream(stream).PlaylistEntries.Select(e => e.Path);
+            }
+            else
+            {
+                // .m3u / .m3u8
+                paths = new M3uContent().GetFromStream(stream).PlaylistEntries.Select(e => e.Path);
+            }
+
+            var itemIds = new List<Guid>();
+            foreach (var path in paths)
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    continue;
+                }
+
+                var item = _libraryManager.FindByPath(path, false);
+                if (item is not null)
+                {
+                    itemIds.Add(item.Id);
+                }
+                else
+                {
+                    _logger.LogDebug("Playlist import: no library item found for path '{Path}', skipping.", path);
+                }
+            }
+
+            return itemIds;
+        }
+
+        private async Task<(List<Guid> ItemIds, MediaType? MediaType)> ImportFromJsonStreamAsync(Stream stream)
+        {
+            PlaylistExportDto export;
+            try
+            {
+                export = await JsonSerializer
+                    .DeserializeAsync<PlaylistExportDto>(stream, PlaylistJsonOptions)
+                    .ConfigureAwait(false);
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException("Invalid Jellyfin playlist JSON.", ex);
+            }
+
+            if (export is null)
+            {
+                throw new ArgumentException("Invalid Jellyfin playlist JSON.");
+            }
+
+            var mediaType = Enum.TryParse<MediaType>(export.MediaType, out var mt) ? mt : (MediaType?)null;
+            var itemIds = new List<Guid>(export.Items.Count);
+
+            foreach (var item in export.Items)
+            {
+                BaseItem match = null;
+
+                // Try provider IDs first — portable across servers.
+                if (item.ProviderIds is { Count: > 0 })
+                {
+                    BaseItemKind[] kinds = Enum.TryParse<BaseItemKind>(item.ItemType, true, out var kind)
+                        ? [kind]
+                        : null;
+
+                    var results = _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        HasAnyProviderId = item.ProviderIds,
+                        IncludeItemTypes = kinds ?? [],
+                        DtoOptions = new DtoOptions(false)
+                    });
+
+                    match = results.FirstOrDefault();
+                }
+
+                // Fallback: exact name + year match.
+                if (match is null && !string.IsNullOrEmpty(item.Name))
+                {
+                    var results = _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        SearchTerm = item.Name,
+                        Years = item.Year.HasValue ? [item.Year.Value] : [],
+                        DtoOptions = new DtoOptions(false)
+                    });
+
+                    match = results.FirstOrDefault(r =>
+                        string.Equals(r.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (match is not null)
+                {
+                    itemIds.Add(match.Id);
+                }
+                else
+                {
+                    _logger.LogDebug(
+                        "Playlist import: could not match '{Name}' ({Year}) to any library item, skipping.",
+                        item.Name,
+                        item.Year);
+                }
+            }
+
+            return (itemIds, mediaType);
+        }
+
+        /// <inheritdoc />
+        public async Task<PlaylistCreationResult> ClonePlaylistAsync(
+            Guid sourcePlaylistId,
+            Guid userId,
+            string newName = null)
+        {
+            if (_libraryManager.GetItemById(sourcePlaylistId) is not Playlist source)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var cloneName = newName
+                ?? string.Format(CultureInfo.InvariantCulture, "{0} (Copy)", source.Name);
+
+            var itemIds = new List<Guid>(source.LinkedChildren.Length);
+            foreach (var child in source.LinkedChildren)
+            {
+                if (child.ItemId.HasValue && !child.ItemId.Value.IsEmpty())
+                {
+                    itemIds.Add(child.ItemId.Value);
+                }
+                else if (!string.IsNullOrEmpty(child.Path))
+                {
+                    // Legacy entry without cached ItemId — resolve via path.
+                    var item = _libraryManager.FindByPath(child.Path, false);
+                    if (item is not null)
+                    {
+                        itemIds.Add(item.Id);
+                    }
+                }
+            }
+
+            return await CreatePlaylist(new PlaylistCreationRequest
+            {
+                Name = cloneName,
+                ItemIdList = itemIds,
+                UserId = userId,
+                MediaType = source.PlaylistMediaType
+            }).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task ShuffleItemsAsync(Guid playlistId, Guid callingUserId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var list = playlist.LinkedChildren.ToList();
+
+            // Fisher-Yates in-place shuffle.
+            for (var i = list.Count - 1; i > 0; i--)
+            {
+                var j = Random.Shared.Next(i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
+
+            playlist.LinkedChildren = [.. list];
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetDuplicateEntryIds(Guid playlistId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var seen = new HashSet<Guid>();
+            var duplicates = new List<string>();
+
+            foreach (var child in playlist.LinkedChildren)
+            {
+                if (!child.ItemId.HasValue || child.ItemId.Value.IsEmpty())
+                {
+                    continue;
+                }
+
+                if (!seen.Add(child.ItemId.Value))
+                {
+                    duplicates.Add(child.ItemId.Value.ToString("N", CultureInfo.InvariantCulture));
+                }
+            }
+
+            return duplicates;
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveDuplicatesAsync(Guid playlistId)
+        {
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var seen = new HashSet<Guid>();
+            var deduplicated = new List<LinkedChild>(playlist.LinkedChildren.Length);
+            var removed = 0;
+
+            foreach (var child in playlist.LinkedChildren)
+            {
+                var itemId = child.ItemId.GetValueOrDefault();
+                if (itemId.IsEmpty() || seen.Add(itemId))
+                {
+                    deduplicated.Add(child);
+                }
+                else
+                {
+                    removed++;
+                }
+            }
+
+            if (removed == 0)
+            {
+                return;
+            }
+
+            _logger.LogInformation(
+                "Removed {Count} duplicate(s) from playlist '{Playlist}'.",
+                removed,
+                playlist.Name);
+
+            playlist.LinkedChildren = [.. deduplicated];
+            await UpdatePlaylistInternal(playlist).ConfigureAwait(false);
+
+            _providerManager.QueueRefresh(
+                playlist.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true },
+                RefreshPriority.High);
         }
 
         private async Task UpdatePlaylistInternal(Playlist playlist)
