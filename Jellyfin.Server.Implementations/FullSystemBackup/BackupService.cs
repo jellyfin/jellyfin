@@ -118,14 +118,20 @@ public class BackupService : IBackupService
                 throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
-            void CopyDirectory(string source, string target)
+            void CopyDirectory(string source, string target, string? exclude = null)
             {
                 var fullSourcePath = NormalizePathSeparator(Path.GetFullPath(source) + Path.DirectorySeparatorChar);
                 var fullTargetRoot = Path.GetFullPath(target) + Path.DirectorySeparatorChar;
+                var excludePath = exclude is null ? null : $"{source}/{exclude}/";
                 foreach (var item in zipArchive.Entries)
                 {
                     var sourcePath = NormalizePathSeparator(Path.GetFullPath(item.FullName));
                     var targetPath = Path.GetFullPath(Path.Combine(target, Path.GetRelativePath(source, item.FullName)));
+
+                    if (excludePath is not null && item.FullName.StartsWith(excludePath, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
 
                     if (!sourcePath.StartsWith(fullSourcePath, StringComparison.Ordinal)
                         || !targetPath.StartsWith(fullTargetRoot, StringComparison.Ordinal)
@@ -142,8 +148,9 @@ public class BackupService : IBackupService
             }
 
             CopyDirectory("Config", _applicationPaths.ConfigurationDirectoryPath);
-            CopyDirectory("Data", _applicationPaths.DataPath);
+            CopyDirectory("Data", _applicationPaths.DataPath, exclude: "metadata");
             CopyDirectory("Root", _applicationPaths.RootFolderPath);
+            CopyDirectory("Data/metadata", _applicationPaths.InternalMetadataPath);
 
             if (manifest.Options.Database)
             {
