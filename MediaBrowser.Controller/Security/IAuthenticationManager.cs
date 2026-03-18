@@ -12,8 +12,8 @@ namespace MediaBrowser.Controller.Security
         /// Creates an API key.
         /// </summary>
         /// <param name="name">The name of the key.</param>
-        /// <returns>A task representing the creation of the key.</returns>
-        Task CreateApiKey(string name);
+        /// <returns>A task representing the creation of the key, containing the created key info.</returns>
+        Task<AuthenticationInfo> CreateApiKey(string name);
 
         /// <summary>
         /// Gets the API keys.

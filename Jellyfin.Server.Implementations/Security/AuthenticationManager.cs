@@ -23,14 +23,25 @@ namespace Jellyfin.Server.Implementations.Security
         }
 
         /// <inheritdoc />
-        public async Task CreateApiKey(string name)
+        public async Task<AuthenticationInfo> CreateApiKey(string name)
         {
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.ApiKeys.Add(new ApiKey(name));
+                var newKey = new ApiKey(name);
+                dbContext.ApiKeys.Add(newKey);
 
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+                return new AuthenticationInfo
+                {
+                    AppName = newKey.Name,
+                    AccessToken = newKey.AccessToken,
+                    DateCreated = newKey.DateCreated,
+                    DeviceId = string.Empty,
+                    DeviceName = string.Empty,
+                    AppVersion = string.Empty
+                };
             }
         }
 
