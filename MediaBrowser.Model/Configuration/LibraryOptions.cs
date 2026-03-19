@@ -80,6 +80,12 @@ namespace MediaBrowser.Model.Configuration
         public string? PreferredMetadataLanguage { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the original title should be
+        /// used as the display title instead of the translated title.
+        /// </summary>
+        public bool KeepOriginalTitle { get; set; }
+
+        /// <summary>
         /// Gets or sets the metadata country code.
         /// </summary>
         /// <value>The metadata country code.</value>

@@ -1338,6 +1338,23 @@ namespace Emby.Server.Implementations.Dto
                     dto.ChannelName = channel.Name;
                 }
             }
+
+            // When KeepOriginalTitle is enabled, display original-language title
+            if (!string.IsNullOrEmpty(item.OriginalTitle))
+            {
+                var libraryOptions = _libraryManager.GetLibraryOptions(item);
+                if (libraryOptions.KeepOriginalTitle)
+                {
+                    var translatedName = dto.Name;
+                    dto.Name = item.OriginalTitle;
+                    dto.OriginalTitle = translatedName;
+
+                    if (options.ContainsField(ItemFields.SortName))
+                    {
+                        dto.SortName = item.OriginalTitle.Trim().ToLowerInvariant();
+                    }
+                }
+            }
         }
 
         private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
