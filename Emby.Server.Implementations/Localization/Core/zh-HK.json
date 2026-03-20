@@ -125,7 +125,7 @@
     "External": "外部",
     "HearingImpaired": "聽力障礙",
     "TaskRefreshTrickplayImages": "產生搜畫預覽圖",
-    "TaskRefreshTrickplayImagesDescription": "為已啟用功能嘅媒體庫影片製作快轉預覽圖。",
+    "TaskRefreshTrickplayImagesDescription": "爲已啟用功能嘅媒體庫影片製作快轉預覽圖。",
     "TaskExtractMediaSegments": "掃描媒體分段資訊",
     "TaskExtractMediaSegmentsDescription": "從支援 MediaSegment 功能嘅插件入面提取媒體片段。",
     "TaskDownloadMissingLyrics": "下載缺失嘅歌詞",
