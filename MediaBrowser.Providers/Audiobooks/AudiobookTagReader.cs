@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -13,8 +14,12 @@ namespace MediaBrowser.Providers.Audiobooks;
 /// Audiobook tag reader for extracting metadata from audiobook files.
 /// </summary>
 /// <typeparam name="TCategoryName">The type of category.</typeparam>
-public class AudiobookTagReader<TCategoryName>
+public partial class AudiobookTagReader<TCategoryName>
 {
+    private static readonly Regex _titleCleanRegex = TitleCleanRegex();
+    private static readonly Regex _seriesInfoRegex = SeriesInfoRegex();
+    private static readonly Regex _copyrightPublisherRegex = CopyrightPublisherRegex();
+
     private readonly TagLib.File _audiobookFile;
     private readonly ILogger<TCategoryName> _logger;
 
@@ -161,11 +166,7 @@ public class AudiobookTagReader<TCategoryName>
         }
 
         // Remove common patterns like [Unabridged], (Unabridged), etc.
-        var cleanTitle = System.Text.RegularExpressions.Regex.Replace(
-            title,
-            @"\s*[\[\(]\s*(unabridged|abridged|audiobook)\s*[\]\)]\s*",
-            string.Empty,
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var cleanTitle = _titleCleanRegex.Replace(title, string.Empty);
 
         return cleanTitle.Trim();
     }
@@ -176,10 +177,7 @@ public class AudiobookTagReader<TCategoryName>
         bookNumber = null;
 
         // Look for patterns like "Series Name, Book 1" or "Series Name 1"
-        var match = System.Text.RegularExpressions.Regex.Match(
-            album,
-            @"^(.+?)(?:,?\s*(?:book|vol|volume)?\s*(\d+))?$",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var match = _seriesInfoRegex.Match(album);
 
         if (match.Success)
         {
@@ -206,10 +204,7 @@ public class AudiobookTagReader<TCategoryName>
         if (!string.IsNullOrEmpty(tag.Copyright))
         {
             // Extract publisher from copyright notice
-            var copyrightMatch = System.Text.RegularExpressions.Regex.Match(
-                tag.Copyright,
-                @"(?:©|\(c\)|copyright)\s*\d*\s*(.+?)(?:\s|$)",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var copyrightMatch = _copyrightPublisherRegex.Match(tag.Copyright);
 
             if (copyrightMatch.Success)
             {
@@ -314,4 +309,13 @@ public class AudiobookTagReader<TCategoryName>
             });
         }
     }
+
+    [GeneratedRegex(@"\s*[\[\(]\s*(unabridged|abridged|audiobook)\s*[\]\)]\s*", RegexOptions.IgnoreCase)]
+    private static partial Regex TitleCleanRegex();
+
+    [GeneratedRegex(@"^(.+?)(?:,?\s*(?:book|vol|volume)?\s*(\d+))?$", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesInfoRegex();
+
+    [GeneratedRegex(@"(?:©|\(c\)|copyright)\s*\d*\s*(.+?)(?:\s|$)", RegexOptions.IgnoreCase)]
+    private static partial Regex CopyrightPublisherRegex();
 }

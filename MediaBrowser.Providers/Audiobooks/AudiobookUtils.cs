@@ -1,18 +1,33 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Providers.Audiobooks;
 
 /// <summary>
 /// Audiobook utilities for audiobook processing.
 /// </summary>
-public static class AudiobookUtils
+public static partial class AudiobookUtils
 {
     /// <summary>
     /// List of supported audiobook file extensions.
     /// </summary>
     public static readonly string[] SupportedExtensions = [".m4b", ".mp3", ".m4a", ".aac", ".ogg", ".flac", ".wma"];
+
+    private static readonly Regex _audiobookPatternRegex = AudiobookPatternRegex();
+    private static readonly Regex _separatorRegex = SeparatorRegex();
+    private static readonly Regex _extraSpacesRegex = ExtraSpacesRegex();
+    private static readonly Regex _isbnRegex = IsbnRegex();
+    private static readonly Regex[] _seriesPatternRegexes =
+    [
+        SeriesPatternWithKeyword1Regex(),   // "Series Name, Book 1"
+        SeriesPatternWithKeyword2Regex(),   // "Series Name - Book #1"
+        SeriesPatternParenthesesRegex(),    // "Series Name (Book 1)" or "Series Name (1)"
+        SeriesPatternBracketsRegex(),       // "Series Name [Book 1]" or "Series Name [1]"
+        SeriesPatternHashRegex(),           // "Series Name #1"
+        SeriesPatternNumberSuffixRegex(),   // "Series Name 1" (last, as it's most general)
+    ];
 
     /// <summary>
     /// Check if the file is a valid audiobook file.
@@ -65,15 +80,11 @@ public static class AudiobookUtils
         var title = Path.GetFileNameWithoutExtension(filename);
 
         // Remove common audiobook patterns
-        title = System.Text.RegularExpressions.Regex.Replace(
-            title,
-            @"\s*[\[\(]\s*(unabridged|abridged|audiobook|mp3|m4b)\s*[\]\)]\s*",
-            string.Empty,
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        title = _audiobookPatternRegex.Replace(title, string.Empty);
 
         // Remove common separators and extra spaces
-        title = System.Text.RegularExpressions.Regex.Replace(title, @"\s*[-_]\s*", " ");
-        title = System.Text.RegularExpressions.Regex.Replace(title, @"\s+", " ");
+        title = _separatorRegex.Replace(title, " ");
+        title = _extraSpacesRegex.Replace(title, " ");
 
         return title.Trim();
     }
@@ -98,23 +109,9 @@ public static class AudiobookUtils
         // Clean the title first - remove quotes and extra whitespace
         var cleanTitle = title.Trim('"', '\'', ' ');
 
-        // Try various patterns for series detection
-        var patterns = new[]
+        foreach (var regex in _seriesPatternRegexes)
         {
-            @"^(.+?)\s*[,\-:]\s*(?:book|vol|volume)\s*(\d+)",             // "Series Name, Book 1"
-            @"^(.+?)\s*[,\-:]\s*(?:book|vol|volume)\s*#?(\d+)",           // "Series Name - Book #1"
-            @"^(.+?)\s*\((?:book|vol|volume)?\s*#?(\d+)\)",               // "Series Name (Book 1)" or "Series Name (1)"
-            @"^(.+?)\s*\[(?:book|vol|volume)?\s*#?(\d+)\]",               // "Series Name [Book 1]" or "Series Name [1]"
-            @"^(.+?)\s*#(\d+)",                                           // "Series Name #1"
-            @"^(.+?)\s*(\d+)$",                                           // "Series Name 1" (last, as it's most general)
-        };
-
-        foreach (var pattern in patterns)
-        {
-            var match = System.Text.RegularExpressions.Regex.Match(
-                cleanTitle,
-                pattern,
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var match = regex.Match(cleanTitle);
 
             if (match.Success && match.Groups.Count >= 3)
             {
@@ -186,10 +183,7 @@ public static class AudiobookUtils
             return null;
         }
 
-        var isbnMatch = System.Text.RegularExpressions.Regex.Match(
-            text,
-            @"ISBN[:\-\s]*(\d{10}|\d{13}|\d{1,5}[\-\s]\d{1,7}[\-\s]\d{1,7}[\-\s][\dX])",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var isbnMatch = _isbnRegex.Match(text);
 
         if (isbnMatch.Success)
         {
@@ -200,4 +194,34 @@ public static class AudiobookUtils
 
         return null;
     }
+
+    [GeneratedRegex(@"\s*[\[\(]\s*(unabridged|abridged|audiobook|mp3|m4b)\s*[\]\)]\s*", RegexOptions.IgnoreCase)]
+    private static partial Regex AudiobookPatternRegex();
+
+    [GeneratedRegex(@"\s*[-_]\s*")]
+    private static partial Regex SeparatorRegex();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex ExtraSpacesRegex();
+
+    [GeneratedRegex(@"ISBN[:\-\s]*(\d{10}|\d{13}|\d{1,5}[\-\s]\d{1,7}[\-\s]\d{1,7}[\-\s][\dX])", RegexOptions.IgnoreCase)]
+    private static partial Regex IsbnRegex();
+
+    [GeneratedRegex(@"^(.+?)\s*[,\-:]\s*(?:book|vol|volume)\s*(\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternWithKeyword1Regex();
+
+    [GeneratedRegex(@"^(.+?)\s*[,\-:]\s*(?:book|vol|volume)\s*#?(\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternWithKeyword2Regex();
+
+    [GeneratedRegex(@"^(.+?)\s*\((?:book|vol|volume)?\s*#?(\d+)\)", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternParenthesesRegex();
+
+    [GeneratedRegex(@"^(.+?)\s*\[(?:book|vol|volume)?\s*#?(\d+)\]", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternBracketsRegex();
+
+    [GeneratedRegex(@"^(.+?)\s*#(\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternHashRegex();
+
+    [GeneratedRegex(@"^(.+?)\s*(\d+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesPatternNumberSuffixRegex();
 }
