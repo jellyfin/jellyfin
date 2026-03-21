@@ -1248,22 +1248,23 @@ namespace MediaBrowser.Controller.MediaEncoding
                     .Append(_mediaEncoder.GetInputPathArgument(state));
             }
 
-            // sub2video for external graphical subtitles
-            if (state.SubtitleStream is not null
-                && ShouldEncodeSubtitle(state)
-                && !state.SubtitleStream.IsTextSubtitleStream
-                && state.SubtitleStream.IsExternal)
+            if (NeedsExternalSubtitleMuxing(state))
             {
                 var subtitlePath = state.SubtitleStream.Path;
-                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
+                var isGraphicalBurnIn = ShouldEncodeSubtitle(state) && !state.SubtitleStream.IsTextSubtitleStream;
 
-                // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
-                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
+                if (isGraphicalBurnIn)
                 {
-                    var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
-                    if (File.Exists(idxFile))
+                    var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
+
+                    // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
+                    if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
                     {
-                        subtitlePath = idxFile;
+                        var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
+                        if (File.Exists(idxFile))
+                        {
+                            subtitlePath = idxFile;
+                        }
                     }
                 }
 
@@ -1274,7 +1275,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     arg.Append(' ').Append(seekSubParam);
                 }
 
-                if (!string.IsNullOrEmpty(canvasArgs))
+                if (isGraphicalBurnIn && !string.IsNullOrEmpty(canvasArgs))
                 {
                     arg.Append(canvasArgs);
                 }
@@ -3000,11 +3001,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
                 {
-                    bool hasExternalGraphicsSubs = state.SubtitleStream is not null
-                        && ShouldEncodeSubtitle(state)
-                        && state.SubtitleStream.IsExternal
-                        && !state.SubtitleStream.IsTextSubtitleStream;
-                    int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
+                    bool hasExternalSubAsInput = NeedsExternalSubtitleMuxing(state);
+                    int externalAudioMapIndex = hasExternalSubAsInput ? 2 : 1;
 
                     args += string.Format(
                         CultureInfo.InvariantCulture,
@@ -3032,12 +3030,20 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (subtitleMethod == SubtitleDeliveryMethod.Embed)
             {
-                int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+                if (state.SubtitleStream.IsExternal)
+                {
+                    // External subtitle file is added as second FFmpeg input
+                    args += " -map 1:0";
+                }
+                else
+                {
+                    int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
 
-                args += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -map 0:{0}",
-                    subtitleStreamIndex);
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 0:{0}",
+                        subtitleStreamIndex);
+                }
             }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
@@ -7785,6 +7791,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             return state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                    || (state.BaseRequest.AlwaysBurnInSubtitleWhenTranscoding && !IsCopyCodec(state.OutputVideoCodec));
+        }
+
+        private static bool NeedsExternalSubtitleMuxing(EncodingJobInfo state)
+        {
+            return state.SubtitleStream is not null
+                && state.SubtitleStream.IsExternal
+                && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed
+                    || (ShouldEncodeSubtitle(state) && !state.SubtitleStream.IsTextSubtitleStream));
         }
 
         public static string GetVideoSyncOption(string videoSync, Version encoderVersion)

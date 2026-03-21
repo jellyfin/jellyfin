@@ -1447,7 +1447,7 @@ namespace MediaBrowser.Model.Dlna
             string? outputContainer,
             MediaStreamProtocol? transcodingSubProtocol)
         {
-            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || transcodingSubProtocol != MediaStreamProtocol.hls))
+            if (CanConsiderEmbedSubtitle(subtitleStream, playMethod, transcodingSubProtocol, outputContainer))
             {
                 // Look for supported embedded subs of the same format
                 foreach (var profile in subtitleProfiles)
@@ -1534,6 +1534,19 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return false;
+        }
+
+        private static bool CanConsiderEmbedSubtitle(MediaStream subtitleStream, PlayMethod playMethod, MediaStreamProtocol? transcodingSubProtocol, string? outputContainer)
+        {
+            if (subtitleStream.IsExternal)
+            {
+                return playMethod == PlayMethod.Transcode
+                    && transcodingSubProtocol != MediaStreamProtocol.hls
+                    && IsSubtitleEmbedSupported(outputContainer);
+            }
+
+            return playMethod != PlayMethod.Transcode
+                || transcodingSubProtocol != MediaStreamProtocol.hls;
         }
 
         private static SubtitleProfile? GetExternalSubtitleProfile(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, bool allowConversion)
