@@ -85,6 +85,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegVaapiDeviceVendorId = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
         private readonly Version _minFFmpegRkmppHevcDecDoviRpu = new Version(7, 1, 1);
+        private readonly Version _minFFmpegReadrateCatchupOption = new Version(8, 0);
 
         private static readonly Regex _containerValidationRegex = new(ContainerValidationRegex, RegexOptions.Compiled);
 
@@ -7226,8 +7227,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }
 
+            int readrate = 0;
             if (state.ReadInputAtNativeFramerate && state.InputProtocol != MediaProtocol.Rtsp)
             {
+                readrate = 1;
                 inputModifier += " -re";
             }
             else if (encodingOptions.EnableSegmentDeletion
@@ -7238,7 +7241,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // Set an input read rate limit 10x for using SegmentDeletion with stream-copy
                 // to prevent ffmpeg from exiting prematurely (due to fast drive)
-                inputModifier += " -readrate 10";
+                readrate = 10;
+                inputModifier += $" -readrate {readrate}";
+            }
+
+            // Set a larger catchup value to revert to the old behavior,
+            // otherwise, remuxing might stall due to this new option
+            if (readrate > 0 && _mediaEncoder.EncoderVersion >= _minFFmpegReadrateCatchupOption)
+            {
+                inputModifier += $" -readrate_catchup {readrate * 100}";
             }
 
             var flags = new List<string>();
