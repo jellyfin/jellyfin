@@ -70,6 +70,7 @@ public static class StorageHelper
             return new FolderStorageInfo()
             {
                 Path = path,
+                ResolvedPath = path,
                 FreeSpace = -1,
                 UsedSpace = -1,
                 StorageType = null,
