@@ -37,7 +37,7 @@ public static class StorageHelper
         try
         {
             // Fully resolve the given path to an actual filesystem target, in case it's a symlink or similar.
-            resolvedPath = ResolvePath(path);
+            string resolvedPath = ResolvePath(path);
             // We iterate all filesystems reported by GetDrives() here, and attempt to find the best
             // match that contains, as deep as possible, the given path.
             // This is required because simply calling `DriveInfo` on a path returns that path as
