@@ -37,24 +37,26 @@ public static class StorageHelper
         try
         {
             // Fully resolve the given path to an actual filesystem target, in case it's a symlink or similar.
-            string resolvedPath = ResolvePath(path);
+            var resolvedPath = ResolvePath(path);
             // We iterate all filesystems reported by GetDrives() here, and attempt to find the best
             // match that contains, as deep as possible, the given path.
             // This is required because simply calling `DriveInfo` on a path returns that path as
             // the Name and RootDevice, which is not at all how this should work.
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
-            DriveInfo bestMatch = null;  
+            var allDrives = DriveInfo.GetDrives();
+            DriveInfo? bestMatch = null;  
             foreach (DriveInfo d in allDrives)
             {
-                if (resolvedPath.StartsWith(d.RootDirectory.FullName) &&
-                    (bestMatch == null || d.RootDirectory.FullName.Length > bestMatch.RootDirectory.FullName.Length))
+                if (resolvedPath.StartsWith(d.RootDirectory.FullName, StringComparison.InvariantCultureIgnoreCase) &&
+                    (bestMatch is null || d.RootDirectory.FullName.Length > bestMatch.RootDirectory.FullName.Length))
                 {
                     bestMatch = d;
                 }
             }
+            
             if (bestMatch is null) {
                 throw new InvalidOperationException($"The path `{path}` has no matching parent device. Space check invalid.");
             }
+            
             return new FolderStorageInfo()
             {
                 Path = path,
