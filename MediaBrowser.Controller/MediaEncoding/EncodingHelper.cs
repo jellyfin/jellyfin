@@ -3032,8 +3032,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (state.SubtitleStream.IsExternal)
                 {
-                    // External subtitle file is added as second FFmpeg input
-                    args += " -map 1:0";
+                    // External subtitle file is added as second FFmpeg input.
+                    // For single-stream files (SRT/ASS/VTT) the in-file index is always 0.
+                    // For multi-stream containers (MKS) we count how many streams from
+                    // the same file appear before the selected one.
+                    var inFileIndex = state.MediaSource.MediaStreams
+                        .Where(s => string.Equals(s.Path, state.SubtitleStream.Path, StringComparison.Ordinal))
+                        .TakeWhile(s => s.Index != state.SubtitleStream.Index)
+                        .Count();
+
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 1:{0}",
+                        inFileIndex);
                 }
                 else
                 {
