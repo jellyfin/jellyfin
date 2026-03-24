@@ -38,7 +38,7 @@ public class BaseItemTests
             Path = altPath,
         };
 
-        video.LocalAlternateVersions = [videoAlt.Path];
+        video.LocalAlternateVersions = [new LinkedChild { Path = videoAlt.Path }];
 
         Assert.Equal(name, video.GetMediaSourceName(video));
         Assert.Equal(altName, video.GetMediaSourceName(videoAlt));
