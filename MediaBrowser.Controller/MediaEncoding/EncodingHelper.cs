@@ -1592,9 +1592,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
                 // Use long arithmetic and clamp to int.MaxValue to prevent int32 overflow
                 // (e.g. bitrate * 4 wraps to a negative value for bitrates above ~537 million)
-                long qsvMaxrate = Math.Min((long)bitrate + 1, int.MaxValue);
-                long qsvInitOcc = Math.Min((long)bitrate * 2, int.MaxValue);
-                long qsvBufsize = Math.Min((long)bitrate * 4, int.MaxValue);
+                int qsvMaxrate = (int)Math.Min((long)bitrate + 1, int.MaxValue);
+                int qsvInitOcc = (int)Math.Min((long)bitrate * 2, int.MaxValue);
+                int qsvBufsize = (int)Math.Min((long)bitrate * 4, int.MaxValue);
 
                 return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {qsvMaxrate} -rc_init_occupancy {qsvInitOcc} -bufsize {qsvBufsize}");
             }
