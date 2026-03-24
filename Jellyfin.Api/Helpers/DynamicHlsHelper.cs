@@ -209,18 +209,21 @@ public class DynamicHlsHelper
             AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.User);
         }
 
-        // For DoVi Profile 5, add a spec-compliant dvh1 variant before the hvc1 hack variant.
-        // P5 has no compatible base layer, so SUPPLEMENTAL-CODECS cannot be used.
-        // The dvh1 variant is listed first so spec-compliant clients (Apple TV, webOS 24+)
-        // select it over the hvc1 fallback when both have identical BANDWIDTH.
+        // For DoVi profiles without a compatible base layer (P5 HEVC, P10/bl0 AV1),
+        // add a spec-compliant dvh1/dav1 variant before the hvc1 hack variant.
+        // SUPPLEMENTAL-CODECS cannot be used for these profiles (no compatible BL to supplement).
+        // The DoVi variant is listed first so spec-compliant clients (Apple TV, webOS 24+)
+        // select it over the fallback when both have identical BANDWIDTH.
+        // Only emit for clients that explicitly declared DOVI support to avoid breaking
+        // non-compliant players that don't recognize dvh1/dav1 CODECS strings.
         if (state.VideoStream is not null
             && state.VideoRequest is not null
             && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
             && state.VideoStream.VideoRangeType == VideoRangeType.DOVI
-            && EncodingHelper.IsDovi(state.VideoStream)
-            && !_encodingHelper.IsDoviRemoved(state)
             && state.VideoStream.DvProfile.HasValue
-            && state.VideoStream.DvLevel.HasValue)
+            && state.VideoStream.DvLevel.HasValue
+            && state.GetRequestedRangeTypes(state.VideoStream.Codec)
+                .Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase))
         {
             AppendDoviPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
         }
@@ -935,9 +938,9 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
-    /// Appends a Dolby Vision Profile 5 variant with dvh1 CODECS to the master playlist.
-    /// This enables spec-compliant HLS clients to detect DoVi from the manifest
-    /// rather than relying on init segment inspection.
+    /// Appends a Dolby Vision variant with dvh1/dav1 CODECS for profiles without a compatible
+    /// base layer (P5 HEVC, P10/bl0 AV1). This enables spec-compliant HLS clients to detect
+    /// DoVi from the manifest rather than relying on init segment inspection.
     /// </summary>
     /// <param name="builder">StringBuilder for the master playlist.</param>
     /// <param name="state">StreamState of the current stream.</param>
@@ -953,6 +956,8 @@ public class DynamicHlsHelper
             return;
         }
 
+        var isAv1 = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+
         var playlistBuilder = new StringBuilder();
         playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
             .Append(bitrate.ToString(CultureInfo.InvariantCulture))
@@ -961,8 +966,7 @@ public class DynamicHlsHelper
 
         playlistBuilder.Append(",VIDEO-RANGE=PQ");
 
-        // Build CODECS with dvh1 instead of hvc1
-        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value);
+        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, isAv1);
 
         string audioCodecs = string.Empty;
         if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))

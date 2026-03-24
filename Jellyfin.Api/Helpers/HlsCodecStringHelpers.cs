@@ -348,15 +348,17 @@ public static class HlsCodecStringHelpers
     }
 
     /// <summary>
-    /// Gets a Dolby Vision codec string.
+    /// Gets a Dolby Vision codec string for profiles without a compatible base layer.
     /// </summary>
     /// <param name="dvProfile">Dolby Vision profile number.</param>
     /// <param name="dvLevel">Dolby Vision level number.</param>
+    /// <param name="isAv1">Whether the video codec is AV1 (uses dav1 FourCC instead of dvh1).</param>
     /// <returns>Dolby Vision codec string.</returns>
-    public static string GetDoviString(int dvProfile, int dvLevel)
+    public static string GetDoviString(int dvProfile, int dvLevel, bool isAv1)
     {
-        // FORMAT: dvh1.[profile].[level] (out-of-band parameter sets, recommended by Apple HLS spec Rule 1.10)
-        StringBuilder result = new StringBuilder("dvh1", 12);
+        // HEVC DoVi uses dvh1, AV1 DoVi uses dav1 (out-of-band parameter sets, recommended by Apple HLS spec Rule 1.10)
+        var fourCc = isAv1 ? "dav1" : "dvh1";
+        StringBuilder result = new StringBuilder(fourCc, 12);
 
         result.Append('.')
             .AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", dvProfile)
