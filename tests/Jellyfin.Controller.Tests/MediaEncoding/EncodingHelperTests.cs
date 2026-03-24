@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -71,6 +73,8 @@ namespace Jellyfin.Controller.Tests.MediaEncoding
         [Fact]
         public void GetMapArgs_SecondExternalSrt_StillMaps1Colon0()
         {
+            // Two separate .srt files — selecting the second one still maps 1:0
+            // because Jellyfin feeds only the selected file as ffmpeg input 1.
             var ext1 = new MediaStream
             {
                 Index = 2,
@@ -92,7 +96,6 @@ namespace Jellyfin.Controller.Tests.MediaEncoding
             var state = BuildState(ext2, SubtitleDeliveryMethod.Embed, additionalStreams: [ext1, ext2]);
             var args = CreateHelper().GetMapArgs(state);
 
-            // Different file from ext1, so in-file index is 0
             Assert.Contains("-map 1:0", args, StringComparison.Ordinal);
         }
 
@@ -156,8 +159,48 @@ namespace Jellyfin.Controller.Tests.MediaEncoding
             var state = BuildState(mks1, SubtitleDeliveryMethod.Embed, additionalStreams: [mks0, mks1, mks2]);
             var args = CreateHelper().GetMapArgs(state);
 
-            // Second track in the same .mks file → in-file index 1
             Assert.Contains("-map 1:1", args, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData(SubtitleDeliveryMethod.Embed, true, "movie.idx")]
+        [InlineData(SubtitleDeliveryMethod.Encode, true, "movie.idx")]
+        [InlineData(SubtitleDeliveryMethod.Embed, false, "movie.sub")]
+        [InlineData(SubtitleDeliveryMethod.Encode, false, "movie.sub")]
+        public void GetInputArgument_VobSub_UsesCorrectPath(
+            SubtitleDeliveryMethod deliveryMethod,
+            bool createIdxFile,
+            string expectedFilename)
+        {
+            var tempDir = Directory.CreateTempSubdirectory("jellyfin-test-");
+            try
+            {
+                var subFile = Path.Combine(tempDir.FullName, "movie.sub");
+                File.WriteAllText(subFile, "dummy");
+
+                if (createIdxFile)
+                {
+                    File.WriteAllText(Path.Combine(tempDir.FullName, "movie.idx"), "dummy");
+                }
+
+                var sub = new MediaStream
+                {
+                    Index = 2,
+                    Type = MediaStreamType.Subtitle,
+                    Codec = "dvdsub",
+                    IsExternal = true,
+                    SupportsExternalStream = true,
+                    Path = subFile
+                };
+                var state = BuildState(sub, deliveryMethod);
+                var inputArgs = CreateHelper().GetInputArgument(state, new EncodingOptions(), null);
+
+                Assert.Contains(expectedFilename, inputArgs, StringComparison.Ordinal);
+            }
+            finally
+            {
+                tempDir.Delete(true);
+            }
         }
 
         private static EncodingJobInfo BuildState(

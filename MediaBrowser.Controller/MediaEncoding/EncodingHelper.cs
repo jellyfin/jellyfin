@@ -1253,18 +1253,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var subtitlePath = state.SubtitleStream.Path;
                 var isGraphicalBurnIn = ShouldEncodeSubtitle(state) && !state.SubtitleStream.IsTextSubtitleStream;
 
-                if (isGraphicalBurnIn)
+                // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
+                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
+                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
                 {
-                    var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
-
-                    // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
-                    if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
+                    var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
+                    if (File.Exists(idxFile))
                     {
-                        var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
-                        if (File.Exists(idxFile))
-                        {
-                            subtitlePath = idxFile;
-                        }
+                        subtitlePath = idxFile;
                     }
                 }
 
