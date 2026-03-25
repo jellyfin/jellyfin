@@ -806,7 +806,7 @@ namespace MediaBrowser.Providers.Manager
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                             }
 
-                            MergeData(localItem, temp, [], false, true);
+                            MergeData(localItem, temp, [], options.ReplaceAllMetadata, true);
                             refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                             break;
