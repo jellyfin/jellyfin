@@ -956,8 +956,6 @@ public class DynamicHlsHelper
             return;
         }
 
-        var isAv1 = string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase);
-
         var playlistBuilder = new StringBuilder();
         playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
             .Append(bitrate.ToString(CultureInfo.InvariantCulture))
@@ -966,7 +964,7 @@ public class DynamicHlsHelper
 
         playlistBuilder.Append(",VIDEO-RANGE=PQ");
 
-        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, isAv1);
+        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, state.ActualOutputVideoCodec);
 
         string audioCodecs = string.Empty;
         if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))

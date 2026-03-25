@@ -352,12 +352,12 @@ public static class HlsCodecStringHelpers
     /// </summary>
     /// <param name="dvProfile">Dolby Vision profile number.</param>
     /// <param name="dvLevel">Dolby Vision level number.</param>
-    /// <param name="isAv1">Whether the video codec is AV1 (uses dav1 FourCC instead of dvh1).</param>
+    /// <param name="codec">Video codec name (e.g. "hevc", "av1") to determine the DoVi FourCC.</param>
     /// <returns>Dolby Vision codec string.</returns>
-    public static string GetDoviString(int dvProfile, int dvLevel, bool isAv1)
+    public static string GetDoviString(int dvProfile, int dvLevel, string codec)
     {
         // HEVC DoVi uses dvh1, AV1 DoVi uses dav1 (out-of-band parameter sets, recommended by Apple HLS spec Rule 1.10)
-        var fourCc = isAv1 ? "dav1" : "dvh1";
+        var fourCc = string.Equals(codec, "av1", StringComparison.OrdinalIgnoreCase) ? "dav1" : "dvh1";
         StringBuilder result = new StringBuilder(fourCc, 12);
 
         result.Append('.')
