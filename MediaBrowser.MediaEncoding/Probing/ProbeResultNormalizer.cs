@@ -997,9 +997,12 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             // Use the global format info (useful for FLAC or single-stream containers)
-            if (bitrate <= 0 && formatInfo != null && int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out var formatVal))
+            if (bitrate <= 0 && formatInfo != null)
             {
-                bitrate = formatVal;
+                if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out var formatVal))
+                {
+                    bitrate = formatVal;
+                }
             }
 
             if (bitrate > 0)
