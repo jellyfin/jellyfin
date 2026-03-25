@@ -384,11 +384,33 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<Video> GetLinkedAlternateVersions()
         {
-            return LinkedAlternateVersions
-                .Select(GetLinkedChild)
-                .Where(i => i is not null)
-                .OfType<Video>()
-                .OrderBy(i => i.SortName);
+            var linked = LinkedAlternateVersions;
+            var result = new List<Video>(linked.Length);
+            var hasStale = false;
+
+            for (var i = 0; i < linked.Length; i++)
+            {
+                var child = GetLinkedChild(linked[i]);
+                if (child is Video video)
+                {
+                    result.Add(video);
+                }
+                else
+                {
+                    hasStale = true;
+                }
+            }
+
+            // Clean up broken links that no longer resolve to valid items
+            if (hasStale)
+            {
+                LinkedAlternateVersions = linked
+                    .Where(l => l.ItemId.HasValue && !l.ItemId.Value.IsEmpty())
+                    .ToArray();
+            }
+
+            result.Sort((a, b) => string.Compare(a.SortName, b.SortName, StringComparison.Ordinal));
+            return result;
         }
 
         /// <summary>

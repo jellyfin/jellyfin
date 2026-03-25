@@ -1778,11 +1778,13 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return itemById;
                 }
+
+                // Cached item no longer exists, invalidate stale cache
+                info.ItemId = null;
             }
 
             var item = FindLinkedChild(info);
 
-            // If still null, log
             if (item is null)
             {
                 // Don't keep searching over and over
