@@ -1253,7 +1253,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrEmpty(duration))
             {
-                duration = Regex.Replace(duration, @"(\.\d{7})\d+", "$1");
+                duration = Regex.Replace(duration, @"(\.\d{7})\d+", "$1", RegexOptions.None, TimeSpan.FromSeconds(1));
                 if (TimeSpan.TryParse(duration, out var parsedDuration))
                 {
                     return parsedDuration.TotalSeconds;
