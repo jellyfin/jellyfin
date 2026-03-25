@@ -1259,9 +1259,15 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (TimeSpan.TryParse(duration, out var parsedDuration))
+
+            if (!string.IsNullOrEmpty(duration))
             {
-                return parsedDuration.TotalSeconds;
+                duration = Regex.Replace(duration, @"(\.\d{7})\d+", "$1");
+                if (TimeSpan.TryParse(duration, out var parsedDuration))
+                {
+                    Console.WriteLine("Duration is" + parsedDuration.TotalSeconds);
+                    return parsedDuration.TotalSeconds;
+                }
             }
 
             return null;
