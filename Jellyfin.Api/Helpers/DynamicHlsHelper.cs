@@ -995,5 +995,4 @@ public class DynamicHlsHelper
             newValue.ToString(),
             StringComparison.Ordinal);
     }
-
 }
