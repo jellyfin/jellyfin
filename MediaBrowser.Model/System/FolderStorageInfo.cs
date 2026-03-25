@@ -11,7 +11,7 @@ public record FolderStorageInfo
     public required string Path { get; init; }
 
     /// <summary>
-    /// Gets the fully resolved path of the folder in question (interpolating any symlinks if present)
+    /// Gets the fully resolved path of the folder in question (interpolating any symlinks if present).
     /// </summary>
     public required string ResolvedPath { get; init; }
 
