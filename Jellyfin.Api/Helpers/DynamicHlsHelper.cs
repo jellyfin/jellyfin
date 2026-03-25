@@ -375,6 +375,65 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
+    /// Appends a Dolby Vision variant with dvh1/dav1 CODECS for profiles without a compatible
+    /// base layer (P5 HEVC, P10/bl0 AV1). This enables spec-compliant HLS clients to detect
+    /// DoVi from the manifest rather than relying on init segment inspection.
+    /// </summary>
+    /// <param name="builder">StringBuilder for the master playlist.</param>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <param name="url">Playlist URL for this variant.</param>
+    /// <param name="bitrate">Bitrate for the BANDWIDTH field.</param>
+    /// <param name="subtitleGroup">Subtitle group identifier, or null.</param>
+    private void AppendDoviPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
+    {
+        var dvProfile = state.VideoStream.DvProfile;
+        var dvLevel = state.VideoStream.DvLevel;
+        if (dvProfile is null || dvLevel is null)
+        {
+            return;
+        }
+
+        var playlistBuilder = new StringBuilder();
+        playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+            .Append(",AVERAGE-BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture));
+
+        playlistBuilder.Append(",VIDEO-RANGE=PQ");
+
+        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, state.ActualOutputVideoCodec);
+
+        string audioCodecs = string.Empty;
+        if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
+        {
+            audioCodecs = GetPlaylistAudioCodecs(state);
+        }
+
+        playlistBuilder.Append(",CODECS=\"")
+            .Append(dvCodec);
+        if (!string.IsNullOrEmpty(audioCodecs))
+        {
+            playlistBuilder.Append(',').Append(audioCodecs);
+        }
+
+        playlistBuilder.Append('"');
+
+        AppendPlaylistResolutionField(playlistBuilder, state);
+        AppendPlaylistFramerateField(playlistBuilder, state);
+
+        if (!string.IsNullOrWhiteSpace(subtitleGroup))
+        {
+            playlistBuilder.Append(",SUBTITLES=\"")
+                .Append(subtitleGroup)
+                .Append('"');
+        }
+
+        playlistBuilder.Append(Environment.NewLine);
+        playlistBuilder.AppendLine(url);
+        builder.Append(playlistBuilder);
+    }
+
+    /// <summary>
     /// Appends a VIDEO-RANGE field containing the range of the output video stream.
     /// </summary>
     /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
@@ -937,62 +996,4 @@ public class DynamicHlsHelper
             StringComparison.Ordinal);
     }
 
-    /// <summary>
-    /// Appends a Dolby Vision variant with dvh1/dav1 CODECS for profiles without a compatible
-    /// base layer (P5 HEVC, P10/bl0 AV1). This enables spec-compliant HLS clients to detect
-    /// DoVi from the manifest rather than relying on init segment inspection.
-    /// </summary>
-    /// <param name="builder">StringBuilder for the master playlist.</param>
-    /// <param name="state">StreamState of the current stream.</param>
-    /// <param name="url">Playlist URL for this variant.</param>
-    /// <param name="bitrate">Bitrate for the BANDWIDTH field.</param>
-    /// <param name="subtitleGroup">Subtitle group identifier, or null.</param>
-    private void AppendDoviPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
-    {
-        var dvProfile = state.VideoStream.DvProfile;
-        var dvLevel = state.VideoStream.DvLevel;
-        if (dvProfile is null || dvLevel is null)
-        {
-            return;
-        }
-
-        var playlistBuilder = new StringBuilder();
-        playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
-            .Append(bitrate.ToString(CultureInfo.InvariantCulture))
-            .Append(",AVERAGE-BANDWIDTH=")
-            .Append(bitrate.ToString(CultureInfo.InvariantCulture));
-
-        playlistBuilder.Append(",VIDEO-RANGE=PQ");
-
-        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, state.ActualOutputVideoCodec);
-
-        string audioCodecs = string.Empty;
-        if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
-        {
-            audioCodecs = GetPlaylistAudioCodecs(state);
-        }
-
-        playlistBuilder.Append(",CODECS=\"")
-            .Append(dvCodec);
-        if (!string.IsNullOrEmpty(audioCodecs))
-        {
-            playlistBuilder.Append(',').Append(audioCodecs);
-        }
-
-        playlistBuilder.Append('"');
-
-        AppendPlaylistResolutionField(playlistBuilder, state);
-        AppendPlaylistFramerateField(playlistBuilder, state);
-
-        if (!string.IsNullOrWhiteSpace(subtitleGroup))
-        {
-            playlistBuilder.Append(",SUBTITLES=\"")
-                .Append(subtitleGroup)
-                .Append('"');
-        }
-
-        playlistBuilder.Append(Environment.NewLine);
-        playlistBuilder.AppendLine(url);
-        builder.Append(playlistBuilder);
-    }
 }
