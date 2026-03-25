@@ -254,6 +254,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestMultiVersion8()
         {
+            // With underscore separator support, these files are now grouped as alternate versions
             var files = new[]
             {
                 "/movies/Iron Man/Iron Man.mkv",
@@ -269,8 +270,8 @@ namespace Jellyfin.Naming.Tests.Video
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
-            Assert.Equal(7, result.Count);
-            Assert.Empty(result[0].AlternateVersions);
+            Assert.Single(result);
+            Assert.Equal(6, result[0].AlternateVersions.Count);
         }
 
         [Fact]
@@ -434,6 +435,40 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(new List<VideoFileInfo>(), _namingOptions).ToList();
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Resolve_GivenUnderscoreSeparator_GroupsVersions()
+        {
+            var files = new[]
+            {
+                "/movies/Movie (2020)/Movie (2020)_4K.mkv",
+                "/movies/Movie (2020)/Movie (2020)_1080p.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void Resolve_GivenDotSeparator_GroupsVersions()
+        {
+            var files = new[]
+            {
+                "/movies/Movie (2020)/Movie (2020).UHD.mkv",
+                "/movies/Movie (2020)/Movie (2020).1080p.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
         }
     }
 }
