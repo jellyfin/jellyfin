@@ -1,10 +1,14 @@
 #nullable disable
 
+using System;
 using System.Globalization;
+using System.IO;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
+using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 
@@ -91,10 +95,31 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             args.LibraryOptions.PreferredMetadataLanguage);
                 }
 
+                SetProviderIdFromPath(season, path);
+
                 return season;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Sets provider ids from the season folder name.
+        /// </summary>
+        /// <param name="item">The season.</param>
+        /// <param name="path">The season folder path.</param>
+        private static void SetProviderIdFromPath(Season item, string path)
+        {
+            var justName = Path.GetFileName(path.AsSpan());
+
+            var tvdbId = justName.GetAttributeValue("tvdbid");
+            item.TrySetProviderId(MetadataProvider.Tvdb, tvdbId);
+
+            var tvmazeId = justName.GetAttributeValue("tvmazeid");
+            item.TrySetProviderId(MetadataProvider.TvMaze, tvmazeId);
+
+            var tmdbId = justName.GetAttributeValue("tmdbid");
+            item.TrySetProviderId(MetadataProvider.Tmdb, tmdbId);
         }
     }
 }
