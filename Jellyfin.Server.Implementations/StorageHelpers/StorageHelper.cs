@@ -43,7 +43,7 @@ public static class StorageHelper
             // This is required because simply calling `DriveInfo` on a path returns that path as
             // the Name and RootDevice, which is not at all how this should work.
             var allDrives = DriveInfo.GetDrives();
-            DriveInfo? bestMatch = null;  
+            DriveInfo? bestMatch = null;
             foreach (DriveInfo d in allDrives)
             {
                 if (resolvedPath.StartsWith(d.RootDirectory.FullName, StringComparison.InvariantCultureIgnoreCase) &&
@@ -52,11 +52,12 @@ public static class StorageHelper
                     bestMatch = d;
                 }
             }
-            
-            if (bestMatch is null) {
+
+            if (bestMatch is null)
+            {
                 throw new InvalidOperationException($"The path `{path}` has no matching parent device. Space check invalid.");
             }
-            
+
             return new FolderStorageInfo()
             {
                 Path = path,
