@@ -993,28 +993,19 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.BitRate = bitrate;
             }
 
-            // Extract bitrate info from tag "BPS" if possible.
+            // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
             if (!stream.BitRate.HasValue
                 && (streamInfo.CodecType == CodecType.Audio
                     || streamInfo.CodecType == CodecType.Video))
             {
-                var bps = GetBPSFromTags(streamInfo);
-                if (bps > 0)
+                var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
+                var bytes = GetNumberOfBytesFromTags(streamInfo);
+                if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
                 {
-                    stream.BitRate = bps;
-                }
-                else
-                {
-                    // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
-                    var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
-                    var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
+                    var bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
+                    if (bps > 0)
                     {
-                        bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
-                        if (bps > 0)
-                        {
-                            stream.BitRate = bps;
-                        }
+                        stream.BitRate = bps;
                     }
                 }
             }
