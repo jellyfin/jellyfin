@@ -1632,6 +1632,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
                 }
 
+                // Some devices (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) only support CQP rate
+                // control. Fall back to CQP so the encoder does not fail at initialisation.
+                if (!_mediaEncoder.IsVaapiDeviceSupportVbrRcMode)
+                {
+                    return " -rc_mode CQP -qp 22";
+                }
+
                 return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 

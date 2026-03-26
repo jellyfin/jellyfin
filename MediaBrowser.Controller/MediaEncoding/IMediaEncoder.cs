@@ -76,6 +76,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the configured VAAPI device supports VBR rate control mode.
+        /// Devices that do not support VBR (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) should
+        /// use CQP as a fallback to avoid encoder initialisation failures.
+        /// </summary>
+        /// <value><c>true</c> if the VAAPI device supports VBR rate control, <c>false</c> if only CQP is available.</value>
+        bool IsVaapiDeviceSupportVbrRcMode { get; }
+
+        /// <summary>
         /// Gets a value indicating whether av1 decoding is available via VideoToolbox.
         /// </summary>
         /// <value><c>true</c> if the av1 is available via VideoToolbox, <c>false</c> otherwise.</value>

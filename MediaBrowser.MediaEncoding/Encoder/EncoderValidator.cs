@@ -423,6 +423,41 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool CheckVaapiDeviceVbrSupport(string renderNodePath)
+        {
+            if (!OperatingSystem.IsLinux())
+            {
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(renderNodePath))
+            {
+                return true;
+            }
+
+            try
+            {
+                // Attempt a minimal 1-frame test encode using VBR rate control.
+                // Some hardware (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) only support CQP
+                // and will emit "Driver does not support VBR RC mode" in the error output.
+                var command = "-v error -hide_banner"
+                    + " -init_hw_device vaapi=va:" + renderNodePath
+                    + " -filter_hw_device va"
+                    + " -f lavfi -i color=black:s=64x64:d=0.04"
+                    + " -frames:v 1 -an"
+                    + " -vf format=nv12,hwupload"
+                    + " -c:v h264_vaapi -rc_mode VBR -b:v 1M"
+                    + " -f null -";
+                var output = GetProcessOutput(_encoderPath, command, true, null);
+                return !output.Contains("not support VBR RC mode", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error probing VAAPI VBR support on {RenderNodePath}", renderNodePath);
+                return true;
+            }
+        }
+
         public bool CheckVulkanDrmDeviceByExtensionName(string renderNodePath, string[] vulkanExtensions)
         {
             if (!OperatingSystem.IsLinux())

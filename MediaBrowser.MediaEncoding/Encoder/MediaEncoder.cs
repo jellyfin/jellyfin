@@ -84,6 +84,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
+        private bool _isVaapiDeviceSupportVbrRcMode = true;
 
         private bool _isVideoToolboxAv1DecodeAvailable = false;
 
@@ -162,6 +163,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
+
+        /// <inheritdoc />
+        public bool IsVaapiDeviceSupportVbrRcMode => _isVaapiDeviceSupportVbrRcMode;
 
         public bool IsVideoToolboxAv1DecodeAvailable => _isVideoToolboxAv1DecodeAvailable;
 
@@ -245,6 +249,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
                     _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
                     _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
+                    _isVaapiDeviceSupportVbrRcMode = validator.CheckVaapiDeviceVbrSupport(options.VaapiDevice);
 
                     if (_isVaapiDeviceAmd)
                     {
@@ -257,6 +262,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (!_isVaapiDeviceSupportVbrRcMode)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} does not support VBR rate control, CQP will be used as fallback", options.VaapiDevice);
                     }
 
                     if (_isVaapiDeviceSupportVulkanDrmModifier)
