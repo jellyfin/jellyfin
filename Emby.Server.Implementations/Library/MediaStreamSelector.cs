@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Library
                 // Only attempt to load subtitles if the audio language is not one of the user's preferred subtitle languages.
                 // If no subtitles of preferred language available, use none.
                 // If the audio language is one of the user's preferred subtitle languages behave like OnlyForced.
-                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
+                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
                 {
                     stream = sortedStreams.FirstOrDefault(x => MatchesPreferredLanguage(x.Language, preferredLanguages));
                 }
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // Prefer smart logic over embedded metadata
                 // Only attempt to load subtitles if the audio language is not one of the user's preferred subtitle languages, otherwise OnlyForced behavior.
-                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
+                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
                 {
                     filteredStreams = sortedStreams.Where(s => MatchesPreferredLanguage(s.Language, preferredLanguages))
                         .ToList();
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.Library
         {
             // If preferredLanguages is empty, treat it as "any language" (wildcard)
             return preferredLanguages.Count == 0 ||
-                preferredLanguages.Contains(language, StringComparison.OrdinalIgnoreCase);
+                preferredLanguages.Contains(language, StringComparer.OrdinalIgnoreCase);
         }
 
         private static bool IsLanguageUndefined(string language)

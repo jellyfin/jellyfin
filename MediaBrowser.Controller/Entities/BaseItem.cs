@@ -1670,7 +1670,7 @@ namespace MediaBrowser.Controller.Entities
         private bool IsVisibleViaTags(User user, bool skipAllowedTagsCheck)
         {
             var allTags = GetInheritedTags();
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => allTags.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1682,7 +1682,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
-            if (!skipAllowedTagsCheck && allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (!skipAllowedTagsCheck && allowedTagsPreference.Length != 0 && !allowedTagsPreference.Any(i => allTags.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1840,7 +1840,7 @@ namespace MediaBrowser.Controller.Entities
             ArgumentException.ThrowIfNullOrEmpty(name);
             var current = Studios;
 
-            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 int curLen = current.Length;
                 if (curLen == 0)
@@ -1869,7 +1869,7 @@ namespace MediaBrowser.Controller.Entities
             ArgumentException.ThrowIfNullOrEmpty(name);
 
             var genres = Genres;
-            if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (!genres.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Genres = [.. genres, name];
             }

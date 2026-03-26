@@ -658,7 +658,7 @@ namespace MediaBrowser.Providers.Manager
 
         /// <inheritdoc/>
         public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
-            => SaveMetadataAsync(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparison.OrdinalIgnoreCase)));
+            => SaveMetadataAsync(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
 
         /// <summary>
         /// Saves the metadata.
@@ -741,7 +741,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (libraryOptions.MetadataSavers is null)
                     {
-                        if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
+                        if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
                         {
                             return false;
                         }
@@ -767,7 +767,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        if (!libraryOptions.MetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
+                        if (!libraryOptions.MetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
                         {
                             return false;
                         }

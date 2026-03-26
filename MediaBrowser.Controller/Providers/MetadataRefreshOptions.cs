@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Providers
         {
             if (RefreshPaths is not null && RefreshPaths.Length > 0)
             {
-                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
             }
 
             return true;

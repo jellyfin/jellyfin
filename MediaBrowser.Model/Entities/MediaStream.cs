@@ -273,7 +273,7 @@ namespace MediaBrowser.Model.Entities
                         var attributes = new List<string>();
 
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
-                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparer.OrdinalIgnoreCase))
                         {
                             // Use pre-resolved localized language name, falling back to raw language code.
                             attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));

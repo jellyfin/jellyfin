@@ -237,19 +237,19 @@ namespace Jellyfin.LiveTv.Listings
 
             if (programInfo.AudioProperties.Count != 0)
             {
-                if (programInfo.AudioProperties.Contains("atmos", StringComparison.OrdinalIgnoreCase))
+                if (programInfo.AudioProperties.Contains("atmos", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Atmos;
                 }
-                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparison.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Contains("dd", StringComparison.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("dd", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Contains("stereo", StringComparison.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("stereo", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Stereo;
                 }
@@ -311,8 +311,8 @@ namespace Jellyfin.LiveTv.Listings
 
             if (programInfo.VideoProperties is not null)
             {
-                info.IsHD = programInfo.VideoProperties.Contains("hdtv", StringComparison.OrdinalIgnoreCase);
-                info.Is3D = programInfo.VideoProperties.Contains("3d", StringComparison.OrdinalIgnoreCase);
+                info.IsHD = programInfo.VideoProperties.Contains("hdtv", StringComparer.OrdinalIgnoreCase);
+                info.Is3D = programInfo.VideoProperties.Contains("3d", StringComparer.OrdinalIgnoreCase);
             }
 
             if (details.ContentRating is not null && details.ContentRating.Count > 0)
@@ -321,7 +321,7 @@ namespace Jellyfin.LiveTv.Listings
                     .Replace("--", "-", StringComparison.Ordinal);
 
                 var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
-                if (invalid.Contains(info.OfficialRating, StringComparison.OrdinalIgnoreCase))
+                if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
                 {
                     info.OfficialRating = null;
                 }
@@ -383,9 +383,9 @@ namespace Jellyfin.LiveTv.Listings
             if (details.Genres is not null)
             {
                 info.Genres = details.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
-                info.IsNews = details.Genres.Contains("news", StringComparison.OrdinalIgnoreCase);
+                info.IsNews = details.Genres.Contains("news", StringComparer.OrdinalIgnoreCase);
 
-                if (info.Genres.Contains("children", StringComparison.OrdinalIgnoreCase))
+                if (info.Genres.Contains("children", StringComparer.OrdinalIgnoreCase))
                 {
                     info.IsKids = true;
                 }

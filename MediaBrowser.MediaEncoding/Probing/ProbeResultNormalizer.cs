@@ -305,8 +305,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // FFprobe can report "matroska,webm" for Matroska-like containers, so only keep "webm" if all streams are WebM-compatible.
                     // Any stream that is not video nor audio is not supported in WebM and should disqualify the webm container probe result.
                     if (mediaStreams.Any(stream => stream.Type is not MediaStreamType.Video and not MediaStreamType.Audio)
-                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
-                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparer.OrdinalIgnoreCase))
+                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparer.OrdinalIgnoreCase))))
                     {
                         splitFormat[i] = string.Empty;
                     }
@@ -1508,8 +1508,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // Don't add artist/album artist name to studios, even if it's listed there
-                if (info.Artists.Contains(studio, StringComparison.OrdinalIgnoreCase)
-                    || info.AlbumArtists.Contains(studio, StringComparison.OrdinalIgnoreCase))
+                if (info.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase)
+                    || info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }

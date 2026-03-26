@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsSports => Tags.Contains("Sports", StringComparison.OrdinalIgnoreCase);
+        public bool IsSports => Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is series.
@@ -82,28 +82,28 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsLive => Tags.Contains("Live", StringComparison.OrdinalIgnoreCase);
+        public bool IsLive => Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets a value indicating whether this instance is news.
         /// </summary>
         /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsNews => Tags.Contains("News", StringComparison.OrdinalIgnoreCase);
+        public bool IsNews => Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets a value indicating whether this instance is kids.
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsKids => Tags.Contains("Kids", StringComparison.OrdinalIgnoreCase);
+        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets a value indicating whether this instance is premiere.
         /// </summary>
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsPremiere => Tags.Contains("Premiere", StringComparison.OrdinalIgnoreCase);
+        public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets the folder containing the item.

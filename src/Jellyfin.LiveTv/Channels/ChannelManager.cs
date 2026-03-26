@@ -168,7 +168,7 @@ namespace Jellyfin.LiveTv.Channels
                     try
                     {
                         return (GetChannelProvider(i) is IHasFolderAttributes hasAttributes
-                            && hasAttributes.Attributes.Contains("Recordings", StringComparison.OrdinalIgnoreCase)) == val;
+                            && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
                     }
                     catch
                     {
@@ -1118,7 +1118,7 @@ namespace Jellyfin.LiveTv.Channels
 
             if (!info.IsLiveStream)
             {
-                if (item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
+                if (item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Except(new[] { "livestream" }, StringComparer.OrdinalIgnoreCase).ToArray();
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
@@ -1127,7 +1127,7 @@ namespace Jellyfin.LiveTv.Channels
             }
             else
             {
-                if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
+                if (!item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
                 {
                     item.Tags = [..item.Tags, "livestream"];
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);

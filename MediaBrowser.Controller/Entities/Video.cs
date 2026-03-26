@@ -185,7 +185,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (SourceType == SourceType.Channel)
                 {
-                    return !Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase);
+                    return !Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase);
                 }
 
                 return !IsActiveRecording();

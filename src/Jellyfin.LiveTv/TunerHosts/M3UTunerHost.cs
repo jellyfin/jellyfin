@@ -109,7 +109,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                         if (response.IsSuccessStatusCode)
                         {
-                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
+                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparer.OrdinalIgnoreCase))
                             {
                                 return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                             }
@@ -120,7 +120,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         Logger.LogWarning("HEAD request to check MIME type failed, shared stream disabled");
                     }
                 }
-                else if (_extensionsCanShareHttpStream.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                else if (_extensionsCanShareHttpStream.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }

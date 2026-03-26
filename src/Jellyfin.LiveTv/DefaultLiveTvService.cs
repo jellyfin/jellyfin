@@ -789,7 +789,7 @@ namespace Jellyfin.LiveTv
 
                 var deletes = _timerManager.GetAll()
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
-                    .Where(i => !allTimerIds.Contains(i.Id, StringComparison.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
+                    .Where(i => !allTimerIds.Contains(i.Id, StringComparer.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
                     .Where(i => deleteStatuses.Contains(i.Status))
                     .ToList();
 

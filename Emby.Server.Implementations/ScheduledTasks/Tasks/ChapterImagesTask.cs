@@ -129,7 +129,7 @@ public class ChapterImagesTask : IScheduledTask
 
             var key = video.Path + video.DateModified.Ticks;
 
-            var extract = !previouslyFailedImages.Contains(key, StringComparison.OrdinalIgnoreCase);
+            var extract = !previouslyFailedImages.Contains(key, StringComparer.OrdinalIgnoreCase);
 
             try
             {
