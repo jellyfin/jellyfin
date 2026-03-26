@@ -147,17 +147,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 // since we only need the -dump_attachment side effect.
                 var hasVideoOrAudioStream = mediaSource.MediaStreams
                     .Any(s => s.Type == MediaStreamType.Video || s.Type == MediaStreamType.Audio);
-                var processArgs = hasVideoOrAudioStream
-                    ? string.Format(
-                        CultureInfo.InvariantCulture,
-                        "-dump_attachment:t \"\" -y {0} -i {1} -t 0 -f null null",
-                        inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
-                        inputPath)
-                    : string.Format(
-                        CultureInfo.InvariantCulture,
-                        "-dump_attachment:t \"\" -y {0} -i {1}",
-                        inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
-                        inputPath);
+                var processArgs = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-dump_attachment:t \"\" -y {0} -i {1} {2}",
+                    inputPath.EndsWith(".concat\"", StringComparison.OrdinalIgnoreCase) ? "-f concat -safe 0" : string.Empty,
+                    inputPath,
+                    hasVideoOrAudioStream ? "-t 0 -f null null" : string.Empty);
 
                 int exitCode;
 
@@ -278,19 +273,13 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var hasVideoOrAudioStream = mediaSource.MediaStreams
                 .Any(s => s.Type == MediaStreamType.Video || s.Type == MediaStreamType.Audio);
-            var processArgs = hasVideoOrAudioStream
-                ? string.Format(
-                    CultureInfo.InvariantCulture,
-                    "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
-                    inputPath,
-                    attachmentStreamIndex,
-                    EncodingUtils.NormalizePath(outputPath))
-                : string.Format(
-                    CultureInfo.InvariantCulture,
-                    "-dump_attachment:{1} \"{2}\" -i {0}",
-                    inputPath,
-                    attachmentStreamIndex,
-                    EncodingUtils.NormalizePath(outputPath));
+            var processArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-dump_attachment:{1} \"{2}\" -i {0} {3}",
+                inputPath,
+                attachmentStreamIndex,
+                EncodingUtils.NormalizePath(outputPath),
+                hasVideoOrAudioStream ? "-t 0 -f null null" : string.Empty);
 
             int exitCode;
 
