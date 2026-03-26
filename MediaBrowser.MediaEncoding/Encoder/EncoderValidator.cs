@@ -437,16 +437,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                // Attempt a minimal 1-frame test encode using VBR rate control.
-                // Some hardware (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) only support CQP
-                // and will emit "Driver does not support VBR RC mode" in the error output.
+                // Probe VBR support using the low-power encoder path (-low_power 1), which is what
+                // Jellyfin uses for Intel iHD hardware via EnableIntelLowPowerH264HwEncoder.
+                // On some devices (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) the EncSliceLP
+                // entrypoint only supports CQP, even if the standard encoder supports VBR.
+                // Without -low_power 1 the probe passes on these devices despite VBR failing in practice.
                 var command = "-v error -hide_banner"
                     + " -init_hw_device vaapi=va:" + renderNodePath
-                    + " -filter_hw_device va"
+                    + " -hwaccel vaapi -hwaccel_output_format vaapi"
                     + " -f lavfi -i color=black:s=64x64:d=0.04"
                     + " -frames:v 1 -an"
-                    + " -vf format=nv12,hwupload"
-                    + " -c:v h264_vaapi -rc_mode VBR -b:v 1M"
+                    + " -vf hwupload,scale_vaapi=format=nv12"
+                    + " -c:v h264_vaapi -low_power 1 -rc_mode VBR -b:v 1M"
                     + " -f null -";
                 var output = GetProcessOutput(_encoderPath, command, true, null);
                 return !output.Contains("not support VBR RC mode", StringComparison.OrdinalIgnoreCase);
