@@ -540,7 +540,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             && unixTimestamp > 0
             && unixTimestamp <= DateTimeOffset.MaxValue.ToUnixTimeSeconds())
         {
-            return DateTime.SpecifyKind(DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).DateTime, DateTimeKind.Utc);
+            return DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
         }
 
         return null;
