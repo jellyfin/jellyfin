@@ -1363,6 +1363,21 @@ namespace Emby.Server.Implementations.Dto
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner)
         {
+            if (item is UserView { ViewType: CollectionType.playlists } playlistsView
+                && options.GetImageLimit(ImageType.Primary) > 0
+                && !playlistsView.DisplayParentId.IsEmpty())
+            {
+                var displayParent = _libraryManager.GetItemById(playlistsView.DisplayParentId);
+                var displayParentPrimaryImage = displayParent?.GetImageInfo(ImageType.Primary, 0);
+
+                if (displayParentPrimaryImage is not null)
+                {
+                    dto.ImageTags?.Remove(ImageType.Primary);
+                    dto.ParentPrimaryImageItemId = displayParent!.Id;
+                    dto.ParentPrimaryImageTag = GetTagAndFillBlurhash(dto, displayParent, displayParentPrimaryImage);
+                }
+            }
+
             if (!item.SupportsInheritedParentImages)
             {
                 return;
