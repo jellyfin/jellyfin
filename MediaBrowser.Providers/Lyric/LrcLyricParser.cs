@@ -44,7 +44,7 @@ public partial class LrcLyricParser : ILyricParser
     /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
-        if (!_supportedMediaTypes.GetAlternateLookup<ReadOnlySpan<char>>().Contains(Path.GetExtension(lyrics.Name.AsSpan())))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name)))
         {
             return null;
         }

@@ -35,9 +35,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 return GetBook(args);
             }
 
-            var extension = Path.GetExtension(args.Path.AsSpan());
+            var extension = Path.GetExtension(args.Path);
 
-            if (!_validExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension))
+            if (!_validExtensions.Contains(extension))
             {
                 return null;
             }
@@ -59,9 +59,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var fileExtension = Path.GetExtension(f.FullName.AsSpan());
+                var fileExtension = Path.GetExtension(f.FullName);
 
-                return _validExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(fileExtension);
+                return _validExtensions.Contains(fileExtension);
             }).ToList();
 
             // directory is only considered a book when it contains exactly one supported file

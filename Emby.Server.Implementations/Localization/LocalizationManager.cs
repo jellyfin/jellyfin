@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Localization
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
             // Handle unrated content
-            if (_unratedValues.GetAlternateLookup<ReadOnlySpan<char>>().Contains(rating.AsSpan()))
+            if (_unratedValues.Contains(rating))
             {
                 return null;
             }

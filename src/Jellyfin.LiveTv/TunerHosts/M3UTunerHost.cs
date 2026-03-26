@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -30,8 +31,13 @@ namespace Jellyfin.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private static readonly string[] _mimeTypesCanShareHttpStream = ["video/MP2T"];
-        private static readonly string[] _extensionsCanShareHttpStream = [".ts", ".tsv", ".m2t"];
+        private static readonly FrozenSet<string> _mimeTypesCanShareHttpStream = FrozenSet.ToFrozenSet(
+            ["video/MP2T"],
+            StringComparer.OrdinalIgnoreCase);
+
+        private static readonly FrozenSet<string> _extensionsCanShareHttpStream = FrozenSet.ToFrozenSet(
+            [".ts", ".tsv", ".m2t"],
+            StringComparer.OrdinalIgnoreCase);
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
@@ -109,7 +115,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
                         if (response.IsSuccessStatusCode)
                         {
-                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparer.OrdinalIgnoreCase))
+                            if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType))
                             {
                                 return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                             }
@@ -120,7 +126,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         Logger.LogWarning("HEAD request to check MIME type failed, shared stream disabled");
                     }
                 }
-                else if (_extensionsCanShareHttpStream.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                else if (_extensionsCanShareHttpStream.Contains(extension))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
@@ -170,8 +176,8 @@ namespace Jellyfin.LiveTv.TunerHosts
             {
                 Path = path,
                 Protocol = protocol,
-                MediaStreams = new MediaStream[]
-                {
+                MediaStreams =
+                [
                     new MediaStream
                     {
                         Type = MediaStreamType.Video,
@@ -185,7 +191,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         // Set the index to -1 because we don't know the exact index of the audio stream within the container
                         Index = -1
                     }
-                },
+                ],
                 RequiresOpening = true,
                 RequiresClosing = true,
                 RequiresLooping = info.EnableStreamLooping,
