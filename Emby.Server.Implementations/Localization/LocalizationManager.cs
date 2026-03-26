@@ -320,6 +320,14 @@ namespace Emby.Server.Implementations.Localization
                 {
                     return value;
                 }
+
+                if (ratingsDictionary is not null && rating.Length > countryCode.Length
+                    && rating.StartsWith(countryCode, StringComparison.OrdinalIgnoreCase)
+                    && (rating[countryCode.Length] == '-' || rating[countryCode.Length] == ':')
+                    && ratingsDictionary.TryGetValue(rating[(countryCode.Length + 1)..].Trim(), out var normalizedValue))
+                {
+                    return normalizedValue;
+                } 
             }
             else
             {
