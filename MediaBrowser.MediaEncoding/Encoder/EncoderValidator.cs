@@ -423,6 +423,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        /// <summary>
+        /// Checks whether the VAAPI device's low-power h264 encoder supports VBR rate control.
+        /// Some iHD devices (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) only support CQP
+        /// via the EncSliceLP entrypoint used when low-power encoding is enabled.
+        /// </summary>
+        /// <param name="renderNodePath">The DRM render node path (e.g. /dev/dri/renderD128).</param>
+        /// <returns><c>true</c> if VBR is supported or the probe cannot be run; <c>false</c> if only CQP is available.</returns>
         public bool CheckVaapiDeviceVbrSupport(string renderNodePath)
         {
             if (!OperatingSystem.IsLinux())

@@ -249,7 +249,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
                     _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
                     _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
-                    _isVaapiDeviceSupportVbrRcMode = validator.CheckVaapiDeviceVbrSupport(options.VaapiDevice);
+
+                    // The low-power encoder CQP limitation is specific to the iHD driver.
+                    if (_isVaapiDeviceInteliHD)
+                    {
+                        _isVaapiDeviceSupportVbrRcMode = validator.CheckVaapiDeviceVbrSupport(options.VaapiDevice);
+                    }
 
                     if (_isVaapiDeviceAmd)
                     {

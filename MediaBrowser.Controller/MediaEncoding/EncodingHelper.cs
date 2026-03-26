@@ -1632,9 +1632,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
                 }
 
-                // Some devices (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) only support CQP rate
-                // control. Fall back to CQP so the encoder does not fail at initialisation.
-                if (!_mediaEncoder.IsVaapiDeviceSupportVbrRcMode)
+                // On some iHD devices (e.g. Intel Iris 640, Jasper Lake, Gemini Lake) the low-power
+                // h264 encoder (EncSliceLP) only supports CQP. Fall back to CQP with a fixed quality
+                // of 22, which is consistent with the default H264 CRF of 23 used for software encoders.
+                if (string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                    && !_mediaEncoder.IsVaapiDeviceSupportVbrRcMode)
                 {
                     return " -rc_mode CQP -qp 22";
                 }
