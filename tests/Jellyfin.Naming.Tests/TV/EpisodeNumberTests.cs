@@ -80,7 +80,9 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("[VCB-Studio] Re Zero kara Hajimeru Isekai Seikatsu [21][Ma10p_1080p][x265_flac].mkv", 21)]
         [InlineData("[CASO&Sumisora][Oda_Nobuna_no_Yabou][04][BDRIP][1920x1080][x264_AAC][7620E503].mp4", 4)]
 
-        // [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 317)] // triple digit episode number
+        [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 317)] // triple digit episode number
+        [InlineData("Season 2/Hunter X Hunter - 101.mkv", 101)] // triple digit episode number without brackets
+        [InlineData("Season 1/Show Name - 1234 [720p].mkv", 1234)] // four digit episode number with quality tag
         // TODO: [InlineData("Season 2/16 12 Some Title.avi", 16)]
         // TODO: [InlineData("Season 4/Uchuu.Senkan.Yamato.2199.E03.avi", 3)]
         // TODO: [InlineData("Season 2/7 12 Angry Men.avi", 7)]

@@ -379,6 +379,14 @@ namespace Emby.Naming.Common
                     IsNamed = true
                 },
 
+                // "Name - 101.mkv", "Name - 101 [720p].mkv", "Name - 101 (2020).mkv"
+                // Handles absolute episode numbers with hyphen delimiter (common in anime)
+                // Without brackets (bracketed version handled above)
+                new EpisodeExpression(@".*[\\\/](?<seriesname>[^\\\/]+?)[\s_]+-[\s_]+(?<epnumber>[0-9]+)[\s_]*(?:\[.*?\]|\(.*?\))*[\s_]*(?:\.\w+)?$")
+                {
+                    IsNamed = true
+                },
+
                 // /server/anything_102.mp4
                 // /server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv
                 // /server/anything_1996.11.14.mp4
