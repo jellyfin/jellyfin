@@ -60,6 +60,7 @@ namespace Emby.Server.Implementations.IO
             _fileSystem = fileSystem;
 
             appLifetime.ApplicationStarted.Register(Start);
+            appLifetime.ApplicationStopping.Register(Stop);
         }
 
         /// <inheritdoc />
