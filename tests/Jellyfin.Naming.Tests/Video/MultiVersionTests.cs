@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.Common;
@@ -254,7 +255,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestMultiVersion8()
         {
-            // With underscore separator support, these files are now grouped as alternate versions
             var files = new[]
             {
                 "/movies/Iron Man/Iron Man.mkv",
@@ -272,6 +272,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             Assert.Single(result);
             Assert.Equal(6, result[0].AlternateVersions.Count);
+
+            // Verify 3D recognition is preserved on alternate versions
+            var hsbs = result[0].AlternateVersions.First(v => v.Path.Contains("3d-hsbs", StringComparison.Ordinal));
+            Assert.True(hsbs.Is3D);
+            Assert.Equal("hsbs", hsbs.Format3D);
         }
 
         [Fact]
