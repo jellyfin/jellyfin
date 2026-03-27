@@ -43,7 +43,8 @@ public class FindExtrasTests
                 new List<IItemResolver> { new AudioResolver(fixture.Create<NamingOptions>()) },
                 fixture.Create<IEnumerable<IIntroProvider>>(),
                 fixture.Create<IEnumerable<IBaseItemComparer>>(),
-                fixture.Create<IEnumerable<ILibraryPostScanTask>>()))
+                fixture.Create<IEnumerable<ILibraryPostScanTask>>(),
+                fixture.Create<IEnumerable<IExternalItemProvider>>()))
             .Create();
 
         // This is pretty terrible but unavoidable

@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Library;
 
 /// <summary>
-/// Describes a single item provided by an <see cref="MediaBrowser.Controller.Library.IExternalItemProvider"/>.
+/// Describes a single item provided by an external item provider.
 /// </summary>
 public class ExternalItemInfo
 {
@@ -86,12 +86,26 @@ public class ExternalItemInfo
 
     /// <summary>
     /// Gets or sets the URL of the primary (poster) image on the remote server.
-    /// The local server will fetch and cache this image.
     /// </summary>
     public string? PrimaryImageUrl { get; set; }
 
     /// <summary>
-    /// Gets or sets the URL of the backdrop image on the remote server.
+    /// Gets or sets the URLs of backdrop images on the remote server.
     /// </summary>
-    public string? BackdropImageUrl { get; set; }
+    public IReadOnlyList<string> BackdropImageUrls { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the URL of the logo image on the remote server.
+    /// </summary>
+    public string? LogoImageUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URL of the thumb (landscape) image on the remote server.
+    /// </summary>
+    public string? ThumbImageUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URL of the banner image on the remote server.
+    /// </summary>
+    public string? BannerImageUrl { get; set; }
 }

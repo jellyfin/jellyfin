@@ -883,6 +883,7 @@ public sealed class BaseItemRepository
         dto.Tagline = entity.Tagline;
         dto.TotalBitrate = entity.TotalBitrate;
         dto.ExternalId = entity.ExternalId;
+        dto.ExternalProviderId = entity.ExternalProviderId;
         dto.Size = entity.Size;
         dto.Genres = string.IsNullOrWhiteSpace(entity.Genres) ? [] : entity.Genres.Split('|');
         dto.DateCreated = entity.DateCreated ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
@@ -1050,6 +1051,7 @@ public sealed class BaseItemRepository
         entity.Tagline = dto.Tagline;
         entity.TotalBitrate = dto.TotalBitrate;
         entity.ExternalId = dto.ExternalId;
+        entity.ExternalProviderId = dto.ExternalProviderId;
         entity.Size = dto.Size;
         entity.Genres = string.Join('|', dto.Genres.Distinct(StringComparer.OrdinalIgnoreCase));
         entity.DateCreated = dto.DateCreated == DateTime.MinValue ? null : dto.DateCreated;
@@ -2039,6 +2041,11 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.ExternalId))
         {
             baseQuery = baseQuery.Where(e => e.ExternalId == filter.ExternalId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.ExternalProviderId))
+        {
+            baseQuery = baseQuery.Where(e => e.ExternalProviderId != null && e.ExternalProviderId.StartsWith(filter.ExternalProviderId));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Name))

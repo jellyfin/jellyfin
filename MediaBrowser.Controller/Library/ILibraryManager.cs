@@ -221,12 +221,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postScanTasks">The post scan tasks.</param>
+        /// <param name="externalItemProviders">The external item providers.</param>
         void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postScanTasks);
+            IEnumerable<ILibraryPostScanTask> postScanTasks,
+            IEnumerable<IExternalItemProvider> externalItemProviders);
 
         /// <summary>
         /// Sorts the specified items.

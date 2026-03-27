@@ -52,6 +52,9 @@ using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
@@ -213,6 +216,12 @@ namespace Emby.Server.Implementations.Library
         private ILibraryPostScanTask[] PostScanTasks { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the external item providers.
+        /// </summary>
+        /// <value>The external item providers.</value>
+        private IExternalItemProvider[] ExternalItemProviders { get; set; } = [];
+
+        /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
@@ -248,12 +257,14 @@ namespace Emby.Server.Implementations.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postScanTasks">The post scan tasks.</param>
+        /// <param name="externalItemProviders">The external item providers.</param>
         public void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postScanTasks)
+            IEnumerable<ILibraryPostScanTask> postScanTasks,
+            IEnumerable<IExternalItemProvider> externalItemProviders)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
@@ -261,6 +272,7 @@ namespace Emby.Server.Implementations.Library
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
             PostScanTasks = postScanTasks.ToArray();
+            ExternalItemProviders = externalItemProviders.ToArray();
         }
 
         /// <summary>
@@ -1196,18 +1208,162 @@ namespace Emby.Server.Implementations.Library
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 
-            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
+            // Budget: 2% per external provider, 4% for post-scan tasks, remainder for filesystem scan.
+            var externalBudget = ExternalItemProviders.Length * 2.0;
+            var postScanBudget = 4.0;
+            var fsBudget = 100.0 - externalBudget - postScanBudget;
+
+            var subProgress = new Progress<double>(pct => progress.Report(pct * fsBudget / 100.0));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(subProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            progress.Report(96);
+            progress.Report(fsBudget);
 
-            innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
+            subProgress = new Progress<double>(pct => progress.Report(fsBudget + (pct * externalBudget / 100.0)));
+            await SyncExternalItemProviders(subProgress, cancellationToken).ConfigureAwait(false);
 
-            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
+            progress.Report(fsBudget + externalBudget);
+
+            subProgress = new Progress<double>(pct => progress.Report(fsBudget + externalBudget + (pct * postScanBudget / 100.0)));
+            await RunPostScanTasks(subProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
+        }
+
+        private async Task SyncExternalItemProviders(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var numProviders = ExternalItemProviders.Length;
+            var numComplete = 0;
+
+            foreach (var provider in ExternalItemProviders)
+            {
+                var currentIndex = numComplete;
+                var subProgress = new Progress<double>(pct =>
+                    progress.Report((currentIndex + (pct / 100.0)) / numProviders * 100.0));
+
+                try
+                {
+                    var items = await provider.GetItemsAsync(cancellationToken).ConfigureAwait(false);
+                    await SyncExternalItemProvider(provider, items, subProgress, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error syncing external item provider {ProviderName}", provider.Name);
+                }
+
+                numComplete++;
+                progress.Report((double)numComplete / numProviders * 100.0);
+            }
+        }
+
+        private async Task SyncExternalItemProvider(IExternalItemProvider provider, IReadOnlyList<ExternalItemInfo> items, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var prefix = provider.Name + ":";
+
+            var existing = GetItemList(new InternalItemsQuery { ExternalProviderId = prefix })
+                .ToDictionary(i => i.ExternalProviderId!, StringComparer.OrdinalIgnoreCase);
+
+            var returnedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var numItems = items.Count;
+            var numComplete = 0;
+
+            foreach (var info in items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var providerId = prefix + info.ExternalId;
+                returnedKeys.Add(providerId);
+
+                if (existing.TryGetValue(providerId, out var existingItem))
+                {
+                    ApplyExternalItemInfo(existingItem, info);
+                    await UpdateItemAsync(existingItem, existingItem.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    var newItem = CreateExternalItem(info, providerId);
+                    if (newItem is not null)
+                    {
+                        CreateItem(newItem, null);
+                    }
+                }
+
+                numComplete++;
+                progress.Report((double)numComplete / numItems * 100.0);
+            }
+
+            foreach (var (key, stale) in existing)
+            {
+                if (!returnedKeys.Contains(key))
+                {
+                    DeleteItem(stale, new DeleteOptions { DeleteFileLocation = false });
+                }
+            }
+        }
+
+        private BaseItem? CreateExternalItem(ExternalItemInfo info, string providerId)
+        {
+            BaseItem? item = info.ItemKind switch
+            {
+                BaseItemKind.Movie => new Movie(),
+                BaseItemKind.Episode => new Episode(),
+                BaseItemKind.Series => new Series(),
+                BaseItemKind.Season => new Season(),
+                BaseItemKind.Audio => new Audio(),
+                BaseItemKind.MusicAlbum => new MusicAlbum(),
+                _ => null
+            };
+
+            if (item is null)
+            {
+                _logger.LogWarning("Unsupported external item kind {Kind} from provider {Provider}", info.ItemKind, providerId);
+                return null;
+            }
+
+            item.Id = GetNewItemId(providerId, item.GetType());
+            item.ExternalProviderId = providerId;
+            item.DateCreated = DateTime.UtcNow;
+            ApplyExternalItemInfo(item, info);
+            return item;
+        }
+
+        private static void ApplyExternalItemInfo(BaseItem item, ExternalItemInfo info)
+        {
+            item.Name = info.Name;
+            item.Overview = info.Overview;
+            item.OfficialRating = info.OfficialRating;
+            item.ProductionYear = info.ProductionYear;
+            item.RunTimeTicks = info.RunTimeTicks;
+            item.Genres = info.Genres.ToArray();
+            item.ProviderIds = new Dictionary<string, string>(info.ProviderIds);
+            item.IndexNumber = info.IndexNumber;
+            item.ParentIndexNumber = info.ParentIndexNumber;
+
+            if (!string.IsNullOrEmpty(info.PrimaryImageUrl))
+            {
+                item.SetImage(new ItemImageInfo { Path = info.PrimaryImageUrl, Type = ImageType.Primary }, 0);
+            }
+
+            for (var i = 0; i < info.BackdropImageUrls.Count; i++)
+            {
+                item.SetImage(new ItemImageInfo { Path = info.BackdropImageUrls[i], Type = ImageType.Backdrop }, i);
+            }
+
+            if (!string.IsNullOrEmpty(info.LogoImageUrl))
+            {
+                item.SetImage(new ItemImageInfo { Path = info.LogoImageUrl, Type = ImageType.Logo }, 0);
+            }
+
+            if (!string.IsNullOrEmpty(info.ThumbImageUrl))
+            {
+                item.SetImage(new ItemImageInfo { Path = info.ThumbImageUrl, Type = ImageType.Thumb }, 0);
+            }
+
+            if (!string.IsNullOrEmpty(info.BannerImageUrl))
+            {
+                item.SetImage(new ItemImageInfo { Path = info.BannerImageUrl, Type = ImageType.Banner }, 0);
+            }
         }
 
         /// <summary>

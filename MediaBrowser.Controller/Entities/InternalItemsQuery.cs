@@ -264,6 +264,8 @@ namespace MediaBrowser.Controller.Entities
 
         public string? ExternalId { get; set; }
 
+        public string? ExternalProviderId { get; set; }
+
         public Guid[] AlbumIds { get; set; }
 
         public Guid[] ArtistIds { get; set; }
