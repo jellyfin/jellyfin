@@ -271,6 +271,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (!string.IsNullOrEmpty(ExternalProviderId))
+                {
+                    return SourceType.External;
+                }
+
                 if (!ChannelId.IsEmpty())
                 {
                     return SourceType.Channel;
@@ -292,6 +297,11 @@ namespace MediaBrowser.Controller.Entities
                 if (IsFolder)
                 {
                     return Path;
+                }
+
+                if (!IsFileProtocol)
+                {
+                    return string.Empty;
                 }
 
                 return System.IO.Path.GetDirectoryName(Path);
@@ -318,6 +328,9 @@ namespace MediaBrowser.Controller.Entities
         public string ExternalSeriesId { get; set; }
 
         [JsonIgnore]
+        public string ExternalProviderId { get; set; }
+
+        [JsonIgnore]
         public virtual bool IsHidden => false;
 
         /// <summary>
@@ -332,7 +345,7 @@ namespace MediaBrowser.Controller.Entities
                 var path = Path;
                 if (string.IsNullOrEmpty(path))
                 {
-                    if (SourceType == SourceType.Channel)
+                    if (SourceType == SourceType.Channel || SourceType == SourceType.External)
                     {
                         return LocationType.Remote;
                     }
@@ -371,7 +384,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (SourceType == SourceType.Channel)
+                if (SourceType == SourceType.Channel || SourceType == SourceType.External)
                 {
                     return false;
                 }
@@ -2535,7 +2548,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected List<FileSystemMetadata> GetLocalMetadataFilesToDelete()
         {
-            if (IsFolder || !IsInMixedFolder)
+            if (IsFolder || !IsInMixedFolder || !IsFileProtocol)
             {
                 return [];
             }
