@@ -15,6 +15,11 @@ public interface IStreamRedirectProvider
     string Name { get; }
 
     /// <summary>
+    /// Gets the provider order. Lower values run first. Use <see cref="int.MaxValue"/> for fallback providers.
+    /// </summary>
+    int Order { get; }
+
+    /// <summary>
     /// Gets a redirect URL for the given item, or <c>null</c> if this provider does not handle it.
     /// </summary>
     /// <param name="item">The item being streamed.</param>
