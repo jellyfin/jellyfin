@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.Library
             Comparers = itemComparers.ToArray();
             PostScanTasks = postScanTasks.ToArray();
             ExternalItemProviders = externalItemProviders.ToArray();
-            StreamRedirectProviders = streamRedirectProviders.ToArray();
+            StreamRedirectProviders = streamRedirectProviders.OrderBy(p => p.Order).ToArray();
         }
 
         /// <summary>
