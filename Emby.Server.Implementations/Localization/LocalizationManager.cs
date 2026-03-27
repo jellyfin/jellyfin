@@ -53,6 +53,8 @@ namespace Emby.Server.Implementations.Localization
         private readonly ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
         private List<CultureDto> _cultures = [];
 
+        private static readonly IReadOnlyList<LocalizationOption> _localizationOptions = BuildLocalizationOptions();
+
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
         /// <summary>
@@ -514,77 +516,68 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<LocalizationOption> GetLocalizationOptions()
         {
-            yield return new LocalizationOption("Afrikaans", "af");
-            yield return new LocalizationOption("العربية", "ar");
-            yield return new LocalizationOption("Беларуская", "be");
-            yield return new LocalizationOption("Български", "bg-BG");
-            yield return new LocalizationOption("বাংলা (বাংলাদেশ)", "bn");
-            yield return new LocalizationOption("Català", "ca");
-            yield return new LocalizationOption("Čeština", "cs");
-            yield return new LocalizationOption("Cymraeg", "cy");
-            yield return new LocalizationOption("Dansk", "da");
-            yield return new LocalizationOption("Deutsch", "de");
-            yield return new LocalizationOption("English (United Kingdom)", "en-GB");
-            yield return new LocalizationOption("English", "en-US");
-            yield return new LocalizationOption("Ελληνικά", "el");
-            yield return new LocalizationOption("Esperanto", "eo");
-            yield return new LocalizationOption("Español", "es");
-            yield return new LocalizationOption("Español americano", "es_419");
-            yield return new LocalizationOption("Español (Argentina)", "es-AR");
-            yield return new LocalizationOption("Español (Dominicana)", "es_DO");
-            yield return new LocalizationOption("Español (México)", "es-MX");
-            yield return new LocalizationOption("Eesti", "et");
-            yield return new LocalizationOption("Basque", "eu");
-            yield return new LocalizationOption("فارسی", "fa");
-            yield return new LocalizationOption("Suomi", "fi");
-            yield return new LocalizationOption("Filipino", "fil");
-            yield return new LocalizationOption("Français", "fr");
-            yield return new LocalizationOption("Français (Canada)", "fr-CA");
-            yield return new LocalizationOption("Galego", "gl");
-            yield return new LocalizationOption("Schwiizerdütsch", "gsw");
-            yield return new LocalizationOption("עִבְרִית", "he");
-            yield return new LocalizationOption("हिन्दी", "hi");
-            yield return new LocalizationOption("Hrvatski", "hr");
-            yield return new LocalizationOption("Magyar", "hu");
-            yield return new LocalizationOption("Bahasa Indonesia", "id");
-            yield return new LocalizationOption("Íslenska", "is");
-            yield return new LocalizationOption("Italiano", "it");
-            yield return new LocalizationOption("日本語", "ja");
-            yield return new LocalizationOption("Qazaqşa", "kk");
-            yield return new LocalizationOption("한국어", "ko");
-            yield return new LocalizationOption("Lietuvių", "lt");
-            yield return new LocalizationOption("Latviešu", "lv");
-            yield return new LocalizationOption("Македонски", "mk");
-            yield return new LocalizationOption("മലയാളം", "ml");
-            yield return new LocalizationOption("मराठी", "mr");
-            yield return new LocalizationOption("Bahasa Melayu", "ms");
-            yield return new LocalizationOption("Norsk bokmål", "nb");
-            yield return new LocalizationOption("नेपाली", "ne");
-            yield return new LocalizationOption("Nederlands", "nl");
-            yield return new LocalizationOption("Norsk nynorsk", "nn");
-            yield return new LocalizationOption("ਪੰਜਾਬੀ", "pa");
-            yield return new LocalizationOption("Polski", "pl");
-            yield return new LocalizationOption("Pirate", "pr");
-            yield return new LocalizationOption("Português", "pt");
-            yield return new LocalizationOption("Português (Brasil)", "pt-BR");
-            yield return new LocalizationOption("Português (Portugal)", "pt-PT");
-            yield return new LocalizationOption("Românește", "ro");
-            yield return new LocalizationOption("Русский", "ru");
-            yield return new LocalizationOption("Slovenčina", "sk");
-            yield return new LocalizationOption("Slovenščina", "sl-SI");
-            yield return new LocalizationOption("Shqip", "sq");
-            yield return new LocalizationOption("Српски", "sr");
-            yield return new LocalizationOption("Svenska", "sv");
-            yield return new LocalizationOption("தமிழ்", "ta");
-            yield return new LocalizationOption("తెలుగు", "te");
-            yield return new LocalizationOption("ภาษาไทย", "th");
-            yield return new LocalizationOption("Türkçe", "tr");
-            yield return new LocalizationOption("Українська", "uk");
-            yield return new LocalizationOption("اُردُو", "ur_PK");
-            yield return new LocalizationOption("Tiếng Việt", "vi");
-            yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
-            yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
-            yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
+            return _localizationOptions;
+        }
+
+        private static IReadOnlyList<LocalizationOption> BuildLocalizationOptions()
+        {
+            var options = new List<LocalizationOption>();
+            var prefix = CoreResourcePrefix;
+
+            foreach (var resource in _assembly.GetManifestResourceNames())
+            {
+                if (!resource.StartsWith(prefix, StringComparison.Ordinal)
+                    || !resource.EndsWith(".json", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Extract culture code from resource name: "...Core.de.json" -> "de", "...Core.pt-BR.json" -> "pt-BR"
+                var code = resource[prefix.Length..^5];
+
+                // Skip the base language file — en-US is added explicitly below
+                if (code.Equals(DefaultCulture, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var displayName = GetDisplayName(code);
+                options.Add(new LocalizationOption(displayName, code));
+            }
+
+            // Ensure en-US is always present
+            options.Add(new LocalizationOption("English", DefaultCulture));
+
+            options.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+            return options;
+        }
+
+        private static string GetDisplayName(string cultureCode)
+        {
+            // Handle Jellyfin-specific codes that aren't valid CultureInfo names
+            if (Bcp47ToJellyfinMap.Values.Contains(cultureCode))
+            {
+                // Convert underscore to hyphen for CultureInfo lookup
+                var normalized = cultureCode.Replace('_', '-');
+                try
+                {
+                    return CultureInfo.GetCultureInfo(normalized).NativeName;
+                }
+                catch (CultureNotFoundException)
+                {
+                    return cultureCode;
+                }
+            }
+
+            try
+            {
+                return CultureInfo.GetCultureInfo(cultureCode).NativeName;
+            }
+            catch (CultureNotFoundException)
+            {
+                // Custom/novelty codes like "pr" (Pirate) — fall back to code itself
+                return cultureCode;
+            }
         }
 
         /// <inheritdoc />
