@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,8 +27,19 @@ namespace Emby.Server.Implementations.Localization
         private const string RatingsPath = "Emby.Server.Implementations.Localization.Ratings.";
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
+        private const string CoreResourcePrefix = "Emby.Server.Implementations.Localization.Core.";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
         private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
+
+        /// <summary>
+        /// Gets the mapping from BCP-47 hyphenated culture codes to Jellyfin's underscore-based codes.
+        /// </summary>
+        public static readonly FrozenDictionary<string, string> Bcp47ToJellyfinMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["es-419"] = "es_419",
+            ["es-DO"] = "es_DO",
+            ["ur-PK"] = "ur_PK"
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
@@ -54,6 +66,31 @@ namespace Emby.Server.Implementations.Localization
         {
             _configurationManager = configurationManager;
             _logger = logger;
+
+            _configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+        }
+
+        private static void OnConfigurationUpdated(object? sender, EventArgs e)
+        {
+            if (sender is IServerConfigurationManager configManager)
+            {
+                var uiCulture = configManager.Configuration.UICulture;
+                if (!string.IsNullOrEmpty(uiCulture))
+                {
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks whether a translation resource file exists for the given culture code.
+        /// </summary>
+        /// <param name="culture">The culture code to check (e.g. "de", "pt-BR", "es_419").</param>
+        /// <returns><c>true</c> if an embedded translation resource exists for the culture.</returns>
+        public static bool HasTranslation(string culture)
+        {
+            var resourceName = CoreResourcePrefix + GetResourceFilename(culture);
+            return _assembly.GetManifestResourceInfo(resourceName) is not null;
         }
 
         /// <summary>
@@ -377,7 +414,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
-            return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
+            return GetLocalizedString(phrase, CultureInfo.CurrentUICulture.Name);
         }
 
         /// <inheritdoc />
@@ -391,6 +428,12 @@ namespace Emby.Server.Implementations.Localization
             if (string.IsNullOrEmpty(culture))
             {
                 culture = DefaultCulture;
+            }
+
+            // Normalize BCP-47 hyphenated codes to Jellyfin's underscore-based codes
+            if (Bcp47ToJellyfinMap.TryGetValue(culture, out var mapped))
+            {
+                culture = mapped;
             }
 
             var dictionary = GetLocalizationDictionary(culture);
