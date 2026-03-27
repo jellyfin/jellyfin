@@ -268,6 +268,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (!string.IsNullOrEmpty(ExternalProviderId))
+                {
+                    return SourceType.External;
+                }
+
                 if (!ChannelId.IsEmpty())
                 {
                     return SourceType.Channel;
@@ -318,6 +323,9 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public string ExternalSeriesId { get; set; }
+
+        [JsonIgnore]
+        public string ExternalProviderId { get; set; }
 
         [JsonIgnore]
         public virtual bool IsHidden => false;
