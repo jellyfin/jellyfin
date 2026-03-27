@@ -284,6 +284,11 @@ namespace MediaBrowser.Controller.Entities
                     return Path;
                 }
 
+                if (!IsFileProtocol)
+                {
+                    return string.Empty;
+                }
+
                 return System.IO.Path.GetDirectoryName(Path);
             }
         }
@@ -322,7 +327,7 @@ namespace MediaBrowser.Controller.Entities
                 var path = Path;
                 if (string.IsNullOrEmpty(path))
                 {
-                    if (SourceType == SourceType.Channel)
+                    if (SourceType == SourceType.Channel || SourceType == SourceType.External)
                     {
                         return LocationType.Remote;
                     }
@@ -361,7 +366,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (SourceType == SourceType.Channel)
+                if (SourceType == SourceType.Channel || SourceType == SourceType.External)
                 {
                     return false;
                 }
@@ -2272,7 +2277,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected List<FileSystemMetadata> GetLocalMetadataFilesToDelete()
         {
-            if (IsFolder || !IsInMixedFolder)
+            if (IsFolder || !IsInMixedFolder || !IsFileProtocol)
             {
                 return [];
             }
