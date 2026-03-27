@@ -2793,6 +2793,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        private static void AddAtempoFilters(List<string> filters, double speed)
+        {
+            // atempo supports 0.5-2.0 per instance; chain for values outside that range
+            var remaining = speed;
+            while (remaining > 2.0)
+            {
+                filters.Add("atempo=2.0");
+                remaining /= 2.0;
+            }
+
+            while (remaining < 0.5)
+            {
+                filters.Add("atempo=0.5");
+                remaining /= 0.5;
+            }
+
+            if (Math.Abs(remaining - 1.0) > 0.001)
+            {
+                filters.Add(string.Format(CultureInfo.InvariantCulture, "atempo={0:F4}", remaining));
+            }
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var channels = state.OutputAudioChannels;
@@ -2831,24 +2853,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var speed = Math.Clamp(state.BaseRequest.PlaybackSpeed.Value, 0.5, 3.0);
                 if (Math.Abs(speed - 1.0) > 0.001)
                 {
-                    // atempo supports 0.5-2.0 per instance; chain for values outside that range
-                    var remaining = speed;
-                    while (remaining > 2.0)
-                    {
-                        filters.Add("atempo=2.0");
-                        remaining /= 2.0;
-                    }
-
-                    while (remaining < 0.5)
-                    {
-                        filters.Add("atempo=0.5");
-                        remaining /= 0.5;
-                    }
-
-                    if (Math.Abs(remaining - 1.0) > 0.001)
-                    {
-                        filters.Add(string.Format(CultureInfo.InvariantCulture, "atempo={0:F4}", remaining));
-                    }
+                    AddAtempoFilters(filters, speed);
                 }
             }
 
@@ -6205,7 +6210,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Add playback speed video filter (setpts)
-            if (state.BaseRequest.PlaybackSpeed.HasValue)
+            if (state.BaseRequest.PlaybackSpeed.HasValue && mainFilters is not null)
             {
                 var speed = Math.Clamp(state.BaseRequest.PlaybackSpeed.Value, 0.5, 3.0);
                 if (Math.Abs(speed - 1.0) > 0.001)
