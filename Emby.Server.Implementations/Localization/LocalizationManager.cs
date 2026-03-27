@@ -418,6 +418,12 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
+        public string GetServerLocalizedString(string phrase)
+        {
+            return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
+        }
+
+        /// <inheritdoc />
         public string GetLocalizedString(string phrase, string culture)
         {
             if (string.IsNullOrEmpty(culture))

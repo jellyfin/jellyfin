@@ -35,14 +35,14 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    _localizationManager.GetLocalizedString("PluginInstalledWithName"),
+                    _localizationManager.GetServerLocalizedString("PluginInstalledWithName"),
                     eventArgs.Argument.Name),
                 NotificationType.PluginInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
-                    _localizationManager.GetLocalizedString("VersionNumber"),
+                    _localizationManager.GetServerLocalizedString("VersionNumber"),
                     eventArgs.Argument.Version)
             }).ConfigureAwait(false);
         }
