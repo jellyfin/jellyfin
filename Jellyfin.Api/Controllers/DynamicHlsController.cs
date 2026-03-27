@@ -17,6 +17,7 @@ using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -517,6 +518,16 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirectUrl is not null)
+            {
+                return new RedirectResult(redirectUrl, permanent: false);
+            }
+        }
+
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
 
@@ -683,6 +694,16 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = false
         };
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirectUrl is not null)
+            {
+                return new RedirectResult(redirectUrl, permanent: false);
+            }
+        }
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
