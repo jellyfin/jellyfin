@@ -44,7 +44,8 @@ public class FindExtrasTests
                 fixture.Create<IEnumerable<IIntroProvider>>(),
                 fixture.Create<IEnumerable<IBaseItemComparer>>(),
                 fixture.Create<IEnumerable<ILibraryPostScanTask>>(),
-                fixture.Create<IEnumerable<IExternalItemProvider>>()))
+                fixture.Create<IEnumerable<IExternalItemProvider>>(),
+                fixture.Create<IEnumerable<IStreamRedirectProvider>>()))
             .Create();
 
         // This is pretty terrible but unavoidable

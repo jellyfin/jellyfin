@@ -6,6 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -84,6 +85,17 @@ public class AudioHelper
 
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
+
+        var item = _libraryManager.GetItemById<BaseItem>(streamingRequest.Id);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (redirectUrl is not null)
+            {
+                cancellationTokenSource.Dispose();
+                return new RedirectResult(redirectUrl, permanent: false);
+            }
+        }
 
         using var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,

@@ -222,6 +222,12 @@ namespace Emby.Server.Implementations.Library
         private IExternalItemProvider[] ExternalItemProviders { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the stream redirect providers.
+        /// </summary>
+        /// <value>The stream redirect providers.</value>
+        private IStreamRedirectProvider[] StreamRedirectProviders { get; set; } = [];
+
+        /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
@@ -258,13 +264,15 @@ namespace Emby.Server.Implementations.Library
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postScanTasks">The post scan tasks.</param>
         /// <param name="externalItemProviders">The external item providers.</param>
+        /// <param name="streamRedirectProviders">The stream redirect providers.</param>
         public void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPostScanTask> postScanTasks,
-            IEnumerable<IExternalItemProvider> externalItemProviders)
+            IEnumerable<IExternalItemProvider> externalItemProviders,
+            IEnumerable<IStreamRedirectProvider> streamRedirectProviders)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
@@ -273,6 +281,7 @@ namespace Emby.Server.Implementations.Library
             Comparers = itemComparers.ToArray();
             PostScanTasks = postScanTasks.ToArray();
             ExternalItemProviders = externalItemProviders.ToArray();
+            StreamRedirectProviders = streamRedirectProviders.ToArray();
         }
 
         /// <summary>
@@ -1300,6 +1309,21 @@ namespace Emby.Server.Implementations.Library
                     DeleteItem(stale, new DeleteOptions { DeleteFileLocation = false });
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<string?> GetStreamRedirectUrlAsync(BaseItem item, CancellationToken cancellationToken)
+        {
+            foreach (var provider in StreamRedirectProviders)
+            {
+                var url = await provider.GetRedirectUrlAsync(item, cancellationToken).ConfigureAwait(false);
+                if (url is not null)
+                {
+                    return url;
+                }
+            }
+
+            return null;
         }
 
         private BaseItem? CreateExternalItem(ExternalItemInfo info, string providerId)
