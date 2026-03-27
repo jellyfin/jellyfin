@@ -1253,8 +1253,15 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    var items = await provider.GetItemsAsync(cancellationToken).ConfigureAwait(false);
-                    await SyncExternalItemProvider(provider, items, subProgress, cancellationToken).ConfigureAwait(false);
+                    if (!await provider.IsAvailableAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        _logger.LogWarning("External item provider {ProviderName} is unavailable, skipping sync", provider.Name);
+                    }
+                    else
+                    {
+                        var items = await provider.GetItemsAsync(cancellationToken).ConfigureAwait(false);
+                        await SyncExternalItemProvider(provider, items, subProgress, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex)
                 {

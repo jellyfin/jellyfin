@@ -19,6 +19,16 @@ public interface IExternalItemProvider
     string Name { get; }
 
     /// <summary>
+    /// Checks whether the remote source is reachable.
+    /// Called before <see cref="GetItemsAsync"/> during each library scan.
+    /// Return <c>false</c> to skip the sync pass without removing existing items.
+    /// The default implementation always returns <c>true</c>.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns><c>true</c> if the provider is available.</returns>
+    Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
+
+    /// <summary>
     /// Returns all items this provider currently owns.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
