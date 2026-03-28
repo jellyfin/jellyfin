@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Library;
 
 /// <summary>
-/// Provides a redirect URL for an external library item at stream request time.
+/// Provides stream redirect information for an external library item at request time.
 /// </summary>
 public interface IStreamRedirectProvider
 {
@@ -20,10 +20,10 @@ public interface IStreamRedirectProvider
     int Order { get; }
 
     /// <summary>
-    /// Gets a redirect URL for the given item, or <c>null</c> if this provider does not handle it.
+    /// Gets a redirect result for the given item, or <c>null</c> if this provider does not handle it.
     /// </summary>
     /// <param name="item">The item being streamed.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    /// <returns>The redirect URL, or <c>null</c>.</returns>
-    Task<string?> GetRedirectUrlAsync(BaseItem item, CancellationToken cancellationToken);
+    /// <returns>A <see cref="StreamRedirectResult"/>, or <c>null</c>.</returns>
+    Task<StreamRedirectResult?> GetRedirectAsync(BaseItem item, CancellationToken cancellationToken);
 }

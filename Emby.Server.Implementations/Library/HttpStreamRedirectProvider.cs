@@ -19,11 +19,11 @@ public class HttpStreamRedirectProvider : IStreamRedirectProvider
     public int Order => int.MaxValue;
 
     /// <inheritdoc />
-    public Task<string?> GetRedirectUrlAsync(BaseItem item, CancellationToken cancellationToken)
+    public Task<StreamRedirectResult?> GetRedirectAsync(BaseItem item, CancellationToken cancellationToken)
     {
         if (item.SourceType != SourceType.External)
         {
-            return Task.FromResult<string?>(null);
+            return Task.FromResult<StreamRedirectResult?>(null);
         }
 
         var path = item.Path;
@@ -31,9 +31,9 @@ public class HttpStreamRedirectProvider : IStreamRedirectProvider
             || (!path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                 && !path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
         {
-            return Task.FromResult<string?>(null);
+            return Task.FromResult<StreamRedirectResult?>(null);
         }
 
-        return Task.FromResult<string?>(path);
+        return Task.FromResult<StreamRedirectResult?>(new StreamRedirectResult(path));
     }
 }

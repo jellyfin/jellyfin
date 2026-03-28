@@ -1,69 +1,141 @@
 using System;
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace MediaBrowser.Common.StreamTokens;
 
 /// <summary>
-/// Generates and validates HMAC-SHA256 time-limited stream access tokens.
+/// Generates and validates self-contained HMAC-SHA256 time-limited stream access tokens.
 /// </summary>
 /// <remarks>
-/// Token format: HMAC-SHA256(secret, "{itemId}|{expiresUnixSeconds}") as lowercase hex.
-/// The caller passes the token and expiry as the query parameters <see cref="TokenParam"/>
-/// and <see cref="ExpiresParam"/> on the redirect URL.
+/// Token format: <c>{base64url(payload)}.{hex(hmac-sha256(secret, payload))}</c>
+/// where payload is the UTF-8 encoding of <c>"{itemId}|{expiresUnixSeconds}"</c>.
+/// The entire token is passed as a single <see cref="TokenParam"/> query parameter.
 /// </remarks>
 public static class StreamToken
 {
-    /// <summary>Query parameter name for the HMAC token.</summary>
+    /// <summary>Query parameter name for the self-contained token.</summary>
     public const string TokenParam = "token";
 
-    /// <summary>Query parameter name for the expiry unix timestamp (seconds).</summary>
-    public const string ExpiresParam = "expires";
-
     /// <summary>
-    /// Generates a time-limited HMAC-SHA256 token for the given item.
+    /// Generates a self-contained, time-limited token for the given item.
     /// </summary>
     /// <param name="secret">The shared secret.</param>
     /// <param name="itemId">The provider-assigned item identifier.</param>
     /// <param name="expiresAt">When the token expires.</param>
-    /// <returns>The lowercase hex-encoded HMAC token.</returns>
+    /// <returns>A self-contained token string.</returns>
     public static string Generate(string secret, string itemId, DateTimeOffset expiresAt)
     {
-        var message = BuildMessage(itemId, expiresAt.ToUnixTimeSeconds());
-        var key = Encoding.UTF8.GetBytes(secret);
-        var hash = HMACSHA256.HashData(key, Encoding.UTF8.GetBytes(message));
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        var payload = BuildPayload(itemId, expiresAt.ToUnixTimeSeconds());
+        var sig = Sign(secret, payload);
+        return string.Concat(payload, ".", sig);
     }
 
     /// <summary>
-    /// Validates a token against the expected item and expiry.
+    /// Extracts the item ID and expiry from a token without verifying the signature.
+    /// Use <see cref="TryValidate"/> when authentication is required.
     /// </summary>
-    /// <param name="secret">The shared secret.</param>
-    /// <param name="token">The token from the request.</param>
-    /// <param name="itemId">The provider-assigned item identifier.</param>
-    /// <param name="expiresUnixSeconds">The expiry unix timestamp from the request.</param>
-    /// <param name="now">The current time, used for expiry checking.</param>
-    /// <returns><c>true</c> if the token signature is valid and the token has not expired.</returns>
-    public static bool Validate(
-        string secret,
-        string token,
-        string itemId,
-        long expiresUnixSeconds,
-        DateTimeOffset now)
+    /// <param name="token">The token string.</param>
+    /// <param name="itemId">The extracted item identifier.</param>
+    /// <param name="expiresUnixSeconds">The extracted expiry as a Unix timestamp.</param>
+    /// <returns><c>true</c> if the token could be parsed.</returns>
+    public static bool TryParse(string token, out string itemId, out long expiresUnixSeconds)
     {
-        if (now.ToUnixTimeSeconds() > expiresUnixSeconds)
+        itemId = string.Empty;
+        expiresUnixSeconds = 0;
+
+        var dot = token.IndexOf('.', StringComparison.Ordinal);
+        if (dot < 1)
         {
             return false;
         }
 
-        var expected = Generate(secret, itemId, DateTimeOffset.FromUnixTimeSeconds(expiresUnixSeconds));
-
-        // Constant-time comparison to prevent timing attacks.
-        return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(token.ToLowerInvariant()),
-            Encoding.UTF8.GetBytes(expected));
+        return TryDecodePayload(token[..dot], out itemId, out expiresUnixSeconds);
     }
 
-    private static string BuildMessage(string itemId, long expiresUnixSeconds)
-        => string.Concat(itemId, "|", expiresUnixSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    /// <summary>
+    /// Validates the token signature and expiry, and extracts the item ID.
+    /// </summary>
+    /// <param name="secret">The shared secret.</param>
+    /// <param name="token">The token string.</param>
+    /// <param name="now">The current time, used for expiry checking.</param>
+    /// <param name="itemId">The item identifier if validation succeeds; otherwise empty.</param>
+    /// <returns><c>true</c> if the token is valid and not expired.</returns>
+    public static bool TryValidate(string secret, string token, DateTimeOffset now, out string itemId)
+    {
+        itemId = string.Empty;
+
+        var dot = token.IndexOf('.', StringComparison.Ordinal);
+        if (dot < 1)
+        {
+            return false;
+        }
+
+        var payload = token[..dot];
+        var receivedSig = token[(dot + 1)..];
+
+        if (!TryDecodePayload(payload, out var parsedItemId, out var expires))
+        {
+            return false;
+        }
+
+        if (now.ToUnixTimeSeconds() > expires)
+        {
+            return false;
+        }
+
+        var expectedSig = Sign(secret, payload);
+
+        // Constant-time comparison to prevent timing attacks.
+        if (!CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(receivedSig.ToLowerInvariant()),
+            Encoding.UTF8.GetBytes(expectedSig)))
+        {
+            return false;
+        }
+
+        itemId = parsedItemId;
+        return true;
+    }
+
+    private static string BuildPayload(string itemId, long expiresUnixSeconds)
+    {
+        var raw = string.Concat(itemId, "|", expiresUnixSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return Base64Url.EncodeToString(Encoding.UTF8.GetBytes(raw));
+    }
+
+    private static bool TryDecodePayload(string payload, out string itemId, out long expiresUnixSeconds)
+    {
+        itemId = string.Empty;
+        expiresUnixSeconds = 0;
+
+        try
+        {
+            var raw = Encoding.UTF8.GetString(Base64Url.DecodeFromChars(payload.AsSpan()));
+            var pipe = raw.IndexOf('|', StringComparison.Ordinal);
+            if (pipe < 1)
+            {
+                return false;
+            }
+
+            itemId = raw[..pipe];
+            return long.TryParse(
+                raw[(pipe + 1)..],
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out expiresUnixSeconds);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    private static string Sign(string secret, string payload)
+    {
+        var key = Encoding.UTF8.GetBytes(secret);
+        var hash = HMACSHA256.HashData(key, Encoding.UTF8.GetBytes(payload));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
 }

@@ -89,11 +89,11 @@ public class AudioHelper
         var item = _libraryManager.GetItemById<BaseItem>(streamingRequest.Id);
         if (item?.SourceType == SourceType.External)
         {
-            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, cancellationTokenSource.Token).ConfigureAwait(false);
-            if (redirectUrl is not null)
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (redirect is not null)
             {
                 cancellationTokenSource.Dispose();
-                return new RedirectResult(redirectUrl, permanent: false);
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
             }
         }
 
