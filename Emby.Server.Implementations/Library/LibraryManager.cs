@@ -1284,6 +1284,13 @@ namespace Emby.Server.Implementations.Library
             var existing = GetItemList(new InternalItemsQuery { ExternalProviderId = prefix })
                 .ToDictionary(i => i.ExternalProviderId!, StringComparer.OrdinalIgnoreCase);
 
+            // Cache ExternalProviderId → item.Id so parent linking can resolve without extra DB queries.
+            var idCache = new Dictionary<string, Guid>(existing.Count + items.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, item) in existing)
+            {
+                idCache[key] = item.Id;
+            }
+
             var returnedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var numItems = items.Count;
             var numComplete = 0;
@@ -1297,7 +1304,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (existing.TryGetValue(providerId, out var existingItem))
                 {
-                    ApplyExternalItemInfo(existingItem, info);
+                    ApplyExternalItemInfo(existingItem, info, prefix, idCache);
                     await UpdateItemAsync(existingItem, existingItem.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                     if (info.MediaStreams.Count > 0)
                     {
@@ -1306,10 +1313,11 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var newItem = CreateExternalItem(info, providerId);
+                    var newItem = CreateExternalItem(info, providerId, prefix, idCache);
                     if (newItem is not null)
                     {
                         CreateItem(newItem, null);
+                        idCache[providerId] = newItem.Id;
                         if (info.MediaStreams.Count > 0)
                         {
                             _mediaStreamRepository.SaveMediaStreams(newItem.Id, info.MediaStreams, cancellationToken);
@@ -1345,7 +1353,7 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
-        private BaseItem? CreateExternalItem(ExternalItemInfo info, string providerId)
+        private BaseItem? CreateExternalItem(ExternalItemInfo info, string providerId, string prefix, Dictionary<string, Guid> idCache)
         {
             BaseItem? item = info.ItemKind switch
             {
@@ -1366,12 +1374,13 @@ namespace Emby.Server.Implementations.Library
 
             item.Id = GetNewItemId(providerId, item.GetType());
             item.ExternalProviderId = providerId;
+            item.ExternalId = info.ExternalId;
             item.DateCreated = DateTime.UtcNow;
-            ApplyExternalItemInfo(item, info);
+            ApplyExternalItemInfo(item, info, prefix, idCache);
             return item;
         }
 
-        private static void ApplyExternalItemInfo(BaseItem item, ExternalItemInfo info)
+        private void ApplyExternalItemInfo(BaseItem item, ExternalItemInfo info, string prefix, Dictionary<string, Guid> idCache)
         {
             item.Name = info.Name;
             item.Overview = info.Overview;
@@ -1384,6 +1393,25 @@ namespace Emby.Server.Implementations.Library
             item.ParentIndexNumber = info.ParentIndexNumber;
             item.Path = info.Path;
             item.Container = info.Container;
+
+            if (item is IHasSeries hasSeries && !string.IsNullOrEmpty(info.SeriesExternalId))
+            {
+                var seriesProviderId = prefix + info.SeriesExternalId;
+                if (idCache.TryGetValue(seriesProviderId, out var seriesId))
+                {
+                    hasSeries.SeriesId = seriesId;
+                    hasSeries.SeriesName = GetItemById(seriesId)?.Name;
+                }
+            }
+
+            if (item is Episode episode && !string.IsNullOrEmpty(info.SeasonExternalId))
+            {
+                var seasonProviderId = prefix + info.SeasonExternalId;
+                if (idCache.TryGetValue(seasonProviderId, out var seasonId))
+                {
+                    episode.SeasonId = seasonId;
+                }
+            }
 
             if (!string.IsNullOrEmpty(info.PrimaryImageUrl))
             {
