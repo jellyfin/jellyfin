@@ -89,6 +89,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
@@ -137,6 +138,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         /// <param name="mediaStreamRepository">The media stream repository.</param>
         /// <param name="externalDataManagerFactory">The external data manager (lazy, to break the DI cycle through ChapterManager).</param>
+        /// <param name="mediaStreamRepository">The media stream repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -161,7 +163,8 @@ namespace Emby.Server.Implementations.Library
             IPathManager pathManager,
             DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
             IMediaStreamRepository mediaStreamRepository,
-            Lazy<IExternalDataManager> externalDataManagerFactory)
+            Lazy<IExternalDataManager> externalDataManagerFactory,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -187,6 +190,7 @@ namespace Emby.Server.Implementations.Library
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
+            _mediaStreamRepository = mediaStreamRepository;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -1543,6 +1547,10 @@ namespace Emby.Server.Implementations.Library
                 {
                     ApplyExternalItemInfo(existingItem, info);
                     await UpdateItemAsync(existingItem, existingItem.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    if (info.MediaStreams.Count > 0)
+                    {
+                        _mediaStreamRepository.SaveMediaStreams(existingItem.Id, info.MediaStreams, cancellationToken);
+                    }
                 }
                 else
                 {
@@ -1550,6 +1558,10 @@ namespace Emby.Server.Implementations.Library
                     if (newItem is not null)
                     {
                         CreateItem(newItem, null);
+                        if (info.MediaStreams.Count > 0)
+                        {
+                            _mediaStreamRepository.SaveMediaStreams(newItem.Id, info.MediaStreams, cancellationToken);
+                        }
                     }
                 }
 
@@ -1618,6 +1630,8 @@ namespace Emby.Server.Implementations.Library
             item.ProviderIds = new Dictionary<string, string>(info.ProviderIds);
             item.IndexNumber = info.IndexNumber;
             item.ParentIndexNumber = info.ParentIndexNumber;
+            item.Path = info.Path;
+            item.Container = info.Container;
 
             if (!string.IsNullOrEmpty(info.PrimaryImageUrl))
             {
