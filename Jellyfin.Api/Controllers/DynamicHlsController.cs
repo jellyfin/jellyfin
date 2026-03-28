@@ -520,10 +520,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         var item = _libraryManager.GetItemById<BaseItem>(itemId);
         if (item?.SourceType == SourceType.External)
         {
-            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
-            if (redirectUrl is not null)
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
             {
-                return new RedirectResult(redirectUrl, permanent: false);
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
             }
         }
 
@@ -697,10 +697,10 @@ public class DynamicHlsController : BaseJellyfinApiController
         var item = _libraryManager.GetItemById<BaseItem>(itemId);
         if (item?.SourceType == SourceType.External)
         {
-            var redirectUrl = await _libraryManager.GetStreamRedirectUrlAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
-            if (redirectUrl is not null)
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
             {
-                return new RedirectResult(redirectUrl, permanent: false);
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
             }
         }
 

@@ -1319,14 +1319,14 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public async Task<string?> GetStreamRedirectUrlAsync(BaseItem item, CancellationToken cancellationToken)
+        public async Task<StreamRedirectResult?> GetStreamRedirectAsync(BaseItem item, CancellationToken cancellationToken)
         {
             foreach (var provider in StreamRedirectProviders)
             {
-                var url = await provider.GetRedirectUrlAsync(item, cancellationToken).ConfigureAwait(false);
-                if (url is not null)
+                var result = await provider.GetRedirectAsync(item, cancellationToken).ConfigureAwait(false);
+                if (result is not null)
                 {
-                    return url;
+                    return result;
                 }
             }
 

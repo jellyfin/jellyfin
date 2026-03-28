@@ -233,12 +233,12 @@ namespace MediaBrowser.Controller.Library
             IEnumerable<IStreamRedirectProvider> streamRedirectProviders);
 
         /// <summary>
-        /// Returns a redirect URL for the given external item, or <c>null</c> if no registered provider handles it.
+        /// Returns a redirect result for the given external item, or <c>null</c> if no registered provider handles it.
         /// </summary>
         /// <param name="item">The item being streamed.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>The redirect URL, or <c>null</c>.</returns>
-        Task<string?> GetStreamRedirectUrlAsync(BaseItem item, CancellationToken cancellationToken);
+        /// <returns>A <see cref="StreamRedirectResult"/>, or <c>null</c>.</returns>
+        Task<StreamRedirectResult?> GetStreamRedirectAsync(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sorts the specified items.
