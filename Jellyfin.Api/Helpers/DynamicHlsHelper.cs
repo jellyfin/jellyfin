@@ -428,7 +428,7 @@ public class DynamicHlsHelper
                 .Append('"');
         }
 
-        playlistBuilder.Append(Environment.NewLine);
+        playlistBuilder.AppendLine();
         playlistBuilder.AppendLine(url);
         builder.Append(playlistBuilder);
     }
