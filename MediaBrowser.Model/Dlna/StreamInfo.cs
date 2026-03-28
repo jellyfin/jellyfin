@@ -895,7 +895,7 @@ public class StreamInfo
 
         if (SubProtocol == MediaStreamProtocol.hls)
         {
-            sb.Append("/master.m3u8?");
+            sb.Append("/master.m3u8");
         }
         else
         {
@@ -906,9 +906,9 @@ public class StreamInfo
                 sb.Append('.');
                 sb.Append(Container);
             }
-
-            sb.Append('?');
         }
+
+        var queryStart = sb.Length;
 
         if (!string.IsNullOrEmpty(DeviceProfileId))
         {
@@ -1131,6 +1131,12 @@ public class StreamInfo
         if (!string.IsNullOrEmpty(query))
         {
             sb.Append(query);
+        }
+
+        // Replace the first '&' with '?' to form a valid query string.
+        if (sb.Length > queryStart)
+        {
+            sb[queryStart] = '?';
         }
 
         return sb.ToString();

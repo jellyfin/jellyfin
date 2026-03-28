@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -1605,7 +1604,7 @@ namespace MediaBrowser.Controller.Entities
                 return !GetBlockUnratedValue(user);
             }
 
-            var ratingScore = LocalizationManager.GetRatingScore(rating);
+            var ratingScore = LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode());
 
             // Could not determine rating level
             if (ratingScore is null)
@@ -1647,7 +1646,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return LocalizationManager.GetRatingScore(rating);
+            return LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode());
         }
 
         public List<string> GetInheritedTags()
@@ -2127,17 +2126,6 @@ namespace MediaBrowser.Controller.Entities
                     DateModified = chapter.ImageDateModified,
                     Type = imageType
                 };
-            }
-
-            // Music albums usually don't have dedicated backdrops, so return one from the artist instead
-            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
-            {
-                var artist = FindParent<MusicArtist>();
-
-                if (artist is not null)
-                {
-                    return artist.GetImages(imageType).ElementAtOrDefault(imageIndex);
-                }
             }
 
             return GetImages(imageType)
@@ -2621,7 +2609,7 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating)))
+                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode())))
                 .OrderBy(i => i.Item2 is null ? 1001 : i.Item2.Score)
                 .ThenBy(i => i.Item2 is null ? 1001 : i.Item2.SubScore)
                 .Select(i => i.rating);

@@ -3,7 +3,7 @@ using Jellyfin.Api.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Jellyfin.Server.Extensions
 {
