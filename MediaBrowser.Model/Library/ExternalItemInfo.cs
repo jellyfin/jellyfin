@@ -45,6 +45,12 @@ public class ExternalItemInfo
     public string? Container { get; set; }
 
     /// <summary>
+    /// Gets or sets the playback path (typically an HTTP URL on the remote server).
+    /// When set, the item appears as a playable media source instead of a placeholder.
+    /// </summary>
+    public string? Path { get; set; }
+
+    /// <summary>
     /// Gets or sets the runtime in ticks.
     /// </summary>
     public long? RunTimeTicks { get; set; }
