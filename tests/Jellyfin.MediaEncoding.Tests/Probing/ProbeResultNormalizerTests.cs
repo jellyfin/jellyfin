@@ -209,8 +209,8 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("mkv,webm", res.Container);
 
             Assert.Equal(2, res.MediaStreams.Count);
-
-            Assert.False(res.MediaStreams[0].IsAVC);
+            Assert.Equal(540, res.MediaStreams[0].Width);
+            Assert.Equal(360, res.MediaStreams[0].Height);
         }
 
         [Fact]
