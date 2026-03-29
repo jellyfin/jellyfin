@@ -1457,29 +1457,37 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (!string.IsNullOrEmpty(info.PrimaryImageUrl))
-            {
-                item.SetImage(new ItemImageInfo { Path = info.PrimaryImageUrl, Type = ImageType.Primary }, 0);
-            }
+            SetOrClearImage(item, ImageType.Primary, 0, info.PrimaryImageUrl);
+            SetOrClearImage(item, ImageType.Logo, 0, info.LogoImageUrl);
+            SetOrClearImage(item, ImageType.Thumb, 0, info.ThumbImageUrl);
+            SetOrClearImage(item, ImageType.Banner, 0, info.BannerImageUrl);
 
+            // Sync backdrop list: set provided URLs, remove extras.
             for (var i = 0; i < info.BackdropImageUrls.Count; i++)
             {
                 item.SetImage(new ItemImageInfo { Path = info.BackdropImageUrls[i], Type = ImageType.Backdrop }, i);
             }
 
-            if (!string.IsNullOrEmpty(info.LogoImageUrl))
+            var existingBackdrops = item.ImageInfos.Where(i => i.Type == ImageType.Backdrop).ToList();
+            for (var i = existingBackdrops.Count - 1; i >= info.BackdropImageUrls.Count; i--)
             {
-                item.SetImage(new ItemImageInfo { Path = info.LogoImageUrl, Type = ImageType.Logo }, 0);
+                item.RemoveImage(existingBackdrops[i]);
             }
+        }
 
-            if (!string.IsNullOrEmpty(info.ThumbImageUrl))
+        private static void SetOrClearImage(BaseItem item, ImageType type, int index, string? url)
+        {
+            if (!string.IsNullOrEmpty(url))
             {
-                item.SetImage(new ItemImageInfo { Path = info.ThumbImageUrl, Type = ImageType.Thumb }, 0);
+                item.SetImage(new ItemImageInfo { Path = url, Type = type }, index);
             }
-
-            if (!string.IsNullOrEmpty(info.BannerImageUrl))
+            else
             {
-                item.SetImage(new ItemImageInfo { Path = info.BannerImageUrl, Type = ImageType.Banner }, 0);
+                var existing = item.GetImageInfo(type, index);
+                if (existing is not null)
+                {
+                    item.RemoveImage(existing);
+                }
             }
         }
 
