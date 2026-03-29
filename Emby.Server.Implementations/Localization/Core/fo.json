@@ -14,5 +14,9 @@
     "DeviceOnlineWithName": "{0} er sambundið",
     "Favorites": "Yndis",
     "Folders": "Mappur",
-    "Forced": "Kravt"
+    "Forced": "Kravt",
+    "FailedLoginAttemptWithUserName": "Miseydnað innritanarroynd frá {0}",
+    "HeaderFavoriteEpisodes": "Yndispartar",
+    "HeaderFavoriteSongs": "Yndissangir",
+    "LabelIpAddressValue": "IP atsetur: {0}"
 }
