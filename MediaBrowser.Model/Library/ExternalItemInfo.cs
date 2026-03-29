@@ -102,6 +102,16 @@ public class ExternalItemInfo
     public string? OriginalTitle { get; set; }
 
     /// <summary>
+    /// Gets or sets the official home page URL.
+    /// </summary>
+    public string? HomePageUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the production/filming locations.
+    /// </summary>
+    public IReadOnlyList<string> ProductionLocations { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the provider IDs (e.g. TMDB, TVDB) for metadata matching.
     /// </summary>
     public IReadOnlyDictionary<string, string> ProviderIds { get; set; } = new Dictionary<string, string>();
@@ -127,6 +137,16 @@ public class ExternalItemInfo
     public string? SeriesStatus { get; set; }
 
     /// <summary>
+    /// Gets or sets the episode display order (e.g. "aired", "dvd", "absolute"). Applies to series.
+    /// </summary>
+    public string? DisplayOrder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the TMDB collection/franchise name. Applies to movies.
+    /// </summary>
+    public string? TmdbCollectionName { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="ExternalId"/> of the parent series. Applies to episodes.
     /// </summary>
     public string? SeriesExternalId { get; set; }
@@ -145,6 +165,26 @@ public class ExternalItemInfo
     /// Gets or sets the season number. Applies to episodes.
     /// </summary>
     public int? ParentIndexNumber { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ending episode number for multi-episode entries. Applies to episodes.
+    /// </summary>
+    public int? IndexNumberEnd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the season number this special airs before. Applies to special episodes.
+    /// </summary>
+    public int? AirsBeforeSeasonNumber { get; set; }
+
+    /// <summary>
+    /// Gets or sets the season number this special airs after. Applies to special episodes.
+    /// </summary>
+    public int? AirsAfterSeasonNumber { get; set; }
+
+    /// <summary>
+    /// Gets or sets the episode number this special airs before. Applies to special episodes.
+    /// </summary>
+    public int? AirsBeforeEpisodeNumber { get; set; }
 
     /// <summary>
     /// Gets or sets the URL of the primary (poster) image on the remote server.
