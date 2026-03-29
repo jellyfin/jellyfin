@@ -1396,17 +1396,36 @@ namespace Emby.Server.Implementations.Library
             item.Tags = info.Tags.ToArray();
             item.Studios = info.Studios.ToArray();
             item.OriginalTitle = info.OriginalTitle;
+            item.HomePageUrl = info.HomePageUrl;
+            item.ProductionLocations = info.ProductionLocations.ToArray();
             item.ProviderIds = new Dictionary<string, string>(info.ProviderIds);
             item.IndexNumber = info.IndexNumber;
             item.ParentIndexNumber = info.ParentIndexNumber;
             item.Path = info.Path;
             item.Container = info.Container;
 
-            if (item is Series series
-                && !string.IsNullOrEmpty(info.SeriesStatus)
-                && Enum.TryParse<SeriesStatus>(info.SeriesStatus, ignoreCase: true, out var status))
+            if (item is Series series)
             {
-                series.Status = status;
+                if (!string.IsNullOrEmpty(info.SeriesStatus)
+                    && Enum.TryParse<SeriesStatus>(info.SeriesStatus, ignoreCase: true, out var status))
+                {
+                    series.Status = status;
+                }
+
+                series.DisplayOrder = info.DisplayOrder;
+            }
+
+            if (item is Movie movie)
+            {
+                movie.TmdbCollectionName = info.TmdbCollectionName;
+            }
+
+            if (item is Episode ep)
+            {
+                ep.IndexNumberEnd = info.IndexNumberEnd;
+                ep.AirsBeforeSeasonNumber = info.AirsBeforeSeasonNumber;
+                ep.AirsAfterSeasonNumber = info.AirsAfterSeasonNumber;
+                ep.AirsBeforeEpisodeNumber = info.AirsBeforeEpisodeNumber;
             }
 
             if (item is IHasArtist hasArtist && info.Artists.Count > 0)
