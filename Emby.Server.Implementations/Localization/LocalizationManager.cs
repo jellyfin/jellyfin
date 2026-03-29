@@ -327,7 +327,7 @@ namespace Emby.Server.Implementations.Localization
                     && ratingsDictionary.TryGetValue(rating[(countryCode.Length + 1)..].Trim(), out var normalizedValue))
                 {
                     return normalizedValue;
-                } 
+                }
             }
             else
             {

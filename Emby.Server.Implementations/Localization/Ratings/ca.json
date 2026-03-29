@@ -24,7 +24,7 @@
             }
         },
         {
-            "ratingStrings": [],
+            "ratingStrings": ["C8"],
             "ratingScore": {
                 "score": 8,
                 "subScore": 0
