@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
@@ -56,9 +57,49 @@ public class ExternalItemInfo
     public long? RunTimeTicks { get; set; }
 
     /// <summary>
+    /// Gets or sets the premiere or release date.
+    /// </summary>
+    public DateTime? PremiereDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the end date (e.g. when a series stopped airing).
+    /// </summary>
+    public DateTime? EndDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the community rating (e.g. IMDb score).
+    /// </summary>
+    public float? CommunityRating { get; set; }
+
+    /// <summary>
+    /// Gets or sets the critic rating (e.g. Rotten Tomatoes score).
+    /// </summary>
+    public float? CriticRating { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tagline.
+    /// </summary>
+    public string? Tagline { get; set; }
+
+    /// <summary>
     /// Gets or sets the genre names.
     /// </summary>
     public IReadOnlyList<string> Genres { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the tags.
+    /// </summary>
+    public IReadOnlyList<string> Tags { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the studio names.
+    /// </summary>
+    public IReadOnlyList<string> Studios { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the original title in the original language.
+    /// </summary>
+    public string? OriginalTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the provider IDs (e.g. TMDB, TVDB) for metadata matching.
@@ -69,6 +110,21 @@ public class ExternalItemInfo
     /// Gets or sets the media streams. Pre-populated from the remote probe so local probing is not required.
     /// </summary>
     public IReadOnlyList<MediaStream> MediaStreams { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the artist names. Applies to audio items.
+    /// </summary>
+    public IReadOnlyList<string> Artists { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the album artist names. Applies to audio items and albums.
+    /// </summary>
+    public IReadOnlyList<string> AlbumArtists { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the series status (e.g. Continuing, Ended). Applies to series.
+    /// </summary>
+    public string? SeriesStatus { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="ExternalId"/> of the parent series. Applies to episodes.

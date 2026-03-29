@@ -1387,12 +1387,37 @@ namespace Emby.Server.Implementations.Library
             item.OfficialRating = info.OfficialRating;
             item.ProductionYear = info.ProductionYear;
             item.RunTimeTicks = info.RunTimeTicks;
+            item.PremiereDate = info.PremiereDate;
+            item.EndDate = info.EndDate;
+            item.CommunityRating = info.CommunityRating;
+            item.CriticRating = info.CriticRating;
+            item.Tagline = info.Tagline;
             item.Genres = info.Genres.ToArray();
+            item.Tags = info.Tags.ToArray();
+            item.Studios = info.Studios.ToArray();
+            item.OriginalTitle = info.OriginalTitle;
             item.ProviderIds = new Dictionary<string, string>(info.ProviderIds);
             item.IndexNumber = info.IndexNumber;
             item.ParentIndexNumber = info.ParentIndexNumber;
             item.Path = info.Path;
             item.Container = info.Container;
+
+            if (item is Series series
+                && !string.IsNullOrEmpty(info.SeriesStatus)
+                && Enum.TryParse<SeriesStatus>(info.SeriesStatus, ignoreCase: true, out var status))
+            {
+                series.Status = status;
+            }
+
+            if (item is IHasArtist hasArtist && info.Artists.Count > 0)
+            {
+                hasArtist.Artists = info.Artists.ToArray();
+            }
+
+            if (item is IHasAlbumArtist hasAlbumArtist && info.AlbumArtists.Count > 0)
+            {
+                hasAlbumArtist.AlbumArtists = info.AlbumArtists.ToArray();
+            }
 
             if (item is IHasSeries hasSeries && !string.IsNullOrEmpty(info.SeriesExternalId))
             {
