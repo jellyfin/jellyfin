@@ -1172,11 +1172,18 @@ namespace MediaBrowser.Controller.Entities
                 info.Video3DFormat = video.Video3DFormat;
                 info.Timestamp = video.Timestamp;
 
-                if (video.IsShortcut)
+                if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
                 {
-                    info.IsRemote = true;
-                    info.Path = video.ShortcutPath;
-                    info.Protocol = MediaSourceManager.GetPathProtocol(info.Path);
+                    var shortcutProtocol = MediaSourceManager.GetPathProtocol(video.ShortcutPath);
+
+                    // Only allow remote shortcut paths — local file paths in .strm files
+                    // could be used to read arbitrary files from the server.
+                    if (shortcutProtocol != MediaProtocol.File)
+                    {
+                        info.IsRemote = true;
+                        info.Path = video.ShortcutPath;
+                        info.Protocol = shortcutProtocol;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(info.Container))

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -32,6 +33,7 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILocalizationManager _localization;
+        private readonly HashSet<string> _allowedSubtitleFormats;
 
         private readonly ISubtitleProvider[] _subtitleProviders;
 
@@ -41,7 +43,9 @@ namespace MediaBrowser.Providers.Subtitles
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
             ILocalizationManager localizationManager,
-            IEnumerable<ISubtitleProvider> subtitleProviders)
+            IEnumerable<ISubtitleProvider> subtitleProviders,
+            NamingOptions namingOptions)
+
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -51,6 +55,9 @@ namespace MediaBrowser.Providers.Subtitles
             _subtitleProviders = subtitleProviders
                 .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
                 .ToArray();
+            _allowedSubtitleFormats = new HashSet<string>(
+                namingOptions.SubtitleFileExtensions.Select(e => e.TrimStart('.')),
+                StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -171,6 +178,12 @@ namespace MediaBrowser.Providers.Subtitles
         /// <inheritdoc />
         public Task UploadSubtitle(Video video, SubtitleResponse response)
         {
+            var format = response.Format;
+            if (string.IsNullOrEmpty(format) || !_allowedSubtitleFormats.Contains(format))
+            {
+                throw new ArgumentException($"Unsupported subtitle format: '{format}'");
+            }
+
             var libraryOptions = BaseItem.LibraryManager.GetLibraryOptions(video);
             return TrySaveSubtitle(video, libraryOptions, response);
         }
@@ -225,7 +238,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                var path = savePath + "." + extension;
+                var path = Path.GetFullPath(savePath + "." + extension);
                 try
                 {
                     if (path.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal)
@@ -236,7 +249,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                         while (fileExists)
                         {
-                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
+                            path = Path.GetFullPath(string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension));
                             fileExists = File.Exists(path);
                             counter++;
                         }
