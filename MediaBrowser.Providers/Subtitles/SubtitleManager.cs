@@ -45,7 +45,6 @@ namespace MediaBrowser.Providers.Subtitles
             ILocalizationManager localizationManager,
             IEnumerable<ISubtitleProvider> subtitleProviders,
             NamingOptions namingOptions)
-
         {
             _logger = logger;
             _fileSystem = fileSystem;
