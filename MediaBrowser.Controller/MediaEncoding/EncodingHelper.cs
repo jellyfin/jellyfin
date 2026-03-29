@@ -2622,8 +2622,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Note: the existing FallbackMaxStreamingBitrate mechanism (default 30 Mbps) only
             // applies when a LiveStreamId is set (M3U/HDHR sources). Plugin streams and other
             // sources that bypass the LiveTV pipeline are not covered by it.
-            const int maxSaneBitrate = 400_000_000; // 400 Mbps
-            return Math.Min(bitrate ?? 0, maxSaneBitrate);
+            const int MaxSaneBitrate = 400_000_000; // 400 Mbps
+            return Math.Min(bitrate ?? 0, MaxSaneBitrate);
         }
 
         private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
