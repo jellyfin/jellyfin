@@ -2614,8 +2614,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Cap the max target bitrate to intMax/2 to satisfy the bufsize=bitrate*2.
-            return Math.Min(bitrate ?? 0, int.MaxValue / 2);
+            // Cap the max target bitrate to 400 Mbps.
+            // No consumer or professional hardware transcode target exceeds this value
+            // (Intel QSV tops out at ~300 Mbps for H.264; HEVC High Tier Level 5.x is ~240 Mbps).
+            // Without this cap, plugin-provided MPEG-TS streams with no usable bitrate metadata
+            // can produce unreasonably large -bufsize/-maxrate values for the encoder.
+            // Note: the existing FallbackMaxStreamingBitrate mechanism (default 30 Mbps) only
+            // applies when a LiveStreamId is set (M3U/HDHR sources). Plugin streams and other
+            // sources that bypass the LiveTV pipeline are not covered by it.
+            const int MaxSaneBitrate = 400_000_000; // 400 Mbps
+            return Math.Min(bitrate ?? 0, MaxSaneBitrate);
         }
 
         private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
