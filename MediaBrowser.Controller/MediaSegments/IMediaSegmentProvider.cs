@@ -40,8 +40,5 @@ public interface IMediaSegmentProvider
     /// <param name="itemId">The item whose data is being pruned.</param>
     /// <param name="cancellationToken">Abort token.</param>
     /// <returns>A task representing the asynchronous cleanup operation.</returns>
-    Task CleanupExtractedData(Guid itemId, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    Task CleanupExtractedData(Guid itemId, CancellationToken cancellationToken);
 }
