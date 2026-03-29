@@ -52,6 +52,7 @@ public class SeasonPathParserTests
     [InlineData("/Drive/Season1", "/Drive", 1, true)]
     [InlineData("The Wonder Years/The.Wonder.Years.S04.PDTV.x264-JCH", "/The Wonder Years", 4, true)]
     [InlineData("/Drive/Season 7 (2016)", "/Drive", 7, true)]
+    [InlineData("/Drive/Hijack/Hijack - Season 02 [2025]", "/Drive/Hijack", 2, true)]
     [InlineData("/Drive/Staffel 7 (2016)", "/Drive", 7, true)]
     [InlineData("/Drive/Stagione 7 (2016)", "/Drive", 7, true)]
     [InlineData("/Drive/Stargate SG-1/Season 1", "/Drive/Stargate SG-1", 1, true)]

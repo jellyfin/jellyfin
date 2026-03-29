@@ -11,6 +11,7 @@ namespace Emby.Naming.TV
     public static partial class SeasonPathParser
     {
         private static readonly Regex CleanNameRegex = new(@"[ ._\-\[\]]", RegexOptions.Compiled);
+        private static readonly Regex TrailingYearInSquareBracketsRegex = new(@"\s*\[\d{4}\]\s*$", RegexOptions.Compiled);
 
         [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPre();
@@ -62,6 +63,7 @@ namespace Emby.Naming.TV
             bool supportNumericSeasonFolders)
         {
             var fileName = Path.GetFileName(path);
+            fileName = TrailingYearInSquareBracketsRegex.Replace(fileName, string.Empty);
 
             var seasonPrefixMatch = SeasonPrefix().Match(fileName);
             if (seasonPrefixMatch.Success &&
