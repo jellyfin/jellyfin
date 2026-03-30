@@ -239,10 +239,15 @@ public class ChapterManager : IChapterManager
     /// <inheritdoc />
     public void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters)
     {
+        if (!Supports(item))
+       {
+          _logger.LogWarning("Attempted to save chapters for unsupported item type {Type}: {Name} ({Id})", item.GetType().Name, item.Name, item.Id);
+          return;
+       }
         // Remove any chapters that are outside of the runtime of the item
         var validChapters = chapters.Where(c => c.StartPositionTicks < item.RunTimeTicks).ToList();
         _chapterRepository.SaveChapters(item.Id, validChapters);
-    }
+}
 
     /// <inheritdoc />
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
