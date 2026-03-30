@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
 
-            if (audio is AudioBook && mediaInfo.Chapters is not null && mediaInfo.Chapters.Length > 0)
+            if (audio is AudioBook && mediaInfo.Chapters is { Length: > 0 })
             {
                 _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
             }

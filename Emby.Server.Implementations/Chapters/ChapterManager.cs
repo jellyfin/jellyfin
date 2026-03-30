@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -230,6 +231,10 @@ public class ChapterManager : IChapterManager
 
         return success;
     }
+
+    /// <inheritdoc />
+    public bool Supports(BaseItem item)
+        => item is Video or Audio;
 
     /// <inheritdoc />
     public void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters)

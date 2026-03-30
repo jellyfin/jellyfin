@@ -14,6 +14,13 @@ namespace MediaBrowser.Controller.Chapters;
 public interface IChapterManager
 {
     /// <summary>
+    /// Gets a value indicating whether the specified item type is supported for chapter operations.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns><c>true</c> if the item type supports chapters; otherwise, <c>false</c>.</returns>
+    bool Supports(BaseItem item);
+
+    /// <summary>
     /// Saves the chapters.
     /// </summary>
     /// <param name="item">The item.</param>
