@@ -232,11 +232,11 @@ public class ChapterManager : IChapterManager
     }
 
     /// <inheritdoc />
-    public void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
+    public void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters)
     {
-        // Remove any chapters that are outside of the runtime of the video
-        var validChapters = chapters.Where(c => c.StartPositionTicks < video.RunTimeTicks).ToList();
-        _chapterRepository.SaveChapters(video.Id, validChapters);
+        // Remove any chapters that are outside of the runtime of the item
+        var validChapters = chapters.Where(c => c.StartPositionTicks < item.RunTimeTicks).ToList();
+        _chapterRepository.SaveChapters(item.Id, validChapters);
     }
 
     /// <inheritdoc />

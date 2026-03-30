@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ATL;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -38,6 +39,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly LyricResolver _lyricResolver;
         private readonly ILyricManager _lyricManager;
         private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly IChapterManager _chapterManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -49,6 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="lyricResolver">Instance of the <see cref="LyricResolver"/> interface.</param>
         /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         /// <param name="mediaStreamRepository">Instance of the <see cref="IMediaStreamRepository"/>.</param>
+        /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
         public AudioFileProber(
             ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
@@ -56,7 +59,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ILibraryManager libraryManager,
             LyricResolver lyricResolver,
             ILyricManager lyricManager,
-            IMediaStreamRepository mediaStreamRepository)
+            IMediaStreamRepository mediaStreamRepository,
+            IChapterManager chapterManager)
         {
             _mediaEncoder = mediaEncoder;
             _libraryManager = libraryManager;
@@ -65,6 +69,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _lyricResolver = lyricResolver;
             _lyricManager = lyricManager;
             _mediaStreamRepository = mediaStreamRepository;
+            _chapterManager = chapterManager;
             ATL.Settings.DisplayValueSeparator = InternalValueSeparator;
             ATL.Settings.UseFileNameWhenNoTitle = false;
             ATL.Settings.ID3v2_separatev2v3Values = false;
@@ -99,6 +104,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     new MediaInfoRequest
                     {
                         MediaType = DlnaProfileType.Audio,
+                        ExtractChapters = item is AudioBook,
                         MediaSource = new MediaSourceInfo
                         {
                             Path = path,
@@ -151,6 +157,11 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.HasLyrics = mediaStreams.Any(s => s.Type == MediaStreamType.Lyric);
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
+
+            if (audio is AudioBook && mediaInfo.Chapters is not null && mediaInfo.Chapters.Length > 0)
+            {
+                _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
+            }
         }
 
         /// <summary>
@@ -212,18 +223,6 @@ namespace MediaBrowser.Providers.MediaInfo
                     albumArtists = albumArtists.SelectMany(a => SplitWithCustomDelimiter(a, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                foreach (var albumArtist in albumArtists)
-                {
-                    if (!string.IsNullOrWhiteSpace(albumArtist))
-                    {
-                        PeopleHelper.AddPerson(people, new PersonInfo
-                        {
-                            Name = albumArtist,
-                            Type = PersonKind.AlbumArtist
-                        });
-                    }
-                }
-
                 string[]? performers = null;
                 if (libraryOptions.PreferNonstandardArtistsTag)
                 {
@@ -244,29 +243,133 @@ namespace MediaBrowser.Providers.MediaInfo
                     performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
 
-                foreach (var performer in performers)
-                {
-                    if (!string.IsNullOrWhiteSpace(performer))
-                    {
-                        PeopleHelper.AddPerson(people, new PersonInfo
-                        {
-                            Name = performer,
-                            Type = PersonKind.Artist
-                        });
-                    }
-                }
+                var isAudioBook = audio is AudioBook;
 
-                if (!string.IsNullOrWhiteSpace(trackComposer))
+                if (isAudioBook)
                 {
-                    foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                    // For audiobooks: AlbumArtists/Performers = Author, NARRATOR tag = Narrator,
+                    // ILLUSTRATOR tag = Illustrator, Composer = fallback Narrator, other performers = Cast.
+                    // If album_artist is missing, fall back to artist/performers for the author role.
+                    var authorSource = albumArtists.Length > 0 ? albumArtists : performers;
+                    var authorNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var author in authorSource)
                     {
-                        if (!string.IsNullOrWhiteSpace(composer))
+                        if (!string.IsNullOrWhiteSpace(author))
+                        {
+                            authorNames.Add(author.Trim());
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = author.Trim(),
+                                Type = PersonKind.Author
+                            });
+                        }
+                    }
+
+                    // Read narrator from format-specific custom tag (TXXX:NARRATOR, Vorbis NARRATOR, Apple NARRATOR, etc.)
+                    TryGetSanitizedAdditionalFields(track, "NARRATOR", out var narratorTag);
+                    var hasNarrator = !string.IsNullOrWhiteSpace(narratorTag);
+                    if (hasNarrator)
+                    {
+                        foreach (var narrator in narratorTag!.Split(InternalValueSeparator))
+                        {
+                            if (!string.IsNullOrWhiteSpace(narrator))
+                            {
+                                PeopleHelper.AddPerson(people, new PersonInfo
+                                {
+                                    Name = narrator.Trim(),
+                                    Type = PersonKind.Narrator
+                                });
+                            }
+                        }
+                    }
+
+                    // Fall back to Composer tag for narrator if no NARRATOR tag is present
+                    // (Audiobookshelf and other tools use Composer for narrator)
+                    if (!hasNarrator && !string.IsNullOrWhiteSpace(trackComposer))
+                    {
+                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        {
+                            if (!string.IsNullOrWhiteSpace(composer))
+                            {
+                                PeopleHelper.AddPerson(people, new PersonInfo
+                                {
+                                    Name = composer.Trim(),
+                                    Type = PersonKind.Narrator
+                                });
+                            }
+                        }
+                    }
+
+                    // Read illustrator from format-specific custom tag
+                    TryGetSanitizedAdditionalFields(track, "ILLUSTRATOR", out var illustratorTag);
+                    if (!string.IsNullOrWhiteSpace(illustratorTag))
+                    {
+                        foreach (var illustrator in illustratorTag!.Split(InternalValueSeparator))
+                        {
+                            if (!string.IsNullOrWhiteSpace(illustrator))
+                            {
+                                PeopleHelper.AddPerson(people, new PersonInfo
+                                {
+                                    Name = illustrator.Trim(),
+                                    Type = PersonKind.Illustrator
+                                });
+                            }
+                        }
+                    }
+
+                    // Any performers not already listed as authors get added as cast
+                    foreach (var performer in performers)
+                    {
+                        if (!string.IsNullOrWhiteSpace(performer) && !authorNames.Contains(performer.Trim()))
                         {
                             PeopleHelper.AddPerson(people, new PersonInfo
                             {
-                                Name = composer,
-                                Type = PersonKind.Composer
+                                Name = performer.Trim(),
+                                Type = PersonKind.Actor
                             });
+                        }
+                    }
+                }
+                else
+                {
+                    // Standard music track handling
+                    foreach (var albumArtist in albumArtists)
+                    {
+                        if (!string.IsNullOrWhiteSpace(albumArtist))
+                        {
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = albumArtist,
+                                Type = PersonKind.AlbumArtist
+                            });
+                        }
+                    }
+
+                    foreach (var performer in performers)
+                    {
+                        if (!string.IsNullOrWhiteSpace(performer))
+                        {
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = performer,
+                                Type = PersonKind.Artist
+                            });
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(trackComposer))
+                    {
+                        foreach (var composer in trackComposer.Split(InternalValueSeparator))
+                        {
+                            if (!string.IsNullOrWhiteSpace(composer))
+                            {
+                                PeopleHelper.AddPerson(people, new PersonInfo
+                                {
+                                    Name = composer,
+                                    Type = PersonKind.Composer
+                                });
+                            }
                         }
                     }
                 }
@@ -356,6 +459,46 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
                 {
                     audio.Genres = genres;
+                }
+            }
+
+            // Audiobook-specific metadata: Overview, Publisher, Series
+            if (audio is AudioBook audioBook)
+            {
+                if (!audio.LockedFields.Contains(MetadataField.Overview))
+                {
+                    var trackDescription = GetSanitizedStringTag(track.Description, audio.Path);
+                    var trackComment = GetSanitizedStringTag(track.Comment, audio.Path);
+                    var overview = !string.IsNullOrWhiteSpace(trackDescription) ? trackDescription : trackComment;
+
+                    if (!string.IsNullOrWhiteSpace(overview))
+                    {
+                        if (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.Overview))
+                        {
+                            audio.Overview = overview;
+                        }
+                    }
+                }
+
+                // Publisher → Studio (Xiph uses LABEL, others use tag.Publisher)
+                var trackPublisher = GetSanitizedStringTag(track.Publisher, audio.Path);
+                if (string.IsNullOrWhiteSpace(trackPublisher))
+                {
+                    TryGetSanitizedAdditionalFields(track, "LABEL", out trackPublisher);
+                }
+
+                if (!string.IsNullOrWhiteSpace(trackPublisher)
+                    && (options.ReplaceAllMetadata || audio.Studios is null || audio.Studios.Length == 0))
+                {
+                    audio.SetStudios(new[] { trackPublisher! });
+                }
+
+                // Series name from SERIES tag (Calibre/Readarr convention)
+                TryGetSanitizedAdditionalFields(track, "SERIES", out var seriesTag);
+                if (!string.IsNullOrWhiteSpace(seriesTag)
+                    && (options.ReplaceAllMetadata || string.IsNullOrEmpty(audioBook.SeriesName)))
+                {
+                    audioBook.SeriesName = seriesTag;
                 }
             }
 

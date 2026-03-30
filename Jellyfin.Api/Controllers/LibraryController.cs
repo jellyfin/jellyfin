@@ -990,7 +990,7 @@ public class LibraryController : BaseJellyfinApiController
             CollectionType.playlists => new[] { "Playlist" },
             CollectionType.movies => new[] { "Movie" },
             CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
-            CollectionType.books => new[] { "Book" },
+            CollectionType.books => new[] { "Book", "AudioBook" },
             CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
             CollectionType.homevideos => new[] { "Video", "Photo" },
             CollectionType.photos => new[] { "Video", "Photo" },

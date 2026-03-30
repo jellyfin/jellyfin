@@ -16,9 +16,9 @@ public interface IChapterManager
     /// <summary>
     /// Saves the chapters.
     /// </summary>
-    /// <param name="video">The video.</param>
+    /// <param name="item">The item.</param>
     /// <param name="chapters">The set of chapters.</param>
-    void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters);
+    void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters);
 
     /// <summary>
     /// Gets a single chapter of a BaseItem on a specific index.

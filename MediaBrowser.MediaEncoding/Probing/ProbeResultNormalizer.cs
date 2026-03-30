@@ -194,6 +194,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 info.ProductionYear = info.PremiereDate.Value.Year;
             }
 
+            if (data.Chapters is not null)
+            {
+                info.Chapters = data.Chapters.Select(GetChapterInfo).ToArray();
+            }
+
             // Set mediaType-specific metadata
             if (isAudio)
             {
@@ -237,11 +242,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 FetchWtvInfo(info, data);
-
-                if (data.Chapters is not null)
-                {
-                    info.Chapters = data.Chapters.Select(GetChapterInfo).ToArray();
-                }
 
                 ExtractTimestamp(info);
 
