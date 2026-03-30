@@ -33,12 +33,12 @@ namespace MediaBrowser.Controller.MediaEncoding
     public partial class EncodingHelper
     {
         /// <summary>
-        /// The codec validation regex.
+        /// The codec validation regex string.
         /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
         /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
         /// This should matches all common valid codecs.
         /// </summary>
-        public const string ContainerValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+        public const string ContainerValidationRegexStr = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
 
         /// <summary>
         /// The level validation regex.
@@ -86,8 +86,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
         private readonly Version _minFFmpegRkmppHevcDecDoviRpu = new Version(7, 1, 1);
         private readonly Version _minFFmpegReadrateCatchupOption = new Version(8, 0);
-
-        private static readonly Regex _containerValidationRegex = new(ContainerValidationRegex, RegexOptions.Compiled);
 
         private static readonly string[] _videoProfilesH264 =
         [
@@ -180,6 +178,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             RemoveDovi,
             RemoveHdr10Plus,
         }
+
+        /// <summary>
+        /// The codec validation regex.
+        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
+        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
+        /// This should matches all common valid codecs.
+        /// </summary>
+        [GeneratedRegex(@"^[a-zA-Z0-9\-\._,|]{0,40}$")]
+        public static partial Regex ContainerValidationRegex();
 
         [GeneratedRegex(@"\s+")]
         private static partial Regex WhiteSpaceRegex();
@@ -477,7 +484,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetMjpegEncoder(state, encodingOptions);
                 }
 
-                if (_containerValidationRegex.IsMatch(codec))
+                if (ContainerValidationRegex().IsMatch(codec))
                 {
                     return codec.ToLowerInvariant();
                 }
@@ -518,7 +525,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container) || !_containerValidationRegex.IsMatch(container))
+            if (string.IsNullOrEmpty(container) || !ContainerValidationRegex().IsMatch(container))
             {
                 return null;
             }
@@ -736,7 +743,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = state.OutputAudioCodec;
 
-            if (!_containerValidationRegex.IsMatch(codec))
+            if (!ContainerValidationRegex().IsMatch(codec))
             {
                 codec = "aac";
             }
