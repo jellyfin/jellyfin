@@ -97,7 +97,11 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
     private async Task RespondToV2Message(IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
-        var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
+        var smartUrl = _appHost.GetSmartApiUrl(endpoint.Address);
+        var localUrl = IsLoopbackUrl(smartUrl)
+            ? _appHost.GetLocalApiUrl(_networkManager.GetBindAddress(endpoint.Address, out _, skipOverrides: true))
+            : smartUrl;
+
         if (string.IsNullOrEmpty(localUrl))
         {
             _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined");
@@ -117,4 +121,9 @@ public sealed class AutoDiscoveryHost : BackgroundService
             _logger.LogError(ex, "Error sending response message");
         }
     }
+
+    private static bool IsLoopbackUrl(string? url)
+        => Uri.TryCreate(url, UriKind.Absolute, out var uri)
+           && IPAddress.TryParse(uri.Host, out var ip)
+           && IPAddress.IsLoopback(ip);
 }

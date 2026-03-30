@@ -11,6 +11,7 @@
  - [AThomsen](https://github.com/AThomsen)
  - [barongreenback](https://github.com/BaronGreenback)
  - [barronpm](https://github.com/barronpm)
+ - [baykatre](https://github.com/baykatre)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
  - [BnMcG](https://github.com/BnMcG)
