@@ -439,6 +439,13 @@ public sealed partial class BaseItemRepository
                         || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
+        // Exclude alternate versions from counts. Alternate versions have
+        // OwnerId set (pointing to their primary) but no ExtraType.
+        if (!filter.IncludeOwnedItems)
+        {
+            baseQuery = baseQuery.Where(e => e.OwnerId == null || e.ExtraType != null);
+        }
+
         return baseQuery;
     }
 
