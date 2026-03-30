@@ -24,44 +24,29 @@ public class SkiaEncoder : IImageEncoder
     private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
-    private static readonly SKImageFilter _imageFilter;
     private static readonly SKTypeface?[] _typefaces = InitializeTypefaces();
+    private static readonly SKImageFilter _imageFilter = SKImageFilter.CreateMatrixConvolution(
+        new SKSizeI(3, 3),
+        [
+            0,    -.1f,    0,
+            -.1f, 1.4f, -.1f,
+            0,    -.1f,    0
+        ],
+        1f,
+        0f,
+        new SKPointI(1, 1),
+        SKShaderTileMode.Clamp,
+        true);
 
     /// <summary>
     /// The default sampling options, equivalent to old high quality filter settings when upscaling.
     /// </summary>
-    public static readonly SKSamplingOptions UpscaleSamplingOptions;
+    public static readonly SKSamplingOptions UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
 
     /// <summary>
     /// The sampling options, used for downscaling images, equivalent to old high quality filter settings when not upscaling.
     /// </summary>
-    public static readonly SKSamplingOptions DefaultSamplingOptions;
-
-    static SkiaEncoder()
-    {
-        var kernel = new[]
-        {
-            0,    -.1f,    0,
-            -.1f, 1.4f, -.1f,
-            0,    -.1f,    0,
-        };
-
-        var kernelSize = new SKSizeI(3, 3);
-        var kernelOffset = new SKPointI(1, 1);
-        _imageFilter = SKImageFilter.CreateMatrixConvolution(
-            kernelSize,
-            kernel,
-            1f,
-            0f,
-            kernelOffset,
-            SKShaderTileMode.Clamp,
-            true);
-
-        // use cubic for upscaling
-        UpscaleSamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
-        // use bilinear for everything else
-        DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
-    }
+    public static readonly SKSamplingOptions DefaultSamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
