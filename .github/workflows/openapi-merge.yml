@@ -11,7 +11,7 @@ permissions: {}
 jobs:
   publish-openapi:
     name: OpenAPI - Publish Artifact
-    uses: ./.github/workflows/openapi/__generate.yml
+    uses: ./.github/workflows/openapi-generate.yml
     with:
       ref: ${{ github.sha }}
       repository: ${{ github.repository }}
