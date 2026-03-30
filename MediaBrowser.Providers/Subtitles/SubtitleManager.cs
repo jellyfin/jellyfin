@@ -205,7 +205,13 @@ namespace MediaBrowser.Providers.Subtitles
                 }
 
                 var savePaths = new List<string>();
-                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+                var language = response.Language.ToLowerInvariant();
+                if (language.AsSpan().IndexOfAny(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) >= 0)
+                {
+                    throw new ArgumentException("Language contains invalid characters.");
+                }
+
+                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + language;
 
                 if (response.IsForced)
                 {
@@ -245,15 +251,17 @@ namespace MediaBrowser.Providers.Subtitles
                 var path = Path.GetFullPath(savePath + "." + extension);
                 try
                 {
-                    if (path.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal)
-                            || path.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+                    var containingFolder = video.ContainingFolderPath + Path.DirectorySeparatorChar;
+                    var metadataFolder = video.GetInternalMetadataPath() + Path.DirectorySeparatorChar;
+                    if (path.StartsWith(containingFolder, StringComparison.Ordinal)
+                            || path.StartsWith(metadataFolder, StringComparison.Ordinal))
                     {
                         var fileExists = File.Exists(path);
                         var counter = 0;
 
                         while (fileExists)
                         {
-                            path = Path.GetFullPath(string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension));
+                            path = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}", savePath, counter, extension);
                             fileExists = File.Exists(path);
                             counter++;
                         }
