@@ -46,7 +46,6 @@ namespace MediaBrowser.Providers.Subtitles
             IEnumerable<ISubtitleProvider> subtitleProviders,
             NamingOptions namingOptions)
         {
-            _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
