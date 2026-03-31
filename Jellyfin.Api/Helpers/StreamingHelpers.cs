@@ -485,7 +485,7 @@ public static class StreamingHelpers
                     request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     break;
                 case 15:
-                    if (videoRequest is not null && EncodingHelper.LevelValidationRegex().IsMatch(val))
+                    if (videoRequest is not null && EncodingHelper.LevelValidationRegexStr().IsMatch(val))
                     {
                         videoRequest.Level = val;
                     }
