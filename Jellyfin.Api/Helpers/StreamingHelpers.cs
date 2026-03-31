@@ -17,9 +17,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -487,7 +485,7 @@ public static class StreamingHelpers
                     request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     break;
                 case 15:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && EncodingHelper.LevelValidationRegex().IsMatch(val))
                     {
                         videoRequest.Level = val;
                     }

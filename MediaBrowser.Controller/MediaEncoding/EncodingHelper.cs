@@ -41,10 +41,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         public const string ContainerValidationRegexStr = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
 
         /// <summary>
-        /// The level validation regex.
+        /// The level validation regex string.
         /// This regular expression matches strings representing a double.
         /// </summary>
-        public const string LevelValidationRegex = @"-?[0-9]+(?:\.[0-9]+)?";
+        public const string LevelValidationRegexStr = @"-?[0-9]+(?:\.[0-9]+)?";
 
         private const string _defaultMjpegEncoder = "mjpeg";
 
@@ -1790,38 +1790,40 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
-            if (double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
+            if (!double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
             {
-                if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+                return null;
+            }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.3 (15) and lower for maximum compatibility.
+                // https://en.wikipedia.org/wiki/AV1#Levels
+                if (requestLevel < 0 || requestLevel >= 15)
                 {
-                    // Transcode to level 5.3 (15) and lower for maximum compatibility.
-                    // https://en.wikipedia.org/wiki/AV1#Levels
-                    if (requestLevel < 0 || requestLevel >= 15)
-                    {
-                        return "15";
-                    }
+                    return "15";
                 }
-                else if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.0 and lower for maximum compatibility.
+                // Level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it.
+                // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
+                // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880.
+                if (requestLevel < 0 || requestLevel >= 150)
                 {
-                    // Transcode to level 5.0 and lower for maximum compatibility.
-                    // Level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it.
-                    // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
-                    // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880.
-                    if (requestLevel < 0 || requestLevel >= 150)
-                    {
-                        return "150";
-                    }
+                    return "150";
                 }
-                else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.1 and lower for maximum compatibility.
+                // h264 4k 30fps requires at least level 5.1 otherwise it will break on safari fmp4.
+                // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
+                if (requestLevel < 0 || requestLevel >= 51)
                 {
-                    // Transcode to level 5.1 and lower for maximum compatibility.
-                    // h264 4k 30fps requires at least level 5.1 otherwise it will break on safari fmp4.
-                    // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
-                    if (requestLevel < 0 || requestLevel >= 51)
-                    {
-                        return "51";
-                    }
+                    return "51";
                 }
             }
 
@@ -2211,12 +2213,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            var level = state.GetRequestedLevel(targetVideoCodec);
+            var level = NormalizeTranscodingLevel(state, state.GetRequestedLevel(targetVideoCodec));
 
             if (!string.IsNullOrEmpty(level))
             {
-                level = NormalizeTranscodingLevel(state, level);
-
                 // libx264, QSV, AMF can adjust the given level to match the output.
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
