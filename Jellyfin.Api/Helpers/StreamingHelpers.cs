@@ -17,9 +17,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -422,14 +420,18 @@ public static class StreamingHelpers
                     request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     break;
                 case 4:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.VideoCodec = val;
                     }
 
                     break;
                 case 5:
-                    request.AudioCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.AudioCodec = val;
+                    }
+
                     break;
                 case 6:
                     if (videoRequest is not null)
@@ -483,7 +485,7 @@ public static class StreamingHelpers
                     request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     break;
                 case 15:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && EncodingHelper.LevelValidationRegex().IsMatch(val))
                     {
                         videoRequest.Level = val;
                     }
@@ -504,7 +506,7 @@ public static class StreamingHelpers
 
                     break;
                 case 18:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.Profile = val;
                     }
@@ -563,7 +565,11 @@ public static class StreamingHelpers
 
                     break;
                 case 30:
-                    request.SubtitleCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.SubtitleCodec = val;
+                    }
+
                     break;
                 case 31:
                     if (videoRequest is not null)
@@ -584,6 +590,11 @@ public static class StreamingHelpers
                     break;
             }
         }
+    }
+
+    private static bool IsValidCodecName(string val)
+    {
+        return EncodingHelper.ContainerValidationRegex().IsMatch(val);
     }
 
     /// <summary>
