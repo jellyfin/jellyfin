@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BitFaster.Caching;
@@ -250,6 +251,166 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var translated = localizationManager.GetLocalizedString(key);
             Assert.NotNull(translated);
             Assert.Equal(key, translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var translated = localizationManager.GetLocalizedString("Artists", "de");
+            Assert.Equal("Interpreten", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_FallsBackToEnUs()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // A culture with no translation file should fall back to en-US
+            var translated = localizationManager.GetLocalizedString("Artists", "zz");
+            Assert.Equal("Artists", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithBcp47Normalization_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // es-419 is stored as es_419 in Jellyfin
+            var translated = localizationManager.GetLocalizedString("Default", "es-419");
+            Assert.NotEqual("Default", translated);
+        }
+
+        [Fact]
+        public void GetServerLocalizedString_UsesServerCulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de"
+            });
+
+            // Even if CurrentUICulture is fr, GetServerLocalizedString should use the server's "de"
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+                var translated = localizationManager.GetServerLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_FallbackChain_UsesFirstAvailableCulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // Set fallback chain: de -> fr -> en-US
+            // "Artists" exists in de as "Interpreten", should use de (first in chain)
+            LocalizationManager.RequestCultureFallback = new[] { "de", "fr", "en-US" };
+            try
+            {
+                var translated = localizationManager.GetLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                LocalizationManager.RequestCultureFallback = null;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_FallbackChain_SkipsMissingAndUsesNext()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // "zz" has no translation file so the key won't be found there,
+            // should fall through to de which has "Artists" as "Interpreten"
+            LocalizationManager.RequestCultureFallback = new[] { "zz", "de", "en-US" };
+            try
+            {
+                var translated = localizationManager.GetLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                LocalizationManager.RequestCultureFallback = null;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_FallbackChain_ReturnsKeyWhenNoTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var key = "CompletelyNonExistentKey";
+            LocalizationManager.RequestCultureFallback = new[] { "de", "en-US" };
+            try
+            {
+                var translated = localizationManager.GetLocalizedString(key);
+                Assert.Equal(key, translated);
+            }
+            finally
+            {
+                LocalizationManager.RequestCultureFallback = null;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_NoFallbackChain_UsesCurrentUICulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de");
+                LocalizationManager.RequestCultureFallback = null;
+
+                var translated = localizationManager.GetLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Theory]
+        [InlineData("de", true)]
+        [InlineData("en-US", true)]
+        [InlineData("fr", true)]
+        [InlineData("es_419", true)]
+        [InlineData("nonexistent", false)]
+        [InlineData("zz-ZZ", false)]
+        public void HasTranslation_ReturnsExpected(string culture, bool expected)
+        {
+            Assert.Equal(expected, LocalizationManager.HasTranslation(culture));
         }
 
         private LocalizationManager Setup(ServerConfiguration config)
