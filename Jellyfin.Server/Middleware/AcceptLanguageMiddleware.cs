@@ -1,16 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Server.Middleware;
 
 /// <summary>
 /// Middleware that resolves the <c>Accept-Language</c> request header
-/// to a Jellyfin-supported culture and sets <see cref="CultureInfo.CurrentUICulture"/>
-/// for the duration of the request. Also sets the <c>Content-Language</c> response header.
+/// to an ordered list of Jellyfin-supported cultures, sets the fallback chain
+/// on <see cref="LocalizationManager.RequestCultureFallback"/>, and writes
+/// the <c>Content-Language</c> response header.
 /// </summary>
 public class AcceptLanguageMiddleware
 {
@@ -29,33 +32,49 @@ public class AcceptLanguageMiddleware
     /// Invoke request.
     /// </summary>
     /// <param name="context">Request context.</param>
+    /// <param name="configurationManager">The server configuration manager.</param>
     /// <returns>Task.</returns>
-    public async Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context, IServerConfigurationManager configurationManager)
     {
-        var resolved = ResolveLanguage(context.Request);
-        if (resolved is not null)
+        var chain = ResolveLanguages(context.Request, configurationManager);
+        if (chain is not null)
         {
-            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(resolved);
+            LocalizationManager.RequestCultureFallback = chain;
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(chain[0]);
         }
 
         context.Response.OnStarting(
             static state =>
             {
-                var ctx = (HttpContext)state;
-                var culture = CultureInfo.CurrentUICulture.Name;
-                if (!string.IsNullOrEmpty(culture))
+                var (ctx, languages) = ((HttpContext, IReadOnlyList<string>?))state;
+                if (languages is not null)
                 {
-                    ctx.Response.Headers.ContentLanguage = culture;
+                    ctx.Response.Headers.ContentLanguage = string.Join(", ", languages);
+                }
+                else
+                {
+                    var culture = CultureInfo.CurrentUICulture.Name;
+                    if (!string.IsNullOrEmpty(culture))
+                    {
+                        ctx.Response.Headers.ContentLanguage = culture;
+                    }
                 }
 
                 return Task.CompletedTask;
             },
-            context);
+            (context, chain));
 
-        await _next(context).ConfigureAwait(false);
+        try
+        {
+            await _next(context).ConfigureAwait(false);
+        }
+        finally
+        {
+            LocalizationManager.RequestCultureFallback = null;
+        }
     }
 
-    private static string? ResolveLanguage(HttpRequest request)
+    private static IReadOnlyList<string>? ResolveLanguages(HttpRequest request, IServerConfigurationManager configurationManager)
     {
         var acceptLanguageHeader = request.GetTypedHeaders().AcceptLanguage;
         if (acceptLanguageHeader is null || acceptLanguageHeader.Count == 0)
@@ -67,30 +86,57 @@ public class AcceptLanguageMiddleware
             .OrderByDescending(h => h.Quality ?? 1)
             .Select(h => h.Value.ToString());
 
+        var chain = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var lang in languages)
         {
-            if (LocalizationManager.HasTranslation(lang))
-            {
-                return lang;
-            }
-
-            if (LocalizationManager.Bcp47ToJellyfinMap.TryGetValue(lang, out var mapped))
-            {
-                return mapped;
-            }
-
-            // Try parent culture match (e.g. de-DE -> de)
-            var dashIndex = lang.IndexOf('-', StringComparison.Ordinal);
-            if (dashIndex > 0)
-            {
-                var parent = lang[..dashIndex];
-                if (LocalizationManager.HasTranslation(parent))
-                {
-                    return parent;
-                }
-            }
+            TryAddCulture(lang, chain, seen);
         }
 
-        return null;
+        if (chain.Count == 0)
+        {
+            return null;
+        }
+
+        // Append server default culture if not already present
+        var serverCulture = configurationManager.Configuration.UICulture;
+        if (!string.IsNullOrEmpty(serverCulture))
+        {
+            TryAddCulture(serverCulture, chain, seen);
+        }
+
+        // Ensure en-US is always the final fallback
+        TryAddCulture("en-US", chain, seen);
+
+        return chain;
+    }
+
+    private static void TryAddCulture(string lang, List<string> chain, HashSet<string> seen)
+    {
+        // Direct match
+        if (LocalizationManager.HasTranslation(lang) && seen.Add(lang))
+        {
+            chain.Add(lang);
+            return;
+        }
+
+        // BCP-47 to Jellyfin underscore mapping (e.g. es-419 -> es_419)
+        if (LocalizationManager.Bcp47ToJellyfinMap.TryGetValue(lang, out var mapped) && seen.Add(mapped))
+        {
+            chain.Add(mapped);
+            return;
+        }
+
+        // Parent culture fallback (e.g. de-DE -> de)
+        var dashIndex = lang.IndexOf('-', StringComparison.Ordinal);
+        if (dashIndex > 0)
+        {
+            var parent = lang[..dashIndex];
+            if (LocalizationManager.HasTranslation(parent) && seen.Add(parent))
+            {
+                chain.Add(parent);
+            }
+        }
     }
 }

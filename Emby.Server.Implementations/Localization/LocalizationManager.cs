@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
@@ -46,7 +47,9 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly Dictionary<string, Dictionary<string, ParentalRatingScore?>> _allParentalRatings = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly AsyncLocal<IReadOnlyList<string>?> _requestCultureFallback = new();
+
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _cultureOnlyDictionaries = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
@@ -72,16 +75,14 @@ namespace Emby.Server.Implementations.Localization
             _configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
         }
 
-        private static void OnConfigurationUpdated(object? sender, EventArgs e)
+        /// <summary>
+        /// Gets or sets the per-request culture fallback chain resolved from Accept-Language.
+        /// Each entry is a Jellyfin culture code (e.g. "de", "nl", "en-US") in priority order.
+        /// </summary>
+        public static IReadOnlyList<string>? RequestCultureFallback
         {
-            if (sender is IServerConfigurationManager configManager)
-            {
-                var uiCulture = configManager.Configuration.UICulture;
-                if (!string.IsNullOrEmpty(uiCulture))
-                {
-                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
-                }
-            }
+            get => _requestCultureFallback.Value;
+            set => _requestCultureFallback.Value = value;
         }
 
         /// <summary>
@@ -93,6 +94,18 @@ namespace Emby.Server.Implementations.Localization
         {
             var resourceName = CoreResourcePrefix + GetResourceFilename(culture);
             return _assembly.GetManifestResourceInfo(resourceName) is not null;
+        }
+
+        private static void OnConfigurationUpdated(object? sender, EventArgs e)
+        {
+            if (sender is IServerConfigurationManager configManager)
+            {
+                var uiCulture = configManager.Configuration.UICulture;
+                if (!string.IsNullOrEmpty(uiCulture))
+                {
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
+                }
+            }
         }
 
         /// <summary>
@@ -416,6 +429,21 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
+            var fallback = _requestCultureFallback.Value;
+            if (fallback is not null)
+            {
+                foreach (var culture in fallback)
+                {
+                    var dict = GetLocalizationDictionary(culture);
+                    if (dict.TryGetValue(phrase, out var value))
+                    {
+                        return value;
+                    }
+                }
+
+                return phrase;
+            }
+
             return GetLocalizedString(phrase, CultureInfo.CurrentUICulture.Name);
         }
 
@@ -451,6 +479,15 @@ namespace Emby.Server.Implementations.Localization
                 return value;
             }
 
+            if (!string.Equals(culture, DefaultCulture, StringComparison.OrdinalIgnoreCase))
+            {
+                var fallback = GetLocalizationDictionary(DefaultCulture);
+                if (fallback.TryGetValue(phrase, out var fallbackValue))
+                {
+                    return fallbackValue;
+                }
+            }
+
             return phrase;
         }
 
@@ -458,26 +495,17 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(culture);
 
-            const string Prefix = "Core";
-
-            return _dictionaries.GetOrAdd(
+            return _cultureOnlyDictionaries.GetOrAdd(
                 culture,
-                static (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                static (key, localizationManager) =>
+                {
+                    var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var namespaceName = localizationManager.GetType().Namespace + ".Core";
+                    localizationManager.CopyInto(dictionary, namespaceName + "." + GetResourceFilename(key)).GetAwaiter().GetResult();
+
+                    return dictionary;
+                },
                 this);
-        }
-
-        private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(culture);
-
-            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            var namespaceName = GetType().Namespace + "." + prefix;
-
-            await CopyInto(dictionary, namespaceName + "." + baseFilename).ConfigureAwait(false);
-            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture)).ConfigureAwait(false);
-
-            return dictionary;
         }
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
