@@ -117,8 +117,8 @@
     "Undefined": "未定義",
     "Forced": "強制",
     "Default": "初始",
-    "TaskOptimizeDatabaseDescription": "壓縮數據庫並釋放剩餘空間。喺掃描媒體櫃或者做咗一啲會修改數據庫嘅操作之後行呢個任務，或者可以提升效能。",
-    "TaskOptimizeDatabase": "最佳化數據庫",
+    "TaskOptimizeDatabaseDescription": "壓縮數據櫃並釋放剩餘空間。喺掃描媒體櫃或者做咗一啲會修改數據櫃嘅操作之後行呢個任務，或者可以提升效能。",
+    "TaskOptimizeDatabase": "最佳化數據櫃",
     "TaskCleanActivityLogDescription": "刪除超過設定日期嘅活動記錄。",
     "TaskKeyframeExtractorDescription": "提取關鍵影格（Keyframe）嚟建立更準確嘅 HLS 播放列表。呢個任務可能要行好耐。",
     "TaskKeyframeExtractor": "關鍵影格提取器",
@@ -137,5 +137,5 @@
     "TaskMoveTrickplayImagesDescription": "根據媒體櫃設定，將現有嘅 Trickplay（快轉預覽）檔案搬去對應位置。",
     "TaskMoveTrickplayImages": "搬移快轉預覽圖嘅位置",
     "CleanupUserDataTask": "清理使用者資料嘅任務",
-    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體使用者數據（包括觀看狀態、心水狀態等）。"
+    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體用家數據（包括觀看狀態、心水狀態等）。"
 }
