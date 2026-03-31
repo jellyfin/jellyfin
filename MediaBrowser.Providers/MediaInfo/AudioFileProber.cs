@@ -266,27 +266,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         }
                     }
 
-                    // Read narrator from format-specific custom tag (TXXX:NARRATOR, Vorbis NARRATOR, Apple NARRATOR, etc.)
-                    TryGetSanitizedAdditionalFields(track, "NARRATOR", out var narratorTag);
-                    var hasNarrator = !string.IsNullOrWhiteSpace(narratorTag);
-                    if (hasNarrator)
-                    {
-                        foreach (var narrator in narratorTag!.Split(InternalValueSeparator))
-                        {
-                            if (!string.IsNullOrWhiteSpace(narrator))
-                            {
-                                PeopleHelper.AddPerson(people, new PersonInfo
-                                {
-                                    Name = narrator.Trim(),
-                                    Type = PersonKind.Narrator
-                                });
-                            }
-                        }
-                    }
-
-                    // Fall back to Composer tag for narrator if no NARRATOR tag is present
-                    // (Audiobookshelf and other tools use Composer for narrator)
-                    if (!hasNarrator && !string.IsNullOrWhiteSpace(trackComposer))
+                    // Composer tag = Narrator (Audiobookshelf and other tools use Composer for narrator)
+                    if (!string.IsNullOrWhiteSpace(trackComposer))
                     {
                         foreach (var composer in trackComposer.Split(InternalValueSeparator))
                         {
@@ -296,23 +277,6 @@ namespace MediaBrowser.Providers.MediaInfo
                                 {
                                     Name = composer.Trim(),
                                     Type = PersonKind.Narrator
-                                });
-                            }
-                        }
-                    }
-
-                    // Read illustrator from format-specific custom tag
-                    TryGetSanitizedAdditionalFields(track, "ILLUSTRATOR", out var illustratorTag);
-                    if (!string.IsNullOrWhiteSpace(illustratorTag))
-                    {
-                        foreach (var illustrator in illustratorTag!.Split(InternalValueSeparator))
-                        {
-                            if (!string.IsNullOrWhiteSpace(illustrator))
-                            {
-                                PeopleHelper.AddPerson(people, new PersonInfo
-                                {
-                                    Name = illustrator.Trim(),
-                                    Type = PersonKind.Illustrator
                                 });
                             }
                         }
@@ -480,25 +444,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                // Publisher → Studio (Xiph uses LABEL, others use tag.Publisher)
+                // Publisher → Studio
                 var trackPublisher = GetSanitizedStringTag(track.Publisher, audio.Path);
-                if (string.IsNullOrWhiteSpace(trackPublisher))
-                {
-                    TryGetSanitizedAdditionalFields(track, "LABEL", out trackPublisher);
-                }
-
                 if (!string.IsNullOrWhiteSpace(trackPublisher)
                     && (options.ReplaceAllMetadata || audio.Studios is null || audio.Studios.Length == 0))
                 {
                     audio.SetStudios(new[] { trackPublisher! });
-                }
-
-                // Series name from SERIES tag (Calibre/Readarr convention)
-                TryGetSanitizedAdditionalFields(track, "SERIES", out var seriesTag);
-                if (!string.IsNullOrWhiteSpace(seriesTag)
-                    && (options.ReplaceAllMetadata || string.IsNullOrEmpty(audioBook.SeriesName)))
-                {
-                    audioBook.SeriesName = seriesTag;
                 }
             }
 
