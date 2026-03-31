@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
@@ -485,7 +486,7 @@ public static class StreamingHelpers
                     request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     break;
                 case 15:
-                    if (videoRequest is not null && EncodingHelper.LevelValidationRegexStr().IsMatch(val))
+                    if (videoRequest is not null && Regex.IsMatch(val, EncodingHelper.LevelValidationRegexStr))
                     {
                         videoRequest.Level = val;
                     }
