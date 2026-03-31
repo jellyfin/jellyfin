@@ -422,14 +422,18 @@ public static class StreamingHelpers
                     request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     break;
                 case 4:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.VideoCodec = val;
                     }
 
                     break;
                 case 5:
-                    request.AudioCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.AudioCodec = val;
+                    }
+
                     break;
                 case 6:
                     if (videoRequest is not null)
@@ -504,7 +508,7 @@ public static class StreamingHelpers
 
                     break;
                 case 18:
-                    if (videoRequest is not null)
+                    if (videoRequest is not null && IsValidCodecName(val))
                     {
                         videoRequest.Profile = val;
                     }
@@ -563,7 +567,11 @@ public static class StreamingHelpers
 
                     break;
                 case 30:
-                    request.SubtitleCodec = val;
+                    if (IsValidCodecName(val))
+                    {
+                        request.SubtitleCodec = val;
+                    }
+
                     break;
                 case 31:
                     if (videoRequest is not null)
@@ -584,6 +592,11 @@ public static class StreamingHelpers
                     break;
             }
         }
+    }
+
+    private static bool IsValidCodecName(string val)
+    {
+        return EncodingHelper.ContainerValidationRegex().IsMatch(val);
     }
 
     /// <summary>
