@@ -94,11 +94,6 @@ public class AcceptLanguageMiddleware
             TryAddCulture(lang, chain, seen);
         }
 
-        if (chain.Count == 0)
-        {
-            return null;
-        }
-
         // Append server default culture if not already present
         var serverCulture = configurationManager.Configuration.UICulture;
         if (!string.IsNullOrEmpty(serverCulture))
