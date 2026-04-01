@@ -226,10 +226,11 @@ public class PluginsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!string.IsNullOrEmpty(plugin.Manifest.ImagePath))
+        string? imagePath = plugin.Manifest.ImagePath;
+        if (!string.IsNullOrWhiteSpace(imagePath))
         {
-            var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath);
-            if (!System.IO.File.Exists(imagePath))
+            imagePath = Path.GetFullPath(imagePath, plugin.Path);
+            if (imagePath.StartsWith(plugin.Path, StringComparison.OrdinalIgnoreCase) is false || System.IO.File.Exists(imagePath) is false)
             {
                 return NotFound();
             }

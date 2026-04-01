@@ -60,11 +60,8 @@ public class HlsSegmentController : BaseJellyfinApiController
     public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
     {
         // TODO: Deprecate with new iOS app
-        var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodePath = _serverConfigurationManager.GetTranscodePath();
-        file = Path.GetFullPath(Path.Combine(transcodePath, file));
-        var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture))
+        var file = ValidateTranscodePath(string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan())));
+        if (file is null)
         {
             return BadRequest("Invalid segment.");
         }
@@ -86,12 +83,9 @@ public class HlsSegmentController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
     public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
     {
-        var file = string.Concat(playlistId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodePath = _serverConfigurationManager.GetTranscodePath();
-        file = Path.GetFullPath(Path.Combine(transcodePath, file));
-        var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture)
-            || Path.GetExtension(file.AsSpan()).Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
+        var file = ValidateTranscodePath(string.Concat(playlistId, Path.GetExtension(Request.Path.Value.AsSpan())));
+        if (file is null
+            || !Path.GetExtension(file.AsSpan()).Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest("Invalid segment.");
         }
@@ -140,18 +134,13 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromRoute, Required] string segmentId,
         [FromRoute, Required] string segmentContainer)
     {
-        var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
-
-        file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));
-        var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodeFolderPath, StringComparison.InvariantCulture))
+        var file = ValidateTranscodePath(string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan())));
+        if (file is null)
         {
             return BadRequest("Invalid segment.");
         }
 
-        var normalizedPlaylistId = playlistId;
-
+        var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
         var filePaths = _fileSystem.GetFilePaths(transcodeFolderPath);
         // Add . to start of segment container for future use.
         segmentContainer = segmentContainer.Insert(0, ".");
@@ -161,7 +150,7 @@ public class HlsSegmentController : BaseJellyfinApiController
             var pathExtension = Path.GetExtension(path);
             if ((string.Equals(pathExtension, segmentContainer, StringComparison.OrdinalIgnoreCase)
                  || string.Equals(pathExtension, ".m3u8", StringComparison.OrdinalIgnoreCase))
-                && path.Contains(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase))
+                && path.Contains(playlistId, StringComparison.OrdinalIgnoreCase))
             {
                 playlistPath = path;
                 break;
@@ -171,6 +160,19 @@ public class HlsSegmentController : BaseJellyfinApiController
         return playlistPath is null
             ? NotFound("Hls segment not found.")
             : GetFileResult(file, playlistPath);
+    }
+
+    private string? ValidateTranscodePath(string filename)
+    {
+        var transcodePath = _serverConfigurationManager.GetTranscodePath();
+        var file = Path.GetFullPath(filename, transcodePath);
+        var fileDir = Path.GetDirectoryName(file);
+        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return file;
     }
 
     private ActionResult GetFileResult(string path, string playlistPath)
