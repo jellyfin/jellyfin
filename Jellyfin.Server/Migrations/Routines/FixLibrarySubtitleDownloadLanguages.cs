@@ -49,6 +49,11 @@ internal class FixLibrarySubtitleDownloadLanguages : IAsyncMigrationRoutine
 
         foreach (var virtualFolder in virtualFolders)
         {
+            if (virtualFolder is null || virtualFolder.LibraryOptions is null)
+            {
+                continue;
+            }
+
             var options = virtualFolder.LibraryOptions;
             if (options.SubtitleDownloadLanguages is null || options.SubtitleDownloadLanguages.Length == 0)
             {
