@@ -244,6 +244,7 @@ public class ChapterManager : IChapterManager
           _logger.LogWarning("Attempted to save chapters for unsupported item type {Type}: {Name} ({Id})", item.GetType().Name, item.Name, item.Id);
           return;
        }
+       
         // Remove any chapters that are outside of the runtime of the item
         var validChapters = chapters.Where(c => c.StartPositionTicks < item.RunTimeTicks).ToList();
         _chapterRepository.SaveChapters(item.Id, validChapters);
