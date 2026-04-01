@@ -774,7 +774,11 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem? ResolvePath(FileSystemMetadata fileInfo, Folder? parent = null, IDirectoryService? directoryService = null, CollectionType? collectionType = null)
+        public BaseItem? ResolvePath(
+            FileSystemMetadata fileInfo,
+            Folder? parent = null,
+            IDirectoryService? directoryService = null,
+            CollectionType? collectionType = null)
             => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
 
         /// <inheritdoc />

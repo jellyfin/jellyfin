@@ -1859,7 +1859,13 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user, userItemData);
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields, (int Played, int Total)? precomputedCounts = null)
+        public override void FillUserDataDtoValues(
+            UserItemDataDto dto,
+            UserItemData userData,
+            BaseItemDto itemDto,
+            User user,
+            DtoOptions fields,
+            (int Played, int Total)? precomputedCounts = null)
         {
             if (!SupportsUserDataFromChildren)
             {

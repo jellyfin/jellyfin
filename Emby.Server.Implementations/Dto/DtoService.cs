@@ -153,7 +153,12 @@ namespace Emby.Server.Implementations.Dto
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
-        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User? user = null, BaseItem? owner = null, bool skipVisibilityCheck = false)
+        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(
+            IReadOnlyList<BaseItem> items,
+            DtoOptions options,
+            User? user = null,
+            BaseItem? owner = null,
+            bool skipVisibilityCheck = false)
         {
             var accessibleItems = skipVisibilityCheck || user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
@@ -201,7 +206,15 @@ namespace Emby.Server.Implementations.Dto
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
-                var dto = GetBaseItemDtoInternal(item, options, user, owner, userDataBatch?.GetValueOrDefault(item.Id), allCollectionFolders, childCountBatch, playedCountBatch);
+                var dto = GetBaseItemDtoInternal(
+                    item,
+                    options,
+                    user,
+                    owner,
+                    userDataBatch?.GetValueOrDefault(item.Id),
+                    allCollectionFolders,
+                    childCountBatch,
+                    playedCountBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -253,7 +266,15 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null, UserItemData? userData = null, List<Folder>? allCollectionFolders = null, Dictionary<Guid, int>? childCountBatch = null, Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+        private BaseItemDto GetBaseItemDtoInternal(
+            BaseItem item,
+            DtoOptions options,
+            User? user = null,
+            BaseItem? owner = null,
+            UserItemData? userData = null,
+            List<Folder>? allCollectionFolders = null,
+            Dictionary<Guid, int>? childCountBatch = null,
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -290,7 +311,14 @@ namespace Emby.Server.Implementations.Dto
 
             if (user is not null)
             {
-                AttachUserSpecificInfo(dto, item, user, options, userData, childCountBatch, playedCountBatch);
+                AttachUserSpecificInfo(
+                    dto,
+                    item,
+                    user,
+                    options,
+                    userData,
+                    childCountBatch,
+                    playedCountBatch);
             }
 
             if (item is IHasMediaSources
@@ -468,7 +496,14 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options, UserItemData? userData = null, Dictionary<Guid, int>? childCountBatch = null, Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+        private void AttachUserSpecificInfo(
+            BaseItemDto dto,
+            BaseItem item,
+            User user,
+            DtoOptions options,
+            UserItemData? userData = null,
+            Dictionary<Guid, int>? childCountBatch = null,
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
         {
             if (item.IsFolder)
             {
@@ -480,7 +515,8 @@ namespace Emby.Server.Implementations.Dto
                     {
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
-                        (int Played, int Total)? precomputed = playedCountBatch is not null && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
+                        (int Played, int Total)? precomputed = playedCountBatch is not null
+                            && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options, precomputed);
                     }
                     else

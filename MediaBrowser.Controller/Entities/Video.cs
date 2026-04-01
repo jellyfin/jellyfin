@@ -461,7 +461,11 @@ namespace MediaBrowser.Controller.Entities
             return hasChanges;
         }
 
-        private async Task RefreshMetadataForVersions(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        private async Task RefreshMetadataForVersions(
+            MetadataRefreshOptions options,
+            bool copyTitleMetadata,
+            string path,
+            CancellationToken cancellationToken)
         {
             // Ensure the alternate version exists with the correct type (e.g. Movie, not Video)
             // before refreshing. This must happen here rather than in RefreshMetadataForOwnedVideo
@@ -498,10 +502,19 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private new Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        private new Task RefreshMetadataForOwnedVideo(
+            MetadataRefreshOptions options,
+            bool copyTitleMetadata,
+            string path,
+            CancellationToken cancellationToken)
             => RefreshMetadataForOwnedVideo(options, copyTitleMetadata, path, GetType(), cancellationToken);
 
-        private async Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, Type itemType, CancellationToken cancellationToken)
+        private async Task RefreshMetadataForOwnedVideo(
+            MetadataRefreshOptions options,
+            bool copyTitleMetadata,
+            string path,
+            Type itemType,
+            CancellationToken cancellationToken)
         {
             var newOptions = new MetadataRefreshOptions(options)
             {
@@ -624,7 +637,9 @@ namespace MediaBrowser.Controller.Entities
                 (this, MediaSourceType.Default)
             };
 
-            list.AddRange(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
+            list.AddRange(
+                LibraryManager.GetLinkedAlternateVersions(this)
+                    .Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
             if (PrimaryVersionId.HasValue)
             {
