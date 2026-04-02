@@ -126,6 +126,11 @@ namespace Emby.Server.Implementations.Library
                 return true;
             }
 
+            if (stream.IsVobSubSubtitleStream)
+            {
+                return true;
+            }
+
             return false;
         }
 

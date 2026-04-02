@@ -572,7 +572,9 @@ namespace MediaBrowser.Model.Dlna
                 {
                     foreach (var profile in subtitleProfiles)
                     {
-                        if (profile.Method == SubtitleDeliveryMethod.External && string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase))
+                        if (profile.Method == SubtitleDeliveryMethod.External
+                            && (string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase)
+                                || (string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase) && stream.IsVobSubSubtitleStream)))
                         {
                             return stream.Index;
                         }
@@ -1560,10 +1562,15 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if ((profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)) ||
+                bool isVobSubMksProfile = string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase)
+                    && subtitleStream.IsVobSubSubtitleStream;
+
+                if ((profile.Method == SubtitleDeliveryMethod.External
+                        && (isVobSubMksProfile || subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))) ||
                     (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
-                    bool requiresConversion = !string.Equals(subtitleStream.Codec, profile.Format, StringComparison.OrdinalIgnoreCase);
+                    bool requiresConversion = !isVobSubMksProfile
+                        && !string.Equals(subtitleStream.Codec, profile.Format, StringComparison.OrdinalIgnoreCase);
 
                     if (!requiresConversion)
                     {
