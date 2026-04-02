@@ -40,6 +40,11 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
+    /// <summary>
+    /// Maximum allowed length for virtual folder names.
+    /// </summary>
+    private const int MaxNameLength = 200;
+
     public LibraryStructureController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
@@ -81,6 +86,11 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
         [FromQuery] bool refreshLibrary = false)
     {
+        if (!string.IsNullOrEmpty(name) && name.Length > MaxNameLength)
+        {
+            return BadRequest($"Name must not exceed {MaxNameLength} characters.");
+        }
+
         var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
         if (paths is not null && paths.Length > 0)
@@ -143,10 +153,24 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(newName));
         }
 
+        if (name.Length > MaxNameLength || newName.Length > MaxNameLength)
+        {
+            return BadRequest($"Name must not exceed {MaxNameLength} characters.");
+        }
+
         var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
-        var currentPath = Path.Combine(rootFolderPath, name);
-        var newPath = Path.Combine(rootFolderPath, newName);
+        // Sanitize names to prevent path traversal.
+        // Validate that the resolved paths stay within the root folder.
+        var currentPath = Path.GetFullPath(Path.Combine(rootFolderPath, name));
+        var newPath = Path.GetFullPath(Path.Combine(rootFolderPath, newName));
+        var normalizedRoot = Path.GetFullPath(rootFolderPath);
+
+        if (!currentPath.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            || !newPath.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Invalid folder name.");
+        }
 
         if (!Directory.Exists(currentPath))
         {

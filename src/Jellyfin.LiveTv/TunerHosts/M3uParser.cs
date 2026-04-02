@@ -45,12 +45,74 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
         }
 
+        /// <summary>
+        /// Determines whether the specified URL uses an allowed streaming protocol.
+        /// Only http, https, udp, rtp, rtsp, and rtmp are permitted.
+        /// </summary>
+        private static bool IsAllowedStreamingUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return false;
+            }
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("udp", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("rtp", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("rtsp", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("rtmp", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified URL uses an allowed remote protocol (http or https only).
+        /// </summary>
+        private static bool IsAllowedRemoteUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return false;
+            }
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
+                    || uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
         public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(info);
 
+            if (string.IsNullOrWhiteSpace(info.Url))
+            {
+                throw new ArgumentException("Tuner host URL must not be empty.", nameof(info));
+            }
+
+            // Block file:// and other dangerous protocols for tuner host source URLs.
+            // Only allow http/https for remote sources and validated local file paths.
+            if (info.Url.StartsWith("file://", StringComparison.OrdinalIgnoreCase)
+                || info.Url.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("file:// and UNC paths are not allowed for tuner host URLs.", nameof(info));
+            }
+
             if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
+                // For local file paths, validate the file actually exists and has an expected extension
+                if (!File.Exists(info.Url))
+                {
+                    throw new FileNotFoundException("The specified M3U file was not found.", info.Url);
+                }
+
                 return AsyncFile.OpenRead(info.Url);
             }
 
@@ -93,6 +155,16 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
+                    // Validate that channel URLs use allowed streaming protocols only.
+                    // This prevents local file access (file://, absolute paths, UNC paths)
+                    // via malicious M3U playlists.
+                    if (!IsAllowedStreamingUrl(trimmedLine))
+                    {
+                        _logger.LogWarning("Skipping channel with disallowed URL: {Url}", trimmedLine);
+                        extInf = string.Empty;
+                        continue;
+                    }
+
                     var channel = GetChannelInfo(extInf, tunerHostId, trimmedLine);
                     channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -118,11 +190,11 @@ namespace Jellyfin.LiveTv.TunerHosts
             var attributes = ParseExtInf(extInf, out string remaining);
             extInf = remaining;
 
-            if (attributes.TryGetValue("tvg-logo", out string tvgLogo))
+            if (attributes.TryGetValue("tvg-logo", out string tvgLogo) && IsAllowedRemoteUrl(tvgLogo))
             {
                 channel.ImageUrl = tvgLogo;
             }
-            else if (attributes.TryGetValue("logo", out string logo))
+            else if (attributes.TryGetValue("logo", out string logo) && IsAllowedRemoteUrl(logo))
             {
                 channel.ImageUrl = logo;
             }

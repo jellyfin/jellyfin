@@ -79,6 +79,13 @@ namespace Jellyfin.LiveTv.Listings
                 Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
             }
 
+            // Block file:// and UNC paths to prevent local file access via crafted listing sources
+            if (info.Path.StartsWith("file://", StringComparison.OrdinalIgnoreCase)
+                || info.Path.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("file:// and UNC paths are not allowed for listing provider paths.");
+            }
+
             if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
@@ -93,6 +100,12 @@ namespace Jellyfin.LiveTv.Listings
             }
             else
             {
+                // For local file paths, verify the file exists before reading
+                if (!File.Exists(info.Path))
+                {
+                    throw new FileNotFoundException("The specified XmlTv file was not found.", info.Path);
+                }
+
                 var stream = AsyncFile.OpenRead(info.Path);
                 await using (stream.ConfigureAwait(false))
                 {
@@ -227,7 +240,14 @@ namespace Jellyfin.LiveTv.Listings
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            // Assume all urls are valid. check files for existence
+            // Block file:// and UNC paths
+            if (info.Path.StartsWith("file://", StringComparison.OrdinalIgnoreCase)
+                || info.Path.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("file:// and UNC paths are not allowed for listing provider paths.");
+            }
+
+            // Assume all http urls are valid. check files for existence
             if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !File.Exists(info.Path))
             {
                 throw new FileNotFoundException("Could not find the XmlTv file specified:", info.Path);

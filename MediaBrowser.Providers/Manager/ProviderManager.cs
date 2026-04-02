@@ -168,6 +168,15 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public async Task SaveImage(BaseItem item, string url, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
+            // Validate URL scheme to prevent SSRF attacks.
+            // Only allow http and https URLs for remote image downloads.
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var validatedUri)
+                || (!string.Equals(validatedUri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(validatedUri.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("Only HTTP and HTTPS URLs are allowed for remote image downloads.", nameof(url));
+            }
+
             using (await _imageSaveLock.LockAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 if (_memoryCache.TryGetValue(url, out (string ContentType, byte[] ImageContents)? cachedValue)
@@ -189,7 +198,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                using var response = await httpClient.GetAsync(validatedUri, cancellationToken).ConfigureAwait(false);
 
                 response.EnsureSuccessStatusCode();
 
