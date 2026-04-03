@@ -6,14 +6,12 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-  actions: read
-
 jobs:
   publish-openapi:
     name: OpenAPI - Publish Artifact
     uses: ./.github/workflows/openapi-generate.yml
+    permissions:
+      contents: read
     with:
       ref: ${{ github.sha }}
       repository: ${{ github.repository }}
