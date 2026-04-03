@@ -6,7 +6,9 @@ on:
     tags:
       - 'v*'
 
-permissions: {}
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   publish-openapi:

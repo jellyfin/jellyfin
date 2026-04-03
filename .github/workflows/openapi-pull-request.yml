@@ -63,10 +63,22 @@ jobs:
         name: openapi-base
         path: openapi-base
     - name: Detect Changes
-      uses: jellyfin/openapi-diff-action@9274f6bda9d01ab091942a4a8334baa53692e8a4 # v1.0.0
+      runs-on: ubuntu-latest
       id: openapi-diff
       with:
         old-spec: openapi-base/openapi.json
         new-spec: openapi-head/openapi.json
-        markdown: openapi-changelog.md
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        sed 's:allOf:oneOf:g' openapi-head/openapi.json
+        sed 's:allOf:oneOf:g' openapi-base/openapi.json
+
+        mkdir -p /tmp/openapi-report
+        mv openapi-head/openapi.json /tmp/openapi-report/head.json
+        mv openapi-base/openapi.json /tmp/openapi-report/base.json
+
+        docker run -v /tmp/openapi-report:/data openapitools/openapi-diff:2.1.6 /data/base.json /data/head.json --state -l ERROR --markdown /data/openapi-report.md
+    - name: Upload Artifact
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      with:
+        name: openapi-report
+        path: /tmp/openapi-report/openapi-report.md
