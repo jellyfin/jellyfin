@@ -239,7 +239,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths, Video video, string extension)
         {
-            if (!_allowedSubtitleFormats.Contains("." + extension, StringComparison.OrdinalIgnoreCase))
+            if (!_allowedSubtitleFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Invalid subtitle format: {extension}");
             }
