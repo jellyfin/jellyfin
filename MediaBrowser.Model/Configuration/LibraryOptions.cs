@@ -65,6 +65,13 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticSeriesGrouping { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether series with matching provider IDs
+        /// should be merged across different libraries, combining their seasons and episodes
+        /// into a single unified view.
+        /// </summary>
+        public bool EnableCrossLibrarySeriesMerging { get; set; }
+
         public bool EnableEmbeddedTitles { get; set; }
 
         public bool EnableEmbeddedExtrasTitles { get; set; }
