@@ -63,11 +63,7 @@ jobs:
         name: openapi-base
         path: openapi-base
     - name: Detect Changes
-      runs-on: ubuntu-latest
       id: openapi-diff
-      with:
-        old-spec: openapi-base/openapi.json
-        new-spec: openapi-head/openapi.json
       run: |
         sed 's:allOf:oneOf:g' openapi-head/openapi.json
         sed 's:allOf:oneOf:g' openapi-base/openapi.json
