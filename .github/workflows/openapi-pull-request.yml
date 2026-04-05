@@ -65,8 +65,8 @@ jobs:
     - name: Detect Changes
       id: openapi-diff
       run: |
-        sed 's:allOf:oneOf:g' openapi-head/openapi.json
-        sed 's:allOf:oneOf:g' openapi-base/openapi.json
+        sed -i 's:allOf:oneOf:g' openapi-head/openapi.json
+        sed -i 's:allOf:oneOf:g' openapi-base/openapi.json
 
         mkdir -p /tmp/openapi-report
         mv openapi-head/openapi.json /tmp/openapi-report/head.json
