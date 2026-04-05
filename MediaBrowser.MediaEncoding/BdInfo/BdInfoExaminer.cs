@@ -33,6 +33,17 @@ public class BdInfoExaminer : IBlurayExaminer
     /// <returns>BlurayDiscInfo.</returns>
     public BlurayDiscInfo GetDiscInfo(string path)
     {
+        return GetDiscInfoInternal(path, null);
+    }
+
+    /// <inheritdoc />
+    public BlurayDiscInfo GetDiscInfo(string path, string playlistName)
+    {
+        return GetDiscInfoInternal(path, playlistName);
+    }
+
+    private BlurayDiscInfo GetDiscInfoInternal(string path, string? playlistName)
+    {
         if (string.IsNullOrWhiteSpace(path))
         {
             throw new ArgumentNullException(nameof(path));
@@ -42,8 +53,18 @@ public class BdInfoExaminer : IBlurayExaminer
 
         bdrom.Scan();
 
-        // Get the longest playlist
-        var playlist = bdrom.PlaylistFiles.Values.OrderByDescending(p => p.TotalLength).FirstOrDefault(p => p.IsValid);
+        TSPlaylistFile? playlist;
+        if (playlistName is not null)
+        {
+            // Look up the specific playlist by name
+            playlist = bdrom.PlaylistFiles.Values.FirstOrDefault(
+                p => p.IsValid && string.Equals(p.Name, playlistName, StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            // Get the longest playlist
+            playlist = bdrom.PlaylistFiles.Values.OrderByDescending(p => p.TotalLength).FirstOrDefault(p => p.IsValid);
+        }
 
         var outputStream = new BlurayDiscInfo
         {

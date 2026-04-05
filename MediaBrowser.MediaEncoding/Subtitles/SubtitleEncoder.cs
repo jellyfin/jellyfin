@@ -619,9 +619,21 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
+
+            var extraInputArgs = string.Empty;
+            if (mediaSource.VideoType == VideoType.BluRay)
+            {
+                var (_, playlistNumber) = EncodingHelper.ParseBlurayPath(mediaSource.Path);
+                if (playlistNumber.HasValue)
+                {
+                    extraInputArgs = "-playlist " + playlistNumber.Value + " ";
+                }
+            }
+
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0}",
+                "{0}-i {1}",
+                extraInputArgs,
                 inputPath);
 
             foreach (var subtitleStream in subtitleStreams)

@@ -1231,7 +1231,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            if (state.MediaSource.VideoType == VideoType.BluRay)
+            {
+                var (discRoot, playlistNumber) = ParseBlurayPath(state.MediaPath);
+
+                if (playlistNumber.HasValue)
+                {
+                    arg.Append(" -playlist ")
+                        .Append(playlistNumber.Value);
+                }
+
+                arg.Append(" -i bluray:\"")
+                    .Append(discRoot.Replace("\"", "\\\"", StringComparison.Ordinal))
+                    .Append("\" ");
+            }
+            else if (state.MediaSource.VideoType == VideoType.Dvd)
             {
                 var concatFilePath = Path.Join(_configurationManager.CommonApplicationPaths.CachePath, "concat", state.MediaSource.Id + ".concat");
                 if (!File.Exists(concatFilePath))
@@ -1382,6 +1396,42 @@ namespace MediaBrowser.Controller.MediaEncoding
             return rangeType is VideoRangeType.HDR10Plus
                        or VideoRangeType.DOVIWithHDR10Plus
                        or VideoRangeType.DOVIWithELHDR10Plus;
+        }
+
+        /// <summary>
+        /// Parses a Blu-ray path into the disc root directory and an optional playlist number.
+        /// Handles BDMV directories, disc root directories, and .mpls playlist file paths.
+        /// </summary>
+        /// <param name="path">A path to a disc root, BDMV directory, or .mpls file.</param>
+        /// <returns>The disc root directory and an optional playlist number.</returns>
+        public static (string DiscRoot, int? PlaylistNumber) ParseBlurayPath(string path)
+        {
+            if (path.EndsWith(".mpls", StringComparison.OrdinalIgnoreCase))
+            {
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                int? playlistNumber = int.TryParse(fileName, NumberStyles.None, CultureInfo.InvariantCulture, out var num) ? num : null;
+
+                var playlistDir = Path.GetDirectoryName(path);
+                var bdmvDir = playlistDir is not null ? Path.GetDirectoryName(playlistDir) : null;
+                var discRoot = bdmvDir is not null ? Path.GetDirectoryName(bdmvDir) : null;
+
+                if (discRoot is not null)
+                {
+                    return (discRoot, playlistNumber);
+                }
+            }
+
+            var trimmedPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (trimmedPath.EndsWith("BDMV", StringComparison.OrdinalIgnoreCase))
+            {
+                var discRoot = Path.GetDirectoryName(trimmedPath);
+                if (discRoot is not null)
+                {
+                    return (discRoot, null);
+                }
+            }
+
+            return (path, null);
         }
 
         /// <summary>

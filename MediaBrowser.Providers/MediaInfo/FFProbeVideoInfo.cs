@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -124,23 +125,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 else if (item.VideoType == VideoType.BluRay)
                 {
-                    // Get BD disc information
-                    blurayDiscInfo = GetBDInfo(item.Path);
+                    // Use bluray: protocol via ffprobe — libbluray handles playlist
+                    // selection and stream demuxing natively
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
-                    // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
-                    {
-                        _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
-
-                    // Fetch metadata of first .m2ts file
-                    mediaInfoResult = await GetMediaInfo(
-                        new Video
-                        {
-                            Path = blurayDiscInfo.Files[0]
-                        },
-                        cancellationToken).ConfigureAwait(false);
+                    // BDInfo is still needed for chapter marks, which libbluray
+                    // does not expose through ffprobe.
+                    var (discRoot, _) = EncodingHelper.ParseBlurayPath(item.Path);
+                    var playlistName = item.Path.EndsWith(".mpls", StringComparison.OrdinalIgnoreCase)
+                        ? Path.GetFileName(item.Path)
+                        : null;
+                    blurayDiscInfo = GetBDInfo(discRoot, playlistName);
                 }
                 else
                 {
@@ -318,28 +313,14 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        /// <summary>
+        /// Extracts chapter information from BDInfo. Stream metadata and runtime
+        /// are handled by ffprobe via the bluray: protocol, so only chapters
+        /// (which libbluray does not expose through ffprobe) are taken from BDInfo.
+        /// </summary>
         private void FetchBdInfo(Video video, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
-            var ffmpegVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-            var externalStreams = mediaStreams.Where(s => s.IsExternal).ToList();
-
-            // Fill video properties from the BDInfo result
-            mediaStreams.Clear();
-
-            // Rebuild the list with external streams first
-            int index = 0;
-            foreach (var stream in externalStreams.Concat(blurayInfo.MediaStreams))
-            {
-                stream.Index = index++;
-                mediaStreams.Add(stream);
-            }
-
-            if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
-            {
-                video.RunTimeTicks = blurayInfo.RunTimeTicks;
-            }
-
-            if (blurayInfo.Chapters is not null)
+            if (blurayInfo.Chapters is not null && blurayInfo.Chapters.Length > 0)
             {
                 double[] brChapter = blurayInfo.Chapters;
                 chapters = new ChapterInfo[brChapter.Length];
@@ -351,36 +332,23 @@ namespace MediaBrowser.Providers.MediaInfo
                     };
                 }
             }
-
-            var blurayVideoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-
-            // Use the ffprobe values if these are empty
-            if (blurayVideoStream is not null && ffmpegVideoStream is not null)
-            {
-                // Always use ffmpeg's detected codec since that is what the rest of the codebase expects.
-                blurayVideoStream.Codec = ffmpegVideoStream.Codec;
-                blurayVideoStream.BitRate = blurayVideoStream.BitRate.GetValueOrDefault() == 0 ? ffmpegVideoStream.BitRate : blurayVideoStream.BitRate;
-                blurayVideoStream.Width = blurayVideoStream.Width.GetValueOrDefault() == 0 ? ffmpegVideoStream.Width : blurayVideoStream.Width;
-                blurayVideoStream.Height = blurayVideoStream.Height.GetValueOrDefault() == 0 ? ffmpegVideoStream.Height : blurayVideoStream.Height;
-                blurayVideoStream.ColorRange = ffmpegVideoStream.ColorRange;
-                blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
-                blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
-                blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
-            }
         }
 
         /// <summary>
-        /// Gets information about the longest playlist on a bdrom.
+        /// Gets Blu-ray disc info, optionally for a specific playlist.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>VideoStream.</returns>
-        private BlurayDiscInfo? GetBDInfo(string path)
+        /// <param name="path">The disc root path.</param>
+        /// <param name="playlistName">Optional playlist filename (e.g. "00202.mpls"). If null, uses the longest playlist.</param>
+        /// <returns>BlurayDiscInfo.</returns>
+        private BlurayDiscInfo? GetBDInfo(string path, string? playlistName = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
 
             try
             {
-                return _blurayExaminer.GetDiscInfo(path);
+                return playlistName is not null
+                    ? _blurayExaminer.GetDiscInfo(path, playlistName)
+                    : _blurayExaminer.GetDiscInfo(path);
             }
             catch (Exception ex)
             {

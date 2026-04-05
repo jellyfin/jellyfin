@@ -464,6 +464,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -rtsp_transport tcp+udp -rtsp_flags prefer_tcp";
             }
 
+            if (request.MediaSource.VideoType == VideoType.BluRay)
+            {
+                var (_, playlistNumber) = EncodingHelper.ParseBlurayPath(request.MediaSource.Path);
+                if (playlistNumber.HasValue)
+                {
+                    extraArgs += " -playlist " + playlistNumber.Value;
+                }
+            }
+
             return extraArgs;
         }
 
@@ -476,13 +485,41 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
-            var prefix = "file";
             if (mediaSource.IsoType == IsoType.BluRay)
             {
-                prefix = "bluray";
+                // ISOs are always handled via the bluray protocol directly
+                return EncodingUtils.GetInputArgument("bluray", new[] { inputFile }, mediaSource.Protocol);
             }
 
-            return EncodingUtils.GetInputArgument(prefix, new[] { inputFile }, mediaSource.Protocol);
+            if (mediaSource.VideoType == VideoType.BluRay && IsBlurayPath(inputFile))
+            {
+                var (discRoot, _) = EncodingHelper.ParseBlurayPath(inputFile);
+                return EncodingUtils.GetInputArgument("bluray", new[] { discRoot }, mediaSource.Protocol);
+            }
+
+            return EncodingUtils.GetInputArgument("file", new[] { inputFile }, mediaSource.Protocol);
+        }
+
+        /// <summary>
+        /// Checks whether the given path points to a Blu-ray disc structure
+        /// rather than a sidecar file (concat, mks, etc.).
+        /// </summary>
+        private static bool IsBlurayPath(string path)
+        {
+            if (path.EndsWith(".mpls", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (path.EndsWith("BDMV", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith("BDMV/", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith("BDMV\\", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Check if this looks like a disc root (has a BDMV subdirectory)
+            return Directory.Exists(Path.Combine(path, "BDMV"));
         }
 
         /// <inheritdoc />
@@ -625,11 +662,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
+            var extraInputArgs = string.Empty;
+            if (mediaSource.VideoType == VideoType.BluRay)
+            {
+                var (_, playlistNumber) = EncodingHelper.ParseBlurayPath(inputFile);
+                if (playlistNumber.HasValue)
+                {
+                    extraInputArgs = "-playlist " + playlistNumber.Value + " ";
+                }
+            }
+
             if (!isAudio)
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(extraInputArgs, inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, targetFormat, false, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -641,7 +688,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(extraInputArgs, inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
         }
 
         private string GetImageResolutionParameter()
@@ -668,6 +715,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         private async Task<string> ExtractImageInternal(
+            string extraInputArgs,
             string inputPath,
             string container,
             MediaStream videoStream,
@@ -745,7 +793,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0}{1} -threads {2} -v quiet -vframes 1 -vf {3}{4}{5} -f image2 \"{6}\"",
+                "{0}-i {1}{2} -threads {3} -v quiet -vframes 1 -vf {4}{5}{6} -f image2 \"{7}\"",
+                extraInputArgs,
                 inputPath,
                 mapArg,
                 _threads,
@@ -1277,7 +1326,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return mediaSource.VideoType switch
             {
                 VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
-                VideoType.BluRay => GetInputArgument(GetPrimaryPlaylistM2tsFiles(path), mediaSource),
+                VideoType.BluRay => GetInputArgument(path, mediaSource),
                 _ => GetInputArgument(path, mediaSource)
             };
         }
