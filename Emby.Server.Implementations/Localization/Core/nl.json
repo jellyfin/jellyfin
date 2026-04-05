@@ -1,5 +1,5 @@
 {
-    "Albums": "Albums",
+    "Albums": "",
     "AppDeviceValues": "App: {0}, Apparaat: {1}",
     "Application": "Applicatie",
     "Artists": "Artiesten",
@@ -14,7 +14,7 @@
     "FailedLoginAttemptWithUserName": "Mislukte aanmeldpoging van {0}",
     "Favorites": "Favorieten",
     "Folders": "Mappen",
-    "Genres": "Genres",
+    "Genres": "",
     "HeaderAlbumArtists": "Albumartiesten",
     "HeaderContinueWatching": "Verder kijken",
     "HeaderFavoriteAlbums": "Favoriete albums",
