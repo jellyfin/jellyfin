@@ -1,11 +1,24 @@
 using System;
+using System.Globalization;
 using Jellyfin.Api.Controllers;
+using MediaBrowser.Controller.MediaEncoding;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
 {
     public class DynamicHlsControllerTests
     {
+        private readonly Mock<IMediaEncoder> _mediaEncoder;
+
+        public DynamicHlsControllerTests()
+        {
+            _mediaEncoder = new Mock<IMediaEncoder>();
+            _mediaEncoder
+                .Setup(e => e.GetTimeParameter(It.IsAny<long>()))
+                .Returns((long ticks) => TimeSpan.FromTicks(ticks).ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture));
+        }
+
         [Theory]
         [MemberData(nameof(GetSegmentLengths_Success_TestData))]
         public void GetSegmentLengths_Success(long runtimeTicks, int segmentlength, double[] expected)
@@ -40,6 +53,25 @@ namespace Jellyfin.Api.Tests.Controllers
                 new double[] { 6, 3.3333333 });
 
             return data;
+        }
+
+        [Theory]
+        [InlineData(600000000L, true, "libx264", "copy", " -ss 00:01:00.000 -output_ts_offset 00:01:00.000")] // video transcode + audio copy → trim
+        [InlineData(600000000L, true, "libx264", "aac", "")] // both transcode → no trim
+        [InlineData(600000000L, true, "copy", "copy", "")] // both copy → no trim
+        [InlineData(600000000L, true, "copy", "aac", "")] // video copy + audio transcode → no trim
+        [InlineData(0L, true, "libx264", "copy", "")] // zero start time → no trim
+        [InlineData(600000000L, false, "libx264", "copy", "")] // audio-only → no trim
+        public void GetOutputSeekParam_ReturnsExpected(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, string expected)
+        {
+            var result = DynamicHlsController.GetOutputSeekParam(
+                startTimeTicks,
+                isOutputVideo,
+                videoCodec,
+                audioCodec,
+                _mediaEncoder.Object);
+
+            Assert.Equal(expected, result);
         }
     }
 }

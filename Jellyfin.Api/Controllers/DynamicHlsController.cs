@@ -1570,6 +1570,33 @@ public class DynamicHlsController : BaseJellyfinApiController
         return segments;
     }
 
+    /// <summary>
+    /// Gets the output-level seek parameter for ffmpeg.
+    /// When video is transcoded but audio is copied, -noaccurate_seek causes both
+    /// streams to start from the nearest keyframe, which may be seconds before the
+    /// target time. This produces segments that don't match the HLS playlist timestamps.
+    /// Adding an output-level -ss trims both streams to the exact target time.
+    /// The -output_ts_offset shifts timestamps back to the original position so that
+    /// segment timestamps remain consistent with -copyts.
+    /// </summary>
+    /// <param name="startTimeTicks">The requested start time in ticks.</param>
+    /// <param name="isOutputVideo">Whether the output includes video.</param>
+    /// <param name="videoCodec">The output video codec.</param>
+    /// <param name="audioCodec">The output audio codec.</param>
+    /// <param name="mediaEncoder">The media encoder for time formatting.</param>
+    /// <returns>The output seek parameter string, or empty if not needed.</returns>
+    internal static string GetOutputSeekParam(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, IMediaEncoder mediaEncoder)
+    {
+        if (isOutputVideo && startTimeTicks > 0
+            && !EncodingHelper.IsCopyCodec(videoCodec) && EncodingHelper.IsCopyCodec(audioCodec))
+        {
+            var time = mediaEncoder.GetTimeParameter(startTimeTicks);
+            return string.Format(CultureInfo.InvariantCulture, " -ss {0} -output_ts_offset {0}", time);
+        }
+
+        return string.Empty;
+    }
+
     private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber)
     {
         var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
@@ -1631,11 +1658,19 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        var outputSeekParam = GetOutputSeekParam(
+            state.BaseRequest.StartTimeTicks ?? 0,
+            state.IsOutputVideo,
+            videoCodec,
+            _encodingHelper.GetAudioEncoder(state),
+            _mediaEncoder);
+
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
+            "{0} {1}{2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} {6} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {7} -f hls -max_delay 5000000 -hls_time {8} -hls_segment_type {9} -start_number {10}{11} -hls_segment_filename \"{12}\" {13} -y \"{14}\"",
             inputModifier,
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
+            outputSeekParam,
             threads,
             mapArgs,
             GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
