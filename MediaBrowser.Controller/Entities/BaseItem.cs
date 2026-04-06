@@ -1333,7 +1333,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var parents = GetParents().ToList();
-            if (GetParents().Any(i => !i.IsVisible(user, true)))
+            if (parents.Any(i => !i.IsVisible(user, true)))
             {
                 return false;
             }
