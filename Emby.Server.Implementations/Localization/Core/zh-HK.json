@@ -42,7 +42,7 @@
     "MusicVideos": "MV",
     "NameInstallFailed": "{0} 安裝失敗",
     "NameSeasonNumber": "第 {0} 季",
-    "NameSeasonUnknown": "未知的季度",
+    "NameSeasonUnknown": "未知嘅季度",
     "NewVersionIsAvailable": "有新版本嘅 Jellyfin 可以下載。",
     "NotificationOptionApplicationUpdateAvailable": "有得更新應用程式",
     "NotificationOptionApplicationUpdateInstalled": "應用程式更新好咗",
