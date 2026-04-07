@@ -2617,7 +2617,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item is null)
             {
-                return new List<Folder>();
+                return [];
             }
 
             return GetCollectionFoldersInternal(item, allUserRootChildren);

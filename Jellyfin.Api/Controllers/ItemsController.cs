@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -271,14 +272,16 @@ public class ItemsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet)
-        {
-            parentId = null;
-        }
-
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
+
+        if (includeItemTypes.Length == 1
+            && includeItemTypes[0] == BaseItemKind.BoxSet
+            && item is not BoxSet)
+        {
+            parentId = null;
+            item = _libraryManager.GetUserRootFolder();
+        }
 
         if (item is not Folder folder)
         {
@@ -387,39 +390,7 @@ public class ItemsController : BaseJellyfinApiController
                 query.CollapseBoxSetItems = false;
             }
 
-            foreach (var filter in filters)
-            {
-                switch (filter)
-                {
-                    case ItemFilter.Dislikes:
-                        query.IsLiked = false;
-                        break;
-                    case ItemFilter.IsFavorite:
-                        query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsFavoriteOrLikes:
-                        query.IsFavoriteOrLiked = true;
-                        break;
-                    case ItemFilter.IsFolder:
-                        query.IsFolder = true;
-                        break;
-                    case ItemFilter.IsNotFolder:
-                        query.IsFolder = false;
-                        break;
-                    case ItemFilter.IsPlayed:
-                        query.IsPlayed = true;
-                        break;
-                    case ItemFilter.IsResumable:
-                        query.IsResumable = true;
-                        break;
-                    case ItemFilter.IsUnplayed:
-                        query.IsPlayed = false;
-                        break;
-                    case ItemFilter.Likes:
-                        query.IsLiked = true;
-                        break;
-                }
-            }
+            query.ApplyFilters(filters);
 
             // Filter by Series Status
             if (seriesStatus.Length != 0)

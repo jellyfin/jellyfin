@@ -74,9 +74,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="dict">The dict.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string> ConvertDictionaryToCaseInsensitive(IReadOnlyDictionary<string, string> dict)
+        private static Dictionary<string, string?> ConvertDictionaryToCaseInsensitive(IReadOnlyDictionary<string, string?> dict)
         {
-            return new Dictionary<string, string>(dict, StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, string?>(dict, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

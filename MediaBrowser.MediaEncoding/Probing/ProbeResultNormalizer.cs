@@ -697,24 +697,18 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>MediaStream.</returns>
         private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo, IReadOnlyList<MediaFrameInfo> frameInfoList)
         {
-            // These are mp4 chapters
-            if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
-            {
-                // Edit: but these are also sometimes subtitles?
-                // return null;
-            }
-
             var stream = new MediaStream
             {
                 Codec = streamInfo.CodecName,
                 Profile = streamInfo.Profile,
+                Width = streamInfo.Width,
+                Height = streamInfo.Height,
                 Level = streamInfo.Level,
                 Index = streamInfo.Index,
                 PixelFormat = streamInfo.PixelFormat,
                 NalLengthSize = streamInfo.NalLengthSize,
                 TimeBase = streamInfo.TimeBase,
-                CodecTimeBase = streamInfo.CodecTimeBase,
-                IsAVC = streamInfo.IsAvc
+                CodecTimeBase = streamInfo.CodecTimeBase
             };
 
             // Filter out junk
@@ -774,10 +768,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
                 stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
 
-                // Graphical subtitle may have width and height info
-                stream.Width = streamInfo.Width;
-                stream.Height = streamInfo.Height;
-
                 if (string.IsNullOrEmpty(stream.Title))
                 {
                     // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SubtitleHandler"
@@ -790,6 +780,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (streamInfo.CodecType == CodecType.Video)
             {
+                stream.IsAVC = streamInfo.IsAvc;
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
@@ -822,8 +813,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.Type = MediaStreamType.Video;
                 }
 
-                stream.Width = streamInfo.Width;
-                stream.Height = streamInfo.Height;
                 stream.AspectRatio = GetAspectRatio(streamInfo);
 
                 if (streamInfo.BitsPerSample > 0)
@@ -1091,8 +1080,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && width > 0
                     && height > 0))
             {
-                width = info.Width;
-                height = info.Height;
+                width = info.Width.Value;
+                height = info.Height.Value;
             }
 
             if (width > 0 && height > 0)

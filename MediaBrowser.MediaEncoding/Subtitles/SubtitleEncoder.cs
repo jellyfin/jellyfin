@@ -328,7 +328,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(outputPath))
+                if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                 {
                     await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -431,9 +431,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
-            else if (!File.Exists(outputPath))
+            else if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
             {
                 failed = true;
+
+                try
+                {
+                    _logger.LogWarning("Deleting converted subtitle due to failure: {Path}", outputPath);
+                    _fileSystem.DeleteFile(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting converted subtitle {Path}", outputPath);
+                }
             }
 
             if (failed)
@@ -507,7 +520,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
-                    if (File.Exists(outputPath))
+                    if (File.Exists(outputPath) && _fileSystem.GetFileInfo(outputPath).Length > 0)
                     {
                         releaser.Dispose();
                         continue;
@@ -564,7 +577,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var outputPaths = new List<string>();
                 var args = string.Format(
                     CultureInfo.InvariantCulture,
-                    "-i {0} -copyts",
+                    "-i {0}",
                     inputPath);
 
                 foreach (var subtitleStream in subtitleStreams)
@@ -589,7 +602,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPaths.Add(outputPath);
                     args += string.Format(
                         CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
+                        " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
                         streamIndex,
                         outputCodec,
                         outputPath);
@@ -608,7 +621,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0} -copyts",
+                "-i {0}",
                 inputPath);
 
             foreach (var subtitleStream in subtitleStreams)
@@ -634,7 +647,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputPaths.Add(outputPath);
                 args += string.Format(
                     CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
+                    " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
                     streamIndex,
                     outputCodec,
                     outputPath);
@@ -722,10 +735,24 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 foreach (var outputPath in outputPaths)
                 {
-                    if (!File.Exists(outputPath))
+                    if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                     {
                         _logger.LogError("ffmpeg subtitle extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
                         failed = true;
+
+                        try
+                        {
+                            _logger.LogWarning("Deleting extracted subtitle due to failure: {Path}", outputPath);
+                            _fileSystem.DeleteFile(outputPath);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
+                        }
+
                         continue;
                     }
 
@@ -764,7 +791,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(outputPath))
+                if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                 {
                     var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
@@ -867,9 +894,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
                 }
             }
-            else if (!File.Exists(outputPath))
+            else if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
             {
                 failed = true;
+
+                try
+                {
+                    _logger.LogWarning("Deleting extracted subtitle due to failure: {Path}", outputPath);
+                    _fileSystem.DeleteFile(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting extracted subtitle {Path}", outputPath);
+                }
             }
 
             if (failed)
