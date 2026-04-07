@@ -103,9 +103,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         internal void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
-            // Drop subs that are earlier than what we're looking for
+            // Drop subs that have fully elapsed before the requested start position
             track.TrackEvents = track.TrackEvents
-                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
+                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 && (i.EndPositionTicks - startPositionTicks) < 0)
                 .ToArray();
 
             if (endTimeTicks > 0)
