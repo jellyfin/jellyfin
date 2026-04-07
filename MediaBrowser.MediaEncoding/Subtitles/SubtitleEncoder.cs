@@ -205,84 +205,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
-                var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
-                var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
-
-                // Fast path: subtitle already extracted and cached
-                if (File.Exists(outputPath) && _fileSystem.GetFileInfo(outputPath).Length > 0)
-                {
-                    return new SubtitleInfo()
-                    {
-                        Path = outputPath,
-                        Protocol = MediaProtocol.File,
-                        Format = outputFormat,
-                        IsExternal = false
-                    };
-                }
-
-                // For text-based subtitles (SRT, SSA): return as soon as the output file has data on disk.
-                // With -flush_packets 1, ffmpeg writes data within ~1 second. The client gets a valid partial
-                // subtitle file immediately instead of waiting minutes for full extraction to complete.
-                // ASS is excluded because SetAssFont rewrites the file after extraction (race condition).
-                // PGS is excluded because it's a binary bitmap format that needs the complete file.
-                if (IsEarlyReturnSubtitleFormat(outputFormat))
-                {
-                    // Use CancellationToken.None so extraction continues even if this HTTP request completes
-                    var extractionTask = ExtractAllExtractableSubtitles(mediaSource, CancellationToken.None);
-                    var fileReadyTask = WaitForFileDataAsync(outputPath, TimeSpan.FromSeconds(30));
-
-                    var completedTask = await Task.WhenAny(extractionTask, fileReadyTask).ConfigureAwait(false);
-
-                    if (completedTask == fileReadyTask)
-                    {
-                        var dataReady = await fileReadyTask.ConfigureAwait(false);
-                        if (dataReady)
-                        {
-                            _logger.LogInformation(
-                                "Subtitle file has data, returning early while extraction continues in background: {Path}",
-                                outputPath);
-
-                            // Let extraction finish in background (holds locks, cleans up, extracts remaining streams)
-                            _ = extractionTask.ContinueWith(
-                                t =>
-                                {
-                                    if (t.IsFaulted)
-                                    {
-                                        _logger.LogWarning(
-                                            t.Exception,
-                                            "Background subtitle extraction completed with errors: {Path}",
-                                            outputPath);
-                                    }
-                                },
-                                TaskScheduler.Default);
-
-                            return new SubtitleInfo()
-                            {
-                                Path = outputPath,
-                                Protocol = MediaProtocol.File,
-                                Format = outputFormat,
-                                IsExternal = false
-                            };
-                        }
-                    }
-
-                    // Extraction finished first (fast storage) or file data timed out — await for error handling
-                    await extractionTask.ConfigureAwait(false);
-                }
-                else
-                {
-                    // PGS (binary) and ASS (needs SetAssFont post-processing): wait for full extraction
-                    await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
-                }
-
-                return new SubtitleInfo()
-                {
-                    Path = outputPath,
-                    Protocol = MediaProtocol.File,
-                    Format = outputFormat,
-                    IsExternal = false
-                };
+                return await GetExtractedSubtitle(mediaSource, subtitleStream, cancellationToken).ConfigureAwait(false);
             }
 
             var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
@@ -1028,6 +951,86 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
+        }
+
+        private async Task<SubtitleInfo> GetExtractedSubtitle(
+            MediaSourceInfo mediaSource,
+            MediaStream subtitleStream,
+            CancellationToken cancellationToken)
+        {
+            var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
+            var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
+            var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
+
+            var info = new SubtitleInfo()
+            {
+                Path = outputPath,
+                Protocol = MediaProtocol.File,
+                Format = outputFormat,
+                IsExternal = false
+            };
+
+            // Fast path: subtitle already extracted and cached
+            if (File.Exists(outputPath) && _fileSystem.GetFileInfo(outputPath).Length > 0)
+            {
+                return info;
+            }
+
+            // For text-based subtitles (SRT, SSA): return as soon as the output file has data on disk.
+            // With -flush_packets 1, ffmpeg writes data within ~1 second. The client gets a valid partial
+            // subtitle file immediately instead of waiting minutes for full extraction to complete.
+            // ASS is excluded because SetAssFont rewrites the file after extraction (race condition).
+            // PGS is excluded because it's a binary bitmap format that needs the complete file.
+            if (IsEarlyReturnSubtitleFormat(outputFormat)
+                && await TryReturnEarly(mediaSource, outputPath).ConfigureAwait(false))
+            {
+                return info;
+            }
+
+            // PGS (binary), ASS (needs SetAssFont post-processing), or early-return timed out:
+            // wait for full extraction to complete.
+            await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
+            return info;
+        }
+
+        /// <summary>
+        /// Starts background extraction and waits for the output file to have data.
+        /// Returns true if the file is ready and extraction should continue in the background.
+        /// </summary>
+        private async Task<bool> TryReturnEarly(MediaSourceInfo mediaSource, string outputPath)
+        {
+            // Use CancellationToken.None so extraction continues even if this HTTP request completes
+            var extractionTask = ExtractAllExtractableSubtitles(mediaSource, CancellationToken.None);
+            var fileReadyTask = WaitForFileDataAsync(outputPath, TimeSpan.FromSeconds(30));
+
+            var completedTask = await Task.WhenAny(extractionTask, fileReadyTask).ConfigureAwait(false);
+
+            if (completedTask == fileReadyTask && await fileReadyTask.ConfigureAwait(false))
+            {
+                _logger.LogInformation(
+                    "Subtitle file has data, returning early while extraction continues in background: {Path}",
+                    outputPath);
+
+                // Let extraction finish in background (holds locks, cleans up, extracts remaining streams)
+                _ = extractionTask.ContinueWith(
+                    t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            _logger.LogWarning(
+                                t.Exception,
+                                "Background subtitle extraction completed with errors: {Path}",
+                                outputPath);
+                        }
+                    },
+                    TaskScheduler.Default);
+
+                return true;
+            }
+
+            // Extraction finished first (fast storage) or file data timed out — await for error handling
+            await extractionTask.ConfigureAwait(false);
+            return false;
         }
 
         /// <summary>
