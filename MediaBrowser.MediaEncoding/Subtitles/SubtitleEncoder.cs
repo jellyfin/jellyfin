@@ -195,7 +195,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return AsyncFile.OpenRead(fileInfo.Path);
+            var fileStream = AsyncFile.OpenRead(fileInfo.Path);
+            if (fileInfo.ExtractionTask is not null && !fileInfo.ExtractionTask.IsCompleted)
+            {
+                return new TailingFileStream(fileStream, fileInfo.ExtractionTask);
+            }
+
+            return fileStream;
         }
 
         internal async Task<SubtitleInfo> GetReadableFile(
@@ -977,14 +983,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             // For text-based subtitles (SRT, SSA): return as soon as the output file has data on disk.
-            // With -flush_packets 1, ffmpeg writes data within ~1 second. The client gets a valid partial
-            // subtitle file immediately instead of waiting minutes for full extraction to complete.
+            // With -flush_packets 1, ffmpeg writes data within ~1 second. The HTTP response is then
+            // wrapped in a TailingFileStream so it streams progressively as ffmpeg keeps writing,
+            // delivering the full file in a single connection without blocking on extraction.
             // ASS is excluded because SetAssFont rewrites the file after extraction (race condition).
             // PGS is excluded because it's a binary bitmap format that needs the complete file.
-            if (IsEarlyReturnSubtitleFormat(outputFormat)
-                && await TryReturnEarly(mediaSource, outputPath).ConfigureAwait(false))
+            if (IsEarlyReturnSubtitleFormat(outputFormat))
             {
-                return info;
+                var extractionTask = await TryReturnEarly(mediaSource, outputPath).ConfigureAwait(false);
+                if (extractionTask is not null)
+                {
+                    return info with { ExtractionTask = extractionTask };
+                }
             }
 
             // PGS (binary), ASS (needs SetAssFont post-processing), or early-return timed out:
@@ -995,9 +1005,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         /// <summary>
         /// Starts background extraction and waits for the output file to have data.
-        /// Returns true if the file is ready and extraction should continue in the background.
+        /// Returns the still-running extraction task if the file is ready, or null if early return
+        /// was not possible (extraction finished synchronously, or file did not appear in time).
         /// </summary>
-        private async Task<bool> TryReturnEarly(MediaSourceInfo mediaSource, string outputPath)
+        private async Task<Task?> TryReturnEarly(MediaSourceInfo mediaSource, string outputPath)
         {
             // Use CancellationToken.None so extraction continues even if this HTTP request completes
             var extractionTask = ExtractAllExtractableSubtitles(mediaSource, CancellationToken.None);
@@ -1025,12 +1036,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     },
                     TaskScheduler.Default);
 
-                return true;
+                return extractionTask;
             }
 
             // Extraction finished first (fast storage) or file data timed out — await for error handling
             await extractionTask.ConfigureAwait(false);
-            return false;
+            return null;
         }
 
         /// <summary>
@@ -1159,6 +1170,121 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             public string Format { get; init; }
 
             public bool IsExternal { get; init; }
+
+            /// <summary>
+            /// Gets the background extraction task when the file is being served while ffmpeg
+            /// is still writing it. When non-null, the file stream should be wrapped in a
+            /// <see cref="TailingFileStream"/> so the HTTP response keeps reading newly written
+            /// bytes until extraction completes, ensuring the client receives the full file
+            /// in a single connection.
+            /// </summary>
+            public Task? ExtractionTask { get; init; }
+        }
+
+        /// <summary>
+        /// A read-only stream that wraps a <see cref="FileStream"/> for a file currently being
+        /// written by ffmpeg. When the inner read returns 0 bytes (consumer caught up to writer),
+        /// it waits briefly and retries until the supplied extraction task has completed, then
+        /// drains any remaining bytes and returns real EOF.
+        /// </summary>
+        internal sealed class TailingFileStream : Stream
+        {
+            private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(50);
+            private static readonly TimeSpan MaxWait = TimeSpan.FromMinutes(5);
+            private readonly FileStream _inner;
+            private readonly Task _extractionTask;
+
+            public TailingFileStream(FileStream inner, Task extractionTask)
+            {
+                _inner = inner;
+                _extractionTask = extractionTask;
+            }
+
+            public override bool CanRead => true;
+
+            public override bool CanSeek => false;
+
+            public override bool CanWrite => false;
+
+            public override long Length => _inner.Length;
+
+            public override long Position
+            {
+                get => _inner.Position;
+                set => throw new NotSupportedException();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                var sw = Stopwatch.StartNew();
+                while (true)
+                {
+                    var read = _inner.Read(buffer, offset, count);
+                    if (read > 0)
+                    {
+                        return read;
+                    }
+
+                    if (_extractionTask.IsCompleted)
+                    {
+                        // One last drain in case bytes were written between our read and IsCompleted check
+                        return _inner.Read(buffer, offset, count);
+                    }
+
+                    if (sw.Elapsed > MaxWait)
+                    {
+                        return 0;
+                    }
+
+                    Thread.Sleep(PollInterval);
+                }
+            }
+
+            public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                var sw = Stopwatch.StartNew();
+                while (true)
+                {
+                    var read = await _inner.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    if (read > 0)
+                    {
+                        return read;
+                    }
+
+                    if (_extractionTask.IsCompleted)
+                    {
+                        return await _inner.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    if (sw.Elapsed > MaxWait)
+                    {
+                        return 0;
+                    }
+
+                    await Task.Delay(PollInterval, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+                => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+            public override void Flush() => _inner.Flush();
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _inner.Dispose();
+                }
+
+                base.Dispose(disposing);
+            }
         }
     }
 }
