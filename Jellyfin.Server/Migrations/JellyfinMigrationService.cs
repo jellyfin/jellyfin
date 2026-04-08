@@ -152,22 +152,25 @@ internal class JellyfinMigrationService
                             .Where(e => migrationOptions.Applied.Any(f => f.Id.Equals(e.Metadata.Key!.Value)))
                             .Where(e => !appliedMigrations.Contains(e.BuildCodeMigrationId()))
                             .OrderBy(e => e.BuildCodeMigrationId())
-                            .Last(); // this is the latest migration applied in the old migration.xml
+                            .LastOrDefault(); // this is the latest migration applied in the old migration.xml
 
-                        IReadOnlyList<CodeMigration> oldMigrations = [
-                            .. Migrations
-                            .SelectMany(e => e)
-                            .OrderBy(e => e.BuildCodeMigrationId())
-                            .TakeWhile(e => e.BuildCodeMigrationId() != lastOldAppliedMigration.BuildCodeMigrationId()),
-                            lastOldAppliedMigration
-                        ];
-                        // those are all migrations that had to run in the old migration system, even if not noted in the migration.xml file.
-
-                        var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
-                        foreach (var item in startupScripts)
+                        if (lastOldAppliedMigration is not null)
                         {
-                            logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
-                            await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                            IReadOnlyList<CodeMigration> oldMigrations = [
+                                .. Migrations
+                                .SelectMany(e => e)
+                                .OrderBy(e => e.BuildCodeMigrationId())
+                                .TakeWhile(e => e.BuildCodeMigrationId() != lastOldAppliedMigration.BuildCodeMigrationId()),
+                                lastOldAppliedMigration
+                            ];
+                            // those are all migrations that had to run in the old migration system, even if not noted in the migration.xml file.
+
+                            var startupScripts = oldMigrations.Select(e => (Migration: e.Metadata, Script: historyRepository.GetInsertScript(new HistoryRow(e.BuildCodeMigrationId(), GetJellyfinVersion()))));
+                            foreach (var item in startupScripts)
+                            {
+                                logger.LogInformation("Migrate migration {Key}-{Name}.", item.Migration.Key, item.Migration.Name);
+                                await dbContext.Database.ExecuteSqlRawAsync(item.Script).ConfigureAwait(false);
+                            }
                         }
 
                         logger.LogInformation("Rename old migration.xml to migration.xml.backup");
