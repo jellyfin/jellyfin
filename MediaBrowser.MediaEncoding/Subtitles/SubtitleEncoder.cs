@@ -119,8 +119,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 foreach (var trackEvent in track.TrackEvents)
                 {
-                    trackEvent.EndPositionTicks -= startPositionTicks;
-                    trackEvent.StartPositionTicks -= startPositionTicks;
+                    trackEvent.EndPositionTicks = Math.Max(0, trackEvent.EndPositionTicks - startPositionTicks);
+                    trackEvent.StartPositionTicks = Math.Max(0, trackEvent.StartPositionTicks - startPositionTicks);
                 }
             }
         }
