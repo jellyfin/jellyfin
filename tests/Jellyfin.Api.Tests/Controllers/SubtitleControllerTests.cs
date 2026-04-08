@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -28,11 +29,13 @@ public class SubtitleControllerTests
     private readonly SubtitleController _subject;
     private readonly Mock<ILibraryManager> _mockLibraryManager;
     private readonly Mock<IMediaSourceManager> _mockMediaSourceManager;
+    private readonly Mock<IDynamicHlsPlaylistGenerator> _mockPlaylistGenerator;
 
     public SubtitleControllerTests()
     {
         _mockLibraryManager = new Mock<ILibraryManager>();
         _mockMediaSourceManager = new Mock<IMediaSourceManager>();
+        _mockPlaylistGenerator = new Mock<IDynamicHlsPlaylistGenerator>();
 
         _subject = new SubtitleController(
             Mock.Of<IServerConfigurationManager>(),
@@ -42,7 +45,8 @@ public class SubtitleControllerTests
             _mockMediaSourceManager.Object,
             Mock.Of<IProviderManager>(),
             Mock.Of<IFileSystem>(),
-            Mock.Of<ILogger<SubtitleController>>());
+            Mock.Of<ILogger<SubtitleController>>(),
+            _mockPlaylistGenerator.Object);
 
         var claims = new[]
         {
@@ -68,6 +72,7 @@ public class SubtitleControllerTests
         //   Video segments start at: 0, 10.8, 21.1, 31.5, 42, 52.5s
         //   Fixed 6s subtitle segments start at: 0, 6, 12, 18, 24, 30, 36, 42, 48, 54s
         // The divergence after segment 0 causes persistent subtitle offset on seek.
+        var keyframeAlignedSegments = new double[] { 10.8, 10.3, 10.4, 10.5, 10.5, 7.5 };
         var expectedStartTicks = new[]
         {
             TimeSpan.FromMilliseconds(0).Ticks,
@@ -98,6 +103,14 @@ public class SubtitleControllerTests
                 RunTimeTicks = runtimeTicks,
                 Path = "/media/test.mkv"
             });
+
+        _mockPlaylistGenerator
+            .Setup(g => g.GetSegmentDurations(
+                It.IsAny<Guid?>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<long>()))
+            .Returns(keyframeAlignedSegments);
 
         var result = await _subject.GetSubtitlePlaylist(itemId, 0, mediaSourceId, 6);
 

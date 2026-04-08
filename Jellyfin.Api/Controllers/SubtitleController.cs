@@ -14,6 +14,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
+using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -48,6 +49,7 @@ public class SubtitleController : BaseJellyfinApiController
     private readonly IProviderManager _providerManager;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SubtitleController> _logger;
+    private readonly IDynamicHlsPlaylistGenerator _playlistGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubtitleController"/> class.
@@ -60,6 +62,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="providerManager">Instance of <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
+    /// <param name="playlistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/> interface.</param>
     public SubtitleController(
         IServerConfigurationManager serverConfigurationManager,
         ILibraryManager libraryManager,
@@ -68,7 +71,8 @@ public class SubtitleController : BaseJellyfinApiController
         IMediaSourceManager mediaSourceManager,
         IProviderManager providerManager,
         IFileSystem fileSystem,
-        ILogger<SubtitleController> logger)
+        ILogger<SubtitleController> logger,
+        IDynamicHlsPlaylistGenerator playlistGenerator)
     {
         _serverConfigurationManager = serverConfigurationManager;
         _libraryManager = libraryManager;
@@ -78,6 +82,7 @@ public class SubtitleController : BaseJellyfinApiController
         _providerManager = providerManager;
         _fileSystem = fileSystem;
         _logger = logger;
+        _playlistGenerator = playlistGenerator;
     }
 
     /// <summary>
@@ -368,6 +373,12 @@ public class SubtitleController : BaseJellyfinApiController
             throw new ArgumentException("segmentLength was not given, or it was given incorrectly. (It should be bigger than 0)");
         }
 
+        var segments = _playlistGenerator.GetSegmentDurations(
+            Guid.Parse(mediaSourceId),
+            mediaSource.Path,
+            segmentLength * 1000,
+            runtime);
+
         var builder = new StringBuilder();
         builder.AppendLine("#EXTM3U")
             .Append("#EXT-X-TARGETDURATION:")
@@ -381,17 +392,16 @@ public class SubtitleController : BaseJellyfinApiController
 
         var accessToken = User.GetToken();
 
-        while (positionTicks < runtime)
+        foreach (var segmentDuration in segments)
         {
-            var remaining = runtime - positionTicks;
-            var lengthTicks = Math.Min(remaining, segmentLengthTicks);
+            var lengthTicks = Convert.ToInt64(segmentDuration * TimeSpan.TicksPerSecond);
 
             builder.Append("#EXTINF:")
                 .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds)
                 .Append(',')
                 .AppendLine();
 
-            var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
+            var endPositionTicks = positionTicks + lengthTicks;
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -402,7 +412,7 @@ public class SubtitleController : BaseJellyfinApiController
 
             builder.AppendLine(url);
 
-            positionTicks += segmentLengthTicks;
+            positionTicks = endPositionTicks;
         }
 
         builder.AppendLine("#EXT-X-ENDLIST");
