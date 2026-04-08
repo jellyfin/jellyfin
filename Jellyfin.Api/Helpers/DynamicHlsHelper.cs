@@ -688,13 +688,16 @@ public class DynamicHlsHelper
             var isDefault = selectedIndex.HasValue && selectedIndex.Value == stream.Index;
             var isForced = stream.IsForced;
 
+            var isRemuxing = EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
+
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}&IsRemuxing={4}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
-                user.GetToken());
+                user.GetToken(),
+                isRemuxing.ToString(CultureInfo.InvariantCulture));
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,

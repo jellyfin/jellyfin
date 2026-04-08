@@ -337,6 +337,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="index">The subtitle stream index.</param>
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="segmentLength">The subtitle segment length.</param>
+    /// <param name="isRemuxing">Whether the video is being remuxed (copy codec).</param>
     /// <response code="200">Subtitle playlist retrieved.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
@@ -350,7 +351,8 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index,
         [FromRoute, Required] string mediaSourceId,
-        [FromQuery, Required] int segmentLength)
+        [FromQuery, Required] int segmentLength,
+        [FromQuery] bool isRemuxing = false)
     {
         var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
         if (item is null)
@@ -377,7 +379,8 @@ public class SubtitleController : BaseJellyfinApiController
             Guid.Parse(mediaSourceId),
             mediaSource.Path,
             segmentLength * 1000,
-            runtime);
+            runtime,
+            isRemuxing);
 
         var builder = new StringBuilder();
         builder.AppendLine("#EXTM3U")
