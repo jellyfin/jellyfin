@@ -205,6 +205,45 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         }
 
         [Fact]
+        public void FilterEvents_SpanningBoundaryWithTimestampAdjustment_DoesNotProduceNegativeTimestamps()
+        {
+            // Subtitle starts at 5s, ends at 15s.
+            // Segment requested from 10s to 20s, preserveTimestamps = false.
+            // The subtitle spans the boundary and is retained, but shifting
+            // StartPositionTicks by -10s would produce -5s (negative).
+            var track = new SubtitleTrackInfo
+            {
+                TrackEvents = new[]
+                {
+                    new SubtitleTrackEvent("1", "Spans boundary")
+                    {
+                        StartPositionTicks = TimeSpan.FromSeconds(5).Ticks,
+                        EndPositionTicks = TimeSpan.FromSeconds(15).Ticks
+                    },
+                    new SubtitleTrackEvent("2", "Fully in range")
+                    {
+                        StartPositionTicks = TimeSpan.FromSeconds(12).Ticks,
+                        EndPositionTicks = TimeSpan.FromSeconds(17).Ticks
+                    }
+                }
+            };
+
+            _encoder.FilterEvents(
+                track,
+                startPositionTicks: TimeSpan.FromSeconds(10).Ticks,
+                endTimeTicks: TimeSpan.FromSeconds(20).Ticks,
+                preserveTimestamps: false);
+
+            Assert.Equal(2, track.TrackEvents.Count);
+            // Subtitle 1: start should be clamped to 0, not -5s
+            Assert.True(track.TrackEvents[0].StartPositionTicks >= 0, "StartPositionTicks must not be negative");
+            Assert.Equal(TimeSpan.FromSeconds(5).Ticks, track.TrackEvents[0].EndPositionTicks);
+            // Subtitle 2: normal shift (12s - 10s = 2s, 17s - 10s = 7s)
+            Assert.Equal(TimeSpan.FromSeconds(2).Ticks, track.TrackEvents[1].StartPositionTicks);
+            Assert.Equal(TimeSpan.FromSeconds(7).Ticks, track.TrackEvents[1].EndPositionTicks);
+        }
+
+        [Fact]
         public void FilterEvents_NoEndTimeTicks_ReturnsAllFromStartPosition()
         {
             var track = new SubtitleTrackInfo
