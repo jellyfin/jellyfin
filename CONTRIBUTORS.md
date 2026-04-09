@@ -229,6 +229,7 @@
  - [LiHRaM](https://github.com/LiHRaM)
  - [MSalman5230](https://github.com/MSalman5230)
  - [dwandw](https://github.com/dwandw)
+ - [Starkiller21321](https://github.com/Starkiller21321)
 
 # Emby Contributors
 

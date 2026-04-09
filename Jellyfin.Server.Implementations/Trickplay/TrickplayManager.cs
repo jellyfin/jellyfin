@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Trickplay;
 /// <summary>
 /// ITrickplayManager implementation.
 /// </summary>
-public class TrickplayManager : ITrickplayManager
+public class TrickplayManager : ITrickplayManager, IDisposable
 {
     private readonly ILogger<TrickplayManager> _logger;
     private readonly IMediaEncoder _mediaEncoder;
@@ -40,8 +40,9 @@ public class TrickplayManager : ITrickplayManager
     private readonly IApplicationPaths _appPaths;
     private readonly IPathManager _pathManager;
 
-    private static readonly AsyncNonKeyedLocker _resourcePool = new(1);
+    private readonly AsyncNonKeyedLocker _resourcePool;
     private static readonly string[] _trickplayImgExtensions = [".jpg"];
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayManager"/> class.
@@ -75,6 +76,33 @@ public class TrickplayManager : ITrickplayManager
         _dbProvider = dbProvider;
         _appPaths = appPaths;
         _pathManager = pathManager;
+        _resourcePool = new(config.Configuration.TrickplayOptions.MaxParallelism);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases unmanaged and optionally managed resources.
+    /// </summary>
+    /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _resourcePool?.Dispose();
+        }
+
+        _disposed = true;
     }
 
     /// <inheritdoc />
