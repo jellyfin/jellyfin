@@ -75,11 +75,11 @@
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="Svg.Skia" Version="3.4.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.5" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.5" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.7" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.7" />
     <PackageVersion Include="System.Text.Json" Version="10.0.5" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.11.0" />
+    <PackageVersion Include="z440.atl.core" Version="7.12.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />

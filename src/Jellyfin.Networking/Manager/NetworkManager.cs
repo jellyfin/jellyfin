@@ -747,12 +747,13 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
     {
-        return NetworkManager.GetAllBindInterfaces(individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
+        return NetworkManager.GetAllBindInterfaces(_logger, individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
     }
 
     /// <summary>
     /// Reads the jellyfin configuration of the configuration manager and produces a list of interfaces that should be bound.
     /// </summary>
+    /// <param name="logger">Logger to use for messages.</param>
     /// <param name="individualInterfaces">Defines that only known interfaces should be used.</param>
     /// <param name="configurationManager">The ConfigurationManager.</param>
     /// <param name="knownInterfaces">The known interfaces that gets returned if possible or instructed.</param>
@@ -760,6 +761,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <param name="readIpv6">Include IPV6 type interfaces.</param>
     /// <returns>A list of ip address of which jellyfin should bind to.</returns>
     public static IReadOnlyList<IPData> GetAllBindInterfaces(
+        ILogger<NetworkManager> logger,
         bool individualInterfaces,
         IConfigurationManager configurationManager,
         IReadOnlyList<IPData> knownInterfaces,
@@ -771,6 +773,13 @@ public class NetworkManager : INetworkManager, IDisposable
         if ((localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]) && knownInterfaces.Count > 0) || individualInterfaces)
         {
             return knownInterfaces;
+        }
+
+        // TODO: remove when upgrade to dotnet 11 is done
+        if (readIpv6 && !Socket.OSSupportsIPv6)
+        {
+            logger.LogWarning("IPv6 Unsupported by OS, not listening on IPv6");
+            readIpv6 = false;
         }
 
         // No bind address and no exclusions, so listen on all interfaces.
@@ -869,7 +878,20 @@ public class NetworkManager : INetworkManager, IDisposable
         if (availableInterfaces.Count == 0)
         {
             // There isn't any others, so we'll use the loopback.
-            result = IsIPv4Enabled && !IsIPv6Enabled ? "127.0.0.1" : "::1";
+            // Prefer loopback address matching the source's address family
+            if (source is not null && source.AddressFamily == AddressFamily.InterNetwork && IsIPv4Enabled)
+            {
+                result = "127.0.0.1";
+            }
+            else if (source is not null && source.AddressFamily == AddressFamily.InterNetworkV6 && IsIPv6Enabled)
+            {
+                result = "::1";
+            }
+            else
+            {
+                result = IsIPv4Enabled ? "127.0.0.1" : "::1";
+            }
+
             _logger.LogWarning("{Source}: Only loopback {Result} returned, using that as bind address.", source, result);
             return result;
         }
@@ -894,9 +916,19 @@ public class NetworkManager : INetworkManager, IDisposable
             }
         }
 
-        // Fallback to first available interface
+        // Fallback to an interface matching the source's address family, or first available
+        var preferredInterface = availableInterfaces
+            .FirstOrDefault(x => x.Address.AddressFamily == source.AddressFamily);
+
+        if (preferredInterface is not null)
+        {
+            result = NetworkUtils.FormatIPString(preferredInterface.Address);
+            _logger.LogDebug("{Source}: No matching subnet found, using interface with matching address family: {Result}", source, result);
+            return result;
+        }
+
         result = NetworkUtils.FormatIPString(availableInterfaces[0].Address);
-        _logger.LogDebug("{Source}: No matching interfaces found, using preferred interface as bind address: {Result}", source, result);
+        _logger.LogDebug("{Source}: No matching interfaces found, using first available interface as bind address: {Result}", source, result);
         return result;
     }
 
