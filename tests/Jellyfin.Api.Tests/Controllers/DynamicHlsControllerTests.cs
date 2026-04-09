@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Tests.Controllers
         }
 
         [Theory]
-        [InlineData(600000000L, true, "libx264", "copy", " -ss 00:01:00.000 -output_ts_offset 00:01:00.000")] // video transcode + audio copy → trim
+        [InlineData(600000000L, true, "libx264", "copy", " -ss 00:01:00.000 -output_ts_offset 00:01:00.000 -max_interleave_delta 0")] // video transcode + audio copy → trim
         [InlineData(600000000L, true, "libx264", "aac", "")] // both transcode → no trim
         [InlineData(600000000L, true, "copy", "copy", "")] // both copy → no trim
         [InlineData(600000000L, true, "copy", "aac", "")] // video copy + audio transcode → no trim
