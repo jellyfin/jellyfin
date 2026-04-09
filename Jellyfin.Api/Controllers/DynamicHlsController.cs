@@ -1589,10 +1589,12 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="videoCodec">The output video codec.</param>
     /// <param name="audioCodec">The output audio codec.</param>
     /// <param name="mediaEncoder">The media encoder for time formatting.</param>
+    /// <param name="hlsAudioSeekStrategy">The configured HLS audio seek strategy.</param>
     /// <returns>The output seek parameter string, or empty if not needed.</returns>
-    internal static string GetOutputSeekParam(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, IMediaEncoder mediaEncoder)
+    internal static string GetOutputSeekParam(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, IMediaEncoder mediaEncoder, HlsAudioSeekStrategy hlsAudioSeekStrategy)
     {
-        if (isOutputVideo && startTimeTicks > 0
+        if (hlsAudioSeekStrategy == HlsAudioSeekStrategy.OutputSeek
+            && isOutputVideo && startTimeTicks > 0
             && !EncodingHelper.IsCopyCodec(videoCodec) && EncodingHelper.IsCopyCodec(audioCodec))
         {
             var time = mediaEncoder.GetTimeParameter(startTimeTicks);
@@ -1668,7 +1670,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.IsOutputVideo,
             videoCodec,
             _encodingHelper.GetAudioEncoder(state),
-            _mediaEncoder);
+            _mediaEncoder,
+            _encodingOptions.HlsAudioSeekStrategy);
 
         return string.Format(
             CultureInfo.InvariantCulture,

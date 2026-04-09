@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using Moq;
 using Xunit;
 
@@ -56,20 +57,22 @@ namespace Jellyfin.Api.Tests.Controllers
         }
 
         [Theory]
-        [InlineData(600000000L, true, "libx264", "copy", " -ss 00:01:00.000 -output_ts_offset 00:01:00.000 -max_interleave_delta 0")] // video transcode + audio copy → trim
-        [InlineData(600000000L, true, "libx264", "aac", "")] // both transcode → no trim
-        [InlineData(600000000L, true, "copy", "copy", "")] // both copy → no trim
-        [InlineData(600000000L, true, "copy", "aac", "")] // video copy + audio transcode → no trim
-        [InlineData(0L, true, "libx264", "copy", "")] // zero start time → no trim
-        [InlineData(600000000L, false, "libx264", "copy", "")] // audio-only → no trim
-        public void GetOutputSeekParam_ReturnsExpected(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, string expected)
+        [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.OutputSeek, " -ss 00:01:00.000 -output_ts_offset 00:01:00.000 -max_interleave_delta 0")] // OutputSeek + video transcode + audio copy → trim
+        [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.DisableAccurateSeek, "")] // DisableAccurateSeek → no trim
+        [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.TranscodeAudio, "")] // TranscodeAudio → no trim
+        [InlineData(600000000L, true, "libx264", "aac", HlsAudioSeekStrategy.OutputSeek, "")] // both transcode → no trim
+        [InlineData(600000000L, true, "copy", "copy", HlsAudioSeekStrategy.OutputSeek, "")] // both copy → no trim
+        [InlineData(0L, true, "libx264", "copy", HlsAudioSeekStrategy.OutputSeek, "")] // zero start time → no trim
+        [InlineData(600000000L, false, "libx264", "copy", HlsAudioSeekStrategy.OutputSeek, "")] // audio-only → no trim
+        public void GetOutputSeekParam_ReturnsExpected(long startTimeTicks, bool isOutputVideo, string videoCodec, string audioCodec, HlsAudioSeekStrategy strategy, string expected)
         {
             var result = DynamicHlsController.GetOutputSeekParam(
                 startTimeTicks,
                 isOutputVideo,
                 videoCodec,
                 audioCodec,
-                _mediaEncoder.Object);
+                _mediaEncoder.Object,
+                strategy);
 
             Assert.Equal(expected, result);
         }

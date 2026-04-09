@@ -8,9 +8,8 @@ namespace MediaBrowser.Model.Configuration
     {
         /// <summary>
         /// If the video stream is transcoded and the audio stream is copied,
-        /// seek the video stream to the same keyframe as the audio stream.
-        /// An output-level seek trims both streams to the exact target time
-        /// to prevent A/V desync while keeping audio stream copy.
+        /// seek the video stream to the same keyframe as the audio stream. The
+        /// resulting timestamps in the output streams may be inaccurate.
         /// </summary>
         DisableAccurateSeek = 0,
 
@@ -20,5 +19,12 @@ namespace MediaBrowser.Model.Configuration
         /// overhead will be incurred.
         /// </summary>
         TranscodeAudio = 1,
+
+        /// <summary>
+        /// Use an output-level seek to trim both streams to the exact target time
+        /// while keeping audio stream copy. This avoids A/V desync without the
+        /// overhead of audio transcoding.
+        /// </summary>
+        OutputSeek = 2,
     }
 }
