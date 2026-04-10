@@ -57,7 +57,7 @@ namespace Jellyfin.Api.Tests.Controllers
         }
 
         [Theory]
-        [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.OutputSeek, " -ss 00:01:00.000 -output_ts_offset 00:01:00.000 -max_interleave_delta 0")] // OutputSeek + video transcode + audio copy → trim
+        [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.OutputSeek, " -ss 00:01:00.000")] // OutputSeek + video transcode + audio copy → trim
         [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.DisableAccurateSeek, "")] // DisableAccurateSeek → no trim
         [InlineData(600000000L, true, "libx264", "copy", HlsAudioSeekStrategy.TranscodeAudio, "")] // TranscodeAudio → no trim
         [InlineData(600000000L, true, "libx264", "aac", HlsAudioSeekStrategy.OutputSeek, "")] // both transcode → no trim

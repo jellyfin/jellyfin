@@ -1574,15 +1574,9 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// Gets the output-level seek parameter for ffmpeg.
     /// When video is transcoded but audio is copied, -noaccurate_seek causes both
     /// streams to start from the nearest keyframe, which may be seconds before the
-    /// target time. This produces segments that don't match the HLS playlist timestamps.
-    /// Adding an output-level -ss trims both streams to the exact target time.
-    /// The -output_ts_offset shifts timestamps back to the original position so that
-    /// segment timestamps remain consistent with -copyts.
-    /// The -max_interleave_delta 0 is required because ffmpeg's of_streamcopy subtracts
-    /// start_time from stream-copied audio timestamps while encoded video keeps its
-    /// original timestamps from the trim filter. This creates a large DTS gap in the
-    /// interleaving queue (e.g. audio at 0s vs video at 60s) that triggers a force-flush
-    /// before audio arrives, producing HLS segments without audio.
+    /// target time. Adding an output-level -ss trims both streams to the exact
+    /// target time. With -copyts (already in the main command), timestamps are
+    /// preserved from the original file so no -output_ts_offset is needed.
     /// </summary>
     /// <param name="startTimeTicks">The requested start time in ticks.</param>
     /// <param name="isOutputVideo">Whether the output includes video.</param>
@@ -1598,7 +1592,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             && !EncodingHelper.IsCopyCodec(videoCodec) && EncodingHelper.IsCopyCodec(audioCodec))
         {
             var time = mediaEncoder.GetTimeParameter(startTimeTicks);
-            return string.Format(CultureInfo.InvariantCulture, " -ss {0} -output_ts_offset {0} -max_interleave_delta 0", time);
+            return string.Format(CultureInfo.InvariantCulture, " -ss {0}", time);
         }
 
         return string.Empty;
