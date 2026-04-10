@@ -50,6 +50,10 @@ public class ArtistsValidator
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var names = _itemRepo.GetAllArtistNames();
+        var existingArtistIds = _libraryManager.GetItemIds(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.MusicArtist]
+        }).ToHashSet();
 
         var numComplete = 0;
         var count = names.Count;
@@ -59,8 +63,13 @@ public class ArtistsValidator
             try
             {
                 var item = _libraryManager.GetArtist(name);
+                var isNew = !existingArtistIds.Contains(item.Id);
+                var neverRefreshed = item.DateLastRefreshed == DateTime.MinValue;
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                if (isNew || neverRefreshed)
+                {
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException)
             {

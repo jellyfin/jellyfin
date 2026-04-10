@@ -125,7 +125,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (string.IsNullOrWhiteSpace(overview))
             {
-                overview = result.strBiographyEN;
+                overview = string.IsNullOrWhiteSpace(result.strBiographyEN)
+                    ? result.strBiography
+                    : result.strBiographyEN;
             }
 
             item.Overview = (overview ?? string.Empty).StripHtml();
@@ -223,6 +225,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strFacebook { get; set; }
 
             public string strTwitter { get; set; }
+
+            public string strBiography { get; set; }
 
             public string strBiographyEN { get; set; }
 
