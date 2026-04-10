@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     new MediaInfoRequest
                     {
                         MediaType = DlnaProfileType.Audio,
-                        ExtractChapters = item is AudioBook,
+                        ExtractChapters = item.FindParent<AudioBook>() is not null,
                         MediaSource = new MediaSourceInfo
                         {
                             Path = path,
@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _mediaStreamRepository.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
 
-            if (audio is AudioBook && mediaInfo.Chapters is { Length: > 0 })
+            if (audio.FindParent<AudioBook>() is not null && mediaInfo.Chapters is { Length: > 0 })
             {
                 _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
             }
@@ -199,6 +199,8 @@ namespace MediaBrowser.Providers.MediaInfo
             var trackArist = GetSanitizedStringTag(track.Artist, audio.Path);
             var trackComposer = GetSanitizedStringTag(track.Composer, audio.Path);
             var trackGenre = GetSanitizedStringTag(track.Genre, audio.Path);
+
+            var isAudioBook = audio.FindParent<AudioBook>() is not null;
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
@@ -242,8 +244,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     performers = performers.SelectMany(p => SplitWithCustomDelimiter(p, libraryOptions.GetCustomTagDelimiters(), libraryOptions.DelimiterWhitelist)).ToArray();
                 }
-
-                var isAudioBook = audio is AudioBook;
 
                 if (isAudioBook)
                 {
@@ -426,8 +426,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            // Audiobook-specific metadata: Overview, Publisher, Series
-            if (audio is AudioBook audioBook)
+            // Audiobook-specific metadata: Overview, Publisher, Movement tags
+            if (isAudioBook)
             {
                 if (!audio.LockedFields.Contains(MetadataField.Overview))
                 {
@@ -450,6 +450,51 @@ namespace MediaBrowser.Providers.MediaInfo
                     && (options.ReplaceAllMetadata || audio.Studios is null || audio.Studios.Length == 0))
                 {
                     audio.SetStudios(new[] { trackPublisher! });
+                }
+
+                // Movement tags: map to standard Audio fields for proper track ordering.
+                // MOVEMENTNUMBER → IndexNumber (chapter/track number) as fallback
+                // MOVEMENTNAME → Name (chapter title) as fallback
+                if (TryGetSanitizedAdditionalFields(track, "MOVEMENTNUMBER", out var movementNumStr)
+                    || TryGetSanitizedAdditionalFields(track, "MVIN", out movementNumStr))
+                {
+                    if (!string.IsNullOrWhiteSpace(movementNumStr))
+                    {
+                        var parts = movementNumStr.Split('/');
+                        if (int.TryParse(parts[0].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var movNum))
+                        {
+                            if (options.ReplaceAllMetadata || !audio.IndexNumber.HasValue)
+                            {
+                                audio.IndexNumber = movNum;
+                            }
+                        }
+                    }
+                }
+
+                // Fall back to FFprobe MovementNumber for IndexNumber
+                if (!audio.IndexNumber.HasValue && mediaInfo.MovementNumber.HasValue)
+                {
+                    audio.IndexNumber = mediaInfo.MovementNumber;
+                }
+
+                if (TryGetSanitizedAdditionalFields(track, "MOVEMENTNAME", out var movementName)
+                    || TryGetSanitizedAdditionalFields(track, "MVNM", out movementName))
+                {
+                    if (!string.IsNullOrWhiteSpace(movementName))
+                    {
+                        if (!audio.LockedFields.Contains(MetadataField.Name)
+                            && (options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.Name)))
+                        {
+                            audio.Name = movementName;
+                        }
+                    }
+                }
+
+                if (!audio.LockedFields.Contains(MetadataField.Name)
+                    && string.IsNullOrEmpty(audio.Name)
+                    && !string.IsNullOrEmpty(mediaInfo.MovementName))
+                {
+                    audio.Name = mediaInfo.MovementName;
                 }
             }
 

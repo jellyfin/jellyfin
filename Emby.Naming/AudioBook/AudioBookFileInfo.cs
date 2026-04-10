@@ -59,16 +59,16 @@ namespace Emby.Naming.AudioBook
                 return 1;
             }
 
-            var chapterNumberComparison = Nullable.Compare(ChapterNumber, other.ChapterNumber);
-            if (chapterNumberComparison != 0)
-            {
-                return chapterNumberComparison;
-            }
-
             var partNumberComparison = Nullable.Compare(PartNumber, other.PartNumber);
             if (partNumberComparison != 0)
             {
                 return partNumberComparison;
+            }
+
+            var chapterNumberComparison = Nullable.Compare(ChapterNumber, other.ChapterNumber);
+            if (chapterNumberComparison != 0)
+            {
+                return chapterNumberComparison;
             }
 
             return string.Compare(Path, other.Path, StringComparison.Ordinal);

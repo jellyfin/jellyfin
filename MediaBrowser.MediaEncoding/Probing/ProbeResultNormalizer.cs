@@ -1427,6 +1427,35 @@ namespace MediaBrowser.MediaEncoding.Probing
             mb = GetMultipleMusicBrainzId(tags.GetValueOrDefault("MusicBrainz Release Track Id"))
                  ?? GetMultipleMusicBrainzId(tags.GetValueOrDefault("MUSICBRAINZ_RELEASETRACKID"));
             audio.TrySetProviderId(MetadataProvider.MusicBrainzTrack, mb);
+
+            // Work / Grouping — identifies the larger work this track belongs to (e.g. audiobook title).
+            // FFprobe exposes ID3v2 TIT1 as "grouping", WORK as "work", and iTunes ©grp as "grouping".
+            audio.WorkName = tags.GetFirstNotNullNorWhiteSpaceValue("work", "WORK", "grouping", "GROUPING");
+
+            // Movement name — the chapter/movement title within the work.
+            audio.MovementName = tags.GetFirstNotNullNorWhiteSpaceValue("movement_name", "MOVEMENTNAME", "MVNM");
+
+            // Movement number — the chapter/movement index within the work.
+            var movementNum = tags.GetFirstNotNullNorWhiteSpaceValue("movement_number", "MOVEMENTNUMBER", "MVIN");
+            if (!string.IsNullOrEmpty(movementNum)
+                && int.TryParse(movementNum.Split('/')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var movementIndex))
+            {
+                audio.MovementNumber = movementIndex;
+            }
+
+            // Movement total — total number of chapters/movements.
+            var movementTot = tags.GetFirstNotNullNorWhiteSpaceValue("movement_total", "MOVEMENTTOTAL");
+            if (string.IsNullOrEmpty(movementTot) && !string.IsNullOrEmpty(movementNum) && movementNum.Contains('/', StringComparison.Ordinal))
+            {
+                // MVIN format can be "number/total"
+                movementTot = movementNum.Split('/').ElementAtOrDefault(1);
+            }
+
+            if (!string.IsNullOrEmpty(movementTot)
+                && int.TryParse(movementTot, NumberStyles.Integer, CultureInfo.InvariantCulture, out var totalMovements))
+            {
+                audio.MovementTotal = totalMovements;
+            }
         }
 
         private static string GetMultipleMusicBrainzId(string value)

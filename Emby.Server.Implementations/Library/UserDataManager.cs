@@ -325,7 +325,7 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
-            else if (positionTicks > 0 && hasRuntime && item is AudioBook)
+            else if (positionTicks > 0 && hasRuntime && item.FindParent<AudioBook>() is not null)
             {
                 var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;

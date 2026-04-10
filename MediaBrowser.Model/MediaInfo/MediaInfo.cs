@@ -82,5 +82,29 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
+
+        /// <summary>
+        /// Gets or sets the work name (e.g. the audiobook title that groups multiple track files).
+        /// Sourced from the WORK / TIT1 / GROUPING tag.
+        /// </summary>
+        public string WorkName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the movement name (e.g. the chapter title within a multi-track audiobook).
+        /// Sourced from the MOVEMENTNAME / MVNM tag.
+        /// </summary>
+        public string MovementName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the movement number (e.g. chapter number within a multi-track audiobook).
+        /// Sourced from the MOVEMENTNUMBER / MVIN tag.
+        /// </summary>
+        public int? MovementNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of movements.
+        /// Sourced from the MOVEMENTTOTAL tag.
+        /// </summary>
+        public int? MovementTotal { get; set; }
     }
 }

@@ -77,8 +77,10 @@ namespace Emby.Naming.AudioBook
             {
                 if (group.Key.ChapterNumber is null && group.Key.PartNumber is null)
                 {
-                    if (group.Count() > 1 || haveChaptersOrPages)
+                    if (haveChaptersOrPages)
                     {
+                        // Other files have chapter/part info from filenames but these don't.
+                        // Classify untagged stragglers as extras or alternates.
                         List<AudioBookFileInfo>? ex = null;
                         List<AudioBookFileInfo>? alt = null;
 
@@ -121,6 +123,11 @@ namespace Emby.Naming.AudioBook
                             alternativeVersions.AddRange(alternatives);
                         }
                     }
+
+                    // When NO files have chapter/part info from filenames, keep all as
+                    // main files. The directory is the grouping signal; ordering and
+                    // metadata are enriched later via WORK / MOVEMENTNAME /
+                    // MOVEMENTNUMBER tags during audio probing.
                 }
                 else if (group.Count() > 1)
                 {

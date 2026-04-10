@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
@@ -18,7 +19,15 @@ public interface IChapterManager
     /// </summary>
     /// <param name="item">The item to check.</param>
     /// <returns><c>true</c> if the item type supports chapters; otherwise, <c>false</c>.</returns>
-    bool Supports(BaseItem item);
+    bool Supports(BaseItem item) => item is Video or Audio;
+
+    /// <summary>
+    /// Saves the chapters.
+    /// </summary>
+    /// <param name="video">The video.</param>
+    /// <param name="chapters">The set of chapters.</param>
+    void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
+        => SaveChapters((BaseItem)video, chapters);
 
     /// <summary>
     /// Saves the chapters.

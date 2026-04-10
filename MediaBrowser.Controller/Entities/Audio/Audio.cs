@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         protected override bool SupportsOwnedItems => false;
 
         [JsonIgnore]
-        public override Folder LatestItemsIndexContainer => AlbumEntity;
+        public override Folder LatestItemsIndexContainer => AlbumEntity ?? (Folder)FindParent<AudioBook>();
 
         [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();

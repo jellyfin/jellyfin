@@ -1,5 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -14,7 +21,7 @@ namespace MediaBrowser.Providers.Books;
 /// <summary>
 /// Service to manage audiobook metadata.
 /// </summary>
-public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
+public class AudioBookMetadataService : MetadataService<AudioBook, BookInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioBookMetadataService"/> class.
@@ -39,6 +46,56 @@ public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
     }
 
     /// <inheritdoc />
+    protected override bool EnableUpdatingPremiereDateFromChildren => true;
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingGenresFromChildren => true;
+
+    /// <inheritdoc />
+    protected override bool EnableUpdatingStudiosFromChildren => true;
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(AudioBook item)
+        => item.GetRecursiveChildren(i => i is Audio);
+
+    /// <inheritdoc />
+    protected override ItemUpdateType UpdateMetadataFromChildren(AudioBook item, IReadOnlyList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
+    {
+        var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
+
+        if (item.IsLocked)
+        {
+            return updateType;
+        }
+
+        if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+        {
+            // Propagate Overview from first child track
+            if (!item.LockedFields.Contains(MetadataField.Overview))
+            {
+                var firstTrack = children.FirstOrDefault(c => !string.IsNullOrEmpty(c.Overview));
+                if (firstTrack is not null && !string.Equals(item.Overview, firstTrack.Overview, StringComparison.Ordinal))
+                {
+                    item.Overview = firstTrack.Overview;
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
+            }
+        }
+
+        return updateType;
+    }
+
+    /// <inheritdoc />
+    protected override Task AfterMetadataRefresh(AudioBook item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+    {
+        base.AfterMetadataRefresh(item, refreshOptions, cancellationToken);
+
+        SetPeopleFromChildren(item);
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
     protected override void MergeData(
         MetadataResult<AudioBook> source,
         MetadataResult<AudioBook> target,
@@ -47,18 +104,40 @@ public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
         bool mergeMetadataSettings)
     {
         base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+    }
 
-        var sourceItem = source.Item;
-        var targetItem = target.Item;
-
-        if (replaceData || targetItem.Artists.Count == 0)
+    private void SetPeopleFromChildren(AudioBook item)
+    {
+        if (item.IsLocked)
         {
-            targetItem.Artists = sourceItem.Artists;
+            return;
         }
 
-        if (replaceData || string.IsNullOrEmpty(targetItem.Album))
+        var children = item.GetRecursiveChildren(i => i is Audio);
+        var childPeople = new List<PersonInfo>();
+        foreach (var child in children)
         {
-            targetItem.Album = sourceItem.Album;
+            foreach (var person in LibraryManager.GetPeople(child))
+            {
+                if (!childPeople.Exists(p => string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) && p.Type == person.Type))
+                {
+                    childPeople.Add(person);
+                }
+            }
         }
+
+        if (childPeople.Count == 0)
+        {
+            return;
+        }
+
+        var existingPeople = LibraryManager.GetPeople(item);
+        if (existingPeople.Count == childPeople.Count
+            && existingPeople.All(e => childPeople.Exists(c => string.Equals(c.Name, e.Name, StringComparison.OrdinalIgnoreCase) && c.Type == e.Type)))
+        {
+            return;
+        }
+
+        LibraryManager.UpdatePeople(item, childPeople);
     }
 }
