@@ -574,7 +574,9 @@ namespace MediaBrowser.Model.Dlna
                     {
                         if (profile.Method == SubtitleDeliveryMethod.External
                             && (string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase)
-                                || (string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase) && stream.IsVobSubSubtitleStream)))
+                                || (string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase)
+                                    && stream.IsVobSubSubtitleStream
+                                    && (!stream.IsExternal || stream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase)))))
                         {
                             return stream.Index;
                         }
@@ -1563,7 +1565,8 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 bool isVobSubMksProfile = string.Equals(profile.Format, "mks", StringComparison.OrdinalIgnoreCase)
-                    && subtitleStream.IsVobSubSubtitleStream;
+                    && subtitleStream.IsVobSubSubtitleStream
+                    && (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase));
 
                 if ((profile.Method == SubtitleDeliveryMethod.External
                         && (isVobSubMksProfile || subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))) ||
