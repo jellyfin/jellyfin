@@ -2918,7 +2918,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeople(query);
+            return _peopleRepository.GetPeople(query).Items;
         }
 
         public IReadOnlyList<PersonInfo> GetPeople(BaseItem item)
@@ -2939,24 +2939,33 @@ namespace Emby.Server.Implementations.Library
             return [];
         }
 
-        public IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query)
+        public QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeopleNames(query)
-            .Select(i =>
+            var queryResult = _peopleRepository.GetPeople(query);
+            var baseItems = queryResult.Items.Select(i =>
+                {
+                    try
+                    {
+                        return GetPerson(i.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "error retrieving BaseItem for person: {0}", i.Name);
+                        return null;
+                    }
+                })
+                .Where(i => i is not null)
+                .Where(i => query.User is null || i!.IsVisible(query.User))
+                .OfType<BaseItem>()
+                .ToList()
+                .AsReadOnly();
+
+            return new QueryResult<BaseItem>
             {
-                try
-                {
-                    return GetPerson(i);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting person");
-                    return null;
-                }
-            })
-            .Where(i => i is not null)
-            .Where(i => query.User is null || i!.IsVisible(query.User))
-            .ToList()!; // null values are filtered out
+                StartIndex = queryResult.StartIndex,
+                TotalRecordCount = queryResult.TotalRecordCount,
+                Items = baseItems,
+            };
         }
 
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
