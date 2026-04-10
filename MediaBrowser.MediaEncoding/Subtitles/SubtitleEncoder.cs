@@ -509,6 +509,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || MediaStream.IsVobSubFormat(codec);
         }
 
+        internal static bool ShouldExtractVobSubSeparately(MediaStream subtitleStream)
+        {
+            if (!subtitleStream.IsVobSubSubtitleStream)
+            {
+                return false;
+            }
+
+            return !subtitleStream.IsExternal
+                || string.IsNullOrEmpty(subtitleStream.Path)
+                || !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <inheritdoc />
         public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
@@ -547,7 +559,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     await ExtractAllExtractableSubtitlesInternal(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
                     await ExtractAllExtractableSubtitlesMKS(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
-                    await ExtractAllExtractableExternalVobSubSubtitles(mediaSource, extractableStreams, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -633,6 +644,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
+            var dedicatedVobSubStreams = new List<MediaStream>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
                 "-i {0} -copyts",
@@ -646,9 +658,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     continue;
                 }
 
-                if (subtitleStream.IsExternal && subtitleStream.IsVobSubSubtitleStream)
+                if (ShouldExtractVobSubSeparately(subtitleStream))
                 {
-                    _logger.LogDebug("Subtitle {Index} is an external VobSub track. Handling it with a dedicated remux path", subtitleStream.Index);
+                    _logger.LogDebug("Subtitle {Index} is a VobSub track. Handling it in the internal extraction path", subtitleStream.Index);
+                    dedicatedVobSubStreams.Add(subtitleStream);
                     continue;
                 }
 
@@ -673,33 +686,30 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPath);
             }
 
-            if (outputPaths.Count == 0)
+            if (outputPaths.Count > 0)
             {
-                return;
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
             }
 
-            await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+            foreach (var subtitleStream in dedicatedVobSubStreams)
+            {
+                await ExtractSeparateVobSubSubtitle(mediaSource, subtitleStream, cancellationToken).ConfigureAwait(false);
+            }
         }
 
-        private async Task ExtractAllExtractableExternalVobSubSubtitles(
+        private async Task ExtractSeparateVobSubSubtitle(
             MediaSourceInfo mediaSource,
-            List<MediaStream> subtitleStreams,
+            MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            foreach (var subtitleStream in subtitleStreams)
+            var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".mks");
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
+
+            if (subtitleStream.IsExternal)
             {
-                if (!subtitleStream.IsExternal || !subtitleStream.IsVobSubSubtitleStream || string.IsNullOrEmpty(subtitleStream.Path))
-                {
-                    continue;
-                }
-
-                if (subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".mks");
                 var inputSubtitlePath = subtitleStream.Path;
+                ArgumentException.ThrowIfNullOrEmpty(inputSubtitlePath);
+
                 var inputExtension = Path.GetExtension(inputSubtitlePath.AsSpan());
 
                 if (inputExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
@@ -711,22 +721,39 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
-
-                var inputPath = _mediaEncoder.GetInputArgument(inputSubtitlePath, new MediaSourceInfo
+                var externalInputPath = _mediaEncoder.GetInputArgument(inputSubtitlePath, new MediaSourceInfo
                 {
                     Path = inputSubtitlePath,
                     Protocol = _mediaSourceManager.GetPathProtocol(inputSubtitlePath)
                 });
 
-                var args = string.Format(
+                var externalArgs = string.Format(
                     CultureInfo.InvariantCulture,
                     "-i {0} -copyts -map 0:0 -an -vn -c:s copy \"{1}\"",
-                    inputPath,
+                    externalInputPath,
                     outputPath);
 
-                await ExtractSubtitlesForFile(inputPath, args, [outputPath], cancellationToken).ConfigureAwait(false);
+                await ExtractSubtitlesForFile(externalInputPath, externalArgs, [outputPath], cancellationToken).ConfigureAwait(false);
+                return;
             }
+
+            var internalInputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+            var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
+            if (streamIndex == -1)
+            {
+                _logger.LogError("Cannot find subtitle stream index for {InputPath} ({Index}), skipping this stream", internalInputPath, subtitleStream.Index);
+                return;
+            }
+
+            var internalArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-i {0} -copyts -map 0:{1} -an -vn -c:s copy \"{2}\"",
+                internalInputPath,
+                streamIndex,
+                outputPath);
+
+            await ExtractSubtitlesForFile(internalInputPath, internalArgs, [outputPath], cancellationToken).ConfigureAwait(false);
         }
 
         private async Task ExtractSubtitlesForFile(
