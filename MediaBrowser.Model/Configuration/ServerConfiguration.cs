@@ -291,6 +291,13 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int ImageJpegQuality { get; set; } = 96;
 
     /// <summary>
+    /// Gets or sets a value indicating whether .jellyignore files should be used to filter library items.
+    /// .jellyforceignore files are always applied regardless of this setting.
+    /// </summary>
+    /// <value>True if .jellyignore filtering is enabled; otherwise, false. Default is true.</value>
+    public bool EnableJellyignore { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; }

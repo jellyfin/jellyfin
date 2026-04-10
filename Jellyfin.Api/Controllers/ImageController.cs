@@ -1508,7 +1508,7 @@ public class ImageController : BaseJellyfinApiController
                 null,
                 null,
                 null,
-                90,
+                _serverConfigurationManager.Configuration.ImageJpegQuality,
                 null,
                 null,
                 null,
@@ -1920,7 +1920,7 @@ public class ImageController : BaseJellyfinApiController
     {
         if (format.HasValue)
         {
-            return [format.Value];
+            return new[] { format.Value };
         }
 
         return GetClientSupportedFormats();
