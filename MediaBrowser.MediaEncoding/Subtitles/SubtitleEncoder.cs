@@ -203,9 +203,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
-                .TrimStart('.');
-
             if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
@@ -219,9 +216,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     Path = outputPath,
                     Protocol = MediaProtocol.File,
                     Format = outputFormat,
-                    IsExternal = MediaStream.IsVobSubFormat(outputFormat) 
+                    IsExternal = MediaStream.IsVobSubFormat(outputFormat)
                 };
             }
+
+            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path).TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))
