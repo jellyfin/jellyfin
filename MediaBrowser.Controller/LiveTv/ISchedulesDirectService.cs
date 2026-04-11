@@ -21,4 +21,11 @@ public interface ISchedulesDirectService
     /// </summary>
     /// <returns><c>true</c> if the image limit has been hit and has not yet reset; otherwise <c>false</c>.</returns>
     bool IsImageDailyLimitActive();
+
+    /// <summary>
+    /// Gets a value indicating whether the Schedules Direct service is available.
+    /// Returns <c>false</c> if a permanent account error has occurred or a transient backoff is active.
+    /// </summary>
+    /// <returns><c>true</c> if the service can accept requests; otherwise <c>false</c>.</returns>
+    bool IsServiceAvailable();
 }

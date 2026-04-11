@@ -738,6 +738,14 @@ public class GuideManager : IGuideManager
             _cacheParallelOptions,
             async (program, cancellationToken) =>
             {
+                // Re-check: limit may have been set by a parallel task since the LINQ filter ran.
+                if (_schedulesDirectService.IsImageDailyLimitActive()
+                    && program.ImageInfos.All(
+                        img => img.IsLocalFile || img.Path.Contains("schedulesdirect", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 for (var i = 0; i < program.ImageInfos.Length; i++)
                 {
                     if (cancellationToken.IsCancellationRequested)

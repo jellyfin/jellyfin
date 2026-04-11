@@ -45,8 +45,8 @@ namespace Jellyfin.LiveTv.Listings
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private DateTime _lastErrorResponse;
-        private bool _accountError;
+        private long _lastErrorResponseTicks;
+        private volatile bool _accountError;
         private bool _disposed = false;
 
         private byte[] _countriesCache;
@@ -594,7 +594,7 @@ namespace Jellyfin.LiveTv.Listings
             }
 
             // Avoid hammering SD after transient login failures (e.g. max attempts / temporary lockout)
-            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 30)
+            if ((DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastErrorResponseTicks), DateTimeKind.Utc)).TotalMinutes < 30)
             {
                 return null;
             }
@@ -635,7 +635,7 @@ namespace Jellyfin.LiveTv.Listings
                         && (int)ex.StatusCode.Value < 500)
                     {
                         _tokens.Clear();
-                        _lastErrorResponse = DateTime.UtcNow;
+                        Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
                     }
 
                     throw;
@@ -695,7 +695,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 // Transient login errors — back off for 30 minutes, then allow retry.
                 _tokens.Clear();
-                _lastErrorResponse = DateTime.UtcNow;
+                Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
             }
             else if (sdCode is SdErrorCode.MaxImageDownloads)
             {
@@ -874,6 +874,22 @@ namespace Jellyfin.LiveTv.Listings
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public bool IsServiceAvailable()
+        {
+            if (_accountError)
+            {
+                return false;
+            }
+
+            if ((DateTime.UtcNow - new DateTime(Interlocked.Read(ref _lastErrorResponseTicks), DateTimeKind.Utc)).TotalMinutes < 30)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <inheritdoc />
