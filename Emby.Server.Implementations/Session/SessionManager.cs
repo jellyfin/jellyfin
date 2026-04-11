@@ -960,7 +960,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var tracksChanged = UpdatePlaybackSettings(user, info, data);
-            if (!tracksChanged)
+            if (tracksChanged)
             {
                 changed = true;
             }

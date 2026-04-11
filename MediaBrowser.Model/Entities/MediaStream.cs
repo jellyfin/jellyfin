@@ -2,7 +2,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
