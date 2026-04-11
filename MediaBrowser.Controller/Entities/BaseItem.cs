@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -1172,11 +1171,18 @@ namespace MediaBrowser.Controller.Entities
                 info.Video3DFormat = video.Video3DFormat;
                 info.Timestamp = video.Timestamp;
 
-                if (video.IsShortcut)
+                if (video.IsShortcut && !string.IsNullOrEmpty(video.ShortcutPath))
                 {
-                    info.IsRemote = true;
-                    info.Path = video.ShortcutPath;
-                    info.Protocol = MediaSourceManager.GetPathProtocol(info.Path);
+                    var shortcutProtocol = MediaSourceManager.GetPathProtocol(video.ShortcutPath);
+
+                    // Only allow remote shortcut paths — local file paths in .strm files
+                    // could be used to read arbitrary files from the server.
+                    if (shortcutProtocol != MediaProtocol.File)
+                    {
+                        info.IsRemote = true;
+                        info.Path = video.ShortcutPath;
+                        info.Protocol = shortcutProtocol;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(info.Container))
@@ -1601,11 +1607,10 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(rating))
             {
-                Logger.LogDebug("{0} has no parental rating set.", Name);
                 return !GetBlockUnratedValue(user);
             }
 
-            var ratingScore = LocalizationManager.GetRatingScore(rating);
+            var ratingScore = LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode());
 
             // Could not determine rating level
             if (ratingScore is null)
@@ -1647,7 +1652,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return LocalizationManager.GetRatingScore(rating);
+            return LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode());
         }
 
         public List<string> GetInheritedTags()
@@ -2127,17 +2132,6 @@ namespace MediaBrowser.Controller.Entities
                     DateModified = chapter.ImageDateModified,
                     Type = imageType
                 };
-            }
-
-            // Music albums usually don't have dedicated backdrops, so return one from the artist instead
-            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
-            {
-                var artist = FindParent<MusicArtist>();
-
-                if (artist is not null)
-                {
-                    return artist.GetImages(imageType).ElementAtOrDefault(imageIndex);
-                }
             }
 
             return GetImages(imageType)
@@ -2621,7 +2615,7 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating)))
+                .Select(rating => (rating, LocalizationManager.GetRatingScore(rating, GetPreferredMetadataCountryCode())))
                 .OrderBy(i => i.Item2 is null ? 1001 : i.Item2.Score)
                 .ThenBy(i => i.Item2 is null ? 1001 : i.Item2.SubScore)
                 .Select(i => i.rating);

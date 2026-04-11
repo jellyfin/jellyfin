@@ -209,6 +209,25 @@ public class DynamicHlsHelper
             AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.User);
         }
 
+        // For DoVi profiles without a compatible base layer (P5 HEVC, P10/bl0 AV1),
+        // add a spec-compliant dvh1/dav1 variant before the hvc1 hack variant.
+        // SUPPLEMENTAL-CODECS cannot be used for these profiles (no compatible BL to supplement).
+        // The DoVi variant is listed first so spec-compliant clients (Apple TV, webOS 24+)
+        // select it over the fallback when both have identical BANDWIDTH.
+        // Only emit for clients that explicitly declared DOVI support to avoid breaking
+        // non-compliant players that don't recognize dvh1/dav1 CODECS strings.
+        if (state.VideoStream is not null
+            && state.VideoRequest is not null
+            && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            && state.VideoStream.VideoRangeType == VideoRangeType.DOVI
+            && state.VideoStream.DvProfile.HasValue
+            && state.VideoStream.DvLevel.HasValue
+            && state.GetRequestedRangeTypes(state.VideoStream.Codec)
+                .Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            AppendDoviPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
+        }
+
         var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
         if (state.VideoStream is not null && state.VideoRequest is not null)
@@ -353,6 +372,65 @@ public class DynamicHlsHelper
         builder.Append(playlistBuilder);
 
         return playlistBuilder;
+    }
+
+    /// <summary>
+    /// Appends a Dolby Vision variant with dvh1/dav1 CODECS for profiles without a compatible
+    /// base layer (P5 HEVC, P10/bl0 AV1). This enables spec-compliant HLS clients to detect
+    /// DoVi from the manifest rather than relying on init segment inspection.
+    /// </summary>
+    /// <param name="builder">StringBuilder for the master playlist.</param>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <param name="url">Playlist URL for this variant.</param>
+    /// <param name="bitrate">Bitrate for the BANDWIDTH field.</param>
+    /// <param name="subtitleGroup">Subtitle group identifier, or null.</param>
+    private void AppendDoviPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
+    {
+        var dvProfile = state.VideoStream.DvProfile;
+        var dvLevel = state.VideoStream.DvLevel;
+        if (dvProfile is null || dvLevel is null)
+        {
+            return;
+        }
+
+        var playlistBuilder = new StringBuilder();
+        playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+            .Append(",AVERAGE-BANDWIDTH=")
+            .Append(bitrate.ToString(CultureInfo.InvariantCulture));
+
+        playlistBuilder.Append(",VIDEO-RANGE=PQ");
+
+        var dvCodec = HlsCodecStringHelpers.GetDoviString(dvProfile.Value, dvLevel.Value, state.ActualOutputVideoCodec);
+
+        string audioCodecs = string.Empty;
+        if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
+        {
+            audioCodecs = GetPlaylistAudioCodecs(state);
+        }
+
+        playlistBuilder.Append(",CODECS=\"")
+            .Append(dvCodec);
+        if (!string.IsNullOrEmpty(audioCodecs))
+        {
+            playlistBuilder.Append(',').Append(audioCodecs);
+        }
+
+        playlistBuilder.Append('"');
+
+        AppendPlaylistResolutionField(playlistBuilder, state);
+        AppendPlaylistFramerateField(playlistBuilder, state);
+
+        if (!string.IsNullOrWhiteSpace(subtitleGroup))
+        {
+            playlistBuilder.Append(",SUBTITLES=\"")
+                .Append(subtitleGroup)
+                .Append('"');
+        }
+
+        playlistBuilder.AppendLine();
+        playlistBuilder.AppendLine(url);
+        builder.Append(playlistBuilder);
     }
 
     /// <summary>

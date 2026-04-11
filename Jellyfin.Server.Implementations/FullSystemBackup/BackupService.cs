@@ -118,14 +118,20 @@ public class BackupService : IBackupService
                 throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
 
-            void CopyDirectory(string source, string target)
+            void CopyDirectory(string source, string target, string[]? exclude = null)
             {
                 var fullSourcePath = NormalizePathSeparator(Path.GetFullPath(source) + Path.DirectorySeparatorChar);
                 var fullTargetRoot = Path.GetFullPath(target) + Path.DirectorySeparatorChar;
+                var excludePaths = exclude?.Select(e => $"{source}/{e}/").ToArray();
                 foreach (var item in zipArchive.Entries)
                 {
                     var sourcePath = NormalizePathSeparator(Path.GetFullPath(item.FullName));
                     var targetPath = Path.GetFullPath(Path.Combine(target, Path.GetRelativePath(source, item.FullName)));
+
+                    if (excludePaths is not null && excludePaths.Any(e => item.FullName.StartsWith(e, StringComparison.Ordinal)))
+                    {
+                        continue;
+                    }
 
                     if (!sourcePath.StartsWith(fullSourcePath, StringComparison.Ordinal)
                         || !targetPath.StartsWith(fullTargetRoot, StringComparison.Ordinal)
@@ -142,8 +148,10 @@ public class BackupService : IBackupService
             }
 
             CopyDirectory("Config", _applicationPaths.ConfigurationDirectoryPath);
-            CopyDirectory("Data", _applicationPaths.DataPath);
+            CopyDirectory("Data", _applicationPaths.DataPath, exclude: ["metadata", "metadata-default"]);
             CopyDirectory("Root", _applicationPaths.RootFolderPath);
+            CopyDirectory("Data/metadata", _applicationPaths.InternalMetadataPath);
+            CopyDirectory("Data/metadata-default", _applicationPaths.DefaultInternalMetadataPath);
 
             if (manifest.Options.Database)
             {
@@ -404,6 +412,15 @@ public class BackupService : IBackupService
                 if (backupOptions.Metadata)
                 {
                     CopyDirectory(Path.Combine(_applicationPaths.InternalMetadataPath), Path.Combine("Data", "metadata"));
+
+                    // If a custom metadata path is configured, the default location may still contain data.
+                    if (!string.Equals(
+                            Path.GetFullPath(_applicationPaths.DefaultInternalMetadataPath),
+                            Path.GetFullPath(_applicationPaths.InternalMetadataPath),
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        CopyDirectory(Path.Combine(_applicationPaths.DefaultInternalMetadataPath), Path.Combine("Data", "metadata-default"));
+                    }
                 }
 
                 var manifestStream = await zipArchive.CreateEntry(ManifestEntryName).OpenAsync().ConfigureAwait(false);
