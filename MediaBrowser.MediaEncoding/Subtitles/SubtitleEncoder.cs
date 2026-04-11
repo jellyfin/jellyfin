@@ -601,6 +601,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                    var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                     if (streamIndex == -1)
@@ -614,9 +615,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPaths.Add(outputPath);
                     args += string.Format(
                         CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
+                        " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
                         streamIndex,
                         outputCodec,
+                        outputFormatOption,
                         outputPath);
                 }
 
