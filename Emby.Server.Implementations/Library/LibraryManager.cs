@@ -3747,6 +3747,12 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query)
         {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
         }
     }

@@ -60,9 +60,7 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? item = null;
         if (includeItemTypes.Length != 1
-            || !(includeItemTypes[0] == BaseItemKind.BoxSet
-                 || includeItemTypes[0] == BaseItemKind.Playlist
-                 || includeItemTypes[0] == BaseItemKind.Trailer
+            || !(includeItemTypes[0] == BaseItemKind.Trailer
                  || includeItemTypes[0] == BaseItemKind.Program))
         {
             item = _libraryManager.GetParentItem(parentId, user?.Id);
@@ -127,9 +125,7 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? parentItem = null;
         if (includeItemTypes.Length == 1
-            && (includeItemTypes[0] == BaseItemKind.BoxSet
-                || includeItemTypes[0] == BaseItemKind.Playlist
-                || includeItemTypes[0] == BaseItemKind.Trailer
+            && (includeItemTypes[0] == BaseItemKind.Trailer
                 || includeItemTypes[0] == BaseItemKind.Program))
         {
             parentItem = null;
