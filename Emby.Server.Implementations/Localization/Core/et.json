@@ -133,8 +133,8 @@
     "TaskDownloadMissingLyrics": "Hangi puuduvad laulusõnad",
     "TaskDownloadMissingLyricsDescription": "Laulusõnade allalaadimine",
     "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",
-    "TaskExtractMediaSegments": "Skaneeri meediasegmente",
-    "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meediasegmendid MediaSegment'i lubavatest pluginatest.",
+    "TaskExtractMediaSegments": "Skaneeri meedialõike",
+    "TaskExtractMediaSegmentsDescription": "Eraldab või võtab meedialõigud MediaSegment'i toega pluginatest.",
     "TaskMoveTrickplayImages": "Muuda trickplay piltide asukoht",
     "CleanupUserDataTask": "Puhasta kasutajaandmed",
     "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mida pole enam vähemalt 90 päeva saadaval olnud."
