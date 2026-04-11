@@ -206,14 +206,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
                 .TrimStart('.');
 
-            var isVobSub = MediaStream.IsVobSubFormat(currentFormat);
-
             if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
 
                 var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
-                var outputFormat = isVobSub ? "mks" : GetExtractableSubtitleFormat(subtitleStream);
+                var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
 
                 return new SubtitleInfo()
@@ -221,7 +219,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     Path = outputPath,
                     Protocol = MediaProtocol.File,
                     Format = outputFormat,
-                    IsExternal = isVobSub
+                    IsExternal = MediaStream.IsVobSubFormat(outputFormat) 
                 };
             }
 
