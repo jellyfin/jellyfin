@@ -212,7 +212,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
 
-                var outputFileExtension = isVobSub ? "mks" : GetExtractableSubtitleFileExtension(subtitleStream);
+                var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
                 var outputFormat = isVobSub ? "mks" : GetExtractableSubtitleFormat(subtitleStream);
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
 
@@ -491,6 +491,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             else if (MediaStream.IsVobSubFormat(subtitleStream.Codec))
             {
+                // FFmpeg cannot mux VobSub subtitle streams back into the .idx/.sub pair, so we use .mks container instead.
                 return "mks";
             }
             else
@@ -601,6 +602,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                    // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                     var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
@@ -648,6 +650,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                 var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
