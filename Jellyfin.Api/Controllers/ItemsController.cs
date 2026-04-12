@@ -299,17 +299,20 @@ public class ItemsController : BaseJellyfinApiController
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };
         }
-        else if (folder is ICollectionFolder && includeItemTypes.Length == 0)
+        else if (folder is ICollectionFolder)
         {
             // When the client doesn't specify recursive/includeItemTypes, force the query
             // through the database path where all filters (IsHD, genres, etc.) are applied.
-            recursive = true;
-            includeItemTypes = collectionType switch
+            recursive ??= true;
+            if (includeItemTypes.Length == 0)
             {
-                CollectionType.boxsets => [BaseItemKind.BoxSet],
-                null => [BaseItemKind.Movie, BaseItemKind.Series], // mixed
-                _ => []
-            };
+                includeItemTypes = collectionType switch
+                {
+                    CollectionType.boxsets => [BaseItemKind.BoxSet],
+                    null => [BaseItemKind.Movie, BaseItemKind.Series],
+                    _ => []
+                };
+            }
         }
 
         if (item is not UserRootFolder
