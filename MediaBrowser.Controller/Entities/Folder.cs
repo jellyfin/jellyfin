@@ -390,6 +390,13 @@ namespace MediaBrowser.Controller.Entities
                 {
                     nonCachedChildren = GetNonCachedChildren(directoryService);
                 }
+                catch (DirectoryNotFoundException ex)
+                {
+                    // The folder no longer exists on disk. Use an empty list so the existing
+                    // database entry is naturally flagged for removal by the comparison below,
+                    // and the rest of the library scan can continue uninterrupted.
+                    Logger.LogWarning(ex, "Directory not found during scan, marking for removal: {Path}", Path);
+                }
                 catch (IOException ex)
                 {
                     Logger.LogError(ex, "Error retrieving children from file system");
