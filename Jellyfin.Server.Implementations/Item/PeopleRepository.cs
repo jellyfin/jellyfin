@@ -245,6 +245,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             query = query.Where(e => e.Name.CompareTo(filter.NameLessThan.ToLowerInvariant()) < 0);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        {
+            query = query.Where(e => e.Name.CompareTo(filter.NameStartsWithOrGreater.ToLowerInvariant()) >= 0);
+        }
+
         return query;
     }
 

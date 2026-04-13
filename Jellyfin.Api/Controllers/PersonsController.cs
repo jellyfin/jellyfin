@@ -52,6 +52,7 @@ public class PersonsController : BaseJellyfinApiController
     /// <param name="searchTerm">The search term.</param>
     /// <param name="nameStartsWith">Optional. Filter by items whose name starts with the given input string.</param>
     /// <param name="nameLessThan">Optional. Filter by items whose name will appear before this value when sorted alphabetically.</param>
+    /// <param name="nameStartsWithOrGreater">Optional. Filter by items whose name will appear after this value when sorted alphabetically.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
     /// <param name="filters">Optional. Specify additional filters to apply.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not. userId is required.</param>
@@ -74,6 +75,7 @@ public class PersonsController : BaseJellyfinApiController
         [FromQuery] string? searchTerm,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
+        [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
@@ -103,6 +105,7 @@ public class PersonsController : BaseJellyfinApiController
             NameContains = searchTerm,
             NameStartsWith = nameStartsWith,
             NameLessThan = nameLessThan,
+            NameStartsWithOrGreater = nameStartsWithOrGreater,
             User = user,
             IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,
             AppearsInItemId = appearsInItemId ?? Guid.Empty,
