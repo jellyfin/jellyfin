@@ -42,6 +42,12 @@ namespace MediaBrowser.Controller.Entities
 
         public string NameContains { get; set; }
 
+        public string NameStartsWith { get; set; }
+
+        public string NameLessThan { get; set; }
+
+        public string NameStartsWithOrGreater { get; set; }
+
         public User User { get; set; }
 
         public bool? IsFavorite { get; set; }
