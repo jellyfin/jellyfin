@@ -64,7 +64,7 @@ public class ArtistsValidator
             {
                 var item = _libraryManager.GetArtist(name);
                 var isNew = !existingArtistIds.Contains(item.Id);
-                var neverRefreshed = item.DateLastRefreshed == DateTime.MinValue;
+                var neverRefreshed = item.DateLastRefreshed == default;
 
                 if (isNew || neverRefreshed)
                 {
