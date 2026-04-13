@@ -212,6 +212,7 @@
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
+ - [elio42](https://github.com/elio42)
 
 # Emby Contributors
 
