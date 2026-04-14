@@ -20,12 +20,5 @@ namespace MediaBrowser.Model.Configuration
         /// overhead will be incurred.
         /// </summary>
         TranscodeAudio = 1,
-
-        /// <summary>
-        /// Use an output-level seek to trim both streams to the exact target time
-        /// while keeping audio stream copy. This avoids A/V desync without the
-        /// overhead of audio transcoding.
-        /// </summary>
-        OutputSeek = 2,
     }
 }
