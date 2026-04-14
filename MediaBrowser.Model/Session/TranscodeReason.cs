@@ -43,5 +43,22 @@ namespace MediaBrowser.Model.Session
         UnknownVideoStreamInfo = 1 << 21,
         UnknownAudioStreamInfo = 1 << 22,
         DirectPlayError = 1 << 23,
+
+        // Composite Masks
+        IntensiveTranscodeReasons =
+            VideoResolutionNotSupported
+            | AnamorphicVideoNotSupported
+            | InterlacedVideoNotSupported
+            | VideoBitDepthNotSupported
+            | VideoBitrateNotSupported
+            | VideoFramerateNotSupported
+            | VideoLevelNotSupported
+            | RefFramesNotSupported
+            | VideoRangeTypeNotSupported
+            | VideoProfileNotSupported
+            | VideoCodecNotSupported
+            | ContainerBitrateExceedsLimit
+            | VideoCodecTagNotSupported
+            | SubtitleCodecNotSupported,
     }
 }

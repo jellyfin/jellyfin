@@ -12,6 +12,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -259,6 +260,25 @@ public class MediaInfoHelper
 
         if (streamInfo is not null)
         {
+            var hasIntensiveTranscodeReason = (streamInfo.TranscodeReasons & TranscodeReason.IntensiveTranscodeReasons) != 0;
+
+            var transcodeBitrateLimit = _serverConfigurationManager.GetEncodingOptions().TranscodeBitrateLimit;
+
+            // we don't want to lower the bitrate limit unless we're transcoding something intensive(video)
+            // if we are, and our bitrate is above our TranscodeBitrateLimit, rerun video calculations
+            if (item.MediaType == MediaType.Video && hasIntensiveTranscodeReason && transcodeBitrateLimit > 0 && options.MaxBitrate > transcodeBitrateLimit)
+            {
+                options.MaxBitrate = transcodeBitrateLimit;
+                var newStreamInfo = streamBuilder.GetOptimalVideoStream(options);
+
+                if (newStreamInfo is not null)
+                {
+                    // merge old and new transcode reasons
+                    newStreamInfo.TranscodeReasons |= streamInfo.TranscodeReasons;
+                    streamInfo = newStreamInfo;
+                }
+            }
+
             streamInfo.PlaySessionId = playSessionId;
             streamInfo.StartPositionTicks = startTimeTicks;
 
