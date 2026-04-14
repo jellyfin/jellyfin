@@ -2976,18 +2976,23 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (state.IsVideoRequest)
                 {
-                    // If we are remuxing, then the copied stream cannot be seeked accurately (it will seek to the nearest
-                    // keyframe). If we are using fMP4, then force all other streams to use the same inaccurate seeking to
-                    // avoid A/V sync issues which cause playback issues on some devices.
-                    // When remuxing video, the segment start times correspond to key frames in the source stream, so this
-                    // option shouldn't change the seeked point that much.
+                    // When video is transcoded, accurate_seek (the default) trims video
+                    // to the exact seek point via decoder-side frame discard. But
+                    // stream-copied audio bypasses the decoder, so it starts from the
+                    // nearest keyframe — potentially seconds before the target.
+                    // Use the noise bsf to drop copied audio packets before the seek
+                    // target, achieving the same trim precision without re-encoding.
                     // Important: make sure not to use it with wtv because it breaks seeking
                     if (state.TranscodingType is TranscodingJobType.Hls
-                        && string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
-                        && (IsCopyCodec(state.OutputVideoCodec) || IsCopyCodec(state.OutputAudioCodec))
+                        && !IsCopyCodec(state.OutputVideoCodec)
+                        && IsCopyCodec(state.OutputAudioCodec)
                         && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
                     {
-                        seekParam += " -noaccurate_seek";
+                        var seekSeconds = time / (double)TimeSpan.TicksPerSecond;
+                        seekParam += string.Format(
+                            CultureInfo.InvariantCulture,
+                            " -bsf:a noise=drop='lt(pts*tb\\,{0:F3})'",
+                            seekSeconds);
                     }
                 }
             }
