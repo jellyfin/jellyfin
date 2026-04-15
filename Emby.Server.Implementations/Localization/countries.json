@@ -390,12 +390,6 @@
         "TwoLetterISORegionName": "KE"
     },
     {
-        "DisplayName": "Tanzania",
-        "Name": "TZ",
-        "ThreeLetterISORegionName": "TZA",
-        "TwoLetterISORegionName": "TZ"
-    },
-    {
         "DisplayName": "Korea",
         "Name": "KR",
         "ThreeLetterISORegionName": "KOR",
@@ -754,6 +748,12 @@
         "Name": "TJ",
         "ThreeLetterISORegionName": "TAJ",
         "TwoLetterISORegionName": "TJ"
+    },
+    {
+        "DisplayName": "Tanzania",
+        "Name": "TZ",
+        "ThreeLetterISORegionName": "TZA",
+        "TwoLetterISORegionName": "TZ"
     },
     {
         "DisplayName": "Thailand",
