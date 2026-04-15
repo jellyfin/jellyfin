@@ -74,6 +74,11 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // when playback unpause is supposed to happen.
                 // Seek only if playback actually started.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
+
+                // Clamp position to media duration to prevent overshoot.
+                // Network delay or processing time can cause the calculated
+                // position to exceed the actual media length.
+                context.PositionTicks = context.SanitizePositionTicks(context.PositionTicks);
             }
 
             // Prepare new session.
@@ -361,6 +366,9 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                 // when playback unpause is supposed to happen.
                 // Seek only if playback actually started.
                 context.PositionTicks += Math.Max(elapsedTime.Ticks, 0);
+
+                // Clamp position to media duration to prevent overshoot.
+                context.PositionTicks = context.SanitizePositionTicks(context.PositionTicks);
 
                 // Send pause command to all non-buffering sessions.
                 var command = context.NewSyncPlayCommand(SendCommandType.Pause);
