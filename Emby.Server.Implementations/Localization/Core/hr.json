@@ -89,7 +89,7 @@
     "UserStartedPlayingItemWithValues": "{0} je pokrenuo reprodukciju {1} na {2}",
     "UserStoppedPlayingItemWithValues": "{0} je završio reprodukciju {1} na {2}",
     "ValueHasBeenAddedToLibrary": "{0} je dodano u medijsku biblioteku",
-    "ValueSpecialEpisodeName": "Posebno - {0}",
+    "ValueSpecialEpisodeName": "Posebno – {0}",
     "VersionNumber": "Verzija {0}",
     "TaskRefreshLibraryDescription": "Skenira medijsku biblioteku radi novih datoteka i osvježava metapodatke.",
     "TaskRefreshLibrary": "Skeniraj medijsku biblioteku",
