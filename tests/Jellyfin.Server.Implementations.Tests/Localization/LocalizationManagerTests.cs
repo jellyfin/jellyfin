@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             var countries = localizationManager.GetCountries().ToList();
 
-            Assert.Equal(139, countries.Count);
+            Assert.Equal(140, countries.Count);
 
             var germany = countries.FirstOrDefault(x => x.Name.Equals("DE", StringComparison.Ordinal));
             Assert.NotNull(germany);
