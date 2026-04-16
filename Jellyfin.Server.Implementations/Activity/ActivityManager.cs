@@ -58,9 +58,9 @@ public class ActivityManager : IActivityManager
         {
             // TODO switch to LeftJoin in .NET 10.
             var entries = from a in dbContext.ActivityLogs
-                join u in dbContext.Users on a.UserId equals u.Id into ugj
-                from u in ugj.DefaultIfEmpty()
-                select new ExpandedActivityLog { ActivityLog = a, Username = u.Username };
+                          join u in dbContext.Users on a.UserId equals u.Id into ugj
+                          from u in ugj.DefaultIfEmpty()
+                          select new ExpandedActivityLog { ActivityLog = a, Username = u.Username };
 
             if (query.HasUserId is not null)
             {

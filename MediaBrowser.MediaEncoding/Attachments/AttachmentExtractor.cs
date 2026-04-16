@@ -157,19 +157,19 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 int exitCode;
 
                 using (var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            Arguments = processArgs,
-                            FileName = _mediaEncoder.EncoderPath,
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            WindowStyle = ProcessWindowStyle.Hidden,
-                            WorkingDirectory = outputFolder,
-                            ErrorDialog = false
-                        },
-                        EnableRaisingEvents = true
-                    })
+                        Arguments = processArgs,
+                        FileName = _mediaEncoder.EncoderPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        WorkingDirectory = outputFolder,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
                 {
                     _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -284,18 +284,18 @@ namespace MediaBrowser.MediaEncoding.Attachments
             int exitCode;
 
             using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        Arguments = processArgs,
-                        FileName = _mediaEncoder.EncoderPath,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        ErrorDialog = false
-                    },
-                    EnableRaisingEvents = true
-                })
+                    Arguments = processArgs,
+                    FileName = _mediaEncoder.EncoderPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            })
             {
                 _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 

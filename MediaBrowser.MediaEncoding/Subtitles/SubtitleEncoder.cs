@@ -187,10 +187,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     await using (stream.ConfigureAwait(false))
                     {
-                      using var reader = new StreamReader(stream, detected.Encoding);
-                      var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                        using var reader = new StreamReader(stream, detected.Encoding);
+                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                      return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                        return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
             }
@@ -1004,20 +1004,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                {
-                    using var stream = await _httpClientFactory
-                      .CreateClient(NamedClient.Default)
-                      .GetStreamAsync(new Uri(path), cancellationToken)
-                      .ConfigureAwait(false);
+                    {
+                        using var stream = await _httpClientFactory
+                          .CreateClient(NamedClient.Default)
+                          .GetStreamAsync(new Uri(path), cancellationToken)
+                          .ConfigureAwait(false);
 
-                    return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-                }
+                        return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                    }
 
                 case MediaProtocol.File:
-                {
-                    return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
-                                          .ConfigureAwait(false);
-                }
+                    {
+                        return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
+                                              .ConfigureAwait(false);
+                    }
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol), protocol, "Unsupported protocol");

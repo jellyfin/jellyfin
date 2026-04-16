@@ -2086,7 +2086,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
             var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower) < 0);
         }
 
         if (filter.ImageTypes.Length > 0)

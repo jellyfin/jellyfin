@@ -117,8 +117,8 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             return true;
         }
 
-         // Mitigate the problem of the Ignore library not handling Windows paths correctly.
-         // See https://github.com/jellyfin/jellyfin/issues/15484
+        // Mitigate the problem of the Ignore library not handling Windows paths correctly.
+        // See https://github.com/jellyfin/jellyfin/issues/15484
         var pathToCheck = normalizePath ? path.NormalizePath('/') : path;
 
         // Add trailing slash for directories to match "folder/"
