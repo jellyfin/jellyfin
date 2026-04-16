@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     continue;
                 }
 
-                if (_subtitleProviders.All(provider => libraryOptions.DisabledSubtitleFetchers.Contains(provider.Name)))
+                if (_subtitleProviders.All(provider => libraryOptions.DisabledSubtitleFetchers.Contains(provider.Name, StringComparer.OrdinalIgnoreCase)))
                 {
                     // Skip this library if all subtitle providers are disabled
                     continue;
