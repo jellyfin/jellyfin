@@ -39,11 +39,11 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             if (libraryTypeOptions is not null)
             {
-                return libraryTypeOptions.MetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+                return libraryTypeOptions.MetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.GetMetadataOptionsForType(baseItem.GetType().Name);
-            return itemConfig is null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+            return itemConfig is null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -63,11 +63,11 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             if (libraryTypeOptions is not null)
             {
-                return libraryTypeOptions.ImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+                return libraryTypeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.GetMetadataOptionsForType(baseItem.GetType().Name);
-            return itemConfig is null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+            return itemConfig is null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

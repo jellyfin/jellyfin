@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
 
             var current = item.Tags;
 
-            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 if (current.Length == 0)
                 {

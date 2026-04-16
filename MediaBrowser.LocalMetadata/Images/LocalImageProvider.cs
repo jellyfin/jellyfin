@@ -123,7 +123,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return directoryService.GetFileSystemEntries(path)
                 .Where(i =>
                     (includeDirectories && i.IsDirectory)
-                    || BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparison.OrdinalIgnoreCase))
+                    || BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 

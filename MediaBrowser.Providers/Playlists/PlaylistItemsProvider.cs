@@ -78,7 +78,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
         }
 
         var extension = Path.GetExtension(path);
-        if (!Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+        if (!Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparer.OrdinalIgnoreCase))
         {
             return;
         }

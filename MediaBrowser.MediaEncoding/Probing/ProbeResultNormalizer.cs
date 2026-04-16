@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -33,8 +34,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         private static readonly char[] _basicDelimiters = ['/', ';'];
         private static readonly char[] _nameDelimiters = [.. _basicDelimiters, '|', '\\'];
         private static readonly char[] _genreDelimiters = [.. _basicDelimiters, ','];
-        private static readonly string[] _webmVideoCodecs = ["av1", "vp8", "vp9"];
-        private static readonly string[] _webmAudioCodecs = ["opus", "vorbis"];
+        private static readonly FrozenSet<string> _webmVideoCodecs = FrozenSet.ToFrozenSet(
+            ["av1", "vp8", "vp9"],
+            StringComparer.OrdinalIgnoreCase);
+
+        private static readonly FrozenSet<string> _webmAudioCodecs = FrozenSet.ToFrozenSet(
+            ["opus", "vorbis"],
+            StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
@@ -52,8 +58,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             _localization = localization;
         }
 
-        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
-        {
+        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??=
+        [
             "AC/DC",
             "A/T/O/S",
             "As/Hi Soundworks",
@@ -84,7 +90,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "We;Na",
             "LSR/CITY",
             "Kairon; IRSE!",
-        };
+        ];
 
         /// <summary>
         /// Transforms a FFprobe response into its <see cref="MediaInfo"/> equivalent.
@@ -305,8 +311,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     // FFprobe can report "matroska,webm" for Matroska-like containers, so only keep "webm" if all streams are WebM-compatible.
                     // Any stream that is not video nor audio is not supported in WebM and should disqualify the webm container probe result.
                     if (mediaStreams.Any(stream => stream.Type is not MediaStreamType.Video and not MediaStreamType.Audio)
-                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
-                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec))
+                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec))))
                     {
                         splitFormat[i] = string.Empty;
                     }
@@ -1503,8 +1509,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // Don't add artist/album artist name to studios, even if it's listed there
-                if (info.Artists.Contains(studio, StringComparison.OrdinalIgnoreCase)
-                    || info.AlbumArtists.Contains(studio, StringComparison.OrdinalIgnoreCase))
+                if (info.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase)
+                    || info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }

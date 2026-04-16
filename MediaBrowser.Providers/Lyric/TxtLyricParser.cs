@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Frozen;
 using System.IO;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Lyrics;
@@ -12,7 +12,10 @@ namespace MediaBrowser.Providers.Lyric;
 /// </summary>
 public class TxtLyricParser : ILyricParser
 {
-    private static readonly string[] _supportedMediaTypes = [".lrc", ".elrc", ".txt"];
+    private static readonly FrozenSet<string> _supportedMediaTypes = FrozenSet.ToFrozenSet(
+        new[] { ".lrc", ".elrc", ".txt" },
+        StringComparer.OrdinalIgnoreCase);
+
     private static readonly string[] _lineBreakCharacters = ["\r\n", "\r", "\n"];
 
     /// <inheritdoc />
@@ -27,7 +30,7 @@ public class TxtLyricParser : ILyricParser
     /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
-        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name)))
         {
             return null;
         }

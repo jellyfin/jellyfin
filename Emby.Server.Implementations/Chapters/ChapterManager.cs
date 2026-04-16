@@ -151,7 +151,7 @@ public class ChapterManager : IChapterManager
 
             var path = _pathManager.GetChapterImagePath(video, chapter.StartPositionTicks);
 
-            if (!currentImages.Contains(path, StringComparison.OrdinalIgnoreCase))
+            if (!currentImages.Contains(path, StringComparer.OrdinalIgnoreCase))
             {
                 if (extractImages)
                 {
@@ -280,7 +280,7 @@ public class ChapterManager : IChapterManager
         var existingImages = chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i));
         var deadImages = images
             .Except(existingImages, StringComparer.OrdinalIgnoreCase)
-            .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i.AsSpan()), StringComparison.OrdinalIgnoreCase))
+            .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         foreach (var image in deadImages)

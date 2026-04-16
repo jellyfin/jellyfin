@@ -603,13 +603,13 @@ namespace Emby.Server.Implementations.IO
             {
                 files = files.Where(i =>
                 {
-                    var ext = i.Extension.AsSpan();
-                    if (ext.IsEmpty)
+                    var ext = i.Extension;
+                    if (string.IsNullOrEmpty(ext))
                     {
                         return false;
                     }
 
-                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
+                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
 
@@ -663,13 +663,13 @@ namespace Emby.Server.Implementations.IO
             {
                 files = files.Where(i =>
                 {
-                    var ext = Path.GetExtension(i.AsSpan());
-                    if (ext.IsEmpty)
+                    var ext = Path.GetExtension(i);
+                    if (string.IsNullOrEmpty(ext))
                     {
                         return false;
                     }
 
-                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
+                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
 

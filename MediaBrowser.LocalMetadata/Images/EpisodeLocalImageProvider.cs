@@ -64,7 +64,7 @@ namespace MediaBrowser.LocalMetadata.Images
                     continue;
                 }
 
-                if (BaseItem.SupportedImageExtensions.Contains(i.Extension.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                if (BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 {
                     var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.FullName.AsSpan());
 

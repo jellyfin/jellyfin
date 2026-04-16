@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.Manager
 
             // Delete the current path
             if (currentImageIsLocalFile
-                && !savedPaths.Contains(currentImagePath, StringComparison.OrdinalIgnoreCase)
+                && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase)
                 && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
@@ -575,7 +575,7 @@ namespace MediaBrowser.Providers.Manager
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;
-            while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
             {
                 current++;
             }

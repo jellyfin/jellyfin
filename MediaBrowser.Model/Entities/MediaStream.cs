@@ -20,17 +20,10 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class MediaStream
     {
-        private static readonly string[] _specialCodes =
-        {
-            // Uncoded languages.
-            "mis",
-            // Multiple languages.
-            "mul",
-            // Undetermined.
-            "und",
-            // No linguistic content; not applicable.
-            "zxx"
-        };
+        // Uncoded languages / Multiple languages / Undetermined / No linguistic content.
+        private static readonly FrozenSet<string> _specialCodes = FrozenSet.ToFrozenSet(
+            ["mis", "mul", "und", "zxx"],
+            StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets the codec.
@@ -271,7 +264,7 @@ namespace MediaBrowser.Model.Entities
                         var attributes = new List<string>();
 
                         // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
-                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language))
                         {
                             // Use pre-resolved localized language name, falling back to raw language code.
                             attributes.Add(StringHelper.FirstToUpper(LocalizedLanguage ?? Language));

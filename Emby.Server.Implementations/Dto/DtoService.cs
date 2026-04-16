@@ -343,7 +343,7 @@ namespace Emby.Server.Implementations.Dto
                             path = path.TrimStart('.');
                         }
 
-                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
                         {
                             fileExtensionContainer = path;
                         }

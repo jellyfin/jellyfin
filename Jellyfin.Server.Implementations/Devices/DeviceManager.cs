@@ -242,7 +242,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 return true;
             }
 
-            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparison.OrdinalIgnoreCase)
+            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparer.OrdinalIgnoreCase)
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
 

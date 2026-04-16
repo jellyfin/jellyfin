@@ -27,7 +27,9 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
+        private static readonly FrozenSet<string> _unratedValues = FrozenSet.ToFrozenSet(
+        new[] { "n/a", "unrated", "not rated", "nr" },
+        StringComparer.OrdinalIgnoreCase);
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
@@ -186,7 +188,7 @@ namespace Emby.Server.Implementations.Localization
                         var culture = cultures[i];
                         if (lang.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
                             || lang.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
-                            || culture.ThreeLetterISOLanguageNames.Contains(lang, StringComparison.OrdinalIgnoreCase)
+                            || culture.ThreeLetterISOLanguageNames.Contains(lang, StringComparer.OrdinalIgnoreCase)
                             || lang.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
                         {
                             return culture;
@@ -294,7 +296,7 @@ namespace Emby.Server.Implementations.Localization
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
             // Handle unrated content
-            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
+            if (_unratedValues.Contains(rating))
             {
                 return null;
             }

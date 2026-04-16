@@ -59,10 +59,10 @@ namespace Emby.Naming.Video
 
             if (!isDirectory)
             {
-                var extension = Path.GetExtension(path.AsSpan());
+                var extension = Path.GetExtension(path);
 
                 // Check supported extensions
-                if (!namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                if (!namingOptions.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
                     // It's not supported. Check stub extensions
                     if (!StubResolver.TryResolveFile(path, namingOptions, out stubType))
@@ -118,8 +118,8 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file.</returns>
         public static bool IsVideoFile(string path, NamingOptions namingOptions)
         {
-            var extension = Path.GetExtension(path.AsSpan());
-            return namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path);
+            return namingOptions.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file stub.</returns>
         public static bool IsStubFile(string path, NamingOptions namingOptions)
         {
-            var extension = Path.GetExtension(path.AsSpan());
-            return namingOptions.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path);
+            return namingOptions.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

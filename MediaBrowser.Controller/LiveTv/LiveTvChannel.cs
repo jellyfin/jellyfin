@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsKids => Tags.Contains("Kids", StringComparison.OrdinalIgnoreCase);
+        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
 
         [JsonIgnore]
         public bool IsRepeat { get; set; }

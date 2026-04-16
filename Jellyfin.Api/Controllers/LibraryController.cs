@@ -836,7 +836,7 @@ public class LibraryController : BaseJellyfinApiController
         var typesList = types.ToList();
 
         var plugins = _providerManager.GetAllMetadataPlugins()
-            .Where(i => types.Contains(i.ItemType, StringComparison.OrdinalIgnoreCase))
+            .Where(i => types.Contains(i.ItemType, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i => typesList.IndexOf(i.ItemType))
             .ToList();
 
@@ -1007,10 +1007,10 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
-            .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             .ToArray();
 
-        return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparison.OrdinalIgnoreCase));
+        return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase));
     }
 
     private bool IsMetadataFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -1030,7 +1030,7 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
-        return metadataOptions is null || !metadataOptions.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+        return metadataOptions is null || !metadataOptions.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
     }
 
     private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -1052,6 +1052,6 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
-        return metadataOptions is null || !metadataOptions.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
+        return metadataOptions is null || !metadataOptions.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
     }
 }

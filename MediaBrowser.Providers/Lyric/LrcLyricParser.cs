@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Jellyfin.Extensions;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Lyrics;
@@ -20,7 +20,9 @@ public partial class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
-    private static readonly string[] _supportedMediaTypes = [".lrc", ".elrc"];
+    private static readonly FrozenSet<string> _supportedMediaTypes = FrozenSet.ToFrozenSet(
+        new[] { ".lrc", ".elrc" },
+        StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LrcLyricParser"/> class.
@@ -42,7 +44,7 @@ public partial class LrcLyricParser : ILyricParser
     /// <inheritdoc />
     public LyricDto? ParseLyrics(LyricFile lyrics)
     {
-        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name)))
         {
             return null;
         }

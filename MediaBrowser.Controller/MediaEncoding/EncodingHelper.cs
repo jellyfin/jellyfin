@@ -1417,10 +1417,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return DynamicHdrMetadataRemovalPlan.None;
             }
 
-            var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparison.OrdinalIgnoreCase);
-            var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparison.OrdinalIgnoreCase);
+            var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparer.OrdinalIgnoreCase);
+            var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparer.OrdinalIgnoreCase);
+            var requestHasDOVIwithEL = requestedRangeTypes.Contains(VideoRangeType.DOVIWithEL.ToString(), StringComparer.OrdinalIgnoreCase);
+            var requestHasDOVIwithELHDR10plus = requestedRangeTypes.Contains(VideoRangeType.DOVIWithELHDR10Plus.ToString(), StringComparer.OrdinalIgnoreCase);
 
             var shouldRemoveHdr10Plus = false;
             // Case 1: Client supports HDR10, does not support DOVI with EL but EL presets
@@ -2131,7 +2131,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 videoProfiles = _videoProfilesAv1;
             }
 
-            if (!videoProfiles.Contains(profile, StringComparison.OrdinalIgnoreCase))
+            if (!videoProfiles.Contains(profile, StringComparer.OrdinalIgnoreCase))
             {
                 profile = string.Empty;
             }
@@ -2370,7 +2370,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Source and target codecs must match
             if (string.IsNullOrEmpty(videoStream.Codec)
                 || (state.SupportedVideoCodecs.Length != 0
-                    && !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparison.OrdinalIgnoreCase)))
+                    && !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -2388,7 +2388,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestedProfile = requestedProfiles[0];
                 // strip spaces because they may be stripped out on the query string as well
                 if (!string.IsNullOrEmpty(videoStream.Profile)
-                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase))
+                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Codec, videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(videoStream.Codec, requestedProfile);
@@ -2409,10 +2409,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // DOVIWithHDR10 should be compatible with HDR10 supporting players. Same goes with HLG and of course SDR. So allow copy of those formats
-                var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparison.OrdinalIgnoreCase);
-                var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
-                var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
-                var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+                var requestHasHDR10 = requestedRangeTypes.Contains(VideoRangeType.HDR10.ToString(), StringComparer.OrdinalIgnoreCase);
+                var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparer.OrdinalIgnoreCase);
+                var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparer.OrdinalIgnoreCase);
+                var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 // If SDR is the only supported range, we should not copy any of the HDR streams.
                 // All the following copy check assumes at least one HDR format is supported.
@@ -2427,7 +2427,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
 
-                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase)
+                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparer.OrdinalIgnoreCase)
                      && !((requestHasHDR10 && videoStream.VideoRangeType == VideoRangeType.DOVIWithHDR10)
                             || (requestHasHLG && videoStream.VideoRangeType == VideoRangeType.DOVIWithHLG)
                             || (requestHasSDR && videoStream.VideoRangeType == VideoRangeType.DOVIWithSDR)
@@ -2551,7 +2551,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec)
-                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparison.OrdinalIgnoreCase))
+                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -6454,7 +6454,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var decoderName = decoderPrefix + '_' + decoderSuffix;
 
-            var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
+            var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
 
             // VideoToolbox decoders have built-in SW fallback
             if (bitDepth == 10
@@ -6462,14 +6462,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase)
                     && !options.EnableDecodingColorDepth10Hevc)
                 {
                     return null;
                 }
 
                 if (string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
-                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase)
                     && !options.EnableDecodingColorDepth10Vp9)
                 {
                     return null;
@@ -6514,7 +6514,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isQsvSupported = (isLinux || isWindows) && _mediaEncoder.SupportsHwaccel("qsv");
             var isVideotoolboxSupported = isMacOS && _mediaEncoder.SupportsHwaccel("videotoolbox");
             var isRkmppSupported = isLinux && IsRkmppFullSupported();
-            var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
+            var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
             var hardwareAccelerationType = options.HardwareAccelerationType;
 
             var ffmpegVersion = _mediaEncoder.EncoderVersion;
@@ -6540,7 +6540,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && (options.HardwareAccelerationType != HardwareAccelerationType.videotoolbox))
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase))
+                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase))
                 {
                     if (IsVideoStreamHevcRext(state))
                     {
@@ -6567,7 +6567,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 if (string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
-                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase)
                     && bitDepth == 10
                     && !options.EnableDecodingColorDepth10Vp9)
                 {
@@ -7470,12 +7470,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 shiftAudioCodecs.Add("eac3");
             }
 
-            if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparison.OrdinalIgnoreCase))
+            while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparer.OrdinalIgnoreCase))
             {
                 var removed = audioCodecs[0];
                 audioCodecs.RemoveAt(0);
@@ -7504,12 +7504,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 shiftVideoCodecs.Add("av1");
             }
 
-            if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparison.OrdinalIgnoreCase))
+            while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparer.OrdinalIgnoreCase))
             {
                 var removed = videoCodecs[0];
                 videoCodecs.RemoveAt(0);
@@ -7721,7 +7721,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var bitrate = state.OutputAudioBitrate;
-            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(codec, StringComparison.OrdinalIgnoreCase))
+            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(codec, StringComparer.OrdinalIgnoreCase))
             {
                 var vbrParam = GetAudioVbrModeParam(codec, bitrate.Value, channels ?? 2);
                 if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
@@ -7752,7 +7752,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var channels = state.OutputAudioChannels;
             var outputCodec = state.OutputAudioCodec;
 
-            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparison.OrdinalIgnoreCase))
+            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparer.OrdinalIgnoreCase))
             {
                 var vbrParam = GetAudioVbrModeParam(GetAudioEncoder(state), bitrate.Value, channels ?? 2);
                 if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)

@@ -1694,7 +1694,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
 
-            if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
+            if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparer.OrdinalIgnoreCase))
             {
                 var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value, audioChannels ?? 2);
                 if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
@@ -1742,7 +1742,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var bitrate = state.OutputAudioBitrate;
-        if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
+        if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparer.OrdinalIgnoreCase))
         {
             var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value, channels ?? 2);
             if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
@@ -1804,7 +1804,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             var requestedRange = state.GetRequestedRangeTypes(state.ActualOutputVideoCodec);
             // Clients reporting Dolby Vision capabilities with fallbacks may only support the fallback layer.
             // Only enable Dolby Vision remuxing if the client explicitly declares support for profiles without fallbacks.
-            var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+            var clientSupportsDoVi = requestedRange.Contains(VideoRangeType.DOVI.ToString(), StringComparer.OrdinalIgnoreCase);
             var videoIsDoVi = EncodingHelper.IsDovi(state.VideoStream);
 
             if (EncodingHelper.IsCopyCodec(codec)

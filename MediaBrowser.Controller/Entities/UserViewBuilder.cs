@@ -779,7 +779,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply genre filter
-            if (query.Genres.Count > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparison.OrdinalIgnoreCase)))
+            if (query.Genres.Count > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -803,7 +803,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
-                return studioItem is not null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
+                return studioItem is not null && item.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -813,7 +813,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.GenreIds.Count > 0 && !query.GenreIds.Any(id =>
             {
                 var genreItem = libraryManager.GetItemById(id);
-                return genreItem is not null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
+                return genreItem is not null && item.Genres.Contains(genreItem.Name, StringComparer.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -846,7 +846,7 @@ namespace MediaBrowser.Controller.Entities
             var tags = query.Tags;
             if (tags.Length > 0)
             {
-                if (!tags.Any(v => item.Tags.Contains(v, StringComparison.OrdinalIgnoreCase)))
+                if (!tags.Any(v => item.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

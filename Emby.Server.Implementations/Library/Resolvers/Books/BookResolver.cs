@@ -3,11 +3,11 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Frozen;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Book;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -16,7 +16,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
     public class BookResolver : ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf", ".m4b", ".m4a", ".aac", ".flac", ".mp3", ".opus" };
+        private static readonly FrozenSet<string> _validExtensions = FrozenSet.ToFrozenSet(
+            new[] { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf", ".m4b", ".m4a", ".aac", ".flac", ".mp3", ".opus" },
+            StringComparer.OrdinalIgnoreCase);
 
         protected override Book Resolve(ItemResolveArgs args)
         {
@@ -33,9 +35,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 return GetBook(args);
             }
 
-            var extension = Path.GetExtension(args.Path.AsSpan());
+            var extension = Path.GetExtension(args.Path);
 
-            if (!_validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            if (!_validExtensions.Contains(extension))
             {
                 return null;
             }
@@ -57,11 +59,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var fileExtension = Path.GetExtension(f.FullName.AsSpan());
+                var fileExtension = Path.GetExtension(f.FullName);
 
-                return _validExtensions.Contains(
-                    fileExtension,
-                    StringComparison.OrdinalIgnoreCase);
+                return _validExtensions.Contains(fileExtension);
             }).ToList();
 
             // directory is only considered a book when it contains exactly one supported file

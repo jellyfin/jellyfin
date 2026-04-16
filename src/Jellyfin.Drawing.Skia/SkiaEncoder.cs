@@ -285,8 +285,8 @@ public class SkiaEncoder : IImageEncoder
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
 
-        var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase)
+        var extension = Path.GetExtension(path).TrimStart('.');
+        if (!SupportedInputFormats.Contains(extension, StringComparer.OrdinalIgnoreCase)
             || extension.Equals(SvgFormat, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
@@ -571,8 +571,8 @@ public class SkiaEncoder : IImageEncoder
         ArgumentException.ThrowIfNullOrEmpty(inputPath);
         ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
-        var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.');
-        if (!SupportedInputFormats.Contains(inputFormat, StringComparison.OrdinalIgnoreCase))
+        var inputFormat = Path.GetExtension(inputPath).TrimStart('.');
+        if (!SupportedInputFormats.Contains(inputFormat, StringComparer.OrdinalIgnoreCase))
         {
             _logger.LogDebug("Unable to encode image due to unsupported format: {ImagePath}", inputPath);
             return inputPath;

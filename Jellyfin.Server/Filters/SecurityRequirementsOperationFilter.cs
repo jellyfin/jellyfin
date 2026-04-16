@@ -72,7 +72,7 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
         var scheme = new OpenApiSecuritySchemeReference(AuthenticationSchemes.CustomAuthentication, null, null);
 
         // Add DefaultAuthorization scope to any endpoint that has a policy with a requirement that is a subset of DefaultAuthorization.
-        if (!requiredScopes.Contains(DefaultAuthPolicy.AsSpan(), StringComparison.Ordinal))
+        if (!requiredScopes.Contains(DefaultAuthPolicy, StringComparer.Ordinal))
         {
             foreach (var scope in requiredScopes)
             {
