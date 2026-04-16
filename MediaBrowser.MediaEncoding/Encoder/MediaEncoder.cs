@@ -564,7 +564,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (result is null || (result.Streams is null && result.Format is null))
                 {
-                    throw new FfmpegException("ffprobe failed - streams and format are both null.");
+                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffprobe failed for '{0}' - streams and format are both null.", primaryPath));
                 }
 
                 if (result.Streams is not null)
