@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Localization
                     string twoCharName = parts[2];
                     if (string.IsNullOrWhiteSpace(twoCharName))
                     {
-                        continue;
+                        twoCharName = string.Empty;
                     }
                     else if (twoCharName.Contains('-', StringComparison.OrdinalIgnoreCase))
                     {
