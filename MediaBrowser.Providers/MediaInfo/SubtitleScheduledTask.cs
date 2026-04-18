@@ -8,14 +8,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -57,16 +55,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool IsLogged => true;
 
-        private SubtitleOptions GetOptions()
-        {
-            return _config.GetConfiguration<SubtitleOptions>("subtitles");
-        }
-
         /// <inheritdoc />
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = GetOptions();
-
             var types = new[] { BaseItemKind.Episode, BaseItemKind.Movie };
 
             var dict = new Dictionary<Guid, BaseItem>();
@@ -81,16 +72,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (libraryOptions.SubtitleDownloadLanguages is null)
                 {
-                    subtitleDownloadLanguages = options.DownloadLanguages;
-                    skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
-                    skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
+                    // Skip this library if subtitle download languages are not configured
+                    continue;
                 }
-                else
-                {
-                    subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
-                    skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
-                    skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                }
+
+                subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
+                skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
+                skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
 
                 foreach (var lang in subtitleDownloadLanguages)
                 {
@@ -144,7 +132,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 try
                 {
-                    await DownloadSubtitles(video as Video, options, cancellationToken).ConfigureAwait(false);
+                    await DownloadSubtitles(video as Video, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -160,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private async Task<bool> DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
+        private async Task<bool> DownloadSubtitles(Video video, CancellationToken cancellationToken)
         {
             var mediaStreams = video.GetMediaStreams();
 
@@ -173,18 +161,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (libraryOptions.SubtitleDownloadLanguages is null)
             {
-                subtitleDownloadLanguages = options.DownloadLanguages;
-                skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
-                skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                requirePerfectMatch = options.RequirePerfectMatch;
+                // Subtitle downloading is not configured for this library
+                return true;
             }
-            else
-            {
-                subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
-                skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
-                skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
-            }
+
+            subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
+            skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
+            skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
+            requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
 
             var downloadedLanguages = await new SubtitleDownloader(
                 _logger,
