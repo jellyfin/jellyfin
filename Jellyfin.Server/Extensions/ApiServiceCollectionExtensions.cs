@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
@@ -26,16 +26,15 @@ using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
 
@@ -172,7 +171,7 @@ namespace Jellyfin.Server.Extensions
             if (config.KnownProxies.Length == 0)
             {
                 options.ForwardedHeaders = ForwardedHeaders.None;
-                options.KnownNetworks.Clear();
+                options.KnownIPNetworks.Clear();
                 options.KnownProxies.Clear();
             }
             else
@@ -182,7 +181,7 @@ namespace Jellyfin.Server.Extensions
             }
 
             // Only set forward limit if we have some known proxies or some known networks.
-            if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+            if (options.KnownProxies.Count != 0 || options.KnownIPNetworks.Count != 0)
             {
                 options.ForwardLimit = null;
             }
@@ -206,7 +205,7 @@ namespace Jellyfin.Server.Extensions
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(version)
+                            new JsonNodeExtension(JsonValue.Create(version))
                         }
                     }
                 });
@@ -253,13 +252,16 @@ namespace Jellyfin.Server.Extensions
                 c.AddSwaggerTypeMappings();
 
                 c.SchemaFilter<IgnoreEnumSchemaFilter>();
+                c.SchemaFilter<FlagsEnumSchemaFilter>();
                 c.OperationFilter<RetryOnTemporarilyUnavailableFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
-            });
+                c.DocumentFilter<SecuritySchemeReferenceFixupFilter>();
+            })
+            .Replace(ServiceDescriptor.Transient<ISwaggerProvider, CachingOpenApiProvider>());
         }
 
         private static void AddPolicy(this AuthorizationOptions authorizationOptions, string policyName, IAuthorizationRequirement authorizationRequirement)
@@ -286,10 +288,7 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    if (subnet is not null)
-                    {
-                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
-                    }
+                    AddIPAddress(config, options, subnet.Address, subnet.Subnet.PrefixLength);
                 }
                 else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
                 {
@@ -319,7 +318,7 @@ namespace Jellyfin.Server.Extensions
             }
             else
             {
-                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(addr, prefixLength));
+                options.KnownIPNetworks.Add(new System.Net.IPNetwork(addr, prefixLength));
             }
         }
 
@@ -332,63 +331,28 @@ namespace Jellyfin.Server.Extensions
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
-                    Type = "object",
+                    Type = JsonSchemaType.Object,
                     AdditionalProperties = new OpenApiSchema
                     {
-                        Type = "string"
+                        Type = JsonSchemaType.String
                     }
-                });
-
-            /*
-             * Support BlurHash dictionary
-             */
-            options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
-                new OpenApiSchema
-                {
-                    Type = "object",
-                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
-                        name => name,
-                        _ => new OpenApiSchema
-                        {
-                            Type = "object",
-                            AdditionalProperties = new OpenApiSchema
-                            {
-                                Type = "string"
-                            }
-                        })
                 });
 
             // Support dictionary with nullable string value.
             options.MapType<Dictionary<string, string?>>(() =>
                 new OpenApiSchema
                 {
-                    Type = "object",
+                    Type = JsonSchemaType.Object,
                     AdditionalProperties = new OpenApiSchema
                     {
-                        Type = "string",
-                        Nullable = true
-                    }
-                });
-
-            // Manually describe Flags enum.
-            options.MapType<TranscodeReason>(() =>
-                new OpenApiSchema
-                {
-                    Type = "array",
-                    Items = new OpenApiSchema
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Id = nameof(TranscodeReason),
-                            Type = ReferenceType.Schema,
-                        }
+                        Type = JsonSchemaType.String | JsonSchemaType.Null
                     }
                 });
 
             // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.
             options.MapType<Version>(() => new OpenApiSchema
             {
-                Type = "string"
+                Type = JsonSchemaType.String
             });
         }
     }

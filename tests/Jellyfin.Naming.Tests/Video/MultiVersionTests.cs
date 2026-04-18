@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.Common;
@@ -269,8 +270,13 @@ namespace Jellyfin.Naming.Tests.Video
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
-            Assert.Equal(7, result.Count);
-            Assert.Empty(result[0].AlternateVersions);
+            Assert.Single(result);
+            Assert.Equal(6, result[0].AlternateVersions.Count);
+
+            // Verify 3D recognition is preserved on alternate versions
+            var hsbs = result[0].AlternateVersions.First(v => v.Path.Contains("3d-hsbs", StringComparison.Ordinal));
+            Assert.True(hsbs.Is3D);
+            Assert.Equal("hsbs", hsbs.Format3D);
         }
 
         [Fact]
@@ -434,6 +440,40 @@ namespace Jellyfin.Naming.Tests.Video
             var result = VideoListResolver.Resolve(new List<VideoFileInfo>(), _namingOptions).ToList();
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void Resolve_GivenUnderscoreSeparator_GroupsVersions()
+        {
+            var files = new[]
+            {
+                "/movies/Movie (2020)/Movie (2020)_4K.mkv",
+                "/movies/Movie (2020)/Movie (2020)_1080p.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void Resolve_GivenDotSeparator_GroupsVersions()
+        {
+            var files = new[]
+            {
+                "/movies/Movie (2020)/Movie (2020).UHD.mkv",
+                "/movies/Movie (2020)/Movie (2020).1080p.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Single(result[0].AlternateVersions);
         }
     }
 }

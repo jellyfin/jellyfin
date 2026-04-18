@@ -287,5 +287,5 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
-    public bool EnableLegacyAuthorization { get; set; } = true;
+    public bool EnableLegacyAuthorization { get; set; }
 }

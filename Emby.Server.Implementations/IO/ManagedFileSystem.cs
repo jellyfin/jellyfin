@@ -497,8 +497,17 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return Path.TrimEndingDirectorySeparator(path1).Equals(
-                Path.TrimEndingDirectorySeparator(path2),
+            if (string.IsNullOrWhiteSpace(path1) || string.IsNullOrWhiteSpace(path2))
+            {
+                return false;
+            }
+
+            var normalized1 = Path.TrimEndingDirectorySeparator(path1);
+            var normalized2 = Path.TrimEndingDirectorySeparator(path2);
+
+            return string.Equals(
+                normalized1,
+                normalized2,
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 

@@ -65,7 +65,7 @@ public class CollectionController : BaseJellyfinApiController
             UserIds = new[] { userId }
         }).ConfigureAwait(false);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
 
         var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
 

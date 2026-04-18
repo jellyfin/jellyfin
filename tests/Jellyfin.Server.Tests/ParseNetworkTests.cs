@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Server.Tests
 {
@@ -87,7 +86,7 @@ namespace Jellyfin.Server.Tests
 
             // Need this here as ::1 and 127.0.0.1 are in them by default.
             options.KnownProxies.Clear();
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
 
             ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList, options);
 
@@ -97,10 +96,10 @@ namespace Jellyfin.Server.Tests
                 Assert.True(options.KnownProxies.Contains(item));
             }
 
-            Assert.Equal(knownNetworks.Length, options.KnownNetworks.Count);
+            Assert.Equal(knownNetworks.Length, options.KnownIPNetworks.Count);
             foreach (var item in knownNetworks)
             {
-                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.Prefix.Equals(item.Prefix) && x.PrefixLength == item.PrefixLength));
+                Assert.NotEqual(default, options.KnownIPNetworks.FirstOrDefault(x => x.BaseAddress.Equals(item.BaseAddress) && x.PrefixLength == item.PrefixLength));
             }
         }
 

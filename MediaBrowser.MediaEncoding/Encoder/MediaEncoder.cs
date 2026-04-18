@@ -511,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
 
-            if (!isAudio && _proberSupportsFirstVideoFrame)
+            if (protocol == MediaProtocol.File && !isAudio && _proberSupportsFirstVideoFrame)
             {
                 args += " -show_frames -only_first_vframe";
             }
@@ -1331,8 +1331,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            // TODO is there ever a case when a subtitle can't be extracted??
-            return true;
+            return _configurationManager.GetEncodingOptions().EnableSubtitleExtraction;
         }
 
         private sealed class ProcessWrapper : IDisposable

@@ -74,8 +74,7 @@ public class MoviesController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
-        var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions { Fields = fields };
 
         var categories = new List<RecommendationDto>();
 

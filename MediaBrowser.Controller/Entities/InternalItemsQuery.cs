@@ -10,6 +10,7 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -124,6 +125,8 @@ namespace MediaBrowser.Controller.Entities
         public string? Path { get; set; }
 
         public string? Name { get; set; }
+
+        public bool? UseRawName { get; set; }
 
         public string? Person { get; set; }
 
@@ -385,6 +388,76 @@ namespace MediaBrowser.Controller.Entities
                 .ToArray();
 
             User = user;
+        }
+
+        public void ApplyFilters(ItemFilter[] filters)
+        {
+            static void ThrowConflictingFilters()
+                => throw new ArgumentException("Conflicting filters", nameof(filters));
+
+            foreach (var filter in filters)
+            {
+                switch (filter)
+                {
+                    case ItemFilter.IsFolder:
+                        if (filters.Contains(ItemFilter.IsNotFolder))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsFolder = true;
+                        break;
+                    case ItemFilter.IsNotFolder:
+                        if (filters.Contains(ItemFilter.IsFolder))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsFolder = false;
+                        break;
+                    case ItemFilter.IsUnplayed:
+                        if (filters.Contains(ItemFilter.IsPlayed))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsPlayed = false;
+                        break;
+                    case ItemFilter.IsPlayed:
+                        if (filters.Contains(ItemFilter.IsUnplayed))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsPlayed = true;
+                        break;
+                    case ItemFilter.IsFavorite:
+                        IsFavorite = true;
+                        break;
+                    case ItemFilter.IsResumable:
+                        IsResumable = true;
+                        break;
+                    case ItemFilter.Likes:
+                        if (filters.Contains(ItemFilter.Dislikes))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsLiked = true;
+                        break;
+                    case ItemFilter.Dislikes:
+                        if (filters.Contains(ItemFilter.Likes))
+                        {
+                            ThrowConflictingFilters();
+                        }
+
+                        IsLiked = false;
+                        break;
+                    case ItemFilter.IsFavoriteOrLikes:
+                        IsFavoriteOrLiked = true;
+                        break;
+                }
+            }
         }
     }
 }

@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (sortBy == ItemSortBy.Default)
             {
-              return items;
+                return items;
             }
 
             return LibraryManager.Sort(items, user, new[] { sortBy }, SortOrder.Ascending);
@@ -133,6 +133,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
+            return Sort(children, user).ToArray();
+        }
+
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, out int totalItemCount, InternalItemsQuery query = null)
+        {
+            var children = base.GetChildren(user, includeLinkedChildren, out totalItemCount, query);
             return Sort(children, user).ToArray();
         }
 

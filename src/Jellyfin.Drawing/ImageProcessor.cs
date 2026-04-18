@@ -85,7 +85,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             "jpeg",
             "jpg",
             "png",
-            "aiff",
             "cr2",
             "crw",
             "nef",

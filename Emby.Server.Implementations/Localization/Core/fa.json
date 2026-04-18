@@ -73,7 +73,6 @@
     "Shows": "سریال‌ها",
     "Songs": "موسیقی‌ها",
     "StartupEmbyServerIsLoading": "سرور Jellyfin در حال بارگیری است. لطفا کمی بعد دوباره تلاش کنید.",
-    "SubtitleDownloadFailureForItem": "دانلود زیرنویس برای {0} ناموفق بود",
     "SubtitleDownloadFailureFromForItem": "بارگیری زیرنویس برای {1} از {0} شکست خورد",
     "Sync": "همگام‌سازی",
     "System": "سیستم",

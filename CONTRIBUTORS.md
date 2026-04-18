@@ -117,6 +117,7 @@
  - [sachk](https://github.com/sachk)
  - [sammyrc34](https://github.com/sammyrc34)
  - [samuel9554](https://github.com/samuel9554)
+ - [SapientGuardian](https://github.com/SapientGuardian)
  - [scheidleon](https://github.com/scheidleon)
  - [sebPomme](https://github.com/sebPomme)
  - [SegiH](https://github.com/SegiH)
@@ -163,6 +164,7 @@
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [ZachPhelan](https://github.com/ZachPhelan)
+ - [ZeusCraft10](https://github.com/ZeusCraft10)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
@@ -205,6 +207,12 @@
  - [theshoeshiner](https://github.com/theshoeshiner)
  - [TokerX](https://github.com/TokerX)
  - [GeneMarks](https://github.com/GeneMarks)
+ - [Kirill Nikiforov](https://github.com/allmazz)
+ - [bjorntp](https://github.com/bjorntp)
+ - [martenumberto](https://github.com/martenumberto)
+ - [ZeusCraft10](https://github.com/ZeusCraft10)
+ - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
+ - [LiHRaM](https://github.com/LiHRaM)
 
 # Emby Contributors
 
@@ -281,3 +289,4 @@
  - [Martin Reuter](https://github.com/reuterma24)
  - [Michael McElroy](https://github.com/mcmcelro)
  - [Soumyadip Auddy](https://github.com/SoumyadipAuddy)
+ - [DerMaddis](https://github.com/dermaddis)

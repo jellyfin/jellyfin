@@ -464,6 +464,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         SqliteConnection.ClearAllPools();
 
+        using (var checkpointConnection = new SqliteConnection($"Filename={libraryDbPath}"))
+        {
+            checkpointConnection.Open();
+            using var cmd = checkpointConnection.CreateCommand();
+            cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            cmd.ExecuteNonQuery();
+        }
+
+        SqliteConnection.ClearAllPools();
+
         _logger.LogInformation("Move {0} to {1}.", libraryDbPath, libraryDbPath + ".old");
         File.Move(libraryDbPath, libraryDbPath + ".old", true);
     }
@@ -505,13 +515,35 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             PlayCount = dto.GetInt32(4),
             IsFavorite = dto.GetBoolean(5),
             PlaybackPositionTicks = dto.GetInt64(6),
-            LastPlayedDate = dto.IsDBNull(7) ? null : dto.GetDateTime(7),
+            LastPlayedDate = dto.IsDBNull(7) ? null : ReadDateTimeFromColumn(dto, 7),
             AudioStreamIndex = dto.IsDBNull(8) ? null : dto.GetInt32(8),
             SubtitleStreamIndex = dto.IsDBNull(9) ? null : dto.GetInt32(9),
             Likes = null,
             User = null!,
             Item = null!
         };
+    }
+
+    private static DateTime? ReadDateTimeFromColumn(SqliteDataReader reader, int index)
+    {
+        // Try reading as a formatted date string first (handles ISO-8601 dates).
+        if (reader.TryReadDateTime(index, out var dateTimeResult))
+        {
+            return dateTimeResult;
+        }
+
+        // Some databases have Unix epoch timestamps stored as integers.
+        // SqliteDataReader.GetDateTime interprets integers as Julian dates, which crashes
+        // for Unix epoch values. Handle them explicitly.
+        var rawValue = reader.GetValue(index);
+        if (rawValue is long unixTimestamp
+            && unixTimestamp > 0
+            && unixTimestamp <= DateTimeOffset.MaxValue.ToUnixTimeSeconds())
+        {
+            return DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
+        }
+
+        return null;
     }
 
     private AncestorId GetAncestorId(SqliteDataReader reader)
@@ -1163,7 +1195,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 Item = null!,
                 ProviderId = e[0],
                 ProviderValue = string.Join('|', e.Skip(1))
-            }).ToArray();
+            })
+            .DistinctBy(e => e.ProviderId)
+            .ToArray();
         }
 
         if (reader.TryGetString(index++, out var imageInfos))
@@ -1247,8 +1281,11 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         }
 
         var baseItem = BaseItemRepository.DeserializeBaseItem(entity, _logger, null, false);
-        var dataKeys = baseItem.GetUserDataKeys();
-        userDataKeys.AddRange(dataKeys);
+        if (baseItem is not null)
+        {
+            var dataKeys = baseItem.GetUserDataKeys();
+            userDataKeys.AddRange(dataKeys);
+        }
 
         return (entity, userDataKeys.ToArray());
     }

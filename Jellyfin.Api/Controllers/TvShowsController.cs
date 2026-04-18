@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -69,7 +68,6 @@ public class TvShowsController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. Include user data.</param>
     /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
     /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
-    /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
     /// <param name="enableResumable">Whether to include resumable episodes in next up results.</param>
     /// <param name="enableRewatching">Whether to include watched episodes in next up results.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
@@ -88,7 +86,6 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData,
         [FromQuery] DateTime? nextUpDateCutoff,
         [FromQuery] bool enableTotalRecordCount = true,
-        [FromQuery][ParameterObsolete] bool disableFirstEpisode = false,
         [FromQuery] bool enableResumable = true,
         [FromQuery] bool enableRewatching = false)
     {
@@ -99,7 +96,6 @@ public class TvShowsController : BaseJellyfinApiController
         }
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var result = _tvSeriesManager.GetNextUp(
@@ -161,7 +157,6 @@ public class TvShowsController : BaseJellyfinApiController
         var parentIdGuid = parentId ?? Guid.Empty;
 
         var options = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -231,7 +226,6 @@ public class TvShowsController : BaseJellyfinApiController
         List<BaseItem> episodes;
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var shouldIncludeMissingEpisodes = (user is not null && user.DisplayMissingEpisodes) || User.GetIsApiKey();
 
@@ -360,7 +354,6 @@ public class TvShowsController : BaseJellyfinApiController
         });
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);

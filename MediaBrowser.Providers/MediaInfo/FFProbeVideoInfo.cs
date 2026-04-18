@@ -363,6 +363,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
                 blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
                 blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
+                blurayVideoStream.BitDepth = ffmpegVideoStream.BitDepth;
+                blurayVideoStream.PixelFormat = ffmpegVideoStream.PixelFormat;
             }
         }
 

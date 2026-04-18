@@ -75,7 +75,9 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AddVirtualFolder(
-        [FromQuery] string name,
+        [FromQuery]
+        [RegularExpression(@"^(?:\S(?:.*\S)?)$", ErrorMessage = "Library name cannot be empty or have leading/trailing spaces.")]
+        string name,
         [FromQuery] CollectionTypeOptions? collectionType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
@@ -340,6 +342,17 @@ public class LibraryStructureController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        LibraryOptions options = item.GetLibraryOptions();
+        foreach (var mediaPath in request.LibraryOptions!.PathInfos)
+        {
+            if (options.PathInfos.Any(i => i.Path == mediaPath.Path))
+            {
+                continue;
+            }
+
+            _libraryManager.CreateShortcut(item.Path, mediaPath);
         }
 
         item.UpdateLibraryOptions(request.LibraryOptions);

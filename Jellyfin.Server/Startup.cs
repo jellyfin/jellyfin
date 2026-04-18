@@ -173,9 +173,6 @@ namespace Jellyfin.Server
                     mainApp.UseHttpsRedirection();
                 }
 
-                // This must be injected before any path related middleware.
-                mainApp.UsePathTrim();
-
                 if (appConfig.HostWebClient())
                 {
                     var extensionProvider = new FileExtensionContentTypeProvider();

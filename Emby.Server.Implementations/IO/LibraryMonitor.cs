@@ -60,6 +60,7 @@ namespace Emby.Server.Implementations.IO
             _fileSystem = fileSystem;
 
             appLifetime.ApplicationStarted.Register(Start);
+            appLifetime.ApplicationStopping.Register(Stop);
         }
 
         /// <inheritdoc />
@@ -348,6 +349,12 @@ namespace Emby.Server.Implementations.IO
             ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (IgnorePatterns.ShouldIgnore(path))
+            {
+                return;
+            }
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
             {
                 return;
             }

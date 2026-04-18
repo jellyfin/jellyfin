@@ -1,6 +1,7 @@
 #pragma warning disable CA1819 // XML serialization handles collections improperly, so we need to use arrays
 
 #nullable disable
+using System.ComponentModel;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration;
@@ -57,8 +58,10 @@ public class EncodingOptions
         AllowHevcEncoding = false;
         AllowAv1Encoding = false;
         EnableSubtitleExtraction = true;
+        SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
+        HlsAudioSeekStrategy = HlsAudioSeekStrategy.DisableAccurateSeek;
     }
 
     /// <summary>
@@ -287,6 +290,11 @@ public class EncodingOptions
     public bool EnableSubtitleExtraction { get; set; }
 
     /// <summary>
+    /// Gets or sets the timeout for subtitle extraction in minutes.
+    /// </summary>
+    public int SubtitleExtractionTimeoutMinutes { get; set; }
+
+    /// <summary>
     /// Gets or sets the codecs hardware encoding is used for.
     /// </summary>
     public string[] HardwareDecodingCodecs { get; set; }
@@ -295,4 +303,10 @@ public class EncodingOptions
     /// Gets or sets the file extensions on-demand metadata based keyframe extraction is enabled for.
     /// </summary>
     public string[] AllowOnDemandMetadataBasedKeyframeExtractionForExtensions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the method used for audio seeking in HLS.
+    /// </summary>
+    [DefaultValue(HlsAudioSeekStrategy.DisableAccurateSeek)]
+    public HlsAudioSeekStrategy HlsAudioSeekStrategy { get; set; }
 }

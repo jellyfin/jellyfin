@@ -77,7 +77,7 @@ public class SuggestionsController : BaseJellyfinApiController
             user = _userManager.GetUserById(requestUserId);
         }
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        var dtoOptions = new DtoOptions();
         var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
             OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },

@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,5 +68,31 @@ public static class OrderMapper
             // ItemSortBy.AiredEpisodeOrder => "AiredEpisodeOrder",
             _ => e => e.SortName
         };
+    }
+
+    /// <summary>
+    /// Creates an expression to order search results by match quality.
+    /// Prioritizes: exact match (0) > prefix match with word boundary (1) > prefix match (2) > contains (3).
+    /// </summary>
+    /// <param name="searchTerm">The search term to match against.</param>
+    /// <returns>An expression that returns an integer representing match quality (lower is better).</returns>
+    public static Expression<Func<BaseItemEntity, int>> MapSearchRelevanceOrder(string searchTerm)
+    {
+        var cleanSearchTerm = GetCleanValue(searchTerm);
+        var searchPrefix = cleanSearchTerm + " ";
+        return e =>
+            e.CleanName == cleanSearchTerm ? 0 :
+            e.CleanName!.StartsWith(searchPrefix) ? 1 :
+            e.CleanName!.StartsWith(cleanSearchTerm) ? 2 : 3;
+    }
+
+    private static string GetCleanValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
+        return value.RemoveDiacritics().ToLowerInvariant();
     }
 }
