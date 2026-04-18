@@ -22,7 +22,7 @@
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
     <PackageVersion Include="Ignore" Version="0.2.1" />
-    <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
+    <PackageVersion Include="Jellyfin.XmlTv" Version="10.12.0-pre1" />
     <PackageVersion Include="libse" Version="4.0.12" />
     <PackageVersion Include="LrcParser" Version="2025.623.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="8.0.1" />
