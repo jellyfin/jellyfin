@@ -6,7 +6,7 @@
   <ItemGroup Label="Package Dependencies">
     <PackageVersion Include="AsyncKeyedLock" Version="8.0.2" />
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
-    <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.Xunit3" Version="4.19.0" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
     <PackageVersion Include="BitFaster.Caching" Version="2.5.4" />
@@ -17,7 +17,7 @@
     <PackageVersion Include="Diacritics" Version="4.1.4" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="FsCheck.Xunit" Version="3.3.2" />
+    <PackageVersion Include="FsCheck.Xunit.v3" Version="3.3.2" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
@@ -82,9 +82,8 @@
     <PackageVersion Include="z440.atl.core" Version="7.11.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
-    <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="Xunit.v3.Priority" Version="1.1.18" />
   </ItemGroup>
 </Project>
