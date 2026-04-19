@@ -5,8 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,6 +25,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger<PeopleValidationTask> _logger;
 
     /// <summary>
@@ -29,12 +34,19 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
-    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<PeopleValidationTask> logger)
+    public PeopleValidationTask(
+        ILibraryManager libraryManager,
+        ILocalizationManager localization,
+        IDbContextFactory<JellyfinDbContext> dbContextFactory,
+        IFileSystem fileSystem,
+        ILogger<PeopleValidationTask> logger)
     {
         _libraryManager = libraryManager;
         _localization = localization;
         _dbContextFactory = dbContextFactory;
+        _fileSystem = fileSystem;
         _logger = logger;
     }
 
@@ -83,10 +95,11 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             return;
         }
 
+        // Phase 1: Deduplicate and remove orphaned people (0-33%)
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
@@ -141,9 +154,69 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             subProgress.Report(100);
         }
 
-        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+        // Phase 2: Validate people (33-66%). Runs after orphaned PeopleBaseItemMap entries are
+        // cleaned up above, so dead people are removed in a single pass instead of requiring a second run.
+        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 3) + 33));
         await _libraryManager.ValidatePeopleAsync(validateProgress, cancellationToken).ConfigureAwait(false);
 
+        // Phase 3: Refresh images for people missing them (66-100%)
+        IProgress<double> refreshProgress = new Progress<double>((val) => progress.Report((val / 3) + 66));
+        await RefreshPeopleImagesAsync(refreshProgress, cancellationToken).ConfigureAwait(false);
+
         progress.Report(100);
+    }
+
+    private async Task RefreshPeopleImagesAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    {
+        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
+        var numPeople = people.Count;
+        var numComplete = 0;
+        var numRefreshed = 0;
+
+        _logger.LogDebug("Checking {Count} people for missing images", numPeople);
+
+        foreach (var person in people)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var item = _libraryManager.GetPerson(person);
+                if (item is null)
+                {
+                    continue;
+                }
+
+                var hasImage = item.HasImage(ImageType.Primary, 0);
+                var hasOverview = !string.IsNullOrWhiteSpace(item.Overview);
+
+                if ((hasImage && hasOverview) || (DateTime.UtcNow - item.DateLastRefreshed).TotalDays < 30)
+                {
+                    continue;
+                }
+
+                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
+                    MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+                };
+
+                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                numRefreshed++;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error refreshing images for {Person}", person);
+            }
+
+            numComplete++;
+            progress.Report(100.0 * numComplete / numPeople);
+        }
+
+        _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
     }
 }
