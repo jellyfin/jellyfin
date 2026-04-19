@@ -294,7 +294,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
         // Batch-load all child items in a single query
         var childIds = alternateVersionLinks.Select(l => l.ChildId).Distinct().ToList();
         var childItems = await context.BaseItems
-            .Where(b => childIds.Contains(b.Id))
+            .WhereOneOrMany(childIds, b => b.Id)
             .ToDictionaryAsync(b => b.Id, cancellationToken)
             .ConfigureAwait(false);
 

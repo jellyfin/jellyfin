@@ -62,29 +62,23 @@ public sealed partial class BaseItemRepository
 
     private IQueryable<BaseItemEntity> ApplyGroupingFilter(JellyfinDbContext context, IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        // This whole block is needed to filter duplicate entries on request
-        // for the time being it cannot be used because it would destroy the ordering
-        // this results in "duplicate" responses for queries that try to lookup individual series or multiple versions but
-        // for that case the invoker has to run a DistinctBy(e => e.PresentationUniqueKey) on their own
-
+        // Collapse duplicates sharing a presentation key (e.g. alternate versions) by picking
+        // the min Id per group. Keep the grouped ids as an IQueryable sub-select; materializing
+        // to a List would inline one bound parameter per id and hit SQLite's variable cap.
         var enableGroupByPresentationUniqueKey = EnableGroupByPresentationUniqueKey(filter);
-        // Materialize GroupBy IDs first to split the complex expression tree.
-        // This runs the filter+GroupBy+Min as one simple SQL query, then the downstream
-        // Order/Paging/Navigations work on a flat WHERE Id IN (...) list, avoiding
-        // EF Core having to compile a deeply nested expression tree.
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id)).ToList();
+            var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id)).ToList();
+            var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
-            var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id)).ToList();
+            var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
             dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
         }
         else
@@ -96,8 +90,7 @@ public sealed partial class BaseItemRepository
         {
             dbQuery = ApplyBoxSetCollapsing(context, dbQuery, filter.CollapseBoxSetItemTypes);
 
-            // Apply name-range filters after collapse so BoxSets are filtered by their own name,
-            // not by their children's names.
+            // Name filters run after collapse so BoxSets match by their own name, not a child's.
             dbQuery = ApplyNameFilters(dbQuery, filter);
         }
 

@@ -219,7 +219,9 @@ namespace Emby.Server.Implementations.Library
                 using var context = _repository.CreateDbContext();
                 var userDataArray = context.UserData
                     .AsNoTracking()
-                    .Where(e => allItemIds.Contains(e.ItemId) && allKeys.Contains(e.CustomDataKey) && e.UserId.Equals(user.Id))
+                    .Where(e => e.UserId.Equals(user.Id))
+                    .WhereOneOrMany(allItemIds, e => e.ItemId)
+                    .WhereOneOrMany(allKeys, e => e.CustomDataKey)
                     .ToArray();
 
                 var userDataByItem = userDataArray.GroupBy(e => e.ItemId).ToDictionary(g => g.Key, g => g.ToArray());

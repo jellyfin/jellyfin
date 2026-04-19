@@ -209,7 +209,7 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
                 var childIds = toInsert.Select(lc => lc.ChildId).Distinct().ToList();
                 var existingChildIds = context.BaseItems
-                    .Where(b => childIds.Contains(b.Id))
+                    .WhereOneOrMany(childIds, b => b.Id)
                     .Select(b => b.Id)
                     .ToHashSet();
 
