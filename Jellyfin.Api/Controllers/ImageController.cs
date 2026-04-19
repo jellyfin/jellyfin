@@ -2039,7 +2039,9 @@ public class ImageController : BaseJellyfinApiController
 
                 // Check If-None-Match header for ETag-based validation (preferred over If-Modified-Since)
                 var ifNoneMatch = Request.Headers[HeaderNames.IfNoneMatch].ToString();
-                if (!string.IsNullOrEmpty(ifNoneMatch) && (ifNoneMatch == $"\"{tag}\"" || ifNoneMatch == tag))
+                if (!string.IsNullOrEmpty(ifNoneMatch)
+                    && (string.Equals(ifNoneMatch, $"\"{tag}\"", StringComparison.Ordinal)
+                        || string.Equals(ifNoneMatch, tag, StringComparison.Ordinal)))
                 {
                     Response.StatusCode = StatusCodes.Status304NotModified;
                     return new ContentResult();
