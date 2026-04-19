@@ -73,8 +73,10 @@ public class ArtistsValidator
 
                 // Fall back to GetArtist if not found (creates new item if needed)
                 item ??= _libraryManager.GetArtist(name);
+                var isNew = !existingArtistIds.Contains(item.Id);
+                var neverRefreshed = item.DateLastRefreshed == default;
 
-                if (!existingArtistIds.Contains(item.Id))
+                if (isNew || neverRefreshed)
                 {
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                     refreshed++;
