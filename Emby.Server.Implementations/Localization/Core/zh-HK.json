@@ -29,7 +29,7 @@
     "Inherit": "繼承",
     "ItemAddedWithName": "{0} 經已加咗入媒體櫃",
     "ItemRemovedWithName": "{0} 經已由媒體櫃移除咗",
-    "LabelIpAddressValue": "IP 地址：{0}",
+    "LabelIpAddressValue": "IP 位址：{0}",
     "LabelRunningTimeValue": "運行時間：{0}",
     "Latest": "最新",
     "MessageApplicationUpdated": "Jellyfin 經已更新咗",
