@@ -292,7 +292,7 @@ public class ServerConfiguration : BaseApplicationConfiguration
 
     /// <summary>
     /// Gets or sets a value indicating whether .jellyignore files should be used to filter library items.
-    /// .jellyforceignore files are always applied regardless of this setting.
+    /// .ignore files are always applied regardless of this setting.
     /// </summary>
     /// <value>True if .jellyignore filtering is enabled; otherwise, false. Default is true.</value>
     public bool EnableJellyignore { get; set; } = true;

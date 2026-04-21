@@ -10,12 +10,15 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library;
 
 /// <summary>
-/// Resolver rule class for ignoring files via .ignore files.
-/// Empty .ignore file ignores the entire directory.
+/// Resolver rule class for ignoring files via .ignore and .jellyignore files.
+/// .ignore files are always applied (forced ignores).
+/// .jellyignore files are optional and controlled by the EnableJellyignore setting.
+/// Empty ignore file ignores the entire directory.
 /// </summary>
 public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 {
-    private const string IgnoreFilename = ".ignore";
+    private const string ForceIgnoreFilename = ".ignore";
+    private const string JellyignoreFilename = ".jellyignore";
 
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
 
@@ -53,17 +56,12 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     }
 
     /// <summary>
-    /// Instance method to check if a file is ignored by .ignore file.
-    /// Respects ServerConfiguration.EnableJellyignore setting.
+    /// Instance method to check if a file is ignored by .ignore or .jellyignore files.
+    /// .ignore files are always applied (forced ignores).
+    /// .jellyignore files are optionally applied based on EnableJellyignore setting.
     /// </summary>
     private bool IsIgnoredInstance(FileSystemMetadata fileInfo, BaseItem? parent)
     {
-        bool enableJellyignore = _configurationManager?.Configuration.EnableJellyignore ?? true;
-        if (!enableJellyignore)
-        {
-            return false;
-        }
-
         var searchDirectory = fileInfo.IsDirectory
             ? new DirectoryInfo(fileInfo.FullName)
             : new DirectoryInfo(Path.GetDirectoryName(fileInfo.FullName) ?? string.Empty);
@@ -73,7 +71,67 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             return false;
         }
 
-        return IsIgnoredByFile(searchDirectory, fileInfo);
+        // Always check .ignore files (forced ignores)
+        if (IsIgnoredByFile(searchDirectory, fileInfo, ForceIgnoreFilename))
+        {
+            return true;
+        }
+
+        // Check .jellyignore files (optional ignores)
+        // Get the per-library EnableJellyignore setting if available, otherwise use global setting
+        bool enableJellyignore = GetEnableJellyignoreSetting(parent);
+        if (enableJellyignore && IsIgnoredByFile(searchDirectory, fileInfo, JellyignoreFilename))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the EnableJellyignore setting from the parent library if available, otherwise uses global setting.
+    /// </summary>
+    private bool GetEnableJellyignoreSetting(BaseItem? parent)
+    {
+        // Try to get per-library setting from parent
+        if (parent is not null)
+        {
+            var collectionFolder = GetCollectionFolderParent(parent);
+            if (collectionFolder is not null)
+            {
+                try
+                {
+                    var libraryOptions = collectionFolder.GetLibraryOptions();
+                    return libraryOptions.EnableJellyignore;
+                }
+                catch
+                {
+                    // If we can't get library options, fall back to global setting
+                }
+            }
+        }
+
+        // Fall back to global setting
+        return _configurationManager?.Configuration.EnableJellyignore ?? true;
+    }
+
+    /// <summary>
+    /// Gets the collection folder parent of the given item.
+    /// </summary>
+    private static CollectionFolder? GetCollectionFolderParent(BaseItem item)
+    {
+        var current = item;
+        while (current is not null)
+        {
+            if (current is CollectionFolder collectionFolder)
+            {
+                return collectionFolder;
+            }
+
+            current = current.GetParent();
+        }
+
+        return null;
     }
 
     private static FileInfo? FindIgnoreFile(DirectoryInfo directory, string filename)
@@ -91,12 +149,12 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     }
 
     /// <summary>
-    /// Checks if a file is ignored by .ignore file.
-    /// Empty .ignore file = ignore entire directory.
+    /// Checks if a file is ignored by the specified ignore file.
+    /// Empty ignore file = ignore entire directory.
     /// </summary>
-    private static bool IsIgnoredByFile(DirectoryInfo searchDirectory, FileSystemMetadata fileInfo)
+    private static bool IsIgnoredByFile(DirectoryInfo searchDirectory, FileSystemMetadata fileInfo, string ignoreFilename)
     {
-        var ignoreFile = FindIgnoreFile(searchDirectory, IgnoreFilename);
+        var ignoreFile = FindIgnoreFile(searchDirectory, ignoreFilename);
         if (ignoreFile is null)
         {
             return false;
