@@ -101,11 +101,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
-        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
+        internal void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
-            // Drop subs that are earlier than what we're looking for
+            // Drop subs that have fully elapsed before the requested start position
             track.TrackEvents = track.TrackEvents
-                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
+                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 && (i.EndPositionTicks - startPositionTicks) < 0)
                 .ToArray();
 
             if (endTimeTicks > 0)
@@ -119,8 +119,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 foreach (var trackEvent in track.TrackEvents)
                 {
-                    trackEvent.EndPositionTicks -= startPositionTicks;
-                    trackEvent.StartPositionTicks -= startPositionTicks;
+                    trackEvent.EndPositionTicks = Math.Max(0, trackEvent.EndPositionTicks - startPositionTicks);
+                    trackEvent.StartPositionTicks = Math.Max(0, trackEvent.StartPositionTicks - startPositionTicks);
                 }
             }
         }
@@ -577,7 +577,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var outputPaths = new List<string>();
                 var args = string.Format(
                     CultureInfo.InvariantCulture,
-                    "-i {0} -copyts",
+                    "-i {0}",
                     inputPath);
 
                 foreach (var subtitleStream in subtitleStreams)
@@ -602,7 +602,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPaths.Add(outputPath);
                     args += string.Format(
                         CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
+                        " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
                         streamIndex,
                         outputCodec,
                         outputPath);
@@ -621,7 +621,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0} -copyts",
+                "-i {0}",
                 inputPath);
 
             foreach (var subtitleStream in subtitleStreams)
@@ -647,7 +647,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputPaths.Add(outputPath);
                 args += string.Format(
                     CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1} \"{2}\"",
+                    " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
                     streamIndex,
                     outputCodec,
                     outputPath);

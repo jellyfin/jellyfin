@@ -1555,7 +1555,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!subtitleStream.IsExternal && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
+                if (!subtitleStream.IsExternal && playMethod == PlayMethod.Transcode && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
                 {
                     continue;
                 }

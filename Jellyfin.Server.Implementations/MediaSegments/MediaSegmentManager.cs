@@ -182,6 +182,18 @@ public class MediaSegmentManager : IMediaSegmentManager
     /// <inheritdoc />
     public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
+        foreach (var provider in _segmentProviders)
+        {
+            try
+            {
+                await provider.CleanupExtractedData(itemId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Provider {ProviderName} failed to clean up extracted data for item {ItemId}", provider.Name, itemId);
+            }
+        }
+
         var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (db.ConfigureAwait(false))
         {

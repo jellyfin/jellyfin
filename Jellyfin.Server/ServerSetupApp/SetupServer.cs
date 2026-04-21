@@ -142,6 +142,7 @@ public sealed class SetupServer : IDisposable
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
         var config = _configurationManager.GetNetworkConfiguration()!;
+        _startupServer?.Dispose();
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
             .UseSerilog()
@@ -162,7 +163,7 @@ public sealed class SetupServer : IDisposable
                                 {
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(_loggerFactory.CreateLogger<NetworkManager>(), false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,

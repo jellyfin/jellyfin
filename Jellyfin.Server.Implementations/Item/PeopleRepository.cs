@@ -62,7 +62,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
 
-        // dbQuery = dbQuery.OrderBy(e => e.ListOrder);
+        if (filter.StartIndex.HasValue && filter.StartIndex > 0)
+        {
+            dbQuery = dbQuery.Skip(filter.StartIndex.Value);
+        }
+
         if (filter.Limit > 0)
         {
             dbQuery = dbQuery.Take(filter.Limit);
@@ -197,6 +201,11 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.ItemId)));
         }
 
+        if (filter.ParentId != null)
+        {
+            query = query.Where(e => e.BaseItems!.Any(w => context.AncestorIds.Any(i => i.ParentItemId == filter.ParentId && i.ItemId == w.ItemId)));
+        }
+
         if (!filter.AppearsInItemId.IsEmpty())
         {
             query = query.Where(e => e.BaseItems!.Any(w => w.ItemId.Equals(filter.AppearsInItemId)));
@@ -224,6 +233,21 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         {
             var nameContainsUpper = filter.NameContains.ToUpper();
             query = query.Where(e => e.Name.ToUpper().Contains(nameContainsUpper));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
+        {
+            query = query.Where(e => e.Name.StartsWith(filter.NameStartsWith.ToLowerInvariant()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
+        {
+            query = query.Where(e => e.Name.CompareTo(filter.NameLessThan.ToLowerInvariant()) < 0);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
+        {
+            query = query.Where(e => e.Name.CompareTo(filter.NameStartsWithOrGreater.ToLowerInvariant()) >= 0);
         }
 
         return query;
