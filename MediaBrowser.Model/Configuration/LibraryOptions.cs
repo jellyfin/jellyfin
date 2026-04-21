@@ -27,6 +27,7 @@ namespace MediaBrowser.Model.Configuration
 
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
+            EnableJellyignore = true;
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
             SaveTrickplayWithMedia = false;
@@ -43,6 +44,8 @@ namespace MediaBrowser.Model.Configuration
         public bool Enabled { get; set; } = true;
 
         public bool EnablePhotos { get; set; }
+
+        public bool EnableJellyignore { get; set; } = true;
 
         public bool EnableRealtimeMonitor { get; set; }
 

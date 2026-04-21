@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
 
@@ -23,6 +24,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
 
     private readonly IServerConfigurationManager? _configurationManager;
+    private readonly ILogger<DotIgnoreIgnoreRule>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class.
@@ -38,6 +40,17 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     public DotIgnoreIgnoreRule(IServerConfigurationManager configurationManager)
     {
         _configurationManager = configurationManager;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class with dependencies.
+    /// </summary>
+    /// <param name="configurationManager">The server configuration manager.</param>
+    /// <param name="logger">The logger.</param>
+    public DotIgnoreIgnoreRule(IServerConfigurationManager configurationManager, ILogger<DotIgnoreIgnoreRule> logger)
+    {
+        _configurationManager = configurationManager;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -80,9 +93,13 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         // Check .jellyignore files (optional ignores)
         // Get the per-library EnableJellyignore setting if available, otherwise use global setting
         bool enableJellyignore = GetEnableJellyignoreSetting(parent);
-        if (enableJellyignore && IsIgnoredByFile(searchDirectory, fileInfo, JellyignoreFilename))
+        if (enableJellyignore)
         {
-            return true;
+            bool isIgnoredByJellyignore = IsIgnoredByFile(searchDirectory, fileInfo, JellyignoreFilename);
+            if (isIgnoredByJellyignore)
+            {
+                return true;
+            }
         }
 
         return false;
@@ -102,17 +119,29 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
                 try
                 {
                     var libraryOptions = collectionFolder.GetLibraryOptions();
+                    _logger?.LogDebug("DotIgnoreIgnoreRule: Found CollectionFolder {CollectionFolderPath}, EnableJellyignore={EnableJellyignore}", collectionFolder.Path, libraryOptions.EnableJellyignore);
                     return libraryOptions.EnableJellyignore;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // If we can't get library options, fall back to global setting
+                    _logger?.LogWarning(ex, "DotIgnoreIgnoreRule: Error getting library options for parent {ParentPath}", parent.Path);
+                    // If we can't get library options, fall back to finding by path
                 }
             }
+            else
+            {
+                _logger?.LogDebug("DotIgnoreIgnoreRule: No CollectionFolder found for parent {ParentPath}, using global setting", parent.Path);
+            }
+        }
+        else
+        {
+            _logger?.LogDebug("DotIgnoreIgnoreRule: Parent is null, using global setting");
         }
 
         // Fall back to global setting
-        return _configurationManager?.Configuration.EnableJellyignore ?? true;
+        var globalSetting = _configurationManager?.Configuration.EnableJellyignore ?? true;
+        _logger?.LogDebug("DotIgnoreIgnoreRule: Using global EnableJellyignore setting: {GlobalSetting}", globalSetting);
+        return globalSetting;
     }
 
     /// <summary>

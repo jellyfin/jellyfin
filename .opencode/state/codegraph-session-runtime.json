@@ -1,0 +1,15 @@
+{
+  "projectId": "",
+  "defaultAgentId": "opencode",
+  "stateFilePath": "/Users/raniwehbe/Desktop/github/jellyfin-all/jellyfin/.opencode/state/codegraph-session-runtime.json",
+  "lastWorkflowState": null,
+  "pendingReviewCommit": null,
+  "lastContextSessionId": null,
+  "lastContextSessionState": null,
+  "lastContextAccessMode": null,
+  "lastContextOwnerUserKey": null,
+  "activeScenario": "default",
+  "recentUsedContextItems": [],
+  "lastCommitFingerprint": null,
+  "lastCommitStatus": null
+}
