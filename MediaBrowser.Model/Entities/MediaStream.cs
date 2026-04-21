@@ -2,11 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;

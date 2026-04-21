@@ -617,5 +617,60 @@ namespace Jellyfin.Model.Tests
 
             return (path, query, filename, extension);
         }
+
+        [Theory]
+        // EnableSubtitleExtraction = false, internal subtitles
+        [InlineData("srt", "srt", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
+        [InlineData("srt", "srt", false, false, PlayMethod.DirectPlay, SubtitleDeliveryMethod.External)]
+        [InlineData("pgssub", "pgssub", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
+        [InlineData("pgssub", "pgssub", false, false, PlayMethod.DirectPlay, SubtitleDeliveryMethod.External)]
+        [InlineData("pgssub", "srt", false, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
+        // EnableSubtitleExtraction = false, external subtitles
+        [InlineData("srt", "srt", false, true, PlayMethod.Transcode, SubtitleDeliveryMethod.External)]
+        // EnableSubtitleExtraction = true, internal subtitles
+        [InlineData("srt", "srt", true, false, PlayMethod.Transcode, SubtitleDeliveryMethod.External)]
+        [InlineData("pgssub", "pgssub", true, false, PlayMethod.Transcode, SubtitleDeliveryMethod.External)]
+        [InlineData("pgssub", "pgssub", true, false, PlayMethod.DirectPlay, SubtitleDeliveryMethod.External)]
+        [InlineData("pgssub", "srt", true, false, PlayMethod.Transcode, SubtitleDeliveryMethod.Encode)]
+        // EnableSubtitleExtraction = true, external subtitles
+        [InlineData("srt", "srt", true, true, PlayMethod.Transcode, SubtitleDeliveryMethod.External)]
+        public void GetSubtitleProfile_RespectsExtractionSetting(
+            string codec,
+            string profileFormat,
+            bool enableSubtitleExtraction,
+            bool isExternal,
+            PlayMethod playMethod,
+            SubtitleDeliveryMethod expectedMethod)
+        {
+            var mediaSource = new MediaSourceInfo();
+            var subtitleStream = new MediaStream
+            {
+                Type = MediaStreamType.Subtitle,
+                Index = 0,
+                IsExternal = isExternal,
+                Path = isExternal ? "/media/sub." + codec : null,
+                Codec = codec,
+                SupportsExternalStream = MediaStream.IsTextFormat(codec)
+            };
+
+            var subtitleProfiles = new[]
+            {
+                new SubtitleProfile { Format = profileFormat, Method = SubtitleDeliveryMethod.External }
+            };
+
+            var transcoderSupport = new Mock<ITranscoderSupport>();
+            transcoderSupport.Setup(t => t.CanExtractSubtitles(It.IsAny<string>())).Returns(enableSubtitleExtraction);
+
+            var result = StreamBuilder.GetSubtitleProfile(
+                mediaSource,
+                subtitleStream,
+                subtitleProfiles,
+                playMethod,
+                transcoderSupport.Object,
+                null,
+                null);
+
+            Assert.Equal(expectedMethod, result.Method);
+        }
     }
 }

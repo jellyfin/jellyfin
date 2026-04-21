@@ -154,11 +154,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
 
-        protected override bool GetBlockUnratedValue(User user)
-        {
-            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music);
-        }
-
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Music;

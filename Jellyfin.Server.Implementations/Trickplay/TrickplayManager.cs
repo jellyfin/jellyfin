@@ -399,64 +399,72 @@ public class TrickplayManager : ITrickplayManager
         var workDir = Path.Combine(_appPaths.TempDirectory, "trickplay_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workDir);
 
-        var trickplayInfo = new TrickplayInfo
+        try
         {
-            Width = width,
-            Interval = options.Interval,
-            TileWidth = options.TileWidth,
-            TileHeight = options.TileHeight,
-            ThumbnailCount = images.Count,
-            // Set during image generation
-            Height = 0,
-            Bandwidth = 0
-        };
-
-        /*
-         * Generate trickplay tiles from sets of thumbnails
-         */
-        var imageOptions = new ImageCollageOptions
-        {
-            Width = trickplayInfo.TileWidth,
-            Height = trickplayInfo.TileHeight
-        };
-
-        var thumbnailsPerTile = trickplayInfo.TileWidth * trickplayInfo.TileHeight;
-        var requiredTiles = (int)Math.Ceiling((double)images.Count / thumbnailsPerTile);
-
-        for (int i = 0; i < requiredTiles; i++)
-        {
-            // Set output/input paths
-            var tilePath = Path.Combine(workDir, $"{i}.jpg");
-
-            imageOptions.OutputPath = tilePath;
-            imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile))).ToList();
-
-            // Generate image and use returned height for tiles info
-            var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
-            if (trickplayInfo.Height == 0)
+            var trickplayInfo = new TrickplayInfo
             {
-                trickplayInfo.Height = height;
+                Width = width,
+                Interval = options.Interval,
+                TileWidth = options.TileWidth,
+                TileHeight = options.TileHeight,
+                ThumbnailCount = images.Count,
+                // Set during image generation
+                Height = 0,
+                Bandwidth = 0
+            };
+
+            /*
+             * Generate trickplay tiles from sets of thumbnails
+             */
+            var imageOptions = new ImageCollageOptions
+            {
+                Width = trickplayInfo.TileWidth,
+                Height = trickplayInfo.TileHeight
+            };
+
+            var thumbnailsPerTile = trickplayInfo.TileWidth * trickplayInfo.TileHeight;
+            var requiredTiles = (int)Math.Ceiling((double)images.Count / thumbnailsPerTile);
+
+            for (int i = 0; i < requiredTiles; i++)
+            {
+                // Set output/input paths
+                var tilePath = Path.Combine(workDir, $"{i}.jpg");
+
+                imageOptions.OutputPath = tilePath;
+                imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile))).ToList();
+
+                // Generate image and use returned height for tiles info
+                var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
+                if (trickplayInfo.Height == 0)
+                {
+                    trickplayInfo.Height = height;
+                }
+
+                // Update bitrate
+                var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
+                trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
             }
 
-            // Update bitrate
-            var bitrate = (int)Math.Ceiling(new FileInfo(tilePath).Length * 8m / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000m));
-            trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
+            /*
+             * Move trickplay tiles to output directory
+             */
+            Directory.CreateDirectory(Directory.GetParent(outputDir)!.FullName);
+
+            // Replace existing tiles if they already exist
+            if (Directory.Exists(outputDir))
+            {
+                Directory.Delete(outputDir, true);
+            }
+
+            _fileSystem.MoveDirectory(workDir, outputDir);
+
+            return trickplayInfo;
         }
-
-        /*
-         * Move trickplay tiles to output directory
-         */
-        Directory.CreateDirectory(Directory.GetParent(outputDir)!.FullName);
-
-        // Replace existing tiles if they already exist
-        if (Directory.Exists(outputDir))
+        catch
         {
-            Directory.Delete(outputDir, true);
+            Directory.Delete(workDir, true);
+            throw;
         }
-
-        _fileSystem.MoveDirectory(workDir, outputDir);
-
-        return trickplayInfo;
     }
 
     private bool CanGenerateTrickplay(Video video, int interval)
