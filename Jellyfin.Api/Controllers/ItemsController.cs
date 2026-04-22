@@ -271,18 +271,29 @@ public class ItemsController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        var requestedParentId = parentId;
+
         if (includeItemTypes.Length == 1
             && includeItemTypes[0] == BaseItemKind.BoxSet)
         {
-            parentId = null;
+            requestedParentId = null;
         }
 
-        var item = _libraryManager.GetParentItem(parentId, userId);
+        var item = _libraryManager.GetParentItem(requestedParentId, userId);
         QueryResult<BaseItem> result;
 
         if (item is not Folder folder)
         {
             folder = _libraryManager.GetUserRootFolder();
+        }
+
+        // Browsing UserViews uses the UserView's id as the request parentId, but items are parented
+        // to the underlying collection folder. Let the UserView/Folder query pipeline decide the
+        // actual parent by not forcing ParentId to the UserView id.
+        var queryParentId = requestedParentId;
+        if (item is UserView)
+        {
+            queryParentId = null;
         }
 
         CollectionType? collectionType = null;
@@ -369,7 +380,7 @@ public class ItemsController : BaseJellyfinApiController
                 ItemIds = ids,
                 MinCommunityRating = minCommunityRating,
                 MinCriticRating = minCriticRating,
-                ParentId = parentId ?? Guid.Empty,
+                ParentId = queryParentId ?? Guid.Empty,
                 IndexNumber = indexNumber,
                 ParentIndexNumber = parentIndexNumber,
                 EnableTotalRecordCount = enableTotalRecordCount,
