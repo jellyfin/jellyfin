@@ -136,14 +136,14 @@ namespace Emby.Server.Implementations.Library.Scanning
             }
 
             var tasks = new List<Task>(FolderWorkerConcurrency);
-            var done = false;
+            using var doneCts = new CancellationTokenSource();
 
             async Task WorkerLoop()
             {
-                while (!done)
+                while (!doneCts.IsCancellationRequested)
                 {
                     await pending.WaitAsync(cancellationToken).ConfigureAwait(false);
-                    if (done)
+                    if (doneCts.IsCancellationRequested)
                     {
                         pending.Release();
                         return;
@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Library.Scanning
 
                     if (DecrementAndCheckDone())
                     {
-                        done = true;
+                        doneCts.Cancel();
                         for (var i = 0; i < FolderWorkerConcurrency; i++)
                         {
                             pending.Release();
