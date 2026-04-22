@@ -27,7 +27,6 @@ namespace MediaBrowser.Model.Configuration
 
             AutomaticallyAddToCollection = false;
             EnablePhotos = true;
-            EnableJellyignore = true;
             SaveSubtitlesWithMedia = true;
             SaveLyricsWithMedia = false;
             SaveTrickplayWithMedia = false;
@@ -39,6 +38,7 @@ namespace MediaBrowser.Model.Configuration
             UseCustomTagDelimiters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
             DelimiterWhitelist = Array.Empty<string>();
+            EnableJellyignore = true;
         }
 
         public bool Enabled { get; set; } = true;

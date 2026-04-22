@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
@@ -23,6 +24,7 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
 
     private readonly IServerConfigurationManager? _configurationManager;
+    private readonly ILibraryManager? _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class.
@@ -40,8 +42,19 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
         _configurationManager = configurationManager;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class with dependencies.
+    /// </summary>
+    /// <param name="configurationManager">The server configuration manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    public DotIgnoreIgnoreRule(IServerConfigurationManager configurationManager, ILibraryManager libraryManager)
+    {
+        _configurationManager = configurationManager;
+        _libraryManager = libraryManager;
+    }
+
     /// <inheritdoc />
-    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnored(fileInfo, parent);
+    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnoredInstance(fileInfo, parent);
 
     /// <summary>
     /// Static method to check if a file is ignored.
@@ -97,45 +110,22 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
     /// </summary>
     private bool GetEnableJellyignoreSetting(BaseItem? parent)
     {
-        // Try to get per-library setting from parent
-        if (parent is not null)
+        // Try to get per-library setting from parent using ILibraryManager
+        if (parent is not null && _libraryManager is not null)
         {
-            var collectionFolder = GetCollectionFolderParent(parent);
-            if (collectionFolder is not null)
+            try
             {
-                try
-                {
-                    var libraryOptions = collectionFolder.GetLibraryOptions();
-                    return libraryOptions.EnableJellyignore;
-                }
-                catch (Exception)
-                {
-                    // If we can't get library options, fall back to global setting
-                }
+                var libraryOptions = _libraryManager.GetLibraryOptions(parent);
+                return libraryOptions.EnableJellyignore;
+            }
+            catch (Exception)
+            {
+                // If we can't get library options, fall back to global setting
             }
         }
 
         // Fall back to global setting
         return _configurationManager?.Configuration.EnableJellyignore ?? true;
-    }
-
-    /// <summary>
-    /// Gets the collection folder parent of the given item.
-    /// </summary>
-    private static CollectionFolder? GetCollectionFolderParent(BaseItem item)
-    {
-        var current = item;
-        while (current is not null)
-        {
-            if (current is CollectionFolder collectionFolder)
-            {
-                return collectionFolder;
-            }
-
-            current = current.GetParent();
-        }
-
-        return null;
     }
 
     private static FileInfo? FindIgnoreFile(DirectoryInfo directory, string filename)

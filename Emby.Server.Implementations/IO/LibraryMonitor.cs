@@ -354,7 +354,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
-            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
+            if (new DotIgnoreIgnoreRule(_configurationManager, _libraryManager).ShouldIgnore(fileInfo, null))
             {
                 return;
             }

@@ -2833,7 +2833,7 @@ namespace Emby.Server.Implementations.Library
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             // Apply .ignore rules
-            var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
+            var filtered = fileSystemChildren.Where(c => !new DotIgnoreIgnoreRule(_configurationManager, this).ShouldIgnore(c, owner)).ToList();
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
