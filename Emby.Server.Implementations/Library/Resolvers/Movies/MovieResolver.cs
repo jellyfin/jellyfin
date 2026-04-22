@@ -23,11 +23,12 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
     /// <summary>
-    /// Class MovieResolver.
+    /// Resolves movie and video items.
     /// </summary>
     public partial class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
         private readonly IImageProcessor _imageProcessor;
+        private readonly ILogger<MovieResolver> _logger;
 
         private static readonly CollectionType[] _validCollectionTypes = new[]
         {
@@ -41,20 +42,20 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
         /// </summary>
-        /// <param name="imageProcessor">The image processor.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="namingOptions">The naming options.</param>
-        /// <param name="directoryService">The directory service.</param>
+        /// <param name="imageProcessor">Image processor.</param>
+        /// <param name="logger">Logger.</param>
+        /// <param name="namingOptions">Naming options.</param>
+        /// <param name="directoryService">Directory service.</param>
         public MovieResolver(IImageProcessor imageProcessor, ILogger<MovieResolver> logger, NamingOptions namingOptions, IDirectoryService directoryService)
             : base(logger, namingOptions, directoryService)
         {
             _imageProcessor = imageProcessor;
+            _logger = logger;
         }
 
         /// <summary>
-        /// Gets the priority.
+        /// Gets the resolver priority.
         /// </summary>
-        /// <value>The priority.</value>
         public override ResolverPriority Priority => ResolverPriority.Fourth;
 
         [GeneratedRegex(@"\bsample\b", RegexOptions.IgnoreCase)]
@@ -81,15 +82,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         }
 
         /// <summary>
-        /// Resolves the specified args.
+        /// Resolves a single item.
         /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>Video.</returns>
         protected override Video Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
-            // Find movies with their own folders
             if (args.IsDirectory)
             {
                 if (IsInvalid(args.Parent, collectionType))
@@ -131,7 +129,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     movie = FindMovie<Movie>(args, args.Path, args.Parent, files, DirectoryService, collectionType, true);
                 }
 
-                // ignore extras
                 return movie?.ExtraType is null ? movie : null;
             }
 
@@ -152,7 +149,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 item = ResolveVideo<MusicVideo>(args, false);
             }
 
-            // To find a movie file, the collection type must be movies or boxsets
             else if (collectionType == CollectionType.movies)
             {
                 item = ResolveVideo<Movie>(args, true);
@@ -171,7 +167,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 item = ResolveVideo<Video>(args, false);
             }
 
-            // Ignore extras
             if (item?.ExtraType is not null)
             {
                 return null;
@@ -207,7 +202,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (collectionType is null)
             {
-                // Owned items should just use the plain video type
                 if (parent is null)
                 {
                     return ResolveVideos<Video>(parent, files, false, collectionType, false);
@@ -246,10 +240,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var leftOver = new List<FileSystemMetadata>();
             var hasCollectionType = collectionType is not null;
 
-            // Loop through each child file/folder and see if we find a video
             foreach (var child in fileSystemEntries)
             {
-                // This is a hack but currently no better way to resolve a sometimes ambiguous situation
                 if (!hasCollectionType)
                 {
                     if (string.Equals(child.Name, "tvshow.nfo", StringComparison.OrdinalIgnoreCase)
@@ -347,10 +339,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         }
 
         /// <summary>
-        /// Sets the initial item values.
+        /// Sets initial item values.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
         protected override void SetInitialItemValues(Video item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);
@@ -358,20 +348,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             SetProviderIdsFromPath(item);
         }
 
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
         private static void SetProviderIdsFromPath(Video item)
         {
             if (item is Movie || item is MusicVideo)
             {
-                // We need to only look at the name of this actual item (not parents)
                 var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path.AsSpan()) : Path.GetFileName(item.ContainingFolderPath.AsSpan());
 
                 var tmdbid = justName.GetAttributeValue("tmdbid");
 
-                // If not in a mixed folder and ID not found in folder path, check filename
                 if (string.IsNullOrEmpty(tmdbid) && !item.IsInMixedFolder)
                 {
                     tmdbid = Path.GetFileName(item.Path.AsSpan()).GetAttributeValue("tmdbid");
@@ -381,17 +365,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
-                    // Check for IMDb id - we use full media path, as we can assume that this will match in any use case (whether  id in parent dir or in file name)
                     var imdbid = item.Path.AsSpan().GetAttributeValue("imdbid");
                     item.TrySetProviderId(MetadataProvider.Imdb, imdbid);
                 }
             }
         }
 
-        /// <summary>
-        /// Finds a movie based on a child file system entries.
-        /// </summary>
-        /// <returns>Movie.</returns>
         private T FindMovie<T>(ItemResolveArgs args, string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, CollectionType? collectionType, bool parseName)
             where T : Video, new()
         {
@@ -453,7 +432,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            // TODO: Allow GetMultiDiscMovie in here
             const bool SupportsMultiVersion = true;
 
             var result = ResolveVideos<T>(parent, fileSystemEntries, SupportsMultiVersion, collectionType, parseName) ??
@@ -486,14 +464,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return null;
         }
 
-        /// <summary>
-        /// Gets the multi disc movie.
-        /// </summary>
-        /// <param name="multiDiscFolders">The folders.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>``0.</returns>
         private T GetMultiDiscMovie<T>(List<FileSystemMetadata> multiDiscFolders, IDirectoryService directoryService)
-               where T : Video, new()
+                where T : Video, new()
         {
             var videoTypes = new List<VideoType>();
 
@@ -530,7 +502,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return false;
             }).Order().ToList();
 
-            // If different video types were found, don't allow this
             if (videoTypes.Distinct().Count() > 1)
             {
                 return null;

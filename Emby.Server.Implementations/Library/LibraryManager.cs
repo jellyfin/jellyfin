@@ -1,13 +1,17 @@
 #pragma warning disable CS1591
 #pragma warning disable CA5394
+#pragma warning disable CA1001
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using BitFaster.Caching.Lru;
@@ -30,6 +34,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -64,6 +70,12 @@ namespace Emby.Server.Implementations.Library
     public class LibraryManager : ILibraryManager
     {
         private const string ShortcutFileExtension = ".mblink";
+        private const int MaxLocalMetadataNameLength = 1024;
+        private const int MaxLocalMetadataOverviewLength = 131072;
+        private const int MaxLocalMetadataTaglineLength = 2048;
+        private const int MaxLocalMetadataOfficialRatingLength = 64;
+        private const int Phase15ProgressBatchSize = 50;
+        private const int Phase15SaveChunkSize = 10;
 
         private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
@@ -74,6 +86,7 @@ namespace Emby.Server.Implementations.Library
         private readonly Lazy<IProviderManager> _providerManagerFactory;
         private readonly Lazy<IUserViewManager> _userViewManagerFactory;
         private readonly IServerApplicationHost _appHost;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
@@ -90,6 +103,10 @@ namespace Emby.Server.Implementations.Library
         private readonly Lock _rootFolderSyncLock = new();
         private readonly Lock _userRootFolderSyncLock = new();
 
+        private static readonly SemaphoreSlim _createItemsLock = new(1, 1);
+        private static readonly ConcurrentDictionary<Type, MethodInfo> _getMetadataProvidersCache = new();
+        private readonly Lock _libraryScanCtsLock = new();
+
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         /// <summary>
@@ -97,6 +114,8 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         private volatile AggregateFolder? _rootFolder;
         private volatile UserRootFolder? _userRootFolder;
+
+        private CancellationTokenSource? _libraryScanCts;
 
         private bool _wizardCompleted;
 
@@ -140,6 +159,7 @@ namespace Emby.Server.Implementations.Library
             IPathManager pathManager)
         {
             _appHost = appHost;
+            _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
             _taskManager = taskManager;
             _userManager = userManager;
@@ -257,6 +277,7 @@ namespace Emby.Server.Implementations.Library
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
+            _logger.LogInformation("LibraryManager.AddParts registered {Count} resolvers: {Resolvers}", EntityResolvers.Length, string.Join(", ", EntityResolvers.Select(r => r.GetType().Name)));
             MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
@@ -666,10 +687,12 @@ namespace Emby.Server.Implementations.Library
             IItemResolver[]? resolvers,
             Folder? parent = null,
             CollectionType? collectionType = null,
-            LibraryOptions? libraryOptions = null)
+            LibraryOptions? libraryOptions = null,
+            bool allowFastDirectoryResolution = false)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var fullPath = fileInfo.FullName;
 
             if (collectionType is null && parent is not null)
@@ -694,6 +717,19 @@ namespace Emby.Server.Implementations.Library
             // Gather child folder and files
             if (args.IsDirectory)
             {
+                if (allowFastDirectoryResolution
+                    && collectionType == CollectionType.tvshows
+                    && parent is not null)
+                {
+                    args.FileSystemChildren = [];
+
+                    var fastItem = ResolveItem(args, resolvers);
+                    if (fastItem is not null)
+                    {
+                        return fastItem;
+                    }
+                }
+
                 var isPhysicalRoot = args.IsPhysicalRoot;
 
                 // When resolving the root, we need it's grandchildren (children of user views)
@@ -701,10 +737,13 @@ namespace Emby.Server.Implementations.Library
 
                 FileSystemMetadata[] files;
                 var isVf = args.IsVf;
+                long gfsTime = 0, filterTime = 0;
 
                 try
                 {
+                    var gfsSw = System.Diagnostics.Stopwatch.StartNew();
                     files = FileData.GetFilteredFileSystemEntries(directoryService, args.Path, _fileSystem, _appHost, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || isVf);
+                    gfsTime = gfsSw.ElapsedMilliseconds;
                 }
                 catch (Exception ex)
                 {
@@ -728,13 +767,26 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 args.FileSystemChildren = files;
-            }
 
-            // Filter content based on ignore rules
-            if (args.IsDirectory)
-            {
+                // Filter content based on ignore rules
+                var filterSw = System.Diagnostics.Stopwatch.StartNew();
                 var filtered = args.GetActualFileSystemChildren().ToArray();
                 args.FileSystemChildren = filtered ?? [];
+                filterTime = filterSw.ElapsedMilliseconds;
+
+                var item = ResolveItem(args, resolvers);
+                if (sw.ElapsedMilliseconds > 1000 || gfsTime > 500)
+                {
+                    _logger.LogInformation(
+                        "SLOW ResolvePath: {Path} took {TotalMs}ms (GetFilteredFileSystemEntries={GfsMs}ms, Filter={FilterMs}ms, ResolveItem={ResolveMs}ms)",
+                        fullPath,
+                        sw.ElapsedMilliseconds,
+                        gfsTime,
+                        filterTime,
+                        sw.ElapsedMilliseconds - gfsTime - filterTime);
+                }
+
+                return item;
             }
 
             return ResolveItem(args, resolvers);
@@ -765,9 +817,9 @@ namespace Emby.Server.Implementations.Library
             return newList;
         }
 
-        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, CollectionType? collectionType = null)
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, CollectionType? collectionType = null, int? maxParallelism = null)
         {
-            return ResolvePaths(files, directoryService, parent, libraryOptions, collectionType, EntityResolvers);
+            return ResolvePaths(files, directoryService, parent, libraryOptions, collectionType, EntityResolvers, maxParallelism);
         }
 
         public IEnumerable<BaseItem> ResolvePaths(
@@ -776,7 +828,8 @@ namespace Emby.Server.Implementations.Library
             Folder parent,
             LibraryOptions libraryOptions,
             CollectionType? collectionType,
-            IItemResolver[] resolvers)
+            IItemResolver[] resolvers,
+            int? maxParallelism = null)
         {
             var fileList = files.Where(i => !IgnoreFile(i, parent)).ToList();
 
@@ -792,13 +845,13 @@ namespace Emby.Server.Implementations.Library
                     {
                         var items = result.Items;
                         items.RemoveAll(item => !ResolverHelper.SetInitialItemValues(item, parent, this, directoryService));
-                        items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));
+                        items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions, maxParallelism));
                         return items;
                     }
                 }
             }
 
-            return ResolveFileList(fileList, directoryService, parent, collectionType, resolvers, libraryOptions);
+            return ResolveFileList(fileList, directoryService, parent, collectionType, resolvers, libraryOptions, maxParallelism);
         }
 
         private IEnumerable<BaseItem> ResolveFileList(
@@ -807,25 +860,46 @@ namespace Emby.Server.Implementations.Library
             Folder? parent,
             CollectionType? collectionType,
             IItemResolver[]? resolvers,
-            LibraryOptions libraryOptions)
+            LibraryOptions libraryOptions,
+            int? maxParallelism = null)
         {
-            // Given that fileList is a list we can save enumerator allocations by indexing
+            if (fileList.Count == 0)
+            {
+                yield break;
+            }
+
+            var results = new BaseItem?[fileList.Count];
+            var defaultParallelism = Math.Max(4, Environment.ProcessorCount);
+            var parallelism = Math.Min(fileList.Count, maxParallelism ?? defaultParallelism);
+            Parallel.For(
+                0,
+                fileList.Count,
+                new ParallelOptions { MaxDegreeOfParallelism = parallelism },
+                i =>
+                {
+                    var file = fileList[i];
+                    try
+                    {
+                        results[i] = ResolvePath(
+                            file,
+                            directoryService,
+                            resolvers,
+                            parent,
+                            collectionType,
+                            libraryOptions,
+                            allowFastDirectoryResolution: collectionType == CollectionType.tvshows);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error resolving path {Path}", file.FullName);
+                    }
+                });
+
             for (var i = 0; i < fileList.Count; i++)
             {
-                var file = fileList[i];
-                BaseItem? result = null;
-                try
+                if (results[i] is not null)
                 {
-                    result = ResolvePath(file, directoryService, resolvers, parent, collectionType, libraryOptions);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error resolving path {Path}", file.FullName);
-                }
-
-                if (result is not null)
-                {
-                    yield return result;
+                    yield return results[i]!;
                 }
             }
         }
@@ -937,8 +1011,6 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public BaseItem? FindByPath(string path, bool? isFolder)
         {
-            // If this returns multiple items it could be tricky figuring out which one is correct.
-            // In most cases, the newest one will be and the others obsolete but not yet cleaned up
             ArgumentException.ThrowIfNullOrEmpty(path);
 
             var query = new InternalItemsQuery
@@ -1122,20 +1194,19 @@ namespace Emby.Server.Implementations.Library
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Validates the media library internal.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task ValidateMediaLibraryPhase1Async(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Library Phase 1 scan started");
             IsScanRunning = true;
             LibraryMonitor.Stop();
 
+            var linkedToken = GetLibraryScanCancellationToken(cancellationToken);
+
             try
             {
-                await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
+                await PerformLibraryPhase1(progress, linkedToken).ConfigureAwait(false);
+                _logger.LogInformation("Library Phase 1 scan completed");
             }
             finally
             {
@@ -1144,43 +1215,164 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
+        /// <inheritdoc />
+        public async Task ValidateMediaLibraryPhase2Async(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Library Phase 2 scan started");
+            IsScanRunning = true;
+            LibraryMonitor.Stop();
+
+            var linkedToken = GetLibraryScanCancellationToken(cancellationToken);
+
+            try
+            {
+                await PerformLibraryPhase2(progress, linkedToken).ConfigureAwait(false);
+                _logger.LogInformation("Library Phase 2 scan completed");
+            }
+            finally
+            {
+                LibraryMonitor.Start();
+                IsScanRunning = false;
+            }
+        }
+
+        /// <summary>
+        /// Creates or reuses a shared cancellation token for library scan operations.
+        /// When any scan task is cancelled, all linked scan operations are cancelled.
+        /// </summary>
+        private CancellationToken GetLibraryScanCancellationToken(CancellationToken externalToken)
+        {
+            lock (_libraryScanCtsLock)
+            {
+                if (_libraryScanCts is null || _libraryScanCts.IsCancellationRequested)
+                {
+                    _libraryScanCts?.Dispose();
+                    _libraryScanCts = new CancellationTokenSource();
+                }
+
+                var linked = CancellationTokenSource.CreateLinkedTokenSource(_libraryScanCts.Token, externalToken);
+                externalToken.Register(() =>
+                {
+                    try
+                    {
+                        _libraryScanCts?.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Ignore if already disposed
+                    }
+                });
+                return linked.Token;
+            }
+        }
+
+        /// <summary>
+        /// Cancels any running library scan operations.
+        /// </summary>
+        public void CancelLibraryScan()
+        {
+            lock (_libraryScanCtsLock)
+            {
+                try
+                {
+                    _libraryScanCts?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the media library internal.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var scanId = Guid.NewGuid();
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogInformation("Library scan started {ScanId}", scanId);
+            IsScanRunning = true;
+            LibraryMonitor.Stop();
+
+            var linkedToken = GetLibraryScanCancellationToken(cancellationToken);
+
+            try
+            {
+                // Phase 1 = 40% of total progress
+                await PerformLibraryPhase1(new Progress<double>(pct => progress.Report(pct * 0.4)), linkedToken).ConfigureAwait(false);
+
+                // Phase 2 = 60% of total progress, weighted by folder item counts
+                await PerformLibraryPhase2(new Progress<double>(pct => progress.Report(0.4 + (pct * 0.6))), linkedToken).ConfigureAwait(false);
+
+                _logger.LogInformation("Library scan completed {ScanId} in {ElapsedMs}ms", scanId, stopwatch.ElapsedMilliseconds);
+            }
+            finally
+            {
+                LibraryMonitor.Start();
+                IsScanRunning = false;
+            }
+        }
+
+        public Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
+            => ValidateTopLibraryFoldersInternal(cancellationToken, removeRoot, refreshTopLevelMetadata: true, validateRootPathExistence: true);
+
+        private async Task ValidateTopLibraryFoldersInternal(CancellationToken cancellationToken, bool removeRoot, bool refreshTopLevelMetadata, bool validateRootPathExistence)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("ValidateTopLibraryFoldersInternal START");
+
             RootFolder.Children = null;
+            var stepSw = System.Diagnostics.Stopwatch.StartNew();
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("RootFolder.RefreshMetadata took {ElapsedMs}ms", stepSw.ElapsedMilliseconds);
 
             // Start by just validating the children of the root, but go no further
+            stepSw.Restart();
             await RootFolder.ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 allowRemoveRoot: removeRoot,
+                refreshChildMetadata: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("RootFolder.ValidateChildren took {ElapsedMs}ms", stepSw.ElapsedMilliseconds);
 
             var rootFolder = GetUserRootFolder();
             rootFolder.Children = null;
 
+            stepSw.Restart();
             await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("UserRootFolder.RefreshMetadata took {ElapsedMs}ms", stepSw.ElapsedMilliseconds);
 
+            stepSw.Restart();
             await rootFolder.ValidateChildren(
                 new Progress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 allowRemoveRoot: removeRoot,
+                refreshChildMetadata: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("UserRootFolder.ValidateChildren took {ElapsedMs}ms", stepSw.ElapsedMilliseconds);
 
-            // Quickly scan CollectionFolders for changes
             var toDelete = new List<Guid>();
             foreach (var child in rootFolder.Children!.OfType<Folder>())
             {
                 // If the user has somehow deleted the collection directory, remove the metadata from the database.
-                if (child is CollectionFolder collectionFolder && !Directory.Exists(collectionFolder.Path))
+                if (validateRootPathExistence
+                    && child is CollectionFolder collectionFolder
+                    && !Directory.Exists(collectionFolder.Path))
                 {
                     toDelete.Add(collectionFolder.Id);
                 }
-                else
+                else if (refreshTopLevelMetadata)
                 {
+                    stepSw.Restart();
                     await child.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("CollectionFolder '{Name}' RefreshMetadata took {ElapsedMs}ms", child.Name, stepSw.ElapsedMilliseconds);
                 }
             }
 
@@ -1188,26 +1380,778 @@ namespace Emby.Server.Implementations.Library
             {
                 _itemRepository.DeleteItem(toDelete.ToArray());
             }
+
+            _logger.LogInformation("ValidateTopLibraryFoldersInternal END in {ElapsedMs}ms", sw.ElapsedMilliseconds);
         }
 
-        private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task PerformLibraryPhase1(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Validating media library");
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("PerformLibraryPhase1 START");
 
+            var topFoldersSw = System.Diagnostics.Stopwatch.StartNew();
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("ValidateTopLibraryFolders completed in {ElapsedMs}ms", topFoldersSw.ElapsedMilliseconds);
 
-            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
+            _logger.LogInformation("Validating media library - Phase 1: Fast discovery with local NFO metadata");
 
-            // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+            // Fast phase intentionally skips top-level folder validation to minimize
+            // startup I/O on large or network-mounted libraries.
 
-            progress.Report(96);
+            // Record scan start time to identify newly created items
+            var scanStartTime = DateTime.UtcNow;
 
-            innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
+            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.5)); // Discovery is first half of Phase 1
 
-            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Phase 1 discovery scanning root folder");
+            var phase1Sw = System.Diagnostics.Stopwatch.StartNew();
+            await RootFolder.ValidateChildren(
+                innerProgress,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
+                recursive: true,
+                refreshChildMetadata: false,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Phase 1 discovery completed in {ElapsedMs}ms (NFO metadata merged inline)", phase1Sw.ElapsedMilliseconds);
 
             progress.Report(100);
+
+            _logger.LogInformation("PerformLibraryPhase1 END in {ElapsedMs}ms", totalSw.ElapsedMilliseconds);
+        }
+
+        private async Task PerformLibraryPhase2(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("PerformLibraryPhase2 START");
+
+            // CollectionFolders are virtual containers; we must validate their physical sub-folders
+            // to actually scan the media directories (tvshows, movies, music, etc.).
+            var libraryFolders = RootFolder.Children.OfType<Folder>()
+                .Where(f => f.IsFileProtocol && !string.IsNullOrEmpty(f.Path))
+                .ToList();
+
+            var physicalFolders = libraryFolders
+                .OfType<CollectionFolder>()
+                .SelectMany(cf => cf.GetPhysicalFolders())
+                .Concat(libraryFolders.Where(f => f is not CollectionFolder))
+                .Where(f => f.IsFileProtocol && !string.IsNullOrEmpty(f.Path))
+                .ToList();
+
+            _logger.LogInformation("Library discovery complete. Building Phase 2 work items for {Count} physical folders.", physicalFolders.Count);
+
+            var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            {
+                MetadataRefreshMode = MetadataRefreshMode.Default,
+                ImageRefreshMode = MetadataRefreshMode.Default,
+                ValidateFileSystem = false
+            };
+
+            try
+            {
+                await RefreshMetadataForExistingItems(progress, options, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Phase 2 metadata refresh cancelled");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Phase 2 metadata refresh failed, falling back to folder-based approach");
+                var (workItems, weights) = BuildPhase2WorkItems(physicalFolders);
+                _logger.LogInformation("Phase 2 fallback: {Count} work items", workItems.Count);
+                try
+                {
+                    await Folder.LimitedConcurrencyLibraryScheduler
+                        .Enqueue(
+                            workItems.ToArray(),
+                            (item, innerProgress) => ExecutePhase2WorkItem(item, innerProgress, cancellationToken),
+                            weights.ToArray(),
+                            progress,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Phase 2 fallback cancelled");
+                }
+            }
+
+            progress.Report(100);
+
+            _logger.LogInformation("PerformLibraryPhase2 END in {ElapsedMs}ms", totalSw.ElapsedMilliseconds);
+        }
+
+        private async Task RefreshMetadataForExistingItems(IProgress<double> progress, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Starting metadata-only refresh for existing items (no filesystem scan)");
+
+            // Query DB for top-level media items: Movies, Series, MusicAlbums.
+            // Episodes, Seasons, Tracks are handled transitively when their parent is refreshed.
+            var dtoOptions = new DtoOptions(false) { EnableImages = false };
+
+            var movies = _itemRepository.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { BaseItemKind.Movie },
+                Recursive = true,
+                DtoOptions = dtoOptions
+            });
+
+            var series = _itemRepository.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { BaseItemKind.Series },
+                Recursive = true,
+                DtoOptions = dtoOptions
+            });
+
+            var albums = _itemRepository.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
+                Recursive = true,
+                DtoOptions = dtoOptions
+            });
+
+            // Build weighted work items: Movie=1, Series=episode count, Album=song count.
+            var workItems = new List<BaseItem>();
+            var weights = new List<double>();
+
+            foreach (var movie in movies)
+            {
+                workItems.Add(movie);
+                weights.Add(1);
+            }
+
+            foreach (var s in series)
+            {
+                var episodeCount = GetCount(new InternalItemsQuery
+                {
+                    AncestorIds = new[] { s.Id },
+                    IncludeItemTypes = new[] { BaseItemKind.Episode },
+                    Recursive = true,
+                    DtoOptions = dtoOptions
+                });
+                workItems.Add(s);
+                weights.Add(Math.Max(1, episodeCount));
+            }
+
+            foreach (var album in albums)
+            {
+                var songCount = GetCount(new InternalItemsQuery
+                {
+                    AncestorIds = new[] { album.Id },
+                    IncludeItemTypes = new[] { BaseItemKind.Audio },
+                    Recursive = true,
+                    DtoOptions = dtoOptions
+                });
+                workItems.Add(album);
+                weights.Add(Math.Max(1, songCount));
+            }
+
+            _logger.LogInformation(
+                "Phase 2 metadata refresh: {Movies} movies, {Series} series, {Albums} albums ({Total} work items)",
+                movies.Count,
+                series.Count,
+                albums.Count,
+                workItems.Count);
+
+            if (workItems.Count == 0)
+            {
+                progress.Report(100);
+                return;
+            }
+
+            try
+            {
+                await Folder.LimitedConcurrencyLibraryScheduler
+                    .Enqueue(
+                        workItems.ToArray(),
+                        async (item, innerProgress) =>
+                        {
+                            if (options.RefreshItem(item))
+                            {
+                                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                            }
+
+                            innerProgress.Report(100);
+                        },
+                        weights.ToArray(),
+                        progress,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Phase 2 metadata refresh cancelled");
+                throw;
+            }
+
+            _logger.LogInformation("Completed metadata-only refresh for {Count} existing items", workItems.Count);
+        }
+
+        private (List<BaseItem> Items, List<double> Weights) BuildPhase2WorkItems(List<Folder> physicalFolders)
+        {
+            var items = new List<BaseItem>();
+            var weights = new List<double>();
+
+            foreach (var folder in physicalFolders)
+            {
+                var collectionType = GetContentType(folder);
+                folder.Children = null; // Ensure fresh data
+                var children = folder.Children?.ToList() ?? new List<BaseItem>();
+
+                if (collectionType == Jellyfin.Data.Enums.CollectionType.tvshows)
+                {
+                    foreach (var series in children.OfType<MediaBrowser.Controller.Entities.TV.Series>())
+                    {
+                        try
+                        {
+                            var episodeCount = GetCount(new InternalItemsQuery
+                            {
+                                AncestorIds = new[] { series.Id },
+                                IncludeItemTypes = new[] { BaseItemKind.Episode },
+                                Recursive = true,
+                                DtoOptions = new DtoOptions(false) { EnableImages = false }
+                            });
+                            items.Add(series);
+                            weights.Add(Math.Max(1, episodeCount));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error counting episodes for series {Series}", series.Name);
+                            items.Add(series);
+                            weights.Add(1);
+                        }
+                    }
+
+                    foreach (var movie in children.OfType<Movie>())
+                    {
+                        items.Add(movie);
+                        weights.Add(1);
+                    }
+
+                    foreach (var other in children.Where(c => c is not MediaBrowser.Controller.Entities.TV.Series && c is not Movie))
+                    {
+                        AddGenericPhase2WorkItem(other, items, weights);
+                    }
+                }
+                else if (collectionType == Jellyfin.Data.Enums.CollectionType.movies)
+                {
+                    foreach (var movie in children.OfType<Movie>())
+                    {
+                        items.Add(movie);
+                        weights.Add(1);
+                    }
+
+                    foreach (var other in children.Where(c => c is not Movie))
+                    {
+                        AddGenericPhase2WorkItem(other, items, weights);
+                    }
+                }
+                else if (collectionType == Jellyfin.Data.Enums.CollectionType.music)
+                {
+                    foreach (var album in children.OfType<MusicAlbum>())
+                    {
+                        try
+                        {
+                            var songCount = GetCount(new InternalItemsQuery
+                            {
+                                AncestorIds = new[] { album.Id },
+                                IncludeItemTypes = new[] { BaseItemKind.Audio },
+                                Recursive = true,
+                                DtoOptions = new DtoOptions(false) { EnableImages = false }
+                            });
+                            items.Add(album);
+                            weights.Add(Math.Max(1, songCount));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error counting songs for album {Album}", album.Name);
+                            items.Add(album);
+                            weights.Add(1);
+                        }
+                    }
+
+                    foreach (var other in children.Where(c => c is not MusicAlbum))
+                    {
+                        AddGenericPhase2WorkItem(other, items, weights);
+                    }
+                }
+                else
+                {
+                    foreach (var child in children)
+                    {
+                        AddGenericPhase2WorkItem(child, items, weights);
+                    }
+                }
+            }
+
+            return (items, weights);
+        }
+
+        private void AddGenericPhase2WorkItem(BaseItem item, List<BaseItem> items, List<double> weights)
+        {
+            if (item is Folder subFolder)
+            {
+                try
+                {
+                    var count = GetCount(new InternalItemsQuery
+                    {
+                        AncestorIds = new[] { subFolder.Id },
+                        Recursive = true,
+                        DtoOptions = new DtoOptions(false) { EnableImages = false }
+                    });
+                    items.Add(subFolder);
+                    weights.Add(Math.Max(1, count));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error counting items for folder {Folder}", subFolder.Path);
+                    items.Add(subFolder);
+                    weights.Add(1);
+                }
+            }
+            else
+            {
+                items.Add(item);
+                weights.Add(1);
+            }
+        }
+
+        private async Task ExecutePhase2WorkItem(BaseItem item, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            {
+                MetadataRefreshMode = MetadataRefreshMode.Default,
+                ValidateFileSystem = false
+            };
+
+            if (item is Folder folder)
+            {
+                await folder.ValidateChildren(
+                    progress,
+                    options,
+                    recursive: true,
+                    refreshChildMetadata: true,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                if (options.RefreshItem(item))
+                {
+                    await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                }
+
+                progress.Report(100);
+            }
+        }
+
+        /// <summary>
+        /// Applies NFO metadata to items created since the specified time.
+        /// </summary>
+        private async Task ApplyNfoMetadataToNewItems(DateTime scanStartTime, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var allItems = _itemRepository.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[]
+                    {
+                        BaseItemKind.Movie,
+                        BaseItemKind.Series,
+                        BaseItemKind.Season,
+                        BaseItemKind.Episode,
+                        BaseItemKind.MusicAlbum,
+                        BaseItemKind.MusicArtist,
+                        BaseItemKind.Audio,
+                        BaseItemKind.Video,
+                        BaseItemKind.MusicVideo,
+                        BaseItemKind.Book,
+                        BaseItemKind.AudioBook
+                    },
+                    Recursive = true,
+                    DtoOptions = new DtoOptions(true)
+                    {
+                        EnableImages = true
+                    }
+                });
+
+                var newItems = allItems
+                    .Where(i => i.DateLastRefreshed == DateTime.MinValue)
+                    .ToList();
+
+                if (newItems.Count == 0)
+                {
+                    _logger.LogInformation("No new items discovered");
+                    progress.Report(100);
+                    return;
+                }
+
+                _logger.LogInformation("Reading NFO metadata for {Count} newly discovered items", newItems.Count);
+
+                var directoryService = new DirectoryService(_fileSystem);
+                var processedCount = 0;
+                var updatedCount = 0;
+                var batchSize = Phase15ProgressBatchSize;
+                var updateBatch = new System.Collections.Concurrent.ConcurrentBag<BaseItem>();
+
+                await Parallel.ForEachAsync(
+                    newItems,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2),
+                        CancellationToken = cancellationToken
+                    },
+                    async (item, ct) =>
+                    {
+                        try
+                        {
+                            if (await ApplyLocalNfoFieldsAsync(item, directoryService, ct).ConfigureAwait(false))
+                            {
+                                updateBatch.Add(item);
+                                Interlocked.Increment(ref updatedCount);
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Error reading NFO for {Item}", item.Path ?? item.Name);
+                        }
+
+                        var processed = Interlocked.Increment(ref processedCount);
+                        if (processed % batchSize == 0 || processed == newItems.Count)
+                        {
+                            var percent = 100.0 * processed / newItems.Count;
+                            progress.Report(percent);
+                        }
+                    }).ConfigureAwait(false);
+
+                var toSave = updateBatch.ToList();
+                if (toSave.Count > 0)
+                {
+                    _logger.LogInformation("Persisting NFO metadata for {Count} items", toSave.Count);
+                    for (int i = 0; i < toSave.Count; i += Phase15SaveChunkSize)
+                    {
+                        var chunk = toSave.GetRange(i, Math.Min(Phase15SaveChunkSize, toSave.Count - i));
+                        try
+                        {
+                            _itemRepository.SaveItems(chunk, cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error saving NFO metadata chunk of {Count} items", chunk.Count);
+                        }
+                    }
+                }
+
+                progress.Report(100);
+                _logger.LogInformation("NFO metadata applied to {Updated} of {Total} new items", updatedCount, newItems.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error applying NFO metadata during Phase 1.5");
+            }
+        }
+
+        public async Task<bool> ApplyLocalNfoFieldsAsync(BaseItem item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        {
+            var (source, nfoImages) = await InvokeLocalMetadataProvidersAsync(item, directoryService, cancellationToken).ConfigureAwait(false);
+            if (source is null)
+            {
+                return false;
+            }
+
+            SanitizeLocalMetadataSource(item, source);
+
+            var changed = MergeTextualNfoFields(item, source);
+
+            if (nfoImages is { Count: > 0 })
+            {
+                changed |= MergeNfoImages(item, nfoImages);
+            }
+
+            if (changed)
+            {
+                item.DateLastRefreshed = DateTime.UtcNow;
+            }
+
+            return changed;
+        }
+
+        private static bool MergeNfoImages(BaseItem target, List<LocalImageInfo> nfoImages)
+        {
+            var changed = false;
+            var existingPaths = new HashSet<string>(target.ImageInfos.Select(i => i.Path), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var nfoImg in nfoImages)
+            {
+                if (nfoImg.FileInfo is null || !nfoImg.FileInfo.Exists)
+                {
+                    continue;
+                }
+
+                if (existingPaths.Contains(nfoImg.FileInfo.FullName))
+                {
+                    continue;
+                }
+
+                var replaceIdx = Array.FindIndex(target.ImageInfos, i => i.Type == nfoImg.Type);
+                var newImage = new ItemImageInfo
+                {
+                    Path = nfoImg.FileInfo.FullName,
+                    Type = nfoImg.Type,
+                    DateModified = nfoImg.FileInfo.LastWriteTimeUtc
+                };
+
+                if (replaceIdx >= 0)
+                {
+                    target.SetImage(newImage, replaceIdx);
+                }
+                else
+                {
+                    target.AddImage(newImage);
+                }
+
+                existingPaths.Add(nfoImg.FileInfo.FullName);
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private void SanitizeLocalMetadataSource(BaseItem target, BaseItem source)
+        {
+            if (source is Episode && !string.IsNullOrEmpty(source.Name) && source.Name.Length > MaxLocalMetadataNameLength)
+            {
+                _logger.LogWarning(
+                    "Skipping oversized local metadata name for {Path}. Length={Length}",
+                    target.Path ?? target.Name,
+                    source.Name.Length);
+                source.Name = string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(source.Overview) && source.Overview.Length > MaxLocalMetadataOverviewLength)
+            {
+                _logger.LogWarning(
+                    "Skipping oversized local metadata overview for {Path}. Length={Length}",
+                    target.Path ?? target.Name,
+                    source.Overview.Length);
+                source.Overview = null;
+            }
+
+            if (!string.IsNullOrEmpty(source.Tagline) && source.Tagline.Length > MaxLocalMetadataTaglineLength)
+            {
+                _logger.LogWarning(
+                    "Skipping oversized local metadata tagline for {Path}. Length={Length}",
+                    target.Path ?? target.Name,
+                    source.Tagline.Length);
+                source.Tagline = null;
+            }
+
+            if (!string.IsNullOrEmpty(source.OfficialRating) && source.OfficialRating.Length > MaxLocalMetadataOfficialRatingLength)
+            {
+                _logger.LogWarning(
+                    "Skipping oversized local metadata official rating for {Path}. Length={Length}",
+                    target.Path ?? target.Name,
+                    source.OfficialRating.Length);
+                source.OfficialRating = string.Empty;
+            }
+        }
+
+        private async Task<(BaseItem? Item, List<LocalImageInfo>? Images)> InvokeLocalMetadataProvidersAsync(BaseItem item, IDirectoryService directoryService, CancellationToken cancellationToken)
+        {
+            var itemType = item.GetType();
+            var libraryOptions = GetLibraryOptions(item);
+
+            var methodInfo = _getMetadataProvidersCache.GetOrAdd(itemType, t =>
+            {
+                var generic = typeof(IProviderManager).GetMethod(nameof(IProviderManager.GetMetadataProviders))
+                    ?? throw new InvalidOperationException("GetMetadataProviders not found");
+                return generic.MakeGenericMethod(t);
+            });
+
+            if (methodInfo.Invoke(ProviderManager, new object[] { item, libraryOptions }) is not System.Collections.IEnumerable providers)
+            {
+                return (null, null);
+            }
+
+            var itemInfo = new ItemInfo(item);
+
+            foreach (var provider in providers)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var providerType = provider?.GetType();
+                if (providerType is null)
+                {
+                    continue;
+                }
+
+                if (!providerType.GetInterfaces().Any(iface =>
+                    iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(ILocalMetadataProvider<>)))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var getMetadataMethod = providerType.GetMethod("GetMetadata", new[] { typeof(ItemInfo), typeof(IDirectoryService), typeof(CancellationToken) });
+                    if (getMetadataMethod is null)
+                    {
+                        continue;
+                    }
+
+                    var task = getMetadataMethod.Invoke(provider, new object[] { itemInfo, directoryService, cancellationToken }) as Task;
+                    if (task is null)
+                    {
+                        continue;
+                    }
+
+                    await task.ConfigureAwait(false);
+
+                    var resultProperty = task.GetType().GetProperty("Result");
+                    var metadataResult = resultProperty?.GetValue(task);
+                    if (metadataResult is null)
+                    {
+                        continue;
+                    }
+
+                    var hasMetadataProperty = metadataResult.GetType().GetProperty("HasMetadata");
+                    var hasMetadata = (bool?)hasMetadataProperty?.GetValue(metadataResult) ?? false;
+                    if (!hasMetadata)
+                    {
+                        continue;
+                    }
+
+                    var itemProperty = metadataResult.GetType().GetProperty("Item");
+                    var imagesProperty = metadataResult.GetType().GetProperty("Images");
+                    var parsedItem = itemProperty?.GetValue(metadataResult) as BaseItem;
+                    var nfoImages = imagesProperty?.GetValue(metadataResult) as List<LocalImageInfo>;
+
+                    if (parsedItem is not null)
+                    {
+                        return (parsedItem, nfoImages);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Local NFO provider invocation failed for {Item}", item.Path ?? item.Name);
+                }
+            }
+
+            return (null, null);
+        }
+
+        private static bool MergeTextualNfoFields(BaseItem target, BaseItem source)
+        {
+            bool changed = false;
+
+            if (!target.IndexNumber.HasValue && source.IndexNumber.HasValue)
+            {
+                target.IndexNumber = source.IndexNumber;
+                changed = true;
+            }
+
+            if (!target.ParentIndexNumber.HasValue && source.ParentIndexNumber.HasValue)
+            {
+                target.ParentIndexNumber = source.ParentIndexNumber;
+                changed = true;
+            }
+
+            if (!string.IsNullOrEmpty(source.Name) && target is Episode
+                && !string.Equals(target.Name, source.Name, StringComparison.Ordinal))
+            {
+                target.Name = source.Name;
+                changed = true;
+            }
+
+            if (string.IsNullOrEmpty(target.Overview) && !string.IsNullOrEmpty(source.Overview))
+            {
+                target.Overview = source.Overview;
+                changed = true;
+            }
+
+            if (string.IsNullOrEmpty(target.Tagline) && !string.IsNullOrEmpty(source.Tagline))
+            {
+                target.Tagline = source.Tagline;
+                changed = true;
+            }
+
+            if (!target.PremiereDate.HasValue && source.PremiereDate.HasValue)
+            {
+                target.PremiereDate = source.PremiereDate;
+                changed = true;
+            }
+
+            if (!target.ProductionYear.HasValue && source.ProductionYear.HasValue)
+            {
+                target.ProductionYear = source.ProductionYear;
+                changed = true;
+            }
+
+            if (!target.CommunityRating.HasValue && source.CommunityRating.HasValue)
+            {
+                target.CommunityRating = source.CommunityRating;
+                changed = true;
+            }
+
+            if (!target.CriticRating.HasValue && source.CriticRating.HasValue)
+            {
+                target.CriticRating = source.CriticRating;
+                changed = true;
+            }
+
+            if (string.IsNullOrEmpty(target.OfficialRating) && !string.IsNullOrEmpty(source.OfficialRating))
+            {
+                target.OfficialRating = source.OfficialRating;
+                changed = true;
+            }
+
+            if ((target.Genres is null || target.Genres.Length == 0) && source.Genres is { Length: > 0 })
+            {
+                target.Genres = source.Genres;
+                changed = true;
+            }
+
+            if ((target.Studios is null || target.Studios.Length == 0) && source.Studios is { Length: > 0 })
+            {
+                target.Studios = source.Studios;
+                changed = true;
+            }
+
+            if ((target.Tags is null || target.Tags.Length == 0) && source.Tags is { Length: > 0 })
+            {
+                target.Tags = source.Tags;
+                changed = true;
+            }
+
+            if (!target.RunTimeTicks.HasValue && source.RunTimeTicks.HasValue)
+            {
+                target.RunTimeTicks = source.RunTimeTicks;
+                changed = true;
+            }
+
+            if (source.ProviderIds is { Count: > 0 })
+            {
+                foreach (var (key, value) in source.ProviderIds)
+                {
+                    if (!target.ProviderIds.ContainsKey(key) && !string.IsNullOrEmpty(value))
+                    {
+                        target.ProviderIds[key] = value;
+                        changed = true;
+                    }
+                }
+            }
+
+            return changed;
         }
 
         /// <summary>
@@ -1993,7 +2937,54 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
+            var duplicateIds = items.GroupBy(i => i.Id).Where(g => g.Count() > 1).ToList();
+            if (duplicateIds.Count > 0)
+            {
+                foreach (var dup in duplicateIds)
+                {
+                    _logger.LogError(
+                        "Duplicate item ID {ItemId} detected in CreateItems batch for parent {ParentPath}: {Paths}",
+                        dup.Key,
+                        parent?.Path ?? "null",
+                        string.Join(", ", dup.Select(i => $"'{i.Path}' ({i.GetType().Name})")));
+                }
+            }
+
+            var itemsToSave = items.GroupBy(i => i.Id).Select(g => g.First()).ToList();
+            if (itemsToSave.Count < items.Count)
+            {
+                _logger.LogWarning(
+                    "Deduplicating {OriginalCount} items to {UniqueCount} items before saving",
+                    items.Count,
+                    itemsToSave.Count);
+            }
+
+            _createItemsLock.Wait(cancellationToken);
+            try
+            {
+                _itemRepository.SaveItems(itemsToSave, cancellationToken);
+            }
+            finally
+            {
+                _createItemsLock.Release();
+            }
+
+            foreach (var item in itemsToSave)
+            {
+                var providerIds = item.ProviderIds?.Count > 0
+                    ? string.Join(", ", item.ProviderIds.Select(p => $"{p.Key}={p.Value}"))
+                    : "none";
+                var year = item.ProductionYear.HasValue ? $" ({item.ProductionYear})" : string.Empty;
+                _logger.LogInformation(
+                    "DISCOVERED: {ItemType} {Name}{Year} [ProviderIds: {ProviderIds}] at {Path}",
+                    item.GetType().Name,
+                    item.Name,
+                    year,
+                    providerIds,
+                    item.Path ?? "no-path");
+            }
+
+            _logger.LogInformation("DISCOVERED batch: {Count} items saved to database", itemsToSave.Count);
 
             foreach (var item in items)
             {
@@ -2161,7 +3152,15 @@ namespace Emby.Server.Implementations.Library
                 item.DateLastSaved = DateTime.UtcNow;
             }
 
-            _itemRepository.SaveItems(items, cancellationToken);
+            await _createItemsLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                _itemRepository.SaveItems(items, cancellationToken);
+            }
+            finally
+            {
+                _createItemsLock.Release();
+            }
 
             if (parent is Folder folder)
             {
@@ -2210,7 +3209,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
-            if (item.IsFileProtocol)
+            if (item.IsFileProtocol && updateReason != ItemUpdateType.MetadataImport)
             {
                 await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
@@ -3078,8 +4077,6 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
-                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
-
                 if (refreshLibrary)
                 {
                     StartScanInBackground();
@@ -3090,6 +4087,18 @@ namespace Emby.Server.Implementations.Library
                     await Task.Delay(1000).ConfigureAwait(false);
                     LibraryMonitor.Start();
                 }
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error validating top library folders after adding virtual folder");
+                    }
+                });
             }
         }
 
@@ -3365,6 +4374,28 @@ namespace Emby.Server.Implementations.Library
             }
 
             return item is UserRootFolder || item.IsVisibleStandalone(user);
+        }
+
+        public Task<Phase1TreeScanResult> ScanTreeAsync(
+            Folder folder,
+            MetadataRefreshOptions options,
+            IDirectoryService directoryService,
+            CancellationToken cancellationToken)
+        {
+            var collectionType = GetContentType(folder);
+            if (collectionType is null)
+            {
+                return Task.FromResult(new Phase1TreeScanResult { Scanned = false });
+            }
+
+            var scanner = new Scanning.Phase1TreeScanner(
+                this,
+                _fileSystem,
+                _providerManagerFactory.Value,
+                _loggerFactory.CreateLogger<Scanning.Phase1TreeScanner>(),
+                _namingOptions);
+
+            return scanner.ScanAsync(folder, collectionType.Value, directoryService, cancellationToken);
         }
 
         public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo)

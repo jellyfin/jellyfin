@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -904,42 +905,104 @@ namespace MediaBrowser.Providers.Manager
                 MergeNewData(temp.Item, id);
             }
 
-            foreach (var provider in providers)
+            var providerGroups = providers
+                .GroupBy(p => (p as IHasOrder)?.Order ?? 0)
+                .OrderBy(g => g.Key)
+                .ToList();
+
+            foreach (var group in providerGroups)
             {
-                var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
+                var groupProviders = group.ToList();
 
-                try
+                if (groupProviders.Count == 1)
                 {
-                    var result = await provider.GetMetadata(id, cancellationToken).ConfigureAwait(false);
-
+                    var provider = groupProviders[0];
+                    var result = await RunRemoteProviderAsync(provider, temp, logName, replaceData, id, cancellationToken).ConfigureAwait(false);
                     if (result.HasMetadata)
                     {
-                        result.Provider = provider.Name;
-
-                        MergeData(result, temp, [], replaceData, false);
-                        MergeNewData(temp.Item, id);
-
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(result.ErrorMessage))
                     {
-                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
+                        refreshResult.ErrorMessage = result.ErrorMessage;
                     }
+
+                    refreshResult.Failures += result.Failures;
                 }
-                catch (OperationCanceledException)
+                else
                 {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    refreshResult.Failures++;
-                    refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                    var options = new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = Math.Min(3, groupProviders.Count),
+                        CancellationToken = cancellationToken
+                    };
+
+                    var groupResults = new ConcurrentBag<(bool HasMetadata, ItemUpdateType UpdateType, string ErrorMessage, int Failures)>();
+
+                    await Parallel.ForEachAsync(groupProviders, options, async (provider, ct) =>
+                    {
+                        var providerResult = await RunRemoteProviderAsync(provider, temp, logName, replaceData, id, cancellationToken).ConfigureAwait(false);
+                        groupResults.Add(providerResult);
+                    }).ConfigureAwait(false);
+
+                    foreach (var result in groupResults)
+                    {
+                        if (result.HasMetadata)
+                        {
+                            refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
+                        }
+
+                        if (!string.IsNullOrEmpty(result.ErrorMessage))
+                        {
+                            refreshResult.ErrorMessage = result.ErrorMessage;
+                        }
+
+                        refreshResult.Failures += result.Failures;
+                    }
                 }
             }
 
             return refreshResult;
+        }
+
+        private async Task<(bool HasMetadata, ItemUpdateType UpdateType, string ErrorMessage, int Failures)> RunRemoteProviderAsync(
+            IRemoteMetadataProvider<TItemType, TIdType> provider,
+            MetadataResult<TItemType> temp,
+            string logName,
+            bool replaceData,
+            TIdType id,
+            CancellationToken cancellationToken)
+        {
+            var providerName = provider.GetType().Name;
+            Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
+
+            try
+            {
+                var result = await provider.GetMetadata(id, cancellationToken).ConfigureAwait(false);
+
+                if (result.HasMetadata)
+                {
+                    result.Provider = provider.Name;
+
+                    MergeData(result, temp, [], replaceData, false);
+                    MergeNewData(temp.Item, id);
+
+                    return (true, ItemUpdateType.MetadataDownload, null, 0);
+                }
+
+                Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
+                return (false, ItemUpdateType.None, null, 0);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                return (false, ItemUpdateType.None, ex.Message, 1);
+            }
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)

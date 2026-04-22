@@ -20,4 +20,16 @@ public interface ILimitedConcurrencyLibraryScheduler
     /// <param name="cancellationToken">Stop token.</param>
     /// <returns>A task that finishes when all data has been processed by the worker.</returns>
     Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, IProgress<double> progress, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Enqueues an action that will be invoked with the set data using weighted progress reporting.
+    /// </summary>
+    /// <typeparam name="T">The data Type.</typeparam>
+    /// <param name="data">The data.</param>
+    /// <param name="worker">The callback to process the data.</param>
+    /// <param name="weights">The weight of each data item used for progress calculation.</param>
+    /// <param name="progress">A progress reporter.</param>
+    /// <param name="cancellationToken">Stop token.</param>
+    /// <returns>A task that finishes when all data has been processed by the worker.</returns>
+    Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, double[] weights, IProgress<double> progress, CancellationToken cancellationToken);
 }

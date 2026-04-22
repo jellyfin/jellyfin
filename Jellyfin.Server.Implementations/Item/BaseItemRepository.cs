@@ -640,9 +640,11 @@ public sealed class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
+        var transactionActive = true;
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
-        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
+        var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToHashSet();
 
         foreach (var item in tuples)
         {
@@ -650,7 +652,7 @@ public sealed class BaseItemRepository
             // TODO: refactor this "inconsistency"
             entity.TopParentId = item.TopParent?.Id;
 
-            if (!existingItems.Any(e => e == entity.Id))
+            if (!existingItems.Contains(entity.Id))
             {
                 context.BaseItems.Add(entity);
             }
@@ -674,7 +676,56 @@ public sealed class BaseItemRepository
             }
         }
 
-        context.SaveChanges();
+        try
+        {
+            context.SaveChanges();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is Microsoft.Data.Sqlite.SqliteException sqliteEx && (sqliteEx.SqliteErrorCode == 19 || sqliteEx.SqliteErrorCode == 18))
+        {
+            _logger.LogWarning(ex, "Batch save failed with SQLite error {ErrorCode}; falling back to individual item saves", sqliteEx.SqliteErrorCode);
+            context.ChangeTracker.Clear();
+            transaction.Rollback();
+            transactionActive = false;
+            foreach (var item in tuples)
+            {
+                context.ChangeTracker.AutoDetectChangesEnabled = false;
+                var singleEntity = Map(item.Item);
+                singleEntity.TopParentId = item.TopParent?.Id;
+                var singleExisting = context.BaseItems.Where(e => e.Id == singleEntity.Id).Select(e => e.Id).ToHashSet();
+                if (!singleExisting.Contains(singleEntity.Id))
+                {
+                    context.BaseItems.Add(singleEntity);
+                }
+                else
+                {
+                    context.BaseItemProviders.Where(e => e.ItemId == singleEntity.Id).ExecuteDelete();
+                    context.BaseItemImageInfos.Where(e => e.ItemId == singleEntity.Id).ExecuteDelete();
+                    context.BaseItemMetadataFields.Where(e => e.ItemId == singleEntity.Id).ExecuteDelete();
+                    if (singleEntity.Images is { Count: > 0 })
+                    {
+                        context.BaseItemImageInfos.AddRange(singleEntity.Images);
+                    }
+
+                    if (singleEntity.LockedFields is { Count: > 0 })
+                    {
+                        context.BaseItemMetadataFields.AddRange(singleEntity.LockedFields);
+                    }
+
+                    context.BaseItems.Attach(singleEntity).State = EntityState.Modified;
+                }
+
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch (DbUpdateException innerEx) when (innerEx.InnerException is Microsoft.Data.Sqlite.SqliteException innerSqliteEx && innerSqliteEx.SqliteErrorCode == 18)
+                {
+                    _logger.LogWarning(innerEx, "Individual save failed for item {ItemId} because a field value is too large; skipping", item.Item.Id);
+                }
+
+                context.ChangeTracker.Clear();
+            }
+        }
 
         var itemValueMaps = tuples
             .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
@@ -704,15 +755,22 @@ public sealed class BaseItemRepository
         context.SaveChanges();
 
         var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var itemValueLookup = itemValuesStore.ToDictionary(e => (e.Type, e.Value));
         var valueMap = itemValueMaps
-            .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
+            .Select(f => (f.Item, Values: f.Values.Select(e => itemValueLookup[(e.MagicNumber, e.Value)]).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
 
         var mappedValues = context.ItemValuesMap.Where(e => ids.Contains(e.ItemId)).ToList();
+        var mappedValuesByItemId = mappedValues
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(e => e.Key, e => e.ToList());
 
         foreach (var item in valueMap)
         {
-            var itemMappedValues = mappedValues.Where(e => e.ItemId == item.Item.Id).ToList();
+            var itemMappedValues = mappedValuesByItemId.TryGetValue(item.Item.Id, out var existingMappedValues)
+                ? existingMappedValues
+                : [];
+
             foreach (var itemValue in item.Values)
             {
                 var existingItem = itemMappedValues.FirstOrDefault(f => f.ItemValueId == itemValue.ItemValueId);
@@ -739,12 +797,31 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
 
+        var existingAncestorIdsByItemId = context.AncestorIds
+            .Where(e => ids.Contains(e.ItemId))
+            .ToList()
+            .GroupBy(e => e.ItemId)
+            .ToDictionary(e => e.Key, e => e.ToList());
+
+        var allAncestorIds = tuples
+            .Where(e => e.Item.SupportsAncestors && e.AncestorIds is not null)
+            .SelectMany(e => e.AncestorIds!)
+            .Distinct()
+            .ToArray();
+
+        var validAncestorIdSet = allAncestorIds.Length > 0
+            ? context.BaseItems.Where(e => allAncestorIds.Contains(e.Id)).Select(f => f.Id).ToHashSet()
+            : [];
+
         foreach (var item in tuples)
         {
             if (item.Item.SupportsAncestors && item.AncestorIds != null)
             {
-                var existingAncestorIds = context.AncestorIds.Where(e => e.ItemId == item.Item.Id).ToList();
-                var validAncestorIds = context.BaseItems.Where(e => item.AncestorIds.Contains(e.Id)).Select(f => f.Id).ToArray();
+                var existingAncestorIds = existingAncestorIdsByItemId.TryGetValue(item.Item.Id, out var ancestors)
+                    ? ancestors
+                    : [];
+
+                var validAncestorIds = item.AncestorIds.Where(validAncestorIdSet.Contains);
                 foreach (var ancestorId in validAncestorIds)
                 {
                     var existingAncestorId = existingAncestorIds.FirstOrDefault(e => e.ParentItemId == ancestorId);
@@ -769,7 +846,10 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
-        transaction.Commit();
+        if (transactionActive)
+        {
+            transaction.Commit();
+        }
     }
 
     /// <inheritdoc  />
@@ -1040,7 +1120,9 @@ public sealed class BaseItemRepository
         entity.InheritedParentalRatingValue = dto.InheritedParentalRatingValue;
         entity.InheritedParentalRatingSubValue = dto.InheritedParentalRatingSubValue;
         entity.CriticRating = dto.CriticRating;
-        entity.PresentationUniqueKey = dto.PresentationUniqueKey;
+        entity.PresentationUniqueKey = string.IsNullOrEmpty(dto.PresentationUniqueKey)
+            ? dto.Id.ToString("N", CultureInfo.InvariantCulture)
+            : dto.PresentationUniqueKey;
         entity.OriginalTitle = dto.OriginalTitle;
         entity.Album = dto.Album;
         entity.LUFS = dto.LUFS;
@@ -1060,12 +1142,24 @@ public sealed class BaseItemRepository
         entity.OwnerId = dto.OwnerId.ToString();
         entity.Width = dto.Width;
         entity.Height = dto.Height;
-        entity.Provider = dto.ProviderIds.Select(e => new BaseItemProvider()
+        var providers = dto.ProviderIds.Select(e => new BaseItemProvider()
         {
             Item = entity,
             ProviderId = e.Key,
             ProviderValue = e.Value
         }).ToList();
+
+        var duplicateProvider = providers.GroupBy(p => p.ProviderId).FirstOrDefault(g => g.Count() > 1);
+        if (duplicateProvider is not null)
+        {
+            var dup = duplicateProvider.First();
+            throw new InvalidOperationException(
+                $"Duplicate provider ID '{dup.ProviderId}' detected for item '{dto.Name}' ({dto.Id}). " +
+                $"ProviderIds keys: {string.Join(", ", dto.ProviderIds.Keys)}. " +
+                $"ProviderIds values: {string.Join(", ", dto.ProviderIds.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        }
+
+        entity.Provider = providers;
 
         if (dto.Audio.HasValue)
         {
@@ -1112,7 +1206,9 @@ public sealed class BaseItemRepository
         {
             entity.SeriesName = hasSeriesName.SeriesName;
             entity.SeriesId = hasSeriesName.SeriesId;
-            entity.SeriesPresentationUniqueKey = hasSeriesName.SeriesPresentationUniqueKey;
+            entity.SeriesPresentationUniqueKey = string.IsNullOrEmpty(hasSeriesName.SeriesPresentationUniqueKey)
+                ? hasSeriesName.SeriesId.ToString("N", CultureInfo.InvariantCulture)
+                : hasSeriesName.SeriesPresentationUniqueKey;
         }
 
         if (dto is Episode episode)

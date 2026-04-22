@@ -55,7 +55,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
+                var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
                 ((IMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).Perform();
 #pragma warning restore CS0618 // Type or member is obsolete
             }
@@ -68,7 +68,7 @@ internal class CodeMigration(Type migrationType, JellyfinMigrationAttribute meta
             }
             else
             {
-                using var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
+                var migrationServices = MigrationServices(serviceProvider, logger).BuildServiceProvider();
                 await ((IAsyncMigrationRoutine)ActivatorUtilities.CreateInstance(migrationServices, MigrationType)).PerformAsync(cancellationToken).ConfigureAwait(false);
             }
         }

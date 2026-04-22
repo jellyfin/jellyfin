@@ -85,13 +85,15 @@ namespace Jellyfin.Server
             {
                 AutomaticDecompression = DecompressionMethods.All,
                 RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
-                ConnectCallback = HttpClientExtension.OnConnect
+                ConnectCallback = HttpClientExtension.OnConnect,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(5)
             };
 
             Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
             {
                 AutomaticDecompression = DecompressionMethods.All,
-                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(5)
             };
 
             services.AddHttpClient(NamedClient.Default, c =>

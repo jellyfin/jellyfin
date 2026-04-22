@@ -13,6 +13,7 @@ using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -156,6 +157,16 @@ public class BackupService : IBackupService
             if (manifest.Options.Database)
             {
                 _logger.LogInformation("Begin restoring Database");
+
+                var databasePath = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+                var walPath = databasePath + "-wal";
+                var shmPath = databasePath + "-shm";
+
+                SqliteConnection.ClearAllPools();
+                DeleteIfExists(databasePath);
+                DeleteIfExists(walPath);
+                DeleteIfExists(shmPath);
+
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
@@ -184,6 +195,24 @@ public class BackupService : IBackupService
                         await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
                     }
 
+                    _logger.LogInformation("Ensuring database schema is up to date");
+                    // Clear history so MigrateAsync will create all tables on a fresh database
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var deleteScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(deleteScript).ConfigureAwait(false);
+                    }
+
+                    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+
+                    // Clear history rows inserted by MigrateAsync to avoid unique constraint conflicts
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var deleteScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(deleteScript).ConfigureAwait(false);
+                    }
+
+                    // Restore the backup's migration history after schema creation
                     foreach (var item in historyEntries)
                     {
                         var insertScript = historyRepository.GetInsertScript(item);
@@ -248,6 +277,17 @@ public class BackupService : IBackupService
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
+    }
+
+    private void DeleteIfExists(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        _logger.LogInformation("Removing existing database file {Path} before restore migration", path);
+        File.Delete(path);
     }
 
     private bool TestBackupVersionCompatibility(Version backupEngineVersion)

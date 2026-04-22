@@ -21,6 +21,9 @@ namespace Emby.Naming.Video
         [GeneratedRegex(@"^\[([^]]*)\]")]
         private static partial Regex CheckMultiVersionRegex();
 
+        [GeneratedRegex(@"[\[\(\{](?:tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)[=-][^\]\)\}]+[\]\)\}]", RegexOptions.IgnoreCase)]
+        private static partial Regex ProviderIdTokenRegex();
+
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
@@ -197,29 +200,92 @@ namespace Emby.Naming.Video
 
         private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, ReadOnlySpan<char> testFilename, NamingOptions namingOptions)
         {
-            if (!testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+            var rawFolderName = StripProviderIdTokens(folderName);
+            var rawTestFilename = StripProviderIdTokens(testFilename);
+
+            if (!rawTestFilename.StartsWith(rawFolderName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var rawSuffix = rawTestFilename.Length > rawFolderName.Length
+                ? rawTestFilename[rawFolderName.Length..].Trim()
+                : string.Empty;
+
+            if (HasUnmatchedOpeningBracket(rawSuffix))
+            {
+                return false;
+            }
+
+            var normalizedFolderName = NormalizeMultiVersionName(folderName, namingOptions);
+            var normalizedTestFilename = NormalizeMultiVersionName(testFilename, namingOptions);
+
+            if (!normalizedTestFilename.StartsWith(normalizedFolderName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             // Remove the folder name before cleaning as we don't care about cleaning that part
-            if (folderName.Length <= testFilename.Length)
+            if (normalizedFolderName.Length <= normalizedTestFilename.Length)
             {
-                testFilename = testFilename[folderName.Length..].Trim();
+                normalizedTestFilename = normalizedTestFilename[normalizedFolderName.Length..].Trim().ToString();
             }
 
-            // There are no span overloads for regex unfortunately
-            if (CleanStringParser.TryClean(testFilename.ToString(), namingOptions.CleanStringRegexes, out var cleanName))
+            // The NormalizeMultiVersionName should have removed common keywords etc.
+            return normalizedTestFilename.Length == 0
+                   || normalizedTestFilename[0] == '-'
+                   || normalizedTestFilename[0] == '_'
+                   || normalizedTestFilename[0] == '.'
+                   || CheckMultiVersionRegex().IsMatch(normalizedTestFilename);
+        }
+
+        private static string NormalizeMultiVersionName(ReadOnlySpan<char> name, NamingOptions namingOptions)
+        {
+            var normalizedName = StripProviderIdTokens(name);
+
+            normalizedName = VideoResolver.CleanDateTime(normalizedName, namingOptions).Name;
+
+            if (CleanStringParser.TryClean(normalizedName, namingOptions.CleanStringRegexes, out var cleanName))
             {
-                testFilename = cleanName.AsSpan().Trim();
+                normalizedName = cleanName;
             }
 
-            // The CleanStringParser should have removed common keywords etc.
-            return testFilename.IsEmpty
-                   || testFilename[0] == '-'
-                   || testFilename[0] == '_'
-                   || testFilename[0] == '.'
-                   || CheckMultiVersionRegex().IsMatch(testFilename);
+            return normalizedName.Trim();
+        }
+
+        private static string StripProviderIdTokens(ReadOnlySpan<char> name)
+            => ProviderIdTokenRegex().Replace(name.ToString(), string.Empty).Trim();
+
+        private static bool HasUnmatchedOpeningBracket(string value)
+        {
+            int square = 0, round = 0, curly = 0;
+
+            foreach (var ch in value)
+            {
+                switch (ch)
+                {
+                    case '[':
+                        square++;
+                        break;
+                    case ']':
+                        square = square > 0 ? square - 1 : square;
+                        break;
+                    case '(':
+                        round++;
+                        break;
+                    case ')':
+                        round = round > 0 ? round - 1 : round;
+                        break;
+                    case '{':
+                        curly++;
+                        break;
+                    case '}':
+                        curly = curly > 0 ? curly - 1 : curly;
+                        break;
+                }
+            }
+
+            return square > 0 || round > 0 || curly > 0;
         }
     }
 }

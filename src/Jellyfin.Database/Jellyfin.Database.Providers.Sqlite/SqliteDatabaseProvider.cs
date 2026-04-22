@@ -190,10 +190,34 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     {
         ArgumentNullException.ThrowIfNull(tableNames);
 
+        var existingTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var command = dbContext.Database.GetDbConnection().CreateCommand();
+        await using (command.ConfigureAwait(false))
+        {
+            command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table';";
+            await dbContext.Database.OpenConnectionAsync().ConfigureAwait(false);
+            var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+            await using (reader.ConfigureAwait(false))
+            {
+                while (await reader.ReadAsync().ConfigureAwait(false))
+                {
+                    existingTables.Add(reader.GetString(0));
+                }
+            }
+        }
+
         var deleteQueries = new List<string>();
         foreach (var tableName in tableNames)
         {
-            deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+            if (existingTables.Contains(tableName))
+            {
+                deleteQueries.Add($"DELETE FROM \"{tableName}\";");
+            }
+        }
+
+        if (deleteQueries.Count == 0)
+        {
+            return;
         }
 
         var deleteAllQuery =

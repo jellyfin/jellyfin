@@ -246,6 +246,11 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int LibraryScanFanoutConcurrency { get; set; }
 
     /// <summary>
+    /// Gets or sets the memory limit in MB for buffering library scan items before writing to the database.
+    /// </summary>
+    public int LibraryScanMemoryLimitMB { get; set; } = 100;
+
+    /// <summary>
     /// Gets or sets the how many metadata refreshes can run concurrently.
     /// </summary>
     public int LibraryMetadataRefreshConcurrency { get; set; }

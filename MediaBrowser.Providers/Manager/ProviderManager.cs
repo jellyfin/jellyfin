@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -43,7 +44,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager.
+    /// Manages metadata and image providers.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
@@ -59,6 +60,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new();
+        private readonly ConcurrentDictionary<Guid, long> _refreshQueueEnqueueTimestamps = new();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
         private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
         private readonly IMemoryCache _memoryCache;
@@ -78,9 +80,6 @@ namespace MediaBrowser.Providers.Manager
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProviderManager"/> class.
-        /// </summary>
         /// <param name="httpClientFactory">The Http client factory.</param>
         /// <param name="subtitleManager">The subtitle manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
@@ -195,21 +194,16 @@ namespace MediaBrowser.Providers.Manager
 
                 var contentType = response.Content.Headers.ContentType?.MediaType;
 
-                // Workaround for tvheadend channel icons
-                // TODO: Isolate this hack into the tvh plugin
                 if (string.IsNullOrEmpty(contentType))
                 {
-                    // Special case for imagecache
                     if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                     {
                         contentType = MediaTypeNames.Image.Png;
                     }
                 }
 
-                // some providers don't correctly report media type, extract from url if no extension found
                 if (contentType is null || contentType.Equals(MediaTypeNames.Application.Octet, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Strip query parameters from url to get actual path.
                     contentType = MimeTypes.GetMimeType(new Uri(url).GetLeftPart(UriPartial.Path));
                 }
 
@@ -333,8 +327,6 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!includeAllLanguages && hasPreferredLanguage)
                 {
-                    // Filter out languages that do not match the preferred languages.
-                    //
                     // TODO: should exception case of "en" (English) eventually be removed?
                     result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
                                                string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
@@ -447,13 +439,10 @@ namespace MediaBrowser.Providers.Manager
             return _metadataProviders.OfType<IMetadataProvider<T>>()
                 .Where(i => CanRefreshMetadata(i, item, typeOptions, includeDisabled, forceEnableInternetMetadata))
                 .OrderBy(i =>
-                    // local and remote providers will be interleaved in the final order
-                    // only relative order within a type matters: consumers of the list filter to one or the other
                     i switch
                     {
                         ILocalMetadataProvider => GetConfiguredOrder(localMetadataReaderOrder, i.Name),
                         IRemoteMetadataProvider => GetConfiguredOrder(metadataFetcherOrder, i.Name),
-                        // Default to end
                         _ => int.MaxValue
                     })
                 .ThenBy(GetDefaultOrder);
@@ -476,7 +465,6 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            // If locked only allow local providers
             if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
             {
                 return false;
@@ -499,7 +487,6 @@ namespace MediaBrowser.Providers.Manager
                 return index;
             }
 
-            // default to end
             return int.MaxValue;
         }
 
@@ -510,7 +497,6 @@ namespace MediaBrowser.Providers.Manager
                 return hasOrder.Order;
             }
 
-            // after items that want to be first (~0) but before items that want to be last (~100)
             return 50;
         }
 
@@ -538,7 +524,6 @@ namespace MediaBrowser.Providers.Manager
         private MetadataPluginSummary GetPluginSummary<T>()
             where T : BaseItem, new()
         {
-            // Give it a dummy path just so that it looks like a file system item
             var dummy = new T
             {
                 Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
@@ -566,7 +551,6 @@ namespace MediaBrowser.Providers.Manager
             AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
             AddImagePlugins(pluginList, imageProviders);
 
-            // Subtitle fetchers
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
             pluginList.AddRange(subtitleProviders.Select(i => new MetadataPlugin
             {
@@ -574,7 +558,6 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.SubtitleFetcher
             }));
 
-            // Lyric fetchers
             var lyricProviders = _lyricManager.GetSupportedProviders(dummy);
             pluginList.AddRange(lyricProviders.Select(i => new MetadataPlugin
             {
@@ -582,7 +565,6 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LyricFetcher
             }));
 
-            // Media segment providers
             var mediaSegmentProviders = _mediaSegmentManager.GetSupportedProviders(dummy);
             pluginList.AddRange(mediaSegmentProviders.Select(i => new MetadataPlugin
             {
@@ -609,21 +591,18 @@ namespace MediaBrowser.Providers.Manager
         {
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
 
-            // Locals
             list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
-            // Fetchers
             list.AddRange(providers.Where(i => i is IRemoteMetadataProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.MetadataFetcher
             }));
 
-            // Savers
             list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, true)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
@@ -633,14 +612,12 @@ namespace MediaBrowser.Providers.Manager
 
         private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
         {
-            // Locals
             list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
-            // Fetchers
             list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (i is IRemoteImageProvider)).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
@@ -699,6 +676,10 @@ namespace MediaBrowser.Providers.Manager
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
                         item.DateLastSaved = DateTime.UtcNow;
                     }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        _logger.LogWarning(ex, "Unauthorized access saving metadata for {Item}; skipping", item.Name);
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error in metadata saver");
@@ -714,6 +695,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
                         item.DateLastSaved = DateTime.UtcNow;
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        _logger.LogWarning(ex, "Unauthorized access saving metadata for {Item}; skipping", item.Name);
                     }
                     catch (Exception ex)
                     {
@@ -748,26 +733,17 @@ namespace MediaBrowser.Providers.Manager
 
                         if (!item.IsSaveLocalMetadataEnabled())
                         {
-                            if (updateType >= ItemUpdateType.MetadataEdit)
-                            {
-                                // Manual edit occurred
-                                // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
-                                {
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                // Manual edit did not occur
-                                // Since local metadata saving is disabled, consider it disabled
-                                return false;
-                            }
+                            return false;
                         }
                     }
                     else
                     {
                         if (!libraryOptions.MetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+
+                        if (!item.IsSaveLocalMetadataEnabled())
                         {
                             return false;
                         }
@@ -1013,6 +989,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _refreshQueue.Enqueue((itemId, options), priority);
+            _refreshQueueEnqueueTimestamps[itemId] = Stopwatch.GetTimestamp();
 
             lock (_refreshQueueLock)
             {
@@ -1027,6 +1004,10 @@ namespace MediaBrowser.Providers.Manager
         private async Task StartProcessingRefreshQueue()
         {
             var libraryManager = _libraryManager;
+            var processedItems = 0;
+            double totalQueueWaitMs = 0;
+            double totalProcessingMs = 0;
+            var maxParallelRefreshes = GetMetadataRefreshConcurrencyLimit();
 
             if (_disposed)
             {
@@ -1035,26 +1016,35 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
-            while (_refreshQueue.TryDequeue(out var refreshItem, out _))
+            while (!_disposed)
             {
-                if (_disposed)
+                var refreshBatch = new List<(Guid ItemId, MetadataRefreshOptions RefreshOptions)>();
+                while (refreshBatch.Count < maxParallelRefreshes && _refreshQueue.TryDequeue(out var refreshItem, out _))
                 {
-                    return;
+                    refreshBatch.Add(refreshItem);
                 }
+
+                if (refreshBatch.Count == 0)
+                {
+                    break;
+                }
+
+                var refreshTasks = refreshBatch.Select(refreshItem => ProcessQueuedRefreshItem(libraryManager, refreshItem, cancellationToken));
 
                 try
                 {
-                    var item = libraryManager.GetItemById(refreshItem.ItemId);
-                    if (item is null)
+                    var results = await Task.WhenAll(refreshTasks).ConfigureAwait(false);
+                    foreach (var result in results)
                     {
-                        continue;
+                        if (!result.Processed)
+                        {
+                            continue;
+                        }
+
+                        totalQueueWaitMs += result.QueueWaitMs;
+                        totalProcessingMs += result.ProcessingMs;
+                        processedItems++;
                     }
-
-                    var task = item is MusicArtist artist
-                        ? RefreshArtist(artist, refreshItem.RefreshOptions, cancellationToken)
-                        : RefreshItem(item, refreshItem.RefreshOptions, cancellationToken);
-
-                    await task.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1072,9 +1062,72 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private async Task<(bool Processed, double QueueWaitMs, double ProcessingMs)> ProcessQueuedRefreshItem(
+            ILibraryManager libraryManager,
+            (Guid ItemId, MetadataRefreshOptions RefreshOptions) refreshItem,
+            CancellationToken cancellationToken)
+        {
+            var itemStopwatch = Stopwatch.StartNew();
+            var item = libraryManager.GetItemById(refreshItem.ItemId);
+            if (item is null)
+            {
+                return (false, 0, 0);
+            }
+
+            var queueWaitMs = 0d;
+            if (_refreshQueueEnqueueTimestamps.TryRemove(refreshItem.ItemId, out var enqueueTimestamp))
+            {
+                queueWaitMs = Stopwatch.GetElapsedTime(enqueueTimestamp).TotalMilliseconds;
+            }
+
+            try
+            {
+                var task = item is MusicArtist artist
+                    ? RefreshArtist(artist, refreshItem.RefreshOptions, cancellationToken)
+                    : RefreshItem(item, refreshItem.RefreshOptions, cancellationToken);
+
+                await task.ConfigureAwait(false);
+                itemStopwatch.Stop();
+
+                var itemProcessingMs = itemStopwatch.Elapsed.TotalMilliseconds;
+                return (true, queueWaitMs, itemProcessingMs);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                itemStopwatch.Stop();
+                _logger.LogError(ex, "Error refreshing item {ItemId:N}", refreshItem.ItemId);
+                return (false, queueWaitMs, itemStopwatch.Elapsed.TotalMilliseconds);
+            }
+        }
+
+        private int GetMetadataRefreshConcurrencyLimit()
+        {
+            var configuredConcurrency = _configurationManager.Configuration.LibraryMetadataRefreshConcurrency;
+            if (configuredConcurrency > 0)
+            {
+                return configuredConcurrency;
+            }
+
+            return Environment.ProcessorCount <= 3
+                ? 1
+                : Math.Max(1, Environment.ProcessorCount - 3);
+        }
+
         private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+
+            // Skip child validation when a library scan is already running to avoid
+            // duplicate validation work and potential deadlocks. The scan will validate
+            // children as part of its normal flow.
+            if (_libraryManager.IsScanRunning)
+            {
+                return;
+            }
 
             // Collection folders don't validate their children so we'll have to simulate that here
             switch (item)
@@ -1117,7 +1170,7 @@ namespace MediaBrowser.Providers.Manager
                 .Where(i => i is not null)
                 .Distinct();
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, false, cancellationToken));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), options, true, false, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 

@@ -280,6 +280,24 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
+        public void TestMultiVersionWithDifferentProviderTokens()
+        {
+            var files = new[]
+            {
+                "/movies/Meg 2 The Trench (2023) [tmdbid-615656]/Meg 2 The Trench (2023) {imdb-tt9224104} [AMZN][WEBDL-2160p][HDR10Plus][EAC3 5.1][h265]-KEWPiE.mkv",
+                "/movies/Meg 2 The Trench (2023) [tmdbid-615656]/Meg 2 The Trench (2023) {imdb-tt9224104} [WEBDL-1080p][EAC3 Atmos 5.1][h264]-XEBEC.mkv",
+                "/movies/Meg 2 The Trench (2023) [tmdbid-615656]/Meg 2 The Trench (2023) [tmdbid-615656] - [Remux-2160p][TrueHD Atmos 7.1][DV HDR10][HEVC]-FraMeSToR.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Equal(2, result[0].AlternateVersions.Count);
+        }
+
+        [Fact]
         public void TestMultiVersion9()
         {
             // Test for false positive

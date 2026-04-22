@@ -80,6 +80,7 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     private string BuildCommandText()
     {
         var sb = new StringBuilder();
+        sb.AppendLine("PRAGMA journal_mode=WAL;");
         if (_cacheSize.HasValue)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA cache_size={_cacheSize.Value};");

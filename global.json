@@ -1,6 +1,7 @@
 {
     "sdk": {
         "version": "10.0.0",
-        "rollForward": "latestMinor"
+        "rollForward": "latestMinor",
+        "allowMissingPrunePackageData": true
     }
 }

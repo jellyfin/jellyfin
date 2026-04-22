@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using Emby.Server.Implementations;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
@@ -25,7 +26,14 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
     public MigrateNetworkConfiguration(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory)
     {
         _applicationPaths = applicationPaths;
-        _logger = loggerFactory.CreateLogger<MigrateNetworkConfiguration>();
+        try
+        {
+            _logger = loggerFactory.CreateLogger<MigrateNetworkConfiguration>();
+        }
+        catch (ObjectDisposedException)
+        {
+            _logger = NullLogger<MigrateNetworkConfiguration>.Instance;
+        }
     }
 
     /// <inheritdoc />

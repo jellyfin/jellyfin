@@ -72,6 +72,13 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             return;
         }
 
+        var fileInfo = new FileInfo(libraryDbPath);
+        if (fileInfo.Length == 0)
+        {
+            _logger.LogWarning("{LibraryDb} is empty, skipping migration.", libraryDbPath);
+            return;
+        }
+
         using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
 
         var fullOperationTimer = new Stopwatch();
@@ -364,9 +371,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                         peopleCache[entity.Name + "|" + entity.PersonType] = personCache = (entity, []);
                     }
 
-                    if (reader.TryGetString(2, out var role))
-                    {
-                    }
+                    reader.TryGetString(2, out var role);
 
                     int? sortOrder = reader.IsDBNull(4) ? null : reader.GetInt32(4);
                     int? listOrder = reader.IsDBNull(5) ? null : reader.GetInt32(5);
@@ -826,11 +831,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
         }
 
         item.IsHearingImpaired = reader.TryGetBoolean(43, out var result) && result;
-
-        // if (reader.TryGetInt32(44, out var rotation))
-        // {
-        //     item.Rotation = rotation;
-        // }
 
         return item;
     }
