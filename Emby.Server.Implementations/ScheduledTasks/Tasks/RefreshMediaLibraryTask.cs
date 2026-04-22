@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.ScheduledTasks;
 using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
@@ -17,19 +16,16 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 /// </summary>
 public class RefreshMediaLibraryTask : IScheduledTask
 {
-    private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly ITaskManager _taskManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
     /// </summary>
-    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="taskManager">Instance of the <see cref="ITaskManager"/> interface.</param>
-    public RefreshMediaLibraryTask(ILibraryManager libraryManager, ILocalizationManager localization, ITaskManager taskManager)
+    public RefreshMediaLibraryTask(ILocalizationManager localization, ITaskManager taskManager)
     {
-        _libraryManager = libraryManager;
         _localization = localization;
         _taskManager = taskManager;
     }

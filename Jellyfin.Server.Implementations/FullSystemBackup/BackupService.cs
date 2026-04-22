@@ -226,25 +226,25 @@ public class BackupService : IBackupService
                         .ToArray();
 
                     var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
-                    _logger.LogInformation("Begin purging database");
+                    _logger.LogDebug("Begin purging database");
                     await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
-                    _logger.LogInformation("Database Purged");
+                    _logger.LogDebug("Database Purged");
 
                     foreach (var entityType in entityTypes)
                     {
-                        _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+                        _logger.LogDebug("Read backup of {Table}", entityType.Type.Name);
 
                         var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
-                            _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
+                            _logger.LogDebug("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
                             continue;
                         }
 
                         var zipEntryStream = await zipEntry.OpenAsync().ConfigureAwait(false);
                         await using (zipEntryStream.ConfigureAwait(false))
                         {
-                            _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
+                            _logger.LogDebug("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
                             await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
                             {
@@ -265,11 +265,11 @@ public class BackupService : IBackupService
                                 }
                             }
 
-                            _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
+                            _logger.LogDebug("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
                         }
                     }
 
-                    _logger.LogInformation("Try restore Database");
+                    _logger.LogDebug("Try restore Database");
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     _logger.LogInformation("Restored database");
                 }

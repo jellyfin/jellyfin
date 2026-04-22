@@ -206,14 +206,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             }
         }
 
-        var deleteQueries = new List<string>();
-        foreach (var tableName in tableNames)
-        {
-            if (existingTables.Contains(tableName))
-            {
-                deleteQueries.Add($"DELETE FROM \"{tableName}\";");
-            }
-        }
+        var deleteQueries = tableNames
+            .Where(existingTables.Contains)
+            .Select(tableName => $"DELETE FROM \"{tableName}\";")
+            .ToList();
 
         if (deleteQueries.Count == 0)
         {

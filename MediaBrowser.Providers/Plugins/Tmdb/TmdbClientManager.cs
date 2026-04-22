@@ -694,12 +694,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             if (_completedRequestTimes.TryGetValue(key, out var completedTime)
-                && DateTime.UtcNow - completedTime < TimeSpan.FromSeconds(InflightCoalescingWindowSeconds))
+                && DateTime.UtcNow - completedTime < TimeSpan.FromSeconds(InflightCoalescingWindowSeconds)
+                && _memoryCache.TryGetValue(key, out cachedValue))
             {
-                if (_memoryCache.TryGetValue(key, out cachedValue))
-                {
-                    return cachedValue;
-                }
+                return cachedValue;
             }
 
             var tcs = new TaskCompletionSource<object>();

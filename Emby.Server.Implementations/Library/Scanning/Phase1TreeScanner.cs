@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Naming.Common;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
@@ -56,23 +55,14 @@ namespace Emby.Server.Implementations.Library.Scanning
         private static readonly MethodInfo? _updateFromResolvedItemMethod = typeof(BaseItem).GetMethod("UpdateFromResolvedItem", BindingFlags.Instance | BindingFlags.NonPublic);
 
         private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
-        private readonly IProviderManager _providerManager;
         private readonly ILogger<Phase1TreeScanner> _logger;
-        private readonly NamingOptions _namingOptions;
 
         public Phase1TreeScanner(
             ILibraryManager libraryManager,
-            IFileSystem fileSystem,
-            IProviderManager providerManager,
-            ILogger<Phase1TreeScanner> logger,
-            NamingOptions namingOptions)
+            ILogger<Phase1TreeScanner> logger)
         {
             _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
-            _providerManager = providerManager;
             _logger = logger;
-            _namingOptions = namingOptions;
         }
 
         public async Task<Phase1TreeScanResult> ScanAsync(
@@ -128,12 +118,11 @@ namespace Emby.Server.Implementations.Library.Scanning
                 pending.Release();
             }
 
-            bool IncrementInFlight()
+            void IncrementInFlight()
             {
                 lock (inFlightLock)
                 {
                     inFlight++;
-                    return true;
                 }
             }
 
@@ -397,12 +386,9 @@ namespace Emby.Server.Implementations.Library.Scanning
 
             if (!work.IsKnownNewSubtree)
             {
-                foreach (var existing in currentChildren)
+                foreach (var existing in currentChildren.Where(e => !consumedExistingIds.Contains(e.Id)))
                 {
-                    if (!consumedExistingIds.Contains(existing.Id))
-                    {
-                        result.RemovedItems.Add(existing);
-                    }
+                    result.RemovedItems.Add(existing);
                 }
             }
         }
@@ -420,12 +406,9 @@ namespace Emby.Server.Implementations.Library.Scanning
         private static Dictionary<string, BaseItem> BuildPathMap(IReadOnlyList<BaseItem> items)
         {
             var map = new Dictionary<string, BaseItem>(items.Count, StringComparer.Ordinal);
-            foreach (var item in items)
+            foreach (var item in items.Where(i => !string.IsNullOrEmpty(i.Path)))
             {
-                if (!string.IsNullOrEmpty(item.Path))
-                {
-                    map[NormalizePath(item.Path)] = item;
-                }
+                map[NormalizePath(item.Path)] = item;
             }
 
             return map;
@@ -448,12 +431,9 @@ namespace Emby.Server.Implementations.Library.Scanning
                 return false;
             }
 
-            if (!fs.IsDirectory)
+            if (!fs.IsDirectory && existing.Size.HasValue && existing.Size.Value != fs.Length)
             {
-                if (existing.Size.HasValue && existing.Size.Value != fs.Length)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
@@ -537,7 +517,7 @@ namespace Emby.Server.Implementations.Library.Scanning
             return new SidecarIndex(imagesByStem, nfoByStem, subsByStem);
         }
 
-        private bool AttachFileBasedSidecars(BaseItem item, SidecarIndex sidecars)
+        private static bool AttachFileBasedSidecars(BaseItem item, SidecarIndex sidecars)
         {
             if (string.IsNullOrEmpty(item.Path) || item is Folder)
             {

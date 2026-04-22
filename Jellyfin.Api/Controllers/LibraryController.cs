@@ -47,6 +47,8 @@ namespace Jellyfin.Api.Controllers;
 [Route("")]
 public class LibraryController : BaseJellyfinApiController
 {
+    private const string UnauthorizedAccessMessage = "Unauthorized access";
+
     private readonly IProviderManager _providerManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
@@ -385,7 +387,7 @@ public class LibraryController : BaseJellyfinApiController
 
         if (user is not null && !item.CanDelete(user))
         {
-            return Unauthorized("Unauthorized access");
+            return Unauthorized(UnauthorizedAccessMessage);
         }
 
         _libraryManager.DeleteItem(
@@ -421,7 +423,7 @@ public class LibraryController : BaseJellyfinApiController
 
         if (!isApiKey && user is null)
         {
-            return Unauthorized("Unauthorized access");
+            return Unauthorized(UnauthorizedAccessMessage);
         }
 
         foreach (var i in ids)
@@ -434,7 +436,7 @@ public class LibraryController : BaseJellyfinApiController
 
             if (user is not null && !item.CanDelete(user))
             {
-                return Unauthorized("Unauthorized access");
+                return Unauthorized(UnauthorizedAccessMessage);
             }
 
             _libraryManager.DeleteItem(
@@ -490,7 +492,7 @@ public class LibraryController : BaseJellyfinApiController
 
             if (user is not null && !parent.CanDelete(user))
             {
-                return Unauthorized("Unauthorized access");
+                return Unauthorized(UnauthorizedAccessMessage);
             }
         }
 
@@ -515,7 +517,7 @@ public class LibraryController : BaseJellyfinApiController
             {
                 if (user is not null && !item.CanDelete(user))
                 {
-                    return Unauthorized("Unauthorized access");
+                    return Unauthorized(UnauthorizedAccessMessage);
                 }
 
                 idsToDelete.Add(item.Id);
@@ -534,7 +536,7 @@ public class LibraryController : BaseJellyfinApiController
             {
                 if (user is not null && !item.CanDelete(user))
                 {
-                    return Unauthorized("Unauthorized access");
+                    return Unauthorized(UnauthorizedAccessMessage);
                 }
 
                 idsToDelete.Add(item.Id);

@@ -74,8 +74,6 @@ namespace Emby.Server.Implementations.Library
         private const int MaxLocalMetadataOverviewLength = 131072;
         private const int MaxLocalMetadataTaglineLength = 2048;
         private const int MaxLocalMetadataOfficialRatingLength = 64;
-        private const int Phase15ProgressBatchSize = 50;
-        private const int Phase15SaveChunkSize = 10;
 
         private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
@@ -1250,7 +1248,6 @@ namespace Emby.Server.Implementations.Library
                     _libraryScanCts = new CancellationTokenSource();
                 }
 
-                var linked = CancellationTokenSource.CreateLinkedTokenSource(_libraryScanCts.Token, externalToken);
                 externalToken.Register(() =>
                 {
                     try
@@ -1259,10 +1256,9 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (ObjectDisposedException)
                     {
-                        // Ignore if already disposed
                     }
                 });
-                return linked.Token;
+                return _libraryScanCts.Token;
             }
         }
 
@@ -1398,9 +1394,6 @@ namespace Emby.Server.Implementations.Library
             // Fast phase intentionally skips top-level folder validation to minimize
             // startup I/O on large or network-mounted libraries.
 
-            // Record scan start time to identify newly created items
-            var scanStartTime = DateTime.UtcNow;
-
             var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.5)); // Discovery is first half of Phase 1
 
             _logger.LogInformation("Phase 1 discovery scanning root folder");
@@ -1449,9 +1442,9 @@ namespace Emby.Server.Implementations.Library
             {
                 await RefreshMetadataForExistingItems(progress, options, cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Phase 2 metadata refresh cancelled");
+                _logger.LogDebug(ex, "Phase 2 metadata refresh cancelled");
             }
             catch (Exception ex)
             {
@@ -1469,9 +1462,9 @@ namespace Emby.Server.Implementations.Library
                             cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Phase 2 fallback cancelled");
+                    _logger.LogDebug(ex, "Phase 2 fallback cancelled");
                 }
             }
 
@@ -1577,9 +1570,9 @@ namespace Emby.Server.Implementations.Library
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Phase 2 metadata refresh cancelled");
+                _logger.LogDebug(ex, "Phase 2 metadata refresh cancelled");
                 throw;
             }
 
@@ -1743,121 +1736,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// Applies NFO metadata to items created since the specified time.
-        /// </summary>
-        private async Task ApplyNfoMetadataToNewItems(DateTime scanStartTime, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var allItems = _itemRepository.GetItemList(new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[]
-                    {
-                        BaseItemKind.Movie,
-                        BaseItemKind.Series,
-                        BaseItemKind.Season,
-                        BaseItemKind.Episode,
-                        BaseItemKind.MusicAlbum,
-                        BaseItemKind.MusicArtist,
-                        BaseItemKind.Audio,
-                        BaseItemKind.Video,
-                        BaseItemKind.MusicVideo,
-                        BaseItemKind.Book,
-                        BaseItemKind.AudioBook
-                    },
-                    Recursive = true,
-                    DtoOptions = new DtoOptions(true)
-                    {
-                        EnableImages = true
-                    }
-                });
-
-                var newItems = allItems
-                    .Where(i => i.DateLastRefreshed == DateTime.MinValue)
-                    .ToList();
-
-                if (newItems.Count == 0)
-                {
-                    _logger.LogInformation("No new items discovered");
-                    progress.Report(100);
-                    return;
-                }
-
-                _logger.LogInformation("Reading NFO metadata for {Count} newly discovered items", newItems.Count);
-
-                var directoryService = new DirectoryService(_fileSystem);
-                var processedCount = 0;
-                var updatedCount = 0;
-                var batchSize = Phase15ProgressBatchSize;
-                var updateBatch = new System.Collections.Concurrent.ConcurrentBag<BaseItem>();
-
-                await Parallel.ForEachAsync(
-                    newItems,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2),
-                        CancellationToken = cancellationToken
-                    },
-                    async (item, ct) =>
-                    {
-                        try
-                        {
-                            if (await ApplyLocalNfoFieldsAsync(item, directoryService, ct).ConfigureAwait(false))
-                            {
-                                updateBatch.Add(item);
-                                Interlocked.Increment(ref updatedCount);
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogDebug(ex, "Error reading NFO for {Item}", item.Path ?? item.Name);
-                        }
-
-                        var processed = Interlocked.Increment(ref processedCount);
-                        if (processed % batchSize == 0 || processed == newItems.Count)
-                        {
-                            var percent = 100.0 * processed / newItems.Count;
-                            progress.Report(percent);
-                        }
-                    }).ConfigureAwait(false);
-
-                var toSave = updateBatch.ToList();
-                if (toSave.Count > 0)
-                {
-                    _logger.LogInformation("Persisting NFO metadata for {Count} items", toSave.Count);
-                    for (int i = 0; i < toSave.Count; i += Phase15SaveChunkSize)
-                    {
-                        var chunk = toSave.GetRange(i, Math.Min(Phase15SaveChunkSize, toSave.Count - i));
-                        try
-                        {
-                            _itemRepository.SaveItems(chunk, cancellationToken);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error saving NFO metadata chunk of {Count} items", chunk.Count);
-                        }
-                    }
-                }
-
-                progress.Report(100);
-                _logger.LogInformation("NFO metadata applied to {Updated} of {Total} new items", updatedCount, newItems.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error applying NFO metadata during Phase 1.5");
-            }
-        }
-
-        public async Task<bool> ApplyLocalNfoFieldsAsync(BaseItem item, IDirectoryService directoryService, CancellationToken cancellationToken)
+                public async Task<bool> ApplyLocalNfoFieldsAsync(BaseItem item, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             var (source, nfoImages) = await InvokeLocalMetadataProvidersAsync(item, directoryService, cancellationToken).ConfigureAwait(false);
             if (source is null)
@@ -4390,10 +4269,7 @@ namespace Emby.Server.Implementations.Library
 
             var scanner = new Scanning.Phase1TreeScanner(
                 this,
-                _fileSystem,
-                _providerManagerFactory.Value,
-                _loggerFactory.CreateLogger<Scanning.Phase1TreeScanner>(),
-                _namingOptions);
+                _loggerFactory.CreateLogger<Scanning.Phase1TreeScanner>());
 
             return scanner.ScanAsync(folder, collectionType.Value, directoryService, cancellationToken);
         }

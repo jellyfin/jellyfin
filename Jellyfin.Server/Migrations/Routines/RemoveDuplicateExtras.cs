@@ -49,9 +49,9 @@ internal class RemoveDuplicateExtras : IMigrationRoutine
                 var queryResult = connection.Query("SELECT t1.Path FROM TypedBaseItems AS t1, TypedBaseItems AS t2 WHERE t1.Path=t2.Path AND t1.Type!=t2.Type AND t1.Type='MediaBrowser.Controller.Entities.Video'");
                 bads = string.Join(", ", queryResult.Select(x => x.GetString(0)));
             }
-            catch (SqliteException)
+            catch (SqliteException ex)
             {
-                _logger.LogInformation("TypedBaseItems table not available yet, skipping migration.");
+                _logger.LogInformation(ex, "TypedBaseItems table not available yet, skipping migration.");
                 return;
             }
 

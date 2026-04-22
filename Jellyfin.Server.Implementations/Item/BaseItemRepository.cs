@@ -799,7 +799,7 @@ public sealed class BaseItemRepository
 
         var existingAncestorIdsByItemId = context.AncestorIds
             .Where(e => ids.Contains(e.ItemId))
-            .ToList()
+            .AsEnumerable()
             .GroupBy(e => e.ItemId)
             .ToDictionary(e => e.Key, e => e.ToList());
 

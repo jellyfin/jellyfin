@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     public partial class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
         private readonly IImageProcessor _imageProcessor;
-        private readonly ILogger<MovieResolver> _logger;
 
         private static readonly CollectionType[] _validCollectionTypes = new[]
         {
@@ -50,7 +49,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             : base(logger, namingOptions, directoryService)
         {
             _imageProcessor = imageProcessor;
-            _logger = logger;
         }
 
         /// <summary>
