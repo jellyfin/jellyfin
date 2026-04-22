@@ -1042,6 +1042,7 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
+            libraryManager.ClearIgnoreRuleCache();
             while (_refreshQueue.TryDequeue(out var refreshItem, out _))
             {
                 if (_disposed)
@@ -1076,6 +1077,7 @@ namespace MediaBrowser.Providers.Manager
             lock (_refreshQueueLock)
             {
                 _isProcessingRefreshQueue = false;
+                libraryManager.ClearIgnoreRuleCache();
             }
         }
 
