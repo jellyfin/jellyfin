@@ -7,7 +7,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net10.0/jellyfin.dll",
-            "args": ["--webdir", "/Users/raniwehbe/Desktop/github/jellyfin-all/jellyfin-web/dist"],
+            "args": [],
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",
             "stopAtEntry": false,
