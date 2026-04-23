@@ -470,7 +470,7 @@ namespace MediaBrowser.Controller.Entities
 
                             actuallyRemoved.Add(item);
                             item.SetParent(null);
-                            LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                            await LibraryManager.DeleteItemAsync(item, new DeleteOptions { DeleteFileLocation = false }, this, false, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }

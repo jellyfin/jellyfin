@@ -313,21 +313,21 @@ namespace Emby.Server.Implementations.Library
             _cache.AddOrUpdate(item.Id, item);
         }
 
-        public void DeleteItem(BaseItem item, DeleteOptions options)
+        public async Task DeleteItemAsync(BaseItem item, DeleteOptions options, CancellationToken cancellationToken = default)
         {
-            DeleteItem(item, options, false);
+            await DeleteItemAsync(item, options, false, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        public void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem)
+        public async Task DeleteItemAsync(BaseItem item, DeleteOptions options, bool notifyParentItem, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(item);
 
             var parent = item.GetOwner() ?? item.GetParent();
 
-            DeleteItem(item, options, parent, notifyParentItem);
+            await DeleteItemAsync(item, options, parent, notifyParentItem, cancellationToken).ConfigureAwait(false);
         }
 
-        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items)
+        public async Task DeleteItemsUnsafeFastAsync(IEnumerable<BaseItem> items, CancellationToken cancellationToken = default)
         {
             var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();
 
@@ -363,10 +363,10 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+            await _itemRepository.DeleteItemsAsync([.. pathMaps.Select(f => f.Item.Id)], cancellationToken).ConfigureAwait(false);
         }
 
-        public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
+        public async Task DeleteItemAsync(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem = false, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -376,7 +376,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        BaseItem.ChannelManager.DeleteItem(item).GetAwaiter().GetResult();
+                        await BaseItem.ChannelManager.DeleteItem(item).ConfigureAwait(false);
                     }
                     catch (ArgumentException)
                     {
@@ -450,7 +450,7 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
+            await _itemRepository.DeleteItemsAsync([item.Id, .. children.Select(f => f.Id)], cancellationToken).ConfigureAwait(false);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
@@ -1186,7 +1186,7 @@ namespace Emby.Server.Implementations.Library
 
             if (toDelete.Count > 0)
             {
-                _itemRepository.DeleteItem(toDelete.ToArray());
+                await _itemRepository.DeleteItemsAsync(toDelete.ToArray()).ConfigureAwait(false);
             }
         }
 
