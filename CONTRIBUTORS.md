@@ -1,5 +1,6 @@
 # Jellyfin Contributors
 
+ - [Rani-Wehbe](https://github.com/Rani-Wehbe)
  - [1337joe](https://github.com/1337joe)
  - [97carmine](https://github.com/97carmine)
  - [Abbe98](https://github.com/Abbe98)
