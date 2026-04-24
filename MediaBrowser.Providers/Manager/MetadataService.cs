@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (isFirstRefresh)
             {
-                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                await SaveItemAsync(metadataResult, ItemUpdateType.MetadataImport, false, cancellationToken).ConfigureAwait(false);
             }
 
             // Next run metadata providers
@@ -247,7 +247,7 @@ namespace MediaBrowser.Providers.Manager
                     }
 
                     // Save to database
-                    await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
+                    await SaveItemAsync(metadataResult, updateType, isFirstRefresh, cancellationToken).ConfigureAwait(false);
                 }
 
                 return updateType;
@@ -275,9 +275,14 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, bool reattachUserData, CancellationToken cancellationToken)
         {
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
+            if (reattachUserData)
+            {
+                await result.Item.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             if (result.Item.SupportsPeople && result.People is not null)
             {
                 var baseItem = result.Item;
@@ -815,7 +820,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                        Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
 
                         // If a local provider fails, consider that a failure
                         refreshResult.ErrorMessage = ex.Message;
@@ -881,7 +886,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
             }
         }
 
@@ -930,7 +935,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
                 }
             }
 

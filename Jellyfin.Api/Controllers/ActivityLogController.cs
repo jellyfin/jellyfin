@@ -38,6 +38,7 @@ public class ActivityLogController : BaseJellyfinApiController
     /// <param name="startIndex">The record index to start at. All items with a lower index will be dropped from the results.</param>
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="minDate">The minimum date.</param>
+    /// <param name="maxDate">The maximum date.</param>
     /// <param name="hasUserId">Filter log entries if it has user id, or not.</param>
     /// <param name="name">Filter by name.</param>
     /// <param name="overview">Filter by overview.</param>
@@ -56,6 +57,7 @@ public class ActivityLogController : BaseJellyfinApiController
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] DateTime? minDate,
+        [FromQuery] DateTime? maxDate,
         [FromQuery] bool? hasUserId,
         [FromQuery] string? name,
         [FromQuery] string? overview,
@@ -72,6 +74,7 @@ public class ActivityLogController : BaseJellyfinApiController
             Skip = startIndex,
             Limit = limit,
             MinDate = minDate,
+            MaxDate = maxDate,
             HasUserId = hasUserId,
             Name = name,
             Overview = overview,

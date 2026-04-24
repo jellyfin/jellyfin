@@ -158,6 +158,12 @@ public class MediaStreamRepository : IMediaStreamRepository
             dto.LocalizedDefault = _localization.GetLocalizedString("Default");
             dto.LocalizedExternal = _localization.GetLocalizedString("External");
 
+            if (!string.IsNullOrEmpty(dto.Language))
+            {
+                var culture = _localization.FindLanguageInfo(dto.Language);
+                dto.LocalizedLanguage = culture?.DisplayName;
+            }
+
             if (dto.Type is MediaStreamType.Subtitle)
             {
                 dto.LocalizedUndefined = _localization.GetLocalizedString("Undefined");

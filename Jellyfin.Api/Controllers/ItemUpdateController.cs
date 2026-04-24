@@ -180,11 +180,14 @@ public class ItemUpdateController : BaseJellyfinApiController
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (inheritedContentType is null || inheritedContentType == CollectionType.tvshows)
+                if (inheritedContentType is null
+                    || inheritedContentType == CollectionType.tvshows
+                    || inheritedContentType == CollectionType.movies)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
-                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase))
+                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(i.Value, "Movies", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
             }
@@ -246,7 +249,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.IndexNumber = request.IndexNumber;
         item.ParentIndexNumber = request.ParentIndexNumber;
         item.Overview = request.Overview;
-        item.Genres = request.Genres;
+        item.Genres = request.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
         if (item is Episode episode)
         {
@@ -267,7 +270,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.Studios is not null)
         {
-            item.Studios = Array.ConvertAll(request.Studios, x => x.Name);
+            item.Studios = Array.ConvertAll(request.Studios, x => x.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         if (request.DateCreated.HasValue)
@@ -284,7 +287,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.CustomRating = request.CustomRating;
 
         var currentTags = item.Tags;
-        var newTags = request.Tags;
+        var newTags = request.Tags.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var removedTags = currentTags.Except(newTags).ToList();
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;
@@ -370,7 +373,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.ProductionLocations is not null)
         {
-            item.ProductionLocations = request.ProductionLocations;
+            item.ProductionLocations = request.ProductionLocations.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
@@ -418,7 +421,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasAlbumArtist hasAlbumArtists)
             {
-                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name);
+                hasAlbumArtists.AlbumArtists = Array.ConvertAll(request.AlbumArtists, i => i.Name.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
         }
 
@@ -426,7 +429,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             if (item is IHasArtist hasArtists)
             {
-                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name);
+                hasArtists.Artists = Array.ConvertAll(request.ArtistItems, i => i.Name.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
         }
 

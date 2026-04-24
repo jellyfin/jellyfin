@@ -282,6 +282,14 @@ namespace MediaBrowser.Controller.Library
         Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Reattaches the user data to the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+        Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
@@ -652,5 +660,12 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        /// <summary>
+        /// Add mblink file for a media path.
+        /// </summary>
+        /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
+        /// <param name="pathInfo">The new virtualfolder.</param>
+        public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
     }
 }

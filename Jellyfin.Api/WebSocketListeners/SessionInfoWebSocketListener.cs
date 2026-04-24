@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +16,7 @@ namespace Jellyfin.Api.WebSocketListeners;
 /// <summary>
 /// Class SessionInfoWebSocketListener.
 /// </summary>
-public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
+public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfoDto>, WebSocketListenerState>
 {
     private readonly ISessionManager _sessionManager;
     private bool _disposed;
@@ -52,24 +53,26 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// Gets the data to send.
     /// </summary>
     /// <returns>Task{SystemInfo}.</returns>
-    protected override Task<IEnumerable<SessionInfo>> GetDataToSend()
+    protected override Task<IEnumerable<SessionInfoDto>> GetDataToSend()
     {
-        return Task.FromResult(_sessionManager.Sessions);
+        return Task.FromResult(_sessionManager.Sessions.Select(_sessionManager.ToSessionInfoDto));
     }
 
     /// <inheritdoc />
-    protected override Task<IEnumerable<SessionInfo>> GetDataToSendForConnection(IWebSocketConnection connection)
+    protected override Task<IEnumerable<SessionInfoDto>> GetDataToSendForConnection(IWebSocketConnection connection)
     {
+        var sessions = _sessionManager.Sessions;
+
         // For non-admin users, filter the sessions to only include their own sessions
         if (connection.AuthorizationInfo?.User is not null &&
             !connection.AuthorizationInfo.IsApiKey &&
             !connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
         {
             var userId = connection.AuthorizationInfo.User.Id;
-            return Task.FromResult(_sessionManager.Sessions.Where(s => s.UserId.Equals(userId) || s.ContainsUser(userId)));
+            sessions = sessions.Where(s => s.UserId.Equals(userId) || s.ContainsUser(userId));
         }
 
-        return Task.FromResult(_sessionManager.Sessions);
+        return Task.FromResult(sessions.Select(_sessionManager.ToSessionInfoDto));
     }
 
     /// <inheritdoc />

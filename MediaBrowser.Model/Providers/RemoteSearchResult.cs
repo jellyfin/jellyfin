@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -19,7 +18,7 @@ namespace MediaBrowser.Model.Providers
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -41,13 +40,13 @@ namespace MediaBrowser.Model.Providers
 
         public DateTime? PremiereDate { get; set; }
 
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
-        public string SearchProviderName { get; set; }
+        public string? SearchProviderName { get; set; }
 
-        public string Overview { get; set; }
+        public string? Overview { get; set; }
 
-        public RemoteSearchResult AlbumArtist { get; set; }
+        public RemoteSearchResult? AlbumArtist { get; set; }
 
         public RemoteSearchResult[] Artists { get; set; }
     }

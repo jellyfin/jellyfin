@@ -73,7 +73,6 @@
     "Shows": "Serier",
     "Songs": "Sange",
     "StartupEmbyServerIsLoading": "Jellyfin er i gang med at starte. Prøv igen om et øjeblik.",
-    "SubtitleDownloadFailureForItem": "Fejlet i download af undertekster for {0}",
     "SubtitleDownloadFailureFromForItem": "Undertekster kunne ikke hentes fra {0} til {1}",
     "Sync": "Synkroniser",
     "System": "System",

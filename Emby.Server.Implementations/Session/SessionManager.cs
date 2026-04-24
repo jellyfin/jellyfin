@@ -793,6 +793,16 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
             };
 
+            if (info.Item is not null)
+            {
+                _logger.LogInformation(
+                    "User {0} started playback of '{1}' ({2} {3})",
+                    session.UserName,
+                    info.Item.Name,
+                    session.Client,
+                    session.ApplicationVersion);
+            }
+
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
 
             // Nothing to save here
@@ -946,7 +956,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var tracksChanged = UpdatePlaybackSettings(user, info, data);
-            if (!tracksChanged)
+            if (tracksChanged)
             {
                 changed = true;
             }
@@ -1056,11 +1066,12 @@ namespace Emby.Server.Implementations.Session
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
                 _logger.LogInformation(
-                    "Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
-                    session.Client,
-                    session.ApplicationVersion,
+                    "User {0} stopped playback of '{1}' at {2}ms ({3} {4})",
+                    session.UserName,
                     info.Item.Name,
-                    msString);
+                    msString,
+                    session.Client,
+                    session.ApplicationVersion);
             }
 
             if (info.NowPlayingQueue is not null)
@@ -1171,7 +1182,8 @@ namespace Emby.Server.Implementations.Session
             return session;
         }
 
-        private SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
+        /// <inheritdoc />
+        public SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
         {
             return new SessionInfoDto
             {

@@ -135,5 +135,7 @@
     "TaskExtractMediaSegments": "Media Segment Skandeer",
     "TaskExtractMediaSegmentsDescription": "Onttrek of verkry mediasegmente van MediaSegment-geaktiveerde inproppe.",
     "TaskMoveTrickplayImages": "Migreer Trickplay Beeldligging",
-    "TaskMoveTrickplayImagesDescription": "Skuif ontstaande trickplay lêers volgens die biblioteekinstellings."
+    "TaskMoveTrickplayImagesDescription": "Skuif ontstaande trickplay lêers volgens die biblioteekinstellings.",
+    "CleanupUserDataTask": "Gebruikers data skoon maak taak",
+    "CleanupUserDataTaskDescription": "Maak alle gebruikers data (kykstatus, gunstelingstatus, ens.) skoon van media wat nie meer vir ten minste 90 dae teenwoordig is nie."
 }

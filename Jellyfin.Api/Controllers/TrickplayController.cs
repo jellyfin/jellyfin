@@ -86,7 +86,7 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int index,
         [FromQuery] Guid? mediaSourceId)
     {
-        var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
+        var item = _libraryManager.GetItemById<BaseItem>(mediaSourceId ?? itemId, User.GetUserId());
         if (item is null)
         {
             return NotFound();

@@ -73,7 +73,6 @@
     "Shows": "Séries",
     "Songs": "Chansons",
     "StartupEmbyServerIsLoading": "Le serveur Jellyfin est en cours de chargement. Veuillez réessayer dans quelques instants.",
-    "SubtitleDownloadFailureForItem": "Le téléchargement des sous-titres pour {0} a échoué.",
     "SubtitleDownloadFailureFromForItem": "Échec du téléchargement des sous-titres depuis {0} pour {1}",
     "Sync": "Synchroniser",
     "System": "Système",

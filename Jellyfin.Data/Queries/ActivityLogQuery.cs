@@ -22,6 +22,11 @@ public class ActivityLogQuery : PaginatedQuery
     public DateTime? MinDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum date to query for.
+    /// </summary>
+    public DateTime? MaxDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the name filter.
     /// </summary>
     public string? Name { get; set; }

@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// <summary>
 /// MusicBrainz artist provider.
 /// </summary>
-public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IDisposable
+public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IDisposable, IHasOrder
 {
     private readonly ILogger<MusicBrainzArtistProvider> _logger;
     private Query _musicBrainzQuery;
@@ -41,6 +41,10 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
     /// <inheritdoc />
     public string Name => "MusicBrainz";
+
+    /// <inheritdoc />
+    /// Runs first to populate the MusicBrainz artist ID used by downstream providers.
+    public int Order => 0;
 
     private void ReloadConfig(object? sender, BasePluginConfiguration e)
     {

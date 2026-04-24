@@ -673,7 +673,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
             if (state.VideoRequest is not null)
             {
-                _encodingHelper.TryStreamCopy(state);
+                _encodingHelper.TryStreamCopy(state, encodingOptions);
             }
         }
 

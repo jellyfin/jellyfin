@@ -2,8 +2,9 @@ using System;
 using AsyncKeyedLock;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -23,6 +24,7 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
     private readonly IMemoryCache _memoryCache;
     private readonly SwaggerGenerator _swaggerGenerator;
     private readonly SwaggerGeneratorOptions _swaggerGeneratorOptions;
+    private readonly ILogger<CachingOpenApiProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CachingOpenApiProvider"/> class.
@@ -31,19 +33,22 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
     /// <param name="apiDescriptionsProvider">The api descriptions provider.</param>
     /// <param name="schemaGenerator">The schema generator.</param>
     /// <param name="memoryCache">The memory cache.</param>
+    /// <param name="logger">The logger.</param>
     public CachingOpenApiProvider(
         IOptions<SwaggerGeneratorOptions> optionsAccessor,
         IApiDescriptionGroupCollectionProvider apiDescriptionsProvider,
         ISchemaGenerator schemaGenerator,
-        IMemoryCache memoryCache)
+        IMemoryCache memoryCache,
+        ILogger<CachingOpenApiProvider> logger)
     {
         _swaggerGeneratorOptions = optionsAccessor.Value;
         _swaggerGenerator = new SwaggerGenerator(_swaggerGeneratorOptions, apiDescriptionsProvider, schemaGenerator);
         _memoryCache = memoryCache;
+        _logger = logger;
     }
 
     /// <inheritdoc />
-    public OpenApiDocument GetSwagger(string documentName, string? host = null, string? basePath = null)
+    public OpenApiDocument GetSwagger(string documentName, string host, string basePath)
     {
         if (_memoryCache.TryGetValue(CacheKey, out OpenApiDocument? openApiDocument) && openApiDocument is not null)
         {
@@ -61,7 +66,16 @@ internal sealed class CachingOpenApiProvider : ISwaggerProvider
             throw new InvalidOperationException("OpenApi document is generating");
         }
 
+        try
+        {
         openApiDocument = _swaggerGenerator.GetSwagger(documentName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "OpenAPI generation error");
+            throw;
+        }
+
         _memoryCache.Set(CacheKey, openApiDocument, _cacheOptions);
         return AdjustDocument(openApiDocument, host, basePath);
     }

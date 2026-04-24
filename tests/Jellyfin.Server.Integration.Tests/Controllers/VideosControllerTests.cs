@@ -21,7 +21,7 @@ public sealed class VideosControllerTests : IClassFixture<JellyfinApplicationFac
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var response = await client.DeleteAsync($"Videos/{Guid.NewGuid()}");
+        var response = await client.DeleteAsync($"Videos/{Guid.NewGuid()}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

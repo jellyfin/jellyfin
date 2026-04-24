@@ -73,7 +73,6 @@
     "Shows": "Σειρές",
     "Songs": "Τραγούδια",
     "StartupEmbyServerIsLoading": "Ο διακομιστής Jellyfin φορτώνει. Περιμένετε λίγο και δοκιμάστε ξανά.",
-    "SubtitleDownloadFailureForItem": "Οι υπότιτλοι απέτυχαν να κατέβουν για {0}",
     "SubtitleDownloadFailureFromForItem": "Αποτυχίες μεταφόρτωσης υποτίτλων από {0} για {1}",
     "Sync": "Συγχρονισμός",
     "System": "Σύστημα",
