@@ -227,6 +227,7 @@
  - [ZeusCraft10](https://github.com/ZeusCraft10)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
  - [LiHRaM](https://github.com/LiHRaM)
+ - [MSalman5230](https://github.com/MSalman5230)
 
 # Emby Contributors
 
