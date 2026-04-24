@@ -194,20 +194,17 @@ namespace MediaBrowser.Providers.MediaInfo
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
 
-            // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
-
+            // Add embedded streams FIRST, preserving the ffprobe-native stream indices
+            // stored in MediaStream.Index. The subtitle cache on disk is keyed by this
+            // Index (see SubtitleEncoder.GetSubtitleCachePath), and FindIndex-based
+            // ffmpeg `-map 0:N` extraction also depends on Index matching the physical
+            // stream position. If we renumber embedded streams after externals have
+            // claimed low indices, a later refresh that adds or removes an external
+            // subtitle will shift all embedded Index values and the cache files will be
+            // served under the wrong labels (e.g. selecting "Spanish" shows Thai).
             if (mediaInfo is not null)
             {
-                foreach (var mediaStream in mediaInfo.MediaStreams)
-                {
-                    mediaStream.Index = startIndex++;
-                    mediaStreams.Add(mediaStream);
-                }
+                mediaStreams.AddRange(mediaInfo.MediaStreams);
 
                 mediaAttachments = mediaInfo.MediaAttachments;
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -231,7 +228,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     if (!mediaStream.IsExternal)
                     {
-                        mediaStream.Index = startIndex++;
                         mediaStreams.Add(mediaStream);
                     }
                 }
@@ -239,6 +235,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = [];
                 chapters = [];
             }
+
+            // External streams get Index values AFTER the embedded range.
+            // AddExternalSubtitlesAsync / AddExternalAudioAsync already compute their
+            // startIndex as `max(existing Index) + 1`, so they fall in sequence after
+            // the highest embedded stream.
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
