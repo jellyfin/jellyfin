@@ -266,10 +266,21 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
-        public string FriendlyName =>
-            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
-                ? Environment.MachineName
-                : ConfigurationManager.Configuration.ServerName;
+        public string FriendlyName
+        {
+            get
+            {
+                var nameFromEnvVar = Environment.GetEnvironmentVariable("JELLYFIN_SERVER_NAME");
+                if (!string.IsNullOrWhiteSpace(nameFromEnvVar))
+                {
+                    return nameFromEnvVar;
+                }
+
+                return string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
+                    ? Environment.MachineName
+                    : ConfigurationManager.Configuration.ServerName;
+            }
+        }
 
         public string RestoreBackupPath { get; set; }
 
