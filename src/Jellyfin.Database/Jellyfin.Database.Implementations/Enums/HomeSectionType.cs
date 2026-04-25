@@ -53,5 +53,10 @@ public enum HomeSectionType
     /// <summary>
     /// Continue Reading.
     /// </summary>
-    ResumeBook = 9
+    ResumeBook = 9,
+
+    /// <summary>
+    /// Pinned Collection.
+    /// </summary>
+    PinnedCollection = 10
 }
