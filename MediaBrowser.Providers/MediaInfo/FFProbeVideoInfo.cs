@@ -30,6 +30,13 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class FFProbeVideoInfo
     {
+        // External subtitle / audio streams are assigned Index values starting at
+        // this offset so they (a) never collide with ffprobe-native indices on the
+        // embedded streams and (b) stay invariant to the embedded stream count, which
+        // is unknown for .strm shortcuts during the no-probe metadata scan. ffprobe
+        // never returns indices anywhere near this magnitude for real media files.
+        private const int ExternalStreamIndexBase = 1_000_000;
+
         private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -43,13 +50,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
         private readonly IMediaStreamRepository _mediaStreamRepository;
-
-        // External subtitle / audio streams are assigned Index values starting at
-        // this offset so they (a) never collide with ffprobe-native indices on the
-        // embedded streams and (b) stay invariant to the embedded stream count, which
-        // is unknown for .strm shortcuts during the no-probe metadata scan. ffprobe
-        // never returns indices anywhere near this magnitude for real media files.
-        private const int ExternalStreamIndexBase = 1_000_000;
 
         public FFProbeVideoInfo(
             ILogger<FFProbeVideoInfo> logger,
