@@ -621,6 +621,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
 
+            if (runtime <= 0)
+            {
+                return [];
+            }
+
             int chapterCount = Math.Max(1, (int)(runtime / dummyChapterDuration));
             var chapters = new ChapterInfo[chapterCount];
 
