@@ -65,7 +65,7 @@ namespace Jellyfin.LiveTv.Listings
 
             if (File.Exists(cacheFile))
             {
-                if (File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
+                if (CanUseCache(info.Path, cacheFile))
                 {
                     return cacheFile;
                 }
@@ -97,6 +97,17 @@ namespace Jellyfin.LiveTv.Listings
                     return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        private static bool CanUseCache(string sourcePath, string cacheFile)
+        {
+            var cacheWriteTime = File.GetLastWriteTimeUtc(cacheFile);
+            if (sourcePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return cacheWriteTime >= DateTime.UtcNow.Subtract(_maxCacheAge);
+            }
+
+            return cacheWriteTime >= File.GetLastWriteTimeUtc(sourcePath);
         }
 
         private async Task<string> UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
