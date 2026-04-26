@@ -285,6 +285,12 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
 
     /// <summary>
+    /// Gets or sets the JPEG quality for image encoding.
+    /// </summary>
+    /// <value>The JPEG quality (0-100). Default is 96.</value>
+    public int ImageJpegQuality { get; set; } = 96;
+
+    /// <summary>
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; }

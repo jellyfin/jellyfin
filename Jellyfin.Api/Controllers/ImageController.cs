@@ -1900,7 +1900,7 @@ public class ImageController : BaseJellyfinApiController
             MaxWidth = maxWidth,
             FillHeight = fillHeight,
             FillWidth = fillWidth,
-            Quality = quality ?? 100,
+            Quality = quality ?? _serverConfigurationManager.Configuration.ImageJpegQuality,
             Width = width,
             PercentPlayed = percentPlayed ?? 0,
             UnplayedCount = unplayedCount,
