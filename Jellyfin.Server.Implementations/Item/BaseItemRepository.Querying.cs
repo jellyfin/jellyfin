@@ -87,7 +87,7 @@ public sealed partial class BaseItemRepository
                 return Array.Empty<BaseItemDto>();
             }
 
-            var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().Where(e => orderedIds.Contains(e.Id)), filter)
                 .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))

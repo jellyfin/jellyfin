@@ -62,7 +62,9 @@ public class LinkedChildrenService : ILinkedChildrenService
     {
         using var dbContext = _dbProvider.CreateDbContext();
 
-        var artists = dbContext.BaseItems.Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
+        var artists = dbContext.BaseItems
+            .AsNoTracking()
+            .Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 

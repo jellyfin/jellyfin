@@ -197,7 +197,7 @@ public sealed partial class BaseItemRepository
         var masterIds = orderedMasterQuery.ToList();
 
         var query = ApplyNavigations(
-                context.BaseItems.AsSingleQuery().Where(e => masterIds.Contains(e.Id)),
+                context.BaseItems.AsNoTracking().AsSingleQuery().Where(e => masterIds.Contains(e.Id)),
                 filter);
 
         query = ApplyOrder(query, filter, context);

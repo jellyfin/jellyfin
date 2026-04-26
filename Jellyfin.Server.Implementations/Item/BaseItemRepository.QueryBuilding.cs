@@ -69,17 +69,17 @@ public sealed partial class BaseItemRepository
         if (enableGroupByPresentationUniqueKey && filter.GroupBySeriesPresentationUniqueKey)
         {
             var groupedIds = dbQuery.GroupBy(e => new { e.PresentationUniqueKey, e.SeriesPresentationUniqueKey }).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
+            dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (enableGroupByPresentationUniqueKey)
         {
             var groupedIds = dbQuery.GroupBy(e => e.PresentationUniqueKey).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
+            dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else if (filter.GroupBySeriesPresentationUniqueKey)
         {
             var groupedIds = dbQuery.GroupBy(e => e.SeriesPresentationUniqueKey).Select(e => e.Min(x => x.Id));
-            dbQuery = context.BaseItems.Where(e => groupedIds.Contains(e.Id));
+            dbQuery = context.BaseItems.AsNoTracking().Where(e => groupedIds.Contains(e.Id));
         }
         else
         {
@@ -142,7 +142,7 @@ public sealed partial class BaseItemRepository
             .Distinct();
 
         var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
-        return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+        return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
     }
 
     private static IQueryable<BaseItemEntity> ApplyBoxSetCollapsingAll(
@@ -169,7 +169,7 @@ public sealed partial class BaseItemRepository
             .Distinct();
 
         var collapsedIds = notInBoxSet.Union(boxSetIds);
-        return context.BaseItems.Where(e => collapsedIds.Contains(e.Id));
+        return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
     }
 
     private static IQueryable<BaseItemEntity> ApplyNameFilters(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
@@ -368,6 +368,7 @@ public sealed partial class BaseItemRepository
         var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(context, ancestorId);
 
         var baseQuery = context.BaseItems
+            .AsNoTracking()
             .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
 
         return ApplyAccessFiltering(context, baseQuery, filter);
