@@ -139,7 +139,7 @@ public class StartupController : BaseJellyfinApiController
 
         if (startupUserDto.Name is not null)
         {
-            user.Username = startupUserDto.Name;
+            user.Username = startupUserDto.Name.Trim();
         }
 
         await _userManager.UpdateUserAsync(user).ConfigureAwait(false);

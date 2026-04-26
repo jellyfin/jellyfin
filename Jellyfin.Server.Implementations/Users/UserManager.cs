@@ -139,7 +139,6 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            name = name.Trim();
             return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -149,8 +148,6 @@ namespace Jellyfin.Server.Implementations.Users
             ArgumentNullException.ThrowIfNull(user);
 
             ThrowIfInvalidUsername(newName);
-
-            newName = newName.Trim();
 
             if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
@@ -220,8 +217,6 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task<User> CreateUserAsync(string name)
         {
             ThrowIfInvalidUsername(name);
-
-            name = name.Trim();
 
             if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -405,7 +400,6 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(username));
             }
 
-            username = username.Trim();
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             var authResult = await AuthenticateLocalUser(username, password, user)
                 .ConfigureAwait(false);

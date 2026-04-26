@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260426115901_TrimUsernameWhitespaces")]
-    partial class TrimUsernameWhitespaces
+    [Migration("20260426173709_TrimUsernames")]
+    partial class TrimUsernames
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
