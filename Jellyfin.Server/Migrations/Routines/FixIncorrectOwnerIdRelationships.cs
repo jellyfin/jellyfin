@@ -87,9 +87,18 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
         // Collect all duplicate IDs to delete in one batch
         var allIdsToDelete = new List<Guid>();
+        const int progressLogStep = 500;
+        var processedPaths = 0;
         foreach (var path in duplicatePaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (processedPaths > 0 && processedPaths % progressLogStep == 0)
+            {
+                _logger.LogInformation("Resolving duplicates: {Processed}/{Total} paths", processedPaths, duplicatePaths.Count);
+            }
+
+            processedPaths++;
 
             // Get all items with this path
             var itemsWithPath = await context.BaseItems
@@ -208,6 +217,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
         }
 
         _logger.LogInformation("Found {Count} orphaned extras to reassign", orphanedExtras.Count);
+        const int extraProgressLogStep = 500;
 
         // Build a lookup of directory -> first video/movie item for parent resolution
         var extraDirectories = orphanedExtras
@@ -244,8 +254,16 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
         }
 
         var reassignedCount = 0;
+        var processedExtras = 0;
         foreach (var extra in orphanedExtras)
         {
+            if (processedExtras > 0 && processedExtras % extraProgressLogStep == 0)
+            {
+                _logger.LogInformation("Reassigning orphaned extras: {Processed}/{Total}", processedExtras, orphanedExtras.Count);
+            }
+
+            processedExtras++;
+
             if (string.IsNullOrEmpty(extra.Path))
             {
                 continue;
@@ -299,8 +317,17 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
             .ConfigureAwait(false);
 
         var updatedCount = 0;
+        const int linkProgressLogStep = 1000;
+        var processedLinks = 0;
         foreach (var link in alternateVersionLinks)
         {
+            if (processedLinks > 0 && processedLinks % linkProgressLogStep == 0)
+            {
+                _logger.LogInformation("Populating PrimaryVersionId: {Processed}/{Total} links", processedLinks, alternateVersionLinks.Count);
+            }
+
+            processedLinks++;
+
             if (childItems.TryGetValue(link.ChildId, out var childItem))
             {
                 childItem.PrimaryVersionId = link.ParentId;

@@ -75,12 +75,19 @@ internal class MigrateLinkedChildren : IDatabaseMigrationRoutine
 
         var linkedChildrenToAdd = new List<LinkedChildEntity>();
         var processedCount = 0;
+        const int progressLogStep = 1000;
+        var totalItems = itemsWithData.Count;
 
         foreach (var item in itemsWithData)
         {
             if (string.IsNullOrEmpty(item.Data))
             {
                 continue;
+            }
+
+            if (processedCount > 0 && processedCount % progressLogStep == 0)
+            {
+                _logger.LogInformation("Processing LinkedChildren: {Processed}/{Total} items", processedCount, totalItems);
             }
 
             try

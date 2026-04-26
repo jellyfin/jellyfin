@@ -87,7 +87,7 @@ public sealed partial class BaseItemRepository
                 return Array.Empty<BaseItemDto>();
             }
 
-            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().Where(e => orderedIds.Contains(e.Id)), filter)
+            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
                 .AsSplitQuery()
                 .AsEnumerable()
                 .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
@@ -142,48 +142,27 @@ public sealed partial class BaseItemRepository
             groupKeySelector = e => e.Album;
         }
 
-        var topGroupKeys = baseQuery
+        // Group by GroupKey, pick the latest item per group (correlated subquery: ORDER BY DateCreated DESC, Id DESC LIMIT 1),
+        // order groups by group max date, take the top N — all in a single SQL statement.
+        // ThenByDescending(Id) is the tiebreaker for deterministic ordering when items share a DateCreated.
+        var topGroupItems = baseQuery
             .Where(groupKeyFilter)
             .GroupBy(groupKeySelector)
-            .Select(g => new { GroupKey = g.Key!, MaxDate = g.Max(e => e.DateCreated) })
+            .Select(g => new
+            {
+                MaxDate = g.Max(e => e.DateCreated),
+                FirstId = g.OrderByDescending(e => e.DateCreated).ThenByDescending(e => e.Id).Select(e => e.Id).First()
+            })
             .OrderByDescending(g => g.MaxDate);
 
-        if (filter.Limit.HasValue)
-        {
-            topGroupKeys = topGroupKeys.Take(filter.Limit.Value).OrderByDescending(g => g.MaxDate);
-        }
+        var firstIdsQuery = filter.Limit.HasValue
+            ? topGroupItems.Take(filter.Limit.Value).Select(g => g.FirstId)
+            : topGroupItems.Select(g => g.FirstId);
 
-        // Get only the first (most recent) item ID per group using a lightweight projection,
-        // then fetch full entities only for those items. This avoids loading all versions/tracks
-        // with expensive navigation properties just to discard duplicates.
-        var topGroupKeyList = topGroupKeys.Select(g => g.GroupKey).ToList();
-        // ThenByDescending(Id) is a tiebreaker for deterministic ordering when multiple items
-        // share the same DateCreated timestamp — without it, SQL returns arbitrary order across queries.
-        var allItemsLite = collectionType switch
-        {
-            CollectionType.movies => baseQuery
-                .Where(e => e.PresentationUniqueKey != null && topGroupKeyList.Contains(e.PresentationUniqueKey))
-                .OrderByDescending(e => e.DateCreated)
-                .ThenByDescending(e => e.Id)
-                .Select(e => new { e.Id, GroupKey = e.PresentationUniqueKey })
-                .AsEnumerable(),
-            _ => baseQuery
-                .Where(e => e.Album != null && topGroupKeyList.Contains(e.Album))
-                .OrderByDescending(e => e.DateCreated)
-                .ThenByDescending(e => e.Id)
-                .Select(e => new { e.Id, GroupKey = e.Album })
-                .AsEnumerable()
-        };
+        var firstIds = firstIdsQuery.ToList();
 
-        // Client-side DistinctBy: EF Core/SQLite cannot reliably translate
-        // GroupBy(...).Select(g => g.First()) to SQL. The projection is lightweight
-        // (only Id + GroupKey for ~50 items), so client-side dedup is negligible.
-        var firstIds = allItemsLite
-            .DistinctBy(e => e.GroupKey)
-            .Select(e => e.Id)
-            .ToList();
-
-        var itemsQuery = context.BaseItems.AsNoTracking().Where(e => firstIds.Contains(e.Id));
+        // Single bound JSON / array parameter via WhereOneOrMany — keeps SQL small regardless of N.
+        var itemsQuery = context.BaseItems.AsNoTracking().WhereOneOrMany(firstIds, e => e.Id);
         itemsQuery = ApplyNavigations(itemsQuery, filter);
 
         return itemsQuery
@@ -250,13 +229,14 @@ public sealed partial class BaseItemRepository
             ? topSeriesData.Min(g => g.MaxDate)?.AddHours(-RecentAdditionWindowHours)
             : null;
 
-        // Fetch only the columns needed for analysis (lightweight projection).
+        // Restrict to episodes of the top series, optionally bounded by the global cutoff.
         var episodeQuery = baseQuery.Where(e => e.SeriesName != null && topSeriesNames.Contains(e.SeriesName));
         if (globalCutoff is not null)
         {
             episodeQuery = episodeQuery.Where(e => e.DateCreated >= globalCutoff);
         }
 
+        // Lightweight projection: only the columns needed for the in-memory analysis below.
         var allEpisodes = episodeQuery
             .OrderByDescending(e => e.DateCreated)
             .ThenByDescending(e => e.Id)

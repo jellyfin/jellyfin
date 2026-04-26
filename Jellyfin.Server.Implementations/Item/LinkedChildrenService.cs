@@ -54,7 +54,7 @@ public class LinkedChildrenService : ILinkedChildrenService
         return query
             .OrderBy(lc => lc.SortOrder)
             .Select(lc => lc.ChildId)
-            .ToList();
+            .ToArray();
     }
 
     /// <inheritdoc/>
