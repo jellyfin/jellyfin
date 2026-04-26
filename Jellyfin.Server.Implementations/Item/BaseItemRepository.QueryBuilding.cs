@@ -117,28 +117,44 @@ public sealed partial class BaseItemRepository
         // Only collapse specific item types, keep others untouched
         var collapsibleTypeNames = collapsibleTypes.Select(t => _itemTypeLookup.BaseItemKindNames[t]).ToList();
 
+        // Categorize items in currentIds in a single pass to avoid multiple correlated EXISTS over BaseItems.
+        var categorized = context.BaseItems
+            .AsNoTracking()
+            .Where(bi => currentIds.Contains(bi.Id))
+            .Select(bi => new
+            {
+                bi.Id,
+                IsCollapsible = collapsibleTypeNames.Contains(bi.Type),
+                IsBoxSet = bi.Type == boxSetTypeName
+            });
+
+        var collapsibleChildIds = categorized.Where(c => c.IsCollapsible).Select(c => c.Id);
+
+        // Single JOIN: manual links to BoxSet parents, restricted to currentIds children.
+        var manualBoxSetLinks = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
+                && currentIds.Contains(lc.ChildId))
+            .Join(
+                context.BaseItems.Where(bs => bs.Type == boxSetTypeName),
+                lc => lc.ParentId,
+                bs => bs.Id,
+                (lc, bs) => new { lc.ChildId, lc.ParentId });
+
+        var childrenInBoxSet = manualBoxSetLinks.Select(x => x.ChildId).Distinct();
+
         // Items whose type is NOT collapsible (always kept in results)
-        var nonCollapsibleIds = currentIds
-            .Where(id => !context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type)));
+        var nonCollapsibleIds = categorized.Where(c => !c.IsCollapsible).Select(c => c.Id);
 
-        // Collapsible items that are NOT in any box set (kept in results)
-        var collapsibleNotInBoxSet = currentIds
-            .Where(id =>
-                context.BaseItems.Any(bi => bi.Id == id && collapsibleTypeNames.Contains(bi.Type))
-                && !context.BaseItems.Any(bs => bs.Id == id && bs.Type == boxSetTypeName)
-                && !context.LinkedChildren.Any(lc =>
-                    lc.ChildId == id
-                    && lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.Manual
-                    && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
+        // Collapsible items that are not a BoxSet themselves and not a manual child of any BoxSet
+        var collapsibleNotInBoxSet = categorized
+            .Where(c => c.IsCollapsible && !c.IsBoxSet)
+            .Select(c => c.Id)
+            .Where(id => !childrenInBoxSet.Contains(id));
 
-        // Box set IDs containing at least one accessible collapsible child item
-        var boxSetIds = context.LinkedChildren
-            .Where(lc =>
-                lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.Manual
-                && currentIds.Contains(lc.ChildId)
-                && context.BaseItems.Any(bi => bi.Id == lc.ChildId && collapsibleTypeNames.Contains(bi.Type))
-                && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName))
-            .Select(lc => lc.ParentId)
+        // BoxSet IDs containing at least one collapsible child item from currentIds
+        var boxSetIds = manualBoxSetLinks
+            .Where(x => collapsibleChildIds.Contains(x.ChildId))
+            .Select(x => x.ParentId)
             .Distinct();
 
         var collapsedIds = nonCollapsibleIds.Union(collapsibleNotInBoxSet).Union(boxSetIds);
@@ -150,23 +166,25 @@ public sealed partial class BaseItemRepository
         IQueryable<Guid> currentIds,
         string boxSetTypeName)
     {
-        // Items that are NOT box sets and NOT in any box set
-        var notInBoxSet = currentIds
-            .Where(id =>
-                !context.BaseItems.Any(bs => bs.Id == id && bs.Type == boxSetTypeName)
-                && !context.LinkedChildren.Any(lc =>
-                    lc.ChildId == id
-                    && lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.Manual
-                    && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName)));
+        // Single JOIN: manual links to BoxSet parents, restricted to currentIds children.
+        var manualBoxSetLinks = context.LinkedChildren
+            .Where(lc => lc.ChildType == Database.Implementations.Entities.LinkedChildType.Manual
+                && currentIds.Contains(lc.ChildId))
+            .Join(
+                context.BaseItems.Where(bs => bs.Type == boxSetTypeName),
+                lc => lc.ParentId,
+                bs => bs.Id,
+                (lc, bs) => new { lc.ChildId, lc.ParentId });
 
-        // Box set IDs containing at least one accessible child item
-        var boxSetIds = context.LinkedChildren
-            .Where(lc =>
-                lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.Manual
-                && currentIds.Contains(lc.ChildId)
-                && context.BaseItems.Any(bs => bs.Id == lc.ParentId && bs.Type == boxSetTypeName))
-            .Select(lc => lc.ParentId)
-            .Distinct();
+        var childrenInBoxSet = manualBoxSetLinks.Select(x => x.ChildId).Distinct();
+        var boxSetIds = manualBoxSetLinks.Select(x => x.ParentId).Distinct();
+
+        // Items in currentIds that are not BoxSets themselves and not a manual child of any BoxSet
+        var notInBoxSet = context.BaseItems
+            .AsNoTracking()
+            .Where(e => currentIds.Contains(e.Id) && e.Type != boxSetTypeName)
+            .Select(e => e.Id)
+            .Where(id => !childrenInBoxSet.Contains(id));
 
         var collapsedIds = notInBoxSet.Union(boxSetIds);
         return context.BaseItems.AsNoTracking().Where(e => collapsedIds.Contains(e.Id));
@@ -405,32 +423,36 @@ public sealed partial class BaseItemRepository
                 e.InheritedParentalRatingValue != null || !unratedItemTypes.Contains(e.UnratedType));
         }
 
-        // Apply excluded tags filtering (blocked tags)
+        // Apply excluded tags filtering (blocked tags).
+        // Pre-build the blocked-item-id set as a sub-select; then four index-seek Contains checks
+        // instead of one EXISTS over a 4-way OR predicate that defeats index seeks.
         if (filter.ExcludeInheritedTags.Length > 0)
         {
             var excludedTags = filter.ExcludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            var blockedTagItemIds = context.ItemValuesMap
+                .Where(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
+                .Select(f => f.ItemId);
+
             baseQuery = baseQuery.Where(e =>
-                !context.ItemValuesMap.Any(f =>
-                    f.ItemValue.Type == ItemValueType.Tags
-                    && excludedTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id
-                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
-                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
-                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
+                !blockedTagItemIds.Contains(e.Id)
+                && !(e.SeriesId.HasValue && blockedTagItemIds.Contains(e.SeriesId.Value))
+                && !e.Parents!.Any(p => blockedTagItemIds.Contains(p.ParentItemId))
+                && !(e.TopParentId.HasValue && blockedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
-        // Apply included tags filtering (allowed tags - item must have at least one)
+        // Apply included tags filtering (allowed tags - item must have at least one).
         if (filter.IncludeInheritedTags.Length > 0)
         {
             var includeTags = filter.IncludeInheritedTags.Select(e => e.GetCleanValue()).ToArray();
+            var allowedTagItemIds = context.ItemValuesMap
+                .Where(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
+                .Select(f => f.ItemId);
+
             baseQuery = baseQuery.Where(e =>
-                context.ItemValuesMap.Any(f =>
-                    f.ItemValue.Type == ItemValueType.Tags
-                    && includeTags.Contains(f.ItemValue.CleanValue)
-                    && (f.ItemId == e.Id
-                        || (e.SeriesId.HasValue && f.ItemId == e.SeriesId.Value)
-                        || e.Parents!.Any(p => f.ItemId == p.ParentItemId)
-                        || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
+                allowedTagItemIds.Contains(e.Id)
+                || (e.SeriesId.HasValue && allowedTagItemIds.Contains(e.SeriesId.Value))
+                || e.Parents!.Any(p => allowedTagItemIds.Contains(p.ParentItemId))
+                || (e.TopParentId.HasValue && allowedTagItemIds.Contains(e.TopParentId.Value)));
         }
 
         // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
