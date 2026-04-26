@@ -1,44 +1,79 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library;
 
 /// <summary>
-/// Resolver rule class for ignoring files via .ignore.
+/// Resolver rule class for ignoring files via .ignore and .jellyignore files.
+/// .ignore files are always applied (forced ignores).
+/// .jellyignore files are optional and controlled by the EnableJellyignore setting.
+/// Empty ignore file ignores the entire directory.
 /// </summary>
 public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 {
+    private const string ForceIgnoreFilename = ".ignore";
+    private const string JellyignoreFilename = ".jellyignore";
+
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
 
-    private static FileInfo? FindIgnoreFile(DirectoryInfo directory)
-    {
-        for (var current = directory; current is not null; current = current.Parent)
-        {
-            var ignorePath = Path.Join(current.FullName, ".ignore");
-            if (File.Exists(ignorePath))
-            {
-                return new FileInfo(ignorePath);
-            }
-        }
+    private readonly IServerConfigurationManager? _configurationManager;
+    private readonly ILibraryManager? _libraryManager;
 
-        return null;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class.
+    /// </summary>
+    public DotIgnoreIgnoreRule()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class with dependencies.
+    /// </summary>
+    /// <param name="configurationManager">The server configuration manager.</param>
+    public DotIgnoreIgnoreRule(IServerConfigurationManager configurationManager)
+    {
+        _configurationManager = configurationManager;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DotIgnoreIgnoreRule"/> class with dependencies.
+    /// </summary>
+    /// <param name="configurationManager">The server configuration manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    public DotIgnoreIgnoreRule(IServerConfigurationManager configurationManager, ILibraryManager libraryManager)
+    {
+        _configurationManager = configurationManager;
+        _libraryManager = libraryManager;
     }
 
     /// <inheritdoc />
-    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnored(fileInfo, parent);
+    public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem? parent) => IsIgnoredInstance(fileInfo, parent);
 
     /// <summary>
-    /// Checks whether or not the file is ignored.
+    /// Static method to check if a file is ignored.
     /// </summary>
-    /// <param name="fileInfo">The file information.</param>
-    /// <param name="parent">The parent BaseItem.</param>
+    /// <param name="fileInfo">The file information to check.</param>
+    /// <param name="parent">The parent BaseItem context.</param>
     /// <returns>True if the file should be ignored.</returns>
     public static bool IsIgnored(FileSystemMetadata fileInfo, BaseItem? parent)
+    {
+        var rule = new DotIgnoreIgnoreRule();
+        return rule.IsIgnoredInstance(fileInfo, parent);
+    }
+
+    /// <summary>
+    /// Instance method to check if a file is ignored by .ignore or .jellyignore files.
+    /// .ignore files are always applied (forced ignores).
+    /// .jellyignore files are optionally applied based on EnableJellyignore setting.
+    /// </summary>
+    private bool IsIgnoredInstance(FileSystemMetadata fileInfo, BaseItem? parent)
     {
         var searchDirectory = fileInfo.IsDirectory
             ? new DirectoryInfo(fileInfo.FullName)
@@ -49,57 +84,114 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             return false;
         }
 
-        var ignoreFile = FindIgnoreFile(searchDirectory);
+        // Always check .ignore files (forced ignores)
+        if (IsIgnoredByFile(searchDirectory, fileInfo, ForceIgnoreFilename))
+        {
+            return true;
+        }
+
+        // Check .jellyignore files (optional ignores)
+        // Get the per-library EnableJellyignore setting if available, otherwise use global setting
+        bool enableJellyignore = GetEnableJellyignoreSetting(parent);
+        if (enableJellyignore)
+        {
+            bool isIgnoredByJellyignore = IsIgnoredByFile(searchDirectory, fileInfo, JellyignoreFilename);
+            if (isIgnoredByJellyignore)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the EnableJellyignore setting from the parent library if available, otherwise uses global setting.
+    /// </summary>
+    private bool GetEnableJellyignoreSetting(BaseItem? parent)
+    {
+        // Try to get per-library setting from parent using ILibraryManager
+        if (parent is not null && _libraryManager is not null)
+        {
+            try
+            {
+                var libraryOptions = _libraryManager.GetLibraryOptions(parent);
+                return libraryOptions.EnableJellyignore;
+            }
+            catch (Exception)
+            {
+                // If we can't get library options, fall back to global setting
+            }
+        }
+
+        // Fall back to global setting
+        return _configurationManager?.Configuration.EnableJellyignore ?? true;
+    }
+
+    private static FileInfo? FindIgnoreFile(DirectoryInfo directory, string filename)
+    {
+        for (var current = directory; current is not null; current = current.Parent)
+        {
+            var ignorePath = Path.Join(current.FullName, filename);
+            if (File.Exists(ignorePath))
+            {
+                return new FileInfo(ignorePath);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks if a file is ignored by the specified ignore file.
+    /// Empty ignore file = ignore entire directory.
+    /// </summary>
+    private static bool IsIgnoredByFile(DirectoryInfo searchDirectory, FileSystemMetadata fileInfo, string ignoreFilename)
+    {
+        var ignoreFile = FindIgnoreFile(searchDirectory, ignoreFilename);
         if (ignoreFile is null)
         {
             return false;
         }
 
-        // Fast path in case the ignore files isn't a symlink and is empty
-        if (ignoreFile.LinkTarget is null && ignoreFile.Length == 0)
+        var content = GetFileContent(ignoreFile);
+
+        // Empty file = ignore everything in this directory
+        if (string.IsNullOrWhiteSpace(content))
         {
-            // Ignore directory if we just have the file
             return true;
         }
 
-        var content = GetFileContent(ignoreFile);
-        return string.IsNullOrWhiteSpace(content)
-            || CheckIgnoreRules(fileInfo.FullName, content, fileInfo.IsDirectory);
+        return CheckIgnoreRules(fileInfo.FullName, content, fileInfo.IsDirectory);
     }
 
     private static bool CheckIgnoreRules(string path, string ignoreFileContent, bool isDirectory)
     {
-        // If file has content, base ignoring off the content .gitignore-style rules
         var rules = ignoreFileContent.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return CheckIgnoreRules(path, rules, isDirectory);
     }
 
-    /// <summary>
-    /// Checks whether a path should be ignored based on an array of ignore rules.
-    /// </summary>
-    /// <param name="path">The path to check.</param>
-    /// <param name="rules">The array of ignore rules.</param>
-    /// <param name="isDirectory">Whether the path is a directory.</param>
-    /// <returns>True if the path should be ignored.</returns>
     internal static bool CheckIgnoreRules(string path, string[] rules, bool isDirectory)
         => CheckIgnoreRules(path, rules, isDirectory, IsWindows);
 
-    /// <summary>
-    /// Checks whether a path should be ignored based on an array of ignore rules.
-    /// </summary>
-    /// <param name="path">The path to check.</param>
-    /// <param name="rules">The array of ignore rules.</param>
-    /// <param name="isDirectory">Whether the path is a directory.</param>
-    /// <param name="normalizePath">Whether to normalize backslashes to forward slashes (for Windows paths).</param>
-    /// <returns>True if the path should be ignored.</returns>
     internal static bool CheckIgnoreRules(string path, string[] rules, bool isDirectory, bool normalizePath)
     {
-        var ignore = new Ignore.Ignore();
+        if (rules.Length == 0)
+        {
+            return false;
+        }
 
-        // Add each rule individually to catch and skip invalid patterns
+        var ignore = new Ignore.Ignore();
         var validRulesAdded = 0;
+
         foreach (var rule in rules)
         {
+            var trimmedRule = rule.Trim();
+            if (trimmedRule.StartsWith('#') || string.IsNullOrEmpty(trimmedRule))
+            {
+                continue;
+            }
+
             try
             {
                 ignore.Add(rule);
@@ -107,21 +199,18 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
             }
             catch (RegexParseException)
             {
-                // Ignore invalid patterns
+                // Skip invalid patterns
             }
         }
 
-        // If no valid rules were added, fall back to ignoring everything (like an empty .ignore file)
+        // All invalid patterns = ignore everything
         if (validRulesAdded == 0)
         {
             return true;
         }
 
-         // Mitigate the problem of the Ignore library not handling Windows paths correctly.
-         // See https://github.com/jellyfin/jellyfin/issues/15484
         var pathToCheck = normalizePath ? path.NormalizePath('/') : path;
 
-        // Add trailing slash for directories to match "folder/"
         if (isDirectory)
         {
             pathToCheck = string.Concat(pathToCheck.AsSpan().TrimEnd('/'), "/");
@@ -132,9 +221,16 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
     private static string GetFileContent(FileInfo ignoreFile)
     {
-        ignoreFile = FileSystemHelper.ResolveLinkTarget(ignoreFile, returnFinalTarget: true) ?? ignoreFile;
-        return ignoreFile.Exists
-            ? File.ReadAllText(ignoreFile.FullName)
-            : string.Empty;
+        try
+        {
+            ignoreFile = FileSystemHelper.ResolveLinkTarget(ignoreFile, returnFinalTarget: true) ?? ignoreFile;
+            return ignoreFile.Exists
+                ? File.ReadAllText(ignoreFile.FullName)
+                : string.Empty;
+        }
+        catch (Exception)
+        {
+            return string.Empty;
+        }
     }
 }

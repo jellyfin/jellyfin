@@ -38,11 +38,14 @@ namespace MediaBrowser.Model.Configuration
             UseCustomTagDelimiters = false;
             CustomTagDelimiters = _defaultTagDelimiters;
             DelimiterWhitelist = Array.Empty<string>();
+            EnableJellyignore = true;
         }
 
         public bool Enabled { get; set; } = true;
 
         public bool EnablePhotos { get; set; }
+
+        public bool EnableJellyignore { get; set; } = true;
 
         public bool EnableRealtimeMonitor { get; set; }
 
