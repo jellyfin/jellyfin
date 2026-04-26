@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// The music genres controller.
 /// </summary>
 [Authorize]
+[Tags("MusicGenre")]
 public class MusicGenresController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

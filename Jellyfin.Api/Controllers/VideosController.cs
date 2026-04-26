@@ -35,6 +35,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The videos controller.
 /// </summary>
+[Tags("Video")]
 public class VideosController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

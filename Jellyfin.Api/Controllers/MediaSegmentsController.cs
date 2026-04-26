@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers;
 /// Media Segments api.
 /// </summary>
 [Authorize]
+[Tags("MediaSegment")]
 public class MediaSegmentsController : BaseJellyfinApiController
 {
     private readonly IMediaSegmentManager _mediaSegmentManager;
