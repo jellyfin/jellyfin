@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Plugins;
@@ -23,6 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// Plugins controller.
 /// </summary>
 [Authorize(Policy = Policies.RequiresElevation)]
+[Tags("Plugin")]
 public class PluginsController : BaseJellyfinApiController
 {
     private readonly IInstallationManager _installationManager;

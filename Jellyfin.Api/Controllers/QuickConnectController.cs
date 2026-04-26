@@ -16,6 +16,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Quick connect controller.
 /// </summary>
+[Tags("Authentication")]
 public class QuickConnectController : BaseJellyfinApiController
 {
     private readonly IQuickConnect _quickConnect;

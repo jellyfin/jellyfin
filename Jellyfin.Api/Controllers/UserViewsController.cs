@@ -26,6 +26,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[Tags("UserView")]
 public class UserViewsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;

@@ -23,6 +23,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[Tags("Suggestion")]
 public class SuggestionsController : BaseJellyfinApiController
 {
     private readonly IDtoService _dtoService;

@@ -29,6 +29,7 @@ namespace Jellyfin.Api.Controllers;
 /// The universal audio controller.
 /// </summary>
 [Route("")]
+[Tags("Audio")]
 public class UniversalAudioController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
