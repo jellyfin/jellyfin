@@ -369,7 +369,7 @@ public class UserController : BaseJellyfinApiController
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
-            await _userManager.RenameUser(user, updateUser.Name?.Trim()).ConfigureAwait(false);
+            await _userManager.RenameUser(user, updateUser.Name!.Trim()).ConfigureAwait(false);
         }
 
         await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
@@ -517,7 +517,7 @@ public class UserController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<UserDto>> CreateUserByName([FromBody, Required] CreateUserByName request)
     {
-        var newUser = await _userManager.CreateUserAsync(request.Name?.Trim()).ConfigureAwait(false);
+        var newUser = await _userManager.CreateUserAsync(request.Name!.Trim()).ConfigureAwait(false);
 
         // no need to authenticate password for new user
         if (request.Password is not null)
@@ -549,7 +549,7 @@ public class UserController : BaseJellyfinApiController
             _logger.LogWarning("Password reset process initiated from outside the local network with IP: {IP}", ip);
         }
 
-        var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername?.Trim(), isLocal).ConfigureAwait(false);
+        var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername!.Trim(), isLocal).ConfigureAwait(false);
 
         return result;
     }
