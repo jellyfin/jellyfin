@@ -198,16 +198,12 @@ namespace MediaBrowser.Providers.MediaInfo
             List<MediaStream> mediaStreams = new List<MediaStream>();
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
-            _logger.LogInformation("Fetching video: {Vid}", video);
 
             // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
             var oldExternalSubtitleFiles = new HashSet<string>(video.SubtitleFiles, StringComparer.OrdinalIgnoreCase);
-
             await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            // If the set of external subtitle files changed, the Jellyfin indexes assigned to embedded
-            // subtitle streams will shift. Delete the subtitle cache so stale extracted files don't get
-            // served for the wrong streams on next playback.
+            // New external subtitles will offset the embedded subtitle indices and cause the cache folder to be stale
             var newExternalSubtitleFiles = mediaStreams
                 .Where(s => s.IsExternal && s.Type == MediaStreamType.Subtitle)
                 .Select(s => s.Path)
@@ -233,7 +229,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     mediaStream.Index = startIndex++;
                     mediaStreams.Add(mediaStream);
-                    _logger.LogInformation("Media: {Name}. Set stream index to: {Index}. URL: {Url}", mediaStream, mediaStream.Index, mediaStream.DeliveryUrl);
                 }
 
                 mediaAttachments = mediaInfo.MediaAttachments;

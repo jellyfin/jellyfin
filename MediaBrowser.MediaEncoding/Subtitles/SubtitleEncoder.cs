@@ -644,8 +644,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new FileNotFoundException($"Calculated path ({outputPath}) is not valid."));
 
-                _logger.LogInformation("Extracting subtitle stream index: {Index}. For {Lang}", streamIndex, subtitleStream.Language);
-                _logger.LogInformation("Current Media: {Media}", subtitleStreams);
                 outputPaths.Add(outputPath);
                 args += string.Format(
                     CultureInfo.InvariantCulture,
