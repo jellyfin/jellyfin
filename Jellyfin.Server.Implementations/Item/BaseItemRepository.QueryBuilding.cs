@@ -432,8 +432,8 @@ public sealed partial class BaseItemRepository
                         || (e.TopParentId.HasValue && f.ItemId == e.TopParentId.Value))));
         }
 
-        // Exclude alternate versions and owned non-extra items from counts.
-        // Alternate versions have PrimaryVersionId set (pointing to their primary).
+        // Exclude alternate versions (have PrimaryVersionId set) and owned non-extra items.
+        // Extras (trailers, etc.) have OwnerId set but also have ExtraType set — keep those.
         if (!filter.IncludeOwnedItems)
         {
             baseQuery = baseQuery.Where(e => e.PrimaryVersionId == null && (e.OwnerId == null || e.ExtraType != null));

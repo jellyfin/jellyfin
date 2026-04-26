@@ -376,14 +376,6 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Peoples!.Any(f => f.People.Name == filter.Person));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.MinSortName))
-        {
-            // this does not makes sense.
-            // baseQuery = baseQuery.Where(e => e.SortName >= query.MinSortName);
-            // whereClauses.Add("SortName>=@MinSortName");
-            // statement?.TryBind("@MinSortName", query.MinSortName);
-        }
-
         if (!string.IsNullOrWhiteSpace(filter.ExternalSeriesId))
         {
             baseQuery = baseQuery.Where(e => e.ExternalSeriesId == filter.ExternalSeriesId);
@@ -407,7 +399,6 @@ public sealed partial class BaseItemRepository
             }
         }
 
-        // These are the same, for now
         var nameContains = filter.NameContains;
         if (!string.IsNullOrWhiteSpace(nameContains))
         {

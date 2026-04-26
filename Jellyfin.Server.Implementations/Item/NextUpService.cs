@@ -150,13 +150,9 @@ public class NextUpService : INextUpService
             .Where(id => id != Guid.Empty)
             .Distinct()
             .ToList();
-        var lastWatchedEpisodes = new Dictionary<Guid, BaseItemEntity>();
-        if (allLastWatchedIds.Count > 0)
-        {
-            var lwQuery = context.BaseItems.AsNoTracking().Where(e => allLastWatchedIds.Contains(e.Id));
-            lwQuery = _queryHelpers.ApplyNavigations(lwQuery, filter);
-            lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
-        }
+        var lwQuery = context.BaseItems.AsNoTracking().Where(e => allLastWatchedIds.Contains(e.Id));
+        lwQuery = _queryHelpers.ApplyNavigations(lwQuery, filter);
+        var lastWatchedEpisodes = lwQuery.ToDictionary(e => e.Id);
 
         Dictionary<string, List<BaseItemEntity>> specialsBySeriesKey = new();
         if (includeSpecials)

@@ -168,9 +168,6 @@ internal static class BaseItemMapper
             dto.ImageInfos = entity.Images.Select(e => MapImageFromEntity(e, appHost)).ToArray();
         }
 
-        // dto.Type = entity.Type;
-        // dto.Data = entity.Data;
-        // dto.MediaType = Enum.TryParse<MediaType>(entity.MediaType);
         if (dto is IHasStartDate hasStartDate)
         {
             hasStartDate.StartDate = entity.StartDate.GetValueOrDefault();
@@ -354,8 +351,6 @@ internal static class BaseItemMapper
             }).ToArray() ?? [];
         }
 
-        // dto.Type = entity.Type;
-        // dto.Data = entity.Data;
         entity.MediaType = dto.MediaType.ToString();
         if (dto is IHasStartDate hasStartDate)
         {

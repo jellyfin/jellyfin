@@ -133,8 +133,9 @@ public sealed partial class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
-        // Materialize the matching CleanValues early. This splits one massive expression tree
-        // into two simpler queries, dramatically reducing EF Core expression compilation time.
+        // Keep this as an IQueryable sub-select. Materializing to a list would inline one
+        // bound parameter per CleanValue and hit SQLite's variable cap on libraries with
+        // high-cardinality value types (e.g. tens of thousands of artists).
         var matchingCleanValues = context.ItemValuesMap
             .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
             .Join(
@@ -142,8 +143,7 @@ public sealed partial class BaseItemRepository
                 ivm => ivm.ItemId,
                 g => g.Id,
                 (ivm, g) => ivm.ItemValue.CleanValue)
-            .Distinct()
-            .ToList();
+            .Distinct();
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
@@ -170,10 +170,8 @@ public sealed partial class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
-        // Materialize the matching IDs first. This keeps the complex nested subquery
-        // (inner filter + ItemValues join + search + GroupBy) as a single simple SQL statement,
-        // and then the entity load with Includes uses a flat WHERE Id IN (...) list.
-        // This avoids EF having to compile the entire nested expression tree into the final query.
+        // Build the master query and collapse rows that share a PresentationUniqueKey
+        // (e.g. alternate versions) by picking the lowest Id per group.
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter);
 
         var orderedMasterQuery = ApplyOrder(masterQuery, filter, context)
@@ -229,9 +227,7 @@ public sealed partial class BaseItemRepository
             var musicArtistTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
             var audioTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
             var trailerTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Trailer];
-
-            // Materialize the matching IDs to avoid nested subquery in the counts expression tree.
-            var itemIds = itemCountQuery.Select(e => e.Id).ToList();
+            var itemIds = itemCountQuery.Select(e => e.Id);
 
             // Rewrite query to avoid SelectMany on navigation properties (which requires SQL APPLY, not supported on SQLite)
             // Instead, start from ItemValueMaps and join with BaseItems

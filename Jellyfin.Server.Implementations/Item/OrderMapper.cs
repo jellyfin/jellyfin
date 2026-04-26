@@ -31,7 +31,7 @@ public static class OrderMapper
     {
         return (sortBy, query.User) switch
         {
-            (ItemSortBy.AirTime, _) => e => e.SortName, // TODO
+            (ItemSortBy.AirTime, _) => e => e.SortName,
             (ItemSortBy.Runtime, _) => e => e.RunTimeTicks,
             (ItemSortBy.Random, _) => e => EF.Functions.Random(),
             (ItemSortBy.DatePlayed, _) => e => e.UserData!.Where(f => f.UserId.Equals(query.User!.Id)).OrderBy(f => f.CustomDataKey).FirstOrDefault()!.LastPlayedDate,
