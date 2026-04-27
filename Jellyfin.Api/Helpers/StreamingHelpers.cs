@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Http;
@@ -245,6 +246,8 @@ public static class StreamingHelpers
             {
                 state.OutputAudioCodec = state.SupportedAudioCodecs.Where(c => !EncodingHelper.LosslessAudioCodecs.Contains(c)).FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec);
             }
+
+            encodingHelper.ResolveOutputDimensions(state, encodingOptions);
         }
 
         var ext = string.IsNullOrWhiteSpace(state.OutputContainer)

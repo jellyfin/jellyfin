@@ -147,10 +147,28 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
 
+        /// <summary>
+        /// Gets or sets the pre-resolved output width. When set, overrides the legacy
+        /// <see cref="DrawingUtils.Resize"/> fallback in <see cref="OutputWidth"/>. Populated
+        /// by <c>OutputDimsPopulator</c> at streaming-state build time with values computed
+        /// to match what the scale filter will emit.
+        /// </summary>
+        public int? ResolvedOutputWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre-resolved output height. See <see cref="ResolvedOutputWidth"/>.
+        /// </summary>
+        public int? ResolvedOutputHeight { get; set; }
+
         public int? OutputWidth
         {
             get
             {
+                if (ResolvedOutputWidth.HasValue)
+                {
+                    return ResolvedOutputWidth;
+                }
+
                 if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
@@ -178,6 +196,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
+                if (ResolvedOutputHeight.HasValue)
+                {
+                    return ResolvedOutputHeight;
+                }
+
                 if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
