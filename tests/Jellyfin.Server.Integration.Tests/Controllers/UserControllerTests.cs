@@ -134,6 +134,20 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
         [Fact]
         [Priority(1)]
+        public async Task GetUsersFromNewUser_Invalid_Fail()
+        {
+            var client = _factory.CreateClient();
+
+            var userAccessToken = await AuthHelper.AuthenticateUserByNameAsync(client, TestUsername, string.Empty);
+
+            client.DefaultRequestHeaders.AddAuthHeader(userAccessToken);
+
+            using var response = await client.GetAsync("Users");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        [Priority(1)]
         public async Task UpdateUserPassword_Valid_Success()
         {
             var client = _factory.CreateClient();
