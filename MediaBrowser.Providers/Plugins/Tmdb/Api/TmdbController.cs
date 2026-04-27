@@ -14,6 +14,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Api
     [Authorize]
     [Route("[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class TmdbController : ControllerBase
     {
         private readonly TmdbClientManager _tmdbClientManager;
