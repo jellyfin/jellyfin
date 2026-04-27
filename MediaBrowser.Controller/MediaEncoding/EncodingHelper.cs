@@ -413,7 +413,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && IsDoviWithHdr10Bl(state.VideoStream);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsDoviWithHdr10Bl(state.VideoStream));
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
