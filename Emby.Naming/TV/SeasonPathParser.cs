@@ -21,6 +21,9 @@ namespace Emby.Naming.TV
         [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]
         private static partial Regex SeasonPrefix();
 
+        [GeneratedRegex(@"(season|staffel|stagione|sæson|temporada|series|kausi|säsong|seizoen|seasong|sezon|sezona|sezóna|sezonul|시즌|シーズン|сезон)", RegexOptions.IgnoreCase)]
+        private static partial Regex SeasonKeyword();
+
         /// <summary>
         /// Attempts to parse season number from path.
         /// </summary>
@@ -91,14 +94,25 @@ namespace Emby.Naming.TV
                 return (val, true);
             }
 
+            bool isMixedLibrary = !supportNumericSeasonFolders && !supportSpecialAliases;
             var preMatch = ProcessPre().Match(filename);
             if (preMatch.Success)
             {
+                if (isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                {
+                    return (null, false);
+                }
+
                 return CheckMatch(preMatch);
             }
             else
             {
                 var postMatch = ProcessPost().Match(filename);
+                if (postMatch.Success && isMixedLibrary && !SeasonKeyword().IsMatch(fileName))
+                {
+                    return (null, false);
+                }
+
                 return CheckMatch(postMatch);
             }
         }
