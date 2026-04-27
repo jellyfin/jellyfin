@@ -414,6 +414,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
                        || IsDoviWithHdr10Bl(state.VideoStream));
         }
 
@@ -429,8 +430,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (IsDoviWithHdr10Bl(state.VideoStream)
-                       || state.VideoStream.VideoRangeType is VideoRangeType.HLG);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
+                       || IsDoviWithHdr10Bl(state.VideoStream)
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
