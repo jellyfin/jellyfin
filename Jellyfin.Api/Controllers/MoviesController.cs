@@ -261,7 +261,7 @@ public class MoviesController : BaseJellyfinApiController
         }
     }
 
-    private IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+    internal IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
         if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -277,6 +277,10 @@ public class MoviesController : BaseJellyfinApiController
                 Limit = itemLimit,
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
+                Genres = item.Genres,
+                Tags = item.Tags,
+                ExcludeItemIds = [item.Id],
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
                 EnableGroupByMetadataKey = true,
                 DtoOptions = dtoOptions
             });
