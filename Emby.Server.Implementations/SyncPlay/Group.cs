@@ -665,6 +665,9 @@ namespace Emby.Server.Implementations.SyncPlay
                 startPositionTicks += Math.Max(elapsedTime.Ticks, 0);
             }
 
+            // Clamp to valid range to prevent overshoot past media duration.
+            startPositionTicks = Math.Clamp(startPositionTicks, 0, RunTimeTicks);
+
             return new PlayQueueUpdate(
                 reason,
                 PlayQueue.LastChange,
