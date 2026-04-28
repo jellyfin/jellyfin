@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
@@ -23,6 +24,7 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
@@ -48,6 +50,8 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <value>The application host.</value>
         private readonly IServerApplicationHost _applicationHost;
+        private readonly IMemoryCache _memoryCache;
+        private readonly AsyncNonKeyedLocker _cacheLock = new(1);
         private readonly Lock _currentInstallationsLock = new();
 
         /// <summary>
@@ -60,6 +64,8 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private readonly ConcurrentBag<InstallationInfo> _completedInstallationsInternal;
 
+        private int _cacheVersion;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager"/> class.
         /// </summary>
@@ -69,6 +75,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="memoryCache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="pluginManager">The <see cref="IPluginManager"/>.</param>
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -77,6 +84,7 @@ namespace Emby.Server.Implementations.Updates
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
+            IMemoryCache memoryCache,
             IPluginManager pluginManager)
         {
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
@@ -88,6 +96,7 @@ namespace Emby.Server.Implementations.Updates
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _config = config;
+            _memoryCache = memoryCache;
             _jsonSerializerOptions = JsonDefaults.Options;
             _pluginManager = pluginManager;
         }
@@ -171,20 +180,66 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
-            var result = new List<PackageInfo>();
-            foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
+            var enabledRepos = _config.Configuration.PluginRepositories
+                .Where(r => r.Enabled && r.Url is not null)
+                .ToArray();
+
+            if (enabledRepos.Length == 0)
             {
-                if (repository.Enabled && repository.Url is not null)
+                return Array.Empty<PackageInfo>();
+            }
+
+            var cacheVersion = _cacheVersion;
+            var cacheKey = "PluginCatalog-" + cacheVersion + "-" + string.Join('\n', enabledRepos.Select(r => (r.Name ?? string.Empty) + "|" + r.Url));
+
+            if (_memoryCache.TryGetValue<IReadOnlyList<PackageInfo>>(cacheKey, out var cached) && cached is not null)
+            {
+                return cached.ToList();
+            }
+
+            var fetchTasks = enabledRepos.Select(async repo =>
+            {
+                using var repoCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                repoCts.CancelAfter(TimeSpan.FromSeconds(20));
+
+                try
                 {
-                    // Where repositories have the same content, the details from the first is taken.
-                    foreach (var package in await GetPackages(repository.Name ?? "Unnamed Repo", repository.Url, true, cancellationToken).ConfigureAwait(true))
+                    return await GetPackages(
+                        repo.Name ?? "Unnamed Repo",
+                        repo.Url!,
+                        true,
+                        repoCts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (repoCts.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogWarning("Timeout fetching plugin manifest for {Repo}", repo.Url);
+                    return Array.Empty<PackageInfo>();
+                }
+            }).ToArray();
+
+            var repoResults = await Task.WhenAll(fetchTasks).ConfigureAwait(false);
+
+            // If the caller cancelled, Task.WhenAll already threw. This is just defensive.
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (await _cacheLock.LockAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (_memoryCache.TryGetValue<IReadOnlyList<PackageInfo>>(cacheKey, out cached) && cached is not null)
+                {
+                    return cached.ToList();
+                }
+
+                // Merge results sequentially (preserves existing deduplication logic).
+                var result = new List<PackageInfo>();
+                for (var i = 0; i < repoResults.Length; i++)
+                {
+                    foreach (var package in repoResults[i])
                     {
                         var existing = FilterPackages(result, package.Name, package.Id).FirstOrDefault();
 
-                        // Remove invalid versions from the valid package.
-                        for (var i = package.Versions.Count - 1; i >= 0; i--)
+                        for (var j = package.Versions.Count - 1; j >= 0; j--)
                         {
-                            var version = package.Versions[i];
+                            var version = package.Versions[j];
 
                             var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin is not null)
@@ -192,14 +247,12 @@ namespace Emby.Server.Implementations.Updates
                                 await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
-                            // Remove versions with a target ABI greater than the current application version.
                             if (Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
                             {
-                                package.Versions.RemoveAt(i);
+                                package.Versions.RemoveAt(j);
                             }
                         }
 
-                        // Don't add a package that doesn't have any compatible versions.
                         if (package.Versions.Count == 0)
                         {
                             continue;
@@ -207,7 +260,6 @@ namespace Emby.Server.Implementations.Updates
 
                         if (existing is not null)
                         {
-                            // Assumption is both lists are ordered, so slot these into the correct place.
                             MergeSortedList(existing.Versions, package.Versions);
                         }
                         else
@@ -216,9 +268,16 @@ namespace Emby.Server.Implementations.Updates
                         }
                     }
                 }
-            }
 
-            return result;
+                // Defensive clone: callers receive mutable PackageInfo/VersionInfo objects,
+                // so cache a deep copy to prevent external mutation from corrupting the cache.
+                var clonedResult = JsonSerializer.Deserialize<List<PackageInfo>>(
+                    JsonSerializer.Serialize(result, _jsonSerializerOptions),
+                    _jsonSerializerOptions)!;
+
+                _memoryCache.Set(cacheKey, clonedResult, TimeSpan.FromMinutes(5));
+                return clonedResult.ToList();
+            }
         }
 
         /// <inheritdoc />
@@ -326,6 +385,7 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
+                Interlocked.Increment(ref _cacheVersion);
 
                 if (isUpdate)
                 {
@@ -396,6 +456,7 @@ namespace Emby.Server.Implementations.Updates
 
             // Remove it the quick way for now
             _pluginManager.RemovePlugin(plugin);
+            Interlocked.Increment(ref _cacheVersion);
 
             _eventManager.Publish(new PluginUninstalledEventArgs(plugin.GetPluginInfo()));
 
@@ -434,6 +495,8 @@ namespace Emby.Server.Implementations.Updates
         {
             if (dispose)
             {
+                _cacheLock?.Dispose();
+
                 lock (_currentInstallationsLock)
                 {
                     foreach (var (info, token) in _currentInstallations)
