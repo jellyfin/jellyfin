@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
 
@@ -15,7 +16,7 @@ public interface IPeopleRepository
     /// </summary>
     /// <param name="filter">The query.</param>
     /// <returns>The list of people matching the filter.</returns>
-    IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter);
+    QueryResult<PersonInfo> GetPeople(InternalPeopleQuery filter);
 
     /// <summary>
     /// Updates the people.

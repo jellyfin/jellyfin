@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -30,7 +29,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
     /// <inheritdoc/>
-    public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
+    public QueryResult<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
@@ -48,20 +47,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.OrderBy(e => e.Name);
         }
 
-        if (filter.Limit > 0)
-        {
-            dbQuery = dbQuery.Take(filter.Limit);
-        }
-
-        return dbQuery.AsEnumerable().Select(Map).ToArray();
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
-    {
-        using var context = _dbProvider.CreateDbContext();
-        var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter).Select(e => e.Name).Distinct();
-
+        var count = dbQuery.Count();
         if (filter.StartIndex.HasValue && filter.StartIndex > 0)
         {
             dbQuery = dbQuery.Skip(filter.StartIndex.Value);
@@ -72,7 +58,18 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.ToArray();
+        return new QueryResult<PersonInfo>
+        {
+            StartIndex = filter.StartIndex ?? 0,
+            TotalRecordCount = count,
+            Items = dbQuery.AsEnumerable().Select(Map).ToArray(),
+        };
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter)
+    {
+        return GetPeople(filter).Items.Select(e => e.Name).ToArray();
     }
 
     /// <inheritdoc />

@@ -514,7 +514,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Person&gt;.</returns>
-        IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query);
+        QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.
