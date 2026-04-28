@@ -225,6 +225,7 @@
  - [bjorntp](https://github.com/bjorntp)
  - [martenumberto](https://github.com/martenumberto)
  - [ZeusCraft10](https://github.com/ZeusCraft10)
+ - [AliveDevil](https://github.com/AliveDevil)
  - [MarcoCoreDuo](https://github.com/MarcoCoreDuo)
  - [LiHRaM](https://github.com/LiHRaM)
  - [MSalman5230](https://github.com/MSalman5230)
