@@ -1132,11 +1132,6 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.Chapters))
-                {
-                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
-                }
-
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
                     var trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
@@ -1148,6 +1143,11 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 dto.ExtraType = video.ExtraType;
+            }
+
+            if (options.ContainsField(ItemFields.Chapters))
+            {
+                dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
             }
 
             if (options.ContainsField(ItemFields.MediaStreams))

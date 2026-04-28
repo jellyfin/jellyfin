@@ -260,6 +260,8 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
                     return PersonKind.Lyricist;
                 case "mus":
                     return PersonKind.AlbumArtist;
+                case "nrt":
+                    return PersonKind.Narrator;
                 case "oth":
                     return PersonKind.Unknown;
                 case "trl":

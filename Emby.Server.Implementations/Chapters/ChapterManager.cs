@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -232,12 +233,22 @@ public class ChapterManager : IChapterManager
     }
 
     /// <inheritdoc />
-    public void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters)
+    public bool Supports(BaseItem item)
+        => item is Video or Audio;
+
+    /// <inheritdoc />
+    public void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters)
     {
-        // Remove any chapters that are outside of the runtime of the video
-        var validChapters = chapters.Where(c => c.StartPositionTicks < video.RunTimeTicks).ToList();
-        _chapterRepository.SaveChapters(video.Id, validChapters);
-    }
+        if (!Supports(item))
+       {
+          _logger.LogWarning("Attempted to save chapters for unsupported item type {Type}: {Name} ({Id})", item.GetType().Name, item.Name, item.Id);
+          return;
+       }
+
+        // Remove any chapters that are outside of the runtime of the item
+        var validChapters = chapters.Where(c => c.StartPositionTicks < item.RunTimeTicks).ToList();
+        _chapterRepository.SaveChapters(item.Id, validChapters);
+}
 
     /// <inheritdoc />
     public ChapterInfo? GetChapter(Guid baseItemId, int index)
