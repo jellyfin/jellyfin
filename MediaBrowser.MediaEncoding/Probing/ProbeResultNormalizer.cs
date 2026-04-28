@@ -966,7 +966,24 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Get stream bitrate
             var bitrate = 0;
 
-            if (int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
+            // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
+            if (streamInfo.CodecType == CodecType.Audio
+                    || streamInfo.CodecType == CodecType.Video)
+            {
+                var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
+                var bytes = GetNumberOfBytesFromTags(streamInfo);
+                if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
+                {
+                    var bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
+                    if (bps > 0)
+                    {
+                        bitrate = bps;
+                    }
+                }
+            }
+
+            if (bitrate == 0
+                && int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
             {
                 bitrate = value;
             }
@@ -986,32 +1003,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (bitrate > 0)
             {
                 stream.BitRate = bitrate;
-            }
-
-            // Extract bitrate info from tag "BPS" if possible.
-            if (!stream.BitRate.HasValue
-                && (streamInfo.CodecType == CodecType.Audio
-                    || streamInfo.CodecType == CodecType.Video))
-            {
-                var bps = GetBPSFromTags(streamInfo);
-                if (bps > 0)
-                {
-                    stream.BitRate = bps;
-                }
-                else
-                {
-                    // Get average bitrate info from tag "NUMBER_OF_BYTES" and "DURATION" if possible.
-                    var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
-                    var bytes = GetNumberOfBytesFromTags(streamInfo);
-                    if (durationInSeconds is not null && durationInSeconds.Value >= 1 && bytes is not null)
-                    {
-                        bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
-                        if (bps > 0)
-                        {
-                            stream.BitRate = bps;
-                        }
-                    }
-                }
             }
 
             var disposition = streamInfo.Disposition;
@@ -1254,9 +1245,14 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (TimeSpan.TryParse(duration, out var parsedDuration))
+
+            if (!string.IsNullOrEmpty(duration))
             {
-                return parsedDuration.TotalSeconds;
+                duration = Regex.Replace(duration, @"(\.\d{7})\d+", "$1", RegexOptions.None, TimeSpan.FromSeconds(1));
+                if (TimeSpan.TryParse(duration, out var parsedDuration))
+                {
+                    return parsedDuration.TotalSeconds;
+                }
             }
 
             return null;
