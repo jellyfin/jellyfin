@@ -950,7 +950,7 @@ public class ItemsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
         }
@@ -1006,7 +1006,7 @@ public class ItemsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
         }

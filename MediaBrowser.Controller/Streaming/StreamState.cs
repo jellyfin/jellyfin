@@ -53,9 +53,7 @@ public class StreamState : EncodingJobInfo, IDisposable
     /// <summary>
     /// Gets or sets the direct stream provider.
     /// </summary>
-    /// <remarks>
-    /// Deprecated.
-    /// </remarks>
+    [Obsolete("Deprecated Feature")]
     public IDirectStreamProvider? DirectStreamProvider { get; set; }
 
     /// <summary>
