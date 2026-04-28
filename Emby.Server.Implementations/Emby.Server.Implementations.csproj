@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="BitFaster.Caching" />
     <PackageReference Include="DiscUtils.Udf" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
