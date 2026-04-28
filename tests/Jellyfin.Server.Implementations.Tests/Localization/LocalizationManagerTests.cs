@@ -242,6 +242,40 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        [InlineData("US:INVALID", "US")] // Colon separator, known country code, unknown rating
+        [InlineData("us:INVALID", "US")] // Colon separator, lowercase country code
+        [InlineData("DE-INVALID", "US")] // Hyphen separator, known language prefix, unknown rating
+        [InlineData("ca:INVALID", "US")] // Colon separator, known country code (Canada)
+        public async Task GetRatingScore_UnknownRatingWithKnownCountry_ReturnsNull(string rating, string countryCode)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingScore(rating));
+        }
+
+        [Theory]
+        [InlineData("us:R", "DE", 17, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("US:PG-13", "DE", 13, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("ca:R", "US", 18, 1)] // Colon separator, Canada country code, valid CA rating
+        public async Task GetRatingScore_ValidRatingWithCountrySeparator_ReturnsScore(string rating, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(rating);
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
         [InlineData("Default", "Default")]
         [InlineData("HeaderLiveTV", "Live TV")]
         public void GetLocalizedString_Valid_Success(string key, string expected)
