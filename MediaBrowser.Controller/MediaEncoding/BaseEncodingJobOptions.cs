@@ -193,6 +193,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed multiplier (e.g., 1.5 for 1.5x speed). Defaults to 1.0.</value>
+        public double? PlaybackSpeed { get; set; }
+
         public string GetOption(string qualifier, string name)
         {
             var value = GetOption(qualifier + "-" + name);

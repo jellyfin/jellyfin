@@ -2815,6 +2815,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        private static void AddAtempoFilters(List<string> filters, double speed)
+        {
+            // atempo supports 0.5-2.0 per instance; chain for values outside that range
+            var remaining = speed;
+            while (remaining > 2.0)
+            {
+                filters.Add("atempo=2.0");
+                remaining /= 2.0;
+            }
+
+            while (remaining < 0.5)
+            {
+                filters.Add("atempo=0.5");
+                remaining /= 0.5;
+            }
+
+            if (Math.Abs(remaining - 1.0) > 0.001)
+            {
+                filters.Add(string.Format(CultureInfo.InvariantCulture, "atempo={0:F4}", remaining));
+            }
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var channels = state.OutputAudioChannels;
@@ -2845,6 +2867,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                         CultureInfo.InvariantCulture,
                         "asetpts=PTS-{0}/TB",
                         Math.Round(seconds)));
+            }
+
+            // Add playback speed audio filter (atempo)
+            if (state.BaseRequest.PlaybackSpeed.HasValue)
+            {
+                var speed = Math.Clamp(state.BaseRequest.PlaybackSpeed.Value, 0.5, 3.0);
+                if (Math.Abs(speed - 1.0) > 0.001)
+                {
+                    AddAtempoFilters(filters, speed);
+                }
             }
 
             if (filters.Count > 0)
@@ -6197,6 +6229,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                     CultureInfo.InvariantCulture,
                     "fps={0}",
                     framerate.Value));
+            }
+
+            // Add playback speed video filter (setpts)
+            if (state.BaseRequest.PlaybackSpeed.HasValue && mainFilters is not null)
+            {
+                var speed = Math.Clamp(state.BaseRequest.PlaybackSpeed.Value, 0.5, 3.0);
+                if (Math.Abs(speed - 1.0) > 0.001)
+                {
+                    mainFilters.Add(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "setpts=PTS/{0:F4}",
+                        speed));
+                }
             }
 
             var mainStr = string.Empty;
