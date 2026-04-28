@@ -52,6 +52,9 @@ using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
@@ -82,6 +85,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
 
         /// <summary>
@@ -120,6 +124,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="directoryService">The directory service.</param>
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
+        /// <param name="mediaStreamRepository">The media stream repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -137,7 +142,8 @@ namespace Emby.Server.Implementations.Library
             NamingOptions namingOptions,
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -158,6 +164,7 @@ namespace Emby.Server.Implementations.Library
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
+            _mediaStreamRepository = mediaStreamRepository;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -213,6 +220,18 @@ namespace Emby.Server.Implementations.Library
         private ILibraryPostScanTask[] PostScanTasks { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the external item providers.
+        /// </summary>
+        /// <value>The external item providers.</value>
+        private IExternalItemProvider[] ExternalItemProviders { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the stream redirect providers.
+        /// </summary>
+        /// <value>The stream redirect providers.</value>
+        private IStreamRedirectProvider[] StreamRedirectProviders { get; set; } = [];
+
+        /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
@@ -248,12 +267,16 @@ namespace Emby.Server.Implementations.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postScanTasks">The post scan tasks.</param>
+        /// <param name="externalItemProviders">The external item providers.</param>
+        /// <param name="streamRedirectProviders">The stream redirect providers.</param>
         public void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postScanTasks)
+            IEnumerable<ILibraryPostScanTask> postScanTasks,
+            IEnumerable<IExternalItemProvider> externalItemProviders,
+            IEnumerable<IStreamRedirectProvider> streamRedirectProviders)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
@@ -261,6 +284,8 @@ namespace Emby.Server.Implementations.Library
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
             PostScanTasks = postScanTasks.ToArray();
+            ExternalItemProviders = externalItemProviders.ToArray();
+            StreamRedirectProviders = streamRedirectProviders.OrderBy(p => p.Order).ToArray();
         }
 
         /// <summary>
@@ -1196,18 +1221,274 @@ namespace Emby.Server.Implementations.Library
 
             await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
 
-            var innerProgress = new Progress<double>(pct => progress.Report(pct * 0.96));
+            // Budget: 2% per external provider, 4% for post-scan tasks, remainder for filesystem scan.
+            var externalBudget = ExternalItemProviders.Length * 2.0;
+            var postScanBudget = 4.0;
+            var fsBudget = 100.0 - externalBudget - postScanBudget;
+
+            var subProgress = new Progress<double>(pct => progress.Report(pct * fsBudget / 100.0));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(subProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            progress.Report(96);
+            progress.Report(fsBudget);
 
-            innerProgress = new Progress<double>(pct => progress.Report(96 + (pct * .04)));
+            subProgress = new Progress<double>(pct => progress.Report(fsBudget + (pct * externalBudget / 100.0)));
+            await SyncExternalItemProviders(subProgress, cancellationToken).ConfigureAwait(false);
 
-            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
+            progress.Report(fsBudget + externalBudget);
+
+            subProgress = new Progress<double>(pct => progress.Report(fsBudget + externalBudget + (pct * postScanBudget / 100.0)));
+            await RunPostScanTasks(subProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
+        }
+
+        private async Task SyncExternalItemProviders(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var numProviders = ExternalItemProviders.Length;
+            var numComplete = 0;
+
+            foreach (var provider in ExternalItemProviders)
+            {
+                var currentIndex = numComplete;
+                var subProgress = new Progress<double>(pct =>
+                    progress.Report((currentIndex + (pct / 100.0)) / numProviders * 100.0));
+
+                try
+                {
+                    if (!await provider.IsAvailableAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        _logger.LogWarning("External item provider {ProviderName} is unavailable, skipping sync", provider.Name);
+                    }
+                    else
+                    {
+                        var items = await provider.GetItemsAsync(cancellationToken).ConfigureAwait(false);
+                        await SyncExternalItemProvider(provider, items, subProgress, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error syncing external item provider {ProviderName}", provider.Name);
+                }
+
+                numComplete++;
+                progress.Report((double)numComplete / numProviders * 100.0);
+            }
+        }
+
+        private async Task SyncExternalItemProvider(IExternalItemProvider provider, IReadOnlyList<ExternalItemInfo> items, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var prefix = provider.Name + ":";
+
+            var existing = GetItemList(new InternalItemsQuery { ExternalProviderId = prefix })
+                .ToDictionary(i => i.ExternalProviderId!, StringComparer.OrdinalIgnoreCase);
+
+            // Cache ExternalProviderId → item.Id so parent linking can resolve without extra DB queries.
+            var idCache = new Dictionary<string, Guid>(existing.Count + items.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, item) in existing)
+            {
+                idCache[key] = item.Id;
+            }
+
+            var returnedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var numItems = items.Count;
+            var numComplete = 0;
+
+            foreach (var info in items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var providerId = prefix + info.ExternalId;
+                returnedKeys.Add(providerId);
+
+                if (existing.TryGetValue(providerId, out var existingItem))
+                {
+                    ApplyExternalItemInfo(existingItem, info, prefix, idCache);
+                    await UpdateItemAsync(existingItem, existingItem.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    if (info.MediaStreams.Count > 0)
+                    {
+                        _mediaStreamRepository.SaveMediaStreams(existingItem.Id, info.MediaStreams, cancellationToken);
+                    }
+                }
+                else
+                {
+                    var newItem = CreateExternalItem(info, providerId, prefix, idCache);
+                    if (newItem is not null)
+                    {
+                        CreateItem(newItem, null);
+                        idCache[providerId] = newItem.Id;
+                        if (info.MediaStreams.Count > 0)
+                        {
+                            _mediaStreamRepository.SaveMediaStreams(newItem.Id, info.MediaStreams, cancellationToken);
+                        }
+                    }
+                }
+
+                numComplete++;
+                progress.Report((double)numComplete / numItems * 100.0);
+            }
+
+            foreach (var (key, stale) in existing)
+            {
+                if (!returnedKeys.Contains(key))
+                {
+                    DeleteItem(stale, new DeleteOptions { DeleteFileLocation = false });
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<StreamRedirectResult?> GetStreamRedirectAsync(BaseItem item, CancellationToken cancellationToken)
+        {
+            foreach (var provider in StreamRedirectProviders)
+            {
+                var result = await provider.GetRedirectAsync(item, cancellationToken).ConfigureAwait(false);
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        private BaseItem? CreateExternalItem(ExternalItemInfo info, string providerId, string prefix, Dictionary<string, Guid> idCache)
+        {
+            BaseItem? item = info.ItemKind switch
+            {
+                BaseItemKind.Movie => new Movie(),
+                BaseItemKind.Episode => new Episode(),
+                BaseItemKind.Series => new Series(),
+                BaseItemKind.Season => new Season(),
+                BaseItemKind.Audio => new Audio(),
+                BaseItemKind.MusicAlbum => new MusicAlbum(),
+                _ => null
+            };
+
+            if (item is null)
+            {
+                _logger.LogWarning("Unsupported external item kind {Kind} from provider {Provider}", info.ItemKind, providerId);
+                return null;
+            }
+
+            item.Id = GetNewItemId(providerId, item.GetType());
+            item.ExternalProviderId = providerId;
+            item.ExternalId = info.ExternalId;
+            item.DateCreated = DateTime.UtcNow;
+            ApplyExternalItemInfo(item, info, prefix, idCache);
+            return item;
+        }
+
+        private void ApplyExternalItemInfo(BaseItem item, ExternalItemInfo info, string prefix, Dictionary<string, Guid> idCache)
+        {
+            item.Name = info.Name;
+            item.Overview = info.Overview;
+            item.OfficialRating = info.OfficialRating;
+            item.ProductionYear = info.ProductionYear;
+            item.RunTimeTicks = info.RunTimeTicks;
+            item.PremiereDate = info.PremiereDate;
+            item.EndDate = info.EndDate;
+            item.CommunityRating = info.CommunityRating;
+            item.CriticRating = info.CriticRating;
+            item.Tagline = info.Tagline;
+            item.Genres = info.Genres.ToArray();
+            item.Tags = info.Tags.ToArray();
+            item.Studios = info.Studios.ToArray();
+            item.OriginalTitle = info.OriginalTitle;
+            item.HomePageUrl = info.HomePageUrl;
+            item.ProductionLocations = info.ProductionLocations.ToArray();
+            item.ProviderIds = new Dictionary<string, string>(info.ProviderIds);
+            item.IndexNumber = info.IndexNumber;
+            item.ParentIndexNumber = info.ParentIndexNumber;
+            item.Path = info.Path;
+            item.Container = info.Container;
+
+            if (item is Series series)
+            {
+                if (!string.IsNullOrEmpty(info.SeriesStatus)
+                    && Enum.TryParse<SeriesStatus>(info.SeriesStatus, ignoreCase: true, out var status))
+                {
+                    series.Status = status;
+                }
+
+                series.DisplayOrder = info.DisplayOrder;
+            }
+
+            if (item is Movie movie)
+            {
+                movie.TmdbCollectionName = info.TmdbCollectionName;
+            }
+
+            if (item is Episode ep)
+            {
+                ep.IndexNumberEnd = info.IndexNumberEnd;
+                ep.AirsBeforeSeasonNumber = info.AirsBeforeSeasonNumber;
+                ep.AirsAfterSeasonNumber = info.AirsAfterSeasonNumber;
+                ep.AirsBeforeEpisodeNumber = info.AirsBeforeEpisodeNumber;
+            }
+
+            if (item is IHasArtist hasArtist && info.Artists.Count > 0)
+            {
+                hasArtist.Artists = info.Artists.ToArray();
+            }
+
+            if (item is IHasAlbumArtist hasAlbumArtist && info.AlbumArtists.Count > 0)
+            {
+                hasAlbumArtist.AlbumArtists = info.AlbumArtists.ToArray();
+            }
+
+            if (item is IHasSeries hasSeries && !string.IsNullOrEmpty(info.SeriesExternalId))
+            {
+                var seriesProviderId = prefix + info.SeriesExternalId;
+                if (idCache.TryGetValue(seriesProviderId, out var seriesId))
+                {
+                    hasSeries.SeriesId = seriesId;
+                    hasSeries.SeriesName = GetItemById(seriesId)?.Name;
+                }
+            }
+
+            if (item is Episode episode && !string.IsNullOrEmpty(info.SeasonExternalId))
+            {
+                var seasonProviderId = prefix + info.SeasonExternalId;
+                if (idCache.TryGetValue(seasonProviderId, out var seasonId))
+                {
+                    episode.SeasonId = seasonId;
+                }
+            }
+
+            SetOrClearImage(item, ImageType.Primary, 0, info.PrimaryImageUrl);
+            SetOrClearImage(item, ImageType.Logo, 0, info.LogoImageUrl);
+            SetOrClearImage(item, ImageType.Thumb, 0, info.ThumbImageUrl);
+            SetOrClearImage(item, ImageType.Banner, 0, info.BannerImageUrl);
+
+            // Sync backdrop list: set provided URLs, remove extras.
+            for (var i = 0; i < info.BackdropImageUrls.Count; i++)
+            {
+                item.SetImage(new ItemImageInfo { Path = info.BackdropImageUrls[i], Type = ImageType.Backdrop }, i);
+            }
+
+            var existingBackdrops = item.ImageInfos.Where(i => i.Type == ImageType.Backdrop).ToList();
+            for (var i = existingBackdrops.Count - 1; i >= info.BackdropImageUrls.Count; i--)
+            {
+                item.RemoveImage(existingBackdrops[i]);
+            }
+        }
+
+        private static void SetOrClearImage(BaseItem item, ImageType type, int index, string? url)
+        {
+            if (!string.IsNullOrEmpty(url))
+            {
+                item.SetImage(new ItemImageInfo { Path = url, Type = type }, index);
+            }
+            else
+            {
+                var existing = item.GetImageInfo(type, index);
+                if (existing is not null)
+                {
+                    item.RemoveImage(existing);
+                }
+            }
         }
 
         /// <summary>

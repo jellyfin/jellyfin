@@ -676,7 +676,9 @@ namespace Emby.Server.Implementations
                 GetExports<IItemResolver>(),
                 GetExports<IIntroProvider>(),
                 GetExports<IBaseItemComparer>(),
-                GetExports<ILibraryPostScanTask>());
+                GetExports<ILibraryPostScanTask>(),
+                GetExports<IExternalItemProvider>(),
+                GetExports<IStreamRedirectProvider>());
 
             Resolve<IProviderManager>().AddParts(
                 GetExports<IImageProvider>(),

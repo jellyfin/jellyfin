@@ -114,6 +114,8 @@ public class BaseItemEntity
 
     public string? ExternalSeriesId { get; set; }
 
+    public string? ExternalProviderId { get; set; }
+
     public string? Tagline { get; set; }
 
     public string? ProductionLocations { get; set; }

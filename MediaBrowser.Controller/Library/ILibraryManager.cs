@@ -221,12 +221,24 @@ namespace MediaBrowser.Controller.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postScanTasks">The post scan tasks.</param>
+        /// <param name="externalItemProviders">The external item providers.</param>
+        /// <param name="streamRedirectProviders">The stream redirect providers.</param>
         void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postScanTasks);
+            IEnumerable<ILibraryPostScanTask> postScanTasks,
+            IEnumerable<IExternalItemProvider> externalItemProviders,
+            IEnumerable<IStreamRedirectProvider> streamRedirectProviders);
+
+        /// <summary>
+        /// Returns a redirect result for the given external item, or <c>null</c> if no registered provider handles it.
+        /// </summary>
+        /// <param name="item">The item being streamed.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A <see cref="StreamRedirectResult"/>, or <c>null</c>.</returns>
+        Task<StreamRedirectResult?> GetStreamRedirectAsync(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sorts the specified items.

@@ -368,6 +368,18 @@ public class VideosController : BaseJellyfinApiController
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (redirect is not null)
+            {
+                cancellationTokenSource.Dispose();
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
+            }
+        }
+
         var streamingRequest = new VideoRequestDto
         {
             Id = itemId,

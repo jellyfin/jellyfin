@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.Dto
                 ServerId = _appHost.SystemId
             };
 
-            if (item.SourceType == SourceType.Channel)
+            if (item.SourceType is SourceType.Channel or SourceType.External)
             {
                 dto.SourceType = item.SourceType.ToString();
             }
