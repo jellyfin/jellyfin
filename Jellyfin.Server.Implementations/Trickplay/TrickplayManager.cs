@@ -198,13 +198,13 @@ public class TrickplayManager : ITrickplayManager
             // Cleanup old trickplay files
             if (Directory.Exists(trickplayDirectory))
             {
-                var existingFolders = Directory.GetDirectories(trickplayDirectory).ToList();
+                var existingFolders = Directory.GetDirectories(trickplayDirectory);
                 var trickplayInfos = await dbContext.TrickplayInfos
                         .AsNoTracking()
                         .Where(i => i.ItemId.Equals(video.Id))
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
-                var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia)).ToList();
+                var expectedFolders = trickplayInfos.Select(i => GetTrickplayDirectory(video, i.TileWidth, i.TileHeight, i.Width, saveWithMedia));
                 var foldersToRemove = existingFolders.Except(expectedFolders);
                 foreach (var folder in foldersToRemove)
                 {
