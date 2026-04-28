@@ -64,6 +64,7 @@
     <ProjectReference Include="..\src\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
     <ProjectReference Include="..\src\Jellyfin.LiveTv\Jellyfin.LiveTv.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
+    <ProjectReference Include="..\src\Jellyfin.MediaEncoding.Keyframes\Jellyfin.MediaEncoding.Keyframes.csproj" />
     <ProjectReference Include="..\src\Jellyfin.MediaEncoding.Hls\Jellyfin.MediaEncoding.Hls.csproj" />
     <ProjectReference Include="..\src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj" />
   </ItemGroup>
