@@ -312,7 +312,7 @@ namespace Jellyfin.Server.Extensions
                 return;
             }
 
-            if (prefixLength == NetworkConstants.MinimumIPv4PrefixSize)
+            if ((addr.AddressFamily == AddressFamily.InterNetwork && prefixLength == NetworkConstants.MinimumIPv4PrefixSize) || (addr.AddressFamily == AddressFamily.InterNetworkV6 && prefixLength == NetworkConstants.MinimumIPv6PrefixSize))
             {
                 options.KnownProxies.Add(addr);
             }
