@@ -42,6 +42,7 @@
  - [dmitrylyzo](https://github.com/dmitrylyzo)
  - [DMouse10462](https://github.com/DMouse10462)
  - [DrPandemic](https://github.com/DrPandemic)
+ - [dsmaugy](https://github.com/dsmaugy)
  - [eglia](https://github.com/eglia)
  - [EgorBakanov](https://github.com/EgorBakanov)
  - [EraYaN](https://github.com/EraYaN)
