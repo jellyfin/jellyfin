@@ -6,9 +6,9 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
     /// <summary>
-    /// External id for a TMDb series.
+    /// External id for a TMDb episode.
     /// </summary>
-    public class TmdbSeriesExternalId : IExternalId
+    public class TmdbEpisodeExternalId : IExternalId
     {
         /// <inheritdoc />
         public string ProviderName => TmdbUtils.ProviderName;
@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         public string Key => MetadataProvider.Tmdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Episode;
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Series;
+        public bool Supports(IHasProviderIds item) => item is Episode;
     }
 }
