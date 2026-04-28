@@ -25,12 +25,12 @@ public class ManagedFileSystemTests
     public void MoveDirectory_SameFileSystem_Correct()
         => MoveDirectoryInternal();
 
-    [SkippableFact]
+    [Fact]
     public void MoveDirectory_DifferentFileSystem_Correct()
     {
         const string DestinationParent = "/dev/shm";
 
-        Skip.IfNot(Directory.Exists(DestinationParent));
+        Assert.SkipUnless(Directory.Exists(DestinationParent), $"{DestinationParent} is not available");
 
         MoveDirectoryInternal(DestinationParent);
     }
@@ -57,7 +57,7 @@ public class ManagedFileSystemTests
         Directory.Delete(destinationDir, true);
     }
 
-    [SkippableTheory]
+    [Theory]
     [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Beethoven/Misc/Moonlight Sonata.mp3")]
     [InlineData("/Volumes/Library/Sample/Music/Playlists/", "../../Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Beethoven/Misc/Moonlight Sonata.mp3")]
     [InlineData("/Volumes/Library/Sample/Music/Playlists/", "Beethoven/Misc/Moonlight Sonata.mp3", "/Volumes/Library/Sample/Music/Playlists/Beethoven/Misc/Moonlight Sonata.mp3")]
@@ -67,13 +67,13 @@ public class ManagedFileSystemTests
         string filePath,
         string expectedAbsolutePath)
     {
-        Skip.If(OperatingSystem.IsWindows());
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Unix-only test");
 
         var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
         Assert.Equal(expectedAbsolutePath, generatedPath);
     }
 
-    [SkippableTheory]
+    [Theory]
     [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Beethoven\Misc\Moonlight Sonata.mp3")]
     [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"..\..\Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Beethoven\Misc\Moonlight Sonata.mp3")]
     [InlineData(@"C:\\Volumes\Library\Sample\Music\Playlists\", @"Beethoven\Misc\Moonlight Sonata.mp3", @"C:\Volumes\Library\Sample\Music\Playlists\Beethoven\Misc\Moonlight Sonata.mp3")]
@@ -83,7 +83,7 @@ public class ManagedFileSystemTests
         string filePath,
         string expectedAbsolutePath)
     {
-        Skip.IfNot(OperatingSystem.IsWindows());
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows-only test");
 
         var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
 
@@ -100,10 +100,10 @@ public class ManagedFileSystemTests
         Assert.Equal(expectedFileName, _sut.GetValidFilename(filename));
     }
 
-    [SkippableFact]
+    [Fact]
     public void GetFileInfo_DanglingSymlink_ExistsFalse()
     {
-        Skip.If(OperatingSystem.IsWindows());
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Unix-only test");
 
         string testFileDir = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
         string testFileName = Path.Combine(testFileDir, Path.GetRandomFileName() + "-danglingsym.link");

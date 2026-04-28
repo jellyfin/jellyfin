@@ -51,7 +51,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(25, packages.Length);
         }
@@ -62,7 +63,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             packages = _installationManager.FilterPackages(packages, "Anime").ToArray();
             Assert.Single(packages);
@@ -74,7 +76,8 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/files/plugin/manifest.json",
-                false);
+                false,
+                TestContext.Current.CancellationToken);
 
             packages = _installationManager.FilterPackages(packages, id: new Guid("a4df60c5-6ab4-412a-8f79-2cab93fb2bc5")).ToArray();
             Assert.Single(packages);

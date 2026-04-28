@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
@@ -26,19 +27,24 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly ILogger<SubtitleScheduledTask> _logger;
         private readonly ILocalizationManager _localization;
+        private readonly ISubtitleProvider[] _subtitleProviders;
 
         public SubtitleScheduledTask(
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             ILogger<SubtitleScheduledTask> logger,
-            ILocalizationManager localization)
+            ILocalizationManager localization,
+            IEnumerable<ISubtitleProvider> subtitleProviders)
         {
             _libraryManager = libraryManager;
             _config = config;
             _subtitleManager = subtitleManager;
             _logger = logger;
             _localization = localization;
+            _subtitleProviders = subtitleProviders
+                .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
+                .ToArray();
         }
 
         public string Name => _localization.GetLocalizedString("TaskDownloadMissingSubtitles");
@@ -73,6 +79,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (libraryOptions.SubtitleDownloadLanguages is null)
                 {
                     // Skip this library if subtitle download languages are not configured
+                    continue;
+                }
+
+                if (_subtitleProviders.All(provider => libraryOptions.DisabledSubtitleFetchers.Contains(provider.Name, StringComparer.OrdinalIgnoreCase)))
+                {
+                    // Skip this library if all subtitle providers are disabled
                     continue;
                 }
 
