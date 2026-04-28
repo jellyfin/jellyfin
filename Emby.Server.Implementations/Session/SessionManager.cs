@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (session is null)
             {
-               return;
+                return;
             }
 
             if (string.IsNullOrEmpty(info.MediaSourceId))

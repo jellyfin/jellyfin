@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library
                         '[' => ']',
                         '(' => ')',
                         '{' => '}',
-                         _ => '\0'
+                        _ => '\0'
                     };
                     if (attributeCloser != '\0' && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
                     {

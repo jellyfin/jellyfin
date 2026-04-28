@@ -569,7 +569,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = i.Item2[0];
             var childCount = 0;
 
-            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum || i.Item1 is Series ))
+            if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum || i.Item1 is Series))
             {
                 item = i.Item1;
                 childCount = i.Item2.Count;

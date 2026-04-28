@@ -19,7 +19,7 @@ public class MusicBrainzTrackExternalUrlProvider : IExternalUrlProvider
     {
         if (item is Audio)
         {
-        if (item.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out var externalId))
+            if (item.TryGetProviderId(MetadataProvider.MusicBrainzTrack, out var externalId))
             {
                 yield return Plugin.Instance!.Configuration.Server + $"/track/{externalId}";
             }

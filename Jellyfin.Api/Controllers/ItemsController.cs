@@ -266,7 +266,7 @@ public class ItemsController : BaseJellyfinApiController
             && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
             && !fields.Contains(ItemFields.Tags))
         {
-            fields = [..fields, ItemFields.Tags];
+            fields = [.. fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
