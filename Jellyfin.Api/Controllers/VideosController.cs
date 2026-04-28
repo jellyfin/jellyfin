@@ -212,6 +212,8 @@ public class VideosController : BaseJellyfinApiController
                     return 0;
                 })
                 .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
+                .ThenByDescending(i => i.GetDefaultVideoStream()?.BitRate ?? 0)
+                .ThenByDescending(i => GetSourceQualityScore(i.Path))
                 .First();
         }
 
@@ -655,5 +657,38 @@ public class VideosController : BaseJellyfinApiController
             context,
             streamOptions,
             enableAudioVbrEncoding);
+    }
+
+    /// <summary>
+    /// Gets a quality score from the file path based on source type keywords.
+    /// Higher score = higher quality source.
+    /// </summary>
+    private static int GetSourceQualityScore(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return 0;
+        }
+
+        var filename = System.IO.Path.GetFileNameWithoutExtension(path.AsSpan());
+
+        if (filename.Contains("remux", StringComparison.OrdinalIgnoreCase))
+        {
+            return 3;
+        }
+
+        if (filename.Contains("bluray", StringComparison.OrdinalIgnoreCase)
+            || filename.Contains("blu-ray", StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        if (filename.Contains("web-dl", StringComparison.OrdinalIgnoreCase)
+            || filename.Contains("webdl", StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        return 0;
     }
 }
