@@ -505,6 +505,25 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
+        /// Resolves the display dimensions the transcode will produce and writes them onto
+        /// <paramref name="state"/> via <see cref="EncodingJobInfo.ResolvedOutputWidth"/> /
+        /// <see cref="EncodingJobInfo.ResolvedOutputHeight"/>.
+        /// </summary>
+        /// <param name="state">The encoding state to mutate.</param>
+        /// <param name="options">Encoding options.</param>
+        public void ResolveOutputDimensions(EncodingJobInfo state, EncodingOptions options)
+        {
+            var videoEncoder = GetVideoEncoder(state, options);
+            if (string.IsNullOrEmpty(videoEncoder))
+            {
+                return;
+            }
+
+            var hasHardwareDecoder = !string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
+            OutputDimensionResolver.Resolve(state, options, videoEncoder, hasHardwareDecoder);
+        }
+
+        /// <summary>
         /// Gets the user agent param.
         /// </summary>
         /// <param name="state">The state.</param>
@@ -2934,7 +2953,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Enforces the resolution limit.
         /// </summary>
         /// <param name="state">The state.</param>
-        public void EnforceResolutionLimit(EncodingJobInfo state)
+        public static void EnforceResolutionLimit(EncodingJobInfo state)
         {
             var videoRequest = state.BaseRequest;
 
@@ -3387,103 +3406,79 @@ namespace MediaBrowser.Controller.MediaEncoding
             int? requestedMaxWidth,
             int? requestedMaxHeight)
         {
-            var isV4l2 = string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
-            var isMjpeg = videoEncoder is not null && videoEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
-            var scaleVal = isV4l2 ? 64 : 2;
-            var targetAr = isMjpeg ? "(a*sar)" : "a"; // manually calculate AR when using mjpeg encoder
+            var decision = ScaleBranching.DecideSwScale(
+                videoEncoder,
+                threedFormat,
+                requestedWidth,
+                requestedHeight,
+                requestedMaxWidth,
+                requestedMaxHeight);
 
-            // If fixed dimensions were supplied
-            if (requestedWidth.HasValue && requestedHeight.HasValue)
+            switch (decision.Branch)
             {
-                if (isV4l2)
-                {
-                    var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
-                    var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
-
+                case SwScaleBranch.FixedWHv4l2:
                     return string.Format(
-                            CultureInfo.InvariantCulture,
-                            "scale=trunc({0}/64)*64:trunc({1}/2)*2",
-                            widthParam,
-                            heightParam);
-                }
+                        CultureInfo.InvariantCulture,
+                        "scale=trunc({0}/64)*64:trunc({1}/2)*2",
+                        requestedWidth.Value.ToString(CultureInfo.InvariantCulture),
+                        requestedHeight.Value.ToString(CultureInfo.InvariantCulture));
 
-                return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
-            }
+                case SwScaleBranch.FixedWH:
+                    return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
 
-            // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
+                case SwScaleBranch.MaxWMaxH:
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"scale=trunc(min(max(iw\,ih*{3})\,min({0}\,{1}*{3}))/{2})*{2}:trunc(min(max(iw/{3}\,ih)\,min({0}/{3}\,{1}))/2)*2",
+                        requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture),
+                        requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture),
+                        decision.ScaleVal,
+                        decision.TargetArExpression);
 
-            if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
-            {
-                var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
-                var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
-
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*{3})\,min({0}\,{1}*{3}))/{2})*{2}:trunc(min(max(iw/{3}\,ih)\,min({0}/{3}\,{1}))/2)*2",
-                    maxWidthParam,
-                    maxHeightParam,
-                    scaleVal,
-                    targetAr);
-            }
-
-            // If a fixed width was requested
-            if (requestedWidth.HasValue)
-            {
-                if (threedFormat.HasValue)
-                {
-                    // This method can handle 0 being passed in for the requested height
+                case SwScaleBranch.FixedW3D:
+                    // GetFixedSwScaleFilter tolerates 0 for the height parameter in 3D branches.
                     return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, 0);
-                }
 
-                var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
+                case SwScaleBranch.FixedW:
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        "scale={0}:trunc(ow/{1}/2)*2",
+                        requestedWidth.Value.ToString(CultureInfo.InvariantCulture),
+                        decision.TargetArExpression);
 
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    "scale={0}:trunc(ow/{1}/2)*2",
-                    widthParam,
-                    targetAr);
+                case SwScaleBranch.FixedH:
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        "scale=trunc(oh*{2}/{1})*{1}:{0}",
+                        requestedHeight.Value.ToString(CultureInfo.InvariantCulture),
+                        decision.ScaleVal,
+                        decision.TargetArExpression);
+
+                case SwScaleBranch.MaxW:
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"scale=trunc(min(max(iw\,ih*{2})\,{0})/{1})*{1}:trunc(ow/{2}/2)*2",
+                        requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture),
+                        decision.ScaleVal,
+                        decision.TargetArExpression);
+
+                case SwScaleBranch.MaxH:
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"scale=trunc(oh*{2}/{1})*{1}:min(max(iw/{2}\,ih)\,{0})",
+                        requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture),
+                        decision.ScaleVal,
+                        decision.TargetArExpression);
+
+                case SwScaleBranch.None:
+                    return string.Empty;
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(videoEncoder),
+                        decision.Branch,
+                        "Unhandled SwScaleBranch value.");
             }
-
-            // If a fixed height was requested
-            if (requestedHeight.HasValue)
-            {
-                var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
-
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    "scale=trunc(oh*{2}/{1})*{1}:{0}",
-                    heightParam,
-                    scaleVal,
-                    targetAr);
-            }
-
-            // If a max width was requested
-            if (requestedMaxWidth.HasValue)
-            {
-                var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
-
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"scale=trunc(min(max(iw\,ih*{2})\,{0})/{1})*{1}:trunc(ow/{2}/2)*2",
-                    maxWidthParam,
-                    scaleVal,
-                    targetAr);
-            }
-
-            // If a max height was requested
-            if (requestedMaxHeight.HasValue)
-            {
-                var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
-
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"scale=trunc(oh*{2}/{1})*{1}:min(max(iw/{2}\,ih)\,{0})",
-                    maxHeightParam,
-                    scaleVal,
-                    targetAr);
-            }
-
-            return string.Empty;
         }
 
         private static string GetFixedSwScaleFilter(Video3DFormat? threedFormat, int requestedWidth, int requestedHeight)
@@ -3506,7 +3501,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to requestedWidth.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
-                        filter = @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw:ih/2:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     case Video3DFormat.FullTopAndBottom:
@@ -6348,7 +6343,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">The encoding job info.</param>
         /// <param name="options">The encoding options.</param>
         /// <returns>The option string or null if none available.</returns>
-        protected string GetHardwareVideoDecoder(EncodingJobInfo state, EncodingOptions options)
+        public string GetHardwareVideoDecoder(EncodingJobInfo state, EncodingOptions options)
         {
             var videoStream = state.VideoStream;
             var mediaSource = state.MediaSource;

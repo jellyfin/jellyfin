@@ -553,10 +553,16 @@ namespace MediaBrowser.Model.Entities
         public MediaStreamType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the aspect ratio.
+        /// Gets or sets the display aspect ratio.
         /// </summary>
         /// <value>The aspect ratio.</value>
         public string AspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sample aspect ratio (pixel shape).
+        /// Format: "N:D" (e.g. "1:1" for square pixels, "32:27" for DVD widescreen).
+        /// </summary>
+        public string SampleAspectRatio { get; set; }
 
         /// <summary>
         /// Gets or sets the index.

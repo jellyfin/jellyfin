@@ -115,6 +115,7 @@ public class MediaStreamRepository : IMediaStreamRepository
         dto.ChannelLayout = entity.ChannelLayout;
         dto.Profile = entity.Profile;
         dto.AspectRatio = entity.AspectRatio;
+        dto.SampleAspectRatio = entity.SampleAspectRatio;
         dto.Path = RestorePath(entity.Path);
         dto.IsInterlaced = entity.IsInterlaced.GetValueOrDefault();
         dto.BitRate = entity.BitRate;
@@ -190,6 +191,7 @@ public class MediaStreamRepository : IMediaStreamRepository
             ChannelLayout = dto.ChannelLayout,
             Profile = dto.Profile,
             AspectRatio = dto.AspectRatio,
+            SampleAspectRatio = dto.SampleAspectRatio,
             Path = GetPathToSave(dto.Path) ?? dto.Path,
             IsInterlaced = dto.IsInterlaced,
             BitRate = dto.BitRate,
