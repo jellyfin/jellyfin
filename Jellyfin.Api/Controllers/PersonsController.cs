@@ -22,6 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// Persons controller.
 /// </summary>
 [Authorize]
+[Tags("Person")]
 public class PersonsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

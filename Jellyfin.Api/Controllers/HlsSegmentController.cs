@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers;
 /// The hls segment controller.
 /// </summary>
 [Route("")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class HlsSegmentController : BaseJellyfinApiController
 {
     private readonly IFileSystem _fileSystem;

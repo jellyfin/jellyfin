@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
@@ -19,6 +18,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize(Policy = Policies.RequiresElevation)]
+[Tags("Plugin")]
 public class PackageController : BaseJellyfinApiController
 {
     private readonly IInstallationManager _installationManager;
