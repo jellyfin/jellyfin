@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
@@ -43,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
         private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly IPathManager _pathManager;
 
         public FFProbeVideoInfo(
             ILogger<FFProbeVideoInfo> logger,
@@ -57,7 +60,8 @@ namespace MediaBrowser.Providers.MediaInfo
             AudioResolver audioResolver,
             SubtitleResolver subtitleResolver,
             IMediaAttachmentRepository mediaAttachmentRepository,
-            IMediaStreamRepository mediaStreamRepository)
+            IMediaStreamRepository mediaStreamRepository,
+            IPathManager pathManager)
         {
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
@@ -72,6 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleResolver = subtitleResolver;
             _mediaAttachmentRepository = mediaAttachmentRepository;
             _mediaStreamRepository = mediaStreamRepository;
+            _pathManager = pathManager;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -195,7 +200,24 @@ namespace MediaBrowser.Providers.MediaInfo
             ChapterInfo[] chapters;
 
             // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
+            var oldExternalSubtitleFiles = new HashSet<string>(video.SubtitleFiles, StringComparer.OrdinalIgnoreCase);
             await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            // New external subtitles will offset the embedded subtitle indices and cause the cache folder to be stale
+            var newExternalSubtitleFiles = mediaStreams
+                .Where(s => s.IsExternal && s.Type == MediaStreamType.Subtitle)
+                .Select(s => s.Path)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (!oldExternalSubtitleFiles.SetEquals(newExternalSubtitleFiles))
+            {
+                var cacheFolder = _pathManager.GetSubtitleFolderPath(video.Id.ToString());
+                if (Directory.Exists(cacheFolder))
+                {
+                    _logger.LogInformation("External subtitles changed for {VideoPath}, clearing subtitle cache at {CacheFolder}", video.Path, cacheFolder);
+                    Directory.Delete(cacheFolder, true);
+                }
+            }
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
