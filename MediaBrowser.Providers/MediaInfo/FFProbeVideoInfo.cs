@@ -84,67 +84,67 @@ namespace MediaBrowser.Providers.MediaInfo
 
             Model.MediaInfo.MediaInfo? mediaInfoResult = null;
 
-            if (!item.IsShortcut || options.EnableRemoteContentProbe)
+            try
             {
-                if (item.VideoType == VideoType.Dvd)
+                if (!item.IsShortcut || options.EnableRemoteContentProbe)
                 {
-                    // Get list of playable .vob files
-                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null);
-
-                    // Return if no playable .vob files are found
-                    if (vobs.Count == 0)
+                    if (item.VideoType == VideoType.Dvd)
                     {
-                        _logger.LogError("No playable .vob files found in DVD structure, skipping FFprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
+                        var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null);
 
-                    // Fetch metadata of first .vob file
-                    mediaInfoResult = await GetMediaInfo(
-                        new Video
+                        if (vobs.Count == 0)
                         {
-                            Path = vobs[0]
-                        },
-                        cancellationToken).ConfigureAwait(false);
+                            _logger.LogError("No playable .vob files found in DVD structure, skipping FFprobe.");
+                            return ItemUpdateType.MetadataImport;
+                        }
 
-                    // Sum up the runtime of all .vob files skipping the first .vob
-                    for (var i = 1; i < vobs.Count; i++)
-                    {
-                        var tmpMediaInfo = await GetMediaInfo(
+                        mediaInfoResult = await GetMediaInfo(
                             new Video
                             {
-                                Path = vobs[i]
+                                Path = vobs[0]
                             },
                             cancellationToken).ConfigureAwait(false);
 
-                        mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
-                    }
-                }
-                else if (item.VideoType == VideoType.BluRay)
-                {
-                    // Get BD disc information
-                    blurayDiscInfo = GetBDInfo(item.Path);
-
-                    // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
-                    {
-                        _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
-
-                    // Fetch metadata of first .m2ts file
-                    mediaInfoResult = await GetMediaInfo(
-                        new Video
+                        for (var i = 1; i < vobs.Count; i++)
                         {
-                            Path = blurayDiscInfo.Files[0]
-                        },
-                        cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
-                }
+                            var tmpMediaInfo = await GetMediaInfo(
+                                new Video
+                                {
+                                    Path = vobs[i]
+                                },
+                                cancellationToken).ConfigureAwait(false);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                            mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
+                        }
+                    }
+                    else if (item.VideoType == VideoType.BluRay)
+                    {
+                        blurayDiscInfo = GetBDInfo(item.Path);
+
+                        if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0)
+                        {
+                            _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
+                            return ItemUpdateType.MetadataImport;
+                        }
+
+                        mediaInfoResult = await GetMediaInfo(
+                            new Video
+                            {
+                                Path = blurayDiscInfo.Files[0]
+                            },
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+            catch (FfmpegException ex) when (ex.Message.Contains("Permission denied", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(ex, "Skipping FFprobe for inaccessible media file {Path}", item.Path);
             }
 
             await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using DotNet.Globbing;
 
 namespace Emby.Server.Implementations.Library
@@ -8,6 +9,8 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public static class IgnorePatterns
     {
+        private static readonly ConcurrentDictionary<string, bool> _cache = new();
+
         /// <summary>
         /// Files matching these glob patterns will be ignored.
         /// </summary>
@@ -135,16 +138,62 @@ namespace Emby.Server.Implementations.Library
         /// <returns>Whether to ignore the path.</returns>
         public static bool ShouldIgnore(ReadOnlySpan<char> path)
         {
+            var pathString = path.ToString();
+            if (_cache.TryGetValue(pathString, out var cached))
+            {
+                return cached;
+            }
+
+            if (!MightMatchIgnorePattern(path))
+            {
+                return _cache[pathString] = false;
+            }
+
             int len = _globs.Length;
             for (int i = 0; i < len; i++)
             {
                 if (_globs[i].IsMatch(path))
                 {
-                    return true;
+                    return _cache[pathString] = true;
                 }
             }
 
-            return false;
+            return _cache[pathString] = false;
+        }
+
+        private static bool MightMatchIgnorePattern(ReadOnlySpan<char> path)
+        {
+            if (path.StartsWith(".") || path.Contains("/.", StringComparison.Ordinal) || path.Contains("\\.", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return path.Contains("metadata", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("sample", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("minta", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("trickplay", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("TempRec", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("TempSBE", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("eaDir", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("recycle", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("thumb", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("grab", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("zfs", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("small.jpg", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("albumart.jpg", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("thumbs.db", StringComparison.OrdinalIgnoreCase)
+                || path.Contains(".bts", StringComparison.OrdinalIgnoreCase)
+                || path.Contains(".sync", StringComparison.OrdinalIgnoreCase)
+                || path.Contains(".actors", StringComparison.OrdinalIgnoreCase)
+                || path.Contains(".wd_tv", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("lost+found", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("subs", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("snapshot", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("System Volume Information", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("ps3_update", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("ps3_vprm", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("extrafanart", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("extrathumbs", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -169,21 +169,24 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var totalItems = items.Count;
             var numComplete = 0;
-
             var childUpdateType = ItemUpdateType.None;
+            var parallelism = Math.Max(2, Environment.ProcessorCount / 4);
+            var updateLock = new object();
 
-            foreach (var item in items)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            await Parallel.ForEachAsync(
+                items,
+                new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken },
+                async (item, ct) =>
+                {
+                    var updateType = await item.RefreshMetadata(refreshOptions, ct).ConfigureAwait(false);
+                    lock (updateLock)
+                    {
+                        childUpdateType = childUpdateType | updateType;
+                    }
 
-                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                childUpdateType = childUpdateType | updateType;
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 95);
-            }
+                    var current = Interlocked.Increment(ref numComplete);
+                    progress.Report((double)current / totalItems * 95);
+                }).ConfigureAwait(false);
 
             var parentRefreshOptions = refreshOptions;
             if (childUpdateType > ItemUpdateType.None)

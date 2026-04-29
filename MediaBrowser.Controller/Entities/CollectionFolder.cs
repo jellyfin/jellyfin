@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -324,6 +325,41 @@ namespace MediaBrowser.Controller.Entities
         protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, bool allowRemoveRoot, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        public override int GetChildCount(User user)
+        {
+            var physicalFolderIds = PhysicalFolderIds;
+            if (physicalFolderIds.Length == 0)
+            {
+                return 0;
+            }
+
+            BaseItemKind[] includeItemTypes = CollectionType switch
+            {
+                Jellyfin.Data.Enums.CollectionType.movies => [BaseItemKind.Movie],
+                Jellyfin.Data.Enums.CollectionType.tvshows => [BaseItemKind.Series],
+                Jellyfin.Data.Enums.CollectionType.music => [BaseItemKind.MusicAlbum],
+                _ => []
+            };
+
+            if (includeItemTypes.Length == 0)
+            {
+                return base.GetChildCount(user);
+            }
+
+            return LibraryManager.GetCount(new InternalItemsQuery(user)
+            {
+                AncestorIds = physicalFolderIds,
+                IncludeItemTypes = includeItemTypes,
+                EnableGroupByMetadataKey = CollectionType == Jellyfin.Data.Enums.CollectionType.movies,
+                IsVirtualItem = false,
+                Limit = 0,
+                DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                }
+            });
         }
 
         public IEnumerable<BaseItem> GetActualChildren()

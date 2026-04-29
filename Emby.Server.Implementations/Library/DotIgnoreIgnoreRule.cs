@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
@@ -14,19 +15,26 @@ namespace Emby.Server.Implementations.Library;
 public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 {
     private static readonly bool IsWindows = OperatingSystem.IsWindows();
+    private static readonly ConcurrentDictionary<string, bool> _directoryHasIgnoreCache = new();
+    private static readonly ConcurrentDictionary<string, FileInfo?> _ignoreFileCache = new();
+    private static readonly ConcurrentDictionary<string, string> _ignoreContentCache = new();
 
     private static FileInfo? FindIgnoreFile(DirectoryInfo directory)
     {
-        for (var current = directory; current is not null; current = current.Parent)
+        return _ignoreFileCache.GetOrAdd(directory.FullName, dir =>
         {
-            var ignorePath = Path.Join(current.FullName, ".ignore");
-            if (File.Exists(ignorePath))
+            for (var current = new DirectoryInfo(dir); current is not null; current = current.Parent)
             {
-                return new FileInfo(ignorePath);
+                var ignorePath = Path.Join(current.FullName, ".ignore");
+                var hasIgnore = _directoryHasIgnoreCache.GetOrAdd(current.FullName, _ => File.Exists(ignorePath));
+                if (hasIgnore)
+                {
+                    return new FileInfo(ignorePath);
+                }
             }
-        }
 
-        return null;
+            return null;
+        });
     }
 
     /// <inheritdoc />
@@ -132,9 +140,12 @@ public class DotIgnoreIgnoreRule : IResolverIgnoreRule
 
     private static string GetFileContent(FileInfo ignoreFile)
     {
-        ignoreFile = FileSystemHelper.ResolveLinkTarget(ignoreFile, returnFinalTarget: true) ?? ignoreFile;
-        return ignoreFile.Exists
-            ? File.ReadAllText(ignoreFile.FullName)
-            : string.Empty;
+        return _ignoreContentCache.GetOrAdd(ignoreFile.FullName, _ =>
+        {
+            var resolved = FileSystemHelper.ResolveLinkTarget(ignoreFile, returnFinalTarget: true) ?? ignoreFile;
+            return resolved.Exists
+                ? File.ReadAllText(resolved.FullName)
+                : string.Empty;
+        });
     }
 }

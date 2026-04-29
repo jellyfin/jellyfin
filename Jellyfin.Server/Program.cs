@@ -88,6 +88,8 @@ namespace Jellyfin.Server
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
             appPaths.MakeSanityCheckOrThrow();
 
+            ThreadPool.SetMinThreads(200, 200);
+
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 

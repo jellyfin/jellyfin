@@ -2524,6 +2524,11 @@ namespace MediaBrowser.Controller.Entities
                 video.OwnerId = Id;
             }
 
+            if (!copyTitleMetadata && video is Video ownedVideo)
+            {
+                ownedVideo.SetPrimaryVersionId(Id.ToString("N", CultureInfo.InvariantCulture));
+            }
+
             await RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken).ConfigureAwait(false);
         }
 

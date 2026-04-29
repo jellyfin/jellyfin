@@ -43,6 +43,13 @@ public class MigrateLibraryDbCompatibilityCheck : IAsyncMigrationRoutine
             return;
         }
 
+        var fileInfo = new FileInfo(libraryDbPath);
+        if (fileInfo.Length == 0)
+        {
+            _logger.LogWarning("{LibraryDb} is empty, skipping compatibility check.", libraryDbPath);
+            return;
+        }
+
         using var connection = new SqliteConnection($"Filename={libraryDbPath};Mode=ReadOnly");
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         CheckMigratableVersion(connection);

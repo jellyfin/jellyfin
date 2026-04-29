@@ -26,7 +26,19 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+            return _cache.GetOrAdd(
+                path,
+                static (p, state) =>
+                {
+                    var entries = state.FileSystem.GetFileSystemEntries(p).ToArray();
+                    foreach (var entry in entries)
+                    {
+                        state.FileCache.TryAdd(entry.FullName, entry);
+                    }
+
+                    return entries;
+                },
+                (FileSystem: _fileSystem, FileCache: _fileCache));
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -110,7 +122,7 @@ namespace MediaBrowser.Controller.Providers
 
         public bool IsAccessible(string path)
         {
-            return _fileSystem.GetFileSystemEntryPaths(path).Any();
+            return _fileSystem.DirectoryExists(path);
         }
     }
 }

@@ -307,59 +307,50 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var totalItems = items.Count;
             var numComplete = 0;
+            var parallelism = Math.Max(2, Environment.ProcessorCount / 4);
 
             // Refresh seasons
-            foreach (var item in items)
-            {
-                if (item is not Season)
-                {
-                    continue;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (refreshOptions.RefreshItem(item))
-                {
-                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
-
-            // Refresh episodes and other children
-            foreach (var item in items)
-            {
-                if (item is Season)
-                {
-                    continue;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                bool skipItem = item is Episode episode
-                    && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
-                    && !refreshOptions.ReplaceAllMetadata
-                    && episode.IsMissingEpisode
-                    && episode.LocationType == LocationType.Virtual
-                    && episode.PremiereDate.HasValue
-                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
-
-                if (!skipItem)
+            var seasons = items.Where(i => i is Season).ToList();
+            await Parallel.ForEachAsync(
+                seasons,
+                new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken },
+                async (item, ct) =>
                 {
                     if (refreshOptions.RefreshItem(item))
                     {
-                        await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                        await item.RefreshMetadata(refreshOptions, ct).ConfigureAwait(false);
                     }
-                }
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
+                    var current = Interlocked.Increment(ref numComplete);
+                    progress.Report((double)current / totalItems * 100);
+                }).ConfigureAwait(false);
+
+            // Refresh episodes and other children
+            var nonSeasons = items.Where(i => i is not Season).ToList();
+            await Parallel.ForEachAsync(
+                nonSeasons,
+                new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken },
+                async (item, ct) =>
+                {
+                    bool skipItem = item is Episode episode
+                        && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
+                        && !refreshOptions.ReplaceAllMetadata
+                        && episode.IsMissingEpisode
+                        && episode.LocationType == LocationType.Virtual
+                        && episode.PremiereDate.HasValue
+                        && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
+
+                    if (!skipItem)
+                    {
+                        if (refreshOptions.RefreshItem(item))
+                        {
+                            await item.RefreshMetadata(refreshOptions, ct).ConfigureAwait(false);
+                        }
+                    }
+
+                    var current = Interlocked.Increment(ref numComplete);
+                    progress.Report((double)current / totalItems * 100);
+                }).ConfigureAwait(false);
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);

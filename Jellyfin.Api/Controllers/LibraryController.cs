@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -46,6 +47,8 @@ namespace Jellyfin.Api.Controllers;
 [Route("")]
 public class LibraryController : BaseJellyfinApiController
 {
+    private const string UnauthorizedAccessMessage = "Unauthorized access";
+
     private readonly IProviderManager _providerManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
@@ -55,6 +58,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILogger<LibraryController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IItemRepository _itemRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
@@ -68,6 +72,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ILibraryManager libraryManager,
@@ -77,7 +82,8 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IItemRepository itemRepository)
     {
         _providerManager = providerManager;
         _libraryManager = libraryManager;
@@ -88,6 +94,7 @@ public class LibraryController : BaseJellyfinApiController
         _libraryMonitor = libraryMonitor;
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
+        _itemRepository = itemRepository;
     }
 
     /// <summary>
@@ -335,6 +342,7 @@ public class LibraryController : BaseJellyfinApiController
     /// Deletes an item from the library and filesystem.
     /// </summary>
     /// <param name="itemId">The item id.</param>
+    /// <param name="deleteFileLocation">Whether to delete the physical file.</param>
     /// <response code="204">Item deleted.</response>
     /// <response code="401">Unauthorized access.</response>
     /// <response code="404">Item not found.</response>
@@ -344,7 +352,7 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult DeleteItem(Guid itemId)
+    public ActionResult DeleteItem(Guid itemId, [FromQuery] bool deleteFileLocation = true)
     {
         var userId = User.GetUserId();
         var isApiKey = User.GetIsApiKey();
@@ -365,12 +373,12 @@ public class LibraryController : BaseJellyfinApiController
 
         if (user is not null && !item.CanDelete(user))
         {
-            return Unauthorized("Unauthorized access");
+            return Unauthorized(UnauthorizedAccessMessage);
         }
 
         _libraryManager.DeleteItem(
             item,
-            new DeleteOptions { DeleteFileLocation = true },
+            new DeleteOptions { DeleteFileLocation = deleteFileLocation },
             true);
 
         return NoContent();
@@ -380,6 +388,7 @@ public class LibraryController : BaseJellyfinApiController
     /// Deletes items from the library and filesystem.
     /// </summary>
     /// <param name="ids">The item ids.</param>
+    /// <param name="deleteFileLocation">Whether to delete the physical files.</param>
     /// <response code="204">Items deleted.</response>
     /// <response code="401">Unauthorized access.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
@@ -388,7 +397,9 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids)
+    public ActionResult DeleteItems(
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] ids,
+        [FromQuery] bool deleteFileLocation = true)
     {
         var isApiKey = User.GetIsApiKey();
         var userId = User.GetUserId();
@@ -398,7 +409,7 @@ public class LibraryController : BaseJellyfinApiController
 
         if (!isApiKey && user is null)
         {
-            return Unauthorized("Unauthorized access");
+            return Unauthorized(UnauthorizedAccessMessage);
         }
 
         foreach (var i in ids)
@@ -411,16 +422,147 @@ public class LibraryController : BaseJellyfinApiController
 
             if (user is not null && !item.CanDelete(user))
             {
-                return Unauthorized("Unauthorized access");
+                return Unauthorized(UnauthorizedAccessMessage);
             }
 
             _libraryManager.DeleteItem(
                 item,
-                new DeleteOptions { DeleteFileLocation = true },
+                new DeleteOptions { DeleteFileLocation = deleteFileLocation },
                 true);
         }
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes items matching the specified query filters from the library.
+    /// </summary>
+    /// <param name="parentId">Optional. Specify this to delete all children of a particular item.</param>
+    /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
+    /// <param name="recursive">Optional. When true, all descendants of matched items are also deleted.</param>
+    /// <param name="deleteFileLocation">Whether to delete the physical files. Defaults to false.</param>
+    /// <response code="200">Items deleted. Returns the number of items removed.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Parent item not found.</response>
+    /// <returns>A <see cref="OkObjectResult"/> containing the count of deleted items.</returns>
+    [HttpDelete("Items/Query")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<int> DeleteItemsByQuery(
+        [FromQuery] Guid? parentId,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[]? includeItemTypes,
+        [FromQuery] bool recursive = true,
+        [FromQuery] bool deleteFileLocation = false)
+    {
+        var userId = User.GetUserId();
+        var isApiKey = User.GetIsApiKey();
+        var user = userId.IsEmpty() && isApiKey
+            ? null
+            : _userManager.GetUserById(userId);
+
+        if (user is null && !isApiKey)
+        {
+            return NotFound();
+        }
+
+        BaseItem? parent = null;
+        if (parentId.HasValue)
+        {
+            parent = _libraryManager.GetItemById<BaseItem>(parentId.Value, user);
+            if (parent is null)
+            {
+                return NotFound();
+            }
+
+            if (user is not null && !parent.CanDelete(user))
+            {
+                return Unauthorized(UnauthorizedAccessMessage);
+            }
+        }
+
+        var idsToDelete = new List<Guid>();
+
+        if (parentId.HasValue && recursive && (includeItemTypes is null || includeItemTypes.Length == 0))
+        {
+            idsToDelete.Add(parentId.Value);
+        }
+        else if (parentId.HasValue)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                ParentId = parentId.Value,
+                Recursive = recursive,
+                IncludeItemTypes = includeItemTypes ?? Array.Empty<BaseItemKind>(),
+                DtoOptions = new DtoOptions(false)
+            };
+
+            var items = _libraryManager.GetItemList(query);
+            foreach (var item in items)
+            {
+                if (user is not null && !item.CanDelete(user))
+                {
+                    return Unauthorized(UnauthorizedAccessMessage);
+                }
+
+                idsToDelete.Add(item.Id);
+            }
+        }
+        else
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = includeItemTypes ?? Array.Empty<BaseItemKind>(),
+                DtoOptions = new DtoOptions(false)
+            };
+
+            var items = _libraryManager.GetItemList(query);
+            foreach (var item in items)
+            {
+                if (user is not null && !item.CanDelete(user))
+                {
+                    return Unauthorized(UnauthorizedAccessMessage);
+                }
+
+                idsToDelete.Add(item.Id);
+                if (recursive && item.IsFolder)
+                {
+                    var childQuery = new InternalItemsQuery(user)
+                    {
+                        AncestorIds = [item.Id],
+                        DtoOptions = new DtoOptions(false)
+                    };
+                    idsToDelete.AddRange(_libraryManager.GetItemList(childQuery).Select(i => i.Id));
+                }
+            }
+        }
+
+        if (idsToDelete.Count == 0)
+        {
+            return Ok(0);
+        }
+
+        if (deleteFileLocation)
+        {
+            foreach (var id in idsToDelete)
+            {
+                var item = _libraryManager.GetItemById<BaseItem>(id, user);
+                if (item is not null)
+                {
+                    _libraryManager.DeleteItem(
+                        item,
+                        new DeleteOptions { DeleteFileLocation = true },
+                        false);
+                }
+            }
+        }
+        else
+        {
+            _itemRepository.DeleteItem(idsToDelete);
+        }
+
+        return Ok(idsToDelete.Count);
     }
 
     /// <summary>

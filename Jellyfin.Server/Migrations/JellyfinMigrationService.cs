@@ -213,7 +213,16 @@ internal class JellyfinMigrationService
 
             foreach (var item in migrations)
             {
-                var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
+                IStartupLogger migrationLogger;
+                try
+                {
+                    migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
+                }
+                catch (ObjectDisposedException)
+                {
+                    migrationLogger = logger.BeginGroup($"{item.Key}");
+                }
+
                 try
                 {
                     migrationLogger.LogInformation("Perform migration {Name}", item.Key);
@@ -434,6 +443,7 @@ internal class JellyfinMigrationService
             await _codeMigration.Perform(_serviceProvider, logger, CancellationToken.None).ConfigureAwait(false);
 
             var historyRepository = _dbContext.GetService<IHistoryRepository>();
+            await historyRepository.CreateIfNotExistsAsync().ConfigureAwait(false);
             var createScript = historyRepository.GetInsertScript(new HistoryRow(_codeMigration.BuildCodeMigrationId(), GetJellyfinVersion()));
             await _dbContext.Database.ExecuteSqlRawAsync(createScript).ConfigureAwait(false);
         }

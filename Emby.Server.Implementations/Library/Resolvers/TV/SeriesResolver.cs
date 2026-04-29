@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 else
                 {
                     string fullName = child.FullName;
-                    if (VideoResolver.IsVideoFile(path, _namingOptions))
+                    if (VideoResolver.IsVideoFile(fullName, _namingOptions))
                     {
                         if (isTvContentType)
                         {

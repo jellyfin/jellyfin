@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -23,10 +24,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public class TmdbClientManager : IDisposable
     {
-        private const int CacheDurationInHours = 1;
+        private const int CacheDurationInHours = 24;
+        private const int FailedCacheDurationInMinutes = 5;
+        private const int InflightCoalescingWindowSeconds = 5;
 
         private readonly IMemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
+        private readonly ConcurrentDictionary<string, Task<object>> _inflightRequests;
+        private readonly ConcurrentDictionary<string, DateTime> _completedRequestTimes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TmdbClientManager"/> class.
@@ -35,12 +40,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public TmdbClientManager(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
+            _inflightRequests = new ConcurrentDictionary<string, Task<object>>();
+            _completedRequestTimes = new ConcurrentDictionary<string, DateTime>();
 
             var apiKey = Plugin.Instance.Configuration.TmdbApiKey;
             apiKey = string.IsNullOrEmpty(apiKey) ? TmdbUtils.ApiKey : apiKey;
             _tmDbClient = new TMDbClient(apiKey);
 
-            // Not really interested in NotFoundException
             _tmDbClient.ThrowApiExceptions = false;
         }
 
@@ -53,35 +59,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb movie or null if not found.</returns>
-        public async Task<Movie?> GetMovieAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public Task<Movie?> GetMovieAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"movie-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
-            if (_memoryCache.TryGetValue(key, out Movie? movie))
-            {
-                return movie;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
+                {
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
-            if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
-            {
-                extraMethods |= MovieMethods.Keywords;
-            }
+                    var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
+                    if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
+                    {
+                        extraMethods |= MovieMethods.Keywords;
+                    }
 
-            movie = await _tmDbClient.GetMovieAsync(
-                tmdbId,
-                TmdbUtils.NormalizeLanguage(language, countryCode),
-                imageLanguages,
-                extraMethods,
-                cancellationToken).ConfigureAwait(false);
+                    var movie = await _tmDbClient.GetMovieAsync(
+                        tmdbId,
+                        TmdbUtils.NormalizeLanguage(language, countryCode),
+                        imageLanguages,
+                        extraMethods,
+                        ct).ConfigureAwait(false);
 
-            if (movie is not null)
-            {
-                _memoryCache.Set(key, movie, TimeSpan.FromHours(CacheDurationInHours));
-            }
-
-            return movie;
+                    return movie;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -93,29 +96,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb collection or null if not found.</returns>
-        public async Task<Collection?> GetCollectionAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public Task<Collection?> GetCollectionAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"collection-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
-            if (_memoryCache.TryGetValue(key, out Collection? collection))
-            {
-                return collection;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
+                {
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            collection = await _tmDbClient.GetCollectionAsync(
-                tmdbId,
-                TmdbUtils.NormalizeLanguage(language, countryCode),
-                imageLanguages,
-                CollectionMethods.Images,
-                cancellationToken).ConfigureAwait(false);
+                    var collection = await _tmDbClient.GetCollectionAsync(
+                        tmdbId,
+                        TmdbUtils.NormalizeLanguage(language, countryCode),
+                        imageLanguages,
+                        CollectionMethods.Images,
+                        ct).ConfigureAwait(false);
 
-            if (collection is not null)
-            {
-                _memoryCache.Set(key, collection, TimeSpan.FromHours(CacheDurationInHours));
-            }
-
-            return collection;
+                    return collection;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -127,35 +127,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show information or null if not found.</returns>
-        public async Task<TvShow?> GetSeriesAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public Task<TvShow?> GetSeriesAsync(int tmdbId, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"series-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvShow? series))
-            {
-                return series;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
+                {
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
-            if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
-            {
-                extraMethods |= TvShowMethods.Keywords;
-            }
+                    var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
+                    if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
+                    {
+                        extraMethods |= TvShowMethods.Keywords;
+                    }
 
-            series = await _tmDbClient.GetTvShowAsync(
-                tmdbId,
-                language: TmdbUtils.NormalizeLanguage(language, countryCode),
-                includeImageLanguage: imageLanguages,
-                extraMethods: extraMethods,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var series = await _tmDbClient.GetTvShowAsync(
+                        tmdbId,
+                        language: TmdbUtils.NormalizeLanguage(language, countryCode),
+                        includeImageLanguage: imageLanguages,
+                        extraMethods: extraMethods,
+                        cancellationToken: ct).ConfigureAwait(false);
 
-            if (series is not null)
-            {
-                _memoryCache.Set(key, series, TimeSpan.FromHours(CacheDurationInHours));
-            }
-
-            return series;
+                    return series;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -224,30 +221,27 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv season information or null if not found.</returns>
-        public async Task<TvSeason?> GetSeasonAsync(int tvShowId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public Task<TvSeason?> GetSeasonAsync(int tvShowId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"season-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvSeason? season))
-            {
-                return season;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
+                {
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            season = await _tmDbClient.GetTvSeasonAsync(
-                tvShowId,
-                seasonNumber,
-                language: TmdbUtils.NormalizeLanguage(language, countryCode),
-                includeImageLanguage: imageLanguages,
-                extraMethods: TvSeasonMethods.Credits | TvSeasonMethods.Images | TvSeasonMethods.ExternalIds | TvSeasonMethods.Videos,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var season = await _tmDbClient.GetTvSeasonAsync(
+                        tvShowId,
+                        seasonNumber,
+                        language: TmdbUtils.NormalizeLanguage(language, countryCode),
+                        includeImageLanguage: imageLanguages,
+                        extraMethods: TvSeasonMethods.Credits | TvSeasonMethods.Images | TvSeasonMethods.ExternalIds | TvSeasonMethods.Videos,
+                        cancellationToken: ct).ConfigureAwait(false);
 
-            if (season is not null)
-            {
-                _memoryCache.Set(key, season, TimeSpan.FromHours(CacheDurationInHours));
-            }
-
-            return season;
+                    return season;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -262,44 +256,43 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, long episodeNumber, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, long episodeNumber, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvEpisode? episode))
-            {
-                return episode;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
-
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
-            if (group is not null)
-            {
-                var season = group.Groups?.Find(s => s.Order == seasonNumber);
-                // Episode order starts at 0
-                var ep = season?.Episodes?.Find(e => e.Order == episodeNumber - 1);
-                if (ep is not null)
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
                 {
-                    seasonNumber = ep.SeasonNumber;
-                    episodeNumber = ep.EpisodeNumber;
-                }
-            }
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            episode = await _tmDbClient.GetTvEpisodeAsync(
-                tvShowId,
-                seasonNumber,
-                episodeNumber,
-                language: TmdbUtils.NormalizeLanguage(language, countryCode),
-                includeImageLanguage: imageLanguages,
-                extraMethods: TvEpisodeMethods.Credits | TvEpisodeMethods.Images | TvEpisodeMethods.ExternalIds | TvEpisodeMethods.Videos,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, ct).ConfigureAwait(false);
+                    var mappedSeasonNumber = seasonNumber;
+                    var mappedEpisodeNumber = episodeNumber;
 
-            if (episode is not null)
-            {
-                _memoryCache.Set(key, episode, TimeSpan.FromHours(CacheDurationInHours));
-            }
+                    if (group is not null)
+                    {
+                        var season = group.Groups?.Find(s => s.Order == seasonNumber);
+                        var ep = season?.Episodes?.Find(e => e.Order == episodeNumber - 1);
+                        if (ep is not null)
+                        {
+                            mappedSeasonNumber = ep.SeasonNumber;
+                            mappedEpisodeNumber = ep.EpisodeNumber;
+                        }
+                    }
 
-            return episode;
+                    var episode = await _tmDbClient.GetTvEpisodeAsync(
+                        tvShowId,
+                        mappedSeasonNumber,
+                        mappedEpisodeNumber,
+                        language: TmdbUtils.NormalizeLanguage(language, countryCode),
+                        includeImageLanguage: imageLanguages,
+                        extraMethods: TvEpisodeMethods.Credits | TvEpisodeMethods.Images | TvEpisodeMethods.ExternalIds | TvEpisodeMethods.Videos,
+                        cancellationToken: ct).ConfigureAwait(false);
+
+                    return episode;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -310,28 +303,25 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb person information or null if not found.</returns>
-        public async Task<Person?> GetPersonAsync(int personTmdbId, string language, string? countryCode, CancellationToken cancellationToken)
+        public Task<Person?> GetPersonAsync(int personTmdbId, string language, string? countryCode, CancellationToken cancellationToken)
         {
             var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
-            if (_memoryCache.TryGetValue(key, out Person? person))
-            {
-                return person;
-            }
 
-            await EnsureClientConfigAsync().ConfigureAwait(false);
+            return ExecuteWithCoalescingAsync(
+                key,
+                async ct =>
+                {
+                    await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            person = await _tmDbClient.GetPersonAsync(
-                personTmdbId,
-                TmdbUtils.NormalizeLanguage(language, countryCode),
-                PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
-                cancellationToken).ConfigureAwait(false);
+                    var person = await _tmDbClient.GetPersonAsync(
+                        personTmdbId,
+                        TmdbUtils.NormalizeLanguage(language, countryCode),
+                        PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
+                        ct).ConfigureAwait(false);
 
-            if (person is not null)
-            {
-                _memoryCache.Set(key, person, TimeSpan.FromHours(CacheDurationInHours));
-            }
-
-            return person;
+                    return person;
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -693,6 +683,59 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             return _tmDbClient.Config;
+        }
+
+        private async Task<TResult?> ExecuteWithCoalescingAsync<TResult>(string key, Func<CancellationToken, Task<TResult?>> fetchFunc, CancellationToken cancellationToken)
+            where TResult : class
+        {
+            if (_memoryCache.TryGetValue(key, out TResult? cachedValue))
+            {
+                return cachedValue;
+            }
+
+            if (_completedRequestTimes.TryGetValue(key, out var completedTime)
+                && DateTime.UtcNow - completedTime < TimeSpan.FromSeconds(InflightCoalescingWindowSeconds)
+                && _memoryCache.TryGetValue(key, out cachedValue))
+            {
+                return cachedValue;
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            var inflightTask = _inflightRequests.GetOrAdd(key, _ => tcs.Task);
+
+            if (inflightTask == tcs.Task)
+            {
+                try
+                {
+                    var result = await fetchFunc(cancellationToken).ConfigureAwait(false);
+                    _completedRequestTimes[key] = DateTime.UtcNow;
+
+                    if (result is not null)
+                    {
+                        _memoryCache.Set(key, result, TimeSpan.FromHours(CacheDurationInHours));
+                    }
+                    else
+                    {
+                        _memoryCache.Set(key, (TResult?)null, TimeSpan.FromMinutes(FailedCacheDurationInMinutes));
+                    }
+
+                    tcs.SetResult(result ?? new object());
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                    throw;
+                }
+                finally
+                {
+                    _inflightRequests.TryRemove(key, out _);
+                }
+
+                return await tcs.Task.ConfigureAwait(false) as TResult;
+            }
+
+            var coalescedResult = await inflightTask.ConfigureAwait(false);
+            return coalescedResult as TResult;
         }
 
         /// <inheritdoc />

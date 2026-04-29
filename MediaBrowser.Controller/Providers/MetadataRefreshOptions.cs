@@ -31,8 +31,8 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllImages = copy.ReplaceAllImages;
             RegenerateTrickplay = copy.RegenerateTrickplay;
             ReplaceImages = copy.ReplaceImages;
-            SearchResult = copy.SearchResult;
             RemoveOldMetadata = copy.RemoveOldMetadata;
+            ValidateFileSystem = copy.ValidateFileSystem;
 
             if (copy.RefreshPaths is not null && copy.RefreshPaths.Length > 0)
             {
@@ -63,6 +63,12 @@ namespace MediaBrowser.Controller.Providers
         public bool ForceSave { get; set; }
 
         public bool EnableRemoteContentProbe { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the file system should be validated
+        /// to discover new or removed children. When false, only existing children are refreshed.
+        /// </summary>
+        public bool ValidateFileSystem { get; set; } = true;
 
         public bool RefreshItem(BaseItem item)
         {

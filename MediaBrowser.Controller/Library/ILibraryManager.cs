@@ -72,13 +72,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent folder.</param>
         /// <param name="libraryOptions">The library options.</param>
         /// <param name="collectionType">The collection type.</param>
+        /// <param name="maxParallelism">Optional cap on parallel resolver workers. Defaults to <c>max(4, Environment.ProcessorCount)</c>.</param>
         /// <returns>The items resolved from the paths.</returns>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,
-            CollectionType? collectionType = null);
+            CollectionType? collectionType = null,
+            int? maxParallelism = null);
 
         /// <summary>
         /// Gets a Person.
@@ -149,6 +151,27 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Runs Phase 1 of the library scan: file discovery and local NFO metadata.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ValidateMediaLibraryPhase1Async(IProgress<double> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Runs Phase 2 of the library scan: external metadata refresh.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ValidateMediaLibraryPhase2Async(IProgress<double> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Cancels any running library scan operations.
+        /// </summary>
+        void CancelLibraryScan();
 
         /// <summary>
         /// Reloads the root media folder.
@@ -455,6 +478,15 @@ namespace MediaBrowser.Controller.Library
         bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh);
 
         /// <summary>
+        /// Applies local NFO metadata fields to the item in-place during Phase 1 scan.
+        /// </summary>
+        /// <param name="item">The item to enrich.</param>
+        /// <param name="directoryService">Directory service for file lookups.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>True if any fields were changed.</returns>
+        Task<bool> ApplyLocalNfoFieldsAsync(BaseItem item, IDirectoryService directoryService, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Parses the name.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -667,5 +699,20 @@ namespace MediaBrowser.Controller.Library
         /// <param name="virtualFolderPath">The path to the virtualfolder.</param>
         /// <param name="pathInfo">The new virtualfolder.</param>
         public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo);
+
+        /// <summary>
+        /// Scans a folder and its children as a complete in-memory tree.
+        /// Returns a result indicating whether the scan was performed and what changed.
+        /// </summary>
+        /// <param name="folder">The folder to scan.</param>
+        /// <param name="options">The metadata refresh options.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task<Phase1TreeScanResult> ScanTreeAsync(
+            Folder folder,
+            MetadataRefreshOptions options,
+            IDirectoryService directoryService,
+            CancellationToken cancellationToken);
     }
 }

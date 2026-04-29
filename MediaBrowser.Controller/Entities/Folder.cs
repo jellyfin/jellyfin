@@ -283,12 +283,13 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="metadataRefreshOptions">The metadata refresh options.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="allowRemoveRoot">remove item even this folder is root.</param>
+        /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true, bool allowRemoveRoot = false, CancellationToken cancellationToken = default)
+        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true, bool allowRemoveRoot = false, bool refreshChildMetadata = true, CancellationToken cancellationToken = default)
         {
             Children = null; // invalidate cached children.
-            return ValidateChildrenInternal(progress, recursive, true, allowRemoveRoot, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
+            return ValidateChildrenInternal(progress, recursive, refreshChildMetadata, allowRemoveRoot, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -381,8 +382,52 @@ namespace MediaBrowser.Controller.Entities
 
             var validChildren = new List<BaseItem>();
             var validChildrenNeedGeneration = false;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("ValidateChildren START: {Name} ({Path})", Name, Path);
 
-            if (IsFileProtocol)
+            var treeScanned = false;
+
+            if (IsFileProtocol && refreshOptions.ValidateFileSystem && !refreshChildMetadata)
+            {
+                var collectionType = LibraryManager.GetContentType(this);
+                if (collectionType.HasValue)
+                {
+                    try
+                    {
+                        var scanResult = await LibraryManager.ScanTreeAsync(this, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+                        if (scanResult.Scanned)
+                        {
+                            treeScanned = true;
+                            validChildren.AddRange(scanResult.AllItems);
+
+                            if (scanResult.NewItems.Count > 0)
+                            {
+                                LibraryManager.CreateItems(scanResult.NewItems, this, cancellationToken);
+                            }
+
+                            if (scanResult.UpdatedItems.Count > 0)
+                            {
+                                await LibraryManager.UpdateItemsAsync(scanResult.UpdatedItems, this, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                            }
+
+                            foreach (var removed in scanResult.RemovedItems)
+                            {
+                                if (removed.CanDelete() && removed.IsFileProtocol)
+                                {
+                                    removed.SetParent(null);
+                                    LibraryManager.DeleteItem(removed, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error during tree scan for {Path}, falling back to normal discovery", Path);
+                    }
+                }
+            }
+
+            if (IsFileProtocol && refreshOptions.ValidateFileSystem && !treeScanned)
             {
                 IEnumerable<BaseItem> nonCachedChildren = [];
 
@@ -404,6 +449,9 @@ namespace MediaBrowser.Controller.Entities
                     return;
                 }
 
+                var nonCachedList = nonCachedChildren.ToList();
+                Logger.LogInformation("ValidateChildren FS children: {Name} got {Count} in {ElapsedMs}ms", Name, nonCachedList.Count, sw.ElapsedMilliseconds);
+
                 progress.Report(ProgressHelpers.RetrievedChildren);
 
                 if (recursive)
@@ -411,16 +459,19 @@ namespace MediaBrowser.Controller.Entities
                     ProviderManager.OnRefreshProgress(this, ProgressHelpers.RetrievedChildren);
                 }
 
-                // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
                 var currentChildren = GetActualChildrenDictionary();
 
-                // Create a list for our validated children
+                // Create lists for our validated children
                 var newItems = new List<BaseItem>();
+                var changedItems = new List<BaseItem>();
+                var batchSize = GetLibraryScanBatchSize();
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var child in nonCachedChildren)
+                foreach (var child in nonCachedList)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!IsLibraryFolderAccessible(directoryService, child, allowRemoveRoot))
                     {
                         continue;
@@ -432,11 +483,10 @@ namespace MediaBrowser.Controller.Entities
 
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
-                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                            changedItems.Add(currentChild);
                         }
-                        else
+                        else if (refreshChildMetadata)
                         {
-                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
                             await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
                         }
 
@@ -447,6 +497,11 @@ namespace MediaBrowser.Controller.Entities
                     child.SetParent(this);
                     newItems.Add(child);
                     validChildren.Add(child);
+
+                    if (newItems.Count + changedItems.Count >= batchSize)
+                    {
+                        await FlushLibraryScanBatchesAsync(newItems, changedItems, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 // That's all the new and changed ones - now see if any have been removed and need cleanup
@@ -475,14 +530,11 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                if (newItems.Count > 0)
-                {
-                    LibraryManager.CreateItems(newItems, this, cancellationToken);
-                }
+                await FlushLibraryScanBatchesAsync(newItems, changedItems, cancellationToken).ConfigureAwait(false);
 
                 // After removing items, reattach any detached user data to remaining children
                 // that share the same user data keys (eg. same episode replaced with a new file).
-                if (actuallyRemoved.Count > 0)
+                if (refreshChildMetadata && actuallyRemoved.Count > 0)
                 {
                     var removedKeys = actuallyRemoved.SelectMany(i => i.GetUserDataKeys()).ToHashSet();
                     foreach (var child in validChildren)
@@ -508,7 +560,7 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (recursive)
+            if (recursive && !treeScanned)
             {
                 var folder = this;
                 var innerProgress = new Progress<double>(innerPercent =>
@@ -526,8 +578,10 @@ namespace MediaBrowser.Controller.Entities
                     validChildrenNeedGeneration = false;
                 }
 
-                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, cancellationToken).ConfigureAwait(false);
+                await ValidateSubFolders(validChildren.OfType<Folder>().ToList(), directoryService, innerProgress, refreshChildMetadata, refreshOptions, cancellationToken).ConfigureAwait(false);
             }
+
+            Logger.LogInformation("ValidateChildren END: {Name} in {ElapsedMs}ms", Name, sw.ElapsedMilliseconds);
 
             if (refreshChildMetadata)
             {
@@ -616,15 +670,20 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="children">The children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="progress">The progress.</param>
+        /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
+        /// <param name="refreshOptions">The metadata refresh options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("ValidateSubFolders START: {Name} with {Count} subfolders", Name, children.Count);
             await RunTasks(
-                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, false, null, directoryService, cancellationToken),
+                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, refreshChildMetadata, false, refreshOptions, directoryService, cancellationToken),
                 children,
                 progress,
                 cancellationToken).ConfigureAwait(false);
+            Logger.LogInformation("ValidateSubFolders END: {Name} in {ElapsedMs}ms", Name, sw.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -1841,6 +1900,27 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Contains constants used when reporting scan progress.
         /// </summary>
+        private static int GetLibraryScanBatchSize()
+        {
+            var memoryLimitMB = ConfigurationManager?.Configuration.LibraryScanMemoryLimitMB ?? 100;
+            return Math.Min(5000, Math.Max(1000, memoryLimitMB * 100));
+        }
+
+        private async Task FlushLibraryScanBatchesAsync(List<BaseItem> newItems, List<BaseItem> changedItems, CancellationToken cancellationToken)
+        {
+            if (newItems.Count > 0)
+            {
+                LibraryManager.CreateItems(newItems, this, cancellationToken);
+                newItems.Clear();
+            }
+
+            if (changedItems.Count > 0)
+            {
+                await LibraryManager.UpdateItemsAsync(changedItems, this, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                changedItems.Clear();
+            }
+        }
+
         private static class ProgressHelpers
         {
             /// <summary>

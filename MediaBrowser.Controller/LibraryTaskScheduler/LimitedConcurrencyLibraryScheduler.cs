@@ -200,7 +200,11 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     }
 
     /// <inheritdoc/>
-    public async Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, IProgress<double> progress, CancellationToken cancellationToken)
+    public Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, IProgress<double> progress, CancellationToken cancellationToken)
+        => Enqueue(data, worker, null, progress, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, double[]? weights, IProgress<double> progress, CancellationToken cancellationToken)
     {
         if (_disposed)
         {
@@ -219,7 +223,23 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         void UpdateProgress()
         {
-            progress.Report(workItems.Select(e => e.ProgressValue).Average());
+            if (weights is not null && weights.Length == workItems.Length)
+            {
+                var totalWeight = 0.0;
+                var weightedSum = 0.0;
+                for (var i = 0; i < workItems.Length; i++)
+                {
+                    var w = weights[i];
+                    totalWeight += w;
+                    weightedSum += workItems[i].ProgressValue * w;
+                }
+
+                progress.Report(totalWeight > 0 ? weightedSum / totalWeight : 0);
+            }
+            else
+            {
+                progress.Report(workItems.Select(e => e.ProgressValue).Average());
+            }
         }
 
         workItems = data.Select(item =>

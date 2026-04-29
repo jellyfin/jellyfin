@@ -13,6 +13,7 @@ using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -156,6 +157,16 @@ public class BackupService : IBackupService
             if (manifest.Options.Database)
             {
                 _logger.LogInformation("Begin restoring Database");
+
+                var databasePath = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
+                var walPath = databasePath + "-wal";
+                var shmPath = databasePath + "-shm";
+
+                SqliteConnection.ClearAllPools();
+                DeleteIfExists(databasePath);
+                DeleteIfExists(walPath);
+                DeleteIfExists(shmPath);
+
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
@@ -184,6 +195,24 @@ public class BackupService : IBackupService
                         await dbContext.Database.ExecuteSqlRawAsync(insertScript).ConfigureAwait(false);
                     }
 
+                    _logger.LogInformation("Ensuring database schema is up to date");
+                    // Clear history so MigrateAsync will create all tables on a fresh database
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var deleteScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(deleteScript).ConfigureAwait(false);
+                    }
+
+                    await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+
+                    // Clear history rows inserted by MigrateAsync to avoid unique constraint conflicts
+                    foreach (var item in await historyRepository.GetAppliedMigrationsAsync(CancellationToken.None).ConfigureAwait(false))
+                    {
+                        var deleteScript = historyRepository.GetDeleteScript(item.MigrationId);
+                        await dbContext.Database.ExecuteSqlRawAsync(deleteScript).ConfigureAwait(false);
+                    }
+
+                    // Restore the backup's migration history after schema creation
                     foreach (var item in historyEntries)
                     {
                         var insertScript = historyRepository.GetInsertScript(item);
@@ -197,25 +226,25 @@ public class BackupService : IBackupService
                         .ToArray();
 
                     var tableNames = entityTypes.Select(f => dbContext.Model.FindEntityType(f.Type.PropertyType.GetGenericArguments()[0])!.GetSchemaQualifiedTableName()!);
-                    _logger.LogInformation("Begin purging database");
+                    _logger.LogDebug("Begin purging database");
                     await _jellyfinDatabaseProvider.PurgeDatabase(dbContext, tableNames).ConfigureAwait(false);
-                    _logger.LogInformation("Database Purged");
+                    _logger.LogDebug("Database Purged");
 
                     foreach (var entityType in entityTypes)
                     {
-                        _logger.LogInformation("Read backup of {Table}", entityType.Type.Name);
+                        _logger.LogDebug("Read backup of {Table}", entityType.Type.Name);
 
                         var zipEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{entityType.Type.Name}.json")));
                         if (zipEntry is null)
                         {
-                            _logger.LogInformation("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
+                            _logger.LogDebug("No backup of expected table {Table} is present in backup, continuing anyway", entityType.Type.Name);
                             continue;
                         }
 
                         var zipEntryStream = await zipEntry.OpenAsync().ConfigureAwait(false);
                         await using (zipEntryStream.ConfigureAwait(false))
                         {
-                            _logger.LogInformation("Restore backup of {Table}", entityType.Type.Name);
+                            _logger.LogDebug("Restore backup of {Table}", entityType.Type.Name);
                             var records = 0;
                             await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonObject>(zipEntryStream, _serializerSettings).ConfigureAwait(false))
                             {
@@ -236,11 +265,11 @@ public class BackupService : IBackupService
                                 }
                             }
 
-                            _logger.LogInformation("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
+                            _logger.LogDebug("Prepared to restore {Number} entries for {Table}", records, entityType.Type.Name);
                         }
                     }
 
-                    _logger.LogInformation("Try restore Database");
+                    _logger.LogDebug("Try restore Database");
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                     _logger.LogInformation("Restored database");
                 }
@@ -248,6 +277,17 @@ public class BackupService : IBackupService
 
             _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
         }
+    }
+
+    private void DeleteIfExists(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        _logger.LogInformation("Removing existing database file {Path} before restore migration", path);
+        File.Delete(path);
     }
 
     private bool TestBackupVersionCompatibility(Version backupEngineVersion)
