@@ -38,6 +38,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
     private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
