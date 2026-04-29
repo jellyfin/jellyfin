@@ -6,12 +6,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Photos;
@@ -120,6 +118,7 @@ namespace Emby.Server.Implementations
         private readonly DeviceId _deviceId;
 
         private readonly IConfiguration _startupConfig;
+        private readonly IServerAddressesFeature _serverAddressesFeature;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly PluginManager _pluginManager;
@@ -141,17 +140,19 @@ namespace Emby.Server.Implementations
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
         /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
+        /// <param name="serverAddressesFeature">The <see cref="IServerAddressesFeature"/> interface.</param>
         protected ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
-            IConfiguration startupConfig)
+            IConfiguration startupConfig,
+            IServerAddressesFeature serverAddressesFeature)
         {
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
             _startupOptions = options;
             _startupConfig = startupConfig;
-
+            _serverAddressesFeature = serverAddressesFeature;
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
             _deviceId = new DeviceId(ApplicationPaths, LoggerFactory.CreateLogger<DeviceId>());
 
@@ -431,6 +432,8 @@ namespace Emby.Server.Implementations
             {
                 _disposableParts.Add(DotNetRuntimeStatsBuilder.Default().StartCollecting());
             }
+
+            serviceCollection.AddSingleton<IServerAddressesFeature, ServerAddressesFeature>();
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.InternalHttpPort;
@@ -780,7 +783,7 @@ namespace Emby.Server.Implementations
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IServerAddressesFeature serverAddresses, IPAddress remoteAddr)
+        public string GetSmartApiUrl(IPAddress remoteAddr)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -790,7 +793,7 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindAddress(remoteAddr, out var port);
-            return GetLocalApiUrl(serverAddresses, smart.Trim('/'), null);
+            return GetLocalApiUrl(smart.Trim('/'), null);
         }
 
         /// <inheritdoc/>
@@ -799,14 +802,14 @@ namespace Emby.Server.Implementations
             // Return the host in the HTTP request as the API URL if not configured otherwise
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
-                return GetLocalApiUrl(request.HttpContext.Features.Get<IServerAddressesFeature>(), request.Host.Host, request.Scheme);
+                return GetLocalApiUrl(request.Host.Host, request.Scheme);
             }
 
-            return GetSmartApiUrl(request.HttpContext.Features.Get<IServerAddressesFeature>(), request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+            return GetSmartApiUrl(request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IServerAddressesFeature serverAddresses, string hostname)
+        public string GetSmartApiUrl(string hostname)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -816,20 +819,20 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindAddress(hostname, out var port);
-            return GetLocalApiUrl(serverAddresses, smart.Trim('/'), null);
+            return GetLocalApiUrl(smart.Trim('/'), null);
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess(IServerAddressesFeature serverAddresses, IPAddress ipAddress = null, bool allowHttps = true)
+        public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
             var smart = NetManager.GetBindAddress(ipAddress, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
-            return GetLocalApiUrl(serverAddresses, smart, scheme);
+            return GetLocalApiUrl(smart, scheme);
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(IServerAddressesFeature serverAddresses, string hostname, string scheme = null)
+        public string GetLocalApiUrl(string hostname, string scheme = null)
         {
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (hostname.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -837,7 +840,7 @@ namespace Emby.Server.Implementations
                 return hostname.TrimEnd('/');
             }
 
-            var bindingAddress = serverAddresses.Addresses.Select(e => new Uri(e)).FirstOrDefault(e => e.Scheme == scheme && e.Host == hostname);
+            var bindingAddress = _serverAddressesFeature.Addresses.Select(e => new Uri(e)).FirstOrDefault(e => e.Scheme == scheme && e.Host == hostname);
 
             if (bindingAddress is null)
             {

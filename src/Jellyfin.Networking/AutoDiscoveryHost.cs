@@ -103,7 +103,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
     private async Task RespondToV2Message(IPEndPoint endpoint, UdpClient broadCastUdpClient, CancellationToken cancellationToken)
     {
-        var localUrl = _appHost.GetSmartApiUrl(_serverAddresses, endpoint.Address);
+        var localUrl = _appHost.GetSmartApiUrl(endpoint.Address);
         if (string.IsNullOrEmpty(localUrl))
         {
             _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined");

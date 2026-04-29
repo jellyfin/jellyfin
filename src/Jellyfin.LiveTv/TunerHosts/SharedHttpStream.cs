@@ -67,7 +67,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
-            MediaSource.Path = _appHost.GetApiUrlForLocalAccess(_serverAddresses) + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
             var res = await taskCompletionSource.Task.ConfigureAwait(false);

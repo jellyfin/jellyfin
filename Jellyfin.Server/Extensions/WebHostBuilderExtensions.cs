@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -39,14 +40,43 @@ public static class WebHostBuilderExtensions
         return builder
             .UseKestrel((builderContext, options) =>
             {
+                var addressess = appHost.NetManager.GetAllBindInterfaces(false);
                 SetupJellyfinWebServer(
-                    appHost.NetManager.GetAllBindInterfaces(false),
+                    addressess,
                     appHost.HttpPort,
                     startupConfig,
                     appPaths,
                     logger,
                     builderContext,
                     options);
+
+                var serverAddresses = appHost.ServiceProvider.GetRequiredService<IServerAddressesFeature>()!;
+                serverAddresses.Addresses.Clear();
+                if (addressess.Count == 0)
+                {
+                    logger.LogWarning("No network interfaces found to bind to. Kestrel will be configured to listen on localhost only. Please check your network configuration.");
+                    serverAddresses.Addresses.Add($"http://localhost:{appHost.HttpPort}");
+                    return;
+                }
+
+                var smartUrl = startupConfig[MediaBrowser.Controller.Extensions.ConfigurationExtensions.AddressOverrideKey];
+                if (!string.IsNullOrEmpty(smartUrl))
+                {
+                    logger.LogInformation("Using published server URL from configuration: {SmartUrl}", smartUrl);
+                    serverAddresses.Addresses.Add(smartUrl);
+                    return;
+                }
+
+                foreach (var address in addressess)
+                {
+                    var uriBuilder = new UriBuilder
+                    {
+                        Scheme = "http",
+                        Host = (address.Address.Equals(IPAddress.IPv6Any) || address.Address.Equals(IPAddress.Any)) ? "localhost" : address.Address.ToString(),
+                        Port = appHost.HttpPort
+                    };
+                    serverAddresses.Addresses.Add(uriBuilder.ToString());
+                }
             })
             .UseStartup(context => new Startup(appHost, context.Configuration));
     }
@@ -72,6 +102,7 @@ public static class WebHostBuilderExtensions
         KestrelServerOptions options)
     {
         bool flagged = false;
+
         foreach (var netAdd in addresses)
         {
             var address = netAdd.Address;

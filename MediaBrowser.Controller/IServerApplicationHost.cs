@@ -43,40 +43,36 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(IServerAddressesFeature serverAddresses, IPAddress remoteAddr);
+        string GetSmartApiUrl(IPAddress remoteAddr);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
-        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="hostname">The hostname used in the connection.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(IServerAddressesFeature serverAddresses, string hostname);
+        string GetSmartApiUrl(string hostname);
 
         /// <summary>
         /// Gets an URL that can be used to access the API over LAN.
         /// </summary>
-        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="ipAddress">An optional IP address to use.</param>
         /// <param name="allowHttps">A value indicating whether to allow HTTPS.</param>
         /// <returns>The API URL.</returns>
-        string GetApiUrlForLocalAccess(IServerAddressesFeature serverAddresses, IPAddress ipAddress = null, bool allowHttps = true);
+        string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
         /// Note: if passing non-null scheme or port it is up to the caller to ensure they form the correct pair.
         /// </summary>
-        /// <param name="serverAddresses">The kestrel Server address feature.</param>
         /// <param name="hostname">The hostname to use in the URL.</param>
         /// <param name="scheme">
         /// The scheme to use for the URL. If null, the scheme will be selected automatically,
         /// preferring HTTPS, if available.
         /// </param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(IServerAddressesFeature serverAddresses, string hostname, string scheme = null);
+        string GetLocalApiUrl(string hostname, string scheme = null);
 
         string ExpandVirtualPath(string path);
 

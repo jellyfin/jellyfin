@@ -151,7 +151,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetApiUrlForLocalAccess(_serverAddresses) + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
