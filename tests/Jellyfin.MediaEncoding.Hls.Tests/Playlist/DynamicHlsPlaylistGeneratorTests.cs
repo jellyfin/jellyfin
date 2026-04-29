@@ -15,10 +15,17 @@ namespace Jellyfin.MediaEncoding.Hls.Tests.Playlist
         }
 
         [Fact]
-        public void ComputeSegments_InvalidDuration_ThrowsArgumentException()
+        public void ComputeSegments_ZeroDurationOvershoot_ClampsToDuration()
         {
             var keyframeData = new KeyframeData(0, new[] { MsToTicks(10000) });
-            Assert.Throws<ArgumentException>(() => DynamicHlsPlaylistGenerator.ComputeSegments(keyframeData, 6000));
+            Assert.Equal(new[] { 10.0 }, DynamicHlsPlaylistGenerator.ComputeSegments(keyframeData, 6000));
+        }
+
+        [Fact]
+        public void ComputeSegments_MinorDurationOvershoot_ClampsToDuration()
+        {
+            var keyframeData = new KeyframeData(MsToTicks(9900), new[] { 0L, MsToTicks(5000), MsToTicks(10000) });
+            Assert.Equal(new[] { 10.0 }, DynamicHlsPlaylistGenerator.ComputeSegments(keyframeData, 6000));
         }
 
         [Theory]
