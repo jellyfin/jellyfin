@@ -30,6 +30,13 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class FFProbeVideoInfo
     {
+        // External subtitle / audio streams are assigned Index values starting at
+        // this offset so they (a) never collide with ffprobe-native indices on the
+        // embedded streams and (b) stay invariant to the embedded stream count, which
+        // is unknown for .strm shortcuts during the no-probe metadata scan. ffprobe
+        // never returns indices anywhere near this magnitude for real media files.
+        private const int ExternalStreamIndexBase = 1_000_000;
+
         private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -194,20 +201,26 @@ namespace MediaBrowser.Providers.MediaInfo
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
 
-            // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
-
+            // Add embedded streams FIRST, preserving the ffprobe-native stream indices
+            // stored in MediaStream.Index. The subtitle cache on disk is keyed by this
+            // Index (see SubtitleEncoder.GetSubtitleCachePath), and FindIndex-based
+            // ffmpeg `-map 0:N` extraction also depends on Index matching the physical
+            // stream position. If we renumber embedded streams after externals have
+            // claimed low indices, a later refresh that adds or removes an external
+            // subtitle will shift all embedded Index values and the cache files will be
+            // served under the wrong labels (e.g. selecting "Spanish" shows Thai).
+            //
+            // For .strm shortcuts, the first metadata refresh runs without a remote
+            // probe (mediaInfo is null) and internal streams are unknown until playback
+            // forces a re-probe; the assignment of external Index values must therefore
+            // be invariant to the internal stream count, otherwise externals would shift
+            // between the no-probe and post-probe snapshots. AddExternalSubtitlesAsync /
+            // AddExternalAudioAsync use ExternalStreamIndexBase below to anchor external
+            // Index values past any plausible ffprobe-native index, keeping external
+            // stream IDs stable for remote videos as the original code intended.
             if (mediaInfo is not null)
             {
-                foreach (var mediaStream in mediaInfo.MediaStreams)
-                {
-                    mediaStream.Index = startIndex++;
-                    mediaStreams.Add(mediaStream);
-                }
+                mediaStreams.AddRange(mediaInfo.MediaStreams);
 
                 mediaAttachments = mediaInfo.MediaAttachments;
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -231,7 +244,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     if (!mediaStream.IsExternal)
                     {
-                        mediaStream.Index = startIndex++;
                         mediaStreams.Add(mediaStream);
                     }
                 }
@@ -239,6 +251,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = [];
                 chapters = [];
             }
+
+            // External streams are assigned Index values starting at
+            // ExternalStreamIndexBase (well past any plausible ffprobe-native index),
+            // so they never collide with embedded streams and stay stable across the
+            // no-probe → probe transition for .strm files.
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -542,7 +562,7 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
+            var startIndex = GetExternalStartIndex(currentStreams);
             var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
@@ -591,12 +611,30 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
+            var startIndex = GetExternalStartIndex(currentStreams);
             var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
             video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 
             currentStreams.AddRange(externalAudioStreams);
+        }
+
+        /// <summary>
+        /// Computes the starting Index for newly-resolved external streams.
+        /// External streams are anchored at <see cref="ExternalStreamIndexBase"/> so
+        /// they don't collide with ffprobe-native indices on embedded streams and stay
+        /// stable across refreshes regardless of internal stream count (in particular,
+        /// across the no-probe → probe transition for .strm shortcuts).
+        /// </summary>
+        private static int GetExternalStartIndex(List<MediaStream> currentStreams)
+        {
+            if (currentStreams.Count == 0)
+            {
+                return ExternalStreamIndexBase;
+            }
+
+            var maxExisting = currentStreams.Max(i => i.Index);
+            return Math.Max(maxExisting + 1, ExternalStreamIndexBase);
         }
 
         /// <summary>
