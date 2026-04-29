@@ -216,12 +216,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     Path = outputPath,
                     Protocol = MediaProtocol.File,
                     Format = outputFormat,
-                    IsExternal = false
+                    IsExternal = MediaStream.IsVobSubFormat(outputFormat)
                 };
             }
 
-            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
-                .TrimStart('.');
+            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path).TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))
@@ -470,6 +469,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return subtitleStream.Codec;
             }
+            else if (MediaStream.IsVobSubFormat(subtitleStream.Codec))
+            {
+                return "mks";
+            }
             else
             {
                 return "srt";
@@ -483,6 +486,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return "sup";
             }
+            else if (MediaStream.IsVobSubFormat(subtitleStream.Codec))
+            {
+                // FFmpeg cannot mux VobSub subtitle streams back into the .idx/.sub pair, so we use .mks container instead.
+                return "mks";
+            }
             else
             {
                 return GetExtractableSubtitleFormat(subtitleStream);
@@ -495,7 +503,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || string.Equals(codec, "ssa", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "srt", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "subrip", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase)
+                || MediaStream.IsVobSubFormat(codec);
         }
 
         /// <inheritdoc />
@@ -511,7 +520,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    if (subtitleStream.IsExternal && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                    if (subtitleStream.IsExternal
+                        && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -589,6 +599,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                    // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
+                    var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                     if (streamIndex == -1)
@@ -602,9 +614,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPaths.Add(outputPath);
                     args += string.Format(
                         CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
+                        " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
                         streamIndex,
                         outputCodec,
+                        outputFormatOption,
                         outputPath);
                 }
 
@@ -634,6 +647,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
+                var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                 if (streamIndex == -1)
@@ -647,18 +662,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputPaths.Add(outputPath);
                 args += string.Format(
                     CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
+                    " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
                     streamIndex,
                     outputCodec,
+                    outputFormatOption,
                     outputPath);
             }
 
-            if (outputPaths.Count == 0)
+            if (outputPaths.Count > 0)
             {
-                return;
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
             }
-
-            await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task ExtractSubtitlesForFile(
