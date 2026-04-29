@@ -108,7 +108,7 @@ public class ChapterManager : IChapterManager
             sum += chapters[i].StartPositionTicks - chapters[i - 1].StartPositionTicks;
         }
 
-        return sum / chapters.Count;
+        return sum / (chapters.Count - 1);
     }
 
     /// <inheritdoc />
@@ -128,7 +128,7 @@ public class ChapterManager : IChapterManager
 
         var averageChapterDuration = GetAverageDurationBetweenChapters(chapters);
         var threshold = TimeSpan.FromSeconds(1).Ticks;
-        if (averageChapterDuration < threshold)
+        if (chapters.Count >= 2 && averageChapterDuration < threshold)
         {
             _logger.LogInformation("Skipping chapter image extraction for {Video} as the average chapter duration {AverageDuration} was lower than the minimum threshold {Threshold}", video.Name, averageChapterDuration, threshold);
             extractImages = false;
