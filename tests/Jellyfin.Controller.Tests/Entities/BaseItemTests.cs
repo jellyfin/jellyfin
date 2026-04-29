@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.MediaInfo;
@@ -23,11 +24,6 @@ public class BaseItemTests
     [InlineData("/Movies/Deadpool 2 (2018)/Deadpool 2 (2018).mkv", "/Movies/Deadpool 2 (2018)/Deadpool 2 (2018) - Super Duper Cut.mkv", "Deadpool 2 (2018)", "Super Duper Cut")]
     public void GetMediaSourceName_Valid(string primaryPath, string altPath, string name, string altName)
     {
-        var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>()))
-                .Returns((string x) => MediaProtocol.File);
-        BaseItem.MediaSourceManager = mediaSourceManager.Object;
-
         var video = new Video()
         {
             Path = primaryPath
@@ -38,7 +34,14 @@ public class BaseItemTests
             Path = altPath,
         };
 
-        video.LocalAlternateVersions = [videoAlt.Path];
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>()))
+                .Returns((string x) => MediaProtocol.File);
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>()))
+                .Returns([Guid.Empty]);
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+        BaseItem.LibraryManager = libraryManager.Object;
 
         Assert.Equal(name, video.GetMediaSourceName(video));
         Assert.Equal(altName, video.GetMediaSourceName(videoAlt));

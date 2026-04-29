@@ -1,10 +1,6 @@
-using System;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Persistence;
@@ -23,16 +19,19 @@ namespace Jellyfin.Server.Migrations.Routines
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ILogger<FixAudioData> _logger;
-        private readonly IServerApplicationPaths _applicationPaths;
         private readonly IItemRepository _itemRepository;
+        private readonly IItemCountService _countService;
+        private readonly IItemPersistenceService _persistenceService;
 
         public FixAudioData(
-            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            IItemRepository itemRepository)
+            IItemRepository itemRepository,
+            IItemCountService countService,
+            IItemPersistenceService persistenceService)
         {
-            _applicationPaths = applicationPaths;
             _itemRepository = itemRepository;
+            _countService = countService;
+            _persistenceService = persistenceService;
             _logger = loggerFactory.CreateLogger<FixAudioData>();
         }
 
@@ -41,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             _logger.LogInformation("Backfilling audio lyrics data to database.");
             var startIndex = 0;
-            var records = _itemRepository.GetCount(new InternalItemsQuery
+            var records = _countService.GetCount(new InternalItemsQuery
             {
                 IncludeItemTypes = [BaseItemKind.Audio],
             });
@@ -68,7 +67,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
                 }
 
-                _itemRepository.SaveItems(results, CancellationToken.None);
+                _persistenceService.SaveItems(results, CancellationToken.None);
                 startIndex += results.Count;
                 _logger.LogInformation("Backfilled data for {UpdatedRecords} of {TotalRecords} audio records", startIndex, records);
             }

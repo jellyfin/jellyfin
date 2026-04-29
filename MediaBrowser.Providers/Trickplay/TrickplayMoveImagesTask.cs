@@ -70,7 +70,8 @@ public class TrickplayMoveImagesTask : IScheduledTask
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
             IsFolder = false,
-            Recursive = true
+            Recursive = true,
+            IncludeOwnedItems = true
         });
 
         var trickplayQuery = new InternalItemsQuery
@@ -78,7 +79,8 @@ public class TrickplayMoveImagesTask : IScheduledTask
             MediaTypes = [MediaType.Video],
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
-            IsFolder = false
+            IsFolder = false,
+            IncludeOwnedItems = true
         };
 
         do

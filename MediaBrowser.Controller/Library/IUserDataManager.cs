@@ -55,6 +55,14 @@ namespace MediaBrowser.Controller.Library
         UserItemDataDto? GetUserDataDto(BaseItem item, User user);
 
         /// <summary>
+        /// Gets user data for multiple items in a single batch operation.
+        /// </summary>
+        /// <param name="items">The items to get user data for.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>A dictionary mapping item IDs to their user data.</returns>
+        Dictionary<Guid, UserItemData> GetUserDataBatch(IReadOnlyList<BaseItem> items, User user);
+
+        /// <summary>
         /// Gets the user data dto.
         /// </summary>
         /// <param name="item">Item to use.</param>
