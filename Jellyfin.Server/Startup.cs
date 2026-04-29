@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -16,6 +17,7 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
@@ -127,6 +129,14 @@ namespace Jellyfin.Server
             services.AddHlsPlaylistGenerator();
             services.AddLiveTvServices();
 
+            var serverUICulture = _serverConfigurationManager.Configuration.UICulture;
+            if (string.IsNullOrEmpty(serverUICulture))
+            {
+                serverUICulture = "en-US";
+            }
+
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(serverUICulture);
+
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
@@ -167,6 +177,8 @@ namespace Jellyfin.Server
                 mainApp.UseResponseCompression();
 
                 mainApp.UseCors();
+
+                mainApp.UseMiddleware<AcceptLanguageMiddleware>();
 
                 if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
                 {
