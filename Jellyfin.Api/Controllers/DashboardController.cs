@@ -70,6 +70,7 @@ public class DashboardController : BaseJellyfinApiController
     /// <response code="404">Plugin configuration page not found.</response>
     /// <returns>The configuration page.</returns>
     [HttpGet("web/ConfigurationPage")]
+    [Authorize(Policy = Policies.ElevatePlugin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile(MediaTypeNames.Text.Html, "application/x-javascript")]
