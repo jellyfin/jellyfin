@@ -732,6 +732,7 @@ namespace MediaBrowser.Providers.Manager
             };
 
             var item = metadata.Item;
+            var fieldStateBeforeRefresh = CaptureFieldState(item);
 
             var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>().ToList();
             var logName = !item.IsFileProtocol ? item.Name ?? item.Path : item.Path ?? item.Name;
@@ -829,11 +830,13 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var isLocalLocked = temp.Item.IsLocked;
+            var hasRemoteMetadata = false;
             if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
             {
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
+                hasRemoteMetadata = (remoteResult.UpdateType & ItemUpdateType.MetadataDownload) > ItemUpdateType.None;
                 refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
@@ -843,22 +846,30 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
+                    bool anyContentMetadataFound =
+                        (refreshResult.UpdateType & (ItemUpdateType.MetadataDownload | ItemUpdateType.MetadataImport)) > ItemUpdateType.None;
+
                     if (!options.RemoveOldMetadata)
                     {
                         // Add existing metadata to provider result if it does not exist there
                         MergeData(metadata, temp, [], false, false);
                     }
 
-                    if (isLocalLocked)
+                    if (anyContentMetadataFound)
                     {
-                        MergeData(temp, metadata, item.LockedFields, true, true);
-                    }
-                    else
-                    {
-                        var shouldReplace = (options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly && options.ReplaceAllMetadata)
-                            // Case for Scan for new and updated files
-                            || (options.MetadataRefreshMode == MetadataRefreshMode.Default && !options.ReplaceAllMetadata);
-                        MergeData(temp, metadata, item.LockedFields, shouldReplace, true);
+                        var effectiveLockedFields = GetEffectiveLockedFields(item.LockedFields, hasRemoteMetadata);
+
+                        if (isLocalLocked)
+                        {
+                            MergeData(temp, metadata, effectiveLockedFields, true, true);
+                        }
+                        else
+                        {
+                            var shouldReplace = (options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly && options.ReplaceAllMetadata)
+                                // Case for Scan for new and updated files
+                                || (options.MetadataRefreshMode == MetadataRefreshMode.Default && !options.ReplaceAllMetadata);
+                            MergeData(temp, metadata, effectiveLockedFields, shouldReplace, true);
+                        }
                     }
                 }
             }
@@ -866,6 +877,11 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!hasRemoteMetadata && RestoreFieldState(item, fieldStateBeforeRefresh))
+            {
+                refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
             }
 
             return refreshResult;
@@ -954,6 +970,77 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private static MetadataField[] GetEffectiveLockedFields(MetadataField[] lockedFields, bool hasRemoteMetadata)
+        {
+            if (hasRemoteMetadata)
+            {
+                return lockedFields;
+            }
+
+            return lockedFields.Concat(Enum.GetValues<MetadataField>()).Distinct().ToArray();
+        }
+
+        private static FieldState CaptureFieldState(BaseItem item)
+        {
+            return new FieldState(
+                item.Name,
+                item.Overview,
+                item.OfficialRating,
+                item.Genres.ToArray(),
+                item.Studios.ToArray(),
+                item.Tags.ToArray(),
+                item.ProductionLocations.ToArray());
+        }
+
+        private static bool RestoreFieldState(BaseItem item, FieldState state)
+        {
+            var hasChanged = false;
+
+            if (!string.Equals(item.Name, state.Name, StringComparison.Ordinal))
+            {
+                item.Name = state.Name;
+                hasChanged = true;
+            }
+
+            if (!string.Equals(item.Overview, state.Overview, StringComparison.Ordinal))
+            {
+                item.Overview = state.Overview;
+                hasChanged = true;
+            }
+
+            if (!string.Equals(item.OfficialRating, state.OfficialRating, StringComparison.Ordinal))
+            {
+                item.OfficialRating = state.OfficialRating;
+                hasChanged = true;
+            }
+
+            if (!item.Genres.SequenceEqual(state.Genres, StringComparer.Ordinal))
+            {
+                item.Genres = state.Genres;
+                hasChanged = true;
+            }
+
+            if (!item.Studios.SequenceEqual(state.Studios, StringComparer.Ordinal))
+            {
+                item.Studios = state.Studios;
+                hasChanged = true;
+            }
+
+            if (!item.Tags.SequenceEqual(state.Tags, StringComparer.Ordinal))
+            {
+                item.Tags = state.Tags;
+                hasChanged = true;
+            }
+
+            if (!item.ProductionLocations.SequenceEqual(state.ProductionLocations, StringComparer.Ordinal))
+            {
+                item.ProductionLocations = state.ProductionLocations;
+                hasChanged = true;
+            }
+
+            return hasChanged;
+        }
+
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
@@ -1006,6 +1093,59 @@ namespace MediaBrowser.Providers.Manager
             ArgumentNullException.ThrowIfNull(sourceResult);
             ArgumentNullException.ThrowIfNull(targetResult);
 
+            // Check if source is an orphaned item (no valid remote metadata)
+            // Orphaned items have no provider IDs and minimal metadata
+            bool isOrphanedSource = (source.ProviderIds?.Count ?? 0) == 0;
+
+            // If source is orphaned, don't perform any merge to preserve existing target data
+            // This prevents empty/invalid data from overwriting valid user edits
+            // This applies to both automatic refresh and explicit "Replace all metadata" actions
+            if (isOrphanedSource)
+            {
+                // Only merge metadata settings if requested, but skip field merging
+                if (mergeMetadataSettings)
+                {
+                    if (replaceData || !target.IsLocked)
+                    {
+                        target.IsLocked = target.IsLocked || source.IsLocked;
+                    }
+
+                    if (target.LockedFields.Length == 0)
+                    {
+                        target.LockedFields = source.LockedFields;
+                    }
+                    else
+                    {
+                        target.LockedFields = target.LockedFields.Concat(source.LockedFields).Distinct().ToArray();
+                    }
+
+                    if (source.DateCreated != DateTime.MinValue)
+                    {
+                        target.DateCreated = source.DateCreated;
+                    }
+
+                    if (source.DateModified != DateTime.MinValue)
+                    {
+                        target.DateModified = source.DateModified;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(source.PreferredMetadataCountryCode)
+                        && (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode)))
+                    {
+                        target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(source.PreferredMetadataLanguage)
+                        && (replaceData || string.IsNullOrEmpty(target.PreferredMetadataLanguage)))
+                    {
+                        target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+                    }
+                }
+
+                // Early return - prevent orphaned data from overwriting existing metadata
+                return;
+            }
+
             if (!lockedFields.Contains(MetadataField.Name))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Name))
@@ -1018,90 +1158,98 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
+            if (!string.IsNullOrWhiteSpace(source.OriginalTitle)
+                && (replaceData || string.IsNullOrEmpty(target.OriginalTitle)))
             {
                 target.OriginalTitle = source.OriginalTitle;
             }
 
-            if (replaceData || !target.CommunityRating.HasValue)
+            if (source.CommunityRating.HasValue && (replaceData || !target.CommunityRating.HasValue))
             {
                 target.CommunityRating = source.CommunityRating;
             }
 
-            if (replaceData || !target.EndDate.HasValue)
+            if (source.EndDate.HasValue && (replaceData || !target.EndDate.HasValue))
             {
                 target.EndDate = source.EndDate;
             }
 
             if (!lockedFields.Contains(MetadataField.Genres))
             {
-                if (replaceData || target.Genres.Length == 0)
+                if (source.Genres.Length > 0 && (replaceData || target.Genres.Length == 0))
                 {
                     target.Genres = source.Genres;
                 }
             }
 
-            if (replaceData || !target.IndexNumber.HasValue)
+            if (source.IndexNumber.HasValue && (replaceData || !target.IndexNumber.HasValue))
             {
                 target.IndexNumber = source.IndexNumber;
             }
 
             if (!lockedFields.Contains(MetadataField.OfficialRating))
             {
-                if (replaceData || string.IsNullOrEmpty(target.OfficialRating))
+                if (!string.IsNullOrWhiteSpace(source.OfficialRating)
+                    && (replaceData || string.IsNullOrEmpty(target.OfficialRating)))
                 {
                     target.OfficialRating = source.OfficialRating;
                 }
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.CustomRating))
+            if (!string.IsNullOrWhiteSpace(source.CustomRating)
+                && (replaceData || string.IsNullOrEmpty(target.CustomRating)))
             {
                 target.CustomRating = source.CustomRating;
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.Tagline))
+            if (!string.IsNullOrWhiteSpace(source.Tagline)
+                && (replaceData || string.IsNullOrEmpty(target.Tagline)))
             {
                 target.Tagline = source.Tagline;
             }
 
             if (!lockedFields.Contains(MetadataField.Overview))
             {
-                if (replaceData || string.IsNullOrEmpty(target.Overview))
+                if (!string.IsNullOrWhiteSpace(source.Overview)
+                    && (replaceData || string.IsNullOrEmpty(target.Overview)))
                 {
                     target.Overview = source.Overview;
                 }
             }
 
-            if (replaceData || !target.ParentIndexNumber.HasValue)
+            if (source.ParentIndexNumber.HasValue && (replaceData || !target.ParentIndexNumber.HasValue))
             {
                 target.ParentIndexNumber = source.ParentIndexNumber;
             }
 
             if (!lockedFields.Contains(MetadataField.Cast))
             {
-                if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
+                if (sourceResult.People is not null && sourceResult.People.Count > 0)
                 {
-                    targetResult.People = sourceResult.People;
-                }
-                else if (sourceResult.People is not null && sourceResult.People.Count > 0)
-                {
-                    MergePeople(sourceResult.People, targetResult.People);
+                    if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
+                    {
+                        targetResult.People = sourceResult.People;
+                    }
+                    else
+                    {
+                        MergePeople(sourceResult.People, targetResult.People);
+                    }
                 }
             }
 
-            if (replaceData || !target.PremiereDate.HasValue)
+            if (source.PremiereDate.HasValue && (replaceData || !target.PremiereDate.HasValue))
             {
                 target.PremiereDate = source.PremiereDate;
             }
 
-            if (replaceData || !target.ProductionYear.HasValue)
+            if (source.ProductionYear.HasValue && source.ProductionYear.Value > 0 && (replaceData || !target.ProductionYear.HasValue))
             {
                 target.ProductionYear = source.ProductionYear;
             }
 
             if (!lockedFields.Contains(MetadataField.Runtime))
             {
-                if (replaceData || !target.RunTimeTicks.HasValue)
+                if (source.RunTimeTicks.HasValue && (replaceData || !target.RunTimeTicks.HasValue))
                 {
                     if (target is not Audio && target is not Video)
                     {
@@ -1112,11 +1260,11 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Studios))
             {
-                if (replaceData || target.Studios.Length == 0)
+                if (source.Studios.Length > 0 && (replaceData || target.Studios.Length == 0))
                 {
                     target.Studios = source.Studios;
                 }
-                else
+                else if (source.Studios.Length > 0)
                 {
                     target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
@@ -1124,11 +1272,11 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Tags))
             {
-                if (replaceData || target.Tags.Length == 0)
+                if (source.Tags.Length > 0 && (replaceData || target.Tags.Length == 0))
                 {
                     target.Tags = source.Tags;
                 }
-                else
+                else if (source.Tags.Length > 0)
                 {
                     target.Tags = target.Tags.Concat(source.Tags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
@@ -1136,11 +1284,11 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.ProductionLocations))
             {
-                if (replaceData || target.ProductionLocations.Length == 0)
+                if (source.ProductionLocations.Length > 0 && (replaceData || target.ProductionLocations.Length == 0))
                 {
                     target.ProductionLocations = source.ProductionLocations;
                 }
-                else
+                else if (source.ProductionLocations.Length > 0)
                 {
                     target.ProductionLocations = target.ProductionLocations.Concat(source.ProductionLocations).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
@@ -1161,16 +1309,16 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || !target.CriticRating.HasValue)
+            if (source.CriticRating.HasValue && (replaceData || !target.CriticRating.HasValue))
             {
                 target.CriticRating = source.CriticRating;
             }
 
-            if (replaceData || target.RemoteTrailers.Count == 0)
+            if (source.RemoteTrailers.Count > 0 && (replaceData || target.RemoteTrailers.Count == 0))
             {
                 target.RemoteTrailers = source.RemoteTrailers;
             }
-            else
+            else if (source.RemoteTrailers.Count > 0)
             {
                 target.RemoteTrailers = target.RemoteTrailers.Concat(source.RemoteTrailers).DistinctBy(t => t.Url).ToArray();
             }
@@ -1209,17 +1357,19 @@ namespace MediaBrowser.Providers.Manager
                     target.DateCreated = source.DateCreated;
                 }
 
-                if (replaceData || source.DateModified != DateTime.MinValue)
+                if (source.DateModified != DateTime.MinValue)
                 {
                     target.DateModified = source.DateModified;
                 }
 
-                if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode))
+                if (!string.IsNullOrWhiteSpace(source.PreferredMetadataCountryCode)
+                    && (replaceData || string.IsNullOrEmpty(target.PreferredMetadataCountryCode)))
                 {
                     target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
                 }
 
-                if (replaceData || string.IsNullOrEmpty(target.PreferredMetadataLanguage))
+                if (!string.IsNullOrWhiteSpace(source.PreferredMetadataLanguage)
+                    && (replaceData || string.IsNullOrEmpty(target.PreferredMetadataLanguage)))
                 {
                     target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
                 }
@@ -1290,13 +1440,16 @@ namespace MediaBrowser.Providers.Manager
             if (source is IHasAlbumArtist sourceHasAlbumArtist
                 && target is IHasAlbumArtist targetHasAlbumArtist)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                if (sourceHasAlbumArtist.AlbumArtists.Count > 0)
                 {
-                    targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
-                }
-                else if (sourceHasAlbumArtist.AlbumArtists.Count > 0)
-                {
-                    targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                    {
+                        targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
+                    }
+                    else
+                    {
+                        targetHasAlbumArtist.AlbumArtists = targetHasAlbumArtist.AlbumArtists.Concat(sourceHasAlbumArtist.AlbumArtists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    }
                 }
             }
         }
@@ -1310,6 +1463,30 @@ namespace MediaBrowser.Providers.Manager
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }
             }
+        }
+
+        private readonly struct FieldState(
+            string name,
+            string overview,
+            string officialRating,
+            string[] genres,
+            string[] studios,
+            string[] tags,
+            string[] productionLocations)
+        {
+            public string Name { get; } = name;
+
+            public string Overview { get; } = overview;
+
+            public string OfficialRating { get; } = officialRating;
+
+            public string[] Genres { get; } = genres;
+
+            public string[] Studios { get; } = studios;
+
+            public string[] Tags { get; } = tags;
+
+            public string[] ProductionLocations { get; } = productionLocations;
         }
     }
 }
