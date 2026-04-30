@@ -15,11 +15,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                 """
                 WITH ranked AS (
                     SELECT "Id", "Username",
-                           ROW_NUMBER() OVER (PARTITION BY TRIM("Username") ORDER BY LENGTH("Username")) as rn
+                           ROW_NUMBER() OVER (PARTITION BY TRIM("Username") ORDER BY LENGTH("Username"), "Id") as rn
                     FROM "Users"
                 )
                 UPDATE "Users"
-                SET "Username" = TRIM("Username") || ' ' || ranked.rn
+                SET "Username" = TRIM("Username") || ' ' || ranked."Id"
                 FROM ranked
                 WHERE "Users"."Id" = ranked."Id" AND ranked.rn > 1;
                 """);
