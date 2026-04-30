@@ -75,6 +75,8 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
+            serviceCollection.AddSingleton<MediaBrowser.Controller.Drawing.IProfileImageService, ProfileImageGenerator>();
+
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();

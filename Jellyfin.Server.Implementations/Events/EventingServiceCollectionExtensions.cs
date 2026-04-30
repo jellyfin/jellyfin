@@ -62,6 +62,7 @@ namespace Jellyfin.Server.Implementations.Events
 
             // User consumers
             collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedLogger>();
+            collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedProfileImageConsumer>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedNotifier>();
             collection.AddScoped<IEventConsumer<UserLockedOutEventArgs>, UserLockedOutLogger>();

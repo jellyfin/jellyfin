@@ -50,6 +50,7 @@ public class ImageController : BaseJellyfinApiController
     private readonly ILogger<ImageController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IApplicationPaths _appPaths;
+    private readonly IProfileImageService _profileImageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -62,6 +63,7 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="profileImageService">Instance of the <see cref="IProfileImageService"/> interface.</param>
     public ImageController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -70,7 +72,8 @@ public class ImageController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
         IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        IProfileImageService profileImageService)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -80,6 +83,7 @@ public class ImageController : BaseJellyfinApiController
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
         _appPaths = appPaths;
+        _profileImageService = profileImageService;
     }
 
     private static CryptoStream GetFromBase64Stream(Stream inputStream)
@@ -230,6 +234,59 @@ public class ImageController : BaseJellyfinApiController
         }
 
         await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Generates a default profile image for the requesting user based on their username initials.
+    /// Any existing profile image is replaced.
+    /// </summary>
+    /// <param name="name">Optional display name override used to derive initials. Defaults to the user's username.</param>
+    /// <response code="204">Profile image generated.</response>
+    /// <response code="403">User does not have permission to update the image.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>A <see cref="NoContentResult"/>.</returns>
+    [HttpPost("UserImage/Generate")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GenerateUserProfileImage([FromQuery] string? name)
+    {
+        var user = _userManager.GetUserById(User.GetUserId());
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        await _profileImageService.GenerateAndSaveProfileImageAsync(user, name).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Generates a default profile image for a specific user (admin use).
+    /// Any existing profile image is replaced. The display name used for initials can be overridden.
+    /// </summary>
+    /// <param name="userId">The target user's Id.</param>
+    /// <param name="name">Optional display name override used to derive initials. Defaults to the user's username.</param>
+    /// <response code="204">Profile image generated.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>A <see cref="NoContentResult"/>.</returns>
+    [HttpPost("UserImage/{userId}/Generate")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AdminGenerateUserProfileImage(
+        [FromRoute, Required] Guid userId,
+        [FromQuery] string? name)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        await _profileImageService.GenerateAndSaveProfileImageAsync(user, name).ConfigureAwait(false);
         return NoContent();
     }
 
