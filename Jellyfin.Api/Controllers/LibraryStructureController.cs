@@ -342,6 +342,17 @@ public class LibraryStructureController : BaseJellyfinApiController
             return NotFound();
         }
 
+        LibraryOptions options = item.GetLibraryOptions();
+        foreach (var mediaPath in request.LibraryOptions!.PathInfos)
+        {
+            if (options.PathInfos.Any(i => i.Path == mediaPath.Path))
+            {
+                continue;
+            }
+
+            _libraryManager.CreateShortcut(item.Path, mediaPath);
+        }
+
         item.UpdateLibraryOptions(request.LibraryOptions);
         return NoContent();
     }

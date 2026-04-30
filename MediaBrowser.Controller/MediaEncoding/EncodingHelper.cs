@@ -33,18 +33,18 @@ namespace MediaBrowser.Controller.MediaEncoding
     public partial class EncodingHelper
     {
         /// <summary>
-        /// The codec validation regex.
+        /// The codec validation regex string.
         /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
         /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
         /// This should matches all common valid codecs.
         /// </summary>
-        public const string ContainerValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+        public const string ContainerValidationRegexStr = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
 
         /// <summary>
-        /// The level validation regex.
+        /// The level validation regex string.
         /// This regular expression matches strings representing a double.
         /// </summary>
-        public const string LevelValidationRegex = @"-?[0-9]+(?:\.[0-9]+)?";
+        public const string LevelValidationRegexStr = @"-?[0-9]+(?:\.[0-9]+)?";
 
         private const string _defaultMjpegEncoder = "mjpeg";
 
@@ -85,8 +85,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegVaapiDeviceVendorId = new Version(7, 0, 1);
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
         private readonly Version _minFFmpegRkmppHevcDecDoviRpu = new Version(7, 1, 1);
-
-        private static readonly Regex _containerValidationRegex = new(ContainerValidationRegex, RegexOptions.Compiled);
+        private readonly Version _minFFmpegReadrateCatchupOption = new Version(8, 0);
 
         private static readonly string[] _videoProfilesH264 =
         [
@@ -179,6 +178,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             RemoveDovi,
             RemoveHdr10Plus,
         }
+
+        /// <summary>
+        /// The codec validation regex.
+        /// This regular expression matches strings that consist of alphanumeric characters, hyphens,
+        /// periods, underscores, commas, and vertical bars, with a length between 0 and 40 characters.
+        /// This should matches all common valid codecs.
+        /// </summary>
+        [GeneratedRegex(@"^[a-zA-Z0-9\-\._,|]{0,40}$")]
+        public static partial Regex ContainerValidationRegex();
 
         [GeneratedRegex(@"\s+")]
         private static partial Regex WhiteSpaceRegex();
@@ -405,7 +413,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && IsDoviWithHdr10Bl(state.VideoStream);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
+                       || IsDoviWithHdr10Bl(state.VideoStream));
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -420,8 +430,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (IsDoviWithHdr10Bl(state.VideoStream)
-                       || state.VideoStream.VideoRangeType is VideoRangeType.HLG);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
+                       || IsDoviWithHdr10Bl(state.VideoStream)
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
@@ -476,7 +488,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetMjpegEncoder(state, encodingOptions);
                 }
 
-                if (_containerValidationRegex.IsMatch(codec))
+                if (ContainerValidationRegex().IsMatch(codec))
                 {
                     return codec.ToLowerInvariant();
                 }
@@ -517,7 +529,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container) || !_containerValidationRegex.IsMatch(container))
+            if (string.IsNullOrEmpty(container) || !ContainerValidationRegex().IsMatch(container))
             {
                 return null;
             }
@@ -735,7 +747,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var codec = state.OutputAudioCodec;
 
-            if (!_containerValidationRegex.IsMatch(codec))
+            if (!ContainerValidationRegex().IsMatch(codec))
             {
                 codec = "aac";
             }
@@ -1267,6 +1279,20 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
 
+                // Use analyzeduration also for subtitle streams to improve resolution detection  with streams inside MKS files
+                var analyzeDurationArgument = GetFfmpegAnalyzeDurationArg(state);
+                if (!string.IsNullOrEmpty(analyzeDurationArgument))
+                {
+                    arg.Append(' ').Append(analyzeDurationArgument);
+                }
+
+                // Apply probesize, too, if configured
+                var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
+                if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
+                {
+                    arg.Append(' ').Append(ffmpegProbeSizeArgument);
+                }
+
                 // Also seek the external subtitles stream.
                 var seekSubParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
                 if (!string.IsNullOrEmpty(seekSubParam))
@@ -1768,38 +1794,40 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
-            if (double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
+            if (!double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
             {
-                if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+                return null;
+            }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.3 (15) and lower for maximum compatibility.
+                // https://en.wikipedia.org/wiki/AV1#Levels
+                if (requestLevel < 0 || requestLevel >= 15)
                 {
-                    // Transcode to level 5.3 (15) and lower for maximum compatibility.
-                    // https://en.wikipedia.org/wiki/AV1#Levels
-                    if (requestLevel < 0 || requestLevel >= 15)
-                    {
-                        return "15";
-                    }
+                    return "15";
                 }
-                else if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.0 and lower for maximum compatibility.
+                // Level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it.
+                // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
+                // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880.
+                if (requestLevel < 0 || requestLevel >= 150)
                 {
-                    // Transcode to level 5.0 and lower for maximum compatibility.
-                    // Level 5.0 is suitable for up to 4k 30fps hevc encoding, otherwise let the encoder to handle it.
-                    // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
-                    // MaxLumaSampleRate = 3840*2160*30 = 248832000 < 267386880.
-                    if (requestLevel < 0 || requestLevel >= 150)
-                    {
-                        return "150";
-                    }
+                    return "150";
                 }
-                else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                // Transcode to level 5.1 and lower for maximum compatibility.
+                // h264 4k 30fps requires at least level 5.1 otherwise it will break on safari fmp4.
+                // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
+                if (requestLevel < 0 || requestLevel >= 51)
                 {
-                    // Transcode to level 5.1 and lower for maximum compatibility.
-                    // h264 4k 30fps requires at least level 5.1 otherwise it will break on safari fmp4.
-                    // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
-                    if (requestLevel < 0 || requestLevel >= 51)
-                    {
-                        return "51";
-                    }
+                    return "51";
                 }
             }
 
@@ -2189,12 +2217,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            var level = state.GetRequestedLevel(targetVideoCodec);
+            var level = NormalizeTranscodingLevel(state, state.GetRequestedLevel(targetVideoCodec));
 
             if (!string.IsNullOrEmpty(level))
             {
-                level = NormalizeTranscodingLevel(state, level);
-
                 // libx264, QSV, AMF can adjust the given level to match the output.
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
@@ -2377,6 +2403,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestHasHLG = requestedRangeTypes.Contains(VideoRangeType.HLG.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasSDR = requestedRangeTypes.Contains(VideoRangeType.SDR.ToString(), StringComparison.OrdinalIgnoreCase);
                 var requestHasDOVI = requestedRangeTypes.Contains(VideoRangeType.DOVI.ToString(), StringComparison.OrdinalIgnoreCase);
+
+                // If SDR is the only supported range, we should not copy any of the HDR streams.
+                // All the following copy check assumes at least one HDR format is supported.
+                if (requestedRangeTypes.Length == 1 && requestHasSDR && videoStream.VideoRangeType != VideoRangeType.SDR)
+                {
+                    return false;
+                }
 
                 // If the client does not support DOVI and the video stream is DOVI without fallback, we should not copy it.
                 if (!requestHasDOVI && videoStream.VideoRangeType == VideoRangeType.DOVI)
@@ -5942,25 +5975,34 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var isFullAfbcPipeline = isEncoderSupportAfbc && isDrmInDrmOut && !doOclTonemap;
                 var swapOutputWandH = doRkVppTranspose && swapWAndH;
-                var outFormat = doOclTonemap ? "p010" : (isMjpegEncoder ? "bgra" : "nv12"); // RGA only support full range in rgb fmts
+                var outFormat = doOclTonemap ? "p010" : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("vpp", "rkrga", outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
-                var doScaling = GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
+                var doScaling = !string.IsNullOrEmpty(GetHwScaleFilter("vpp", "rkrga", string.Empty, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH));
 
                 if (!hasSubs
                      || doRkVppTranspose
                      || !isFullAfbcPipeline
-                     || !string.IsNullOrEmpty(doScaling))
+                     || doScaling)
                 {
+                    var isScaleRatioSupported = IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f);
+
                     // RGA3 hardware only support (1/8 ~ 8) scaling in each blit operation,
                     // but in Trickplay there's a case: (3840/320 == 12), enable 2pass for it
-                    if (!string.IsNullOrEmpty(doScaling)
-                        && !IsScaleRatioSupported(inW, inH, reqW, reqH, reqMaxW, reqMaxH, 8.0f))
+                    if (doScaling && !isScaleRatioSupported)
                     {
                         // Vendor provided BSP kernel has an RGA driver bug that causes the output to be corrupted for P010 format.
                         // Use NV15 instead of P010 to avoid the issue.
                         // SDR inputs are using BGRA formats already which is not affected.
-                        var intermediateFormat = string.Equals(outFormat, "p010", StringComparison.OrdinalIgnoreCase) ? "nv15" : outFormat;
+                        var intermediateFormat = doOclTonemap ? "nv15" : (isMjpegEncoder ? "bgra" : outFormat);
                         var hwScaleFilterFirstPass = $"scale_rkrga=w=iw/7.9:h=ih/7.9:format={intermediateFormat}:force_original_aspect_ratio=increase:force_divisible_by=4:afbc=1";
+                        mainFilters.Add(hwScaleFilterFirstPass);
+                    }
+
+                    // The RKMPP MJPEG encoder on some newer chip models no longer supports RGB input.
+                    // Use 2pass here to enable RGA output of full-range YUV in the 2nd pass.
+                    if (isMjpegEncoder && !doOclTonemap && ((doScaling && isScaleRatioSupported) || !doScaling))
+                    {
+                        var hwScaleFilterFirstPass = "vpp_rkrga=format=bgra:afbc=1";
                         mainFilters.Add(hwScaleFilterFirstPass);
                     }
 
@@ -6338,6 +6380,19 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (!hasHardwareHi10P
                         && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return null;
+                    }
+                }
+
+                // Block unsupported H.264 Hi422P and Hi444PP profiles, which can be encoded with 4:2:0 pixel format
+                if (string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase)
+                    && ((videoStream.Profile?.Contains("4:2:2", StringComparison.OrdinalIgnoreCase) ?? false)
+                        || (videoStream.Profile?.Contains("4:4:4", StringComparison.OrdinalIgnoreCase) ?? false)))
+                {
+                    // VideoToolbox on Apple Silicon has H.264 Hi444PP and theoretically also has Hi422P
+                    if (!(hardwareAccelerationType == HardwareAccelerationType.videotoolbox
+                          && RuntimeInformation.OSArchitecture.Equals(Architecture.Arm64)))
                     {
                         return null;
                     }
@@ -7023,8 +7078,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.Equals(videoStream.Codec, "av1", StringComparison.OrdinalIgnoreCase))
                 {
-                    var accelType = GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
-                    return accelType + ((!string.IsNullOrEmpty(accelType) && isAfbcSupported) ? " -afbc rga" : string.Empty);
+                    // there's an issue about AV1 AFBC on RK3588, disable it for now until it's fixed upstream
+                    return GetHwaccelType(state, options, "av1", bitDepth, hwSurface);
                 }
             }
 
@@ -7087,9 +7142,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
+        private string GetFfmpegAnalyzeDurationArg(EncodingJobInfo state)
         {
-            var inputModifier = string.Empty;
             var analyzeDurationArgument = string.Empty;
 
             // Apply -analyzeduration as per the environment variable,
@@ -7105,6 +7159,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
+            return analyzeDurationArgument;
+        }
+
+        private string GetFfmpegProbesizeArg()
+        {
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                return $"-probesize {ffmpegProbeSize}";
+            }
+
+            return string.Empty;
+        }
+
+        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
+        {
+            var inputModifier = string.Empty;
+            var analyzeDurationArgument = GetFfmpegAnalyzeDurationArg(state);
+
             if (!string.IsNullOrEmpty(analyzeDurationArgument))
             {
                 inputModifier += " " + analyzeDurationArgument;
@@ -7113,11 +7187,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             inputModifier = inputModifier.Trim();
 
             // Apply -probesize if configured
-            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+            var ffmpegProbeSizeArgument = GetFfmpegProbesizeArg();
 
-            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            if (!string.IsNullOrEmpty(ffmpegProbeSizeArgument))
             {
-                inputModifier += $" -probesize {ffmpegProbeSize}";
+                inputModifier += " " + ffmpegProbeSizeArgument;
             }
 
             var userAgentParam = GetUserAgentParam(state);
@@ -7157,8 +7231,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += GetVideoSyncOption(state.InputVideoSync, _mediaEncoder.EncoderVersion);
             }
 
+            int readrate = 0;
             if (state.ReadInputAtNativeFramerate && state.InputProtocol != MediaProtocol.Rtsp)
             {
+                readrate = 1;
                 inputModifier += " -re";
             }
             else if (encodingOptions.EnableSegmentDeletion
@@ -7169,7 +7245,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // Set an input read rate limit 10x for using SegmentDeletion with stream-copy
                 // to prevent ffmpeg from exiting prematurely (due to fast drive)
-                inputModifier += " -readrate 10";
+                readrate = 10;
+                inputModifier += $" -readrate {readrate}";
+            }
+
+            // Set a larger catchup value to revert to the old behavior,
+            // otherwise, remuxing might stall due to this new option
+            if (readrate > 0 && _mediaEncoder.EncoderVersion >= _minFFmpegReadrateCatchupOption)
+            {
+                inputModifier += $" -readrate_catchup {readrate * 100}";
             }
 
             var flags = new List<string>();

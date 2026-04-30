@@ -78,7 +78,7 @@
     <None Update="wwwroot\api-docs\swagger\custom.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="wwwroot\api-docs\banner-dark.svg">
+    <None Update="wwwroot\api-docs\jellyfin.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="ServerSetupApp/index.mstemplate.html">

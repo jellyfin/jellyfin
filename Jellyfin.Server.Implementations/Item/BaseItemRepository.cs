@@ -33,6 +33,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +70,7 @@ public sealed class BaseItemRepository
     private readonly IItemTypeLookup _itemTypeLookup;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
+    private readonly ILocalizationManager _localizationManager;
 
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
@@ -85,18 +87,21 @@ public sealed class BaseItemRepository
     /// <param name="itemTypeLookup">The static type lookup.</param>
     /// <param name="serverConfigurationManager">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
+    /// <param name="localizationManager">Localization manager.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost appHost,
         IItemTypeLookup itemTypeLookup,
         IServerConfigurationManager serverConfigurationManager,
-        ILogger<BaseItemRepository> logger)
+        ILogger<BaseItemRepository> logger,
+        ILocalizationManager localizationManager)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
         _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
+        _localizationManager = localizationManager;
     }
 
     /// <inheritdoc />
@@ -275,6 +280,7 @@ public sealed class BaseItemRepository
         }
 
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         result.Items = dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
         result.StartIndex = filter.StartIndex ?? 0;
@@ -294,6 +300,26 @@ public sealed class BaseItemRepository
 
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+
+        var hasRandomSort = filter.OrderBy.Any(e => e.OrderBy == ItemSortBy.Random);
+        if (hasRandomSort)
+        {
+            var orderedIds = dbQuery.Select(e => e.Id).ToList();
+            if (orderedIds.Count == 0)
+            {
+                return Array.Empty<BaseItemDto>();
+            }
+
+            var itemsById = ApplyNavigations(context.BaseItems.Where(e => orderedIds.Contains(e.Id)), filter)
+                .AsEnumerable()
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .Where(dto => dto is not null)
+                .ToDictionary(i => i!.Id);
+
+            return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
+        }
+
+        dbQuery = ApplyNavigations(dbQuery, filter);
 
         return dbQuery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -336,6 +362,8 @@ public sealed class BaseItemRepository
         mainquery = mainquery.Where(g => g.DateCreated >= subqueryGrouped.Min(s => s.MaxDateCreated));
         mainquery = ApplyGroupingFilter(context, mainquery, filter);
         mainquery = ApplyQueryPaging(mainquery, filter);
+
+        mainquery = ApplyNavigations(mainquery, filter);
 
         return mainquery.AsEnumerable().Where(e => e is not null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).ToArray();
     }
@@ -399,19 +427,32 @@ public sealed class BaseItemRepository
             dbQuery = dbQuery.Distinct();
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter);
-
-        dbQuery = ApplyNavigations(dbQuery, filter);
+        dbQuery = ApplyOrder(dbQuery, filter, context);
 
         return dbQuery;
     }
 
     private static IQueryable<BaseItemEntity> ApplyNavigations(IQueryable<BaseItemEntity> dbQuery, InternalItemsQuery filter)
     {
-        dbQuery = dbQuery.Include(e => e.TrailerTypes)
-           .Include(e => e.Provider)
-           .Include(e => e.LockedFields)
-           .Include(e => e.UserData);
+        if (filter.TrailerTypes.Length > 0 || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+        {
+            dbQuery = dbQuery.Include(e => e.TrailerTypes);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.ProviderIds))
+        {
+            dbQuery = dbQuery.Include(e => e.Provider);
+        }
+
+        if (filter.DtoOptions.ContainsField(ItemFields.Settings))
+        {
+            dbQuery = dbQuery.Include(e => e.LockedFields);
+        }
+
+        if (filter.DtoOptions.EnableUserData)
+        {
+            dbQuery = dbQuery.Include(e => e.UserData);
+        }
 
         if (filter.DtoOptions.EnableImages)
         {
@@ -446,6 +487,7 @@ public sealed class BaseItemRepository
         dbQuery = TranslateQuery(dbQuery, context, filter);
         dbQuery = ApplyGroupingFilter(context, dbQuery, filter);
         dbQuery = ApplyQueryPaging(dbQuery, filter);
+        dbQuery = ApplyNavigations(dbQuery, filter);
         return dbQuery;
     }
 
@@ -599,7 +641,6 @@ public sealed class BaseItemRepository
 
         var ids = tuples.Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
-        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -615,10 +656,16 @@ public sealed class BaseItemRepository
             {
                 context.BaseItemProviders.Where(e => e.ItemId == entity.Id).ExecuteDelete();
                 context.BaseItemImageInfos.Where(e => e.ItemId == entity.Id).ExecuteDelete();
+                context.BaseItemMetadataFields.Where(e => e.ItemId == entity.Id).ExecuteDelete();
 
                 if (entity.Images is { Count: > 0 })
                 {
                     context.BaseItemImageInfos.AddRange(entity.Images);
+                }
+
+                if (entity.LockedFields is { Count: > 0 })
+                {
+                    context.BaseItemMetadataFields.AddRange(entity.LockedFields);
                 }
 
                 context.BaseItems.Attach(entity).State = EntityState.Modified;
@@ -626,19 +673,6 @@ public sealed class BaseItemRepository
         }
 
         context.SaveChanges();
-
-        foreach (var item in newItems)
-        {
-            // reattach old userData entries
-            var userKeys = item.UserDataKey.ToArray();
-            var retentionDate = (DateTime?)null;
-            context.UserData
-                .Where(e => e.ItemId == PlaceholderId)
-                .Where(e => userKeys.Contains(e.CustomDataKey))
-                .ExecuteUpdate(e => e
-                    .SetProperty(f => f.ItemId, item.Item.Id)
-                    .SetProperty(f => f.RetentionDate, retentionDate));
-        }
 
         var itemValueMaps = tuples
             .Select(e => (e.Item, Values: GetItemValuesToSave(e.Item, e.InheritedTags)))
@@ -733,6 +767,43 @@ public sealed class BaseItemRepository
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc  />
+    public async Task ReattachUserDataAsync(BaseItemDto item, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            await using (transaction.ConfigureAwait(false))
+            {
+                var userKeys = item.GetUserDataKeys().ToArray();
+                var retentionDate = (DateTime?)null;
+
+                await dbContext.UserData
+                    .Where(e => e.ItemId == PlaceholderId)
+                    .Where(e => userKeys.Contains(e.CustomDataKey))
+                    .ExecuteUpdateAsync(
+                        e => e
+                            .SetProperty(f => f.ItemId, item.Id)
+                            .SetProperty(f => f.RetentionDate, retentionDate),
+                        cancellationToken).ConfigureAwait(false);
+
+                // Rehydrate the cached userdata
+                item.UserData = await dbContext.UserData
+                    .AsNoTracking()
+                    .Where(e => e.ItemId == item.Id)
+                    .ToArrayAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc  />
@@ -842,7 +913,7 @@ public sealed class BaseItemRepository
         }
 
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
-        dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
+        dto.ProductionLocations = entity.ProductionLocations?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? [];
         dto.Studios = entity.Studios?.Split('|') ?? [];
         dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
 
@@ -1004,7 +1075,7 @@ public sealed class BaseItemRepository
         }
 
         entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
-        entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations) : null;
+        entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations.Where(p => !string.IsNullOrWhiteSpace(p))) : null;
         entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
         entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
@@ -1252,7 +1323,7 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
-        query = ApplyOrder(query, filter);
+        query = ApplyOrder(query, filter, context);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
@@ -1518,51 +1589,58 @@ public sealed class BaseItemRepository
             || query.IncludeItemTypes.Contains(BaseItemKind.Season);
     }
 
-    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter)
+    private IQueryable<BaseItemEntity> ApplyOrder(IQueryable<BaseItemEntity> query, InternalItemsQuery filter, JellyfinDbContext context)
     {
-        var orderBy = filter.OrderBy;
+        var orderBy = filter.OrderBy.Where(e => e.OrderBy != ItemSortBy.Default).ToArray();
         var hasSearch = !string.IsNullOrEmpty(filter.SearchTerm);
 
         if (hasSearch)
         {
-            orderBy = filter.OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
+            orderBy = [(ItemSortBy.SortName, SortOrder.Ascending), .. orderBy];
         }
-        else if (orderBy.Count == 0)
+        else if (orderBy.Length == 0)
         {
             return query.OrderBy(e => e.SortName);
         }
 
         IOrderedQueryable<BaseItemEntity>? orderedQuery = null;
 
+        // When searching, prioritize by match quality: exact match > prefix match > contains
+        if (hasSearch)
+        {
+            orderedQuery = query.OrderBy(OrderMapper.MapSearchRelevanceOrder(filter.SearchTerm!));
+        }
+
         var firstOrdering = orderBy.FirstOrDefault();
         if (firstOrdering != default)
         {
-            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter);
-            if (firstOrdering.SortOrder == SortOrder.Ascending)
+            var expression = OrderMapper.MapOrderByField(firstOrdering.OrderBy, filter, context);
+            if (orderedQuery is null)
             {
-                orderedQuery = query.OrderBy(expression);
+                // No search relevance ordering, start fresh
+                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
+                    ? query.OrderBy(expression)
+                    : query.OrderByDescending(expression);
             }
             else
             {
-                orderedQuery = query.OrderByDescending(expression);
+                // Search relevance ordering already applied, chain with ThenBy
+                orderedQuery = firstOrdering.SortOrder == SortOrder.Ascending
+                    ? orderedQuery.ThenBy(expression)
+                    : orderedQuery.ThenByDescending(expression);
             }
 
             if (firstOrdering.OrderBy is ItemSortBy.Default or ItemSortBy.SortName)
             {
-                if (firstOrdering.SortOrder is SortOrder.Ascending)
-                {
-                    orderedQuery = orderedQuery.ThenBy(e => e.Name);
-                }
-                else
-                {
-                    orderedQuery = orderedQuery.ThenByDescending(e => e.Name);
-                }
+                orderedQuery = firstOrdering.SortOrder is SortOrder.Ascending
+                    ? orderedQuery.ThenBy(e => e.Name)
+                    : orderedQuery.ThenByDescending(e => e.Name);
             }
         }
 
         foreach (var item in orderBy.Skip(1))
         {
-            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter);
+            var expression = OrderMapper.MapOrderByField(item.OrderBy, filter, context);
             if (item.SortOrder == SortOrder.Ascending)
             {
                 orderedQuery = orderedQuery!.ThenBy(expression);
@@ -1644,18 +1722,17 @@ public sealed class BaseItemRepository
         var tags = filter.Tags.ToList();
         var excludeTags = filter.ExcludeTags.ToList();
 
-        if (filter.IsMovie == true)
+        if (filter.IsMovie.HasValue)
         {
-            if (filter.IncludeItemTypes.Length == 0
-                || filter.IncludeItemTypes.Contains(BaseItemKind.Movie)
-                || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer))
+            var shouldIncludeAllMovieTypes = filter.IsMovie.Value
+                && (filter.IncludeItemTypes.Length == 0
+                    || filter.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                    || filter.IncludeItemTypes.Contains(BaseItemKind.Trailer));
+
+            if (!shouldIncludeAllMovieTypes)
             {
-                baseQuery = baseQuery.Where(e => e.IsMovie);
+                baseQuery = baseQuery.Where(e => e.IsMovie == filter.IsMovie.Value);
             }
-        }
-        else if (filter.IsMovie.HasValue)
-        {
-            baseQuery = baseQuery.Where(e => e.IsMovie == filter.IsMovie);
         }
 
         if (filter.IsSeries.HasValue)
@@ -1701,15 +1778,16 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
-            var searchTerm = filter.SearchTerm.ToLower();
-            if (SearchWildcardTerms.Any(f => searchTerm.Contains(f)))
+            var cleanedSearchTerm = GetCleanValue(filter.SearchTerm);
+            var originalSearchTerm = filter.SearchTerm.ToLower();
+            if (SearchWildcardTerms.Any(f => cleanedSearchTerm.Contains(f)))
             {
-                searchTerm = $"%{searchTerm.Trim('%')}%";
-                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!.ToLower(), searchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), searchTerm)));
+                cleanedSearchTerm = $"%{cleanedSearchTerm.Trim('%')}%";
+                baseQuery = baseQuery.Where(e => EF.Functions.Like(e.CleanName!, cleanedSearchTerm) || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle.ToLower(), originalSearchTerm)));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => e.CleanName!.ToLower().Contains(searchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(searchTerm)));
+                baseQuery = baseQuery.Where(e => e.CleanName!.Contains(cleanedSearchTerm) || (e.OriginalTitle != null && e.OriginalTitle.ToLower().Contains(originalSearchTerm)));
             }
         }
 
@@ -1921,8 +1999,15 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            var cleanName = GetCleanValue(filter.Name);
-            baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
+            if (filter.UseRawName == true)
+            {
+                baseQuery = baseQuery.Where(e => e.Name == filter.Name);
+            }
+            else
+            {
+                var cleanName = GetCleanValue(filter.Name);
+                baseQuery = baseQuery.Where(e => e.CleanName == cleanName);
+            }
         }
 
         // These are the same, for now
@@ -1944,19 +2029,20 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWith))
         {
-            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(filter.NameStartsWith));
+            var startsWithLower = filter.NameStartsWith.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.StartsWith(startsWithLower));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameStartsWithOrGreater))
         {
-            // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() > filter.NameStartsWithOrGreater[0] || e.Name!.FirstOrDefault() > filter.NameStartsWithOrGreater[0]);
+            var startsOrGreaterLower = filter.NameStartsWithOrGreater.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(startsOrGreaterLower) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
-            // i hate this
-            baseQuery = baseQuery.Where(e => e.SortName!.FirstOrDefault() < filter.NameLessThan[0] || e.Name!.FirstOrDefault() < filter.NameLessThan[0]);
+            var lessThanLower = filter.NameLessThan.ToLowerInvariant();
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
         }
 
         if (filter.ImageTypes.Length > 0)
@@ -2216,26 +2302,42 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && f.Language == filter.HasNoAudioTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoAudioTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && !f.IsExternal && f.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoInternalSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && !f.IsExternal && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.IsExternal && f.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoExternalSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.IsExternal && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.Language == filter.HasNoSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (filter.HasSubtitles.HasValue)
@@ -2415,40 +2517,24 @@ public sealed class BaseItemRepository
 
         if (filter.ExcludeInheritedTags.Length > 0)
         {
-            baseQuery = baseQuery
-                .Where(e => !e.ItemValues!.Where(w => w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags)
-                .Any(f => filter.ExcludeInheritedTags.Contains(f.ItemValue.CleanValue)));
+            var excludedTags = filter.ExcludeInheritedTags;
+            baseQuery = baseQuery.Where(e =>
+                !e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))
+                && (!e.SeriesId.HasValue || !context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && excludedTags.Contains(f.ItemValue.CleanValue))));
         }
 
         if (filter.IncludeInheritedTags.Length > 0)
         {
-            // Episodes do not store inherit tags from their parents in the database, and the tag may be still required by the client.
-            // In addition to the tags for the episodes themselves, we need to manually query its parent (the season)'s tags as well.
-            if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Episode)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        ||
-                        (e.ParentId.HasValue && context.ItemValuesMap.Where(w => w.ItemId == e.ParentId.Value && (w.ItemValue.Type == ItemValueType.InheritedTags || w.ItemValue.Type == ItemValueType.Tags))
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))));
-            }
+            var includeTags = filter.IncludeInheritedTags;
+            var isPlaylistOnlyQuery = includeTypes.Length == 1 && includeTypes.FirstOrDefault() == BaseItemKind.Playlist;
+            baseQuery = baseQuery.Where(e =>
+                e.ItemValues!.Any(f => f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue))
 
-            // A playlist should be accessible to its owner regardless of allowed tags.
-            else if (includeTypes.Length == 1 && includeTypes.FirstOrDefault() is BaseItemKind.Playlist)
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue))
-                        || e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\""));
-                // d        ^^ this is stupid it hate this.
-            }
-            else
-            {
-                baseQuery = baseQuery
-                    .Where(e => e.ItemValues!.Where(f => f.ItemValue.Type == ItemValueType.InheritedTags || f.ItemValue.Type == ItemValueType.Tags)
-                        .Any(f => filter.IncludeInheritedTags.Contains(f.ItemValue.CleanValue)));
-            }
+                // For seasons and episodes, we also need to check the parent series' tags.
+                || (e.SeriesId.HasValue && context.ItemValuesMap.Any(f => f.ItemId == e.SeriesId.Value && f.ItemValue.Type == ItemValueType.Tags && includeTags.Contains(f.ItemValue.CleanValue)))
+
+                // A playlist should be accessible to its owner regardless of allowed tags
+                || (isPlaylistOnlyQuery && e.Data!.Contains($"OwnerUserId\":\"{filter.User!.Id:N}\"")));
         }
 
         if (filter.SeriesStatuses.Length > 0)
@@ -2602,6 +2688,21 @@ public sealed class BaseItemRepository
             .Where(e => artistNames.Contains(e.Name))
             .ToArray();
 
-        return artists.GroupBy(e => e.Name).ToDictionary(e => e.Key!, e => e.Select(f => DeserializeBaseItem(f)).Cast<MusicArtist>().ToArray());
+        var lookup = artists
+            .GroupBy(e => e.Name!)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(f => DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
+
+        var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
+        foreach (var name in artistNames)
+        {
+            if (lookup.TryGetValue(name, out var artistArray))
+            {
+                result[name] = artistArray;
+            }
+        }
+
+        return result;
     }
 }

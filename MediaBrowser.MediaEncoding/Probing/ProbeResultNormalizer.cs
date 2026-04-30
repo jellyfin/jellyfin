@@ -299,9 +299,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 // Handle WebM
                 else if (string.Equals(splitFormat[i], "webm", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Limit WebM to supported codecs
-                    if (mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
-                        || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
+                    // Limit WebM to supported stream types and codecs.
+                    // FFprobe can report "matroska,webm" for Matroska-like containers, so only keep "webm" if all streams are WebM-compatible.
+                    // Any stream that is not video nor audio is not supported in WebM and should disqualify the webm container probe result.
+                    if (mediaStreams.Any(stream => stream.Type is not MediaStreamType.Video and not MediaStreamType.Audio)
+                        || mediaStreams.Any(stream => (stream.Type == MediaStreamType.Video && !_webmVideoCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))
+                            || (stream.Type == MediaStreamType.Audio && !_webmAudioCodecs.Contains(stream.Codec, StringComparison.OrdinalIgnoreCase))))
                     {
                         splitFormat[i] = string.Empty;
                     }
@@ -853,7 +856,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
-                if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(streamInfo.SampleAspectRatio)
+                    && string.IsNullOrEmpty(streamInfo.DisplayAspectRatio))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (string.Equals(streamInfo.SampleAspectRatio, "1:1", StringComparison.Ordinal))
                 {
                     stream.IsAnamorphic = false;
                 }

@@ -64,6 +64,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         sqliteConnectionBuilder.DataSource = Path.Combine(_applicationPaths.DataPath, "jellyfin.db");
         sqliteConnectionBuilder.Cache = GetOption(customOptions, "cache", Enum.Parse<SqliteCacheMode>, () => SqliteCacheMode.Default);
         sqliteConnectionBuilder.Pooling = GetOption(customOptions, "pooling", e => e.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase), () => true);
+        sqliteConnectionBuilder.DefaultTimeout = GetOption(customOptions, "command-timeout", int.Parse, () => 30);
 
         var connectionString = sqliteConnectionBuilder.ToString();
 

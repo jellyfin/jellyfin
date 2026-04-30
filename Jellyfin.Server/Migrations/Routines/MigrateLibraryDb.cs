@@ -383,8 +383,6 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                     });
                 }
 
-                baseItemIds.Clear();
-
                 foreach (var item in peopleCache)
                 {
                     operation.JellyfinDbContext.Peoples.Add(item.Value.Person);
@@ -463,6 +461,16 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
 
         _logger.LogInformation("Migration of the Library.db done.");
         _logger.LogInformation("Migrating Library db took {0}.", fullOperationTimer.Elapsed);
+
+        SqliteConnection.ClearAllPools();
+
+        using (var checkpointConnection = new SqliteConnection($"Filename={libraryDbPath}"))
+        {
+            checkpointConnection.Open();
+            using var cmd = checkpointConnection.CreateCommand();
+            cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            cmd.ExecuteNonQuery();
+        }
 
         SqliteConnection.ClearAllPools();
 
@@ -1165,7 +1173,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
                 Item = null!,
                 ProviderId = e[0],
                 ProviderValue = string.Join('|', e.Skip(1))
-            }).ToArray();
+            })
+            .DistinctBy(e => e.ProviderId)
+            .ToArray();
         }
 
         if (reader.TryGetString(index++, out var imageInfos))

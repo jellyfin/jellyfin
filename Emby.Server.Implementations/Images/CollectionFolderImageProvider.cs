@@ -98,5 +98,11 @@ namespace Emby.Server.Implementations.Images
 
             return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
         }
+
+        protected override bool HasChangedByDate(BaseItem item, ItemImageInfo image)
+        {
+            var age = DateTime.UtcNow - image.DateModified;
+            return age.TotalDays > 7;
+        }
     }
 }

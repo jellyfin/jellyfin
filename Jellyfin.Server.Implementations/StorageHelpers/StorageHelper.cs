@@ -13,7 +13,6 @@ namespace Jellyfin.Server.Implementations.StorageHelpers;
 public static class StorageHelper
 {
     private const long TwoGigabyte = 2_147_483_647L;
-    private const long FiveHundredAndTwelveMegaByte = 536_870_911L;
     private static readonly string[] _byteHumanizedSuffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
 
     /// <summary>
@@ -24,10 +23,8 @@ public static class StorageHelper
     public static void TestCommonPathsForStorageCapacity(IApplicationPaths applicationPaths, ILogger logger)
     {
         TestDataDirectorySize(applicationPaths.DataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.LogDirectoryPath, logger, FiveHundredAndTwelveMegaByte);
         TestDataDirectorySize(applicationPaths.CachePath, logger, TwoGigabyte);
         TestDataDirectorySize(applicationPaths.ProgramDataPath, logger, TwoGigabyte);
-        TestDataDirectorySize(applicationPaths.TempDirectory, logger, FiveHundredAndTwelveMegaByte);
     }
 
     /// <summary>

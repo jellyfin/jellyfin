@@ -36,6 +36,14 @@ public interface IItemRepository
     void SaveImages(BaseItem item);
 
     /// <summary>
+    /// Reattaches the user data to the item.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous reattachment operation.</returns>
+    Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Retrieves the item.
     /// </summary>
     /// <param name="id">The id.</param>

@@ -547,7 +547,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("aspectratio", hasAspectRatio.AspectRatio);
             }
 
-            if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbCollection))
+            if (item.TryGetProviderId(MetadataProvider.TmdbCollection, out var tmdbCollection))
             {
                 writer.WriteElementString("collectionnumber", tmdbCollection);
                 writtenProviderIds.Add(MetadataProvider.TmdbCollection.ToString());

@@ -721,8 +721,6 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
-
-            _libraryManager.CreateItem(item, null);
         }
 
         /// <summary>

@@ -1175,7 +1175,8 @@ namespace Emby.Server.Implementations.Session
             return session;
         }
 
-        private SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
+        /// <inheritdoc />
+        public SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
         {
             return new SessionInfoDto
             {

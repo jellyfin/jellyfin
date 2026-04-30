@@ -204,6 +204,25 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        [InlineData("TV-MA", "DE", 17, 1)] // US-only rating, DE country code
+        [InlineData("PG-13", "FR", 13, 0)] // US-only rating, FR country code
+        [InlineData("R", "JP", 17, 0)] // US-only rating, JP country code
+        public async Task GetRatingScore_FallbackPrioritizesUS_Success(string rating, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration()
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(rating);
+
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
         [InlineData("Default", "Default")]
         [InlineData("HeaderLiveTV", "Live TV")]
         public void GetLocalizedString_Valid_Success(string key, string expected)

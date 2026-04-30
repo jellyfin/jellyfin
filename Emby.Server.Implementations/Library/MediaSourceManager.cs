@@ -226,6 +226,11 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />>
         public MediaProtocol GetPathProtocol(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return MediaProtocol.File;
+            }
+
             if (path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtsp;

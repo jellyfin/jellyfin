@@ -518,7 +518,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            return _tmDbClient.GetImageUrl(size, path, true).ToString();
+            // Use "original" as default size if size is null or empty to prevent malformed URLs
+            var imageSize = string.IsNullOrEmpty(size) ? "original" : size;
+
+            return _tmDbClient.GetImageUrl(imageSize, path, true).ToString();
         }
 
         /// <summary>

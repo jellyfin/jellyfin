@@ -1051,16 +1051,16 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                dto.ArtistItems = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))])
-                    .Where(e => e.Value.Length > 0)
-                    .Select(i =>
-                    {
-                        return new NameGuidPair
-                        {
-                            Name = i.Key,
-                            Id = i.Value.First().Id
-                        };
-                    }).Where(i => i is not null).ToArray();
+                var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
+                dto.ArtistItems = hasArtist.Artists
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct()
+                    .Select(name => artistsLookup.TryGetValue(name, out var artists) && artists.Length > 0
+                        ? new NameGuidPair { Name = name, Id = artists[0].Id }
+                        : null)
+                    .Where(item => item is not null)
+                    .ToArray();
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
@@ -1085,31 +1085,16 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
+                var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
-                    // .Except(foundArtists, new DistinctNameComparer())
-                    .Select(i =>
-                    {
-                        // This should not be necessary but we're seeing some cases of it
-                        if (string.IsNullOrEmpty(i))
-                        {
-                            return null;
-                        }
-
-                        var artist = _libraryManager.GetArtist(i, new DtoOptions(false)
-                        {
-                            EnableImages = false
-                        });
-                        if (artist is not null)
-                        {
-                            return new NameGuidPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id
-                            };
-                        }
-
-                        return null;
-                    }).Where(i => i is not null).ToArray();
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct()
+                    .Select(name => albumArtistsLookup.TryGetValue(name, out var albumArtists) && albumArtists.Length > 0
+                        ? new NameGuidPair { Name = name, Id = albumArtists[0].Id }
+                        : null)
+                    .Where(item => item is not null)
+                    .ToArray();
             }
 
             // Add video info

@@ -88,7 +88,15 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            singular.AddRange(item.GetImages(ImageType.Backdrop));
+            foreach (var backdrop in item.GetImages(ImageType.Backdrop))
+            {
+                var imageInMetadataFolder = backdrop.Path.StartsWith(itemMetadataPath, StringComparison.OrdinalIgnoreCase);
+                if (imageInMetadataFolder || canDeleteLocal || item.IsSaveLocalMetadataEnabled())
+                {
+                    singular.Add(backdrop);
+                }
+            }
+
             PruneImages(item, singular);
 
             return singular.Count > 0;
@@ -466,10 +474,36 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (UpdateMultiImages(item, images, ImageType.Backdrop))
+            bool hasBackdrop = false;
+            bool backdropStoredWithMedia = false;
+
+            foreach (var image in images)
             {
-                changed = true;
-                foundImageTypes.Add(ImageType.Backdrop);
+                if (image.Type != ImageType.Backdrop)
+                {
+                    continue;
+                }
+
+                hasBackdrop = true;
+
+                if (item.ContainingFolderPath is not null && item.ContainingFolderPath.Contains(Path.GetDirectoryName(image.FileInfo.FullName), StringComparison.OrdinalIgnoreCase))
+                {
+                    backdropStoredWithMedia = true;
+                    break;
+                }
+            }
+
+            if (hasBackdrop)
+            {
+                if (UpdateMultiImages(item, images, ImageType.Backdrop))
+                {
+                    changed = true;
+                }
+
+                if (backdropStoredWithMedia)
+                {
+                    foundImageTypes.Add(ImageType.Backdrop);
+                }
             }
 
             if (foundImageTypes.Count > 0)

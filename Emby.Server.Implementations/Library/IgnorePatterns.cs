@@ -50,6 +50,10 @@ namespace Emby.Server.Implementations.Library
             "**/lost+found",
             "**/subs/**",
             "**/subs",
+            "**/.snapshots/**",
+            "**/.snapshots",
+            "**/.snapshot/**",
+            "**/.snapshot",
 
             // Trickplay files
             "**/*.trickplay",

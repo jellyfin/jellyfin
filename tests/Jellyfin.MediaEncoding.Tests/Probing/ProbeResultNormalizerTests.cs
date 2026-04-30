@@ -196,6 +196,18 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         }
 
         [Fact]
+        public void GetMediaInfo_WebM_Like_Mkv()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_web_like_mkv_with_subtitle.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
+
+            Assert.Equal("mkv", res.Container);
+            Assert.Equal(3, res.MediaStreams.Count);
+        }
+
+        [Fact]
         public void GetMediaInfo_ProgressiveVideoNoFieldOrder_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/Probing/video_progressive_no_field_order.json");

@@ -452,6 +452,7 @@ namespace MediaBrowser.Controller.Entities
                 // That's all the new and changed ones - now see if any have been removed and need cleanup
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
+                var actuallyRemoved = new List<BaseItem>();
                 // If it's an AggregateFolder, don't remove
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
@@ -467,6 +468,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             Logger.LogDebug("Removed item: {Path}", item.Path);
 
+                            actuallyRemoved.Add(item);
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
                         }
@@ -476,6 +478,20 @@ namespace MediaBrowser.Controller.Entities
                 if (newItems.Count > 0)
                 {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
+                }
+
+                // After removing items, reattach any detached user data to remaining children
+                // that share the same user data keys (eg. same episode replaced with a new file).
+                if (actuallyRemoved.Count > 0)
+                {
+                    var removedKeys = actuallyRemoved.SelectMany(i => i.GetUserDataKeys()).ToHashSet();
+                    foreach (var child in validChildren)
+                    {
+                        if (child.GetUserDataKeys().Any(removedKeys.Contains))
+                        {
+                            await child.ReattachUserDataAsync(cancellationToken).ConfigureAwait(false);
+                        }
+                    }
                 }
             }
             else
@@ -729,9 +745,7 @@ namespace MediaBrowser.Controller.Entities
                     query.StartIndex = startIndex;
                 }
 
-                var result = PostFilterAndSort(items, query);
-                result.TotalRecordCount = totalCount;
-                return result;
+                return PostFilterAndSort(items, query);
             }
 
             if (this is not UserRootFolder
@@ -1001,9 +1015,7 @@ namespace MediaBrowser.Controller.Entities
                 items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
             }
 
-            var result = PostFilterAndSort(items, query);
-            result.TotalRecordCount = totalItemCount;
-            return result;
+            return PostFilterAndSort(items, query);
         }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
@@ -1039,7 +1051,15 @@ namespace MediaBrowser.Controller.Entities
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
-            return UserViewBuilder.SortAndPage(items, null, query, LibraryManager);
+            var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
+            var result = UserViewBuilder.SortAndPage(filteredItems, null, query, LibraryManager);
+
+            if (query.EnableTotalRecordCount)
+            {
+                result.TotalRecordCount = filteredItems.Count;
+            }
+
+            return result;
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
@@ -1052,12 +1072,49 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(items);
 
-            if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
+            if (!CollapseBoxSetItems(query, queryParent, user, configurationManager))
             {
-                items = collectionManager.CollapseItemsWithinBoxSets(items, user);
+                return items;
             }
 
-            return items;
+            var config = configurationManager.Configuration;
+
+            bool collapseMovies = config.EnableGroupingMoviesIntoCollections;
+            bool collapseSeries = config.EnableGroupingShowsIntoCollections;
+
+            if (user is null || (collapseMovies && collapseSeries))
+            {
+                return collectionManager.CollapseItemsWithinBoxSets(items, user);
+            }
+
+            if (!collapseMovies && !collapseSeries)
+            {
+                return items;
+            }
+
+            var collapsibleItems = new List<BaseItem>();
+            var remainingItems = new List<BaseItem>();
+
+            foreach (var item in items)
+            {
+                if ((collapseMovies && item is Movie) || (collapseSeries && item is Series))
+                {
+                    collapsibleItems.Add(item);
+                }
+                else
+                {
+                    remainingItems.Add(item);
+                }
+            }
+
+            if (collapsibleItems.Count == 0)
+            {
+                return remainingItems;
+            }
+
+            var collapsedItems = collectionManager.CollapseItemsWithinBoxSets(collapsibleItems, user);
+
+            return collapsedItems.Concat(remainingItems);
         }
 
         private static bool CollapseBoxSetItems(
@@ -1088,24 +1145,26 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var param = query.CollapseBoxSetItems;
-
-            if (!param.HasValue)
+            if (param.HasValue)
             {
-                if (user is not null && query.IncludeItemTypes.Any(type =>
-                    (type == BaseItemKind.Movie && !configurationManager.Configuration.EnableGroupingMoviesIntoCollections) ||
-                    (type == BaseItemKind.Series && !configurationManager.Configuration.EnableGroupingShowsIntoCollections)))
-                {
-                    return false;
-                }
-
-                if (query.IncludeItemTypes.Length == 0
-                    || query.IncludeItemTypes.Any(type => type == BaseItemKind.Movie || type == BaseItemKind.Series))
-                {
-                    param = true;
-                }
+                return param.Value && AllowBoxSetCollapsing(query);
             }
 
-            return param.HasValue && param.Value && AllowBoxSetCollapsing(query);
+            var config = configurationManager.Configuration;
+
+            bool queryHasMovies = query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie);
+            bool queryHasSeries = query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Series);
+
+            bool collapseMovies = config.EnableGroupingMoviesIntoCollections;
+            bool collapseSeries = config.EnableGroupingShowsIntoCollections;
+
+            if (user is not null)
+            {
+                bool canCollapse = (queryHasMovies && collapseMovies) || (queryHasSeries && collapseSeries);
+                return canCollapse && AllowBoxSetCollapsing(query);
+            }
+
+            return (queryHasMovies || queryHasSeries) && AllowBoxSetCollapsing(query);
         }
 
         private static bool AllowBoxSetCollapsing(InternalItemsQuery request)
@@ -1362,13 +1421,6 @@ namespace MediaBrowser.Controller.Entities
             var realChildren = visibleChildren
                 .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
                 .ToArray();
-
-            if (this is BoxSet && (query.OrderBy is null || query.OrderBy.Count == 0))
-            {
-                realChildren = realChildren
-                    .OrderBy(e => e.ProductionYear ?? int.MaxValue)
-                    .ToArray();
-            }
 
             var childCount = realChildren.Length;
             if (result.Count < limit)
