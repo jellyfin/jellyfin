@@ -6,6 +6,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -72,10 +73,15 @@ public class PeopleValidator
                     continue;
                 }
 
+                var hasImage = item.HasImage(ImageType.Primary);
+                var hasOverview = !string.IsNullOrWhiteSpace(item.Overview);
+                var daysSinceRefresh = (DateTime.UtcNow - item.DateLastRefreshed).TotalDays;
+                var stale = daysSinceRefresh >= 30;
+
                 var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                 {
-                    ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
-                    MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
+                    ImageRefreshMode = !hasImage && stale ? MetadataRefreshMode.FullRefresh : MetadataRefreshMode.ValidationOnly,
+                    MetadataRefreshMode = !hasOverview && stale ? MetadataRefreshMode.FullRefresh : MetadataRefreshMode.ValidationOnly
                 };
 
                 await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
