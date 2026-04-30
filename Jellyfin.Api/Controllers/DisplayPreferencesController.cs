@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers;
 /// Display Preferences Controller.
 /// </summary>
 [Authorize]
+[Tags("DisplayPreference")]
 public class DisplayPreferencesController : BaseJellyfinApiController
 {
     private readonly IDisplayPreferencesManager _displayPreferencesManager;
