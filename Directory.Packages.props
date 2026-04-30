@@ -86,4 +86,8 @@
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="Xunit.v3.Priority" Version="1.1.18" />
   </ItemGroup>
+
+  <ItemGroup>
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.4.5" />
+  </ItemGroup>
 </Project>
