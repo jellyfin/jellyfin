@@ -25,6 +25,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +54,11 @@ namespace Jellyfin.Server
         /// The name of the logging configuration file containing the system-specific override settings.
         /// </summary>
         public const string LoggingConfigFileSystem = "logging.json";
+
+        /// <summary>
+        /// The name of the general jellyfin configuration file.
+        /// </summary>
+        public const string JellyfinConfigFileDefault = "appsettings.json";
 
         private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static SetupServer? _setupServer;
@@ -156,11 +163,13 @@ namespace Jellyfin.Server
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
+            var serverAddresses = new ServerAddressesFeature();
             using CoreAppHost appHost = new CoreAppHost(
                             appPaths,
                             _loggerFactory,
                             options,
-                            startupConfig);
+                            startupConfig,
+                            serverAddresses);
             var configurationCompleted = false;
             try
             {
@@ -169,7 +178,7 @@ namespace Jellyfin.Server
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
                     {
-                        webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
+                        webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger, serverAddresses);
                         if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {
                             _logger.LogCritical("UNSUPPORTED HOSTING ENVIRONMENT Microsoft Internet Information Services. The option to run Jellyfin on IIS is an unsupported and untested feature. Only use at your own discretion.");
@@ -342,6 +351,7 @@ namespace Jellyfin.Server
             return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(inMemoryDefaultConfig)
+                .AddJsonFile(JellyfinConfigFileDefault, optional: true, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
