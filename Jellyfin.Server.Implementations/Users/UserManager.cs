@@ -176,7 +176,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             ThrowIfInvalidUsername(newName);
 
-            if (oldName.Equals(newName, StringComparison.Ordinal))
+            if (oldName.Equals(newName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
@@ -204,11 +204,8 @@ namespace Jellyfin.Server.Implementations.Users
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                     // Load a fresh tracked entity inside the lock so the RowVersion is current.
-                    user = await dbContext.Users
-                        .Include(u => u.Permissions)
-                        .Include(u => u.Preferences)
-                        .Include(u => u.AccessSchedules)
-                        .Include(u => u.ProfileImage)
+                    user = await UserQuery(dbContext)
+                        .AsTracking()
                         .FirstOrDefaultAsync(u => u.Id == userId)
                         .ConfigureAwait(false)
                         ?? throw new ResourceNotFoundException(nameof(userId));
@@ -364,11 +361,8 @@ namespace Jellyfin.Server.Implementations.Users
                     // could have incremented RowVersion in the database in the meantime.
                     // Since we now hold the per-user lock, no other write can race with us, so
                     // the freshly loaded RowVersion is guaranteed to be current.
-                    var dbUser = await dbContext.Users
-                        .Include(u => u.Permissions)
-                        .Include(u => u.Preferences)
-                        .Include(u => u.AccessSchedules)
-                        .Include(u => u.ProfileImage)
+                    var dbUser = await UserQuery(dbContext)
+                        .AsTracking()
                         .FirstOrDefaultAsync(u => u.Id == user.Id)
                         .ConfigureAwait(false)
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
@@ -696,13 +690,10 @@ namespace Jellyfin.Server.Implementations.Users
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    var user = dbContext.Users
-                                   .Include(u => u.Permissions)
-                                   .Include(u => u.Preferences)
-                                   .Include(u => u.AccessSchedules)
-                                   .Include(u => u.ProfileImage)
-                                   .FirstOrDefault(u => u.Id.Equals(userId))
-                               ?? throw new ArgumentException("No user exists with given Id!");
+                    var user = UserQuery(dbContext)
+                            .AsTracking()
+                            .FirstOrDefault(u => u.Id.Equals(userId))
+                            ?? throw new ArgumentException("No user exists with given Id!");
 
                     user.SubtitleMode = config.SubtitleMode;
                     user.HidePlayedInLatest = config.HidePlayedInLatest;
@@ -742,13 +733,10 @@ namespace Jellyfin.Server.Implementations.Users
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    var user = dbContext.Users
-                                   .Include(u => u.Permissions)
-                                   .Include(u => u.Preferences)
-                                   .Include(u => u.AccessSchedules)
-                                   .Include(u => u.ProfileImage)
-                                   .FirstOrDefault(u => u.Id.Equals(userId))
-                               ?? throw new ArgumentException("No user exists with given Id!");
+                    var user = UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefault(u => u.Id.Equals(userId))
+                        ?? throw new ArgumentException("No user exists with given Id!");
 
                     // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
                     int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
