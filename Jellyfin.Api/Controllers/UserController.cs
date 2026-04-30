@@ -392,7 +392,7 @@ public class UserController : BaseJellyfinApiController
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
-            await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
+            await _userManager.RenameUser(user.Id, user.Username, updateUser.Name).ConfigureAwait(false);
         }
 
         await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
@@ -448,7 +448,7 @@ public class UserController : BaseJellyfinApiController
         // If removing admin access
         if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
         {
-            if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
+            if (_userManager.GetUsers().Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one user in the system with administrative access.");
             }
@@ -463,7 +463,7 @@ public class UserController : BaseJellyfinApiController
         // If disabling
         if (newPolicy.IsDisabled && !user.HasPermission(PermissionKind.IsDisabled))
         {
-            if (_userManager.Users.Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
+            if (_userManager.GetUsers().Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
             }
@@ -620,7 +620,7 @@ public class UserController : BaseJellyfinApiController
 
     private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
     {
-        var users = _userManager.Users;
+        var users = _userManager.GetUsers();
 
         if (isDisabled.HasValue)
         {
