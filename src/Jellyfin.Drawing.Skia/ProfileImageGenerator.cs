@@ -15,21 +15,32 @@ namespace Jellyfin.Drawing.Skia;
 /// </summary>
 public class ProfileImageGenerator : MediaBrowser.Controller.Drawing.IProfileImageService
 {
-    // A palette of pleasant background colors
+    // A palette of muted background colors suitable for dark-theme UIs.
+    // Colors are kept at moderate saturation (~50%) and mid-range brightness
+    // so they remain clearly distinct without being eye-searing, while still
+    // providing enough contrast for white initials to read comfortably.
     private static readonly SKColor[] _colorPalette =
     [
-        new SKColor(0xE5, 0x39, 0x35), // Red
-        new SKColor(0xD8, 0x1B, 0x60), // Pink
-        new SKColor(0x8E, 0x24, 0xAA), // Purple
-        new SKColor(0x39, 0x49, 0xAB), // Indigo
-        new SKColor(0x1E, 0x88, 0xE5), // Blue
-        new SKColor(0x00, 0x89, 0x7B), // Teal
-        new SKColor(0x43, 0xA0, 0x47), // Green
-        new SKColor(0xF4, 0x51, 0x1E), // Deep Orange
-        new SKColor(0x6D, 0x4C, 0x41), // Brown
-        new SKColor(0x00, 0xAC, 0xC1), // Cyan
-        new SKColor(0x7C, 0xB3, 0x42), // Light Green
-        new SKColor(0xFF, 0xB3, 0x00), // Amber
+        new SKColor(0x9E, 0x40, 0x40), // Muted Crimson
+        new SKColor(0x9E, 0x58, 0x30), // Muted Terra Cotta
+        new SKColor(0x9E, 0x78, 0x30), // Muted Ochre
+        new SKColor(0x7A, 0x8C, 0x30), // Muted Olive
+        new SKColor(0x30, 0x8A, 0x40), // Muted Forest Green
+        new SKColor(0x30, 0x8A, 0x6E), // Muted Jade
+        new SKColor(0x2E, 0x78, 0x78), // Muted Teal
+        new SKColor(0x30, 0x6A, 0x8E), // Muted Steel Blue
+        new SKColor(0x30, 0x4E, 0x9E), // Muted Cobalt
+        new SKColor(0x4E, 0x30, 0x9E), // Muted Indigo
+        new SKColor(0x70, 0x30, 0x9E), // Muted Violet
+        new SKColor(0x9E, 0x30, 0x80), // Muted Plum
+        new SKColor(0x9E, 0x30, 0x50), // Muted Rose
+        new SKColor(0x7A, 0x40, 0x40), // Muted Brick
+        new SKColor(0x48, 0x7A, 0x8E), // Muted Cadet Blue
+        new SKColor(0x48, 0x90, 0x6E), // Muted Sage
+        new SKColor(0x60, 0x48, 0x90), // Muted Slate Purple
+        new SKColor(0x90, 0x60, 0x48), // Muted Sienna
+        new SKColor(0x40, 0x78, 0x58), // Muted Spruce
+        new SKColor(0x78, 0x58, 0x40), // Muted Walnut
     ];
 
     private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -105,15 +116,7 @@ public class ProfileImageGenerator : MediaBrowser.Controller.Drawing.IProfileIma
 
         using var bitmap = new SKBitmap(ImageSize, ImageSize);
         using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Transparent);
-
-        // Draw circular background
-        using var circlePaint = new SKPaint
-        {
-            Color = backgroundColor,
-            IsAntialias = true
-        };
-        canvas.DrawCircle(ImageSize / 2f, ImageSize / 2f, ImageSize / 2f, circlePaint);
+        canvas.Clear(backgroundColor);
 
         // Draw initials text
         var typeface = SKTypeface.FromFamilyName(null, SKFontStyle.Bold);
@@ -124,10 +127,19 @@ public class ProfileImageGenerator : MediaBrowser.Controller.Drawing.IProfileIma
             IsAntialias = true
         };
 
-        font.MeasureText(initials, out SKRect textBounds, textPaint);
+        // Measure the actual glyph bounds for accurate horizontal centering.
+        font.MeasureText(initials, out SKRect textBounds);
+        var textX = (ImageSize / 2f) - textBounds.MidX;
 
-        var textX = ((ImageSize - textBounds.Width) / 2f) - textBounds.Left;
-        var textY = ((ImageSize - textBounds.Height) / 2f) - textBounds.Top;
+        // Use the font's cap height for vertical centering instead of per-glyph bounds.
+        // Per-glyph bounds shift downward when diacritics are present (e.g. "Ö"),
+        // whereas cap height is constant for all uppercase combinations.
+        // Cap height is negative in Skia (measured above the baseline), so take its absolute value.
+        var capHeight = Math.Abs(font.Metrics.CapHeight);
+        var textY = capHeight > 0f
+            ? (ImageSize / 2f) + (capHeight / 2f)
+            : (ImageSize / 2f) - textBounds.MidY;
+
         canvas.DrawText(initials, textX, textY, font, textPaint);
 
         using var image = SKImage.FromBitmap(bitmap);
