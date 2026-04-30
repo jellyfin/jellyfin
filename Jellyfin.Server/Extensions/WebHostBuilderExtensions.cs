@@ -29,13 +29,15 @@ public static class WebHostBuilderExtensions
     /// <param name="startupConfig">The application configuration.</param>
     /// <param name="appPaths">The application paths.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="serverAddressesFeature">The server addresses feature shared with the app host.</param>
     /// <returns>The configured web host builder.</returns>
     public static IWebHostBuilder ConfigureWebHostBuilder(
         this IWebHostBuilder builder,
         CoreAppHost appHost,
         IConfiguration startupConfig,
         IApplicationPaths appPaths,
-        ILogger logger)
+        ILogger logger,
+        IServerAddressesFeature serverAddressesFeature)
     {
         return builder
             .UseKestrel((builderContext, options) =>
@@ -50,12 +52,11 @@ public static class WebHostBuilderExtensions
                     builderContext,
                     options);
 
-                var serverAddresses = appHost.ServiceProvider.GetRequiredService<IServerAddressesFeature>()!;
-                serverAddresses.Addresses.Clear();
+                serverAddressesFeature.Addresses.Clear();
                 if (addressess.Count == 0)
                 {
                     logger.LogWarning("No network interfaces found to bind to. Kestrel will be configured to listen on localhost only. Please check your network configuration.");
-                    serverAddresses.Addresses.Add($"http://localhost:{appHost.HttpPort}");
+                    serverAddressesFeature.Addresses.Add($"http://localhost:{appHost.HttpPort}");
                     return;
                 }
 
@@ -63,7 +64,7 @@ public static class WebHostBuilderExtensions
                 if (!string.IsNullOrEmpty(smartUrl))
                 {
                     logger.LogInformation("Using published server URL from configuration: {SmartUrl}", smartUrl);
-                    serverAddresses.Addresses.Add(smartUrl);
+                    serverAddressesFeature.Addresses.Add(smartUrl);
                     return;
                 }
 
@@ -75,7 +76,7 @@ public static class WebHostBuilderExtensions
                         Host = (address.Address.Equals(IPAddress.IPv6Any) || address.Address.Equals(IPAddress.Any)) ? "localhost" : address.Address.ToString(),
                         Port = appHost.HttpPort
                     };
-                    serverAddresses.Addresses.Add(uriBuilder.ToString());
+                    serverAddressesFeature.Addresses.Add(uriBuilder.ToString());
                 }
             })
             .UseStartup(context => new Startup(appHost, context.Configuration));

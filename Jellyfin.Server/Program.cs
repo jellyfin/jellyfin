@@ -163,11 +163,13 @@ namespace Jellyfin.Server
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
+            var serverAddresses = new ServerAddressesFeature();
             using CoreAppHost appHost = new CoreAppHost(
                             appPaths,
                             _loggerFactory,
                             options,
-                            startupConfig);
+                            startupConfig,
+                            serverAddresses);
             _appHost = appHost;
             var configurationCompleted = false;
             try
@@ -177,7 +179,7 @@ namespace Jellyfin.Server
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
                     {
-                        webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger);
+                        webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger, serverAddresses);
                         if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_ENABLE_IIS"), out var iisEnabled) && iisEnabled)
                         {
                             _logger.LogCritical("UNSUPPORTED HOSTING ENVIRONMENT Microsoft Internet Information Services. The option to run Jellyfin on IIS is an unsupported and untested feature. Only use at your own discretion.");
