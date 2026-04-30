@@ -487,6 +487,13 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
+            // Artists without a folder structure that are derived from metadata have no real path in the library,
+            // so GetLibraryOptions returns null. Allow all providers through rather than blocking them.
+            if (item is MusicArtist && libraryTypeOptions is null)
+            {
+                return true;
+            }
+
             return _baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, provider.Name);
         }
 

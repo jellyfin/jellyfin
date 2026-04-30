@@ -142,6 +142,7 @@ public sealed class SetupServer : IDisposable
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
         var config = _configurationManager.GetNetworkConfiguration()!;
+        _startupServer?.Dispose();
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
             .UseSerilog()

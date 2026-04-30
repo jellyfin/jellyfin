@@ -15,6 +15,7 @@ namespace Jellyfin.Api.Controllers;
 /// The trailers controller.
 /// </summary>
 [Authorize]
+[Tags("Trailer")]
 public class TrailersController : BaseJellyfinApiController
 {
     private readonly ItemsController _itemsController;

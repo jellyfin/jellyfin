@@ -1,5 +1,4 @@
 {
-    "Albums": "Albums",
     "AppDeviceValues": "App: {0}, Apparaat: {1}",
     "Application": "Applicatie",
     "Artists": "Artiesten",
@@ -14,7 +13,6 @@
     "FailedLoginAttemptWithUserName": "Mislukte aanmeldpoging van {0}",
     "Favorites": "Favorieten",
     "Folders": "Mappen",
-    "Genres": "Genres",
     "HeaderAlbumArtists": "Albumartiesten",
     "HeaderContinueWatching": "Verder kijken",
     "HeaderFavoriteAlbums": "Favoriete albums",
@@ -26,7 +24,7 @@
     "HeaderNextUp": "Volgende",
     "HeaderRecordingGroups": "Opnamegroepen",
     "HomeVideos": "Homevideo's",
-    "Inherit": "Erven",
+    "Inherit": "Overnemen",
     "ItemAddedWithName": "{0} is toegevoegd aan de bibliotheek",
     "ItemRemovedWithName": "{0} is verwijderd uit de bibliotheek",
     "LabelIpAddressValue": "IP-adres: {0}",
@@ -116,7 +114,7 @@
     "TaskCleanActivityLogDescription": "Verwijdert activiteitenlogs ouder dan de ingestelde leeftijd.",
     "TaskCleanActivityLog": "Activiteitenlogboek legen",
     "Undefined": "Niet gedefinieerd",
-    "Forced": "Gedwongen",
+    "Forced": "Geforceerd",
     "Default": "Standaard",
     "TaskOptimizeDatabaseDescription": "Comprimeert de database en trimt vrije ruimte. Het uitvoeren van deze taak kan de prestaties verbeteren, na het scannen van de bibliotheek of andere aanpassingen die invloed hebben op de database.",
     "TaskOptimizeDatabase": "Database optimaliseren",
@@ -137,5 +135,7 @@
     "TaskMoveTrickplayImagesDescription": "Verplaatst bestaande trickplay-bestanden op basis van de bibliotheekinstellingen.",
     "TaskExtractMediaSegments": "Scannen op mediasegmenten",
     "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig zijn.",
-    "CleanupUserDataTask": "Opruimtaak gebruikersdata"
+    "CleanupUserDataTask": "Opruimtaak gebruikersdata",
+    "Albums": "Albums",
+    "Genres": "Genres"
 }

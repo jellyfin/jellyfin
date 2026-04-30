@@ -29,6 +29,7 @@ namespace Jellyfin.Api.Controllers;
 /// The universal audio controller.
 /// </summary>
 [Route("")]
+[Tags("Audio")]
 public class UniversalAudioController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -101,13 +102,13 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
         [FromQuery] Guid? userId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] int? transcodingAudioChannels,
         [FromQuery] int? maxStreamingBitrate,
         [FromQuery] int? audioBitRate,
         [FromQuery] long? startTimeTicks,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? transcodingContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? transcodingContainer,
         [FromQuery] MediaStreamProtocol? transcodingProtocol,
         [FromQuery] int? maxAudioSampleRate,
         [FromQuery] int? maxAudioBitDepth,

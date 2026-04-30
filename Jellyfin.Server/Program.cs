@@ -170,7 +170,6 @@ namespace Jellyfin.Server
                             options,
                             startupConfig,
                             serverAddresses);
-            _appHost = appHost;
             var configurationCompleted = false;
             try
             {
@@ -216,6 +215,7 @@ namespace Jellyfin.Server
                 await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
+                _appHost = appHost;
 
                 await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.AppInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
                 await jellyfinMigrationService.CleanupSystemAfterMigration(_logger).ConfigureAwait(false);
@@ -272,6 +272,7 @@ namespace Jellyfin.Server
 
                 _appHost = null;
                 _jellyfinHost?.Dispose();
+                _jellyfinHost = null;
             }
         }
 

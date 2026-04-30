@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// The music genres controller.
 /// </summary>
 [Authorize]
+[Tags("MusicGenre")]
 public class MusicGenresController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -72,6 +73,7 @@ public class MusicGenresController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the queryresult of music genres.</returns>
     [HttpGet]
     [Obsolete("Use GetGenres instead")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public ActionResult<QueryResult<BaseItemDto>> GetMusicGenres(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
@@ -144,6 +146,7 @@ public class MusicGenresController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing a <see cref="BaseItemDto"/> with the music genre.</returns>
     [HttpGet("{genreName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use GetGenre instead")]
     public ActionResult<BaseItemDto> GetMusicGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);

@@ -11,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -29,6 +30,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[Tags("Item")]
 public class ItemsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -270,14 +272,16 @@ public class ItemsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet)
-        {
-            parentId = null;
-        }
-
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
+
+        if (includeItemTypes.Length == 1
+            && includeItemTypes[0] == BaseItemKind.BoxSet
+            && item is not BoxSet)
+        {
+            parentId = null;
+            item = _libraryManager.GetUserRootFolder();
+        }
 
         if (item is not Folder folder)
         {

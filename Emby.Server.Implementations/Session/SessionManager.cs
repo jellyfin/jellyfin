@@ -832,10 +832,6 @@ namespace Emby.Server.Implementations.Session
             {
                 data.Played = true;
             }
-            else
-            {
-                data.Played = false;
-            }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
         }
@@ -960,7 +956,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var tracksChanged = UpdatePlaybackSettings(user, info, data);
-            if (!tracksChanged)
+            if (tracksChanged)
             {
                 changed = true;
             }

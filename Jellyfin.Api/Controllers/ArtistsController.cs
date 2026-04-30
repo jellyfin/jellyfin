@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("Artists")]
 [Authorize]
+[Tags("Artist")]
 public class ArtistsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

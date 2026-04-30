@@ -344,6 +344,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [Obsolete("This endpoint is obsolete.")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "groupId", Justification = "Imported from ServiceStack")]
@@ -387,6 +388,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [Obsolete("This endpoint is obsolete.")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordingGroups([FromQuery] Guid? userId)
     {
@@ -454,7 +456,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Tuners/{tunerId}/Reset")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     public async Task<ActionResult> ResetTuner([FromRoute, Required] string tunerId)
     {
         await _liveTvManager.ResetTuner(tunerId, CancellationToken.None).ConfigureAwait(false);
@@ -945,20 +947,6 @@ public class LiveTvController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Get recording group.
-    /// </summary>
-    /// <param name="groupId">Group id.</param>
-    /// <returns>A <see cref="NotFoundResult"/>.</returns>
-    [HttpGet("Recordings/Groups/{groupId}")]
-    [Authorize(Policy = Policies.LiveTvAccess)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("This endpoint is obsolete.")]
-    public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
-    {
-        return NotFound();
-    }
-
-    /// <summary>
     /// Get guide info.
     /// </summary>
     /// <response code="200">Guide info returned.</response>
@@ -976,7 +964,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created tuner host returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the created tuner host.</returns>
     [HttpPost("TunerHosts")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerHostInfo>> AddTunerHost([FromBody] TunerHostInfo tunerHostInfo)
         => await _tunerHostManager.SaveTunerHost(tunerHostInfo).ConfigureAwait(false);
@@ -988,7 +976,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Tuner host deleted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("TunerHosts")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteTunerHost([FromQuery] string? id)
     {
@@ -1021,7 +1009,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created listings provider returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the created listings provider.</returns>
     [HttpPost("ListingProviders")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SuppressMessage("Microsoft.Performance", "CA5350:RemoveSha1", MessageId = "AddListingProvider", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult<ListingsProviderInfo>> AddListingProvider(
@@ -1047,7 +1035,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Listing provider deleted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("ListingProviders")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteListingProvider([FromQuery] string? id)
     {
@@ -1080,7 +1068,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Available countries returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the available countries.</returns>
     [HttpGet("ListingProviders/SchedulesDirect/Countries")]
-    [Authorize(Policy = Policies.LiveTvAccess)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile(MediaTypeNames.Application.Json)]
     public async Task<ActionResult> GetSchedulesDirectCountries()
@@ -1101,7 +1089,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Channel mapping options returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the channel mapping options.</returns>
     [HttpGet("ChannelMappingOptions")]
-    [Authorize(Policy = Policies.LiveTvAccess)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<ChannelMappingOptionsDto> GetChannelMappingOptions([FromQuery] string? providerId)
         => _listingsManager.GetChannelMappingOptions(providerId);
@@ -1113,7 +1101,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created channel mapping returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
     [HttpPost("ChannelMappings")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<TunerChannelMapping> SetChannelMapping([FromBody, Required] SetChannelMappingDto dto)
         => _listingsManager.SetChannelMapping(dto.ProviderId, dto.TunerChannelId, dto.ProviderChannelId);
@@ -1137,7 +1125,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
     [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
     [HttpGet("Tuners/Discover")]
-    [Authorize(Policy = Policies.LiveTvManagement)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IAsyncEnumerable<TunerHostInfo> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
         => _tunerHostManager.DiscoverTuners(newDevicesOnly);
@@ -1185,7 +1173,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesVideoFile]
     public ActionResult GetLiveStreamFile(
         [FromRoute, Required] string streamId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container)
+        [FromRoute, Required][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container)
     {
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)
