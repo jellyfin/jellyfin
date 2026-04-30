@@ -18,7 +18,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData(2, "The Simpsons/The Simpsons - 02.avi")]
         [InlineData(2, "The Simpsons/The Simpsons - 02 Ep Name.avi")]
         [InlineData(7, "GJ Club (2013)/GJ Club - 07.mkv")]
-        [InlineData(17, "Case Closed (1996-2007)/Case Closed - 317.mkv")]
+        [InlineData(317, "Case Closed (1996-2007)/Case Closed - 317.mkv")]
         // TODO: [InlineData(2, @"The Simpsons/The Simpsons 5 - 02 - Ep Name.avi")]
         // TODO: [InlineData(2, @"The Simpsons/The Simpsons 5 - 02 Ep Name.avi")]
         // TODO: [InlineData(7, @"Seinfeld/Seinfeld 0807 The Checks.avi")]
