@@ -99,17 +99,17 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resets the password.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userId">The users Id.</param>
         /// <returns>Task.</returns>
-        Task ResetPassword(User user);
+        Task ResetPassword(Guid userId);
 
         /// <summary>
         /// Changes the password.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userId">The users id.</param>
         /// <param name="newPassword">New password to use.</param>
         /// <returns>Awaitable task.</returns>
-        Task ChangePassword(User user, string newPassword);
+        Task ChangePassword(Guid userId, string newPassword);
 
         /// <summary>
         /// Gets the user dto.

@@ -335,43 +335,37 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public Task ResetPassword(User user)
+        public Task ResetPassword(Guid userId)
         {
-            return ChangePassword(user, string.Empty);
+            return ChangePassword(userId, string.Empty);
         }
 
         /// <inheritdoc/>
-        public async Task ChangePassword(User user, string newPassword)
+        public async Task ChangePassword(Guid userId, string newPassword)
         {
-            ArgumentNullException.ThrowIfNull(user);
-            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
-            {
-                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
-            }
-
-            using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
+            User dbUser = null!;
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    // Reload the user inside the lock to get the current RowVersion.
-                    // The incoming user may have been loaded with AsNoTracking() before this
-                    // lock was acquired; a concurrent write (e.g. a login updating LastLoginDate)
-                    // could have incremented RowVersion in the database in the meantime.
-                    // Since we now hold the per-user lock, no other write can race with us, so
-                    // the freshly loaded RowVersion is guaranteed to be current.
-                    var dbUser = await UserQuery(dbContext)
+                    dbUser = await UserQuery(dbContext)
                         .AsTracking()
-                        .FirstOrDefaultAsync(u => u.Id == user.Id)
+                        .FirstOrDefaultAsync(u => u.Id == userId)
                         .ConfigureAwait(false)
-                        ?? throw new ResourceNotFoundException(nameof(user.Id));
+                        ?? throw new ResourceNotFoundException(nameof(userId));
+
+                    if (dbUser.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+                    {
+                        throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+                    }
 
                     await GetAuthenticationProvider(dbUser).ChangePassword(dbUser, newPassword).ConfigureAwait(false);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
 
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(dbUser)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

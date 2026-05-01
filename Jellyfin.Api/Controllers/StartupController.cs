@@ -151,7 +151,7 @@ public class StartupController : BaseJellyfinApiController
 
         if (!string.IsNullOrEmpty(startupUserDto.Password))
         {
-            await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
+            await _userManager.ChangePassword(user.Id, startupUserDto.Password).ConfigureAwait(false);
         }
 
         return NoContent();

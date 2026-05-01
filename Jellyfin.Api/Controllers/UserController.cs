@@ -288,7 +288,7 @@ public class UserController : BaseJellyfinApiController
 
         if (request.ResetPassword)
         {
-            await _userManager.ResetPassword(user).ConfigureAwait(false);
+            await _userManager.ResetPassword(user.Id).ConfigureAwait(false);
         }
         else
         {
@@ -306,7 +306,7 @@ public class UserController : BaseJellyfinApiController
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
+            await _userManager.ChangePassword(user.Id, request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
 
@@ -545,7 +545,7 @@ public class UserController : BaseJellyfinApiController
         // no need to authenticate password for new user
         if (request.Password is not null)
         {
-            await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+            await _userManager.ChangePassword(newUser.Id, request.Password).ConfigureAwait(false);
         }
 
         var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIP().ToString());
