@@ -203,7 +203,6 @@ namespace Jellyfin.Server.Implementations.Users
 #pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
-                    // Load a fresh tracked entity inside the lock so the RowVersion is current.
                     user = await UserQuery(dbContext)
                         .AsTracking()
                         .FirstOrDefaultAsync(u => u.Id == userId)
