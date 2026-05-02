@@ -1334,6 +1334,11 @@ public sealed class BaseItemRepository
             .AsSingleQuery()
             .Where(e => masterQuery.Contains(e.Id));
 
+        if (filter.DtoOptions.EnableUserData)
+        {
+            query = query.Include(e => e.UserData);
+        }
+
         query = ApplyOrder(query, filter, context);
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
