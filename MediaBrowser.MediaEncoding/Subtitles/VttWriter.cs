@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +15,32 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
         private static partial Regex NewlineEscapeRegex();
+
+        [GeneratedRegex(@"^\{\\an\d\}", RegexOptions.IgnoreCase)]
+        private static partial Regex AssAlignTagRegex();
+
+        private static readonly Dictionary<string, string> _assTagToCuePosition = new()
+        {
+            ["{\\an1}"] = "position:20%",
+            ["{\\an3}"] = "position:80%",
+            ["{\\an4}"] = "position:20% line:50%",
+            ["{\\an5}"] = "line:50%",
+            ["{\\an6}"] = "position:80% line:50%",
+            ["{\\an7}"] = "position:20% line:10%",
+            ["{\\an8}"] = "line:10%",
+            ["{\\an9}"] = "position:80% line:10%",
+        };
+
+        private static string GetCuePositionFromAssTag(string text)
+        {
+            foreach (var (tag, position) in _assTagToCuePosition)
+            {
+                if (text.StartsWith(tag, StringComparison.Ordinal))
+                    return position;
+            }
+
+            return "region:subtitle line:90%";
+        }
 
         /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
@@ -37,12 +64,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         endTime = startTime.Add(TimeSpan.FromMilliseconds(1));
                     }
 
-                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff} region:subtitle line:90%", startTime, endTime);
-
                     var text = trackEvent.Text;
 
                     // TODO: Not sure how to handle these
                     text = NewlineEscapeRegex().Replace(text, " ");
+
+                    var cuePosition = GetCuePositionFromAssTag(text);
+                    text = AssAlignTagRegex().Replace(text, string.Empty);
+
+                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff} {2}", startTime, endTime, cuePosition);
 
                     writer.WriteLine(text);
                     writer.WriteLine();
