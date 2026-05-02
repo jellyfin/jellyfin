@@ -741,7 +741,7 @@ namespace Jellyfin.LiveTv.Channels
                     var deadItem = _libraryManager.GetItemById(deadId);
                     if (deadItem is not null)
                     {
-                        _libraryManager.DeleteItem(
+                        await _libraryManager.DeleteItemAsync(
                             deadItem,
                             new DeleteOptions
                             {
@@ -749,7 +749,8 @@ namespace Jellyfin.LiveTv.Channels
                                 DeleteFromExternalProvider = false
                             },
                             parentItem,
-                            false);
+                            false,
+                            cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

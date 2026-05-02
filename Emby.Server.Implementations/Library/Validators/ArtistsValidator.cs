@@ -105,13 +105,14 @@ public class ArtistsValidator
 
             _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
 
-            _libraryManager.DeleteItem(
+            await _libraryManager.DeleteItemAsync(
                 item,
                 new DeleteOptions
                 {
                     DeleteFileLocation = false
                 },
-                false);
+                false,
+                cancellationToken).ConfigureAwait(false);
         }
 
         progress.Report(100);

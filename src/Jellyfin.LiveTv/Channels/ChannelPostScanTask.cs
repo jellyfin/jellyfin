@@ -78,23 +78,25 @@ namespace Jellyfin.LiveTv.Channels
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _libraryManager.DeleteItem(
+                _libraryManager.DeleteItemAsync(
                     item,
                     new DeleteOptions
                     {
                         DeleteFileLocation = false
                     },
-                    false);
+                    false,
+                    cancellationToken).GetAwaiter().GetResult();
             }
 
             // Finally, delete the channel itself
-            _libraryManager.DeleteItem(
+            _libraryManager.DeleteItemAsync(
                 channel,
                 new DeleteOptions
                 {
                     DeleteFileLocation = false
                 },
-                false);
+                false,
+                cancellationToken).GetAwaiter().GetResult();
         }
     }
 }
