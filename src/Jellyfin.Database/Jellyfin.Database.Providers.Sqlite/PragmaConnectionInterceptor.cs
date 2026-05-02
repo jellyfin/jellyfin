@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -53,6 +54,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     {
         base.ConnectionOpened(connection, eventData);
 
+        RegisterFunctions(connection);
+
         using (var command = connection.CreateCommand())
         {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
@@ -67,6 +70,8 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
     {
         await base.ConnectionOpenedAsync(connection, eventData, cancellationToken).ConfigureAwait(false);
 
+        RegisterFunctions(connection);
+
         var command = connection.CreateCommand();
         await using (command.ConfigureAwait(false))
         {
@@ -74,6 +79,14 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
             command.CommandText = InitialCommand;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static void RegisterFunctions(DbConnection connection)
+    {
+        if (connection is SqliteConnection sqliteConnection)
+        {
+            sqliteConnection.CreateFunction("CleanValue", (string? s) => s?.ToLowerInvariant(), isDeterministic: true);
         }
     }
 

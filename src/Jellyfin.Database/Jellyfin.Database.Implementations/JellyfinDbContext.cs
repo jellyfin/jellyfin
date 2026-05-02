@@ -307,6 +307,15 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
         }
     }
 
+    /// <summary>
+    /// Lowercases a string using Unicode-aware case folding for use in database queries.
+    /// This method is mapped to a SQLite user-defined function and must only be used in LINQ-to-Entities queries.
+    /// </summary>
+    /// <param name="value">The string to lowercase.</param>
+    /// <returns>The lowercased string.</returns>
+    /// <exception cref="NotSupportedException">Always thrown; this method is only valid in LINQ queries.</exception>
+    public static string? CleanValue(string? value) => throw new NotSupportedException("CleanValue can only be used in LINQ-to-Entities queries.");
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -315,6 +324,8 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
 
         // Configuration for each entity is in its own class inside 'ModelConfiguration'.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
+
+        modelBuilder.HasDbFunction(typeof(JellyfinDbContext).GetMethod(nameof(CleanValue), new[] { typeof(string) })!);
     }
 
     /// <inheritdoc />
