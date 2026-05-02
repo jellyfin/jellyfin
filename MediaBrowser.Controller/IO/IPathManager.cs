@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 
@@ -61,6 +62,13 @@ public interface IPathManager
     /// <param name="chapterPositionTicks">The chapter position.</param>
     /// <returns>The chapter images data path.</returns>
     public string GetChapterImagePath(BaseItem item, long chapterPositionTicks);
+
+    /// <summary>
+    /// Gets the path to the waveform data file.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <returns>The absolute path.</returns>
+    public string GetWaveformPath(Guid itemId);
 
     /// <summary>
     /// Gets the paths of extracted data folders.
