@@ -18,6 +18,23 @@ namespace Jellyfin.Server.Extensions;
 /// </summary>
 public static class JellyfinOptionsServiceCollectionExtensions
 {
+    private static IServiceCollection AddWritableConfigEntry<TModel>(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string sectionName,
+        string filePath)
+        where TModel : class, new()
+    {
+        return services.Configure<TModel>(
+                configuration.GetSection(sectionName))
+                .AddSingleton<IWritableOptions<TModel>>(sp =>
+            new WritableOptions<TModel>(
+                sp.GetRequiredService<IOptionsMonitor<TModel>>(),
+                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                sectionName,
+                filePath));
+    }
+
     /// <summary>
     /// Registers <see cref="IOptions{TOptions}"/>, <see cref="IOptionsMonitor{TOptions}"/> and
     /// <see cref="IWritableOptions{T}"/> for the four core configuration types
@@ -34,79 +51,36 @@ public static class JellyfinOptionsServiceCollectionExtensions
         string configDir)
     {
         // Bind the four core config sections from the JSON files.
-        services.Configure<ServerConfiguration>(
-            configuration.GetSection(JellyfinConfigurationConstants.ServerConfigurationKey));
-
-        services.Configure<EncodingOptions>(
-            configuration.GetSection(JellyfinConfigurationConstants.EncodingOptionsKey));
-
-        services.Configure<NetworkConfiguration>(
-            configuration.GetSection(JellyfinConfigurationConstants.NetworkConfigurationKey));
-
-        services.Configure<BrandingOptions>(
-            configuration.GetSection(JellyfinConfigurationConstants.BrandingOptionsKey));
-
-        // Register the writable variants that allow runtime persistence.
-        services.AddSingleton<IWritableOptions<ServerConfiguration>>(sp =>
-            new WritableOptions<ServerConfiguration>(
-                sp.GetRequiredService<IOptionsMonitor<ServerConfiguration>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+        return services
+            .AddWritableConfigEntry<ServerConfiguration>(
+                configuration,
                 JellyfinConfigurationConstants.ServerConfigurationKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.SystemJsonFile)));
-
-        services.AddSingleton<IWritableOptions<EncodingOptions>>(sp =>
-            new WritableOptions<EncodingOptions>(
-                sp.GetRequiredService<IOptionsMonitor<EncodingOptions>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.SystemJsonFile))
+            .AddWritableConfigEntry<EncodingOptions>(
+                configuration,
                 JellyfinConfigurationConstants.EncodingOptionsKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.EncodingJsonFile)));
-
-        services.AddSingleton<IWritableOptions<NetworkConfiguration>>(sp =>
-            new WritableOptions<NetworkConfiguration>(
-                sp.GetRequiredService<IOptionsMonitor<NetworkConfiguration>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.EncodingJsonFile))
+            .AddWritableConfigEntry<NetworkConfiguration>(
+                configuration,
                 JellyfinConfigurationConstants.NetworkConfigurationKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.NetworkJsonFile)));
-
-        services.AddSingleton<IWritableOptions<BrandingOptions>>(sp =>
-            new WritableOptions<BrandingOptions>(
-                sp.GetRequiredService<IOptionsMonitor<BrandingOptions>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.NetworkJsonFile))
+            .AddWritableConfigEntry<BrandingOptions>(
+                configuration,
                 JellyfinConfigurationConstants.BrandingOptionsKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.BrandingJsonFile)));
-
-        // Database configuration options.
-        services.Configure<DatabaseConfigurationOptions>(
-            configuration.GetSection(JellyfinConfigurationConstants.DatabaseConfigurationKey));
-
-        services.AddSingleton<IWritableOptions<DatabaseConfigurationOptions>>(sp =>
-            new WritableOptions<DatabaseConfigurationOptions>(
-                sp.GetRequiredService<IOptionsMonitor<DatabaseConfigurationOptions>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.BrandingJsonFile))
+            // Database configuration options.
+            .AddWritableConfigEntry<DatabaseConfigurationOptions>(
+                configuration,
                 JellyfinConfigurationConstants.DatabaseConfigurationKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.DatabaseJsonFile)));
-
-        // Live TV and NFO metadata configuration options.
-        services.Configure<LiveTvOptions>(
-            configuration.GetSection(JellyfinConfigurationConstants.LiveTvOptionsKey));
-
-        services.Configure<XbmcMetadataOptions>(
-            configuration.GetSection(JellyfinConfigurationConstants.XbmcMetadataOptionsKey));
-
-        services.AddSingleton<IWritableOptions<LiveTvOptions>>(sp =>
-            new WritableOptions<LiveTvOptions>(
-                sp.GetRequiredService<IOptionsMonitor<LiveTvOptions>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.DatabaseJsonFile))
+            // Live TV and NFO metadata configuration options.
+            .AddWritableConfigEntry<LiveTvOptions>(
+                configuration,
                 JellyfinConfigurationConstants.LiveTvOptionsKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.LiveTvJsonFile)));
-
-        services.AddSingleton<IWritableOptions<XbmcMetadataOptions>>(sp =>
-            new WritableOptions<XbmcMetadataOptions>(
-                sp.GetRequiredService<IOptionsMonitor<XbmcMetadataOptions>>(),
-                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                Path.Combine(configDir, JellyfinConfigurationConstants.LiveTvJsonFile))
+            .AddWritableConfigEntry<XbmcMetadataOptions>(
+                configuration,
                 JellyfinConfigurationConstants.XbmcMetadataOptionsKey,
-                Path.Combine(configDir, JellyfinConfigurationConstants.XbmcMetadataJsonFile)));
-
-        return services;
+                Path.Combine(configDir, JellyfinConfigurationConstants.XbmcMetadataJsonFile));
     }
 }
