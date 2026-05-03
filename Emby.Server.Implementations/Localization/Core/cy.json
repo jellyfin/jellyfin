@@ -130,7 +130,5 @@
     "TaskRefreshTrickplayImagesDescription": "Creu rhagolygon Trickplay ar gyfer fideos mewn llyfrgelloedd gweithredol.",
     "TaskDownloadMissingLyrics": "Lawrlwytho geiriau coll",
     "TaskDownloadMissingLyricsDescription": "Lawrlwytho geiriau caneuon",
-    "TaskCleanCollectionsAndPlaylists": "Glanhau casgliadau a rhestrau chwarae",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Dileu eitemau o gasgliadau a rhestrau chwarae sydd ddim yn bodoli bellach.",
     "TaskExtractMediaSegments": "Sganio Darnau Cyfryngau"
 }

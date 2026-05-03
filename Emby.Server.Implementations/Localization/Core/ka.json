@@ -130,8 +130,6 @@
     "TaskAudioNormalizationDescription": "აანალიზებს ფაილებს აუდიოს ნორმალიზაციისთვის.",
     "TaskDownloadMissingLyrics": "მიუწვდომელი ლირიკების ჩამოტვირთვა",
     "TaskDownloadMissingLyricsDescription": "ჩამოტვირთავს ამჟამად ბიბლიოთეკაში არარსებულ ლირიკებს სიმღერებისთვის",
-    "TaskCleanCollectionsAndPlaylists": "კოლექციების და დასაკრავი სიების გასუფთავება",
-    "TaskCleanCollectionsAndPlaylistsDescription": "შლის არარსებულ ერთეულებს კოლექციებიდან და დასაკრავი სიებიდან.",
     "TaskExtractMediaSegments": "მედია სეგმენტების სკანირება",
     "TaskExtractMediaSegmentsDescription": "მედია სეგმენტების სკანირება მხარდაჭერილი მოდულებისთვის.",
     "TaskMoveTrickplayImages": "Trickplay სურათების მიგრაცია",

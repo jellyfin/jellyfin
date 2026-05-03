@@ -60,8 +60,8 @@ namespace Emby.Server.Implementations.Library
                 var collectionFolder = folder as ICollectionFolder;
                 var folderViewType = collectionFolder?.CollectionType;
 
-                // Playlist library requires special handling because the folder only references user playlists
-                if (folderViewType == CollectionType.playlists)
+                // Playlist and BoxSet libraries require special handling because the folder only references linked items
+                if (folderViewType == CollectionType.playlists || folderViewType == CollectionType.boxsets)
                 {
                     var items = folder.GetItemList(new InternalItemsQuery(user)
                     {
@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.Library
                 list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
             }
 
-            var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
+            var sorted = _libraryManager.Sort(list, user, [ItemSortBy.SortName], SortOrder.Ascending).ToList();
             var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations.Library
             var libraryItems = GetItemsForLatestItems(request.User, request, options);
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
-
+            var containerIndexMap = new Dictionary<Guid, int>();
             foreach (var item in libraryItems)
             {
                 // Only grab the index container for media
@@ -214,20 +214,16 @@ namespace Emby.Server.Implementations.Library
 
                 if (container is null)
                 {
-                    list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
+                    list.Add(new Tuple<BaseItem, List<BaseItem>>(null!, new List<BaseItem> { item }));
+                }
+                else if (containerIndexMap.TryGetValue(container.Id, out var existingIndex))
+                {
+                    list[existingIndex].Item2.Add(item);
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 is not null && i.Item1.Id.Equals(container.Id));
-
-                    if (current is not null)
-                    {
-                        current.Item2.Add(item);
-                    }
-                    else
-                    {
-                        list.Add(new Tuple<BaseItem, List<BaseItem>>(container, new List<BaseItem> { item }));
-                    }
+                    containerIndexMap[container.Id] = list.Count;
+                    list.Add(new Tuple<BaseItem, List<BaseItem>>(container, new List<BaseItem> { item }));
                 }
 
                 if (list.Count >= request.Limit)
@@ -256,7 +252,7 @@ namespace Emby.Server.Implementations.Library
                     return _channelManager.GetLatestChannelItemsInternal(
                         new InternalItemsQuery(user)
                         {
-                            ChannelIds = new[] { parentId },
+                            ChannelIds = [parentId],
                             IsPlayed = request.IsPlayed,
                             StartIndex = request.StartIndex,
                             Limit = request.Limit,
@@ -302,11 +298,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (hasCollectionType.All(i => i.CollectionType == CollectionType.movies))
                     {
-                        includeItemTypes = new[] { BaseItemKind.Movie };
+                        includeItemTypes = [BaseItemKind.Movie];
                     }
                     else if (hasCollectionType.All(i => i.CollectionType == CollectionType.tvshows))
                     {
-                        includeItemTypes = new[] { BaseItemKind.Episode };
+                        includeItemTypes = [BaseItemKind.Episode];
                     }
                 }
             }
@@ -345,29 +341,29 @@ namespace Emby.Server.Implementations.Library
             }
 
             var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Length == 0
-                ? new[]
-                {
+                ?
+                [
                     BaseItemKind.Person,
                     BaseItemKind.Studio,
                     BaseItemKind.Year,
                     BaseItemKind.MusicGenre,
                     BaseItemKind.Genre
-                }
+                ]
                 : Array.Empty<BaseItemKind>();
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[]
-                {
+                OrderBy =
+                [
                     (ItemSortBy.DateCreated, SortOrder.Descending),
                     (ItemSortBy.SortName, SortOrder.Descending),
                     (ItemSortBy.ProductionYear, SortOrder.Descending)
-                },
+                ],
                 IsFolder = includeItemTypes.Length == 0 ? false : null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
-                Limit = limit * 5,
+                Limit = limit * 2,
                 IsPlayed = isPlayed,
                 DtoOptions = options,
                 MediaTypes = mediaTypes
@@ -394,6 +390,12 @@ namespace Emby.Server.Implementations.Library
                 {
                     query.Limit = limit;
                     return _libraryManager.GetLatestItemList(query, parents, CollectionType.music);
+                }
+
+                if (collectionType == CollectionType.movies)
+                {
+                    query.Limit = limit;
+                    return _libraryManager.GetLatestItemList(query, parents, CollectionType.movies);
                 }
             }
 

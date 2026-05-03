@@ -128,8 +128,6 @@
     "TaskRefreshTrickplayImagesDescription": "Loob trickplay eelvaated videotele lubatud meediakogudes.",
     "TaskAudioNormalization": "Normaliseeri helitugevus",
     "TaskAudioNormalizationDescription": "Otsib failidest helitugevuse normaliseerimise teavet.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Eemaldab kogumikest ja esitusloenditest üksused, mida enam ei eksisteeri.",
-    "TaskCleanCollectionsAndPlaylists": "Puhasta kogumikud ja esitusloendid",
     "TaskDownloadMissingLyrics": "Hangi puuduvad laulusõnad",
     "TaskDownloadMissingLyricsDescription": "Laulusõnade allalaadimine",
     "TaskMoveTrickplayImagesDescription": "Liigutab trickplay pildid meediakogu sätete kohaselt.",

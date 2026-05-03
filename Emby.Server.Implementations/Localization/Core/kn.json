@@ -129,7 +129,5 @@
     "TaskExtractMediaSegments": "ಮಾಧ್ಯಮ ವಿಭಾಗದ ಹುಡುಕು",
     "TaskDownloadMissingLyrics": "ಇಲ್ಲದ ಸಾಹಿತ್ಯವನ್ನು ಪಡೆಯಿರಿ",
     "TaskAudioNormalization": "ಧ್ವನಿ ಸಾಮಾನ್ಯೀಕರಣ",
-    "TaskRefreshTrickplayImages": "ಟ್ರಿಕ್‌ಪ್ಲೇ ಚಿತ್ರಗಳನ್ನು ರಚಿಸಿ",
-    "TaskCleanCollectionsAndPlaylists": "ಸಂಗ್ರಹಗಳು ಮತ್ತು ಪ್ಲೇಪಟ್ಟಿಗಳನ್ನು ಸ್ವಚ್ಛಗೊಳಿಸಿ",
-    "TaskCleanCollectionsAndPlaylistsDescription": "ಇಲ್ಲದ ಸಂಗ್ರಹಗಳು ಮತ್ತು ಪ್ಲೇಪಟ್ಟಿಗಳಿಂದ ವಸ್ತುಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."
+    "TaskRefreshTrickplayImages": "ಟ್ರಿಕ್‌ಪ್ಲೇ ಚಿತ್ರಗಳನ್ನು ರಚಿಸಿ"
 }

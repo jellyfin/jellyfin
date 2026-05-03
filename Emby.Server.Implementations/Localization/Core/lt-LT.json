@@ -126,8 +126,6 @@
     "HearingImpaired": "Su klausos sutrikimais",
     "TaskRefreshTrickplayImages": "Generuoti Trickplay atvaizdus",
     "TaskRefreshTrickplayImagesDescription": "Sukuria trickplay peržiūras vaizdo įrašams įgalintose bibliotekose.",
-    "TaskCleanCollectionsAndPlaylists": "Išvalo duomenis rinkiniuose ir grojaraščiuose",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Pašalina neegzistuojančius elementus iš rinkinių ir grojaraščių.",
     "TaskAudioNormalization": "Garso normalizavimas",
     "TaskAudioNormalizationDescription": "Skenuoja failus, ieškant garso normalizavimo duomenų.",
     "TaskExtractMediaSegments": "Medijos segmentų nuskaitymas",

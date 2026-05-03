@@ -41,8 +41,6 @@
     "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reproducción HLS más precisas. Esta tarea puede durar mucho tiempo.",
     "TaskAudioNormalization": "Normalización de audio",
     "TaskAudioNormalizationDescription": "Escanear archivos para la normalización de data.",
-    "TaskCleanCollectionsAndPlaylists": "Limpiar colecciones y listas de reproducción",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Remover elementos de colecciones y listas de reproducción que no existen.",
     "TvShows": "Series de TV",
     "UserStartedPlayingItemWithValues": "{0} está reproduciendo {1} en {2}",
     "TaskRefreshChannels": "Actualizar canales",

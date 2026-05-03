@@ -128,8 +128,6 @@
     "TaskRefreshTrickplayImagesDescription": "Crea miniaturas de previsualización para os vídeos nas bibliotecas habilitadas.",
     "TaskDownloadMissingLyrics": "Descargar letras que faltan",
     "TaskDownloadMissingLyricsDescription": "Descarga as letras das cancións",
-    "TaskCleanCollectionsAndPlaylists": "Limpar coleccións e listas de reprodución",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Quita ítems que xa non existen das coleccións e listas de reprodución.",
     "TaskExtractMediaSegmentsDescription": "Procura segmentos de medios cos plugins habilitados.",
     "TaskExtractMediaSegments": "Escaneo de segmentos de medios",
     "TaskMoveTrickplayImages": "Migrar as miniaturas de previsualización a outra ubicación",

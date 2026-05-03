@@ -126,8 +126,6 @@
     "HearingImpaired": "Discapacitat auditiva",
     "TaskRefreshTrickplayImages": "Generació d'imatges de previsualització",
     "TaskRefreshTrickplayImagesDescription": "Creació d'imatges de previsualització per a vídeos en les mediateques habilitades.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Esborra elements de col·leccions i llistes de reproducció que ja no existeixen.",
-    "TaskCleanCollectionsAndPlaylists": "Neteja de les col·leccions i llistes de reproducció",
     "TaskAudioNormalization": "Estabilització de l'àudio",
     "TaskAudioNormalizationDescription": "Escaneja els fitxer per a obtenir dades de normalització de l'àudio.",
     "TaskDownloadMissingLyricsDescription": "Descàrrega de les lletres de les cançons",
