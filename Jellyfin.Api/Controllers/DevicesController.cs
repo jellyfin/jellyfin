@@ -19,6 +19,7 @@ namespace Jellyfin.Api.Controllers;
 /// Devices Controller.
 /// </summary>
 [Authorize(Policy = Policies.RequiresElevation)]
+[Tags("Device")]
 public class DevicesController : BaseJellyfinApiController
 {
     private readonly IDeviceManager _deviceManager;

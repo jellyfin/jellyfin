@@ -507,7 +507,13 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
-            serviceCollection.AddSingleton<IItemRepository, BaseItemRepository>();
+            serviceCollection.AddSingleton<BaseItemRepository>();
+            serviceCollection.AddSingleton<IItemRepository>(sp => sp.GetRequiredService<BaseItemRepository>());
+            serviceCollection.AddSingleton<IItemQueryHelpers>(sp => sp.GetRequiredService<BaseItemRepository>());
+            serviceCollection.AddSingleton<IItemPersistenceService, ItemPersistenceService>();
+            serviceCollection.AddSingleton<INextUpService, NextUpService>();
+            serviceCollection.AddSingleton<IItemCountService, ItemCountService>();
+            serviceCollection.AddSingleton<ILinkedChildrenService, LinkedChildrenService>();
             serviceCollection.AddSingleton<IPeopleRepository, PeopleRepository>();
             serviceCollection.AddSingleton<IChapterRepository, ChapterRepository>();
             serviceCollection.AddSingleton<IMediaAttachmentRepository, MediaAttachmentRepository>();
@@ -641,6 +647,7 @@ namespace Emby.Server.Implementations
             BaseItem.ConfigurationManager = ConfigurationManager;
             BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
+            BaseItem.ItemCountService = Resolve<IItemCountService>();
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.Logger = Resolve<ILogger<BaseItem>>();

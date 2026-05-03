@@ -420,7 +420,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && IsDoviWithHdr10Bl(state.VideoStream);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
+                       || IsDoviWithHdr10Bl(state.VideoStream));
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -435,8 +437,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Certain DV profile 5 video works in Safari with direct playing, but the VideoToolBox does not produce correct mapping results with transcoding.
             // All other HDR formats working.
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (IsDoviWithHdr10Bl(state.VideoStream)
-                       || state.VideoStream.VideoRangeType is VideoRangeType.HLG);
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || IsHdr10Plus(state.VideoStream)
+                       || IsDoviWithHdr10Bl(state.VideoStream)
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
@@ -1617,13 +1621,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mbbrcOpt = " -mbbrc 1";
                 }
 
+                // Some less powerful H.264 HW decoders require strict CPB size
+                // So bufsize optimizations should not be applied to them
+                int factor = 2;
+                var codec = state.ActualOutputVideoCodec;
+                var level = state.GetRequestedLevel(codec);
+                if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase)
+                    && double.TryParse(level, CultureInfo.InvariantCulture, out double requestedLevel)
+                    && requestedLevel < 51)
+                {
+                    factor = 1;
+                }
+
                 // Set (maxrate == bitrate + 1) to trigger VBR for better bitrate allocation
                 // Set (rc_init_occupancy == 2 * bitrate) and (bufsize == 4 * bitrate) to deal with drastic scene changes
                 // Use long arithmetic and clamp to int.MaxValue to prevent int32 overflow
                 // (e.g. bitrate * 4 wraps to a negative value for bitrates above ~537 million)
                 int qsvMaxrate = (int)Math.Min((long)bitrate + 1, int.MaxValue);
-                int qsvInitOcc = (int)Math.Min((long)bitrate * 2, int.MaxValue);
-                int qsvBufsize = (int)Math.Min((long)bitrate * 4, int.MaxValue);
+                int qsvInitOcc = (int)Math.Min((long)bitrate * 1 * factor, int.MaxValue);
+                int qsvBufsize = (int)Math.Min((long)bitrate * 2 * factor, int.MaxValue);
 
                 return FormattableString.Invariant($"{mbbrcOpt} -b:v {bitrate} -maxrate {qsvMaxrate} -rc_init_occupancy {qsvInitOcc} -bufsize {qsvBufsize}");
             }

@@ -832,10 +832,6 @@ namespace Emby.Server.Implementations.Session
             {
                 data.Played = true;
             }
-            else
-            {
-                data.Played = false;
-            }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
         }
@@ -1832,7 +1828,6 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.Settings);
                 fields.Remove(ItemFields.SortName);
                 fields.Remove(ItemFields.Tags);
-                fields.Remove(ItemFields.ExtraIds);
 
                 dtoOptions.Fields = fields.ToArray();
 

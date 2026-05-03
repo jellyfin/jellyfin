@@ -109,7 +109,7 @@ public class PeopleValidator
         var i = 0;
         foreach (var item in deadEntities.Chunk(500))
         {
-            _libraryManager.DeleteItemsUnsafeFast(item);
+            _libraryManager.DeleteItemsUnsafeFast(item, true);
             subProgress.Report(100f / deadEntities.Count * (i++ * 100));
         }
 

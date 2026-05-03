@@ -130,8 +130,6 @@
     "TaskDownloadMissingLyrics": "Deskargatu falta diren letrak",
     "TaskDownloadMissingLyricsDescription": "Deskargatu abestientzako letrak",
     "TaskExtractMediaSegments": "Multimedia segmentuen eskaneoa",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Jada existitzen ez diren bildumak eta erreprodukzio-zerrendak kentzen ditu.",
-    "TaskCleanCollectionsAndPlaylists": "Garbitu bildumak eta erreprodukzio-zerrendak",
     "TaskExtractMediaSegmentsDescription": "Media segmentuak atera edo lortzen ditu MediaSegment gaituta duten pluginetik.",
     "TaskMoveTrickplayImages": "Aldatu Trickplay irudien kokalekua",
     "TaskMoveTrickplayImagesDescription": "Lehendik dauden trickplay fitxategiak liburutegiaren ezarpenen arabera mugitzen dira.",

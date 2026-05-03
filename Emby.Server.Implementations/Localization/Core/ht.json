@@ -58,5 +58,8 @@
     "ValueSpecialEpisodeName": "Spesyal - {0}",
     "VersionNumber": "Vesyon {0}",
     "TasksApplicationCategory": "Aplikasyon",
-    "TasksMaintenanceCategory": "Antretyen"
+    "TasksMaintenanceCategory": "Antretyen",
+    "AppDeviceValues": "Aplikasyon: {0}, Aparèy: {1}",
+    "AuthenticationSucceededWithUserName": "{0} otantifye avèk siksè",
+    "CameraImageUploadedFrom": "Une nouvelle image de la caméra a été téléchargée depuis {0}"
 }

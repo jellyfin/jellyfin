@@ -17,6 +17,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("System")]
 [Authorize]
+[Tags("System")]
 public class ConfigurationController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _configurationManager;

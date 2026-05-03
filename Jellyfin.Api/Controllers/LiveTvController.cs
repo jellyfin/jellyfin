@@ -344,6 +344,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [Obsolete("This endpoint is obsolete.")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "groupId", Justification = "Imported from ServiceStack")]
@@ -387,6 +388,7 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [Obsolete("This endpoint is obsolete.")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordingGroups([FromQuery] Guid? userId)
     {
@@ -942,20 +944,6 @@ public class LiveTvController : BaseJellyfinApiController
     {
         await _liveTvManager.CreateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
         return NoContent();
-    }
-
-    /// <summary>
-    /// Get recording group.
-    /// </summary>
-    /// <param name="groupId">Group id.</param>
-    /// <returns>A <see cref="NotFoundResult"/>.</returns>
-    [HttpGet("Recordings/Groups/{groupId}")]
-    [Authorize(Policy = Policies.LiveTvAccess)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("This endpoint is obsolete.")]
-    public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
-    {
-        return NotFound();
     }
 
     /// <summary>

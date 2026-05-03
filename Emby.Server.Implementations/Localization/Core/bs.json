@@ -130,8 +130,6 @@
     "TaskOptimizeDatabaseDescription": "Komprimira bazu podataka i čisti slobodan prostor. Pokretanje ovog zadatka nakon skeniranja biblioteke ili izvođenja drugih promjena koje podrazumijevaju izmjene baze podataka može poboljšati performanse.",
     "TaskKeyframeExtractor": "Izvađač ključnih sličica",
     "TaskKeyframeExtractorDescription": "Izvlači ključne okvire iz video datoteka kako bi kreirao preciznije HLS playliste. Ovaj zadatak može trajati dugo.",
-    "TaskCleanCollectionsAndPlaylists": "Očistite kolekcije i playliste",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Uklanja stavke iz kolekcija i playlista koje više ne postoje.",
     "TaskExtractMediaSegments": "Analiza medijskog segmenta",
     "TaskExtractMediaSegmentsDescription": "Izvlači ili dobija medijske segmente iz dodataka koji podržavaju MediaSegment.",
     "TaskMoveTrickplayImages": "Migracija lokacije slike Trickplay",

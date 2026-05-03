@@ -57,7 +57,8 @@ public class MoveTrickplayFiles : IMigrationRoutine
             MediaTypes = [MediaType.Video],
             SourceTypes = [SourceType.Library],
             IsVirtualItem = false,
-            IsFolder = false
+            IsFolder = false,
+            IncludeOwnedItems = true
         };
 
         do

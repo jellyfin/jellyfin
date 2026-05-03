@@ -128,8 +128,6 @@
     "TaskOptimizeDatabase": "Ottimiżża d-database",
     "TaskKeyframeExtractor": "Estrattur ta' Keyframes",
     "TaskKeyframeExtractorDescription": "Jiġbed il-keyframes mill-fajls tal-videos biex jagħmel playlists HLS aktar preċiżi. Dan it-task jista' jdum żmien twil biex ilesti.",
-    "TaskCleanCollectionsAndPlaylists": "Naddaf il-kollezzjonijiet u l-playlists",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Ineħħi oġġetti minn kollezzjonijiet u playlists li m'għadhomx jeżistu.",
     "TaskDownloadMissingLyrics": "Niżżel il-lirika nieqsa",
     "TaskDownloadMissingLyricsDescription": "Iniżżel il-lirika għal-kanzunetti",
     "TaskExtractMediaSegments": "Scan tas-Sezzjoni tal-Midja",

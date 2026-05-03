@@ -6,7 +6,7 @@
   <ItemGroup Label="Package Dependencies">
     <PackageVersion Include="AsyncKeyedLock" Version="8.0.2" />
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
-    <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.Xunit3" Version="4.19.0" />
     <PackageVersion Include="AutoFixture" Version="4.18.1" />
     <PackageVersion Include="BDInfo" Version="0.8.0" />
     <PackageVersion Include="BitFaster.Caching" Version="2.5.4" />
@@ -14,10 +14,10 @@
     <PackageVersion Include="BlurHashSharp" Version="1.4.0-pre.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
-    <PackageVersion Include="Diacritics" Version="4.1.4" />
+    <PackageVersion Include="Diacritics" Version="4.1.8" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="FsCheck.Xunit" Version="3.3.2" />
+    <PackageVersion Include="FsCheck.Xunit.v3" Version="3.3.3" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
     <PackageVersion Include="ICU4N.Transliterator" Version="60.1.0-alpha.356" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8" />
@@ -26,28 +26,28 @@
     <PackageVersion Include="libse" Version="4.0.12" />
     <PackageVersion Include="LrcParser" Version="2025.623.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Morestachio" Version="5.0.1.631" />
     <PackageVersion Include="Moq" Version="4.18.4" />
@@ -77,14 +77,13 @@
     <PackageVersion Include="Svg.Skia" Version="3.4.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.7" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.7" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.6" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.7" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
-    <PackageVersion Include="z440.atl.core" Version="7.12.0" />
+    <PackageVersion Include="z440.atl.core" Version="7.13.0" />
     <PackageVersion Include="TMDbLib" Version="3.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
-    <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="Xunit.v3.Priority" Version="1.1.18" />
   </ItemGroup>
 </Project>

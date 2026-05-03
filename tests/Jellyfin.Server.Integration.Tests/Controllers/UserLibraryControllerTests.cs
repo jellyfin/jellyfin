@@ -28,7 +28,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var response = await client.GetAsync($"Users/{Guid.NewGuid()}/Items/Root");
+        var response = await client.GetAsync($"Users/{Guid.NewGuid()}/Items/Root", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -54,7 +54,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
 
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid(), rootFolderDto.Id));
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid(), rootFolderDto.Id), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -71,7 +71,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
 
         var userDto = await AuthHelper.GetUserDtoAsync(client);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, Guid.NewGuid()));
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, Guid.NewGuid()), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -84,9 +84,9 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}");
+        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto>(_jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto>(_jsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(rootDto);
     }
 
@@ -99,9 +99,9 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}/Intros");
+        var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}/Intros", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await response.Content.ReadFromJsonAsync<QueryResult<BaseItemDto>>(_jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<QueryResult<BaseItemDto>>(_jsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(rootDto);
     }
 
@@ -116,9 +116,9 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
         var userDto = await AuthHelper.GetUserDtoAsync(client);
         var rootFolderDto = await AuthHelper.GetRootFolderDtoAsync(client, userDto.Id);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, rootFolderDto.Id));
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, rootFolderDto.Id), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto[]>(_jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto[]>(_jsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(rootDto);
     }
 }

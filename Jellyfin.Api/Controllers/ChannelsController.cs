@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// Channels Controller.
 /// </summary>
 [Authorize]
+[Tags("Channel")]
 public class ChannelsController : BaseJellyfinApiController
 {
     private readonly IChannelManager _channelManager;

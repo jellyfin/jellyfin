@@ -467,41 +467,40 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         /// <summary>
-        /// ADd linked children.
+        /// Add linked children.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="writer">The xml writer.</param>
         /// <param name="pluralNodeName">The plural node name.</param>
         /// <param name="singularNodeName">The singular node name.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        private static async Task AddLinkedChildren(Folder item, XmlWriter writer, string pluralNodeName, string singularNodeName)
+        private async Task AddLinkedChildren(Folder item, XmlWriter writer, string pluralNodeName, string singularNodeName)
         {
-            var items = item.LinkedChildren
+            var linkedChildren = item.LinkedChildren
                 .Where(i => i.Type == LinkedChildType.Manual)
                 .ToList();
 
-            if (items.Count == 0)
+            if (linkedChildren.Count == 0)
             {
                 return;
             }
 
             await writer.WriteStartElementAsync(null, pluralNodeName, null).ConfigureAwait(false);
 
-            foreach (var link in items)
+            foreach (var link in linkedChildren)
             {
-                if (!string.IsNullOrWhiteSpace(link.Path) || !string.IsNullOrWhiteSpace(link.LibraryItemId))
+                // Resolve ItemId to get the item's path for XML portability
+                string? path = null;
+                if (link.ItemId.HasValue && !link.ItemId.Value.Equals(Guid.Empty))
+                {
+                    var linkedItem = LibraryManager.GetItemById(link.ItemId.Value);
+                    path = linkedItem?.Path;
+                }
+
+                if (!string.IsNullOrWhiteSpace(path))
                 {
                     await writer.WriteStartElementAsync(null, singularNodeName, null).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(link.Path))
-                    {
-                        await writer.WriteElementStringAsync(null, "Path", null, link.Path).ConfigureAwait(false);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(link.LibraryItemId))
-                    {
-                        await writer.WriteElementStringAsync(null, "ItemId", null, link.LibraryItemId).ConfigureAwait(false);
-                    }
-
+                    await writer.WriteElementStringAsync(null, "Path", null, path).ConfigureAwait(false);
                     await writer.WriteEndElementAsync().ConfigureAwait(false);
                 }
             }

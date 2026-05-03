@@ -126,8 +126,6 @@
     "HearingImpaired": "Hörgeschädigt",
     "TaskRefreshTrickplayImages": "Trickplay-Bilder generieren",
     "TaskRefreshTrickplayImagesDescription": "Erstellt ein Trickplay-Vorschauen für Videos in aktivierten Bibliotheken.",
-    "TaskCleanCollectionsAndPlaylists": "Sammlungen und Playlisten aufräumen",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Löscht nicht mehr vorhandene Einträge aus den Sammlungen und Playlisten.",
     "TaskAudioNormalization": "Audio Normalisierung",
     "TaskAudioNormalizationDescription": "Durchsucht Dateien nach Audionormalisierungsdaten.",
     "TaskDownloadMissingLyricsDescription": "Lädt Songtexte herunter",

@@ -124,13 +124,15 @@
     "TaskCleanActivityLog": "Избриши Лог на Активности",
     "External": "Надворешен",
     "HearingImpaired": "Оштетен слух",
-    "TaskCleanCollectionsAndPlaylists": "Исчисти ги колекциите и плејлистите",
     "TaskAudioNormalizationDescription": "Скенирање датотеки за податоци за нормализација на звукот.",
     "TaskDownloadMissingLyrics": "Преземи стихови кои недостасуваат",
     "TaskDownloadMissingLyricsDescription": "Преземи стихови/текстови за песни",
     "TaskRefreshTrickplayImages": "Генерирај слики за прегледување (Trickplay)",
     "TaskAudioNormalization": "Нормализација на звукот",
     "TaskRefreshTrickplayImagesDescription": "Креира трикплеј прегледи за видеа во овозможените библиотеки.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Отстранува ставки од колекциите и плејлистите што веќе не постојат.",
-    "TaskExtractMediaSegments": "Скенирање на сегменти на содржина"
+    "TaskExtractMediaSegments": "Скенирање на сегменти на содржина",
+    "TaskMoveTrickplayImages": "Мигрирај ја локацијата на сликата од Trickplay",
+    "TaskMoveTrickplayImagesDescription": "Ги преместува постоечките датотеки за трикплеј според поставките на библиотеката.",
+    "CleanupUserDataTask": "Задача за чистење на кориснички податоци",
+    "CleanupUserDataTaskDescription": "Ги чисти сите кориснички податоци (состојба на гледање, статус на омилени итн.) од медиуми што повеќе не се присутни најмалку 90 дена."
 }

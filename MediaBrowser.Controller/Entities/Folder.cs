@@ -59,6 +59,10 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
         public bool IsRoot { get; set; }
 
+        /// <summary>
+        /// Gets or sets the linked children.
+        /// </summary>
+        [JsonIgnore]
         public LinkedChild[] LinkedChildren { get; set; }
 
         [JsonIgnore]
@@ -416,6 +420,17 @@ namespace MediaBrowser.Controller.Entities
 
                 // Create a list for our validated children
                 var newItems = new List<BaseItem>();
+                var actuallyRemoved = new List<BaseItem>();
+
+                // Build a reverse path→item lookup for detecting type changes
+                var currentChildrenByPath = new Dictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in currentChildren)
+                {
+                    if (!string.IsNullOrEmpty(kvp.Value.Path))
+                    {
+                        currentChildrenByPath.TryAdd(kvp.Value.Path, kvp.Value);
+                    }
+                }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -443,6 +458,24 @@ namespace MediaBrowser.Controller.Entities
                         continue;
                     }
 
+                    // Check if an existing item occupies the same path with different type/ID
+                    if (!string.IsNullOrEmpty(child.Path)
+                        && currentChildrenByPath.TryGetValue(child.Path, out var staleItem)
+                        && !staleItem.Id.Equals(child.Id))
+                    {
+                        Logger.LogInformation(
+                            "Item type changed at {Path}: {OldType} -> {NewType}, removing stale entry",
+                            child.Path,
+                            staleItem.GetType().Name,
+                            child.GetType().Name);
+
+                        currentChildren.Remove(staleItem.Id);
+                        currentChildrenByPath.Remove(child.Path);
+                        staleItem.SetParent(null);
+                        LibraryManager.DeleteItem(staleItem, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                        actuallyRemoved.Add(staleItem);
+                    }
+
                     // Brand new item - needs to be added
                     child.SetParent(this);
                     newItems.Add(child);
@@ -452,8 +485,18 @@ namespace MediaBrowser.Controller.Entities
                 // That's all the new and changed ones - now see if any have been removed and need cleanup
                 var itemsRemoved = currentChildren.Values.Except(validChildren).ToList();
                 var shouldRemove = !IsRoot || allowRemoveRoot;
-                var actuallyRemoved = new List<BaseItem>();
                 // If it's an AggregateFolder, don't remove
+                // Collect replaced primaries for deferred deletion (after CreateItems)
+                var replacedPrimaries = new List<(Video OldPrimary, Video NewPrimary)>();
+
+                // Build a set of paths that are alternate versions of valid children
+                // These items should not be deleted - they're managed by their primary video
+                var alternateVersionPaths = validChildren
+                    .OfType<Video>()
+                    .SelectMany(v => v.LocalAlternateVersions ?? [])
+                    .Where(p => !string.IsNullOrEmpty(p))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
                 if (shouldRemove && itemsRemoved.Count > 0)
                 {
                     foreach (var item in itemsRemoved)
@@ -462,6 +505,40 @@ namespace MediaBrowser.Controller.Entities
                         {
                             Logger.LogDebug("Item marked as non-removable, skipping: {Path}", item.Path ?? item.Name);
                             continue;
+                        }
+
+                        // Skip items that are alternate versions of another video
+                        if (item is Video video)
+                        {
+                            // Check if path is in LocalAlternateVersions of any valid child
+                            if (!string.IsNullOrEmpty(item.Path) && alternateVersionPaths.Contains(item.Path))
+                            {
+                                Logger.LogDebug("Item path matches an alternate version, skipping deletion: {Path}", item.Path);
+                                continue;
+                            }
+                        }
+
+                        // Defer deletion if this primary video is being replaced by a new primary
+                        // that takes over its alternates. Deleting now would trigger premature
+                        // promotion inside DeleteItem and write stale paths to collection NFOs.
+                        if (item is Video primaryVideo
+                            && !primaryVideo.PrimaryVersionId.HasValue
+                            && primaryVideo.OwnerId.IsEmpty()
+                            && (primaryVideo.LocalAlternateVersions ?? []).Any(p => alternateVersionPaths.Contains(p)))
+                        {
+                            var newPrimary = newItems
+                                .OfType<Video>()
+                                .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                    .Any(p => (primaryVideo.LocalAlternateVersions ?? [])
+                                        .Any(op => string.Equals(op, p, StringComparison.OrdinalIgnoreCase))));
+                            if (newPrimary is not null)
+                            {
+                                Logger.LogDebug("Deferring deletion of replaced primary: {Path}", item.Path);
+                                replacedPrimaries.Add((primaryVideo, newPrimary));
+                                actuallyRemoved.Add(item);
+                                item.SetParent(null);
+                                continue;
+                            }
                         }
 
                         if (item.IsFileProtocol)
@@ -478,6 +555,106 @@ namespace MediaBrowser.Controller.Entities
                 if (newItems.Count > 0)
                 {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
+                }
+
+                // Process deferred replaced-primary deletions now that new primaries exist in DB/cache.
+                // This avoids the premature promotion that would occur if DeleteItem ran before CreateItems.
+                foreach (var (oldPrimary, newPrimary) in replacedPrimaries)
+                {
+                    Logger.LogInformation(
+                        "Processing deferred deletion of replaced primary {OldName} ({OldId}), new primary {NewName} ({NewId})",
+                        oldPrimary.Name,
+                        oldPrimary.Id,
+                        newPrimary.Name,
+                        newPrimary.Id);
+
+                    // Reroute collection/playlist references from old primary to new primary
+                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+
+                    // Transfer alternates from old primary to new primary
+                    var localAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+                    var allAlternateIds = localAlternateIds
+                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var altId in allAlternateIds)
+                    {
+                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
+                        {
+                            altVideo.SetPrimaryVersionId(newPrimary.Id);
+                            altVideo.OwnerId = localAlternateIds.Contains(altVideo.Id) ? newPrimary.Id : Guid.Empty;
+                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+
+                    // Clear alternate arrays so DeleteItem won't trigger promotion
+                    oldPrimary.LocalAlternateVersions = [];
+                    oldPrimary.LinkedAlternateVersions = [];
+
+                    // Safe to delete now — no promotion will happen
+                    LibraryManager.DeleteItem(oldPrimary, new DeleteOptions { DeleteFileLocation = false }, this, false);
+                }
+
+                // Demote old primaries that are now alternate versions of newly created primaries.
+                // This handles the case where a new file is added that becomes the new primary
+                // (e.g. movie-2 added, movie-3 was primary → movie-3 needs demotion).
+                // Items in replacedPrimaries are excluded (already in actuallyRemoved).
+                var oldPrimariesToDemote = new List<(Video OldPrimary, Video NewPrimary)>();
+                foreach (var item in itemsRemoved.Except(actuallyRemoved))
+                {
+                    if (item is Video video
+                        && video.OwnerId.IsEmpty()
+                        && !string.IsNullOrEmpty(item.Path)
+                        && alternateVersionPaths.Contains(item.Path))
+                    {
+                        var newPrimary = newItems
+                            .OfType<Video>()
+                            .FirstOrDefault(v => (v.LocalAlternateVersions ?? [])
+                                .Any(p => string.Equals(p, item.Path, StringComparison.OrdinalIgnoreCase)));
+                        if (newPrimary is not null)
+                        {
+                            oldPrimariesToDemote.Add((video, newPrimary));
+                        }
+                    }
+                }
+
+                foreach (var (oldPrimary, newPrimary) in oldPrimariesToDemote)
+                {
+                    Logger.LogInformation(
+                        "Demoting old primary {OldName} ({OldId}) to alternate of new primary {NewName} ({NewId})",
+                        oldPrimary.Name,
+                        oldPrimary.Id,
+                        newPrimary.Name,
+                        newPrimary.Id);
+
+                    // First: update old primary's alternate items to point to new primary.
+                    // Order matters — update alternates FIRST so they don't get orphan-deleted
+                    // when old primary's arrays are cleared.
+                    var oldAlternateIds = LibraryManager.GetLocalAlternateVersionIds(oldPrimary)
+                        .Concat(LibraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var altId in oldAlternateIds)
+                    {
+                        if (LibraryManager.GetItemById(altId) is Video altVideo && !altVideo.Id.Equals(newPrimary.Id))
+                        {
+                            altVideo.SetPrimaryVersionId(newPrimary.Id);
+                            altVideo.OwnerId = newPrimary.Id;
+                            await altVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+
+                    // Then: demote old primary — clear its arrays and set it as alternate of new primary
+                    oldPrimary.LocalAlternateVersions = [];
+                    oldPrimary.LinkedAlternateVersions = [];
+                    oldPrimary.SetPrimaryVersionId(newPrimary.Id);
+                    oldPrimary.OwnerId = newPrimary.Id;
+                    await oldPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+
+                    // Re-route playlist/collection references from old primary to new primary
+                    await LibraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
                 }
 
                 // After removing items, reattach any detached user data to remaining children
@@ -716,36 +893,10 @@ namespace MediaBrowser.Controller.Entities
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
         {
-            var user = query.User;
-
-            if (!query.ForceDirect && RequiresPostFiltering(query))
+            if (!query.ForceDirect && CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
-                IEnumerable<BaseItem> items;
-                Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
-                var totalCount = 0;
-                if (query.User is null)
-                {
-                    items = GetRecursiveChildren(filter);
-                    totalCount = items.Count();
-                }
-                else
-                {
-                    // Save pagination params before clearing them to prevent pagination from happening
-                    // before sorting. PostFilterAndSort will apply pagination after sorting.
-                    var limit = query.Limit;
-                    var startIndex = query.StartIndex;
-                    query.Limit = null;
-                    query.StartIndex = null;
-
-                    items = GetRecursiveChildren(user, query, out totalCount);
-
-                    // Restore pagination params so PostFilterAndSort can apply them after sorting
-                    query.Limit = limit;
-                    query.StartIndex = startIndex;
-                }
-
-                return PostFilterAndSort(items, query);
+                query.CollapseBoxSetItems = true;
+                SetCollapseBoxSetItemTypes(query);
             }
 
             if (this is not UserRootFolder
@@ -755,15 +906,15 @@ namespace MediaBrowser.Controller.Entities
                 query.Parent = this;
             }
 
-            if (RequiresPostFiltering2(query))
+            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
-                return QueryWithPostFiltering2(query);
+                return QueryWithPostFiltering(query);
             }
 
             return LibraryManager.GetItemsResult(query);
         }
 
-        protected QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
+        protected QueryResult<BaseItem> QueryWithPostFiltering(InternalItemsQuery query)
         {
             var startIndex = query.StartIndex;
             var limit = query.Limit;
@@ -807,120 +958,6 @@ namespace MediaBrowser.Controller.Entities
                 query.StartIndex,
                 totalCount,
                 returnItems.ToArray());
-        }
-
-        private bool RequiresPostFiltering2(InternalItemsQuery query)
-        {
-            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
-            {
-                Logger.LogDebug("Query requires post-filtering due to BoxSet query");
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool RequiresPostFiltering(InternalItemsQuery query)
-        {
-            if (LinkedChildren.Length > 0)
-            {
-                if (this is not ICollectionFolder)
-                {
-                    Logger.LogDebug("{Type}: Query requires post-filtering due to LinkedChildren.", GetType().Name);
-                    return true;
-                }
-            }
-
-            // Filter by Video3DFormat
-            if (query.Is3D.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to Is3D");
-                return true;
-            }
-
-            if (query.HasOfficialRating.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasOfficialRating");
-                return true;
-            }
-
-            if (query.IsPlaceHolder.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to IsPlaceHolder");
-                return true;
-            }
-
-            if (query.HasSpecialFeature.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasSpecialFeature");
-                return true;
-            }
-
-            if (query.HasSubtitles.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasSubtitles");
-                return true;
-            }
-
-            if (query.HasTrailer.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasTrailer");
-                return true;
-            }
-
-            if (query.HasThemeSong.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasThemeSong");
-                return true;
-            }
-
-            if (query.HasThemeVideo.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to HasThemeVideo");
-                return true;
-            }
-
-            // Filter by VideoType
-            if (query.VideoTypes.Length > 0)
-            {
-                Logger.LogDebug("Query requires post-filtering due to VideoTypes");
-                return true;
-            }
-
-            if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
-            {
-                Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
-                return true;
-            }
-
-            if (!query.AdjacentTo.IsNullOrEmpty())
-            {
-                Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
-                return true;
-            }
-
-            if (query.SeriesStatuses.Length > 0)
-            {
-                Logger.LogDebug("Query requires post-filtering due to SeriesStatuses");
-                return true;
-            }
-
-            if (query.AiredDuringSeason.HasValue)
-            {
-                Logger.LogDebug("Query requires post-filtering due to AiredDuringSeason");
-                return true;
-            }
-
-            if (query.IsPlayed.HasValue)
-            {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(BaseItemKind.Series))
-                {
-                    Logger.LogDebug("Query requires post-filtering due to IsPlayed");
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
@@ -990,14 +1027,12 @@ namespace MediaBrowser.Controller.Entities
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
             IEnumerable<BaseItem> items;
 
             int totalItemCount = 0;
             if (query.User is null)
             {
-                items = Children.Where(filter);
+                items = UserViewBuilder.Filter(Children, user, query, UserDataManager, LibraryManager);
                 totalItemCount = items.Count();
             }
             else
@@ -1012,7 +1047,12 @@ namespace MediaBrowser.Controller.Entities
                     NameLessThan = query.NameLessThan
                 };
 
-                items = GetChildren(user, true, out totalItemCount, childQuery).Where(filter);
+                items = UserViewBuilder.Filter(
+                    GetChildren(user, true, out totalItemCount, childQuery),
+                    user,
+                    query,
+                    UserDataManager,
+                    LibraryManager);
             }
 
             return PostFilterAndSort(items, query);
@@ -1026,29 +1066,11 @@ namespace MediaBrowser.Controller.Entities
             if (user is not null)
             {
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
-            }
 
-#pragma warning disable CA1309
-            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
-            {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
-            }
-
-            if (!string.IsNullOrEmpty(query.NameStartsWith))
-            {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
-            }
-
-            if (!string.IsNullOrEmpty(query.NameLessThan))
-            {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
-            }
-#pragma warning restore CA1309
-
-            // This must be the last filter
-            if (!query.AdjacentTo.IsNullOrEmpty())
-            {
-                items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
+                // After collapse, BoxSets may have replaced items whose names matched the filter
+                // but the BoxSet's own name may not match. Re-apply name filtering so BoxSets
+                // appear under the correct letter (e.g. "Jump Street" under J, not under #).
+                items = ApplyNameFilter(items, query);
             }
 
             var filteredItems = items as IReadOnlyList<BaseItem> ?? items.ToList();
@@ -1060,6 +1082,26 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return result;
+        }
+
+        private static IEnumerable<BaseItem> ApplyNameFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)
+        {
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+            {
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
+            {
+                items = items.Where(i => string.Compare(i.SortName, query.NameStartsWithOrGreater, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(i.SortName, query.NameLessThan, StringComparison.OrdinalIgnoreCase) < 0);
+            }
+
+            return items;
         }
 
         private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
@@ -1165,6 +1207,33 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return (queryHasMovies || queryHasSeries) && AllowBoxSetCollapsing(query);
+        }
+
+        private void SetCollapseBoxSetItemTypes(InternalItemsQuery query)
+        {
+            var config = ConfigurationManager.Configuration;
+            bool collapseMovies = config.EnableGroupingMoviesIntoCollections;
+            bool collapseSeries = config.EnableGroupingShowsIntoCollections;
+
+            if (collapseMovies && collapseSeries)
+            {
+                // Empty means collapse all types
+                query.CollapseBoxSetItemTypes = [];
+                return;
+            }
+
+            var types = new List<BaseItemKind>();
+            if (collapseMovies)
+            {
+                types.Add(BaseItemKind.Movie);
+            }
+
+            if (collapseSeries)
+            {
+                types.Add(BaseItemKind.Series);
+            }
+
+            query.CollapseBoxSetItemTypes = types.ToArray();
         }
 
         private static bool AllowBoxSetCollapsing(InternalItemsQuery request)
@@ -1418,8 +1487,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(e => e.IsVisible(user))
                 .ToArray();
 
-            var realChildren = visibleChildren
-                .Where(e => query is null || UserViewBuilder.FilterItem(e, query))
+            var realChildren = UserViewBuilder.Filter(visibleChildren, query.User, query, UserDataManager, LibraryManager)
                 .ToArray();
 
             var childCount = realChildren.Length;
@@ -1680,11 +1748,13 @@ namespace MediaBrowser.Controller.Entities
 
                             if (!string.IsNullOrEmpty(resolvedPath))
                             {
+#pragma warning disable CS0618 // Type or member is obsolete - shortcuts require Path for lazy ItemId resolution
                                 return new LinkedChild
                                 {
                                     Path = resolvedPath,
                                     Type = LinkedChildType.Shortcut
                                 };
+#pragma warning restore CS0618
                             }
 
                             Logger.LogError("Error resolving shortcut {0}", i.FullName);
@@ -1710,12 +1780,6 @@ namespace MediaBrowser.Controller.Entities
                     LinkedChildren = newShortcutLinks.ToArray();
                     return true;
                 }
-            }
-
-            foreach (var child in LinkedChildren)
-            {
-                // Reset the cached value
-                child.ItemId = null;
             }
 
             return false;
@@ -1795,45 +1859,63 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user, userItemData);
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public override void FillUserDataDtoValues(
+            UserItemDataDto dto,
+            UserItemData userData,
+            BaseItemDto itemDto,
+            User user,
+            DtoOptions fields,
+            (int Played, int Total)? precomputedCounts = null)
         {
             if (!SupportsUserDataFromChildren)
             {
                 return;
             }
 
-            if (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount))
+            if (SupportsPlayedStatus || (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount)))
             {
-                itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
-            }
+                int playedCount;
+                int totalCount;
 
-            if (SupportsPlayedStatus)
-            {
-                var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
+                if (precomputedCounts.HasValue)
                 {
-                    Recursive = true,
-                    IsFolder = false,
-                    IsVirtualItem = false,
-                    EnableTotalRecordCount = true,
-                    Limit = 0,
-                    IsPlayed = false,
-                    DtoOptions = new DtoOptions(false)
-                    {
-                        EnableImages = false
-                    }
-                }).TotalRecordCount;
-
-                dto.UnplayedItemCount = unplayedQueryResult;
-
-                if (itemDto?.RecursiveItemCount > 0)
-                {
-                    var unplayedPercentage = ((double)unplayedQueryResult / itemDto.RecursiveItemCount.Value) * 100;
-                    dto.PlayedPercentage = 100 - unplayedPercentage;
-                    dto.Played = dto.PlayedPercentage.Value >= 100;
+                    // Use batch-fetched counts (avoids N+1 queries)
+                    (playedCount, totalCount) = precomputedCounts.Value;
                 }
                 else
                 {
-                    dto.Played = (dto.UnplayedItemCount ?? 0) == 0;
+                    // Fall back to per-item query when no batch data is available
+                    var query = new InternalItemsQuery(user);
+
+                    if (LinkedChildren.Length > 0)
+                    {
+                        (playedCount, totalCount) = ItemCountService.GetPlayedAndTotalCountFromLinkedChildren(query, Id);
+                    }
+                    else
+                    {
+                        (playedCount, totalCount) = ItemCountService.GetPlayedAndTotalCount(query, Id);
+                    }
+                }
+
+                if (itemDto is not null && fields.ContainsField(ItemFields.RecursiveItemCount))
+                {
+                    itemDto.RecursiveItemCount = totalCount;
+                }
+
+                if (SupportsPlayedStatus)
+                {
+                    var unplayedCount = totalCount - playedCount;
+                    dto.UnplayedItemCount = unplayedCount;
+
+                    if (totalCount > 0)
+                    {
+                        dto.PlayedPercentage = playedCount / (double)totalCount * 100;
+                        dto.Played = playedCount >= totalCount;
+                    }
+                    else
+                    {
+                        dto.Played = true;
+                    }
                 }
             }
         }

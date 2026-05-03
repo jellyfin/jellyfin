@@ -1,15 +1,11 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
@@ -20,29 +16,6 @@ namespace MediaBrowser.Controller.Persistence;
 /// </summary>
 public interface IItemRepository
 {
-    /// <summary>
-    /// Deletes the item.
-    /// </summary>
-    /// <param name="ids">The identifier to delete.</param>
-    void DeleteItem(params IReadOnlyList<Guid> ids);
-
-    /// <summary>
-    /// Saves the items.
-    /// </summary>
-    /// <param name="items">The items.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken);
-
-    Task SaveImagesAsync(BaseItem item, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Reattaches the user data to the item.
-    /// </summary>
-    /// <param name="item">The item.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous reattachment operation.</returns>
-    Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken);
-
     /// <summary>
     /// Retrieves the item.
     /// </summary>
@@ -80,43 +53,6 @@ public interface IItemRepository
     IReadOnlyList<BaseItem> GetLatestItemList(InternalItemsQuery filter, CollectionType collectionType);
 
     /// <summary>
-    /// Gets the list of series presentation keys for next up.
-    /// </summary>
-    /// <param name="filter">The query.</param>
-    /// <param name="dateCutoff">The minimum date for a series to have been most recently watched.</param>
-    /// <returns>The list of keys.</returns>
-    IReadOnlyList<string> GetNextUpSeriesKeys(InternalItemsQuery filter, DateTime dateCutoff);
-
-    /// <summary>
-    /// Updates the inherited values.
-    /// </summary>
-    void UpdateInheritedValues();
-
-    int GetCount(InternalItemsQuery filter);
-
-    ItemCounts GetItemCounts(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
-
-    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
-
-    IReadOnlyList<string> GetMusicGenreNames();
-
-    IReadOnlyList<string> GetStudioNames();
-
-    IReadOnlyList<string> GetGenreNames();
-
-    IReadOnlyList<string> GetAllArtistNames();
-
-    /// <summary>
     /// Checks if an item has been persisted to the database.
     /// </summary>
     /// <param name="id">The id to check.</param>
@@ -124,18 +60,84 @@ public interface IItemRepository
     Task<bool> ItemExistsAsync(Guid id);
 
     /// <summary>
-    /// Gets a value indicating wherever all children of the requested Id has been played.
+    /// Gets genres with item counts.
     /// </summary>
-    /// <param name="user">The userdata to check against.</param>
-    /// <param name="id">The Top id to check.</param>
-    /// <param name="recursive">Whever the check should be done recursive. Warning expensive operation.</param>
-    /// <returns>A value indicating whever all children has been played.</returns>
-    bool GetIsPlayed(User user, Guid id, bool recursive);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery filter);
 
     /// <summary>
-    /// Gets all artist matches from the db.
+    /// Gets music genres with item counts.
     /// </summary>
-    /// <param name="artistNames">The names of the artists.</param>
-    /// <returns>A map of the artist name and the potential matches.</returns>
-    IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames);
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The music genres and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets studios with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The studios and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets album artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The album artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets all artists with item counts.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>All artists and their item counts.</returns>
+    QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets all music genre names.
+    /// </summary>
+    /// <returns>The list of music genre names.</returns>
+    IReadOnlyList<string> GetMusicGenreNames();
+
+    /// <summary>
+    /// Gets all studio names.
+    /// </summary>
+    /// <returns>The list of studio names.</returns>
+    IReadOnlyList<string> GetStudioNames();
+
+    /// <summary>
+    /// Gets all genre names.
+    /// </summary>
+    /// <returns>The list of genre names.</returns>
+    IReadOnlyList<string> GetGenreNames();
+
+    /// <summary>
+    /// Gets all artist names.
+    /// </summary>
+    /// <returns>The list of artist names.</returns>
+    IReadOnlyList<string> GetAllArtistNames();
+
+    /// <summary>
+    /// Gets legacy query filters aggregated from the database.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>Aggregated filter values.</returns>
+    QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets whether all children of the requested item have been played.
+    /// </summary>
+    /// <param name="user">The user to check against.</param>
+    /// <param name="id">The top item id to check.</param>
+    /// <param name="recursive">Whether the check should be done recursively.</param>
+    /// <returns>A value indicating whether all children have been played.</returns>
+    bool GetIsPlayed(User user, Guid id, bool recursive);
 }
