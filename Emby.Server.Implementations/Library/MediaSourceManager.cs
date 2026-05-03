@@ -438,7 +438,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (user.AudioLanguagePreference == "OriginalLanguage")
+            if (string.Equals(user.AudioLanguagePreference, "OriginalLanguage", StringComparison.OrdinalIgnoreCase))
             {
                 originalLanguage = !string.IsNullOrWhiteSpace(originalLanguage)
                     ? originalLanguage.Split(',').FirstOrDefault()
@@ -454,7 +454,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 var originalIndex = source.MediaStreams.FindIndex(i => i.Type == MediaStreamType.Audio && i.IsOriginal);
-                // If original language and the language name with the original indicator
+
                 if (!string.IsNullOrWhiteSpace(originalLanguage) && originalIndex != -1)
                 {
                     var mediaLanguageOriginal = source.MediaStreams[originalIndex].Language;
@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = user.AudioLanguagePreference == "OriginalLanguage" && !string.IsNullOrWhiteSpace(originalLanguage)
+            var preferredAudio = string.Equals(user.AudioLanguagePreference, "OriginalLanguage", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(originalLanguage)
                 ? NormalizeLanguage(originalLanguage)
                 : NormalizeLanguage(user.AudioLanguagePreference);
 
