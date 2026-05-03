@@ -55,6 +55,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -165,13 +166,16 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
             _xmlSerializer = new MyXmlSerializer();
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer);
+#pragma warning disable CS0618 // Type or member is obsolete
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _startupConfig);
+
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             _disposableParts.Add(_pluginManager);
         }
@@ -219,6 +223,7 @@ namespace Emby.Server.Implementations
         /// Gets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
+        [Obsolete("See IConfigurationManager")]
         public ServerConfigurationManager ConfigurationManager { get; }
 
         /// <summary>
@@ -444,7 +449,9 @@ namespace Emby.Server.Implementations
         {
             DiscoverTypes();
 
+#pragma warning disable CS0618 // Legacy configuration manager is still populated for plugin compatibility.
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
+#pragma warning restore CS0618
 
             NetManager = new NetworkManager(new NetworkConfigurationOptionsMonitor(_startupConfig), _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
@@ -485,6 +492,7 @@ namespace Emby.Server.Implementations
 
 #pragma warning disable CS0618 // IConfigurationManager registration retained for plugin compatibility.
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
+            serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
 #pragma warning restore CS0618
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
@@ -1022,6 +1030,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
+                _pluginManager.Dispose();
                 _disposableParts.Clear();
             }
 

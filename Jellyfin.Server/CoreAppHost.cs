@@ -39,6 +39,7 @@ namespace Jellyfin.Server
     /// </summary>
     public class CoreAppHost : ApplicationHost
     {
+#pragma warning disable CS0618 // CoreAppHost still uses the compatibility constructor during the IConfigurationManager transition.
         /// <summary>
         /// Initializes a new instance of the <see cref="CoreAppHost" /> class.
         /// </summary>
@@ -58,6 +59,7 @@ namespace Jellyfin.Server
                 startupConfig)
         {
         }
+        #pragma warning restore CS0618
 
         /// <inheritdoc/>
         protected override void RegisterServices(IServiceCollection serviceCollection)
