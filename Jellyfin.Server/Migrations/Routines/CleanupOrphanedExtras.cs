@@ -43,7 +43,6 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
     /// <param name="recordingsManager">The recordings manager.</param>
     /// <param name="mediaSourceManager">The media source manager.</param>
     /// <param name="mediaSegmentManager">The media segments manager.</param>
-    /// <param name="configurationManager">The configuration manager.</param>
     /// <param name="fileSystem">The file system.</param>
     public CleanupOrphanedExtras(
         IStartupLogger<CleanupOrphanedExtras> logger,
@@ -55,7 +54,6 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         IRecordingsManager recordingsManager,
         IMediaSourceManager mediaSourceManager,
         IMediaSegmentManager mediaSegmentManager,
-        IServerConfigurationManager configurationManager,
         IFileSystem fileSystem)
     {
         _logger = logger;
@@ -67,7 +65,6 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         BaseItem.ChannelManager ??= channelManager;
         BaseItem.MediaSourceManager ??= mediaSourceManager;
         BaseItem.MediaSegmentManager ??= mediaSegmentManager;
-        BaseItem.ConfigurationManager ??= configurationManager;
         BaseItem.FileSystem ??= fileSystem;
         Video.RecordingsManager ??= recordingsManager;
     }

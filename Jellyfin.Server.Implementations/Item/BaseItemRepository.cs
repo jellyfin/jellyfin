@@ -7,13 +7,10 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -57,7 +54,7 @@ public sealed partial class BaseItemRepository
     /// <param name="dbProvider">The db factory.</param>
     /// <param name="appHost">The Application host.</param>
     /// <param name="itemTypeLookup">The static type lookup.</param>
-    /// <param name="serverConfig">The server Configuration options.</param>
+    /// <param name="serverConfig">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
@@ -224,6 +221,7 @@ public sealed partial class BaseItemRepository
     public BaseItemDto? DeserializeBaseItem(BaseItemEntity entity, bool skipDeserialization = false)
     {
         ArgumentNullException.ThrowIfNull(entity, nameof(entity));
+
         var serverConfig = _serverConfig.Value;
         if (serverConfig is null)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -21,6 +22,8 @@ namespace MediaBrowser.Providers.Playlists;
 /// </summary>
 public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
 {
+    private readonly IServerApplicationPaths _appPaths;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PlaylistMetadataService"/> class.
     /// </summary>
@@ -31,6 +34,7 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     public PlaylistMetadataService(
         IOptions<MetadataConfiguration> metadataConfig,
         ILogger<PlaylistMetadataService> logger,
@@ -38,9 +42,11 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IExternalDataManager externalDataManager,
-        IItemRepository itemRepository)
+        IItemRepository itemRepository,
+        IServerApplicationPaths appPaths)
         : base(metadataConfig, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
+        _appPaths = appPaths;
     }
 
     /// <inheritdoc />
@@ -72,7 +78,7 @@ public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
             // For internal playlists, the database LinkedChildren table is the source of truth.
             var targetPath = targetItem.Path;
             if (!string.IsNullOrEmpty(targetPath)
-                && !FileSystem.ContainsSubPath(ServerConfigurationManager.ApplicationPaths.DataPath, targetPath))
+                && !FileSystem.ContainsSubPath(_appPaths.DataPath, targetPath))
             {
                 if (replaceData || targetItem.LinkedChildren.Length == 0)
                 {
