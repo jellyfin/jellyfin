@@ -20,6 +20,12 @@ public static class JellyfinConfigurationConstants
     /// <summary>JSON file name for <see cref="Jellyfin.Database.Implementations.DbConfiguration.DatabaseConfigurationOptions"/>.</summary>
     public const string DatabaseJsonFile = "database.json";
 
+    /// <summary>JSON file name for <see cref="MediaBrowser.Model.LiveTv.LiveTvOptions"/>.</summary>
+    public const string LiveTvJsonFile = "livetv.json";
+
+    /// <summary>JSON file name for <see cref="MediaBrowser.Model.Configuration.XbmcMetadataOptions"/>.</summary>
+    public const string XbmcMetadataJsonFile = "xbmcmetadata.json";
+
     /// <summary>Top-level JSON section key for <see cref="MediaBrowser.Model.Configuration.ServerConfiguration"/>.</summary>
     public const string ServerConfigurationKey = "ServerConfiguration";
 
@@ -34,4 +40,10 @@ public static class JellyfinConfigurationConstants
 
     /// <summary>Top-level JSON section key for <see cref="Jellyfin.Database.Implementations.DbConfiguration.DatabaseConfigurationOptions"/>.</summary>
     public const string DatabaseConfigurationKey = "DatabaseConfiguration";
+
+    /// <summary>Top-level JSON section key for <see cref="MediaBrowser.Model.LiveTv.LiveTvOptions"/>.</summary>
+    public const string LiveTvOptionsKey = "LiveTvOptions";
+
+    /// <summary>Top-level JSON section key for <see cref="MediaBrowser.Model.Configuration.XbmcMetadataOptions"/>.</summary>
+    public const string XbmcMetadataOptionsKey = "XbmcMetadataOptions";
 }

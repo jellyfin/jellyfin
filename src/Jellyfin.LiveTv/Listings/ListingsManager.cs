@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -21,7 +20,7 @@ namespace Jellyfin.LiveTv.Listings;
 public class ListingsManager : IListingsManager
 {
     private readonly ILogger<ListingsManager> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IWritableOptions<LiveTvOptions> _config;
     private readonly ITaskManager _taskManager;
     private readonly ITunerHostManager _tunerHostManager;
     private readonly IListingsProvider[] _listingsProviders;
@@ -32,13 +31,13 @@ public class ListingsManager : IListingsManager
     /// Initializes a new instance of the <see cref="ListingsManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IWritableOptions{LiveTvOptions}"/>.</param>
     /// <param name="taskManager">The <see cref="ITaskManager"/>.</param>
     /// <param name="tunerHostManager">The <see cref="ITunerHostManager"/>.</param>
     /// <param name="listingsProviders">The <see cref="IListingsProvider"/>.</param>
     public ListingsManager(
         ILogger<ListingsManager> logger,
-        IConfigurationManager config,
+        IWritableOptions<LiveTvOptions> config,
         ITaskManager taskManager,
         ITunerHostManager tunerHostManager,
         IEnumerable<IListingsProvider> listingsProviders)
@@ -58,22 +57,21 @@ public class ListingsManager : IListingsManager
         var provider = GetProvider(info.Type);
         await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
-        var config = _config.GetLiveTvConfiguration();
-
-        var list = config.ListingProviders;
-        int index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
-
-        if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+        _config.Update(config =>
         {
-            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            config.ListingProviders = [..list, info];
-        }
-        else
-        {
-            config.ListingProviders[index] = info;
-        }
+            var list = config.ListingProviders;
+            int index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
-        _config.SaveConfiguration("livetv", config);
+            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+            {
+                info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                config.ListingProviders = [..list, info];
+            }
+            else
+            {
+                config.ListingProviders[index] = info;
+            }
+        });
         _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
 
         return info;
@@ -82,11 +80,10 @@ public class ListingsManager : IListingsManager
     /// <inheritdoc />
     public void DeleteListingsProvider(string? id)
     {
-        var config = _config.GetLiveTvConfiguration();
-
-        config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-        _config.SaveConfiguration("livetv", config);
+        _config.Update(config =>
+        {
+            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+        });
         _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
     }
 
@@ -98,7 +95,7 @@ public class ListingsManager : IListingsManager
             return GetProvider(providerType).GetLineups(null, country, location);
         }
 
-        var info = _config.GetLiveTvConfiguration().ListingProviders
+        var info = _config.Value.ListingProviders
             .FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase))
             ?? throw new ResourceNotFoundException();
 
@@ -196,7 +193,7 @@ public class ListingsManager : IListingsManager
     /// <inheritdoc />
     public async Task<ChannelMappingOptionsDto> GetChannelMappingOptions(string? providerId)
     {
-        var listingsProviderInfo = _config.GetLiveTvConfiguration().ListingProviders
+        var listingsProviderInfo = _config.Value.ListingProviders
             .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
 
         var provider = GetProvider(listingsProviderInfo.Type);
@@ -225,30 +222,32 @@ public class ListingsManager : IListingsManager
     /// <inheritdoc />
     public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
     {
-        var config = _config.GetLiveTvConfiguration();
-
-        var listingsProviderInfo = config.ListingProviders
-            .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
-
-        var channelMappingExists = listingsProviderInfo.ChannelMappings
-            .Any(pair => string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(pair.Value, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
-
-        listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings
-            .Where(pair => !string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-        if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase)
-            && !channelMappingExists)
+        _config.Update(config =>
         {
-            var newItem = new NameValuePair
-            {
-                Name = tunerChannelNumber,
-                Value = providerChannelNumber
-            };
-            listingsProviderInfo.ChannelMappings = [..listingsProviderInfo.ChannelMappings, newItem];
-        }
+            var listingsProviderInfo = config.ListingProviders
+                .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
 
-        _config.SaveConfiguration("livetv", config);
+            var channelMappingExists = listingsProviderInfo.ChannelMappings
+                .Any(pair => string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(pair.Value, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
+
+            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings
+                .Where(pair => !string.Equals(pair.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase)
+                && !channelMappingExists)
+            {
+                var newItem = new NameValuePair
+                {
+                    Name = tunerChannelNumber,
+                    Value = providerChannelNumber
+                };
+                listingsProviderInfo.ChannelMappings = [..listingsProviderInfo.ChannelMappings, newItem];
+            }
+        });
+
+        var listingsProviderInfo = _config.Value.ListingProviders
+            .First(info => string.Equals(providerId, info.Id, StringComparison.OrdinalIgnoreCase));
 
         var tunerChannels = await GetChannelsForListingsProvider(listingsProviderInfo, CancellationToken.None)
             .ConfigureAwait(false);
@@ -265,7 +264,7 @@ public class ListingsManager : IListingsManager
     }
 
     private List<(IListingsProvider Provider, ListingsProviderInfo ProviderInfo)> GetListingProviders()
-        => _config.GetLiveTvConfiguration().ListingProviders
+        => _config.Value.ListingProviders
             .Select(info => (
                 Provider: _listingsProviders.FirstOrDefault(l
                     => string.Equals(l.Type, info.Type, StringComparison.OrdinalIgnoreCase)),

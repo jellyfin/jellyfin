@@ -9,7 +9,6 @@ using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Security;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,6 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
 {
     public class DefaultAuthorizationHandlerTests
     {
-        private readonly Mock<IConfigurationManager> _configurationManagerMock;
         private readonly List<IAuthorizationRequirement> _requirements;
         private readonly DefaultAuthorizationHandler _sut;
         private readonly Mock<IUserManager> _userManagerMock;
@@ -29,7 +27,6 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
         public DefaultAuthorizationHandlerTests()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
             _requirements = new List<IAuthorizationRequirement> { new DefaultAuthorizationRequirement() };
             _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
             _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
@@ -43,7 +40,6 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
         [InlineData(UserRoles.User)]
         public async Task ShouldSucceedOnUser(string userRole)
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
@@ -58,8 +54,6 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
         [Fact]
         public async Task ShouldSucceedOnApiKey()
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-
             _httpContextAccessor
                 .Setup(h => h.HttpContext!.Connection.RemoteIpAddress)
                 .Returns(new IPAddress(0));

@@ -5,6 +5,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -84,6 +85,27 @@ public static class JellyfinOptionsServiceCollectionExtensions
                 (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
                 JellyfinConfigurationConstants.DatabaseConfigurationKey,
                 Path.Combine(configDir, JellyfinConfigurationConstants.DatabaseJsonFile)));
+
+        // Live TV and NFO metadata configuration options.
+        services.Configure<LiveTvOptions>(
+            configuration.GetSection(JellyfinConfigurationConstants.LiveTvOptionsKey));
+
+        services.Configure<XbmcMetadataOptions>(
+            configuration.GetSection(JellyfinConfigurationConstants.XbmcMetadataOptionsKey));
+
+        services.AddSingleton<IWritableOptions<LiveTvOptions>>(sp =>
+            new WritableOptions<LiveTvOptions>(
+                sp.GetRequiredService<IOptionsMonitor<LiveTvOptions>>(),
+                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                JellyfinConfigurationConstants.LiveTvOptionsKey,
+                Path.Combine(configDir, JellyfinConfigurationConstants.LiveTvJsonFile)));
+
+        services.AddSingleton<IWritableOptions<XbmcMetadataOptions>>(sp =>
+            new WritableOptions<XbmcMetadataOptions>(
+                sp.GetRequiredService<IOptionsMonitor<XbmcMetadataOptions>>(),
+                (IConfigurationRoot)sp.GetRequiredService<IConfiguration>(),
+                JellyfinConfigurationConstants.XbmcMetadataOptionsKey,
+                Path.Combine(configDir, JellyfinConfigurationConstants.XbmcMetadataJsonFile)));
 
         return services;
     }

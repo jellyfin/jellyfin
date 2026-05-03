@@ -10,10 +10,10 @@ namespace Jellyfin.LiveTv.Timers
 {
     public class SeriesTimerManager : ItemDataProvider<SeriesTimerInfo>
     {
-        public SeriesTimerManager(ILogger<SeriesTimerManager> logger, IConfigurationManager config)
+        public SeriesTimerManager(ILogger<SeriesTimerManager> logger, IApplicationPaths appPaths)
             : base(
                 logger,
-                Path.Combine(config.CommonApplicationPaths.DataPath, "livetv/seriestimers.json"),
+                Path.Combine(appPaths.DataPath, "livetv/seriestimers.json"),
                 (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }

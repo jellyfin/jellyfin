@@ -5,10 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
@@ -18,7 +20,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
 {
     private readonly ILogger<DeleteTranscodeFileTask> _logger;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
+    private readonly IApplicationPaths _applicationPaths;
     private readonly IFileSystem _fileSystem;
     private readonly ILocalizationManager _localization;
 
@@ -27,17 +30,20 @@ public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTas
     /// </summary>
     /// <param name="logger">Instance of the <see cref="ILogger{DeleteTranscodeFileTask}"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     public DeleteTranscodeFileTask(
         ILogger<DeleteTranscodeFileTask> logger,
         IFileSystem fileSystem,
-        IConfigurationManager configurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths applicationPaths,
         ILocalizationManager localization)
     {
         _logger = logger;
         _fileSystem = fileSystem;
-        _configurationManager = configurationManager;
+        _encodingOptions = encodingOptions;
+        _applicationPaths = applicationPaths;
         _localization = localization;
     }
 
@@ -83,7 +89,11 @@ public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTas
         var minDateModified = DateTime.UtcNow.AddDays(-1);
         progress.Report(50);
 
-        DeleteTempFilesFromDirectory(_configurationManager.GetTranscodePath(), minDateModified, progress, cancellationToken);
+        DeleteTempFilesFromDirectory(
+            EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _applicationPaths),
+            minDateModified,
+            progress,
+            cancellationToken);
 
         return Task.CompletedTask;
     }

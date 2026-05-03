@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

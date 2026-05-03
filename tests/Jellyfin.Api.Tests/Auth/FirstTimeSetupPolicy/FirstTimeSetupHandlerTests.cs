@@ -9,11 +9,12 @@ using Jellyfin.Api.Auth.FirstTimeSetupPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
 {
     public class FirstTimeSetupHandlerTests
     {
-        private readonly Mock<IConfigurationManager> _configurationManagerMock;
+        private readonly Mock<IOptionsMonitor<ServerConfiguration>> _serverConfigurationMock;
         private readonly List<IAuthorizationRequirement> _requirements;
         private readonly DefaultAuthorizationHandler _defaultAuthorizationHandler;
         private readonly FirstTimeSetupHandler _firstTimeSetupHandler;
@@ -32,7 +33,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         public FirstTimeSetupHandlerTests()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
+            _serverConfigurationMock = fixture.Freeze<Mock<IOptionsMonitor<ServerConfiguration>>>();
             _requirements = new List<IAuthorizationRequirement> { new FirstTimeSetupRequirement() };
             _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
             _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
@@ -61,7 +62,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         [InlineData(UserRoles.User)]
         public async Task ShouldSucceedIfStartupWizardIncomplete(string userRole)
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, false);
+            TestHelpers.SetupServerConfiguration(_serverConfigurationMock, false);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
@@ -78,7 +79,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         [InlineData(UserRoles.User, false)]
         public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldSucceed)
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+            TestHelpers.SetupServerConfiguration(_serverConfigurationMock, true);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
@@ -95,7 +96,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         [InlineData(UserRoles.User, true)]
         public async Task ShouldRequireUserIfNotAdministrator(string userRole, bool shouldSucceed)
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+            TestHelpers.SetupServerConfiguration(_serverConfigurationMock, true);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
@@ -111,7 +112,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupPolicy
         {
             AccessSchedule[] accessSchedules = { new AccessSchedule(DynamicDayOfWeek.Everyday, 0, 0, Guid.Empty) };
 
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+            TestHelpers.SetupServerConfiguration(_serverConfigurationMock, true);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,

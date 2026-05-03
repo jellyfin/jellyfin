@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

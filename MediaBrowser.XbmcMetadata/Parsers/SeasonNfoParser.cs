@@ -1,10 +1,11 @@
 using System.Xml;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -17,14 +18,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Initializes a new instance of the <see cref="SeasonNfoParser"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IOptions{XbmcMetadataOptions}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="DirectoryService"/> interface.</param>
         public SeasonNfoParser(
             ILogger logger,
-            IConfigurationManager config,
+            IOptions<XbmcMetadataOptions> config,
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,

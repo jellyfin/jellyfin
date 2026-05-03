@@ -8,10 +8,10 @@ using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Server.Implementations.Users;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Moq;
 using AccessSchedule = Jellyfin.Database.Implementations.Entities.AccessSchedule;
 
@@ -70,16 +70,16 @@ namespace Jellyfin.Api.Tests
             return new ClaimsPrincipal(identity);
         }
 
-        public static void SetupConfigurationManager(in Mock<IConfigurationManager> configurationManagerMock, bool startupWizardCompleted)
+        public static void SetupServerConfiguration(in Mock<IOptionsMonitor<ServerConfiguration>> configurationMock, bool startupWizardCompleted)
         {
-            var commonConfiguration = new BaseApplicationConfiguration
+            var serverConfiguration = new ServerConfiguration
             {
                 IsStartupWizardCompleted = startupWizardCompleted
             };
 
-            configurationManagerMock
-                .Setup(c => c.CommonConfiguration)
-                .Returns(commonConfiguration);
+            configurationMock
+                .Setup(c => c.CurrentValue)
+                .Returns(serverConfiguration);
         }
     }
 }

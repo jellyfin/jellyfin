@@ -1,14 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata;
 
@@ -18,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata;
 public sealed class NfoUserDataSaver : IHostedService
 {
     private readonly ILogger<NfoUserDataSaver> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IOptions<XbmcMetadataOptions> _config;
     private readonly IUserDataManager _userDataManager;
     private readonly IProviderManager _providerManager;
 
@@ -26,12 +26,12 @@ public sealed class NfoUserDataSaver : IHostedService
     /// Initializes a new instance of the <see cref="NfoUserDataSaver"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IOptions{XbmcMetadataOptions}"/>.</param>
     /// <param name="userDataManager">The <see cref="IUserDataManager"/>.</param>
     /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
     public NfoUserDataSaver(
         ILogger<NfoUserDataSaver> logger,
-        IConfigurationManager config,
+        IOptions<XbmcMetadataOptions> config,
         IUserDataManager userDataManager,
         IProviderManager providerManager)
     {
@@ -63,7 +63,7 @@ public sealed class NfoUserDataSaver : IHostedService
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
+        if (string.IsNullOrWhiteSpace(_config.Value.UserId))
         {
             return;
         }

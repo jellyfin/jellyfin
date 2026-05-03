@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -25,14 +25,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var providerManager = new Mock<IProviderManager>();
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(Enumerable.Empty<ExternalIdInfo>());
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
+            var config = Options.Create(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
             var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new SeriesNfoParser(new NullLogger<SeriesNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object, directoryService.Object);
+            _parser = new SeriesNfoParser(new NullLogger<SeriesNfoParser>(), config, providerManager.Object, user.Object, userData.Object, directoryService.Object);
         }
 
         [Fact]

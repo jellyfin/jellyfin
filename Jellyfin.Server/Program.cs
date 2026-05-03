@@ -359,6 +359,8 @@ namespace Jellyfin.Server
                 .AddJsonFile(JellyfinConfigurationConstants.NetworkJsonFile, optional: true, reloadOnChange: true)
                 .AddJsonFile(JellyfinConfigurationConstants.BrandingJsonFile, optional: true, reloadOnChange: true)
                 .AddJsonFile(JellyfinConfigurationConstants.DatabaseJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.LiveTvJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.XbmcMetadataJsonFile, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
         }

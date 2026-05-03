@@ -483,7 +483,9 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddMemoryCache();
 
+#pragma warning disable CS0618 // IConfigurationManager registration retained for plugin compatibility.
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
+#pragma warning restore CS0618
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);

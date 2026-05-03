@@ -87,12 +87,4 @@ namespace MediaBrowser.Common.Configuration
         /// <param name="factories">The factories.</param>
         void AddParts(IEnumerable<IConfigurationFactory> factories);
     }
-
-    public static class ConfigurationManagerExtensions
-    {
-        public static T GetConfiguration<T>(this IConfigurationManager manager, string key)
-        {
-            return (T)manager.GetConfiguration(key);
-        }
-    }
 }

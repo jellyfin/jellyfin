@@ -2,13 +2,14 @@ using System;
 using System.Globalization;
 using System.Xml;
 using Emby.Naming.TV;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -21,14 +22,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Initializes a new instance of the <see cref="SeriesNfoParser"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IOptions{XbmcMetadataOptions}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public SeriesNfoParser(
             ILogger logger,
-            IConfigurationManager config,
+            IOptions<XbmcMetadataOptions> config,
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,

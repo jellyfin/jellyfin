@@ -10,12 +10,15 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
+
+#pragma warning disable CS0618 // IConfigurationManager is kept only for plugin/legacy named configuration fallback.
 
 /// <summary>
 /// Configuration Controller.
@@ -31,6 +34,8 @@ public class ConfigurationController : BaseJellyfinApiController
     private readonly IWritableOptions<EncodingOptions> _encodingOptions;
     private readonly IWritableOptions<NetworkConfiguration> _networkOptions;
     private readonly IWritableOptions<BrandingOptions> _brandingOptions;
+    private readonly IWritableOptions<LiveTvOptions> _liveTvOptions;
+    private readonly IWritableOptions<XbmcMetadataOptions> _xbmcMetadataOptions;
 
     private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
@@ -43,13 +48,17 @@ public class ConfigurationController : BaseJellyfinApiController
     /// <param name="encodingOptions">Instance of the <see cref="IWritableOptions{EncodingOptions}"/> interface.</param>
     /// <param name="networkOptions">Instance of the <see cref="IWritableOptions{NetworkConfiguration}"/> interface.</param>
     /// <param name="brandingOptions">Instance of the <see cref="IWritableOptions{BrandingOptions}"/> interface.</param>
+    /// <param name="liveTvOptions">Instance of the <see cref="IWritableOptions{LiveTvOptions}"/> interface.</param>
+    /// <param name="xbmcMetadataOptions">Instance of the <see cref="IWritableOptions{XbmcMetadataOptions}"/> interface.</param>
     public ConfigurationController(
         IConfigurationManager configurationManager,
         IMediaEncoder mediaEncoder,
         IWritableOptions<ServerConfiguration> serverConfig,
         IWritableOptions<EncodingOptions> encodingOptions,
         IWritableOptions<NetworkConfiguration> networkOptions,
-        IWritableOptions<BrandingOptions> brandingOptions)
+        IWritableOptions<BrandingOptions> brandingOptions,
+        IWritableOptions<LiveTvOptions> liveTvOptions,
+        IWritableOptions<XbmcMetadataOptions> xbmcMetadataOptions)
     {
         _configurationManager = configurationManager;
         _mediaEncoder = mediaEncoder;
@@ -57,6 +66,8 @@ public class ConfigurationController : BaseJellyfinApiController
         _encodingOptions = encodingOptions;
         _networkOptions = networkOptions;
         _brandingOptions = brandingOptions;
+        _liveTvOptions = liveTvOptions;
+        _xbmcMetadataOptions = xbmcMetadataOptions;
     }
 
     /// <summary>
@@ -113,6 +124,8 @@ public class ConfigurationController : BaseJellyfinApiController
             "encoding" => _encodingOptions.Value,
             "network" => _networkOptions.Value,
             "branding" => _brandingOptions.Value,
+            "livetv" => _liveTvOptions.Value,
+            "xbmcmetadata" => _xbmcMetadataOptions.Value,
             _ => _configurationManager.GetConfiguration(key)
         };
     }
@@ -173,6 +186,36 @@ public class ConfigurationController : BaseJellyfinApiController
                 });
                 break;
 
+            case "livetv":
+                var liveTv = configuration.Deserialize<LiveTvOptions>(_serializerOptions)
+                    ?? throw new ArgumentException("Body doesn't contain a valid live tv configuration");
+                _liveTvOptions.Update(c =>
+                {
+                    foreach (var prop in typeof(LiveTvOptions).GetProperties())
+                    {
+                        if (prop.CanWrite)
+                        {
+                            prop.SetValue(c, prop.GetValue(liveTv));
+                        }
+                    }
+                });
+                break;
+
+            case "xbmcmetadata":
+                var xbmc = configuration.Deserialize<XbmcMetadataOptions>(_serializerOptions)
+                    ?? throw new ArgumentException("Body doesn't contain a valid xbmc metadata configuration");
+                _xbmcMetadataOptions.Update(c =>
+                {
+                    foreach (var prop in typeof(XbmcMetadataOptions).GetProperties())
+                    {
+                        if (prop.CanWrite)
+                        {
+                            prop.SetValue(c, prop.GetValue(xbmc));
+                        }
+                    }
+                });
+                break;
+
             default:
                 var configurationType = _configurationManager.GetConfigurationType(key);
                 var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions);
@@ -223,3 +266,5 @@ public class ConfigurationController : BaseJellyfinApiController
         return NoContent();
     }
 }
+
+#pragma warning restore CS0618

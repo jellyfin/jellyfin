@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.AppBase
 {
+#pragma warning disable CS0618 // BaseConfigurationManager remains the legacy IConfigurationManager implementation during transition.
     /// <summary>
     /// Class BaseConfigurationManager.
     /// </summary>
@@ -380,4 +381,5 @@ namespace Emby.Server.Implementations.AppBase
                 .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
         }
     }
+#pragma warning restore CS0618
 }

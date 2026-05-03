@@ -10,6 +10,7 @@ using Jellyfin.Server.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
@@ -116,6 +117,19 @@ internal class MigrateSettingsXmlToJson : IAsyncMigrationRoutine
             Path.Combine(_applicationPaths.ConfigurationDirectoryPath, JellyfinConfigurationConstants.SystemJsonFile),
             JellyfinConfigurationConstants.ServerConfigurationKey,
             _logger);
+
+        Migrate<LiveTvOptions>(
+            Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "livetv.xml"),
+            Path.Combine(_applicationPaths.ConfigurationDirectoryPath, JellyfinConfigurationConstants.LiveTvJsonFile),
+            JellyfinConfigurationConstants.LiveTvOptionsKey,
+            _logger);
+
+        Migrate<XbmcMetadataOptions>(
+            Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "xbmcmetadata.xml"),
+            Path.Combine(_applicationPaths.ConfigurationDirectoryPath, JellyfinConfigurationConstants.XbmcMetadataJsonFile),
+            JellyfinConfigurationConstants.XbmcMetadataOptionsKey,
+            _logger);
+
         return Task.CompletedTask;
     }
 }

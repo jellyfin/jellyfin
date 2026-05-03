@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using Jellyfin.LiveTv.Configuration;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.Recordings;
 
@@ -28,22 +29,26 @@ public class RecordingsMetadataManager
     private const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
     private readonly ILogger<RecordingsMetadataManager> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IOptionsMonitor<LiveTvOptions> _liveTvOptions;
+    private readonly IOptionsMonitor<XbmcMetadataOptions> _xbmcOptions;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RecordingsMetadataManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="liveTvOptions">The <see cref="IOptionsMonitor{LiveTvOptions}"/>.</param>
+    /// <param name="xbmcOptions">The <see cref="IOptionsMonitor{XbmcMetadataOptions}"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
     public RecordingsMetadataManager(
         ILogger<RecordingsMetadataManager> logger,
-        IConfigurationManager config,
+        IOptionsMonitor<LiveTvOptions> liveTvOptions,
+        IOptionsMonitor<XbmcMetadataOptions> xbmcOptions,
         ILibraryManager libraryManager)
     {
         _logger = logger;
-        _config = config;
+        _liveTvOptions = liveTvOptions;
+        _xbmcOptions = xbmcOptions;
         _libraryManager = libraryManager;
     }
 
@@ -96,7 +101,7 @@ public class RecordingsMetadataManager
                 program.AddGenre("News");
             }
 
-            var config = _config.GetLiveTvConfiguration();
+            var config = _liveTvOptions.CurrentValue;
 
             if (config.SaveRecordingNFO)
             {
@@ -212,7 +217,7 @@ public class RecordingsMetadataManager
                 Async = true
             };
 
-            var options = _config.GetNfoConfiguration();
+            var options = _xbmcOptions.CurrentValue;
 
             var isSeriesEpisode = timer.IsProgramSeries;
 

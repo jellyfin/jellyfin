@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
@@ -16,19 +18,26 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 /// </summary>
 public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
 {
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IOptionsMonitor<ServerConfiguration> _serverConfiguration;
+    private readonly IApplicationPaths _applicationPaths;
     private readonly IFileSystem _fileSystem;
     private readonly ILocalizationManager _localization;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
     /// </summary>
-    /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="serverConfiguration">Instance of the <see cref="IOptionsMonitor{ServerConfiguration}"/> interface.</param>
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-    public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
+    public DeleteLogFileTask(
+        IOptionsMonitor<ServerConfiguration> serverConfiguration,
+        IApplicationPaths applicationPaths,
+        IFileSystem fileSystem,
+        ILocalizationManager localization)
     {
-        _configurationManager = configurationManager;
+        _serverConfiguration = serverConfiguration;
+        _applicationPaths = applicationPaths;
         _fileSystem = fileSystem;
         _localization = localization;
     }
@@ -40,7 +49,7 @@ public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     public string Description => string.Format(
         CultureInfo.InvariantCulture,
         _localization.GetLocalizedString("TaskCleanLogsDescription"),
-        _configurationManager.CommonConfiguration.LogFileRetentionDays);
+        _serverConfiguration.CurrentValue.LogFileRetentionDays);
 
     /// <inheritdoc />
     public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
@@ -71,10 +80,10 @@ public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         // Delete log files more than n days old
-        var minDateModified = DateTime.UtcNow.AddDays(-_configurationManager.CommonConfiguration.LogFileRetentionDays);
+        var minDateModified = DateTime.UtcNow.AddDays(-_serverConfiguration.CurrentValue.LogFileRetentionDays);
 
         // Only delete files that serilog doesn't manage (anything that doesn't start with 'log_'
-        var filesToDelete = _fileSystem.GetFiles(_configurationManager.CommonApplicationPaths.LogDirectoryPath, true)
+        var filesToDelete = _fileSystem.GetFiles(_applicationPaths.LogDirectoryPath, true)
             .Where(f => !f.Name.StartsWith("log_", StringComparison.Ordinal)
                         && _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
             .ToList();

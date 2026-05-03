@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using AsyncKeyedLock;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
-using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Common.Configuration;
@@ -39,7 +38,8 @@ namespace Jellyfin.LiveTv.Recordings;
 public sealed class RecordingsManager : IRecordingsManager, IDisposable
 {
     private readonly ILogger<RecordingsManager> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IWritableOptions<LiveTvOptions> _config;
+    private readonly IOptionsMonitor<LiveTvOptions> _configMonitor;
     private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly IServerApplicationPaths _appPaths;
     private readonly IOptions<EncodingOptions> _encodingOptions;
@@ -57,13 +57,15 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
     private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings = new(StringComparer.OrdinalIgnoreCase);
     private readonly AsyncNonKeyedLocker _recordingDeleteSemaphore = new();
+    private readonly IDisposable? _liveTvOptionsOnChange;
     private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RecordingsManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IWritableOptions{LiveTvOptions}"/>.</param>
+    /// <param name="configMonitor">The <see cref="IOptionsMonitor{LiveTvOptions}"/>.</param>
     /// <param name="serverConfig">The <see cref="IOptions{ServerConfiguration}"/>.</param>
     /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
     /// <param name="encodingOptions">The <see cref="IOptions{EncodingOptions}"/>.</param>
@@ -80,7 +82,8 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     /// <param name="recordingsMetadataManager">The <see cref="RecordingsMetadataManager"/>.</param>
     public RecordingsManager(
         ILogger<RecordingsManager> logger,
-        IConfigurationManager config,
+        IWritableOptions<LiveTvOptions> config,
+        IOptionsMonitor<LiveTvOptions> configMonitor,
         IOptions<ServerConfiguration> serverConfig,
         IServerApplicationPaths appPaths,
         IOptions<EncodingOptions> encodingOptions,
@@ -98,6 +101,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     {
         _logger = logger;
         _config = config;
+        _configMonitor = configMonitor;
         _serverConfig = serverConfig;
         _appPaths = appPaths;
         _encodingOptions = encodingOptions;
@@ -113,14 +117,14 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
         _seriesTimerManager = seriesTimerManager;
         _recordingsMetadataManager = recordingsMetadataManager;
 
-        _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+        _liveTvOptionsOnChange = _configMonitor.OnChange(OnLiveTvConfigurationUpdated);
     }
 
     private string DefaultRecordingPath
     {
         get
         {
-            var path = _config.GetLiveTvConfiguration().RecordingPath;
+            var path = _config.Value.RecordingPath;
 
             return string.IsNullOrWhiteSpace(path)
                 ? Path.Combine(_appPaths.DataPath, "livetv", "recordings")
@@ -164,7 +168,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             };
         }
 
-        var customPath = _config.GetLiveTvConfiguration().MovieRecordingPath;
+        var customPath = _config.Value.MovieRecordingPath;
         if (!string.IsNullOrWhiteSpace(customPath)
             && !string.Equals(customPath, DefaultRecordingPath, StringComparison.OrdinalIgnoreCase)
             && Directory.Exists(customPath))
@@ -177,7 +181,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             };
         }
 
-        customPath = _config.GetLiveTvConfiguration().SeriesRecordingPath;
+        customPath = _config.Value.SeriesRecordingPath;
         if (!string.IsNullOrWhiteSpace(customPath)
             && !string.Equals(customPath, DefaultRecordingPath, StringComparison.OrdinalIgnoreCase)
             && Directory.Exists(customPath))
@@ -234,7 +238,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
                 pathsAdded.AddRange(pathsToCreate);
             }
 
-            var config = _config.GetLiveTvConfiguration();
+            var config = _config.Value;
 
             var pathsToRemove = config.MediaLocationsCreated
                 .Except(recordingFolders.SelectMany(i => i.Locations))
@@ -244,7 +248,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 pathsAdded.InsertRange(0, config.MediaLocationsCreated);
                 config.MediaLocationsCreated = pathsAdded.Except(pathsToRemove).Distinct().ToArray();
-                _config.SaveConfiguration("livetv", config);
+                _config.Update(options => options.MediaLocationsCreated = config.MediaLocationsCreated);
             }
 
             foreach (var path in pathsToRemove)
@@ -452,15 +456,16 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             pair.Value.CancellationTokenSource.Cancel();
         }
 
+        _liveTvOptionsOnChange?.Dispose();
+
         _disposed = true;
     }
 
-    private async void OnNamedConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs e)
+    private async void OnLiveTvConfigurationUpdated(LiveTvOptions options, string? name)
     {
-        if (string.Equals(e.Key, "livetv", StringComparison.OrdinalIgnoreCase))
-        {
-            await CreateRecordingFolders().ConfigureAwait(false);
-        }
+        _ = options;
+        _ = name;
+        await CreateRecordingFolders().ConfigureAwait(false);
     }
 
     private async Task<RemoteSearchResult?> FetchInternetMetadata(TimerInfo timer, CancellationToken cancellationToken)
@@ -489,7 +494,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     private string GetRecordingPath(TimerInfo timer, RemoteSearchResult? metadata, out string? seriesPath)
     {
         var recordingPath = DefaultRecordingPath;
-        var config = _config.GetLiveTvConfiguration();
+        var config = _config.Value;
         seriesPath = null;
 
         if (timer.IsProgramSeries)
@@ -815,7 +820,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
     private async Task PostProcessRecording(string path)
     {
-        var options = _config.GetLiveTvConfiguration();
+        var options = _config.Value;
         if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
         {
             return;

@@ -35,6 +35,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -53,7 +54,7 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IDtoService _dtoService;
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IWritableOptions<LiveTvOptions> _liveTvOptions;
     private readonly ITranscodeManager _transcodeManager;
 
     /// <summary>
@@ -69,7 +70,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="liveTvOptions">Instance of the <see cref="IWritableOptions{LiveTvOptions}"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
@@ -82,7 +83,7 @@ public class LiveTvController : BaseJellyfinApiController
         ILibraryManager libraryManager,
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
-        IConfigurationManager configurationManager,
+        IWritableOptions<LiveTvOptions> liveTvOptions,
         ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
@@ -95,7 +96,7 @@ public class LiveTvController : BaseJellyfinApiController
         _libraryManager = libraryManager;
         _dtoService = dtoService;
         _mediaSourceManager = mediaSourceManager;
-        _configurationManager = configurationManager;
+        _liveTvOptions = liveTvOptions;
         _transcodeManager = transcodeManager;
     }
 
@@ -980,9 +981,11 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteTunerHost([FromQuery] string? id)
     {
-        var config = _configurationManager.GetConfiguration<LiveTvOptions>("livetv");
-        config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-        _configurationManager.SaveConfiguration("livetv", config);
+        _liveTvOptions.Update(config =>
+        {
+            config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+        });
+
         return NoContent();
     }
 

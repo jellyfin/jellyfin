@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -23,7 +22,7 @@ public class TunerHostManager : ITunerHostManager
     private const int TunerDiscoveryDurationMs = 3000;
 
     private readonly ILogger<TunerHostManager> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IWritableOptions<LiveTvOptions> _config;
     private readonly ITaskManager _taskManager;
     private readonly ITunerHost[] _tunerHosts;
 
@@ -31,12 +30,12 @@ public class TunerHostManager : ITunerHostManager
     /// Initializes a new instance of the <see cref="TunerHostManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{T}"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IWritableOptions{LiveTvOptions}"/>.</param>
     /// <param name="taskManager">The <see cref="ITaskManager"/>.</param>
     /// <param name="tunerHosts">The <see cref="IEnumerable{T}"/>.</param>
     public TunerHostManager(
         ILogger<TunerHostManager> logger,
-        IConfigurationManager config,
+        IWritableOptions<LiveTvOptions> config,
         ITaskManager taskManager,
         IEnumerable<ITunerHost> tunerHosts)
     {
@@ -74,22 +73,21 @@ public class TunerHostManager : ITunerHostManager
             await configurable.Validate(info).ConfigureAwait(false);
         }
 
-        var config = _config.GetLiveTvConfiguration();
-
-        var list = config.TunerHosts;
-        var index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
-
-        if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+        _config.Update(config =>
         {
-            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-            config.TunerHosts = [..list, info];
-        }
-        else
-        {
-            config.TunerHosts[index] = info;
-        }
+            var list = config.TunerHosts;
+            var index = Array.FindIndex(list, i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
-        _config.SaveConfiguration("livetv", config);
+            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+            {
+                info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                config.TunerHosts = [..list, info];
+            }
+            else
+            {
+                config.TunerHosts[index] = info;
+            }
+        });
 
         if (dataSourceChanged)
         {
@@ -102,7 +100,7 @@ public class TunerHostManager : ITunerHostManager
     /// <inheritdoc />
     public async IAsyncEnumerable<TunerHostInfo> DiscoverTuners(bool newDevicesOnly)
     {
-        var configuredDeviceIds = _config.GetLiveTvConfiguration().TunerHosts
+        var configuredDeviceIds = _config.Value.TunerHosts
             .Where(i => !string.IsNullOrWhiteSpace(i.DeviceId))
             .Select(i => i.DeviceId)
             .ToList();
@@ -133,7 +131,7 @@ public class TunerHostManager : ITunerHostManager
     {
         var discoveredDevices = await DiscoverDevices(host, TunerDiscoveryDurationMs, cancellationToken).ConfigureAwait(false);
 
-        var configuredDevices = _config.GetLiveTvConfiguration().TunerHosts
+        var configuredDevices = _config.Value.TunerHosts
             .Where(i => string.Equals(i.Type, host.Type, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
