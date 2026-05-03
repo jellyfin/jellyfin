@@ -89,6 +89,7 @@ internal class MigrateSettingsXmlToJson : IAsyncMigrationRoutine
 
         Directory.CreateDirectory(Path.GetDirectoryName(jsonDstPath)!);
         File.WriteAllText(jsonDstPath, root.ToJsonString(_jsonOptions));
+        File.Move(xmlSrcPath, xmlSrcPath + ".backup");
     }
 
     /// <inheritdoc/>
