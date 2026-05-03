@@ -62,6 +62,7 @@ namespace Jellyfin.Server
         private static bool _restartOnShutdown;
         private static IStartupLogger<JellyfinMigrationService>? _migrationLogger;
         private static string? _restoreFromBackup;
+        private static bool _disableSetupServer;
 
         /// <summary>
         /// The entry point of the application.
@@ -101,7 +102,15 @@ namespace Jellyfin.Server
             IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
             StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _setupServer = new SetupServer(static () => _jellyfinHost?.Services?.GetService<INetworkManager>(), appPaths, static () => _appHost, _loggerFactory, startupConfig);
-            await _setupServer.RunAsync().ConfigureAwait(false);
+
+            // Cannot swap hosts, disable setup server
+            _disableSetupServer = bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_DISABLE_SETUPSERVER"), out var parsed) && parsed;
+
+            if (!_disableSetupServer)
+            {
+                await _setupServer.RunAsync().ConfigureAwait(false);
+            }
+
             _logger = _loggerFactory.CreateLogger("Main");
             StartupLogger.Logger = new StartupLogger(_logger);
 
@@ -213,7 +222,11 @@ namespace Jellyfin.Server
                 try
                 {
                     configurationCompleted = true;
-                    await _setupServer!.StopAsync().ConfigureAwait(false);
+                    if (!_disableSetupServer)
+                    {
+                        await _setupServer!.StopAsync().ConfigureAwait(false);
+                    }
+
                     await _jellyfinHost.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
