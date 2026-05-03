@@ -38,6 +38,7 @@ using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using Jellyfin.MediaEncoding.Keyframes;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Networking.Udp;
 using Jellyfin.Server.Implementations.FullSystemBackup;
@@ -853,6 +854,9 @@ namespace Emby.Server.Implementations
 
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
+
+            // Keyframes — must be loaded eagerly so plugins can resolve it via PluginLoadContext fallback
+            yield return typeof(KeyframeData).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
