@@ -4,8 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Updates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,17 +23,17 @@ namespace Jellyfin.Api.Controllers;
 public class PackageController : BaseJellyfinApiController
 {
     private readonly IInstallationManager _installationManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PackageController"/> class.
     /// </summary>
     /// <param name="installationManager">Instance of the <see cref="IInstallationManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public PackageController(IInstallationManager installationManager, IServerConfigurationManager serverConfigurationManager)
+    /// <param name="serverConfig">Instance of the <see cref="IWritableOptions{ServerConfiguration}"/> interface.</param>
+    public PackageController(IInstallationManager installationManager, IWritableOptions<ServerConfiguration> serverConfig)
     {
         _installationManager = installationManager;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <summary>
@@ -144,7 +145,7 @@ public class PackageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
     {
-        return Ok(_serverConfigurationManager.Configuration.PluginRepositories.AsEnumerable());
+        return Ok(_serverConfig.Value.PluginRepositories.AsEnumerable());
     }
 
     /// <summary>
@@ -157,8 +158,7 @@ public class PackageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult SetRepositories([FromBody, Required] RepositoryInfo[] repositoryInfos)
     {
-        _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
-        _serverConfigurationManager.SaveConfiguration();
+        _serverConfig.Update(c => c.PluginRepositories = repositoryInfos);
         return NoContent();
     }
 }

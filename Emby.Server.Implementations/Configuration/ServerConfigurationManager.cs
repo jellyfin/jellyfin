@@ -5,7 +5,6 @@ using Emby.Server.Implementations.AppBase;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,7 @@ namespace Emby.Server.Implementations.Configuration
     /// <summary>
     /// Class ServerConfigurationManager.
     /// </summary>
-    public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
+    public class ServerConfigurationManager : BaseConfigurationManager
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
@@ -31,11 +30,6 @@ namespace Emby.Server.Implementations.Configuration
         {
             UpdateMetadataPath();
         }
-
-        /// <summary>
-        /// Configuration updating event.
-        /// </summary>
-        public event EventHandler<GenericEventArgs<ServerConfiguration>>? ConfigurationUpdating;
 
         /// <summary>
         /// Gets the type of the configuration.
@@ -77,47 +71,6 @@ namespace Emby.Server.Implementations.Configuration
                 ? ApplicationPaths.DefaultInternalMetadataPath
                 : Configuration.MetadataPath;
             Directory.CreateDirectory(ApplicationPaths.InternalMetadataPath);
-        }
-
-        /// <summary>
-        /// Replaces the configuration.
-        /// </summary>
-        /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException">If the configuration path doesn't exist.</exception>
-        public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
-        {
-            var newConfig = (ServerConfiguration)newConfiguration;
-
-            ValidateMetadataPath(newConfig);
-
-            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration>(newConfig));
-
-            base.ReplaceConfiguration(newConfiguration);
-        }
-
-        /// <summary>
-        /// Validates the metadata path.
-        /// </summary>
-        /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException">The new config path doesn't exist.</exception>
-        private void ValidateMetadataPath(ServerConfiguration newConfig)
-        {
-            var newPath = newConfig.MetadataPath;
-
-            if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
-            {
-                if (!Directory.Exists(newPath))
-                {
-                    throw new DirectoryNotFoundException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0} does not exist.",
-                            newPath));
-                }
-
-                EnsureWriteAccess(newPath);
-            }
         }
     }
 }

@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Migrations;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Model.ApiClient;
@@ -25,13 +25,13 @@ namespace Jellyfin.Server.Filters
     {
         // Array of options that should not be visible in the api spec.
         private static readonly Type[] _ignoredConfigurations = [typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions)];
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalModelFilter"/> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public AdditionalModelFilter(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        public AdditionalModelFilter(IConfigurationManager serverConfigurationManager)
         {
             _serverConfigurationManager = serverConfigurationManager;
         }

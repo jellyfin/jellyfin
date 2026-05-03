@@ -2,10 +2,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Middleware;
 
@@ -36,14 +37,14 @@ public class ResponseTimeMiddleware
     /// Invoke request.
     /// </summary>
     /// <param name="context">Request context.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IOptionsMonitor{ServerConfiguration}"/> interface.</param>
     /// <returns>Task.</returns>
-    public async Task Invoke(HttpContext context, IServerConfigurationManager serverConfigurationManager)
+    public async Task Invoke(HttpContext context, IOptionsMonitor<ServerConfiguration> serverConfig)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
 
-        var enableWarning = serverConfigurationManager.Configuration.EnableSlowResponseWarning;
-        var warningThreshold = serverConfigurationManager.Configuration.SlowResponseThresholdMs;
+        var enableWarning = serverConfig.CurrentValue.EnableSlowResponseWarning;
+        var warningThreshold = serverConfig.CurrentValue.SlowResponseThresholdMs;
         context.Response.OnStarting(() =>
         {
             var responseTime = Stopwatch.GetElapsedTime(startTimestamp);

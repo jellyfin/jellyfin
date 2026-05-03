@@ -282,7 +282,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var path = ContainingFolderPath;
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
+            var args = new ItemResolveArgs(ServerApplicationPaths, LibraryManager)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
                 Parent = GetParent() as Folder,

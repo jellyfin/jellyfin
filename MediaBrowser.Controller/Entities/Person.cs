@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var path = ConfigurationManager.ApplicationPaths.PeoplePath;
+            var path = ServerApplicationPaths.PeoplePath;
 
             return string.IsNullOrEmpty(subFolderPrefix) ?
                 System.IO.Path.Combine(path, validFilename) :

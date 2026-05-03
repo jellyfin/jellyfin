@@ -17,7 +17,6 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -37,6 +36,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -54,7 +54,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ILocalizationManager _localization;
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILogger<LibraryController> _logger;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
@@ -67,7 +67,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ILibraryManager libraryManager,
@@ -77,7 +77,7 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IOptions<ServerConfiguration> serverConfig)
     {
         _providerManager = providerManager;
         _libraryManager = libraryManager;
@@ -87,7 +87,7 @@ public class LibraryController : BaseJellyfinApiController
         _localization = localization;
         _libraryMonitor = libraryMonitor;
         _logger = logger;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <summary>
@@ -755,7 +755,7 @@ public class LibraryController : BaseJellyfinApiController
         if (isMovie.Value)
         {
             includeItemTypes.Add(BaseItemKind.Movie);
-            if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+            if (_serverConfig.Value.EnableExternalContentInSuggestions)
             {
                 includeItemTypes.Add(BaseItemKind.Trailer);
                 includeItemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -992,7 +992,7 @@ public class LibraryController : BaseJellyfinApiController
             return false;
         }
 
-        var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
+        var metadataOptions = _serverConfig.Value.MetadataOptions
             .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
@@ -1015,7 +1015,7 @@ public class LibraryController : BaseJellyfinApiController
                    || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
         }
 
-        var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
+        var metadataOptions = Array.Find(_serverConfig.Value.MetadataOptions, i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
         return metadataOptions is null || !metadataOptions.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -1037,7 +1037,7 @@ public class LibraryController : BaseJellyfinApiController
                    || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
         }
 
-        var metadataOptions = _serverConfigurationManager.GetMetadataOptionsForType(type);
+        var metadataOptions = Array.Find(_serverConfig.Value.MetadataOptions, i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase));
         return metadataOptions is null || !metadataOptions.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
     }
 }

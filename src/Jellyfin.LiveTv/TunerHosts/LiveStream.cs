@@ -9,30 +9,37 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.TunerHosts
 {
     public class LiveStream : ILiveStream
     {
-        private readonly IConfigurationManager _configurationManager;
+        private readonly IOptions<EncodingOptions> _encodingOptions;
+        private readonly IServerApplicationPaths _appPaths;
 
         public LiveStream(
             MediaSourceInfo mediaSource,
             TunerHostInfo tuner,
             IFileSystem fileSystem,
             ILogger logger,
-            IConfigurationManager configurationManager,
+            IOptions<EncodingOptions> encodingOptions,
+            IServerApplicationPaths appPaths,
             IStreamHelper streamHelper)
         {
             OriginalMediaSource = mediaSource;
             FileSystem = fileSystem;
             MediaSource = mediaSource;
             Logger = logger;
+            _encodingOptions = encodingOptions;
+            _appPaths = appPaths;
             EnableStreamSharing = true;
             UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
@@ -41,7 +48,6 @@ namespace Jellyfin.LiveTv.TunerHosts
                 TunerHostId = tuner.Id;
             }
 
-            _configurationManager = configurationManager;
             StreamHelper = streamHelper;
 
             ConsumerCount = 1;
@@ -76,7 +82,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         protected void SetTempFilePath(string extension)
         {
-            TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
+            TempFilePath = Path.Combine(EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _appPaths), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)

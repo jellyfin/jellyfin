@@ -6,13 +6,14 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -43,14 +44,14 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
     /// </summary>
     /// <param name="applicationHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
     /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
-    /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="metadataConfig">Instance of the Metadata Config.</param>
     /// <param name="dbProvider">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     public RefreshInternalDateModified(
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
-        IServerConfigurationManager configurationManager,
+        IOptions<MetadataConfiguration> metadataConfig,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         ILogger<RefreshInternalDateModified> logger,
         IFileSystem fileSystem)
@@ -66,7 +67,7 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
             applicationPaths.StudioPath,
             applicationPaths.PeoplePath
         ];
-        _useFileCreationTimeForDateAdded = configurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded;
+        _useFileCreationTimeForDateAdded = metadataConfig.Value.UseFileCreationTimeForDateAdded;
     }
 
     /// <inheritdoc />

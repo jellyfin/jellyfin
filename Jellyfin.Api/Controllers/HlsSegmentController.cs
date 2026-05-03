@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -24,22 +25,26 @@ namespace Jellyfin.Api.Controllers;
 public class HlsSegmentController : BaseJellyfinApiController
 {
     private readonly IFileSystem _fileSystem;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
+    private readonly IApplicationPaths _appPaths;
     private readonly ITranscodeManager _transcodeManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HlsSegmentController"/> class.
     /// </summary>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">The encoding options.</param>
+    /// <param name="appPaths">The application paths.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public HlsSegmentController(
         IFileSystem fileSystem,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths appPaths,
         ITranscodeManager transcodeManager)
     {
         _fileSystem = fileSystem;
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptions = encodingOptions;
+        _appPaths = appPaths;
         _transcodeManager = transcodeManager;
     }
 
@@ -61,7 +66,7 @@ public class HlsSegmentController : BaseJellyfinApiController
     {
         // TODO: Deprecate with new iOS app
         var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodePath = _serverConfigurationManager.GetTranscodePath();
+        var transcodePath = EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _appPaths);
         file = Path.GetFullPath(Path.Combine(transcodePath, file));
         var fileDir = Path.GetDirectoryName(file);
         if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture))
@@ -87,7 +92,7 @@ public class HlsSegmentController : BaseJellyfinApiController
     public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
     {
         var file = string.Concat(playlistId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodePath = _serverConfigurationManager.GetTranscodePath();
+        var transcodePath = EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _appPaths);
         file = Path.GetFullPath(Path.Combine(transcodePath, file));
         var fileDir = Path.GetDirectoryName(file);
         if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture)
@@ -141,7 +146,7 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromRoute, Required] string segmentContainer)
     {
         var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
-        var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
+        var transcodeFolderPath = EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _appPaths);
 
         file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));
         var fileDir = Path.GetDirectoryName(file);

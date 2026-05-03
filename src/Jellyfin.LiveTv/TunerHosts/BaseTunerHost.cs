@@ -11,13 +11,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.LiveTv.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.TunerHosts
 {
@@ -25,15 +26,18 @@ namespace Jellyfin.LiveTv.TunerHosts
     {
         private readonly ConcurrentDictionary<string, List<ChannelInfo>> _cache;
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem)
+        protected BaseTunerHost(IOptions<LiveTvOptions> config, IServerApplicationPaths serverApplicationPaths, ILogger<BaseTunerHost> logger, IFileSystem fileSystem)
         {
             Config = config;
+            ServerApplicationPaths = serverApplicationPaths;
             Logger = logger;
             FileSystem = fileSystem;
             _cache = new ConcurrentDictionary<string, List<ChannelInfo>>();
         }
 
-        protected IServerConfigurationManager Config { get; }
+        protected IOptions<LiveTvOptions> Config { get; }
+
+        protected IServerApplicationPaths ServerApplicationPaths { get; }
 
         protected ILogger<BaseTunerHost> Logger { get; }
 
@@ -69,7 +73,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
         protected virtual IList<TunerHostInfo> GetTunerHosts()
         {
-            return Config.GetLiveTvConfiguration().TunerHosts
+            return Config.Value.TunerHosts
                 .Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -82,7 +86,7 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             foreach (var host in hosts)
             {
-                var channelCacheFile = Path.Combine(Config.ApplicationPaths.CachePath, host.Id + "_channels");
+                var channelCacheFile = Path.Combine(ServerApplicationPaths.CachePath, host.Id + "_channels");
 
                 try
                 {

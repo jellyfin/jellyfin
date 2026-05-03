@@ -1,6 +1,8 @@
 using System;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -13,25 +15,22 @@ namespace Jellyfin.Server.Migrations.Routines
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;
-        private readonly IConfigurationManager _configManager;
+        private readonly IWritableOptions<EncodingOptions> _encodingOptions;
 
-        public DisableTranscodingThrottling(ILogger<DisableTranscodingThrottling> logger, IConfigurationManager configManager)
+        public DisableTranscodingThrottling(ILogger<DisableTranscodingThrottling> logger, IWritableOptions<EncodingOptions> encodingOptions)
         {
             _logger = logger;
-            _configManager = configManager;
+            _encodingOptions = encodingOptions;
         }
 
         /// <inheritdoc/>
         public void Perform()
         {
             // Set EnableThrottling to false since it wasn't used before and may introduce issues
-            var encoding = _configManager.GetEncodingOptions();
-            if (encoding.EnableThrottling)
+            if (_encodingOptions.Value.EnableThrottling)
             {
                 _logger.LogInformation("Disabling transcoding throttling during migration");
-                encoding.EnableThrottling = false;
-
-                _configManager.SaveConfiguration("encoding", encoding);
+                _encodingOptions.Update(o => o.EnableThrottling = false);
             }
         }
     }

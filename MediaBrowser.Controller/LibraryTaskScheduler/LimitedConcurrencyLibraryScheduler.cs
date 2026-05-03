@@ -6,9 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.LibraryTaskScheduler;
 
@@ -20,7 +21,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     private const int CleanupGracePeriod = 60;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger<LimitedConcurrencyLibraryScheduler> _logger;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly Dictionary<CancellationTokenSource, Task> _taskRunners = new();
 
     private static readonly AsyncLocal<CancellationTokenSource> _deadlockDetector = new();
@@ -41,15 +42,15 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     /// </summary>
     /// <param name="hostApplicationLifetime">The hosting lifetime.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    /// <param name="serverConfig">The server configuration.</param>
     public LimitedConcurrencyLibraryScheduler(
         IHostApplicationLifetime hostApplicationLifetime,
         ILogger<LimitedConcurrencyLibraryScheduler> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IOptions<ServerConfiguration> serverConfig)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     private void ScheduleTaskCleanup()
@@ -100,14 +101,14 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
     private bool ShouldForceSequentialOperation()
     {
         // if the user either set the setting to 1 or it's unset and we have fewer than 4 cores it's better to run sequentially.
-        var fanoutSetting = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        var fanoutSetting = _serverConfig.Value.LibraryScanFanoutConcurrency;
         return fanoutSetting == 1 || (fanoutSetting <= 0 && Environment.ProcessorCount <= 3);
     }
 
     private int CalculateScanConcurrencyLimit()
     {
         // when this is invoked, we already checked ShouldForceSequentialOperation for the sequential check.
-        var fanoutConcurrency = _serverConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+        var fanoutConcurrency = _serverConfig.Value.LibraryScanFanoutConcurrency;
         if (fanoutConcurrency <= 0)
         {
             // in case the user did not set a limit manually, we can assume he has 3 or more cores as already checked by ShouldForceSequentialOperation.

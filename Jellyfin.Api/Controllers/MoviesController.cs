@@ -9,16 +9,17 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -32,7 +33,7 @@ public class MoviesController : BaseJellyfinApiController
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IDtoService _dtoService;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoviesController"/> class.
@@ -40,17 +41,17 @@ public class MoviesController : BaseJellyfinApiController
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
     public MoviesController(
         IUserManager userManager,
         ILibraryManager libraryManager,
         IDtoService dtoService,
-        IServerConfigurationManager serverConfigurationManager)
+        IOptions<ServerConfiguration> serverConfig)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
         _dtoService = dtoService;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <summary>
@@ -101,7 +102,7 @@ public class MoviesController : BaseJellyfinApiController
         var recentlyPlayedMovies = _libraryManager.GetItemList(query);
 
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfig.Value.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -184,7 +185,7 @@ public class MoviesController : BaseJellyfinApiController
         RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfig.Value.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -225,7 +226,7 @@ public class MoviesController : BaseJellyfinApiController
     private IEnumerable<RecommendationDto> GetWithActor(User? user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfig.Value.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);
@@ -264,7 +265,7 @@ public class MoviesController : BaseJellyfinApiController
     private IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
     {
         var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
-        if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+        if (_serverConfig.Value.EnableExternalContentInSuggestions)
         {
             itemTypes.Add(BaseItemKind.Trailer);
             itemTypes.Add(BaseItemKind.LiveTvProgram);

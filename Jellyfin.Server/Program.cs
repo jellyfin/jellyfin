@@ -12,9 +12,10 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.DbConfiguration;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
-using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
@@ -31,6 +32,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -187,7 +189,9 @@ namespace Jellyfin.Server
                  * Initialize the transcode path marker so we avoid starting Jellyfin in a broken state.
                  * This should really be a part of IApplicationPaths but this path is configured differently.
                  */
-                _ = appHost.ConfigurationManager.GetTranscodePath();
+                EncodingConfigurationExtensions.GetTranscodePath(
+                    _jellyfinHost.Services.GetRequiredService<IOptions<MediaBrowser.Model.Configuration.EncodingOptions>>().Value,
+                    appPaths);
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;
@@ -279,11 +283,17 @@ namespace Jellyfin.Server
         public static async Task ApplyStartupMigrationAsync(ServerApplicationPaths appPaths, IConfiguration startupConfig)
         {
             _migrationLogger = StartupLogger.Logger.BeginGroup<JellyfinMigrationService>($"Migration Service");
-            var startupConfigurationManager = new ServerConfigurationManager(appPaths, _loggerFactory, new MyXmlSerializer());
-            startupConfigurationManager.AddParts([new DatabaseConfigurationFactory()]);
+
             var migrationStartupServiceProvider = new ServiceCollection()
                 .AddLogging(d => d.AddSerilog())
-                .AddJellyfinDbContext(startupConfigurationManager, startupConfig)
+                .Configure<DatabaseConfigurationOptions>(startupConfig.GetSection(JellyfinConfigurationConstants.DatabaseConfigurationKey))
+                .AddSingleton<IWritableOptions<DatabaseConfigurationOptions>>(sp =>
+                    new WritableOptions<DatabaseConfigurationOptions>(
+                        sp.GetRequiredService<IOptionsMonitor<DatabaseConfigurationOptions>>(),
+                        (IConfigurationRoot)startupConfig,
+                        JellyfinConfigurationConstants.DatabaseConfigurationKey,
+                        Path.Combine(appPaths.ConfigurationDirectoryPath, JellyfinConfigurationConstants.DatabaseJsonFile)))
+                .AddJellyfinDbContext(startupConfig, appPaths)
                 .AddSingleton<IApplicationPaths>(appPaths)
                 .AddSingleton<ServerApplicationPaths>(appPaths)
                 .RegisterStartupLogger();
@@ -344,6 +354,11 @@ namespace Jellyfin.Server
                 .AddInMemoryCollection(inMemoryDefaultConfig)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.SystemJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.EncodingJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.NetworkJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.BrandingJsonFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(JellyfinConfigurationConstants.DatabaseJsonFile, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
         }

@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Users;
@@ -31,11 +31,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultPasswordResetProvider"/> class.
         /// </summary>
-        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appPaths">The app paths.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
+        public DefaultPasswordResetProvider(IServerApplicationPaths appPaths, IApplicationHost appHost)
         {
-            _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
+            _passwordResetFileBaseDir = appPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _appHost = appHost;
             // TODO: Remove the circular dependency on UserManager

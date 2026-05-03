@@ -16,7 +16,6 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.LiveTv.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -28,6 +27,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv
 {
@@ -36,7 +36,7 @@ namespace Jellyfin.LiveTv
     /// </summary>
     public class LiveTvManager : ILiveTvManager
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<LiveTvOptions> _config;
         private readonly ILogger<LiveTvManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
@@ -49,7 +49,7 @@ namespace Jellyfin.LiveTv
         private readonly ILiveTvService[] _services;
 
         public LiveTvManager(
-            IServerConfigurationManager config,
+            IOptions<LiveTvOptions> config,
             ILogger<LiveTvManager> logger,
             IUserDataManager userDataManager,
             IDtoService dtoService,
@@ -1215,7 +1215,7 @@ namespace Jellyfin.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || _config.GetLiveTvConfiguration().TunerHosts.Length > 0);
+            return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || _config.Value.TunerHosts.Length > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()

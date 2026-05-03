@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -21,6 +20,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Manager
         where TIdType : ItemLookupInfo, new()
     {
         protected MetadataService(
-            IServerConfigurationManager serverConfigurationManager,
+            IOptions<MetadataConfiguration> metadataConfig,
             ILogger<MetadataService<TItemType, TIdType>> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Manager
             IExternalDataManager externalDataManager,
             IItemRepository itemRepository)
         {
-            ServerConfigurationManager = serverConfigurationManager;
+            MetadataConfig = metadataConfig;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected ItemImageProvider ImageProvider { get; }
 
-        protected IServerConfigurationManager ServerConfigurationManager { get; }
+        protected IOptions<MetadataConfiguration> MetadataConfig { get; }
 
         protected ILogger<MetadataService<TItemType, TIdType>> Logger { get; }
 
@@ -346,7 +346,7 @@ namespace MediaBrowser.Providers.Manager
                     Logger.LogDebug("File modification time changed from {Then} to {Now}: {Path}", item.DateModified, info.LastWriteTimeUtc, itemPath);
 
                     item.DateModified = info.LastWriteTimeUtc;
-                    if (ServerConfigurationManager.GetMetadataConfiguration().UseFileCreationTimeForDateAdded)
+                    if (MetadataConfig.Value.UseFileCreationTimeForDateAdded)
                     {
                         if (info.CreationTimeUtc > DateTime.MinValue)
                         {

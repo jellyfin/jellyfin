@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.MediaEncoding;
 
@@ -15,7 +15,7 @@ public class TranscodingThrottler : IDisposable
 {
     private readonly TranscodingJob _job;
     private readonly ILogger<TranscodingThrottler> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IOptions<EncodingOptions> _config;
     private readonly IFileSystem _fileSystem;
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
@@ -26,10 +26,10 @@ public class TranscodingThrottler : IDisposable
     /// </summary>
     /// <param name="job">Transcoding job dto.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{TranscodingThrottler}"/> interface.</param>
-    /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="config">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    public TranscodingThrottler(TranscodingJob job, ILogger<TranscodingThrottler> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
+    public TranscodingThrottler(TranscodingJob job, ILogger<TranscodingThrottler> logger, IOptions<EncodingOptions> config, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
     {
         _job = job;
         _logger = logger;
@@ -100,11 +100,6 @@ public class TranscodingThrottler : IDisposable
         }
     }
 
-    private EncodingOptions GetOptions()
-    {
-        return _config.GetEncodingOptions();
-    }
-
     private async void TimerCallback(object? state)
     {
         if (_job.HasExited)
@@ -113,7 +108,7 @@ public class TranscodingThrottler : IDisposable
             return;
         }
 
-        var options = GetOptions();
+        var options = _config.Value;
 
         if (options.EnableThrottling && IsThrottleAllowed(_job, Math.Max(options.ThrottleDelaySeconds, 60)))
         {

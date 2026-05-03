@@ -4,10 +4,11 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -20,19 +21,19 @@ public class ClientLogController : BaseJellyfinApiController
 {
     private const int MaxDocumentSize = 1_000_000;
     private readonly IClientEventLogger _clientEventLogger;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClientLogController"/> class.
     /// </summary>
     /// <param name="clientEventLogger">Instance of the <see cref="IClientEventLogger"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
     public ClientLogController(
         IClientEventLogger clientEventLogger,
-        IServerConfigurationManager serverConfigurationManager)
+        IOptions<ServerConfiguration> serverConfig)
     {
         _clientEventLogger = clientEventLogger;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <summary>
@@ -50,7 +51,7 @@ public class ClientLogController : BaseJellyfinApiController
     [RequestSizeLimit(MaxDocumentSize)]
     public async Task<ActionResult<ClientLogDocumentResponseDto>> LogFile()
     {
-        if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
+        if (!_serverConfig.Value.AllowClientLogUpload)
         {
             return Forbid();
         }

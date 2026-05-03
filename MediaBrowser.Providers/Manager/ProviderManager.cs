@@ -15,7 +15,6 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -33,6 +32,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Book = MediaBrowser.Controller.Entities.Book;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
@@ -56,7 +56,8 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ILyricManager _lyricManager;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
+        private readonly IOptions<XbmcMetadataOptions> _xbmcConfig;
         private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
@@ -83,7 +84,8 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="httpClientFactory">The Http client factory.</param>
         /// <param name="subtitleManager">The subtitle manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="serverConfig">The configuration manager.</param>
+        /// <param name="xbmcConfig">The xbmc config.</param>
         /// <param name="libraryMonitor">The library monitor.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The filesystem.</param>
@@ -96,7 +98,8 @@ namespace MediaBrowser.Providers.Manager
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
-            IServerConfigurationManager configurationManager,
+            IOptions<ServerConfiguration> serverConfig,
+            IOptions<XbmcMetadataOptions> xbmcConfig,
             ILibraryMonitor libraryMonitor,
             ILogger<ProviderManager> logger,
             IFileSystem fileSystem,
@@ -109,7 +112,8 @@ namespace MediaBrowser.Providers.Manager
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
+            _xbmcConfig = xbmcConfig;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
@@ -238,7 +242,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
+            return new ImageSaver(_serverConfig, _xbmcConfig, _appPaths, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -252,7 +256,7 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 var fileStream = AsyncFile.OpenRead(source);
-                await new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                await new ImageSaver(_serverConfig, _xbmcConfig, _appPaths, _libraryMonitor, _fileSystem, _logger)
                     .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -272,7 +276,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public Task SaveImage(Stream source, string mimeType, string path)
         {
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+            return new ImageSaver(_serverConfig, _xbmcConfig, _appPaths, _libraryMonitor, _fileSystem, _logger)
                 .SaveImage(source, path);
         }
 
@@ -657,7 +661,7 @@ namespace MediaBrowser.Providers.Manager
 
         /// <inheritdoc/>
         public MetadataOptions GetMetadataOptions(BaseItem item)
-            => _configurationManager.GetMetadataOptionsForType(item.GetType().Name) ?? new MetadataOptions();
+            => _serverConfig.GetMetadataOptionsForType(item.GetType().Name) ?? new MetadataOptions();
 
         /// <inheritdoc/>
         public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType)
@@ -842,12 +846,12 @@ namespace MediaBrowser.Providers.Manager
 
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataLanguage))
             {
-                searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
+                searchInfo.SearchInfo.MetadataLanguage = _serverConfig.Value.PreferredMetadataLanguage;
             }
 
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
-                searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
+                searchInfo.SearchInfo.MetadataCountryCode = _serverConfig.Value.MetadataCountryCode;
             }
 
             var resultList = new List<RemoteSearchResult>();

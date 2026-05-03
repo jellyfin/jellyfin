@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -29,10 +28,8 @@ public class SubtitleResolverTests
         Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
-        var serverConfig = new Mock<IServerConfigurationManager>();
-        serverConfig.Setup(c => c.ApplicationPaths)
-            .Returns(applicationPaths);
-        BaseItem.ConfigurationManager = serverConfig.Object;
+        BaseItem.ServerApplicationPaths = applicationPaths;
+        BaseItem.ServerConfigOptions = Microsoft.Extensions.Options.Options.Create(new MediaBrowser.Model.Configuration.ServerConfiguration());
 
         // build resolver to test with
         var localizationManager = Mock.Of<ILocalizationManager>();

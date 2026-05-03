@@ -19,7 +19,6 @@ using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
@@ -33,6 +32,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -52,12 +52,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         internal const int DefaultHdrImageExtractionTimeout = 20000;
 
         private readonly ILogger<MediaEncoder> _logger;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IWritableOptions<EncodingOptions> _encodingOptions;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly IConfiguration _config;
-        private readonly IServerConfigurationManager _serverConfig;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
+        private readonly IApplicationPaths _appPaths;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
@@ -107,27 +108,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
-            IServerConfigurationManager configurationManager,
+            IWritableOptions<EncodingOptions> encodingOptions,
             IFileSystem fileSystem,
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IConfiguration config,
-            IServerConfigurationManager serverConfig)
+            IOptions<ServerConfiguration> serverConfig,
+            IApplicationPaths appPaths)
         {
             _logger = logger;
-            _configurationManager = configurationManager;
+            _encodingOptions = encodingOptions;
             _fileSystem = fileSystem;
             _blurayExaminer = blurayExaminer;
             _localization = localization;
             _config = config;
             _serverConfig = serverConfig;
+            _appPaths = appPaths;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
 
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
 
             // Although the type is not nullable, this might still be null during unit tests
-            var semaphoreCount = serverConfig.Configuration?.ParallelImageEncodingLimit ?? 0;
+            var semaphoreCount = serverConfig.Value?.ParallelImageEncodingLimit ?? 0;
             if (semaphoreCount < 1)
             {
                 semaphoreCount = Environment.ProcessorCount;
@@ -189,7 +192,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (string.IsNullOrEmpty(ffmpegPath))
             {
                 // 2) Custom path stored in config/encoding xml file under tag <EncoderAppPath> should be used as a fallback
-                ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+                ffmpegPath = _encodingOptions.Value.EncoderAppPath;
                 ffmpegPathSetMethodText = "encoding.xml config file";
                 if (string.IsNullOrEmpty(ffmpegPath))
                 {
@@ -206,10 +209,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
-            var options = _configurationManager.GetEncodingOptions();
-            options.EncoderAppPathDisplay = _ffmpegPath ?? string.Empty;
-            _configurationManager.SaveConfiguration("encoding", options);
+            // Write the FFmpeg path to the config/encoding.json file as <EncoderAppPathDisplay> so it appears in UI
+            _encodingOptions.Update(options => options.EncoderAppPathDisplay = _ffmpegPath ?? string.Empty);
 
             // Only if mpeg path is set, try and set path to probe
             if (_ffmpegPath is not null)
@@ -228,6 +229,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
+                var options = _encodingOptions.Value;
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
@@ -646,7 +648,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetImageResolutionParameter()
         {
-            var imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
+            var imageResolutionParameter = _serverConfig.Value.ChapterImageResolution switch
             {
                 ImageResolution.P144 => "256x144",
                 ImageResolution.P240 => "426x240",
@@ -685,7 +687,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
-            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
+            var tempExtractPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // deint -> scale -> thumbnail -> tonemap.
@@ -798,7 +800,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     StartProcess(processWrapper);
 
-                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    var timeoutMs = _serverConfig.Value.ImageExtractionTimeoutMs;
                     if (timeoutMs <= 0)
                     {
                         timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
@@ -843,7 +845,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken)
         {
-            var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
+            var options = allowHwAccel ? _encodingOptions.Value : new EncodingOptions();
             threads ??= _threads;
 
             if (allowHwAccel && enableKeyFrameOnlyExtraction)
@@ -989,7 +991,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Output arguments
-            var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+            var targetDirectory = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, "%08d.jpg");
 
@@ -1052,7 +1054,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     bool isResponsive = true;
                     int lastCount = 0;
-                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    var timeoutMs = _serverConfig.Value.ImageExtractionTimeoutMs;
                     timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
                     while (isResponsive && !cancellationToken.IsCancellationRequested)
@@ -1331,7 +1333,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public bool CanExtractSubtitles(string codec)
         {
-            return _configurationManager.GetEncodingOptions().EnableSubtitleExtraction;
+            return _encodingOptions.Value.EnableSubtitleExtraction;
         }
 
         private sealed class ProcessWrapper : IDisposable

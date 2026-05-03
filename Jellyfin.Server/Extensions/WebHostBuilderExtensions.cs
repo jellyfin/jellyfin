@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Hosting;
@@ -33,7 +34,7 @@ public static class WebHostBuilderExtensions
         this IWebHostBuilder builder,
         CoreAppHost appHost,
         IConfiguration startupConfig,
-        IApplicationPaths appPaths,
+        IServerApplicationPaths appPaths,
         ILogger logger)
     {
         return builder
@@ -50,7 +51,7 @@ public static class WebHostBuilderExtensions
                     builderContext,
                     options);
             })
-            .UseStartup(context => new Startup(appHost, context.Configuration));
+            .UseStartup(context => new Startup(appHost, context.Configuration, appPaths));
     }
 
     /// <summary>

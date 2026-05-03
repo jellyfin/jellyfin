@@ -14,12 +14,12 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -28,6 +28,7 @@ using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -40,7 +41,7 @@ public class MediaInfoHelper
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly ILogger<MediaInfoHelper> _logger;
     private readonly INetworkManager _networkManager;
     private readonly IDeviceManager _deviceManager;
@@ -52,7 +53,7 @@ public class MediaInfoHelper
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoHelper}"/> interface.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
@@ -61,7 +62,7 @@ public class MediaInfoHelper
         ILibraryManager libraryManager,
         IMediaSourceManager mediaSourceManager,
         IMediaEncoder mediaEncoder,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<ServerConfiguration> serverConfig,
         ILogger<MediaInfoHelper> logger,
         INetworkManager networkManager,
         IDeviceManager deviceManager)
@@ -70,7 +71,7 @@ public class MediaInfoHelper
         _libraryManager = libraryManager;
         _mediaSourceManager = mediaSourceManager;
         _mediaEncoder = mediaEncoder;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
         _logger = logger;
         _networkManager = networkManager;
         _deviceManager = deviceManager;
@@ -499,7 +500,7 @@ public class MediaInfoHelper
 
         if (remoteClientMaxBitrate <= 0)
         {
-            remoteClientMaxBitrate = _serverConfigurationManager.Configuration.RemoteClientBitrateLimit;
+            remoteClientMaxBitrate = _serverConfig.Value.RemoteClientBitrateLimit;
         }
 
         if (remoteClientMaxBitrate > 0)

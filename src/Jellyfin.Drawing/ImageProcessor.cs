@@ -12,15 +12,16 @@ using AsyncKeyedLock;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Jellyfin.Drawing;
@@ -58,14 +59,14 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
         IImageEncoder imageEncoder,
-        IServerConfigurationManager config)
+        IOptions<ServerConfiguration> config)
     {
         _logger = logger;
         _fileSystem = fileSystem;
         _imageEncoder = imageEncoder;
         _appPaths = appPaths;
 
-        var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
+        var semaphoreCount = config.Value.ParallelImageEncodingLimit;
         if (semaphoreCount < 1)
         {
             semaphoreCount = Environment.ProcessorCount;

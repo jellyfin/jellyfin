@@ -8,25 +8,26 @@ using System.Text;
 using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Keyframes;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.MediaEncoding.Hls.Playlist;
 
 /// <inheritdoc />
 public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
     private readonly IKeyframeExtractor[] _extractors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsPlaylistGenerator"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">An instance of the see <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">An instance of the see encoding options.</param>
     /// <param name="extractors">An instance of <see cref="IEnumerable{IKeyframeExtractor}"/>.</param>
-    public DynamicHlsPlaylistGenerator(IServerConfigurationManager serverConfigurationManager, IEnumerable<IKeyframeExtractor> extractors)
+    public DynamicHlsPlaylistGenerator(IOptions<EncodingOptions> encodingOptions, IEnumerable<IKeyframeExtractor> extractors)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptions = encodingOptions;
         _extractors = extractors.Where(e => e.IsMetadataBased).ToArray();
     }
 
@@ -109,7 +110,7 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
     private bool TryExtractKeyframes(Guid itemId, string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
         keyframeData = null;
-        if (!IsExtractionAllowedForFile(filePath, _serverConfigurationManager.GetEncodingOptions().AllowOnDemandMetadataBasedKeyframeExtractionForExtensions))
+        if (!IsExtractionAllowedForFile(filePath, _encodingOptions.Value.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions))
         {
             return false;
         }

@@ -16,17 +16,18 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.MediaEncoding.Transcoding;
 
@@ -37,7 +38,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     private readonly ILogger<TranscodeManager> _logger;
     private readonly IFileSystem _fileSystem;
     private readonly IApplicationPaths _appPaths;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _serverConfigurationManager;
     private readonly IUserManager _userManager;
     private readonly ISessionManager _sessionManager;
     private readonly EncodingHelper _encodingHelper;
@@ -60,7 +61,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
     /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
-    /// <param name="serverConfigurationManager">The <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="serverConfigurationManager">The <see cref="IOptions{EncodingOptions}"/>.</param>
     /// <param name="userManager">The <see cref="IUserManager"/>.</param>
     /// <param name="sessionManager">The <see cref="ISessionManager"/>.</param>
     /// <param name="encodingHelper">The <see cref="EncodingHelper"/>.</param>
@@ -71,7 +72,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         ILoggerFactory loggerFactory,
         IFileSystem fileSystem,
         IApplicationPaths appPaths,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> serverConfigurationManager,
         IUserManager userManager,
         ISessionManager sessionManager,
         EncodingHelper encodingHelper,
@@ -346,7 +347,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         {
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
-            var hardwareAccelerationType = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+            var hardwareAccelerationType = _serverConfigurationManager.Value.HardwareAccelerationType;
 
             _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
             {
@@ -462,7 +463,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
 
         var logFilePath = Path.Combine(
-            _serverConfigurationManager.ApplicationPaths.LogDirectoryPath,
+            _appPaths.LogDirectoryPath,
             $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
         // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
@@ -667,7 +668,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
-            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var encodingOptions = _serverConfigurationManager.Value;
 
             _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
 
@@ -716,7 +717,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void DeleteEncodedMediaCache()
     {
-        var path = _serverConfigurationManager.GetTranscodePath();
+        var path = EncodingConfigurationExtensions.GetTranscodePath(_serverConfigurationManager.Value, _appPaths);
         if (!Directory.Exists(path))
         {
             return;

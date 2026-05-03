@@ -9,8 +9,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -24,19 +24,19 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
     /// </summary>
     public class StudiosImageProvider : IRemoteImageProvider
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IApplicationPaths _applicationPaths;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StudiosImageProvider"/> class.
         /// </summary>
-        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="applicationPaths">The <see cref="IApplicationPaths"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
-        public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
+        public StudiosImageProvider(IApplicationPaths applicationPaths, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
-            _config = config;
+            _applicationPaths = applicationPaths;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
@@ -59,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
+            var thumbsPath = Path.Combine(_applicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 
             await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 

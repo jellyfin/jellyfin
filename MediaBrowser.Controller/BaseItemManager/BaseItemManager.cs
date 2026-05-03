@@ -1,25 +1,25 @@
 using System;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.BaseItemManager
 {
     /// <inheritdoc />
     public class BaseItemManager : IBaseItemManager
     {
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public BaseItemManager(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="serverConfig">The server configuration.</param>
+        public BaseItemManager(IOptions<ServerConfiguration> serverConfig)
         {
-            _serverConfigurationManager = serverConfigurationManager;
+            _serverConfig = serverConfig;
         }
 
         /// <inheritdoc />
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return libraryTypeOptions.MetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
             }
 
-            var itemConfig = _serverConfigurationManager.GetMetadataOptionsForType(baseItem.GetType().Name);
+            var itemConfig = Array.Find(_serverConfig.Value.MetadataOptions, i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
             return itemConfig is null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return libraryTypeOptions.ImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
             }
 
-            var itemConfig = _serverConfigurationManager.GetMetadataOptionsForType(baseItem.GetType().Name);
+            var itemConfig = Array.Find(_serverConfig.Value.MetadataOptions, i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
             return itemConfig is null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase);
         }
     }

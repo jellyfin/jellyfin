@@ -1,13 +1,14 @@
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.Books;
 
@@ -19,7 +20,7 @@ public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioBookMetadataService"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="metadataConfig">Instance of the metadata config.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
@@ -27,14 +28,14 @@ public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     public AudioBookMetadataService(
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<MetadataConfiguration> metadataConfig,
         ILogger<AudioBookMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IExternalDataManager externalDataManager,
         IItemRepository itemRepository)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
+        : base(metadataConfig, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
     }
 

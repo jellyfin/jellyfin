@@ -16,7 +16,6 @@ using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -24,6 +23,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv
 {
@@ -32,7 +32,7 @@ namespace Jellyfin.LiveTv
         public const string ServiceName = "Emby";
 
         private readonly ILogger<DefaultLiveTvService> _logger;
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<LiveTvOptions> _config;
         private readonly ITunerHostManager _tunerHostManager;
         private readonly IListingsManager _listingsManager;
         private readonly IRecordingsManager _recordingsManager;
@@ -43,7 +43,7 @@ namespace Jellyfin.LiveTv
 
         public DefaultLiveTvService(
             ILogger<DefaultLiveTvService> logger,
-            IServerConfigurationManager config,
+            IOptions<LiveTvOptions> config,
             ITunerHostManager tunerHostManager,
             IListingsManager listingsManager,
             IRecordingsManager recordingsManager,
@@ -404,7 +404,7 @@ namespace Jellyfin.LiveTv
 
         public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
         {
-            var config = _config.GetLiveTvConfiguration();
+            var config = _config.Value;
 
             var defaults = new SeriesTimerInfo()
             {

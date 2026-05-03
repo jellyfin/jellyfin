@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -21,6 +21,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 using Person = MediaBrowser.Controller.Entities.Person;
@@ -36,7 +37,9 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// The _config.
         /// </summary>
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _config;
+        private readonly IOptions<XbmcMetadataOptions> _xbmcOptions;
+        private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
         /// The _directory watchers.
@@ -49,12 +52,16 @@ namespace MediaBrowser.Providers.Manager
         /// Initializes a new instance of the <see cref="ImageSaver" /> class.
         /// </summary>
         /// <param name="config">The config.</param>
+        /// <param name="xbmcOptions">the xbmc options.</param>
+        /// <param name="appPaths">The server app paths.</param>
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
-        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
+        public ImageSaver(IOptions<ServerConfiguration> config, IOptions<XbmcMetadataOptions> xbmcOptions, IServerApplicationPaths appPaths, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
         {
             _config = config;
+            _xbmcOptions = xbmcOptions;
+            _appPaths = appPaths;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
@@ -64,9 +71,7 @@ namespace MediaBrowser.Providers.Manager
         {
             get
             {
-                var config = _config.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
-
-                return config.EnableExtraThumbsDuplication;
+                return _xbmcOptions.Value.EnableExtraThumbsDuplication;
             }
         }
 
@@ -177,7 +182,7 @@ namespace MediaBrowser.Providers.Manager
             // Delete the current path
             if (currentImageIsLocalFile
                 && !savedPaths.Contains(currentImagePath, StringComparison.OrdinalIgnoreCase)
-                && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
+                && (saveLocally || currentImagePath.Contains(_appPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
 
@@ -303,7 +308,7 @@ namespace MediaBrowser.Providers.Manager
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (_config.Configuration.SaveMetadataHidden)
+                if (_config.Value.SaveMetadataHidden)
                 {
                     SetHidden(path, true);
                 }
@@ -338,7 +343,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{System.String}.</returns>
         private string[] GetSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
-            if (!saveLocally || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy))
+            if (!saveLocally || (_config.Value.ImageSavingConvention == ImageSavingConvention.Legacy))
             {
                 return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
             }
@@ -504,7 +509,7 @@ namespace MediaBrowser.Providers.Manager
                 item is MusicArtist ||
                 item is PhotoAlbum ||
                 item is Person ||
-                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
+                (saveLocally && _config.Value.ImageSavingConvention == ImageSavingConvention.Legacy) ?
                 "folder" :
                 "poster";
 

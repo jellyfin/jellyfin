@@ -15,7 +15,7 @@ using Jellyfin.LiveTv.Configuration;
 using Jellyfin.LiveTv.IO;
 using Jellyfin.LiveTv.Timers;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -31,6 +31,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.Recordings;
 
@@ -38,7 +39,10 @@ namespace Jellyfin.LiveTv.Recordings;
 public sealed class RecordingsManager : IRecordingsManager, IDisposable
 {
     private readonly ILogger<RecordingsManager> _logger;
-    private readonly IServerConfigurationManager _config;
+    private readonly IConfigurationManager _config;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
+    private readonly IServerApplicationPaths _appPaths;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
@@ -59,7 +63,10 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     /// Initializes a new instance of the <see cref="RecordingsManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="serverConfig">The <see cref="IOptions{ServerConfiguration}"/>.</param>
+    /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
+    /// <param name="encodingOptions">The <see cref="IOptions{EncodingOptions}"/>.</param>
     /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
     /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
@@ -73,7 +80,10 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     /// <param name="recordingsMetadataManager">The <see cref="RecordingsMetadataManager"/>.</param>
     public RecordingsManager(
         ILogger<RecordingsManager> logger,
-        IServerConfigurationManager config,
+        IConfigurationManager config,
+        IOptions<ServerConfiguration> serverConfig,
+        IServerApplicationPaths appPaths,
+        IOptions<EncodingOptions> encodingOptions,
         IHttpClientFactory httpClientFactory,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
@@ -88,6 +98,9 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     {
         _logger = logger;
         _config = config;
+        _serverConfig = serverConfig;
+        _appPaths = appPaths;
+        _encodingOptions = encodingOptions;
         _httpClientFactory = httpClientFactory;
         _fileSystem = fileSystem;
         _libraryManager = libraryManager;
@@ -110,7 +123,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             var path = _config.GetLiveTvConfiguration().RecordingPath;
 
             return string.IsNullOrWhiteSpace(path)
-                ? Path.Combine(_config.CommonApplicationPaths.DataPath, "livetv", "recordings")
+                ? Path.Combine(_appPaths.DataPath, "livetv", "recordings")
                 : path;
         }
     }
@@ -463,8 +476,8 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             {
                 ProviderIds = timer.SeriesProviderIds,
                 Name = timer.Name,
-                MetadataCountryCode = _config.Configuration.MetadataCountryCode,
-                MetadataLanguage = _config.Configuration.PreferredMetadataLanguage
+                MetadataCountryCode = _serverConfig.Value.MetadataCountryCode,
+                MetadataLanguage = _serverConfig.Value.PreferredMetadataLanguage
             }
         };
 
@@ -794,7 +807,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase)
             || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
         {
-            return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
+            return new EncodedRecorder(_logger, _mediaEncoder, _appPaths, _encodingOptions);
         }
 
         return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);

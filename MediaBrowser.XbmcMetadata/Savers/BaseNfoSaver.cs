@@ -13,7 +13,6 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -24,6 +23,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -101,7 +101,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         protected BaseNfoSaver(
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager,
+            IOptions<XbmcMetadataOptions> xbmcMetadataOptions,
+            IOptions<ServerConfiguration> serverConfig,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
@@ -111,13 +112,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
             UserDataManager = userDataManager;
             UserManager = userManager;
             LibraryManager = libraryManager;
-            ConfigurationManager = configurationManager;
+            NfoSettings = xbmcMetadataOptions;
+            ServerConfig = serverConfig;
             FileSystem = fileSystem;
         }
 
         protected IFileSystem FileSystem { get; }
 
-        protected IServerConfigurationManager ConfigurationManager { get; }
+        protected IOptions<XbmcMetadataOptions> NfoSettings { get; }
+
+        public IOptions<ServerConfiguration> ServerConfig { get; }
 
         protected ILibraryManager LibraryManager { get; }
 
@@ -131,7 +135,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             get
             {
-                if (ConfigurationManager.GetNfoConfiguration().SaveImagePathsInNfo)
+                if (NfoSettings.Value.SaveImagePathsInNfo)
                 {
                     return ItemUpdateType.ImageUpdate;
                 }
@@ -224,7 +228,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 await stream.CopyToAsync(filestream).ConfigureAwait(false);
             }
 
-            if (ConfigurationManager.Configuration.SaveMetadataHidden)
+            if (ServerConfig.Value.SaveMetadataHidden)
             {
                 SetHidden(path, true);
             }
@@ -263,7 +267,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (baseItem is not null)
                 {
-                    AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, ConfigurationManager);
+                    AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, NfoSettings);
                 }
 
                 WriteCustomElements(item, writer);
@@ -435,7 +439,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataRepo,
-            IServerConfigurationManager config)
+            IOptions<XbmcMetadataOptions> config)
         {
             var writtenProviderIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -443,7 +447,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 .StripHtml()
                 .Replace("&quot;", "'", StringComparison.Ordinal);
 
-            var options = config.GetNfoConfiguration();
+            var options = config.Value;
 
             if (item is MusicArtist)
             {

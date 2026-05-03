@@ -14,12 +14,12 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -29,6 +29,7 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -42,7 +43,8 @@ public class VideosController : BaseJellyfinApiController
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
+    private readonly IApplicationPaths _appPaths;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -57,7 +59,8 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
@@ -67,7 +70,8 @@ public class VideosController : BaseJellyfinApiController
         IUserManager userManager,
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths appPaths,
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
@@ -77,7 +81,8 @@ public class VideosController : BaseJellyfinApiController
         _userManager = userManager;
         _dtoService = dtoService;
         _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptions = encodingOptions;
+        _appPaths = appPaths;
         _mediaEncoder = mediaEncoder;
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
@@ -428,7 +433,8 @@ public class VideosController : BaseJellyfinApiController
                 _mediaSourceManager,
                 _userManager,
                 _libraryManager,
-                _serverConfigurationManager,
+                _encodingOptions,
+                _appPaths,
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
@@ -478,8 +484,7 @@ public class VideosController : BaseJellyfinApiController
         }
 
         // Need to start ffmpeg (because media can't be returned directly)
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast);
+        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, _encodingOptions.Value, EncoderPreset.superfast);
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,

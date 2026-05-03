@@ -18,12 +18,13 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -39,7 +40,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationPaths _appPaths;
         private readonly IEventManager _eventManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly IPluginManager _pluginManager;
 
@@ -68,7 +69,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
         /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
-        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="config">The <see cref="IOptions{ServerConfiguration}"/>.</param>
         /// <param name="pluginManager">The <see cref="IPluginManager"/>.</param>
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -76,7 +77,7 @@ namespace Emby.Server.Implementations.Updates
             IApplicationPaths appPaths,
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> config,
             IPluginManager pluginManager)
         {
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
@@ -87,7 +88,7 @@ namespace Emby.Server.Implementations.Updates
             _appPaths = appPaths;
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
-            _config = config;
+            _serverConfig = config;
             _jsonSerializerOptions = JsonDefaults.Options;
             _pluginManager = pluginManager;
         }
@@ -172,7 +173,7 @@ namespace Emby.Server.Implementations.Updates
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
             var result = new List<PackageInfo>();
-            foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
+            foreach (RepositoryInfo repository in _serverConfig.Value.PluginRepositories)
             {
                 if (repository.Enabled && repository.Url is not null)
                 {

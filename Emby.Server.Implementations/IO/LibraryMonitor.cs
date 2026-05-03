@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -19,7 +20,7 @@ namespace Emby.Server.Implementations.IO
     {
         private readonly ILogger<LibraryMonitor> _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -44,19 +45,19 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="serverConfig">The server configuration.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="appLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         public LibraryMonitor(
             ILogger<LibraryMonitor> logger,
             ILibraryManager libraryManager,
-            IServerConfigurationManager configurationManager,
+            IOptions<ServerConfiguration> serverConfig,
             IFileSystem fileSystem,
             IHostApplicationLifetime appLifetime)
         {
             _libraryManager = libraryManager;
             _logger = logger;
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
             _fileSystem = fileSystem;
 
             appLifetime.ApplicationStarted.Register(Start);
@@ -419,7 +420,7 @@ namespace Emby.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _configurationManager, _libraryManager, _logger);
+                var newRefresher = new FileRefresher(path, _serverConfig, _libraryManager, _logger);
                 newRefresher.Completed += OnNewRefresherCompleted;
                 _activeRefreshers.Add(newRefresher);
             }

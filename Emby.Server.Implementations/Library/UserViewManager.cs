@@ -12,15 +12,16 @@ using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -31,15 +32,15 @@ namespace Emby.Server.Implementations.Library
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IOptions<ServerConfiguration> serverConfig)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
-            _config = config;
+            _serverConfig = serverConfig;
         }
 
         public Folder[] GetUserViews(UserViewQuery query)
@@ -110,7 +111,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (_config.Configuration.EnableFolderView)
+            if (_serverConfig.Value.EnableFolderView)
             {
                 var name = _localizationManager.GetLocalizedString("Folders");
                 list.Add(_libraryManager.GetNamedView(name, CollectionType.folders, string.Empty));

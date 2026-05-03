@@ -9,16 +9,17 @@ using Jellyfin.Data.Events;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.EntryPoints;
 
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.EntryPoints;
 public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 {
     private readonly ILibraryManager _libraryManager;
-    private readonly IServerConfigurationManager _configurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly IProviderManager _providerManager;
     private readonly ISessionManager _sessionManager;
     private readonly IUserManager _userManager;
@@ -48,21 +49,21 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
     /// Initializes a new instance of the <see cref="LibraryChangedNotifier"/> class.
     /// </summary>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
-    /// <param name="configurationManager">The <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="configurationManager">The server configuration options.</param>
     /// <param name="sessionManager">The <see cref="ISessionManager"/>.</param>
     /// <param name="userManager">The <see cref="IUserManager"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
     public LibraryChangedNotifier(
         ILibraryManager libraryManager,
-        IServerConfigurationManager configurationManager,
+        IOptions<ServerConfiguration> configurationManager,
         ISessionManager sessionManager,
         IUserManager userManager,
         ILogger<LibraryChangedNotifier> logger,
         IProviderManager providerManager)
     {
         _libraryManager = libraryManager;
-        _configurationManager = configurationManager;
+        _serverConfig = configurationManager;
         _sessionManager = sessionManager;
         _userManager = userManager;
         _logger = logger;
@@ -182,7 +183,7 @@ public sealed class LibraryChangedNotifier : IHostedService, IDisposable
 
         lock (_libraryChangedSyncLock)
         {
-            var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
+            var updateDuration = TimeSpan.FromSeconds(_serverConfig.Value.LibraryUpdateDuration);
 
             if (_libraryUpdateTimer is null)
             {

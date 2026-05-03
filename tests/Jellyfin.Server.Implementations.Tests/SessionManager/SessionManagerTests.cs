@@ -2,15 +2,16 @@ using System;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -27,7 +28,7 @@ public class SessionManagerTests
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<IOptions<ServerConfiguration>>(),
             Mock.Of<ILibraryManager>(),
             Mock.Of<IUserManager>(),
             Mock.Of<IMusicManager>(),
@@ -54,7 +55,7 @@ public class SessionManagerTests
             NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
             Mock.Of<IEventManager>(),
             Mock.Of<IUserDataManager>(),
-            Mock.Of<IServerConfigurationManager>(),
+            Mock.Of<IOptions<ServerConfiguration>>(),
             Mock.Of<ILibraryManager>(),
             Mock.Of<IUserManager>(),
             Mock.Of<IMusicManager>(),

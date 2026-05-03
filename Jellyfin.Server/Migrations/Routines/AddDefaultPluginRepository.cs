@@ -1,5 +1,6 @@
 using System;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Updates;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -12,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines
     public class AddDefaultPluginRepository : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IWritableOptions<ServerConfiguration> _serverConfiguration;
 
         private readonly RepositoryInfo _defaultRepositoryInfo = new RepositoryInfo
         {
@@ -23,17 +24,19 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <summary>
         /// Initializes a new instance of the <see cref="AddDefaultPluginRepository"/> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public AddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="serverConfigurationManager">Instance of the server configuration.</param>
+        public AddDefaultPluginRepository(IWritableOptions<ServerConfiguration> serverConfigurationManager)
         {
-            _serverConfigurationManager = serverConfigurationManager;
+            _serverConfiguration = serverConfigurationManager;
         }
 
         /// <inheritdoc/>
         public void Perform()
         {
-            _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
-            _serverConfigurationManager.SaveConfiguration();
+            _serverConfiguration.Update(value =>
+            {
+                value.PluginRepositories = new[] { _defaultRepositoryInfo };
+            });
         }
     }
 }

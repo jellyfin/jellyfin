@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -24,7 +25,8 @@ public class AudioHelper
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
+    private readonly IApplicationPaths _appPaths;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -37,7 +39,8 @@ public class AudioHelper
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
@@ -47,7 +50,8 @@ public class AudioHelper
         IUserManager userManager,
         ILibraryManager libraryManager,
         IMediaSourceManager mediaSourceManager,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths appPaths,
         IMediaEncoder mediaEncoder,
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
@@ -57,7 +61,8 @@ public class AudioHelper
         _userManager = userManager;
         _libraryManager = libraryManager;
         _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptions = encodingOptions;
+        _appPaths = appPaths;
         _mediaEncoder = mediaEncoder;
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
@@ -91,7 +96,8 @@ public class AudioHelper
                 _mediaSourceManager,
                 _userManager,
                 _libraryManager,
-                _serverConfigurationManager,
+                _encodingOptions,
+                _appPaths,
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
@@ -143,8 +149,7 @@ public class AudioHelper
         }
 
         // Need to start ffmpeg (because media can't be returned directly)
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
+        var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveAudioFullCommandLine(state, _encodingOptions.Value, outputPath);
         return await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,

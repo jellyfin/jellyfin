@@ -19,17 +19,18 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 using Season = MediaBrowser.Controller.Entities.TV.Season;
@@ -887,7 +888,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
+            if (CollapseBoxSetItems(query, this, query.User, ServerConfigOptions))
             {
                 Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
@@ -1025,7 +1026,7 @@ namespace MediaBrowser.Controller.Entities
             // Check recursive - don't substitute in plain folder views
             if (user is not null)
             {
-                items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
+                items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ServerConfigOptions, CollectionManager);
             }
 
 #pragma warning disable CA1309
@@ -1067,17 +1068,17 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             BaseItem queryParent,
             User user,
-            IServerConfigurationManager configurationManager,
+            IOptions<ServerConfiguration> serverConfig,
             ICollectionManager collectionManager)
         {
             ArgumentNullException.ThrowIfNull(items);
 
-            if (!CollapseBoxSetItems(query, queryParent, user, configurationManager))
+            if (!CollapseBoxSetItems(query, queryParent, user, serverConfig))
             {
                 return items;
             }
 
-            var config = configurationManager.Configuration;
+            var config = serverConfig.Value;
 
             bool collapseMovies = config.EnableGroupingMoviesIntoCollections;
             bool collapseSeries = config.EnableGroupingShowsIntoCollections;
@@ -1121,7 +1122,7 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query,
             BaseItem queryParent,
             User user,
-            IServerConfigurationManager configurationManager)
+            IOptions<ServerConfiguration> serverConfig)
         {
             // Could end up stuck in a loop like this
             if (queryParent is BoxSet)
@@ -1150,7 +1151,7 @@ namespace MediaBrowser.Controller.Entities
                 return param.Value && AllowBoxSetCollapsing(query);
             }
 
-            var config = configurationManager.Configuration;
+            var config = serverConfig.Value;
 
             bool queryHasMovies = query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie);
             bool queryHasSeries = query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Series);

@@ -15,8 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -28,19 +28,19 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     public class OmdbProvider
     {
         private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IApplicationPaths _applicationPaths;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions;
 
         /// <summary>Initializes a new instance of the <see cref="OmdbProvider"/> class.</summary>
         /// <param name="httpClientFactory">HttpClientFactory to use for calls to OMDB service.</param>
         /// <param name="fileSystem">IFileSystem to use for store OMDB data.</param>
-        /// <param name="configurationManager">IServerConfigurationManager to use.</param>
-        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        /// <param name="applicationPaths">IApplicationPaths to use.</param>
+        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationPaths applicationPaths)
         {
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
+            _applicationPaths = applicationPaths;
 
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             // These converters need to take priority
@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
-            var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
+            var dataPath = Path.Combine(_applicationPaths.CachePath, "omdb");
 
             var filename = string.Format(CultureInfo.InvariantCulture, "{0}.json", imdbId);
 
@@ -388,7 +388,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
-            var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
+            var dataPath = Path.Combine(_applicationPaths.CachePath, "omdb");
 
             var filename = string.Format(CultureInfo.InvariantCulture, "{0}_season_{1}.json", imdbId, seasonId);
 

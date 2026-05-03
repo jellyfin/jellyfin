@@ -10,14 +10,15 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers;
@@ -35,7 +36,8 @@ public static class StreamingHelpers
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
@@ -48,7 +50,8 @@ public static class StreamingHelpers
         IMediaSourceManager mediaSourceManager,
         IUserManager userManager,
         ILibraryManager libraryManager,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths appPaths,
         IMediaEncoder mediaEncoder,
         EncodingHelper encodingHelper,
         ITranscodeManager transcodeManager,
@@ -151,9 +154,9 @@ public static class StreamingHelpers
             }
         }
 
-        var encodingOptions = serverConfigurationManager.GetEncodingOptions();
+        var encodingOpts = encodingOptions.Value;
 
-        encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
+        encodingHelper.AttachMediaSourceInfo(state, encodingOpts, mediaSource, url);
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
@@ -199,7 +202,7 @@ public static class StreamingHelpers
             state.OutputVideoCodec = state.Request.VideoCodec;
             state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
-            encodingHelper.TryStreamCopy(state, encodingOptions);
+            encodingHelper.TryStreamCopy(state, encodingOptions.Value);
 
             if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && state.OutputVideoBitrate.HasValue)
             {
@@ -251,7 +254,7 @@ public static class StreamingHelpers
             ? GetOutputFileExtension(state, mediaSource)
             : ("." + GetContainerFileExtension(state.OutputContainer));
 
-        state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+        state.OutputFilePath = GetOutputFilePath(state, ext, encodingOptions.Value, appPaths, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
         return state;
     }
@@ -366,17 +369,18 @@ public static class StreamingHelpers
     /// </summary>
     /// <param name="state">The current <see cref="StreamState"/>.</param>
     /// <param name="outputFileExtension">The file extension of the output file.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">The encoding options.</param>
+    /// <param name="appPaths">The application paths.</param>
     /// <param name="deviceId">The device id.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <returns>The complete file path, including the folder, for the transcoding file.</returns>
-    private static string GetOutputFilePath(StreamState state, string outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
+    private static string GetOutputFilePath(StreamState state, string outputFileExtension, EncodingOptions encodingOptions, IApplicationPaths appPaths, string? deviceId, string? playSessionId)
     {
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
 
         var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         var ext = outputFileExtension.ToLowerInvariant();
-        var folder = serverConfigurationManager.GetTranscodePath();
+        var folder = EncodingConfigurationExtensions.GetTranscodePath(encodingOptions, appPaths);
 
         return Path.Combine(folder, filename + ext);
     }

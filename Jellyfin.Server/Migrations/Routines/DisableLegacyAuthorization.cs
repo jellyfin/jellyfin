@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -10,23 +11,21 @@ namespace Jellyfin.Server.Migrations.Routines;
 [JellyfinMigration("2025-11-18T16:00:00", nameof(DisableLegacyAuthorization))]
 public class DisableLegacyAuthorization : IAsyncMigrationRoutine
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DisableLegacyAuthorization"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public DisableLegacyAuthorization(IServerConfigurationManager serverConfigurationManager)
+    /// <param name="serverConfigurationManager">Instance of the server configuration.</param>
+    public DisableLegacyAuthorization(IWritableOptions<ServerConfiguration> serverConfigurationManager)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfigurationManager;
     }
 
     /// <inheritdoc />
     public Task PerformAsync(CancellationToken cancellationToken)
     {
-        _serverConfigurationManager.Configuration.EnableLegacyAuthorization = false;
-        _serverConfigurationManager.SaveConfiguration();
-
+        _serverConfig.Update(value => value.EnableLegacyAuthorization = false);
         return Task.CompletedTask;
     }
 }

@@ -5,12 +5,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Networking;
 
@@ -26,7 +26,7 @@ public sealed class AutoDiscoveryHost : BackgroundService
 
     private readonly ILogger<AutoDiscoveryHost> _logger;
     private readonly IServerApplicationHost _appHost;
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IOptions<NetworkConfiguration> _networkConfig;
     private readonly INetworkManager _networkManager;
 
     /// <summary>
@@ -34,24 +34,24 @@ public sealed class AutoDiscoveryHost : BackgroundService
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{AutoDiscoveryHost}"/>.</param>
     /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
-    /// <param name="configurationManager">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="networkConfig">The <see cref="IOptions{NetworkConfiguration}"/>.</param>
     /// <param name="networkManager">The <see cref="INetworkManager"/>.</param>
     public AutoDiscoveryHost(
         ILogger<AutoDiscoveryHost> logger,
         IServerApplicationHost appHost,
-        IConfigurationManager configurationManager,
+        IOptions<NetworkConfiguration> networkConfig,
         INetworkManager networkManager)
     {
         _logger = logger;
         _appHost = appHost;
-        _configurationManager = configurationManager;
+        _networkConfig = networkConfig;
         _networkManager = networkManager;
     }
 
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var networkConfig = _configurationManager.GetNetworkConfiguration();
+        var networkConfig = _networkConfig.Value;
         if (!networkConfig.AutoDiscovery)
         {
             return;

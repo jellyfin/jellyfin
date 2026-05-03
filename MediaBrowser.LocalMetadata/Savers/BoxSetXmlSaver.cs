@@ -1,12 +1,13 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -19,11 +20,11 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// Initializes a new instance of the <see cref="BoxSetXmlSaver"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="serverConfig">Instance of the server config.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BoxSetXmlSaver}"/> interface.</param>
-        public BoxSetXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<BoxSetXmlSaver> logger)
-            : base(fileSystem, configurationManager, libraryManager, logger)
+        public BoxSetXmlSaver(IFileSystem fileSystem, IOptions<ServerConfiguration> serverConfig, ILibraryManager libraryManager, ILogger<BoxSetXmlSaver> logger)
+            : base(fileSystem, serverConfig, libraryManager, logger)
         {
         }
 

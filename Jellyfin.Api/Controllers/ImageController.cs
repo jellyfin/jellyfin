@@ -17,7 +17,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers;
@@ -48,8 +49,8 @@ public class ImageController : BaseJellyfinApiController
     private readonly IImageProcessor _imageProcessor;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<ImageController> _logger;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly IApplicationPaths _appPaths;
+    private readonly IWritableOptions<BrandingOptions> _brandingOptions;
+    private readonly IServerApplicationPaths _appPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -60,8 +61,8 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="brandingOptions">Instance of the <see cref="IWritableOptions{BrandingOptions}"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     public ImageController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -69,8 +70,8 @@ public class ImageController : BaseJellyfinApiController
         IImageProcessor imageProcessor,
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
-        IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IWritableOptions<BrandingOptions> brandingOptions,
+        IServerApplicationPaths appPaths)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -78,7 +79,7 @@ public class ImageController : BaseJellyfinApiController
         _imageProcessor = imageProcessor;
         _fileSystem = fileSystem;
         _logger = logger;
-        _serverConfigurationManager = serverConfigurationManager;
+        _brandingOptions = brandingOptions;
         _appPaths = appPaths;
     }
 
@@ -125,7 +126,7 @@ public class ImageController : BaseJellyfinApiController
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            var userDataPath = Path.Combine(_appPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
@@ -1645,7 +1646,7 @@ public class ImageController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery] ImageFormat? format)
     {
-        var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+        var brandingOptions = _brandingOptions.Value;
         var isAdmin = User.IsInRole(Constants.UserRoles.Administrator);
         if (!brandingOptions.SplashscreenEnabled && !isAdmin)
         {
@@ -1728,9 +1729,7 @@ public class ImageController : BaseJellyfinApiController
         await using (stream.ConfigureAwait(false))
         {
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
-            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            brandingOptions.SplashscreenLocation = filePath;
-            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+            _brandingOptions.Update(c => c.SplashscreenLocation = filePath);
 
             var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (fs.ConfigureAwait(false))
@@ -1753,13 +1752,12 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteCustomSplashscreen()
     {
-        var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-        if (!string.IsNullOrEmpty(brandingOptions.SplashscreenLocation)
-            && System.IO.File.Exists(brandingOptions.SplashscreenLocation))
+        var splashscreenLocation = _brandingOptions.Value.SplashscreenLocation;
+        if (!string.IsNullOrEmpty(splashscreenLocation)
+            && System.IO.File.Exists(splashscreenLocation))
         {
-            System.IO.File.Delete(brandingOptions.SplashscreenLocation);
-            brandingOptions.SplashscreenLocation = null;
-            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+            System.IO.File.Delete(splashscreenLocation);
+            _brandingOptions.Update(c => c.SplashscreenLocation = null);
         }
 
         return NoContent();

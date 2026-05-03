@@ -8,12 +8,13 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Options;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
 
@@ -23,13 +24,13 @@ namespace Emby.Server.Implementations.TV
     {
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
-        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IOptions<ServerConfiguration> configurationManager)
         {
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
-            _configurationManager = configurationManager;
+            _serverConfig = configurationManager;
         }
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.TV
 
                 var nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().FirstOrDefault();
 
-                if (_configurationManager.Configuration.DisplaySpecialsWithinSeasons)
+                if (_serverConfig.Value.DisplaySpecialsWithinSeasons)
                 {
                     var consideredEpisodes = _libraryManager.GetItemList(new InternalItemsQuery(user)
                     {

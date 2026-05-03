@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -22,13 +22,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-        public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
+        public AudioDbAlbumImageProvider(IServerApplicationPaths appPaths, IHttpClientFactory httpClientFactory)
         {
-            _config = config;
+            _appPaths = appPaths;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             {
                 await AudioDbAlbumProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
+                var path = AudioDbAlbumProvider.GetAlbumInfoPath(_appPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
                 await using (jsonStream.ConfigureAwait(false))

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -21,6 +20,7 @@ using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -556,9 +556,7 @@ namespace Jellyfin.Providers.Tests.Manager
             LibraryOptions? libraryOptions = null,
             IBaseItemManager? baseItemManager = null)
         {
-            var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
-            serverConfigurationManager.Setup(i => i.Configuration)
-                .Returns(serverConfiguration ?? new ServerConfiguration());
+            var serverConfigOptions = Options.Create(serverConfiguration ?? new ServerConfiguration());
 
             var libraryManager = new Mock<ILibraryManager>(MockBehavior.Strict);
             libraryManager.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
@@ -567,7 +565,8 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = new ProviderManager(
                 Mock.Of<IHttpClientFactory>(),
                 Mock.Of<ISubtitleManager>(),
-                serverConfigurationManager.Object,
+                serverConfigOptions,
+                Mock.Of<IOptions<XbmcMetadataOptions>>(),
                 Mock.Of<ILibraryMonitor>(),
                 _logger,
                 Mock.Of<IFileSystem>(),

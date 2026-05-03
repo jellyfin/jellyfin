@@ -20,7 +20,6 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -28,6 +27,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -36,6 +36,7 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -483,7 +484,9 @@ namespace MediaBrowser.Controller.Entities
 
         public static ILibraryManager LibraryManager { get; set; }
 
-        public static IServerConfigurationManager ConfigurationManager { get; set; }
+        public static IOptions<ServerConfiguration> ServerConfigOptions { get; set; }
+
+        public static IServerApplicationPaths ServerApplicationPaths { get; set; }
 
         public static IProviderManager ProviderManager { get; set; }
 
@@ -894,7 +897,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetInternalMetadataPath()
         {
-            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+            var basePath = ServerApplicationPaths.InternalMetadataPath;
 
             return GetInternalMetadataPath(basePath);
         }
@@ -929,7 +932,7 @@ namespace MediaBrowser.Controller.Entities
 
             var sortable = Name.Trim().ToLowerInvariant();
 
-            foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
+            foreach (var search in ServerConfigOptions.Value.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
                 if (sortable.StartsWith(search + " ", StringComparison.Ordinal))
@@ -947,12 +950,12 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            foreach (var removeChar in ServerConfigOptions.Value.SortRemoveCharacters)
             {
                 sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
-            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            foreach (var replaceChar in ServerConfigOptions.Value.SortReplaceCharacters)
             {
                 sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
@@ -1527,7 +1530,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(lang))
             {
-                lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+                lang = ServerConfigOptions.Value.PreferredMetadataLanguage;
             }
 
             return lang;
@@ -1562,7 +1565,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(lang))
             {
-                lang = ConfigurationManager.Configuration.MetadataCountryCode;
+                lang = ServerConfigOptions.Value.MetadataCountryCode;
             }
 
             return lang;

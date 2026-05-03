@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Jellyfin.Api.Middleware;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
 namespace Jellyfin.Server.Extensions
@@ -16,17 +16,18 @@ namespace Jellyfin.Server.Extensions
         /// Adds swagger and swagger UI to the application pipeline.
         /// </summary>
         /// <param name="applicationBuilder">The application builder.</param>
-        /// <param name="serverConfigurationManager">The server configuration.</param>
+        /// <param name="networkConfig">The server network configuration.</param>
         /// <returns>The updated application builder.</returns>
         public static IApplicationBuilder UseJellyfinApiSwagger(
             this IApplicationBuilder applicationBuilder,
-            IServerConfigurationManager serverConfigurationManager)
+            IOptions<NetworkConfiguration> networkConfig)
         {
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
 
-            var baseUrl = serverConfigurationManager.GetNetworkConfiguration().BaseUrl.Trim('/');
-            var apiDocBaseUrl = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
+            var networkConfigValue = networkConfig.Value;
+            var baseUrl = networkConfigValue.BaseUrl.Trim('/');
+            var apiDocBaseUrl = networkConfigValue.BaseUrl;
             if (!string.IsNullOrEmpty(baseUrl))
             {
                 baseUrl += '/';

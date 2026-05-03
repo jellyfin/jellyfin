@@ -14,7 +14,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -29,14 +29,14 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private const string ApiKey = "195003";
         public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-        public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        public AudioDbArtistProvider(IServerApplicationPaths appPaths, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
-            _config = config;
+            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
             Current = this;
@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             {
                 await EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = GetArtistInfoPath(_config.ApplicationPaths, id);
+                var path = GetArtistInfoPath(_appPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
                 await using (jsonStream.ConfigureAwait(false))
@@ -135,7 +135,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         internal async Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
-            var xmlPath = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
+            var xmlPath = GetArtistInfoPath(_appPaths, musicBrainzId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
+            var path = GetArtistInfoPath(_appPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var fileStreamOptions = AsyncFile.WriteOptions;

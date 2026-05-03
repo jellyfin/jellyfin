@@ -15,8 +15,8 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -47,7 +47,7 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<ChannelManager> _logger;
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
@@ -62,7 +62,7 @@ namespace Jellyfin.LiveTv.Channels
         /// <param name="dtoService">The dto service.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="config">The server configuration manager.</param>
+        /// <param name="appPaths">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="providerManager">The provider manager.</param>
@@ -73,7 +73,7 @@ namespace Jellyfin.LiveTv.Channels
             IDtoService dtoService,
             ILibraryManager libraryManager,
             ILogger<ChannelManager> logger,
-            IServerConfigurationManager config,
+            IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IProviderManager providerManager,
@@ -84,7 +84,7 @@ namespace Jellyfin.LiveTv.Channels
             _dtoService = dtoService;
             _libraryManager = libraryManager;
             _logger = logger;
-            _config = config;
+            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
             _providerManager = providerManager;
@@ -433,7 +433,7 @@ namespace Jellyfin.LiveTv.Channels
 
             var id = GetInternalChannelId(channelInfo.Name);
 
-            var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
+            var path = Channel.GetInternalMetadataPath(_appPaths.InternalMetadataPath, id);
 
             var isNew = false;
             var forceUpdate = false;
@@ -910,7 +910,7 @@ namespace Jellyfin.LiveTv.Channels
             filename = filename.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
             return Path.Combine(
-                _config.ApplicationPaths.CachePath,
+                _appPaths.CachePath,
                 "channels",
                 channelId,
                 version,

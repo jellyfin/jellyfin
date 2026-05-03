@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -19,17 +21,23 @@ namespace Jellyfin.Api.Controllers;
 [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
 public class StartupController : BaseJellyfinApiController
 {
-    private readonly IServerConfigurationManager _config;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
+    private readonly IWritableOptions<NetworkConfiguration> _networkConfig;
     private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StartupController" /> class.
     /// </summary>
-    /// <param name="config">The server configuration manager.</param>
+    /// <param name="serverConfig">The writable server configuration options.</param>
+    /// <param name="networkConfig">The writable network configuration options.</param>
     /// <param name="userManager">The user manager.</param>
-    public StartupController(IServerConfigurationManager config, IUserManager userManager)
+    public StartupController(
+        IWritableOptions<ServerConfiguration> serverConfig,
+        IWritableOptions<NetworkConfiguration> networkConfig,
+        IUserManager userManager)
     {
-        _config = config;
+        _serverConfig = serverConfig;
+        _networkConfig = networkConfig;
         _userManager = userManager;
     }
 
@@ -42,8 +50,7 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult CompleteWizard()
     {
-        _config.Configuration.IsStartupWizardCompleted = true;
-        _config.SaveConfiguration();
+        _serverConfig.Update(c => c.IsStartupWizardCompleted = true);
         return NoContent();
     }
 
@@ -58,10 +65,10 @@ public class StartupController : BaseJellyfinApiController
     {
         return new StartupConfigurationDto
         {
-            ServerName = _config.Configuration.ServerName,
-            UICulture = _config.Configuration.UICulture,
-            MetadataCountryCode = _config.Configuration.MetadataCountryCode,
-            PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
+            ServerName = _serverConfig.Value.ServerName,
+            UICulture = _serverConfig.Value.UICulture,
+            MetadataCountryCode = _serverConfig.Value.MetadataCountryCode,
+            PreferredMetadataLanguage = _serverConfig.Value.PreferredMetadataLanguage
         };
     }
 
@@ -75,11 +82,13 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
     {
-        _config.Configuration.ServerName = startupConfiguration.ServerName ?? string.Empty;
-        _config.Configuration.UICulture = startupConfiguration.UICulture ?? string.Empty;
-        _config.Configuration.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
-        _config.Configuration.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
-        _config.SaveConfiguration();
+        _serverConfig.Update(c =>
+        {
+            c.ServerName = startupConfiguration.ServerName ?? string.Empty;
+            c.UICulture = startupConfiguration.UICulture ?? string.Empty;
+            c.MetadataCountryCode = startupConfiguration.MetadataCountryCode ?? string.Empty;
+            c.PreferredMetadataLanguage = startupConfiguration.PreferredMetadataLanguage ?? string.Empty;
+        });
         return NoContent();
     }
 
@@ -93,9 +102,7 @@ public class StartupController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
     {
-        NetworkConfiguration settings = _config.GetNetworkConfiguration();
-        settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
-        _config.SaveConfiguration(NetworkConfigurationStore.StoreKey, settings);
+        _networkConfig.Update(c => c.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess);
         return NoContent();
     }
 

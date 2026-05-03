@@ -18,9 +18,9 @@ using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -28,11 +28,13 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 {
     public class HdHomerunHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
+        private readonly IOptions<EncodingOptions> _encodingConfig;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
@@ -43,15 +45,18 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
 
         public HdHomerunHost(
-            IServerConfigurationManager config,
+            IOptions<LiveTvOptions> config,
+            IOptions<EncodingOptions> encodingConfig,
+            IServerApplicationPaths appPaths,
             ILogger<HdHomerunHost> logger,
             IFileSystem fileSystem,
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
             IStreamHelper streamHelper)
-            : base(config, logger, fileSystem)
+            : base(config, appPaths, logger, fileSystem)
         {
+            _encodingConfig = encodingConfig;
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _socketFactory = socketFactory;
@@ -424,7 +429,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                     modelInfo.TunerCount,
                     FileSystem,
                     Logger,
-                    Config,
+                    _encodingConfig,
+                    ServerApplicationPaths,
                     _appHost,
                     _streamHelper);
             }
@@ -448,7 +454,8 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
                 FileSystem,
                 _httpClientFactory,
                 Logger,
-                Config,
+                _encodingConfig,
+                ServerApplicationPaths,
                 _appHost,
                 _streamHelper);
         }

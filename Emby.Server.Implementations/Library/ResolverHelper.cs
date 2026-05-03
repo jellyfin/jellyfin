@@ -4,7 +4,9 @@ using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -20,9 +22,10 @@ namespace Emby.Server.Implementations.Library
         /// <param name="parent">The parent.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="metadataOptions">The Metadata options.</param>
         /// <returns>True if initializing was successful.</returns>
         /// <exception cref="ArgumentException">Item must have a path.</exception>
-        public static bool SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService)
+        public static bool SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService, MetadataConfiguration metadataOptions)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
             ArgumentException.ThrowIfNullOrEmpty(item.Path);
@@ -45,7 +48,7 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            SetDateCreated(item, fileInfo);
+            SetDateCreated(item, fileInfo, metadataOptions);
 
             EnsureName(item, fileInfo);
 
@@ -59,7 +62,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="args">The args.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem, ILibraryManager libraryManager)
+        /// <param name="metadataOptions">The metadata options.</param>
+        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem, ILibraryManager libraryManager, MetadataConfiguration metadataOptions)
         {
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.Path))
@@ -82,7 +86,7 @@ namespace Emby.Server.Implementations.Library
                 item.GetParents().Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            EnsureDates(fileSystem, item, args);
+            EnsureDates(fileSystem, item, args, metadataOptions);
         }
 
         /// <summary>
@@ -103,7 +107,8 @@ namespace Emby.Server.Implementations.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
-        private static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args)
+        /// <param name="metadataOptions">The Metadata Options.</param>
+        private static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, MetadataConfiguration metadataOptions)
         {
             // See if a different path came out of the resolver than what went in
             if (!fileSystem.AreEqual(args.Path, item.Path))
@@ -112,7 +117,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (childData is not null)
                 {
-                    SetDateCreated(item, childData);
+                    SetDateCreated(item, childData, metadataOptions);
                 }
                 else
                 {
@@ -120,19 +125,19 @@ namespace Emby.Server.Implementations.Library
 
                     if (fileData.Exists)
                     {
-                        SetDateCreated(item, fileData);
+                        SetDateCreated(item, fileData, metadataOptions);
                     }
                 }
             }
             else
             {
-                SetDateCreated(item, args.FileInfo);
+                SetDateCreated(item, args.FileInfo, metadataOptions);
             }
         }
 
-        private static void SetDateCreated(BaseItem item, FileSystemMetadata? info)
+        private static void SetDateCreated(BaseItem item, FileSystemMetadata? info, MetadataConfiguration metadataOptions)
         {
-            var config = BaseItem.ConfigurationManager.GetMetadataConfiguration();
+            var config = metadataOptions;
 
             if (config.UseFileCreationTimeForDateAdded)
             {

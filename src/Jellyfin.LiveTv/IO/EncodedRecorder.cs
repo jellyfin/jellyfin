@@ -16,12 +16,13 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.IO
 {
@@ -31,7 +32,7 @@ namespace Jellyfin.LiveTv.IO
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IOptions<EncodingOptions> _encodingOptions;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
         private FileStream _logFileStream;
@@ -43,12 +44,12 @@ namespace Jellyfin.LiveTv.IO
             ILogger logger,
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
-            IServerConfigurationManager serverConfigurationManager)
+            IOptions<EncodingOptions> encodingOptions)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
-            _serverConfigurationManager = serverConfigurationManager;
+            _encodingOptions = encodingOptions;
         }
 
         private static bool CopySubtitles => false;
@@ -183,7 +184,7 @@ namespace Jellyfin.LiveTv.IO
 
             var outputParam = string.Empty;
 
-            var threads = EncodingHelper.GetNumberOfThreads(null, _serverConfigurationManager.GetEncodingOptions(), null);
+            var threads = EncodingHelper.GetNumberOfThreads(null, _encodingOptions.Value, null);
             var commandLineArgs = string.Format(
                 CultureInfo.InvariantCulture,
                 "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",

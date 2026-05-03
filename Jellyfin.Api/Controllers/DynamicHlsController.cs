@@ -16,7 +16,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
@@ -30,6 +29,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -52,7 +52,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptionsMonitor;
+    private readonly IApplicationPaths _appPaths;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
     private readonly ITranscodeManager _transcodeManager;
@@ -60,7 +61,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly EncodingHelper _encodingHelper;
     private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
-    private readonly EncodingOptions _encodingOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -68,7 +68,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
@@ -80,7 +81,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         ILibraryManager libraryManager,
         IUserManager userManager,
         IMediaSourceManager mediaSourceManager,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
+        IApplicationPaths appPaths,
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
         ITranscodeManager transcodeManager,
@@ -92,7 +94,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         _libraryManager = libraryManager;
         _userManager = userManager;
         _mediaSourceManager = mediaSourceManager;
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptionsMonitor = encodingOptions;
+        _appPaths = appPaths;
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
         _transcodeManager = transcodeManager;
@@ -100,8 +103,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         _dynamicHlsHelper = dynamicHlsHelper;
         _encodingHelper = encodingHelper;
         _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
-
-        _encodingOptions = serverConfigurationManager.GetEncodingOptions();
     }
 
     /// <summary>
@@ -287,7 +288,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaSourceManager,
                 _userManager,
                 _libraryManager,
-                _serverConfigurationManager,
+                _encodingOptionsMonitor,
+                _appPaths,
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
@@ -1393,7 +1395,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaSourceManager,
                 _userManager,
                 _libraryManager,
-                _serverConfigurationManager,
+                _encodingOptionsMonitor,
+                _appPaths,
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
@@ -1442,7 +1445,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _mediaSourceManager,
                 _userManager,
                 _libraryManager,
-                _serverConfigurationManager,
+                _encodingOptionsMonitor,
+                _appPaths,
                 _mediaEncoder,
                 _encodingHelper,
                 _transcodeManager,
@@ -1573,8 +1577,9 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber)
     {
-        var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
-        var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
+        var encodingOptions = _encodingOptionsMonitor.Value;
+        var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
+        var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
 
         var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
@@ -1586,7 +1591,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentFormat = string.Empty;
         var segmentContainer = outputExtension.TrimStart('.');
-        var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
+        var inputModifier = _encodingHelper.GetInputModifier(state, encodingOptions, segmentContainer);
         var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1619,8 +1624,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat = "mpegts";
         }
 
-        var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
-            ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+        var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
+            ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
             : "128";
 
         var baseUrlParam = string.Empty;
@@ -1636,7 +1641,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             CultureInfo.InvariantCulture,
             "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
             inputModifier,
-            _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
+            _encodingHelper.GetInputArgument(state, encodingOptions, segmentContainer),
             threads,
             mapArgs,
             GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
@@ -1663,6 +1668,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return string.Empty;
         }
 
+        var encodingOptions = _encodingOptionsMonitor.Value;
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
         var bitStreamArgs = _encodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
@@ -1698,7 +1704,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
             {
                 var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value, audioChannels ?? 2);
-                if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
+                if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
                 {
                     audioTranscodeParams += vbrParam;
                 }
@@ -1723,7 +1729,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (EncodingHelper.IsCopyCodec(audioCodec))
         {
-            var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+            var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
             var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
             return copyArgs;
@@ -1733,7 +1739,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var channels = state.OutputAudioChannels;
 
-        var useDownMixAlgorithm = DownMixAlgorithmsHelper.AlgorithmFilterStrings.ContainsKey((_encodingOptions.DownMixStereoAlgorithm, DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream)));
+        var useDownMixAlgorithm = DownMixAlgorithmsHelper.AlgorithmFilterStrings.ContainsKey((encodingOptions.DownMixStereoAlgorithm, DownMixAlgorithmsHelper.InferChannelLayout(state.AudioStream)));
 
         if (channels.HasValue
             && (channels.Value != 2
@@ -1746,7 +1752,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
         {
             var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value, channels ?? 2);
-            if (_encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
+            if (encodingOptions.EnableAudioVbr && state.EnableAudioVbrEncoding && vbrParam is not null)
             {
                 args += vbrParam;
             }
@@ -1767,7 +1773,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             args += " -ar 48000";
         }
 
-        args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
+        args += _encodingHelper.GetAudioFilterParam(state, encodingOptions);
 
         return args;
     }
@@ -1792,7 +1798,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             return string.Empty;
         }
 
-        var codec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+        var encodingOptions = _encodingOptionsMonitor.Value;
+        var codec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
 
         var args = "-codec:v:0 " + codec;
 
@@ -1852,7 +1859,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
         else
         {
-            args += _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, isEventPlaylist ? DefaultEventEncoderPreset : DefaultVodEncoderPreset);
+            args += _encodingHelper.GetVideoQualityParam(state, codec, encodingOptions, isEventPlaylist ? DefaultEventEncoderPreset : DefaultVodEncoderPreset);
 
             // Set the key frame params for video encoding to match the hls segment time.
             args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, isEventPlaylist, startNumber);
@@ -1865,7 +1872,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
 
             // video processing filters.
-            var videoProcessParam = _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
+            var videoProcessParam = _encodingHelper.GetVideoProcessingFilterParam(state, encodingOptions, codec);
 
             var negativeMapArgs = _encodingHelper.GetNegativeMapArgsByFilters(state, videoProcessParam);
 
