@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.ServerSetupApp;
@@ -95,6 +96,15 @@ namespace Jellyfin.Server.Integration.Tests
                     builder
                         .SetBasePath(appPaths.ConfigurationDirectoryPath)
                         .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
+                        .AddJsonFile("logging.default.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile("logging.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.SystemJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.EncodingJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.NetworkJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.BrandingJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.DatabaseJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.LiveTvJsonFile, optional: true, reloadOnChange: true)
+                        .AddJsonFile(JellyfinConfigurationConstants.XbmcMetadataJsonFile, optional: true, reloadOnChange: true)
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
                 })
