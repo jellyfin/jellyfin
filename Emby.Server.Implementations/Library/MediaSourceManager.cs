@@ -23,6 +23,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -453,7 +454,6 @@ namespace Emby.Server.Implementations.Library
 
         public void SetDefaultAudioAndSubtitleStreamIndices(BaseItem item, MediaSourceInfo source, User user)
         {
-            // Item would only be null if the app didn't supply ItemId as part of the live stream open request
             var mediaType = item?.MediaType ?? MediaType.Video;
 
             if (mediaType == MediaType.Video)
@@ -461,6 +461,15 @@ namespace Emby.Server.Implementations.Library
                 var userData = item is null ? null : _userDataManager.GetUserData(user, item);
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
+
+                if (allowRememberingSelection
+                    && userData is not null
+                    && !userData.AudioStreamIndex.HasValue
+                    && !userData.SubtitleStreamIndex.HasValue
+                    && item is Episode episode)
+                {
+                    userData = GetPreviousEpisodeUserData(episode, user) ?? userData;
+                }
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
@@ -474,6 +483,68 @@ namespace Emby.Server.Implementations.Library
                     source.DefaultAudioStreamIndex = audio.Index;
                 }
             }
+        }
+
+        /// <summary>
+        /// Finds the most recently watched episode in the same series and returns its UserData,
+        /// allowing audio/subtitle track selections to carry over to a new episode.
+        /// </summary>
+        private UserItemData GetPreviousEpisodeUserData(Episode episode, User user)
+        {
+            var seasonNumber = episode.ParentIndexNumber;
+            var episodeNumber = episode.IndexNumber;
+            var seriesId = episode.SeriesId;
+
+            if (seriesId.IsEmpty() || !seasonNumber.HasValue || !episodeNumber.HasValue)
+            {
+                return null;
+            }
+
+            // Look for the immediately preceding episode (same season, previous number)
+            var previousEpisodeNumber = episodeNumber.Value - 1;
+            BaseItem previousEpisode = null;
+
+            if (previousEpisodeNumber >= 1)
+            {
+                var candidates = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.Episode],
+                    AncestorIds = [seriesId],
+                    ParentIndexNumber = seasonNumber.Value,
+                    IndexNumber = previousEpisodeNumber,
+                    Limit = 1
+                });
+
+                previousEpisode = candidates.FirstOrDefault();
+            }
+
+            // If we're at episode 1, try the last episode of the previous season
+            if (previousEpisode is null && previousEpisodeNumber < 1 && seasonNumber.Value > 1)
+            {
+                var candidates = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.Episode],
+                    AncestorIds = [seriesId],
+                    ParentIndexNumber = seasonNumber.Value - 1,
+                    OrderBy = [(ItemSortBy.IndexNumber, SortOrder.Descending)],
+                    Limit = 1
+                });
+
+                previousEpisode = candidates.FirstOrDefault();
+            }
+
+            if (previousEpisode is null)
+            {
+                return null;
+            }
+
+            var prevUserData = _userDataManager.GetUserData(user, previousEpisode);
+            if (prevUserData?.AudioStreamIndex.HasValue == true || prevUserData?.SubtitleStreamIndex.HasValue == true)
+            {
+                return prevUserData;
+            }
+
+            return null;
         }
 
         private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
