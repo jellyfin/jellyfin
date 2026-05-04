@@ -13,6 +13,7 @@ using Jellyfin.Server.Implementations.StorageHelpers;
 using Jellyfin.Server.Implementations.SystemBackupService;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.SystemBackupService;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -27,6 +28,7 @@ namespace Jellyfin.Server.Implementations.FullSystemBackup;
 public class BackupService : IBackupService
 {
     private const string ManifestEntryName = "manifest.json";
+    private const decimal StorageHeadroomMultiplier = 1.2m;
     private readonly ILogger<BackupService> _logger;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _applicationHost;
@@ -88,8 +90,6 @@ public class BackupService : IBackupService
             throw new FileNotFoundException($"Requested backup file '{archivePath}' does not exist.");
         }
 
-        StorageHelper.TestCommonPathsForStorageCapacity(_applicationPaths, _logger);
-
         var fileStream = File.OpenRead(archivePath);
         await using (fileStream.ConfigureAwait(false))
         {
@@ -117,6 +117,8 @@ public class BackupService : IBackupService
             {
                 throw new NotSupportedException($"The loaded archive '{archivePath}' is made for a newer version of Jellyfin ({manifest.ServerVersion}) and cannot be loaded in this version.");
             }
+
+            await ValidateRestoreStorageCapacityAsync(zipArchive, manifest).ConfigureAwait(false);
 
             void CopyDirectory(string source, string target, string[]? exclude = null)
             {
@@ -283,13 +285,11 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(backupFolder);
         }
 
-        var backupStorageSpace = StorageHelper.GetFreeSpaceOf(_applicationPaths.BackupPath);
-
-        const long FiveGigabyte = 5_368_709_115;
-        if (backupStorageSpace.FreeSpace < FiveGigabyte)
-        {
-            throw new InvalidOperationException($"The backup directory '{backupStorageSpace.Path}' does not have at least '{StorageHelper.HumanizeStorageSize(FiveGigabyte)}' free space. Cannot create backup.");
-        }
+        var estimatedBackupSize = await EstimateBackupRequirementAsync(backupOptions).ConfigureAwait(false);
+        EnsureStorageCapacity(
+            path: _applicationPaths.BackupPath,
+            requiredBytes: estimatedBackupSize,
+            operationName: "backup");
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
 
@@ -574,4 +574,262 @@ public class BackupService : IBackupService
     /// <returns>The normalized path. </returns>
     private static string NormalizePathSeparator(string path)
         => path.Replace('\\', '/');
+
+    private async Task<long> EstimateBackupRequirementAsync(BackupOptionsDto backupOptions)
+    {
+        var requirementBytes = EstimateBackupRequirement(_applicationPaths, backupOptions);
+
+        if (backupOptions.Database)
+        {
+            requirementBytes += await EstimateDatabaseBackupSizeAsync().ConfigureAwait(false);
+        }
+
+        return AddHeadroom(requirementBytes);
+    }
+
+    internal static long EstimateBackupRequirement(IServerApplicationPaths applicationPaths, BackupOptionsDto backupOptions)
+    {
+        var requirementBytes = 0L;
+
+        requirementBytes += EnumerateFilesSize(applicationPaths.ConfigurationDirectoryPath, "*.xml", SearchOption.TopDirectoryOnly);
+        requirementBytes += EnumerateFilesSize(applicationPaths.ConfigurationDirectoryPath, "*.json", SearchOption.TopDirectoryOnly);
+        requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.ConfigurationDirectoryPath, "users"));
+        requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"));
+        requirementBytes += EnumerateFilesSize(applicationPaths.RootFolderPath);
+        requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.DataPath, "collections"));
+        requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.DataPath, "playlists"));
+        requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.DataPath, "ScheduledTasks"));
+
+        if (backupOptions.Subtitles)
+        {
+            requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.DataPath, "subtitles"));
+        }
+
+        if (backupOptions.Trickplay)
+        {
+            requirementBytes += EnumerateFilesSize(Path.Combine(applicationPaths.DataPath, "trickplay"));
+        }
+
+        if (backupOptions.Metadata)
+        {
+            requirementBytes += EnumerateFilesSize(applicationPaths.InternalMetadataPath);
+
+            if (!string.Equals(
+                    Path.GetFullPath(applicationPaths.DefaultInternalMetadataPath),
+                    Path.GetFullPath(applicationPaths.InternalMetadataPath),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                requirementBytes += EnumerateFilesSize(applicationPaths.DefaultInternalMetadataPath);
+            }
+        }
+
+        // Include a small fixed cost for manifest and zip metadata.
+        requirementBytes += 128 * 1024;
+
+        return requirementBytes;
+    }
+
+    private async Task<long> EstimateDatabaseBackupSizeAsync()
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var dbConnection = dbContext.Database.GetDbConnection();
+            string dataSource;
+            try
+            {
+                if (dbConnection is not SqliteConnection)
+                {
+                    _logger.LogWarning("Could not determine a local database file path for backup size estimation for non sqlite dbs.");
+                    return 0;
+                }
+
+                dataSource = dbConnection.DataSource;
+                if (string.IsNullOrEmpty(dataSource) || !File.Exists(dataSource))
+                {
+                    _logger.LogWarning("Could not determine a local database file path for backup size estimation.");
+                    return 0;
+                }
+            }
+            finally
+            {
+                await dbConnection.DisposeAsync().ConfigureAwait(false);
+            }
+
+            var estimate = new FileInfo(dataSource).Length;
+            var walPath = dataSource + "-wal";
+            var shmPath = dataSource + "-shm";
+
+            if (File.Exists(walPath))
+            {
+                estimate += new FileInfo(walPath).Length;
+            }
+
+            if (File.Exists(shmPath))
+            {
+                estimate += new FileInfo(shmPath).Length;
+            }
+
+            // JSON-serialized table exports can be larger than the on-disk sqlite layout.
+            return estimate * 3;
+        }
+    }
+
+    private async Task ValidateRestoreStorageCapacityAsync(ZipArchive zipArchive, BackupManifest manifest)
+    {
+        var dbStoragePath = manifest.Options.Database
+            ? await TryGetLocalDatabasePathAsync().ConfigureAwait(false)
+            : null;
+
+        if (manifest.Options.Database && string.IsNullOrEmpty(dbStoragePath) && SumArchiveEntrySizes(zipArchive, "Database/") > 0)
+        {
+            _logger.LogWarning("Could not determine a local database path. Skipping free space check for database restore requirement.");
+        }
+
+        var requirementsByPath = EstimateRestoreRequirements(zipArchive, _applicationPaths, manifest.Options.Database, dbStoragePath);
+
+        var requirementsByDevice = new Dictionary<string, (long Required, string Path, long FreeSpace)>();
+        foreach (var item in requirementsByPath.Where(i => i.Value > 0))
+        {
+            var storage = StorageHelper.GetFreeSpaceOf(item.Key);
+            var deviceKey = string.IsNullOrEmpty(storage.DeviceId) ? storage.ResolvedPath : storage.DeviceId;
+
+            if (!requirementsByDevice.TryGetValue(deviceKey, out var existing))
+            {
+                requirementsByDevice[deviceKey] = (item.Value, item.Key, storage.FreeSpace);
+                continue;
+            }
+
+            requirementsByDevice[deviceKey] = (existing.Required + item.Value, existing.Path, existing.FreeSpace);
+        }
+
+        foreach (var item in requirementsByDevice.Values)
+        {
+            EnsureStorageCapacity(item.Path, AddHeadroom(item.Required), "restore", item.FreeSpace);
+        }
+    }
+
+    internal static Dictionary<string, long> EstimateRestoreRequirements(
+        ZipArchive zipArchive,
+        IServerApplicationPaths applicationPaths,
+        bool includeDatabase,
+        string? dbStoragePath)
+    {
+        var requirementsByPath = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase)
+        {
+            { applicationPaths.ConfigurationDirectoryPath, SumArchiveEntrySizes(zipArchive, "Config/") },
+            { applicationPaths.RootFolderPath, SumArchiveEntrySizes(zipArchive, "Root/") },
+            {
+                applicationPaths.DataPath,
+                SumArchiveEntrySizes(zipArchive, "Data/", ["Data/metadata/", "Data/metadata-default/"])
+            },
+            { applicationPaths.InternalMetadataPath, SumArchiveEntrySizes(zipArchive, "Data/metadata/") },
+            { applicationPaths.DefaultInternalMetadataPath, SumArchiveEntrySizes(zipArchive, "Data/metadata-default/") }
+        };
+
+        if (includeDatabase && !string.IsNullOrEmpty(dbStoragePath))
+        {
+            var dbRequirement = SumArchiveEntrySizes(zipArchive, "Database/");
+            if (dbRequirement > 0)
+            {
+                requirementsByPath[dbStoragePath] = requirementsByPath.GetValueOrDefault(dbStoragePath, 0) + dbRequirement;
+            }
+        }
+
+        return requirementsByPath;
+    }
+
+    private async Task<string?> TryGetLocalDatabasePathAsync()
+    {
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var dbConnection = dbContext.Database.GetDbConnection();
+            string dataSource;
+            try
+            {
+                if (dbConnection is not SqliteConnection)
+                {
+                    _logger.LogWarning("Could not determine a local database file path for backup size estimation for non sqlite dbs.");
+                    return null;
+                }
+
+                dataSource = dbConnection.DataSource;
+                if (string.IsNullOrEmpty(dataSource) || !File.Exists(dataSource))
+                {
+                    _logger.LogWarning("Could not determine a local database file path for backup size estimation.");
+                    return null;
+                }
+            }
+            finally
+            {
+                await dbConnection.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (string.IsNullOrEmpty(dataSource))
+            {
+                return null;
+            }
+
+            return File.Exists(dataSource)
+                ? Path.GetDirectoryName(dataSource)
+                : null;
+        }
+    }
+
+    private void EnsureStorageCapacity(string path, long requiredBytes, string operationName, long? freeSpace = null)
+    {
+        if (requiredBytes <= 0)
+        {
+            return;
+        }
+
+        var storage = StorageHelper.GetFreeSpaceOf(path);
+        var available = freeSpace ?? storage.FreeSpace;
+        if (available < 0)
+        {
+            _logger.LogWarning("Could not determine free space for path {Path}. Skipping storage check for {Operation}.", path, operationName);
+            return;
+        }
+
+        if (available < requiredBytes)
+        {
+            throw new InvalidOperationException($"The path '{path}' has insufficient free space for {operationName}. Available: {StorageHelper.HumanizeStorageSize(available)}, Required: {StorageHelper.HumanizeStorageSize(requiredBytes)}.");
+        }
+
+        _logger.LogInformation(
+            "Storage check for {Operation} on {Path} succeeded. Available: {Available}, Required (incl. headroom): {Required}.",
+            operationName,
+            path,
+            StorageHelper.HumanizeStorageSize(available),
+            StorageHelper.HumanizeStorageSize(requiredBytes));
+    }
+
+    internal static long AddHeadroom(long size)
+        => (long)Math.Ceiling(size * StorageHeadroomMultiplier);
+
+    internal static long EnumerateFilesSize(string source, string filter = "*", SearchOption searchOption = SearchOption.AllDirectories)
+    {
+        if (!Directory.Exists(source))
+        {
+            return 0;
+        }
+
+        // this can be potentially a bit of an annoying operation for large scale backups. If an issue revisit.
+        return Directory.EnumerateFiles(source, filter, searchOption)
+            .Sum(file => new FileInfo(file).Length);
+    }
+
+    internal static long SumArchiveEntrySizes(ZipArchive zipArchive, string sourcePrefix, string[]? excludedPrefixes = null)
+    {
+        var normalizedPrefix = NormalizePathSeparator(sourcePrefix).TrimEnd('/') + '/';
+
+        return zipArchive.Entries
+            .Where(entry =>
+                !Path.EndsInDirectorySeparator(entry.FullName)
+                && NormalizePathSeparator(entry.FullName).StartsWith(normalizedPrefix, StringComparison.Ordinal)
+                && (excludedPrefixes is null
+                    || !excludedPrefixes.Any(prefix => NormalizePathSeparator(entry.FullName).StartsWith(NormalizePathSeparator(prefix), StringComparison.Ordinal))))
+            .Sum(entry => entry.Length);
+    }
 }
