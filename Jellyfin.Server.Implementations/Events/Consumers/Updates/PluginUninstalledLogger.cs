@@ -1,8 +1,3 @@
-using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using Jellyfin.Database.Implementations.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
@@ -13,33 +8,21 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
     /// <summary>
     /// Creates an entry in the activity log when a plugin is uninstalled.
     /// </summary>
-    public class PluginUninstalledLogger : IEventConsumer<PluginUninstalledEventArgs>
+    public class PluginUninstalledLogger : PluginActivityLogConsumer<PluginUninstalledEventArgs>
     {
-        private readonly ILocalizationManager _localizationManager;
-        private readonly IActivityManager _activityManager;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginUninstalledLogger"/> class.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="activityManager">The activity manager.</param>
         public PluginUninstalledLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
+            : base(
+                localizationManager,
+                activityManager,
+                "PluginUninstalledWithName",
+                NotificationType.PluginUninstalled,
+                eventArgs => eventArgs.Argument.Name)
         {
-            _localizationManager = localizationManager;
-            _activityManager = activityManager;
-        }
-
-        /// <inheritdoc />
-        public async Task OnEvent(PluginUninstalledEventArgs eventArgs)
-        {
-            await _activityManager.CreateAsync(new ActivityLog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localizationManager.GetLocalizedString("PluginUninstalledWithName"),
-                        eventArgs.Argument.Name),
-                    NotificationType.PluginUninstalled.ToString(),
-                    Guid.Empty))
-                .ConfigureAwait(false);
         }
     }
 }

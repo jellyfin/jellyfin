@@ -1,32 +1,25 @@
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Updates;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
     /// <summary>
     /// Notifies admin users when a plugin is installed.
     /// </summary>
-    public class PluginInstalledNotifier : IEventConsumer<PluginInstalledEventArgs>
+    public class PluginInstalledNotifier : PluginNotificationConsumer<PluginInstalledEventArgs, InstallationInfo>
     {
-        private readonly ISessionManager _sessionManager;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginInstalledNotifier"/> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         public PluginInstalledNotifier(ISessionManager sessionManager)
+            : base(sessionManager, SessionMessageType.PackageInstallationCompleted)
         {
-            _sessionManager = sessionManager;
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PluginInstalledEventArgs eventArgs)
-        {
-            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationCompleted, eventArgs.Argument, CancellationToken.None).ConfigureAwait(false);
-        }
+        protected override InstallationInfo GetMessageData(PluginInstalledEventArgs eventArgs) => eventArgs.Argument;
     }
 }
