@@ -4,6 +4,7 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Auth.ConditionalAuthorizationHandler;
 
@@ -13,14 +14,17 @@ namespace Jellyfin.Api.Auth.ConditionalAuthorizationHandler;
 public class ConditionalAuthorizationHandler : AuthorizationHandler<ConditionalAuthorizationRequirement>
 {
     private readonly IServerConfigurationManager _configurationManager;
+    private readonly ILogger<ConditionalAuthorizationHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConditionalAuthorizationHandler"/> class.
     /// </summary>
     /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public ConditionalAuthorizationHandler(IServerConfigurationManager configurationManager)
+    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+    public ConditionalAuthorizationHandler(IServerConfigurationManager configurationManager, ILogger<ConditionalAuthorizationHandler> logger)
     {
         _configurationManager = configurationManager;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -39,10 +43,12 @@ public class ConditionalAuthorizationHandler : AuthorizationHandler<ConditionalA
 
         if (conditionalAuthorization && requiresElevation && !context.User.IsInRole(UserRoles.Administrator))
         {
+            _logger.LogWarning("administrator access currently required for this route due to {PolicyName} setting", requirement.PolicyName);
             context.Fail();
         }
         else if (conditionalAuthorization && !requiresElevation && !context.User.Identity!.IsAuthenticated)
         {
+            _logger.LogWarning("authentication currently required for this route due to {PolicyName} setting", requirement.PolicyName);
             context.Fail();
         }
         else
