@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Database.Providers.Sqlite.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260503204858_AddOriginalLanguage")]
-    partial class AddOriginalLanguage
+    [Migration("20260504075755_AddPartialIndexForItemCounts")]
+    partial class AddPartialIndexForItemCounts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -267,9 +267,6 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.Property<string>("OfficialRating")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("OriginalLanguage")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("OriginalTitle")
                         .HasColumnType("TEXT");
 
@@ -387,6 +384,9 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                     b.HasIndex("TopParentId", "Id");
 
                     b.HasIndex("Type", "CleanName");
+
+                    b.HasIndex("TopParentId", "Type", "IsVirtualItem")
+                        .HasFilter("\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)");
 
                     b.HasIndex("Type", "TopParentId", "Id");
 
@@ -956,9 +956,6 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool?>("IsInterlaced")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsOriginal")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("KeyFrames")

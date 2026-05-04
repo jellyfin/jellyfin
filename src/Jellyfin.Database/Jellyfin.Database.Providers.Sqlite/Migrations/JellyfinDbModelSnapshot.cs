@@ -385,6 +385,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Type", "CleanName");
 
+                    b.HasIndex("TopParentId", "Type", "IsVirtualItem")
+                        .HasFilter("\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)");
+
                     b.HasIndex("Type", "TopParentId", "Id");
 
                     b.HasIndex("Type", "TopParentId", "PresentationUniqueKey");

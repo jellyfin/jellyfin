@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -485,16 +485,38 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return;
             }
 
+            // Batch-resolve all ItemIds to paths in a single query to avoid an N+1 round-trip per linked child
+            var idsToResolve = new HashSet<Guid>();
+            foreach (var link in linkedChildren)
+            {
+                if (link.ItemId.HasValue && !link.ItemId.Value.Equals(Guid.Empty))
+                {
+                    idsToResolve.Add(link.ItemId.Value);
+                }
+            }
+
+            Dictionary<Guid, string?>? pathById = null;
+            if (idsToResolve.Count > 0)
+            {
+                var batched = LibraryManager.GetItemList(new InternalItemsQuery
+                {
+                    ItemIds = [.. idsToResolve]
+                });
+                pathById = new Dictionary<Guid, string?>(batched.Count);
+                foreach (var batchedItem in batched)
+                {
+                    pathById[batchedItem.Id] = batchedItem.Path;
+                }
+            }
+
             await writer.WriteStartElementAsync(null, pluralNodeName, null).ConfigureAwait(false);
 
             foreach (var link in linkedChildren)
             {
-                // Resolve ItemId to get the item's path for XML portability
                 string? path = null;
-                if (link.ItemId.HasValue && !link.ItemId.Value.Equals(Guid.Empty))
+                if (pathById is not null && link.ItemId.HasValue && pathById.TryGetValue(link.ItemId.Value, out var resolvedPath))
                 {
-                    var linkedItem = LibraryManager.GetItemById(link.ItemId.Value);
-                    path = linkedItem?.Path;
+                    path = resolvedPath;
                 }
 
                 if (!string.IsNullOrWhiteSpace(path))

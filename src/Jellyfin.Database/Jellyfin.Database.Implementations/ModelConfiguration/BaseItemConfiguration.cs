@@ -73,6 +73,10 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasIndex(e => e.SeasonId);
         builder.HasIndex(e => e.SeriesId);
 
+        // Items/Counts: SELECT Type, COUNT(*) GROUP BY Type filtered by TopParentId.
+        builder.HasIndex(e => new { e.TopParentId, e.Type, e.IsVirtualItem })
+            .HasFilter("\"PrimaryVersionId\" IS NULL AND (\"OwnerId\" IS NULL OR \"ExtraType\" IS NOT NULL)");
+
         builder.HasData(new BaseItemEntity()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
