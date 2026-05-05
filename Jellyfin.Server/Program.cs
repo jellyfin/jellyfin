@@ -25,6 +25,7 @@ using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -190,7 +191,7 @@ namespace Jellyfin.Server
                  * This should really be a part of IApplicationPaths but this path is configured differently.
                  */
                 EncodingConfigurationExtensions.GetTranscodePath(
-                    _jellyfinHost.Services.GetRequiredService<IOptions<MediaBrowser.Model.Configuration.EncodingOptions>>().Value,
+                    _jellyfinHost.Services.GetRequiredService<IOptions<EncodingOptions>>().Value,
                     appPaths);
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
