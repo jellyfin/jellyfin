@@ -99,6 +99,7 @@ public class AudioHelper
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
+#pragma warning disable CS0618
         if (streamingRequest.Static && state.DirectStreamProvider is not null)
         {
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
@@ -111,6 +112,7 @@ public class AudioHelper
             // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
             return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
         }
+#pragma warning restore CS0618
 
         // Static remote stream
         if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)

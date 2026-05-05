@@ -43,8 +43,6 @@ namespace MediaBrowser.Model.Users
             AllowedTags = Array.Empty<string>();
             BlockUnratedItems = Array.Empty<UnratedItem>();
 
-            EnableUserPreferenceAccess = true;
-
             AccessSchedules = Array.Empty<AccessSchedule>();
 
             LoginAttemptsBeforeLockout = -1;
@@ -117,6 +115,7 @@ namespace MediaBrowser.Model.Users
 
         public string[] AllowedTags { get; set; }
 
+        [Obsolete("Deprecated Feature")]
         public bool EnableUserPreferenceAccess { get; set; }
 
         public AccessSchedule[] AccessSchedules { get; set; }

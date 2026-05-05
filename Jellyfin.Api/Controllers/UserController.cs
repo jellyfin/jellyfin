@@ -256,6 +256,7 @@ public class UserController : BaseJellyfinApiController
         }
     }
 
+#pragma warning disable CS0618
     /// <summary>
     /// Updates a user's password.
     /// </summary>
@@ -274,26 +275,29 @@ public class UserController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromBody, Required] UpdateUserPassword request)
     {
-        var requestUserId = userId ?? User.GetUserId();
-        var user = _userManager.GetUserById(requestUserId);
-        if (user is null)
+        var sessionUser = _userManager.GetUserById(User.GetUserId());
+        var user = _userManager.GetUserById(userId ?? User.GetUserId());
+        if (user == null || sessionUser == null)
         {
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
         }
 
         if (request.ResetPassword)
         {
+            // TODO: this flow is deprecated and very insecure so it should be removed as soon as possible
             await _userManager.ResetPassword(user).ConfigureAwait(false);
         }
         else
         {
-            if (!User.IsInRole(UserRoles.Administrator) || (userId.HasValue && User.GetUserId().Equals(userId.Value)))
+            if (request.CurrentPw != null && (!User.IsInRole(UserRoles.Administrator) || (userId.HasValue && User.GetUserId().Equals(userId.Value))))
             {
+                // TODO: delete this condition when CurrentPw parameter is removed
+                // SessionPassword has different behavior when changing the password of another user with administrator access
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
                     request.CurrentPw ?? string.Empty,
@@ -305,8 +309,21 @@ public class UserController : BaseJellyfinApiController
                     return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
                 }
             }
+            else if (!User.IsInRole(UserRoles.Administrator) || (User.IsInRole(UserRoles.Administrator) && user.Permissions.Any(u => u.Kind == PermissionKind.IsAdministrator)))
+            {
+                var success = await _userManager.AuthenticateUser(
+                    sessionUser.Username,
+                    request.SessionPassword ?? string.Empty,
+                    HttpContext.GetNormalizedRemoteIP().ToString(),
+                    false).ConfigureAwait(false);
 
-            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
+                if (success is null)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "Invalid password entered for current session.");
+                }
+            }
+
+            await _userManager.ChangePassword(user, request.NewPassword ?? request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
 
@@ -315,6 +332,7 @@ public class UserController : BaseJellyfinApiController
 
         return NoContent();
     }
+#pragma warning restore CS0618
 
     /// <summary>
     /// Updates a user's password.
@@ -362,7 +380,7 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
         }
@@ -477,7 +495,7 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (!RequestHelpers.AssertCanUpdateUser(User, user, true))
+        if (!RequestHelpers.AssertCanUpdateUser(User, user))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
         }

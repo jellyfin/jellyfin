@@ -41,7 +41,6 @@ namespace Jellyfin.Database.Implementations.Entities
             // Set default values
             Id = Guid.NewGuid();
             InvalidLoginAttemptCount = 0;
-            EnableUserPreferenceAccess = true;
             MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
             DisplayCollectionsView = false;
@@ -245,6 +244,7 @@ namespace Jellyfin.Database.Implementations.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
+        [Obsolete("Deprecated Feature")]
         public bool EnableUserPreferenceAccess { get; set; }
 
         /// <summary>
