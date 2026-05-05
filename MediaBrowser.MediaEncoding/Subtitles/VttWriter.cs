@@ -36,8 +36,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             foreach (var (tag, position) in _assTagToCuePosition)
             {
                 if (text.StartsWith(tag, StringComparison.Ordinal))
+                {
                     return position;
+                }
             }
+
             return "region:subtitle line:90%";
         }
 
@@ -60,6 +63,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         endTime = startTime.Add(TimeSpan.FromMilliseconds(1));
                     }
+
                     var text = trackEvent.Text;
                     // TODO: Not sure how to handle these
                     text = NewlineEscapeRegex().Replace(text, " ");
