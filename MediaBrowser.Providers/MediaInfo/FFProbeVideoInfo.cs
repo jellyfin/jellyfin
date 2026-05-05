@@ -616,7 +616,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             long dummyChapterDuration = TimeSpan.FromSeconds(_config.Value.DummyChapterDuration).Ticks;
-            if (runtime <= dummyChapterDuration)
+            if (runtime <= 0)
             {
                 return [];
             }
