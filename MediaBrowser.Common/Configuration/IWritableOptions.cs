@@ -8,7 +8,7 @@ namespace MediaBrowser.Common.Configuration;
 /// underlying JSON configuration file at runtime.
 /// </summary>
 /// <typeparam name="T">The options type.</typeparam>
-public interface IWritableOptions<T> : IOptions<T>
+public interface IWritableOptions<out T> : IOptions<T>
     where T : class, new()
 {
     /// <summary>

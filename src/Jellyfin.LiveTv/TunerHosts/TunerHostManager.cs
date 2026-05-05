@@ -105,8 +105,6 @@ public class TunerHostManager : ITunerHostManager
     /// <inheritdoc />
     public void DeleteTunerHost(string? id)
     {
-        var config = _config.Value;
-
         _config.Update(config =>
         {
             config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();

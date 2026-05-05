@@ -3756,7 +3756,6 @@ namespace Emby.Server.Implementations.Library
         public void CreateShortcut(string virtualFolderPath, MediaPathInfo pathInfo)
         {
             var path = pathInfo.Path;
-            var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
             var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 

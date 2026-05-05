@@ -36,6 +36,8 @@ public class NetworkManager : INetworkManager, IDisposable
 
     private readonly Lock _networkEventLock;
 
+    private readonly IDisposable? _configChangeRegistration;
+
     /// <summary>
     /// Holds the published server URLs and the IPs to use them on.
     /// </summary>
@@ -68,8 +70,6 @@ public class NetworkManager : INetworkManager, IDisposable
     /// True if this object is disposed.
     /// </summary>
     private bool _disposed;
-
-    private IDisposable? _configChangeRegistration;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NetworkManager"/> class.

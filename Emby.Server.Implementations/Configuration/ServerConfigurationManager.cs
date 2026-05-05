@@ -110,13 +110,6 @@ namespace Emby.Server.Implementations.Configuration
         public ServerConfiguration Configuration => (ServerConfiguration)CommonConfiguration;
 
         /// <inheritdoc />
-        public void SaveConfiguration()
-        {
-            SaveConfiguration("system", CommonConfiguration);
-            EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, _logger);
-        }
-
-        /// <inheritdoc />
         public void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             ArgumentNullException.ThrowIfNull(newConfiguration);
@@ -165,6 +158,13 @@ namespace Emby.Server.Implementations.Configuration
             }
 
             return GetConfigurationStore(key).ConfigurationType;
+        }
+
+        /// <inheritdoc />
+        public void SaveConfiguration()
+        {
+            SaveConfiguration("system", CommonConfiguration);
+            EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, _logger);
         }
 
         /// <inheritdoc />

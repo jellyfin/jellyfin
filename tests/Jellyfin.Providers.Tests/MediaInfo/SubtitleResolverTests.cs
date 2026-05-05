@@ -8,11 +8,13 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -29,7 +31,7 @@ public class SubtitleResolverTests
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
         BaseItem.ServerApplicationPaths = applicationPaths;
-        BaseItem.ServerConfigOptions = Microsoft.Extensions.Options.Options.Create(new MediaBrowser.Model.Configuration.ServerConfiguration());
+        BaseItem.ServerConfigOptions = Options.Create(new ServerConfiguration());
 
         // build resolver to test with
         var localizationManager = Mock.Of<ILocalizationManager>();
