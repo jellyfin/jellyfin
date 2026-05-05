@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.LiveTv.Guide;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
@@ -24,6 +25,7 @@ public class ListingsManager : IListingsManager
     private readonly IWritableOptions<LiveTvOptions> _config;
     private readonly ITaskManager _taskManager;
     private readonly ITunerHostManager _tunerHostManager;
+    private readonly IServerApplicationPaths _appPaths;
     private readonly IListingsProvider[] _listingsProviders;
 
     private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels = new(StringComparer.OrdinalIgnoreCase);
@@ -36,17 +38,20 @@ public class ListingsManager : IListingsManager
     /// <param name="taskManager">The <see cref="ITaskManager"/>.</param>
     /// <param name="tunerHostManager">The <see cref="ITunerHostManager"/>.</param>
     /// <param name="listingsProviders">The <see cref="IListingsProvider"/>.</param>
+    /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
     public ListingsManager(
         ILogger<ListingsManager> logger,
         IWritableOptions<LiveTvOptions> config,
         ITaskManager taskManager,
         ITunerHostManager tunerHostManager,
-        IEnumerable<IListingsProvider> listingsProviders)
+        IEnumerable<IListingsProvider> listingsProviders,
+        IServerApplicationPaths appPaths)
     {
         _logger = logger;
         _config = config;
         _taskManager = taskManager;
         _tunerHostManager = tunerHostManager;
+        _appPaths = appPaths;
         _listingsProviders = listingsProviders.ToArray();
     }
 
@@ -343,7 +348,7 @@ public class ListingsManager : IListingsManager
         }
 
         // Delete the cached XMLTV file so a fresh copy is downloaded
-        var cachePath = _config.CommonApplicationPaths?.CachePath;
+        var cachePath = _appPaths.CachePath;
         if (!string.IsNullOrEmpty(cachePath))
         {
             var safeId = providerGuid.ToString("N", CultureInfo.InvariantCulture);

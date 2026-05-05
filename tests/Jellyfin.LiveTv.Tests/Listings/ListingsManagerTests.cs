@@ -1,6 +1,7 @@
 using System;
 using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
@@ -18,6 +19,7 @@ public class ListingsManagerTests
     private readonly ILogger<ListingsManager> _logger;
     private readonly ITaskManager _taskManager;
     private readonly ITunerHostManager _tunerHostManager;
+    private readonly IServerApplicationPaths _appPaths;
 
     public ListingsManagerTests()
     {
@@ -31,6 +33,7 @@ public class ListingsManagerTests
         _taskManager = Mock.Of<ITaskManager>();
         _tunerHostManager = Mock.Of<ITunerHostManager>();
         _listingsProviders = new[] { Mock.Of<IListingsProvider>() };
+        _appPaths = Mock.Of<IServerApplicationPaths>();
     }
 
     [Fact]
@@ -38,7 +41,7 @@ public class ListingsManagerTests
     {
         // Arrange
         var id = "MockId";
-        var manager = new ListingsManager(_logger, _config, _taskManager, _tunerHostManager, _listingsProviders);
+        var manager = new ListingsManager(_logger, _config, _taskManager, _tunerHostManager, _listingsProviders, _appPaths);
         _options.ListingProviders = [new ListingsProviderInfo { Id = id }];
 
         // Act

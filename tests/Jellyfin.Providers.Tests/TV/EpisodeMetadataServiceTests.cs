@@ -5,11 +5,13 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.TV;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -92,7 +94,7 @@ public class EpisodeMetadataServiceTests
     {
         public TestEpisodeMetadataService()
             : base(
-                Mock.Of<IServerConfigurationManager>(),
+                Mock.Of<IOptions<MetadataConfiguration>>(),
                 NullLogger<EpisodeMetadataService>.Instance,
                 Mock.Of<IProviderManager>(),
                 Mock.Of<IFileSystem>(),

@@ -25,6 +25,7 @@ public class TunerHostManager : ITunerHostManager
     private readonly ILogger<TunerHostManager> _logger;
     private readonly IWritableOptions<LiveTvOptions> _config;
     private readonly ITaskManager _taskManager;
+    private readonly IApplicationPaths _appPaths;
     private readonly ITunerHost[] _tunerHosts;
 
     /// <summary>
@@ -34,15 +35,18 @@ public class TunerHostManager : ITunerHostManager
     /// <param name="config">The <see cref="IWritableOptions{LiveTvOptions}"/>.</param>
     /// <param name="taskManager">The <see cref="ITaskManager"/>.</param>
     /// <param name="tunerHosts">The <see cref="IEnumerable{T}"/>.</param>
+    /// <param name="appPaths">The Application paths.</param>
     public TunerHostManager(
         ILogger<TunerHostManager> logger,
         IWritableOptions<LiveTvOptions> config,
         ITaskManager taskManager,
-        IEnumerable<ITunerHost> tunerHosts)
+        IEnumerable<ITunerHost> tunerHosts,
+        IApplicationPaths appPaths)
     {
         _logger = logger;
         _config = config;
         _taskManager = taskManager;
+        _appPaths = appPaths;
         _tunerHosts = tunerHosts.Where(t => t.IsSupported).ToArray();
     }
 
@@ -101,9 +105,12 @@ public class TunerHostManager : ITunerHostManager
     /// <inheritdoc />
     public void DeleteTunerHost(string? id)
     {
-        var config = _config.GetLiveTvConfiguration();
-        config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-        _config.SaveConfiguration("livetv", config);
+        var config = _config.Value;
+
+        _config.Update(config =>
+        {
+            config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+        });
 
         // Clean up the disk cache file for this tuner.
         // Tuner IDs are generated as Guid.NewGuid().ToString("N")
@@ -111,7 +118,7 @@ public class TunerHostManager : ITunerHostManager
         if (Guid.TryParseExact(id, "N", out var tunerGuid))
         {
             var safeId = tunerGuid.ToString("N", CultureInfo.InvariantCulture);
-            var channelCacheFile = Path.Combine(_config.CommonApplicationPaths.CachePath, safeId + "_channels");
+            var channelCacheFile = Path.Combine(_appPaths.CachePath, safeId + "_channels");
             try
             {
                 File.Delete(channelCacheFile);
