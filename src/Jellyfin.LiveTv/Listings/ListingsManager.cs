@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +73,8 @@ public class ListingsManager : IListingsManager
                 config.ListingProviders[index] = info;
             }
         });
+
+        InvalidateListingsProviderCache(info.Id);
         _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
 
         return info;
@@ -84,6 +87,12 @@ public class ListingsManager : IListingsManager
         {
             config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
         });
+
+        if (!string.IsNullOrEmpty(id))
+        {
+            InvalidateListingsProviderCache(id);
+        }
+
         _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
     }
 
@@ -319,6 +328,35 @@ public class ListingsManager : IListingsManager
         }
 
         return channelId;
+    }
+
+    private void InvalidateListingsProviderCache(string providerId)
+    {
+        // Clear in-memory EPG channel cache for this provider
+        _epgChannels.TryRemove(providerId, out _);
+
+        // Provider IDs are generated as Guid.NewGuid().ToString("N")
+        // reject anything else so we never use untrusted input in a path or log entry.
+        if (!Guid.TryParseExact(providerId, "N", out var providerGuid))
+        {
+            return;
+        }
+
+        // Delete the cached XMLTV file so a fresh copy is downloaded
+        var cachePath = _config.CommonApplicationPaths?.CachePath;
+        if (!string.IsNullOrEmpty(cachePath))
+        {
+            var safeId = providerGuid.ToString("N", CultureInfo.InvariantCulture);
+            var xmltvCacheFile = Path.Combine(cachePath, "xmltv", safeId + ".xml");
+            try
+            {
+                File.Delete(xmltvCacheFile);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Error deleting XMLTV cache file for provider {ProviderId}", safeId);
+            }
+        }
     }
 
     private async Task<EpgChannelData> GetEpgChannels(

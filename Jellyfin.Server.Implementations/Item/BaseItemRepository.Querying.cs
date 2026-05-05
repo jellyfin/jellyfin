@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
@@ -125,45 +124,53 @@ public sealed partial class BaseItemRepository
             return GetLatestTvShowItems(context, baseQuery, filter, limit);
         }
 
-        // Find the top N group keys ordered by most recent DateCreated.
-        // Movies group by PresentationUniqueKey (alternate versions like 4K/1080p share a key).
-        // Music groups by Album.
-        Expression<Func<BaseItemEntity, bool>> groupKeyFilter;
-        Expression<Func<BaseItemEntity, string?>> groupKeySelector;
-
         if (collectionType is CollectionType.movies)
         {
-            groupKeyFilter = e => e.PresentationUniqueKey != null;
-            groupKeySelector = e => e.PresentationUniqueKey;
+            // Group by PresentationUniqueKey, pick the newest item per group.
+            var topGroupItems = baseQuery
+                .Where(e => e.PresentationUniqueKey != null)
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => new
+                {
+                    MaxDate = g.Max(e => e.DateCreated),
+                    FirstId = g.OrderByDescending(e => e.DateCreated).ThenByDescending(e => e.Id).Select(e => e.Id).First()
+                })
+                .OrderByDescending(g => g.MaxDate);
+
+            var firstIdsQuery = filter.Limit.HasValue
+                ? topGroupItems.Take(filter.Limit.Value).Select(g => g.FirstId)
+                : topGroupItems.Select(g => g.FirstId);
+
+            return LoadLatestByIds(context, firstIdsQuery, filter);
         }
-        else
-        {
-            groupKeyFilter = e => e.Album != null;
-            groupKeySelector = e => e.Album;
-        }
 
-        // Group by GroupKey, pick the latest item per group (correlated subquery: ORDER BY DateCreated DESC, Id DESC LIMIT 1),
-        // order groups by group max date, take the top N — all in a single SQL statement.
-        // ThenByDescending(Id) is the tiebreaker for deterministic ordering when items share a DateCreated.
-        var topGroupItems = baseQuery
-            .Where(groupKeyFilter)
-            .GroupBy(groupKeySelector)
-            .Select(g => new
-            {
-                MaxDate = g.Max(e => e.DateCreated),
-                FirstId = g.OrderByDescending(e => e.DateCreated).ThenByDescending(e => e.Id).Select(e => e.Id).First()
-            })
-            .OrderByDescending(g => g.MaxDate);
+        // Albums whose Id is the parent of any track matching the user's filter.
+        var albumIdsWithMatchingTrack = context.AncestorIds
+            .Join(baseQuery, ai => ai.ItemId, t => t.Id, (ai, _) => ai.ParentItemId);
 
-        var firstIdsQuery = filter.Limit.HasValue
-            ? topGroupItems.Take(filter.Limit.Value).Select(g => g.FirstId)
-            : topGroupItems.Select(g => g.FirstId);
+        var musicAlbumTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicAlbum]!;
+        var topAlbumsQuery = context.BaseItems.AsNoTracking()
+            .Where(album => album.Type == musicAlbumTypeName)
+            .Where(album => albumIdsWithMatchingTrack.Contains(album.Id))
+            .OrderByDescending(album => album.DateCreated)
+            .ThenByDescending(album => album.Id);
 
-        var firstIds = firstIdsQuery.ToList();
+        var albumIdsQuery = filter.Limit.HasValue
+            ? topAlbumsQuery.Take(filter.Limit.Value).Select(a => a.Id)
+            : topAlbumsQuery.Select(a => a.Id);
 
-        // Single bound JSON / array parameter via WhereOneOrMany — keeps SQL small regardless of N.
-        var itemsQuery = context.BaseItems.AsNoTracking().WhereOneOrMany(firstIds, e => e.Id);
-        itemsQuery = ApplyNavigations(itemsQuery, filter);
+        return LoadLatestByIds(context, albumIdsQuery, filter);
+    }
+
+    // Keeping idsQuery deferred lets EF emit `WHERE Id IN (<subquery>)`.
+    private IReadOnlyList<BaseItemDto> LoadLatestByIds(
+        JellyfinDbContext context,
+        IQueryable<Guid> idsQuery,
+        InternalItemsQuery filter)
+    {
+        var itemsQuery = ApplyNavigations(
+            context.BaseItems.AsNoTracking().Where(e => idsQuery.Contains(e.Id)),
+            filter);
 
         return itemsQuery
             .OrderByDescending(e => e.DateCreated)

@@ -41,8 +41,9 @@ public class FFProbeVideoInfoTests
     [Theory]
     [InlineData(null, 0)]
     [InlineData(0L, 0)]
-    [InlineData(1L, 0)]
-    [InlineData(TimeSpan.TicksPerMinute * 5, 0)]
+    [InlineData(1L, 1)]
+    [InlineData(TimeSpan.TicksPerMinute * 3, 1)]
+    [InlineData(TimeSpan.TicksPerMinute * 5, 1)]
     [InlineData((TimeSpan.TicksPerMinute * 5) + 1, 1)]
     [InlineData(TimeSpan.TicksPerMinute * 50, 10)]
     public void CreateDummyChapters_ValidRuntime_CorrectChaptersCount(long? runtime, int chaptersCount)
@@ -53,5 +54,21 @@ public class FFProbeVideoInfoTests
                 });
 
         Assert.Equal(chaptersCount, chapters.Length);
+    }
+
+    [Theory]
+    [InlineData(1L)]
+    [InlineData(TimeSpan.TicksPerMinute * 3)]
+    [InlineData(TimeSpan.TicksPerMinute * 5)]
+    [InlineData((TimeSpan.TicksPerMinute * 5) + 1)]
+    [InlineData((TimeSpan.TicksPerMinute * 50) + 1)]
+    public void CreateDummyChapters_PositiveRuntime_NoChapterBeyondRuntime(long runtime)
+    {
+        var chapters = _fFProbeVideoInfo.CreateDummyChapters(new Video()
+                {
+                    RunTimeTicks = runtime
+                });
+
+        Assert.All(chapters, chapter => Assert.True(chapter.StartPositionTicks < runtime));
     }
 }

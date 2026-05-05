@@ -120,13 +120,13 @@ public class MediaInfoResolverTests
 
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
         // any path other than test target exists and provides an empty listing
-        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>()))
             .Returns(Array.Empty<string>());
 
         _subtitleResolver.GetExternalFiles(video.Object, directoryService.Object, false);
 
         directoryService.Verify(
-            ds => ds.GetFilePaths(It.IsRegex(pathNotFoundRegex), It.IsAny<bool>(), It.IsAny<bool>()),
+            ds => ds.GetFilePaths(It.IsRegex(pathNotFoundRegex), It.IsAny<bool>()),
             Times.Never);
     }
 
@@ -193,7 +193,7 @@ public class MediaInfoResolverTests
         };
 
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
-        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>()))
             .Returns(Array.Empty<string>());
 
         var mediaEncoder = Mock.Of<IMediaEncoder>(MockBehavior.Strict);
@@ -338,9 +338,9 @@ public class MediaInfoResolverTests
         }
 
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
-        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
             .Returns(files);
-        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
             .Returns(Array.Empty<string>());
 
         List<MediaStream> GenerateMediaStreams()
@@ -410,16 +410,16 @@ public class MediaInfoResolverTests
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
         if (useMetadataDirectory)
         {
-            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
                 .Returns(Array.Empty<string>());
-            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
                 .Returns(new[] { MetadataDirectoryPath + "/" + file });
         }
         else
         {
-            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(VideoDirectoryRegex), It.IsAny<bool>()))
                 .Returns(new[] { VideoDirectoryPath + "/" + file });
-            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>()))
                 .Returns(Array.Empty<string>());
         }
 

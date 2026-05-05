@@ -177,6 +177,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
 
+        /// <summary>
+        /// Clears the cached ignore rule directory lookups.
+        /// Call this before triggering a library scan or item refresh to ensure
+        /// any changes to .ignore files are picked up.
+        /// </summary>
+        void ClearIgnoreRuleCache();
+
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
@@ -558,7 +565,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Person&gt;.</returns>
-        IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query);
+        QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.

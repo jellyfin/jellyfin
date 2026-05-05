@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Providers
         public IReadOnlyList<string> GetFilePaths(string path)
             => GetFilePaths(path, false);
 
-        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
         {
             if (clearCache)
             {
@@ -118,7 +118,7 @@ namespace MediaBrowser.Controller.Providers
                 {
                     try
                     {
-                        return fileSystem.GetFilePaths(p).ToList();
+                        return fileSystem.GetFilePaths(p).OrderBy(x => x).ToList();
                     }
                     catch (DirectoryNotFoundException)
                     {
@@ -126,11 +126,6 @@ namespace MediaBrowser.Controller.Providers
                     }
                 },
                 _fileSystem);
-
-            if (sort)
-            {
-                filePaths.Sort();
-            }
 
             return filePaths;
         }

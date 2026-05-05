@@ -45,7 +45,7 @@
     "Genres": "विधाहरू",
     "Folders": "फोल्डरहरू",
     "Favorites": "मनपर्ने",
-    "FailedLoginAttemptWithUserName": "{0}को लग इन प्रयास असफल",
+    "FailedLoginAttemptWithUserName": "असफल लग इन प्रयास {0} देखि",
     "DeviceOnlineWithName": "{0}को साथ जडित",
     "DeviceOfflineWithName": "{0}बाट विच्छेदन भयो",
     "Collections": "संग्रह",

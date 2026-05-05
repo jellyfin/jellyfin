@@ -203,6 +203,39 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
+            // Batch-fetch MusicArtist lookups across all items to avoid N+1 queries.
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null;
+            var artistNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in accessibleItems)
+            {
+                if (item is IHasArtist hasArtist)
+                {
+                    foreach (var name in hasArtist.Artists)
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            artistNames.Add(name);
+                        }
+                    }
+                }
+
+                if (item is IHasAlbumArtist hasAlbumArtist)
+                {
+                    foreach (var name in hasAlbumArtist.AlbumArtists)
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            artistNames.Add(name);
+                        }
+                    }
+                }
+            }
+
+            if (artistNames.Count > 0)
+            {
+                artistsBatch = _libraryManager.GetArtists(artistNames.ToArray());
+            }
+
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
@@ -214,7 +247,8 @@ namespace Emby.Server.Implementations.Dto
                     userDataBatch?.GetValueOrDefault(item.Id),
                     allCollectionFolders,
                     childCountBatch,
-                    playedCountBatch);
+                    playedCountBatch,
+                    artistsBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -274,7 +308,8 @@ namespace Emby.Server.Implementations.Dto
             UserItemData? userData = null,
             List<Folder>? allCollectionFolders = null,
             Dictionary<Guid, int>? childCountBatch = null,
-            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -334,7 +369,7 @@ namespace Emby.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, options);
+            AttachBasicFields(dto, item, owner, options, artistsBatch);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -907,7 +942,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options)
+        /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1152,7 +1188,8 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+                var artistsLookup = artistsBatch
+                    ?? _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
                 dto.ArtistItems = hasArtist.Artists
                     .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -1186,7 +1223,8 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
-                var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+                var albumArtistsLookup = artistsBatch
+                    ?? _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
                     .Where(name => !string.IsNullOrWhiteSpace(name))

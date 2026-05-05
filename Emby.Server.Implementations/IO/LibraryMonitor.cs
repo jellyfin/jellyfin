@@ -22,6 +22,7 @@ namespace Emby.Server.Implementations.IO
         private readonly ILibraryManager _libraryManager;
         private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly IFileSystem _fileSystem;
+        private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
 
         /// <summary>
         /// The file system watchers.
@@ -48,17 +49,20 @@ namespace Emby.Server.Implementations.IO
         /// <param name="serverConfig">The server configuration.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="appLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
+        /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         public LibraryMonitor(
             ILogger<LibraryMonitor> logger,
             ILibraryManager libraryManager,
             IOptions<ServerConfiguration> serverConfig,
             IFileSystem fileSystem,
-            IHostApplicationLifetime appLifetime)
+            IHostApplicationLifetime appLifetime,
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _serverConfig = serverConfig;
             _fileSystem = fileSystem;
+            _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
 
             appLifetime.ApplicationStarted.Register(Start);
             appLifetime.ApplicationStopping.Register(Stop);
@@ -355,7 +359,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
-            if (DotIgnoreIgnoreRule.IsIgnored(fileInfo, null))
+            if (_dotIgnoreIgnoreRule.ShouldIgnore(fileInfo, null))
             {
                 return;
             }

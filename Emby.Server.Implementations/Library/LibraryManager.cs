@@ -30,11 +30,13 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -88,6 +90,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
+        private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -132,6 +135,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="directoryService">The directory service.</param>
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
+        /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -156,7 +160,8 @@ namespace Emby.Server.Implementations.Library
             NamingOptions namingOptions,
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -184,6 +189,7 @@ namespace Emby.Server.Implementations.Library
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
+            _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _serverConfigMonitor.OnChange(OnServerConfigurationChanged);
@@ -1313,6 +1319,7 @@ namespace Emby.Server.Implementations.Library
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             IsScanRunning = true;
+            ClearIgnoreRuleCache();
             LibraryMonitor.Stop();
 
             try
@@ -1321,6 +1328,7 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                ClearIgnoreRuleCache();
                 LibraryMonitor.Start();
                 IsScanRunning = false;
             }
@@ -1328,6 +1336,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
+            ClearIgnoreRuleCache();
             RootFolder.Children = null;
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
@@ -1370,6 +1379,14 @@ namespace Emby.Server.Implementations.Library
             {
                 _persistenceService.DeleteItem(toDelete.ToArray());
             }
+
+            ClearIgnoreRuleCache();
+        }
+
+        /// <inheritdoc />
+        public void ClearIgnoreRuleCache()
+        {
+            _dotIgnoreIgnoreRule.ClearDirectoryCache();
         }
 
         private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
@@ -1889,6 +1906,25 @@ namespace Emby.Server.Implementations.Library
                 if (query.TopParentIds.Length == 0)
                 {
                     query.TopParentIds = [Guid.NewGuid()];
+                }
+            }
+            else if (parents.Count == 1 && parents.First() is Folder folder
+                && (folder is Playlist || folder is BoxSet)
+                && folder.LinkedChildren.Length > 0)
+            {
+                // Playlists and BoxSets store their contents in LinkedChildren and never
+                // populate AncestorIds for those items, so a recursive AncestorIds query
+                // would return zero rows. Resolve to the linked child IDs up front and
+                // route through the existing indexed ItemIds filter.
+                query.ItemIds = folder.LinkedChildren
+                    .Where(lc => lc.ItemId.HasValue && !lc.ItemId.Value.IsEmpty())
+                    .Select(lc => lc.ItemId!.Value)
+                    .ToArray();
+
+                // Empty linked-children should still return empty rather than scanning everything.
+                if (query.ItemIds.Length == 0)
+                {
+                    query.ItemIds = [Guid.NewGuid()];
                 }
             }
             else
@@ -3171,7 +3207,7 @@ namespace Emby.Server.Implementations.Library
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             // Apply .ignore rules
-            var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
+            var filtered = fileSystemChildren.Where(c => !_dotIgnoreIgnoreRule.ShouldIgnore(c, owner)).ToList();
             var isFolder = owner.IsFolder || (owner is Video video && (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd));
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, isFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
@@ -3263,7 +3299,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeople(query);
+            return _peopleRepository.GetPeople(query).Items;
         }
 
         public IReadOnlyList<PersonInfo> GetPeople(BaseItem item)
@@ -3284,24 +3320,33 @@ namespace Emby.Server.Implementations.Library
             return [];
         }
 
-        public IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query)
+        public QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeopleNames(query)
-            .Select(i =>
+            var queryResult = _peopleRepository.GetPeople(query);
+            var baseItems = queryResult.Items.Select(i =>
+                {
+                    try
+                    {
+                        return GetPerson(i.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "error retrieving BaseItem for person: {0}", i.Name);
+                        return null;
+                    }
+                })
+                .Where(i => i is not null)
+                .Where(i => query.User is null || i!.IsVisible(query.User))
+                .OfType<BaseItem>()
+                .ToList()
+                .AsReadOnly();
+
+            return new QueryResult<BaseItem>
             {
-                try
-                {
-                    return GetPerson(i);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting person");
-                    return null;
-                }
-            })
-            .Where(i => i is not null)
-            .Where(i => query.User is null || i!.IsVisible(query.User))
-            .ToList()!; // null values are filtered out
+                StartIndex = queryResult.StartIndex,
+                TotalRecordCount = queryResult.TotalRecordCount,
+                Items = baseItems,
+            };
         }
 
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
