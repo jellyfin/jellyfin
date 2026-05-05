@@ -1593,17 +1593,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public List<BaseItem> GetLinkedChildren()
         {
-            var linkedChildren = LinkedChildren;
-            var list = new List<BaseItem>(linkedChildren.Length);
-
-            foreach (var i in linkedChildren)
+            var resolved = ResolveLinkedChildren(LinkedChildren);
+            var list = new List<BaseItem>(resolved.Count);
+            foreach (var (_, item) in resolved)
             {
-                var child = GetLinkedChild(i);
-
-                if (child is not null)
-                {
-                    list.Add(child);
-                }
+                list.Add(item);
             }
 
             return list;
@@ -1704,10 +1698,72 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public IReadOnlyList<Tuple<LinkedChild, BaseItem>> GetLinkedChildrenInfos()
         {
-            return LinkedChildren
-                .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
-                .Where(i => i.Item2 is not null)
+            return ResolveLinkedChildren(LinkedChildren)
+                .Select(t => new Tuple<LinkedChild, BaseItem>(t.Info, t.Item))
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Resolves a list of <see cref="LinkedChild"/> entries to their <see cref="BaseItem"/> targets,
+        /// batching the database lookup across all entries with a known ItemId.
+        /// Entries without a usable ItemId fall back to the per-entry <see cref="BaseItem.GetLinkedChild"/>
+        /// path (legacy path-based resolution).
+        /// </summary>
+        /// <param name="linkedChildren">Linked children to resolve.</param>
+        /// <returns>Each input entry paired with its resolved item; entries that fail to resolve are dropped.</returns>
+        private List<(LinkedChild Info, BaseItem Item)> ResolveLinkedChildren(IReadOnlyList<LinkedChild> linkedChildren)
+        {
+            var resolved = new List<(LinkedChild Info, BaseItem Item)>(linkedChildren.Count);
+            if (linkedChildren.Count == 0)
+            {
+                return resolved;
+            }
+
+            var idsToBatch = new HashSet<Guid>();
+            foreach (var info in linkedChildren)
+            {
+                if (info.ItemId.HasValue && !info.ItemId.Value.IsEmpty())
+                {
+                    idsToBatch.Add(info.ItemId.Value);
+                }
+            }
+
+            Dictionary<Guid, BaseItem> byId = null;
+            if (idsToBatch.Count > 0)
+            {
+                var batched = LibraryManager.GetItemList(new InternalItemsQuery
+                {
+                    ItemIds = [.. idsToBatch]
+                });
+                byId = new Dictionary<Guid, BaseItem>(batched.Count);
+                foreach (var item in batched)
+                {
+                    byId[item.Id] = item;
+                }
+            }
+
+            foreach (var info in linkedChildren)
+            {
+                BaseItem item = null;
+                if (byId is not null && info.ItemId.HasValue && byId.TryGetValue(info.ItemId.Value, out var batchedItem))
+                {
+                    item = batchedItem;
+                }
+                else
+                {
+                    // ItemId is missing/empty or the batched query couldn't return the item
+                    // (e.g. it has been removed). Fall back to per-entry resolution, which also
+                    // handles legacy path-based linked children.
+                    item = GetLinkedChild(info);
+                }
+
+                if (item is not null)
+                {
+                    resolved.Add((info, item));
+                }
+            }
+
+            return resolved;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
