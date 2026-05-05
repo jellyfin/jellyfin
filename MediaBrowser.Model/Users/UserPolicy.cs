@@ -50,6 +50,7 @@ namespace MediaBrowser.Model.Users
             LoginAttemptsBeforeLockout = -1;
 
             MaxActiveSessions = 0;
+            MaxActiveVideoStreams = 0;
             MaxParentalRating = null;
 
             EnableAllChannels = true;
@@ -174,6 +175,8 @@ namespace MediaBrowser.Model.Users
         public int LoginAttemptsBeforeLockout { get; set; }
 
         public int MaxActiveSessions { get; set; }
+
+        public int MaxActiveVideoStreams { get; set; }
 
         public bool EnablePublicSharing { get; set; }
 
