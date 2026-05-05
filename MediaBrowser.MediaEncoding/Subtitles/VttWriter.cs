@@ -16,7 +16,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
         private static partial Regex NewlineEscapeRegex();
 
-        [GeneratedRegex(@"^\{\\an\d\}", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^\{\\an\d\}")]
         private static partial Regex AssAlignTagRegex();
 
         private static readonly Dictionary<string, string> _assTagToCuePosition = new()
