@@ -2050,7 +2050,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var adminUserIds = _userManager.Users
+            var adminUserIds = _userManager.GetUsers()
                 .Where(i => i.HasPermission(PermissionKind.IsAdministrator))
                 .Select(i => i.Id)
                 .ToList();
