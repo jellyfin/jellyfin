@@ -690,15 +690,12 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}&VttTimestampMapMpegts={4}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
-                user.GetToken());
-            if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
-            {
-                url += "&SegmentContainer=" + Uri.EscapeDataString(state.Request.SegmentContainer);
-            }
+                user.GetToken(),
+                GetVttTimestampMapMpegts(state.Request.SegmentContainer).ToString(CultureInfo.InvariantCulture));
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,
@@ -711,6 +708,12 @@ public class DynamicHlsHelper
 
             builder.AppendLine(line);
         }
+    }
+
+    internal static long GetVttTimestampMapMpegts(string? segmentContainer)
+    {
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(segmentContainer);
+        return string.Equals(segmentExtension, ".mp4", StringComparison.OrdinalIgnoreCase) ? 0 : 900000;
     }
 
     /// <summary>
