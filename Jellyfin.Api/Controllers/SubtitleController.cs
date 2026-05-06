@@ -202,6 +202,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
     /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
     /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
+    /// <param name="segmentContainer">Optional. The HLS segment container.</param>
     /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
@@ -220,6 +221,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromQuery] long? endPositionTicks,
         [FromQuery] bool copyTimestamps = false,
         [FromQuery] bool addVttTimeMap = false,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer = null,
         [FromQuery] long startPositionTicks = 0)
     {
         // Set parameters to route value if not provided via query.
@@ -256,7 +258,7 @@ public class SubtitleController : BaseJellyfinApiController
 
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000", StringComparison.Ordinal);
+                text = text.Replace("WEBVTT", "WEBVTT\n" + GetVttTimestampMap(segmentContainer), StringComparison.Ordinal);
 
                 return File(Encoding.UTF8.GetBytes(text), MimeTypes.GetMimeType("file." + format));
             }
@@ -290,6 +292,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
     /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
     /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
+    /// <param name="segmentContainer">Optional. The HLS segment container.</param>
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
     [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/{routeStartPositionTicks}/Stream.{routeFormat}")]
@@ -308,7 +311,8 @@ public class SubtitleController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] string? format,
         [FromQuery] long? endPositionTicks,
         [FromQuery] bool copyTimestamps = false,
-        [FromQuery] bool addVttTimeMap = false)
+        [FromQuery] bool addVttTimeMap = false,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer = null)
     {
         return GetSubtitle(
             routeItemId,
@@ -322,6 +326,7 @@ public class SubtitleController : BaseJellyfinApiController
             endPositionTicks,
             copyTimestamps,
             addVttTimeMap,
+            segmentContainer,
             startPositionTicks ?? routeStartPositionTicks);
     }
 
@@ -332,6 +337,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="index">The subtitle stream index.</param>
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="segmentLength">The subtitle segment length.</param>
+    /// <param name="segmentContainer">Optional. The HLS segment container.</param>
     /// <response code="200">Subtitle playlist retrieved.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
@@ -345,7 +351,8 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index,
         [FromRoute, Required] string mediaSourceId,
-        [FromQuery, Required] int segmentLength)
+        [FromQuery, Required] int segmentLength,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer = null)
     {
         var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
         if (item is null)
@@ -399,6 +406,10 @@ public class SubtitleController : BaseJellyfinApiController
                 positionTicks.ToString(CultureInfo.InvariantCulture),
                 endPositionTicks.ToString(CultureInfo.InvariantCulture),
                 accessToken);
+            if (!string.IsNullOrWhiteSpace(segmentContainer))
+            {
+                url += "&SegmentContainer=" + Uri.EscapeDataString(segmentContainer);
+            }
 
             builder.AppendLine(url);
 
@@ -407,6 +418,19 @@ public class SubtitleController : BaseJellyfinApiController
 
         builder.AppendLine("#EXT-X-ENDLIST");
         return File(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+    }
+
+    internal static string GetVttTimestampMap(string? segmentContainer)
+    {
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(segmentContainer);
+        var mpegTimestamp = string.Equals(segmentExtension, ".mp4", StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : 900000;
+
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "X-TIMESTAMP-MAP=MPEGTS:{0},LOCAL:00:00:00.000",
+            mpegTimestamp);
     }
 
     /// <summary>

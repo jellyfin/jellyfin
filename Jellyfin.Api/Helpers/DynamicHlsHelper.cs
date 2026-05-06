@@ -695,6 +695,10 @@ public class DynamicHlsHelper
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
                 user.GetToken());
+            if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
+            {
+                url += "&SegmentContainer=" + Uri.EscapeDataString(state.Request.SegmentContainer);
+            }
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,
