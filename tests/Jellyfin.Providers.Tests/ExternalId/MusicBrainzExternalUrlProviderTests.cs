@@ -8,6 +8,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.MusicBrainz;
 using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace Jellyfin.Providers.Tests.ExternalId
             appHostMock.Setup(h => h.ApplicationVersionString).Returns("1.0.0");
             appHostMock.Setup(h => h.ApplicationUserAgentAddress).Returns("localhost");
 
-            _ = new Plugin(appPathsMock.Object, xmlSerializerMock.Object, appHostMock.Object);
+            _ = new Plugin(appPathsMock.Object, xmlSerializerMock.Object, appHostMock.Object, NullLogger<Plugin>.Instance);
         }
 
         public void Dispose()
