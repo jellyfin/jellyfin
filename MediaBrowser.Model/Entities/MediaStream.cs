@@ -728,40 +728,6 @@ namespace MediaBrowser.Model.Entities
                    || string.Equals(codec, "sup", StringComparison.OrdinalIgnoreCase);
         }
 
-        public bool SupportsSubtitleConversionTo(string toCodec)
-        {
-            if (!IsTextSubtitleStream)
-            {
-                return false;
-            }
-
-            var fromCodec = Codec;
-
-            // Can't convert from this
-            if (string.Equals(fromCodec, "ass", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (string.Equals(fromCodec, "ssa", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            // Can't convert to this
-            if (string.Equals(toCodec, "ass", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (string.Equals(toCodec, "ssa", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public (VideoRange VideoRange, VideoRangeType VideoRangeType) GetVideoColorRange()
         {
             if (Type != MediaStreamType.Video)

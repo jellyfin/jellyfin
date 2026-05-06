@@ -1501,7 +1501,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsSubtitleConversionTo(profile.Format))
+                    if (subtitleStream.IsTextSubtitleStream)
                     {
                         return profile;
                     }
@@ -1581,7 +1581,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream && subtitleStream.SupportsSubtitleConversionTo(profile.Format))
+                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream)
                     {
                         return profile;
                     }
