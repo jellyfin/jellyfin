@@ -221,7 +221,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (queryExcludePersonTypes.Count > 0)
         {
-            query = query.Where(e => !queryPersonTypes.Contains(e.PersonType));
+            query = query.Where(e => !queryExcludePersonTypes.Contains(e.PersonType));
         }
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
