@@ -26,6 +26,14 @@ jobs:
         with:
           dotnet-version: ${{ env.SDK_VERSION }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
       - name: Run DotNet CLI Tests
         run: >
           dotnet test Jellyfin.sln
