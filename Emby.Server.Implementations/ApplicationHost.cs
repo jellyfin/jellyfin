@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -121,6 +122,8 @@ namespace Emby.Server.Implementations
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
+
+        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Disposed via _disposableParts collection in Dispose(bool).")]
         private readonly PluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
