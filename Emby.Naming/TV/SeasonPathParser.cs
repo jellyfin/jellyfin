@@ -10,18 +10,23 @@ namespace Emby.Naming.TV
     /// </summary>
     public static partial class SeasonPathParser
     {
+        private const string SeasonKeywordPattern =
+            @"시즌|シーズン|сезон" +
+            @"|season|sæson|saison|staffel|series|stagione|säsong|seizoen|seasong" +
+            @"|sezon|sezona|sezóna|sezonul|série|séria|serie|seria|temporada|kausi";
+
         private static readonly Regex CleanNameRegex = new(@"[ ._\-\[\]]", RegexOptions.Compiled);
 
-        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul|érie|éria|erie|eria)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:" + SeasonKeywordPattern + @")\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPre();
 
-        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul|érie|éria|erie|eria)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^\s*(?:" + SeasonKeywordPattern + @")\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPost();
 
         [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]
         private static partial Regex SeasonPrefix();
 
-        [GeneratedRegex(@"(season|staffel|stagione|sæson|temporada|series|kausi|säsong|seizoen|seasong|sezon|sezona|sezóna|sezonul|시즌|シーズン|сезон)", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(SeasonKeywordPattern, RegexOptions.IgnoreCase)]
         private static partial Regex SeasonKeyword();
 
         /// <summary>
