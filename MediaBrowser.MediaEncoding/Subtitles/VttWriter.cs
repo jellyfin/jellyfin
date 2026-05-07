@@ -15,14 +15,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         private static readonly Dictionary<string, string> _assTagToCuePosition = new()
         {
-            ["{\\an1}"] = "position:20%",
-            ["{\\an3}"] = "position:80%",
-            ["{\\an4}"] = "position:20% line:50%",
-            ["{\\an5}"] = "line:50%",
-            ["{\\an6}"] = "position:80% line:50%",
-            ["{\\an7}"] = "position:20% line:10%",
-            ["{\\an8}"] = "line:10%",
-            ["{\\an9}"] = "position:80% line:10%",
+            ["{\\an1}"] = "position:20% line:90%,end",
+            ["{\\an3}"] = "position:80% line:90%,end",
+            ["{\\an4}"] = "position:20% line:50%,center",
+            ["{\\an5}"] = "line:50%,center",
+            ["{\\an6}"] = "position:80% line:50%,center",
+            ["{\\an7}"] = "position:20% line:10%,start",
+            ["{\\an8}"] = "line:10%,start",
+            ["{\\an9}"] = "position:80% line:10%,start",
         };
 
         [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
@@ -41,7 +41,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return "region:subtitle line:90%";
+            return "region:subtitle line:90%,end";
         }
 
         /// <inheritdoc />
@@ -77,3 +77,4 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
     }
 }
+
