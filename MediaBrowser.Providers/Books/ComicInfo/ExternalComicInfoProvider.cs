@@ -19,7 +19,6 @@ public class ExternalComicInfoProvider : IComicProvider
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<ExternalComicInfoProvider> _logger;
-    private readonly ComicInfoReader _utilities = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExternalComicInfoProvider"/> class.
@@ -43,7 +42,7 @@ public class ExternalComicInfoProvider : IComicProvider
             return new MetadataResult<Book> { HasMetadata = false };
         }
 
-        var book = _utilities.ReadComicBookMetadata(comicInfoXml);
+        var book = ComicInfoReader.ReadComicBookMetadata(comicInfoXml);
 
         if (book is null)
         {
@@ -52,8 +51,8 @@ public class ExternalComicInfoProvider : IComicProvider
 
         var metadataResult = new MetadataResult<Book> { Item = book, HasMetadata = true };
 
-        _utilities.ReadPeopleMetadata(comicInfoXml, metadataResult);
-        _utilities.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
+        ComicInfoReader.ReadPeopleMetadata(comicInfoXml, metadataResult);
+        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
 
         return metadataResult;
     }
@@ -84,7 +83,7 @@ public class ExternalComicInfoProvider : IComicProvider
         }
         catch (Exception e)
         {
-            _logger.LogInformation(e, "Could not load external xml from {Path}. This could mean there is no separate ComicInfo metadata file for this comic or the metadata is bundled within the comic.", path);
+            _logger.LogInformation(e, "Could not load external XML from {Path}. This could mean there is no separate ComicInfo metadata file for this comic or the metadata is bundled within the comic.", path);
             return null;
         }
     }

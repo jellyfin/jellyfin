@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Books.ComicInfo;
 /// <summary>
 /// ComicInfo reader.
 /// </summary>
-public class ComicInfoReader
+public static class ComicInfoReader
 {
     /// <summary>
     /// Filename to check for comic metadata either next to the comic file or inside the archive.
@@ -26,7 +26,7 @@ public class ComicInfoReader
     /// </summary>
     /// <param name="xml">The XDocument to read for comic metadata.</param>
     /// <returns>The resulting book.</returns>
-    public Book? ReadComicBookMetadata(XDocument xml)
+    public static Book? ReadComicBookMetadata(XDocument xml)
     {
         var book = new Book();
         var hasFoundMetadata = false;
@@ -67,7 +67,7 @@ public class ComicInfoReader
     /// </summary>
     /// <param name="xml">The XDocument to read for people metadata.</param>
     /// <param name="metadataResult">The metadata result to update.</param>
-    public void ReadPeopleMetadata(XDocument xml, MetadataResult<Book> metadataResult)
+    public static void ReadPeopleMetadata(XDocument xml, MetadataResult<Book> metadataResult)
     {
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Writer", authors =>
         {
@@ -106,7 +106,7 @@ public class ComicInfoReader
     /// <param name="xml">the XDocument to read for metadata.</param>
     /// <param name="xPath">The path to search.</param>
     /// <param name="commitResult">The action to take after parsing all metadata.</param>
-    public void ReadCultureInfoInto(XDocument xml, string xPath, Action<CultureInfo> commitResult)
+    public static void ReadCultureInfoInto(XDocument xml, string xPath, Action<CultureInfo> commitResult)
     {
         string? culture = null;
 
@@ -115,14 +115,8 @@ public class ComicInfoReader
             return;
         }
 
-        try
-        {
-            // culture cannot be null here as the method would have returned earlier
-            commitResult(new CultureInfo(culture!));
-        }
-        catch (CultureNotFoundException)
-        {
-        }
+        // culture cannot be null here as the method would have returned earlier
+        commitResult(new CultureInfo(culture!));
     }
 
     private static bool ReadStringInto(XDocument xml, string xPath, Action<string> commitResult)
@@ -194,7 +188,7 @@ public class ComicInfoReader
 
         try
         {
-            var dateTime = new DateTime(year, month, day);
+            var dateTime = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Unspecified);
 
             commitResult(dateTime);
             return true;

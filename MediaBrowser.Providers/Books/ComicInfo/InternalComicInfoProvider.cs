@@ -17,7 +17,6 @@ public class InternalComicInfoProvider : IComicProvider
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<InternalComicInfoProvider> _logger;
-    private readonly ComicInfoReader _utilities = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InternalComicInfoProvider"/> class.
@@ -41,7 +40,7 @@ public class InternalComicInfoProvider : IComicProvider
             return new MetadataResult<Book> { HasMetadata = false };
         }
 
-        var book = _utilities.ReadComicBookMetadata(comicInfoXml);
+        var book = ComicInfoReader.ReadComicBookMetadata(comicInfoXml);
 
         if (book is null)
         {
@@ -50,8 +49,8 @@ public class InternalComicInfoProvider : IComicProvider
 
         var metadataResult = new MetadataResult<Book> { Item = book, HasMetadata = true };
 
-        _utilities.ReadPeopleMetadata(comicInfoXml, metadataResult);
-        _utilities.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
+        ComicInfoReader.ReadPeopleMetadata(comicInfoXml, metadataResult);
+        ComicInfoReader.ReadCultureInfoInto(comicInfoXml, "ComicInfo/LanguageISO", cultureInfo => metadataResult.ResultLanguage = cultureInfo.ThreeLetterISOLanguageName);
 
         return metadataResult;
     }
