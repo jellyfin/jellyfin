@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Entities.Libraries;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Item;
@@ -30,7 +29,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider = dbProvider;
 
     /// <inheritdoc/>
-    public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter)
+    public QueryResult<PersonInfo> GetPeople(InternalPeopleQuery filter)
     {
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
@@ -45,7 +44,21 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
         else
         {
-            dbQuery = dbQuery.OrderBy(e => e.Name);
+            // The Peoples table has one row per (Name, PersonType), so the same person can
+            // appear multiple times (e.g. as Actor and GuestStar). Collapse to one row per
+            // name so /Persons doesn't return the same BaseItem id repeatedly.
+            var representativeIds = dbQuery
+                .GroupBy(e => e.Name)
+                .Select(g => g.Min(e => e.Id));
+            dbQuery = context.Peoples.AsNoTracking()
+                .Where(p => representativeIds.Contains(p.Id))
+                .OrderBy(e => e.Name);
+        }
+
+        var count = dbQuery.Count();
+        if (filter.StartIndex.HasValue && filter.StartIndex > 0)
+        {
+            dbQuery = dbQuery.Skip(filter.StartIndex.Value);
         }
 
         if (filter.Limit > 0)
@@ -53,7 +66,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             dbQuery = dbQuery.Take(filter.Limit);
         }
 
-        return dbQuery.AsEnumerable().Select(Map).ToArray();
+        return new QueryResult<PersonInfo>
+        {
+            StartIndex = filter.StartIndex ?? 0,
+            TotalRecordCount = count,
+            Items = dbQuery.AsEnumerable().Select(Map).ToArray(),
+        };
     }
 
     /// <inheritdoc/>
@@ -69,7 +87,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.Limit > 0)
         {
-            dbQuery = dbQuery.Take(filter.Limit);
+            dbQuery = dbQuery.OrderBy(e => e).Take(filter.Limit);
         }
 
         return dbQuery.ToArray();
@@ -221,12 +239,12 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (queryExcludePersonTypes.Count > 0)
         {
-            query = query.Where(e => !queryPersonTypes.Contains(e.PersonType));
+            query = query.Where(e => !queryExcludePersonTypes.Contains(e.PersonType));
         }
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.First(w => w.ItemId == filter.ItemId).ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems!.Where(w => w.ItemId == filter.ItemId).OrderBy(w => w.ListOrder).First().ListOrder <= filter.MaxListOrder.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))

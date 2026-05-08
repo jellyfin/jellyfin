@@ -126,8 +126,6 @@
     "HearingImpaired": "Niedosłyszący",
     "TaskRefreshTrickplayImages": "Generuj obrazy Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy Trickplay dla filmów we włączonych bibliotekach.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
-    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania",
     "TaskAudioNormalization": "Normalizacja dźwięku",
     "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku.",
     "TaskDownloadMissingLyrics": "Pobierz brakujące słowa",
@@ -137,5 +135,6 @@
     "TaskExtractMediaSegmentsDescription": "Wyodrębnia lub pobiera segmenty mediów z wtyczek obsługujących MediaSegment.",
     "TaskMoveTrickplayImagesDescription": "Przenosi istniejące pliki Trickplay zgodnie z ustawieniami biblioteki.",
     "CleanupUserDataTaskDescription": "Usuwa wszystkie dane użytkownika (stan oglądanych, status ulubionych itp.) z mediów, które nie są dostępne od co najmniej 90 dni.",
-    "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika"
+    "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika",
+    "Original": "Oryginalny"
 }

@@ -126,8 +126,6 @@
     "HearingImpaired": "З порушеннями слуху",
     "TaskRefreshTrickplayImagesDescription": "Створює прев'ю-зображення для відео у ввімкнених медіатеках.",
     "TaskRefreshTrickplayImages": "Створити Прев'ю-зображення",
-    "TaskCleanCollectionsAndPlaylists": "Очистити колекції і списки відтворення",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Видаляє елементи з колекцій і списків відтворення, які більше не існують.",
     "TaskAudioNormalizationDescription": "Сканує файли на наявність даних для нормалізації звуку.",
     "TaskAudioNormalization": "Нормалізація аудіо",
     "TaskDownloadMissingLyrics": "Завантажити відсутні тексти пісень",

@@ -157,13 +157,13 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
                                                         && !string.IsNullOrEmpty(skipBackLength)
             ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
-            : 10000;
+            : 15000;
         displayPreferences.CustomPrefs.Remove("skipBackLength");
 
         existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
                                                        && !string.IsNullOrEmpty(skipForwardLength)
             ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
-            : 30000;
+            : 15000;
         displayPreferences.CustomPrefs.Remove("skipForwardLength");
 
         existingDisplayPreferences.DashboardTheme = displayPreferences.CustomPrefs.TryGetValue("dashboardTheme", out var theme)

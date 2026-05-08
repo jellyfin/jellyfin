@@ -153,17 +153,102 @@ namespace Emby.Server.Implementations.Dto
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
-        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User? user = null, BaseItem? owner = null)
+        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(
+            IReadOnlyList<BaseItem> items,
+            DtoOptions options,
+            User? user = null,
+            BaseItem? owner = null,
+            bool skipVisibilityCheck = false)
         {
-            var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
+            var accessibleItems = skipVisibilityCheck || user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
             List<(BaseItem, BaseItemDto)>? programTuples = null;
             List<(BaseItemDto, LiveTvChannel)>? channelTuples = null;
 
+            // Batch-fetch user data for all items
+            Dictionary<Guid, UserItemData>? userDataBatch = null;
+            if (user is not null && options.EnableUserData)
+            {
+                userDataBatch = _userDataRepository.GetUserDataBatch(accessibleItems, user);
+            }
+
+            // Pre-compute collection folders once to avoid N+1 queries in CanDelete
+            List<Folder>? allCollectionFolders = null;
+            if (user is not null && options.ContainsField(ItemFields.CanDelete))
+            {
+                allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+            }
+
+            // Batch-fetch child counts for all folders to avoid N+1 queries
+            Dictionary<Guid, int>? childCountBatch = null;
+            if (options.ContainsField(ItemFields.ChildCount))
+            {
+                var folderIds = accessibleItems.OfType<Folder>().Select(f => f.Id).ToList();
+                if (folderIds.Count > 0)
+                {
+                    childCountBatch = _libraryManager.GetChildCountBatch(folderIds, user?.Id);
+                }
+            }
+
+            // Batch-fetch played/total counts for all folders to avoid N+1 queries
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null;
+            if (user is not null && options.EnableUserData)
+            {
+                var folderIds = accessibleItems.OfType<Folder>()
+                    .Where(f => f.SupportsUserDataFromChildren && (f.SupportsPlayedStatus || options.ContainsField(ItemFields.RecursiveItemCount)))
+                    .Select(f => f.Id).ToList();
+                if (folderIds.Count > 0)
+                {
+                    playedCountBatch = _libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
+                }
+            }
+
+            // Batch-fetch MusicArtist lookups across all items to avoid N+1 queries.
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null;
+            var artistNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in accessibleItems)
+            {
+                if (item is IHasArtist hasArtist)
+                {
+                    foreach (var name in hasArtist.Artists)
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            artistNames.Add(name);
+                        }
+                    }
+                }
+
+                if (item is IHasAlbumArtist hasAlbumArtist)
+                {
+                    foreach (var name in hasAlbumArtist.AlbumArtists)
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            artistNames.Add(name);
+                        }
+                    }
+                }
+            }
+
+            if (artistNames.Count > 0)
+            {
+                artistsBatch = _libraryManager.GetArtists(artistNames.ToArray());
+            }
+
             for (int index = 0; index < accessibleItems.Count; index++)
             {
                 var item = accessibleItems[index];
-                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+                var dto = GetBaseItemDtoInternal(
+                    item,
+                    options,
+                    user,
+                    owner,
+                    userDataBatch?.GetValueOrDefault(item.Id),
+                    allCollectionFolders,
+                    childCountBatch,
+                    playedCountBatch,
+                    artistsBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -197,7 +282,7 @@ namespace Emby.Server.Implementations.Dto
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, user, owner, null);
             if (item is LiveTvChannel tvChannel)
             {
                 LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
@@ -215,7 +300,16 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User? user = null, BaseItem? owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(
+            BaseItem item,
+            DtoOptions options,
+            User? user = null,
+            BaseItem? owner = null,
+            UserItemData? userData = null,
+            List<Folder>? allCollectionFolders = null,
+            Dictionary<Guid, int>? childCountBatch = null,
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -252,7 +346,14 @@ namespace Emby.Server.Implementations.Dto
 
             if (user is not null)
             {
-                AttachUserSpecificInfo(dto, item, user, options);
+                AttachUserSpecificInfo(
+                    dto,
+                    item,
+                    user,
+                    options,
+                    userData,
+                    childCountBatch,
+                    playedCountBatch);
             }
 
             if (item is IHasMediaSources
@@ -268,13 +369,15 @@ namespace Emby.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, options);
+            AttachBasicFields(dto, item, owner, options, artistsBatch);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
                 dto.CanDelete = user is null
                     ? item.CanDelete()
-                    : item.CanDelete(user);
+                    : allCollectionFolders is not null
+                        ? item.CanDelete(user, allCollectionFolders)
+                        : item.CanDelete(user);
             }
 
             if (options.ContainsField(ItemFields.CanDownload))
@@ -378,37 +481,7 @@ namespace Emby.Server.Implementations.Dto
                 return;
             }
 
-            var query = new InternalItemsQuery(user)
-            {
-                Recursive = true,
-                DtoOptions = new DtoOptions(false) { EnableImages = false },
-                IncludeItemTypes = relatedItemKinds
-            };
-
-            switch (dto.Type)
-            {
-                case BaseItemKind.Genre:
-                case BaseItemKind.MusicGenre:
-                    query.GenreIds = [dto.Id];
-                    break;
-                case BaseItemKind.MusicArtist:
-                    query.ArtistIds = [dto.Id];
-                    break;
-                case BaseItemKind.Person:
-                    query.PersonIds = [dto.Id];
-                    break;
-                case BaseItemKind.Studio:
-                    query.StudioIds = [dto.Id];
-                    break;
-                case BaseItemKind.Year
-                    when int.TryParse(dto.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year):
-                    query.Years = [year];
-                    break;
-                default:
-                    return;
-            }
-
-            var counts = _libraryManager.GetItemCounts(query);
+            var counts = _libraryManager.GetItemCountsForNameItem(dto.Type, dto.Id, relatedItemKinds, user);
 
             dto.AlbumCount = counts.AlbumCount;
             dto.ArtistCount = counts.ArtistCount;
@@ -458,7 +531,14 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options)
+        private void AttachUserSpecificInfo(
+            BaseItemDto dto,
+            BaseItem item,
+            User user,
+            DtoOptions options,
+            UserItemData? userData = null,
+            Dictionary<Guid, int>? childCountBatch = null,
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
         {
             if (item.IsFolder)
             {
@@ -466,7 +546,19 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.EnableUserData)
                 {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
+                    if (userData is not null)
+                    {
+                        // Use pre-fetched user data
+                        dto.UserData = GetUserItemDataDto(userData, item.Id);
+                        (int Played, int Total)? precomputed = playedCountBatch is not null
+                            && playedCountBatch.TryGetValue(item.Id, out var counts) ? counts : null;
+                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options, precomputed);
+                    }
+                    else
+                    {
+                        // Fall back to individual fetch
+                        dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
+                    }
                 }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
@@ -485,7 +577,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (options.ContainsField(ItemFields.ChildCount))
                     {
-                        dto.ChildCount ??= GetChildCount(folder, user);
+                        dto.ChildCount ??= GetChildCount(folder, user, childCountBatch);
                     }
                 }
 
@@ -503,7 +595,17 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (options.EnableUserData)
                 {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
+                    if (userData is not null)
+                    {
+                        // Use pre-fetched user data
+                        dto.UserData = GetUserItemDataDto(userData, item.Id);
+                        item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+                    }
+                    else
+                    {
+                        // Fall back to individual fetch
+                        dto.UserData = _userDataRepository.GetUserDataDto(item, user);
+                    }
                 }
             }
 
@@ -513,7 +615,25 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private static int GetChildCount(Folder folder, User user)
+        private static UserItemDataDto GetUserItemDataDto(UserItemData data, Guid itemId)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
+            return new UserItemDataDto
+            {
+                IsFavorite = data.IsFavorite,
+                Likes = data.Likes,
+                PlaybackPositionTicks = data.PlaybackPositionTicks,
+                PlayCount = data.PlayCount,
+                Rating = data.Rating,
+                Played = data.Played,
+                LastPlayedDate = data.LastPlayedDate,
+                ItemId = itemId,
+                Key = data.Key
+            };
+        }
+
+        private static int GetChildCount(Folder folder, User user, Dictionary<Guid, int>? childCountBatch)
         {
             // Right now this is too slow to calculate for top level folders on a per-user basis
             // Just return something so that apps that are expecting a value won't think the folders are empty
@@ -522,6 +642,13 @@ namespace Emby.Server.Implementations.Dto
                 return Random.Shared.Next(1, 10);
             }
 
+            // Use pre-fetched batch data if available
+            if (childCountBatch is not null && childCountBatch.TryGetValue(folder.Id, out var count))
+            {
+                return count;
+            }
+
+            // Fall back to individual query for special cases (Series, Season, etc.)
             return folder.GetChildCount(user);
         }
 
@@ -815,7 +942,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options)
+        /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -939,6 +1067,8 @@ namespace Emby.Server.Implementations.Dto
                 dto.OriginalTitle = item.OriginalTitle;
             }
 
+            dto.OriginalLanguage = item.OriginalLanguage;
+
             if (options.ContainsField(ItemFields.ParentId))
             {
                 dto.ParentId = item.DisplayParentId;
@@ -1060,7 +1190,8 @@ namespace Emby.Server.Implementations.Dto
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
-                var artistsLookup = _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+                var artistsLookup = artistsBatch
+                    ?? _libraryManager.GetArtists([.. hasArtist.Artists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
                 dto.ArtistItems = hasArtist.Artists
                     .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -1094,7 +1225,8 @@ namespace Emby.Server.Implementations.Dto
                 //    })
                 //    .ToList();
 
-                var albumArtistsLookup = _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
+                var albumArtistsLookup = artistsBatch
+                    ?? _libraryManager.GetArtists([.. hasAlbumArtist.AlbumArtists.Where(e => !string.IsNullOrWhiteSpace(e))]);
 
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
                     .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -1132,11 +1264,6 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.Chapters))
-                {
-                    dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
-                }
-
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
                     var trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
@@ -1148,6 +1275,11 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 dto.ExtraType = video.ExtraType;
+            }
+
+            if (options.ContainsField(ItemFields.Chapters))
+            {
+                dto.Chapters = _chapterManager.GetChapters(item.Id).ToList();
             }
 
             if (options.ContainsField(ItemFields.MediaStreams))

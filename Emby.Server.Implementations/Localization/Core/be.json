@@ -126,8 +126,6 @@
     "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных плэй-лістоў HLS. Гэта задача можа выконвацца доўга.",
     "TaskRefreshTrickplayImages": "Стварыць выявы Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Стварае перадпрагляды відэаролікаў для Trickplay у падключаных бібліятэках.",
-    "TaskCleanCollectionsAndPlaylists": "Ачысціць калекцыі і плэй-лісты",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Выдаляе элементы з калекцый і плэй-лістоў, якія больш не існуюць.",
     "TaskAudioNormalizationDescription": "Скануе файлы на прадмет нармалізацыі гуку.",
     "TaskAudioNormalization": "Нармалізацыя гуку",
     "TaskExtractMediaSegmentsDescription": "Выдае або атрымлівае медыясегменты з убудоў з падтрымкай MediaSegment.",

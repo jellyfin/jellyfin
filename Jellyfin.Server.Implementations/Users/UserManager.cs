@@ -1,12 +1,14 @@
 #pragma warning disable CA1307
+#pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
@@ -35,7 +37,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// <summary>
     /// Manages the creation and retrieval of <see cref="User"/> instances.
     /// </summary>
-    public partial class UserManager : IUserManager
+    public partial class UserManager : IUserManager, IDisposable
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
@@ -50,7 +52,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private readonly IDictionary<Guid, User> _users;
+        private readonly AsyncKeyedLocker<Guid> _userLock = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -89,29 +91,28 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
-
-            _users = new ConcurrentDictionary<Guid, User>();
-            using var dbContext = _dbProvider.CreateDbContext();
-            foreach (var user in dbContext.Users
-                .AsSplitQuery()
-                .Include(user => user.Permissions)
-                .Include(user => user.Preferences)
-                .Include(user => user.AccessSchedules)
-                .Include(user => user.ProfileImage)
-                .AsEnumerable())
-            {
-                _users.Add(user.Id, user);
-            }
         }
 
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users => _users.Values;
+        public IEnumerable<User> GetUsers()
+        {
+            using var dbContext = _dbProvider.CreateDbContext();
+            return UserQuery(dbContext)
+                .ToArray();
+        }
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds => _users.Keys;
+        public IEnumerable<Guid> GetUsersIds()
+        {
+            using var dbContext = _dbProvider.CreateDbContext();
+            return dbContext.Users
+                .AsNoTracking()
+                .Select(user => user.Id)
+                .ToArray();
+        }
 
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
@@ -127,8 +128,27 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            _users.TryGetValue(id, out var user);
-            return user;
+            using var dbContext = _dbProvider.CreateDbContext();
+            return UserQuery(dbContext)
+                .FirstOrDefault(user => user.Id == id);
+        }
+
+        private static IQueryable<User> UserQuery(JellyfinDbContext dbContext)
+        {
+            return dbContext.Users
+                            .AsSingleQuery()
+                            .Include(user => user.Permissions)
+                            .Include(user => user.Preferences)
+                            .Include(user => user.AccessSchedules)
+                            .Include(user => user.ProfileImage)
+                            .AsNoTracking();
+        }
+
+        /// <inheritdoc/>
+        public User? GetFirstUser()
+        {
+            using var dbContext = _dbProvider.CreateDbContext();
+            return UserQuery(dbContext).FirstOrDefault();
         }
 
         /// <inheritdoc/>
@@ -139,42 +159,57 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            return _users.Values.FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
+            using var dbContext = _dbProvider.CreateDbContext();
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+            return UserQuery(dbContext)
+                .FirstOrDefault(u => u.Username.ToUpper() == name.ToUpper());
+#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
         }
 
         /// <inheritdoc/>
-        public async Task RenameUser(User user, string newName)
+        public async Task RenameUser(Guid userId, string oldName, string newName)
         {
-            ArgumentNullException.ThrowIfNull(user);
-
             ThrowIfInvalidUsername(newName);
 
-            if (user.Username.Equals(newName, StringComparison.Ordinal))
+            if (oldName.Equals(newName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            User user = null!; // user is never actually null where its used afterwards so we can just ignore.
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 #pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
-                if (await dbContext.Users
-                        .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && !u.Id.Equals(user.Id))
-                        .ConfigureAwait(false))
-                {
-                    throw new ArgumentException(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "A user with the name '{0}' already exists.",
-                        newName));
-                }
+                    if (await dbContext.Users
+                            .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && u.Id != userId)
+                            .ConfigureAwait(false))
+                    {
+                        throw new ArgumentException(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "A user with the name '{0}' already exists.",
+                            newName));
+                    }
 #pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
 #pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
-                user.Username = newName;
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                    user = await UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefaultAsync(u => u.Id == userId)
+                        .ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException(nameof(userId));
+                    user.Username = newName;
+                    await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                }
             }
 
             var eventArgs = new UserUpdatedEventArgs(user);
@@ -185,10 +220,9 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+                await UpdateUserInternalAsync(user).ConfigureAwait(false);
             }
         }
 
@@ -218,23 +252,30 @@ namespace Jellyfin.Server.Implementations.Users
         {
             ThrowIfInvalidUsername(name);
 
-            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "A user with the name '{0}' already exists.",
-                    name));
-            }
-
             User newUser;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+                if (await dbContext.Users
+                        .AnyAsync(u => u.Username.ToUpper() == name.ToUpper())
+                        .ConfigureAwait(false))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "A user with the name '{0}' already exists.",
+                        name));
+                }
+#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
+#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+
                 newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _users.Add(newUser.Id, newUser);
             }
 
             await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
@@ -245,62 +286,82 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task DeleteUserAsync(Guid userId)
         {
-            if (!_users.TryGetValue(userId, out var user))
+            User? user;
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
-                throw new ResourceNotFoundException(nameof(userId));
-            }
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    user = await dbContext.Users
+                        .Include(u => u.Permissions)
+                        .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                        .ConfigureAwait(false);
+                    if (user is null)
+                    {
+                        throw new ResourceNotFoundException(nameof(userId));
+                    }
 
-            if (_users.Count == 1)
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "The user '{0}' cannot be deleted because there must be at least one user in the system.",
-                    user.Username));
-            }
+                    var userCount = await dbContext.Users.CountAsync().ConfigureAwait(false);
+                    if (userCount == 1)
+                    {
+                        throw new InvalidOperationException(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The user '{0}' cannot be deleted because there must be at least one user in the system.",
+                            user.Username));
+                    }
 
-            if (user.HasPermission(PermissionKind.IsAdministrator)
-                && Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
-                        user.Username),
-                    nameof(userId));
-            }
+                    if (user.HasPermission(PermissionKind.IsAdministrator)
+                        && await dbContext.Users
+                            .CountAsync(i => i.Permissions.Any(p => p.Kind == PermissionKind.IsAdministrator && p.Value))
+                            .ConfigureAwait(false) == 1)
+                    {
+                        throw new ArgumentException(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
+                                user.Username),
+                            nameof(userId));
+                    }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                dbContext.Users.Attach(user);
-                dbContext.Users.Remove(user);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                    dbContext.Users.Remove(user);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
-
-            _users.Remove(userId);
 
             await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public Task ResetPassword(User user)
+        public Task ResetPassword(Guid userId)
         {
-            return ChangePassword(user, string.Empty);
+            return ChangePassword(userId, string.Empty);
         }
 
         /// <inheritdoc/>
-        public async Task ChangePassword(User user, string newPassword)
+        public async Task ChangePassword(Guid userId, string newPassword)
         {
-            ArgumentNullException.ThrowIfNull(user);
-            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+            User dbUser = null!;
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
-                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    dbUser = await UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefaultAsync(u => u.Id == userId)
+                        .ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException(nameof(userId));
+                    if (dbUser.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+                    {
+                        throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+                    }
+
+                    await GetAuthenticationProvider(dbUser).ChangePassword(dbUser, newPassword).ConfigureAwait(false);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
 
-            await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
-
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(dbUser)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -400,102 +461,114 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            var authResult = await AuthenticateLocalUser(username, password, user)
-                .ConfigureAwait(false);
-            var authenticationProvider = authResult.AuthenticationProvider;
-            var success = authResult.Success;
-
-            if (user is null)
+            bool success;
+            var user = GetUserByName(username);
+            using (await _userLock.LockAsync(user?.Id ?? Guid.Empty).ConfigureAwait(false))
             {
-                string updatedUsername = authResult.Username;
-
-                if (success
-                    && authenticationProvider is not null
-                    && authenticationProvider is not DefaultAuthenticationProvider)
+                // Reload the user now that we hold the lock so the RowVersion is current.
+                // GetUserByName uses AsNoTracking and the snapshot may be stale if another
+                // write (e.g. a concurrent login) incremented RowVersion after our initial load.
+                if (user is not null)
                 {
-                    // Trust the username returned by the authentication provider
-                    username = updatedUsername;
+                    user = GetUserById(user.Id) ?? user;
+                }
 
-                    // Search the database for the user again
-                    // the authentication provider might have created it
-                    user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+                var authResult = await AuthenticateLocalUser(username, password, user)
+                    .ConfigureAwait(false);
+                var authenticationProvider = authResult.AuthenticationProvider;
+                success = authResult.Success;
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
+                if (user is null)
+                {
+                    string updatedUsername = authResult.Username;
+
+                    if (success
+                        && authenticationProvider is not null
+                        && authenticationProvider is not DefaultAuthenticationProvider)
                     {
-                        await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
+                        // Trust the username returned by the authentication provider
+                        username = updatedUsername;
+
+                        // Search the database for the user again
+                        // the authentication provider might have created it
+                        user = GetUserByName(username);
+
+                        if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
+                        {
+                            await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
+                        }
                     }
                 }
-            }
 
-            if (success && user is not null && authenticationProvider is not null)
-            {
-                var providerId = authenticationProvider.GetType().FullName;
-
-                if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (success && user is not null && authenticationProvider is not null)
                 {
-                    user.AuthenticationProviderId = providerId;
-                    await UpdateUserAsync(user).ConfigureAwait(false);
-                }
-            }
+                    var providerId = authenticationProvider.GetType().FullName;
 
-            if (user is null)
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new AuthenticationException("Invalid username or password entered.");
-            }
-
-            if (user.HasPermission(PermissionKind.IsDisabled))
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException(
-                    $"The {user.Username} account is currently disabled. Please consult with your administrator.");
-            }
-
-            if (!user.HasPermission(PermissionKind.EnableRemoteAccess) &&
-                !_networkManager.IsInLocalNetwork(remoteEndPoint))
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException("Forbidden.");
-            }
-
-            if (!user.IsParentalScheduleAllowed())
-            {
-                _logger.LogInformation(
-                    "Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",
-                    username,
-                    remoteEndPoint);
-                throw new SecurityException("User is not allowed access at this time.");
-            }
-
-            // Update LastActivityDate and LastLoginDate, then save
-            if (success)
-            {
-                if (isUserSession)
-                {
-                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                    if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        user.AuthenticationProviderId = providerId;
+                        await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                    }
                 }
 
-                user.InvalidLoginAttemptCount = 0;
-                await UpdateUserAsync(user).ConfigureAwait(false);
-                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
-            }
-            else
-            {
-                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
-                _logger.LogInformation(
-                    "Authentication request for {UserName} has been denied (IP: {IP}).",
-                    user.Username,
-                    remoteEndPoint);
+                if (user is null)
+                {
+                    _logger.LogInformation(
+                        "Authentication request for {UserName} has been denied (IP: {IP}).",
+                        username,
+                        remoteEndPoint);
+                    throw new AuthenticationException("Invalid username or password entered.");
+                }
+
+                if (user.HasPermission(PermissionKind.IsDisabled))
+                {
+                    _logger.LogInformation(
+                        "Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).",
+                        username,
+                        remoteEndPoint);
+                    throw new SecurityException(
+                        $"The {user.Username} account is currently disabled. Please consult with your administrator.");
+                }
+
+                if (!user.HasPermission(PermissionKind.EnableRemoteAccess) &&
+                    !_networkManager.IsInLocalNetwork(remoteEndPoint))
+                {
+                    _logger.LogInformation(
+                        "Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).",
+                        username,
+                        remoteEndPoint);
+                    throw new SecurityException("Forbidden.");
+                }
+
+                if (!user.IsParentalScheduleAllowed())
+                {
+                    _logger.LogInformation(
+                        "Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",
+                        username,
+                        remoteEndPoint);
+                    throw new SecurityException("User is not allowed access at this time.");
+                }
+
+                // Update LastActivityDate and LastLoginDate, then save
+                if (success)
+                {
+                    if (isUserSession)
+                    {
+                        user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                    }
+
+                    user.InvalidLoginAttemptCount = 0;
+                    await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                    _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
+                }
+                else
+                {
+                    await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
+                    _logger.LogInformation(
+                        "Authentication request for {UserName} has been denied (IP: {IP}).",
+                        user.Username,
+                        remoteEndPoint);
+                }
             }
 
             return success ? user : null;
@@ -539,22 +612,22 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            if (_users.Any())
-            {
-                return;
-            }
-
-            var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
-            {
-                defaultName = "MyJellyfinUser";
-            }
-
-            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
+                if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
+                {
+                    return;
+                }
+
+                var defaultName = Environment.UserName;
+                if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
+                {
+                    defaultName = "MyJellyfinUser";
+                }
+
+                _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
                 var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
                 newUser.SetPermission(PermissionKind.IsAdministrator, true);
                 newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
@@ -562,7 +635,6 @@ namespace Jellyfin.Server.Implementations.Users
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                _users.Add(newUser.Id, newUser);
             }
         }
 
@@ -599,122 +671,120 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
-                var user = dbContext.Users
-                               .Include(u => u.Permissions)
-                               .Include(u => u.Preferences)
-                               .Include(u => u.AccessSchedules)
-                               .Include(u => u.ProfileImage)
-                               .FirstOrDefault(u => u.Id.Equals(userId))
-                           ?? throw new ArgumentException("No user exists with given Id!");
-
-                user.SubtitleMode = config.SubtitleMode;
-                user.HidePlayedInLatest = config.HidePlayedInLatest;
-                user.EnableLocalPassword = config.EnableLocalPassword;
-                user.PlayDefaultAudioTrack = config.PlayDefaultAudioTrack;
-                user.DisplayCollectionsView = config.DisplayCollectionsView;
-                user.DisplayMissingEpisodes = config.DisplayMissingEpisodes;
-                user.AudioLanguagePreference = config.AudioLanguagePreference;
-                user.RememberAudioSelections = config.RememberAudioSelections;
-                user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
-                user.RememberSubtitleSelections = config.RememberSubtitleSelections;
-                user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
-
-                // Only set cast receiver id if it is passed in and it exists in the server config.
-                if (!string.IsNullOrEmpty(config.CastReceiverId)
-                    && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
-                    user.CastReceiverId = config.CastReceiverId;
+                    var user = UserQuery(dbContext)
+                                   .AsTracking()
+                                   .FirstOrDefault(u => u.Id.Equals(userId))
+                               ?? throw new ArgumentException("No user exists with given Id!");
+
+                    user.SubtitleMode = config.SubtitleMode;
+                    user.HidePlayedInLatest = config.HidePlayedInLatest;
+                    user.EnableLocalPassword = config.EnableLocalPassword;
+                    user.PlayDefaultAudioTrack = config.PlayDefaultAudioTrack;
+                    user.DisplayCollectionsView = config.DisplayCollectionsView;
+                    user.DisplayMissingEpisodes = config.DisplayMissingEpisodes;
+                    user.AudioLanguagePreference = config.AudioLanguagePreference;
+                    user.RememberAudioSelections = config.RememberAudioSelections;
+                    user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
+                    user.RememberSubtitleSelections = config.RememberSubtitleSelections;
+                    user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
+
+                    // Only set cast receiver id if it is passed in and it exists in the server config.
+                    if (!string.IsNullOrEmpty(config.CastReceiverId)
+                        && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                    {
+                        user.CastReceiverId = config.CastReceiverId;
+                    }
+
+                    user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
+                    user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
+                    user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
+                    user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
+
+                    dbContext.Update(user);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
-
-                user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
-                user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
-                user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
-                user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
-
-                dbContext.Update(user);
-                _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc/>
         public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
-                var user = dbContext.Users
-                               .Include(u => u.Permissions)
-                               .Include(u => u.Preferences)
-                               .Include(u => u.AccessSchedules)
-                               .Include(u => u.ProfileImage)
-                               .FirstOrDefault(u => u.Id.Equals(userId))
-                           ?? throw new ArgumentException("No user exists with given Id!");
-
-                // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
-                int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
                 {
-                    -1 => null,
-                    0 => 3,
-                    _ => policy.LoginAttemptsBeforeLockout
-                };
+                    var user = UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefault(u => u.Id.Equals(userId))
+                        ?? throw new ArgumentException("No user exists with given Id!");
 
-                user.MaxParentalRatingScore = policy.MaxParentalRating;
-                user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
-                user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
-                user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
-                user.AuthenticationProviderId = policy.AuthenticationProviderId;
-                user.PasswordResetProviderId = policy.PasswordResetProviderId;
-                user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
-                user.LoginAttemptsBeforeLockout = maxLoginAttempts;
-                user.MaxActiveSessions = policy.MaxActiveSessions;
-                user.SyncPlayAccess = policy.SyncPlayAccess;
-                user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
-                user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
-                user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
-                user.SetPermission(PermissionKind.EnableSharedDeviceControl, policy.EnableSharedDeviceControl);
-                user.SetPermission(PermissionKind.EnableRemoteAccess, policy.EnableRemoteAccess);
-                user.SetPermission(PermissionKind.EnableLiveTvManagement, policy.EnableLiveTvManagement);
-                user.SetPermission(PermissionKind.EnableLiveTvAccess, policy.EnableLiveTvAccess);
-                user.SetPermission(PermissionKind.EnableMediaPlayback, policy.EnableMediaPlayback);
-                user.SetPermission(PermissionKind.EnableAudioPlaybackTranscoding, policy.EnableAudioPlaybackTranscoding);
-                user.SetPermission(PermissionKind.EnableVideoPlaybackTranscoding, policy.EnableVideoPlaybackTranscoding);
-                user.SetPermission(PermissionKind.EnableContentDeletion, policy.EnableContentDeletion);
-                user.SetPermission(PermissionKind.EnableContentDownloading, policy.EnableContentDownloading);
-                user.SetPermission(PermissionKind.EnableSyncTranscoding, policy.EnableSyncTranscoding);
-                user.SetPermission(PermissionKind.EnableMediaConversion, policy.EnableMediaConversion);
-                user.SetPermission(PermissionKind.EnableAllChannels, policy.EnableAllChannels);
-                user.SetPermission(PermissionKind.EnableAllDevices, policy.EnableAllDevices);
-                user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
-                user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
-                user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
-                user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
-                user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
-                user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
-                user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
-                user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+                    // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
+                    int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
+                    {
+                        -1 => null,
+                        0 => 3,
+                        _ => policy.LoginAttemptsBeforeLockout
+                    };
 
-                user.AccessSchedules.Clear();
-                foreach (var policyAccessSchedule in policy.AccessSchedules)
-                {
-                    user.AccessSchedules.Add(policyAccessSchedule);
+                    user.MaxParentalRatingScore = policy.MaxParentalRating;
+                    user.MaxParentalRatingSubScore = policy.MaxParentalSubRating;
+                    user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
+                    user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
+                    user.AuthenticationProviderId = policy.AuthenticationProviderId;
+                    user.PasswordResetProviderId = policy.PasswordResetProviderId;
+                    user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
+                    user.LoginAttemptsBeforeLockout = maxLoginAttempts;
+                    user.MaxActiveSessions = policy.MaxActiveSessions;
+                    user.SyncPlayAccess = policy.SyncPlayAccess;
+                    user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
+                    user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
+                    user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
+                    user.SetPermission(PermissionKind.EnableSharedDeviceControl, policy.EnableSharedDeviceControl);
+                    user.SetPermission(PermissionKind.EnableRemoteAccess, policy.EnableRemoteAccess);
+                    user.SetPermission(PermissionKind.EnableLiveTvManagement, policy.EnableLiveTvManagement);
+                    user.SetPermission(PermissionKind.EnableLiveTvAccess, policy.EnableLiveTvAccess);
+                    user.SetPermission(PermissionKind.EnableMediaPlayback, policy.EnableMediaPlayback);
+                    user.SetPermission(PermissionKind.EnableAudioPlaybackTranscoding, policy.EnableAudioPlaybackTranscoding);
+                    user.SetPermission(PermissionKind.EnableVideoPlaybackTranscoding, policy.EnableVideoPlaybackTranscoding);
+                    user.SetPermission(PermissionKind.EnableContentDeletion, policy.EnableContentDeletion);
+                    user.SetPermission(PermissionKind.EnableContentDownloading, policy.EnableContentDownloading);
+                    user.SetPermission(PermissionKind.EnableSyncTranscoding, policy.EnableSyncTranscoding);
+                    user.SetPermission(PermissionKind.EnableMediaConversion, policy.EnableMediaConversion);
+                    user.SetPermission(PermissionKind.EnableAllChannels, policy.EnableAllChannels);
+                    user.SetPermission(PermissionKind.EnableAllDevices, policy.EnableAllDevices);
+                    user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
+                    user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
+                    user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
+                    user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
+                    user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
+                    user.SetPermission(PermissionKind.EnableLyricManagement, policy.EnableLyricManagement);
+                    user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
+                    user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+
+                    user.AccessSchedules.Clear();
+                    foreach (var policyAccessSchedule in policy.AccessSchedules)
+                    {
+                        user.AccessSchedules.Add(policyAccessSchedule);
+                    }
+
+                    // TODO: fix this at some point
+                    user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
+                    user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
+                    user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
+                    user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
+                    user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
+                    user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
+                    user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
+
+                    dbContext.Update(user);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
-
-                // TODO: fix this at some point
-                user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
-                user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-                user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
-                user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
-                user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-                user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
-                user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
-
-                dbContext.Update(user);
-                _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -726,15 +796,17 @@ namespace Jellyfin.Server.Implementations.Users
                 return;
             }
 
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
+            using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
-                dbContext.Remove(user.ProfileImage);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    dbContext.Remove(user.ProfileImage);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
 
-            user.ProfileImage = null;
-            _users[user.Id] = user;
+                user.ProfileImage = null;
+            }
         }
 
         internal static void ThrowIfInvalidUsername(string name)
@@ -880,15 +952,42 @@ namespace Jellyfin.Server.Implementations.Users
                     user.InvalidLoginAttemptCount);
             }
 
-            await UpdateUserAsync(user).ConfigureAwait(false);
+            await UpdateUserInternalAsync(user).ConfigureAwait(false);
+        }
+
+        private async Task UpdateUserInternalAsync(User user)
+        {
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
+            }
         }
 
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Attach(user);
             dbContext.Entry(user).State = EntityState.Modified;
-            _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes all members of this class.
+        /// </summary>
+        /// <param name="disposing">Defines if the class has been cleaned up by a dispose or finalizer.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _userLock.Dispose();
+            }
         }
     }
 }

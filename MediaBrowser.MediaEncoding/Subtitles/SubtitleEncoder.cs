@@ -147,7 +147,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
+            // ASS is a superset of SSA, skipping the conversion and preserving the styles
+            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(inputFormat, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(outputFormat, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase)))
             {
                 return stream;
             }

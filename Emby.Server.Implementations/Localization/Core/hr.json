@@ -128,8 +128,6 @@
     "TaskRefreshTrickplayImagesDescription": "Stvara preglede brzog pregledavanja za videa u aktiviranim bibliotekama.",
     "TaskAudioNormalization": "Normalizacija zvuka",
     "TaskAudioNormalizationDescription": "Skenira datoteke u potrazi za podacima o normalizaciji zvuka.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Uklanja stavke iz zbirki i popisa za reprodukciju koje više ne postoje.",
-    "TaskCleanCollectionsAndPlaylists": "Očisti zbirke i popise za reprodukciju",
     "TaskExtractMediaSegments": "Skeniranje dijelova medija",
     "TaskDownloadMissingLyrics": "Preuzmi tekstove koji nedostaju",
     "TaskDownloadMissingLyricsDescription": "Preuzmi tekstove pjesama",

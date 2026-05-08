@@ -30,18 +30,17 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -77,12 +76,17 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
+        private readonly IItemPersistenceService _persistenceService;
+        private readonly INextUpService _nextUpService;
+        private readonly IItemCountService _countService;
+        private readonly ILinkedChildrenService _linkedChildrenService;
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
+        private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -115,11 +119,16 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userViewManagerFactory">The user view manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
+        /// <param name="persistenceService">The item persistence service.</param>
+        /// <param name="nextUpService">The next up service.</param>
+        /// <param name="countService">The item count service.</param>
+        /// <param name="linkedChildrenService">The linked children service.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
+        /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -133,11 +142,16 @@ namespace Emby.Server.Implementations.Library
             Lazy<IUserViewManager> userViewManagerFactory,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
+            IItemPersistenceService persistenceService,
+            INextUpService nextUpService,
+            IItemCountService countService,
+            ILinkedChildrenService linkedChildrenService,
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
-            IPathManager pathManager)
+            IPathManager pathManager,
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -151,6 +165,10 @@ namespace Emby.Server.Implementations.Library
             _userViewManagerFactory = userViewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
+            _persistenceService = persistenceService;
+            _nextUpService = nextUpService;
+            _countService = countService;
+            _linkedChildrenService = linkedChildrenService;
             _imageProcessor = imageProcessor;
 
             _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
@@ -158,6 +176,7 @@ namespace Emby.Server.Implementations.Library
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
+            _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -327,9 +346,17 @@ namespace Emby.Server.Implementations.Library
             DeleteItem(item, options, parent, notifyParentItem);
         }
 
-        public void DeleteItemsUnsafeFast(IEnumerable<BaseItem> items)
+        public void DeleteItemsUnsafeFast(IReadOnlyCollection<BaseItem> items, bool deleteSourceFiles = false)
         {
-            var pathMaps = items.Select(e => (Item: e, InternalPath: GetInternalMetadataPaths(e), DeletePaths: e.GetDeletePaths())).ToArray();
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            var pathMaps = items.Select(e =>
+                (Item: e,
+                InternalPath: GetInternalMetadataPaths(e),
+                DeletePaths: deleteSourceFiles ? e.GetDeletePaths() : [])).ToArray();
 
             foreach (var (item, internalPaths, pathsToDelete) in pathMaps)
             {
@@ -363,7 +390,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _itemRepository.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
+            _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
@@ -404,6 +431,99 @@ namespace Emby.Server.Implementations.Library
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
                     item.Id);
+            }
+
+            // If deleting a primary version video, clear PrimaryVersionId from alternate versions
+            // OwnerId check: items with OwnerId set are alternate versions or extras, not primaries
+            if (item is Video video && !video.PrimaryVersionId.HasValue && video.OwnerId.IsEmpty())
+            {
+                var localAlternateIds = GetLocalAlternateVersionIds(video).ToHashSet();
+                var allAlternateVersions = localAlternateIds
+                    .Concat(GetLinkedAlternateVersions(video).Select(v => v.Id))
+                    .Distinct()
+                    .Select(id => GetItemById(id))
+                    .OfType<Video>()
+                    .ToList();
+
+                // Partition alternates by whether their files still exist on disk
+                var alternateVersions = new List<Video>();
+                var missingAlternates = new List<Video>();
+                foreach (var alt in allAlternateVersions)
+                {
+                    if (!string.IsNullOrEmpty(alt.Path) && !_fileSystem.FileExists(alt.Path))
+                    {
+                        missingAlternates.Add(alt);
+                    }
+                    else
+                    {
+                        alternateVersions.Add(alt);
+                    }
+                }
+
+                // Delete alternates whose files no longer exist to avoid ghost items.
+                // Clear PrimaryVersionId first so DeleteItem doesn't try to update the primary being deleted.
+                foreach (var missing in missingAlternates)
+                {
+                    _logger.LogInformation(
+                        "Deleting missing alternate version {Name} ({Path})",
+                        missing.Name ?? "Unknown name",
+                        missing.Path ?? string.Empty);
+                    missing.SetPrimaryVersionId(null);
+                    missing.OwnerId = Guid.Empty;
+                    missing.LocalAlternateVersions = [];
+                    missing.LinkedAlternateVersions = [];
+                    DeleteItem(missing, new DeleteOptions { DeleteFileLocation = false }, false);
+                }
+
+                if (alternateVersions.Count > 0)
+                {
+                    _logger.LogInformation(
+                        "Clearing PrimaryVersionId from {Count} alternate versions of {Name}",
+                        alternateVersions.Count,
+                        item.Name ?? "Unknown name");
+
+                    // Promote the first alternate version to be the new primary
+                    var newPrimary = alternateVersions[0];
+                    newPrimary.SetPrimaryVersionId(null);
+                    newPrimary.OwnerId = Guid.Empty;
+
+                    // Transfer alternate version arrays from old primary to new primary
+                    // so UpdateToRepositoryAsync creates correct LinkedChildren entries
+                    newPrimary.LocalAlternateVersions = video.LocalAlternateVersions
+                        .Where(p => !string.Equals(p, newPrimary.Path, StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+                    newPrimary.LinkedAlternateVersions = video.LinkedAlternateVersions
+                        .Where(lc => !lc.ItemId.HasValue || !lc.ItemId.Value.Equals(newPrimary.Id))
+                        .ToArray();
+
+                    newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+
+                    // Re-route playlist/collection references from deleted primary to new primary
+                    RerouteLinkedChildReferencesAsync(video.Id, newPrimary.Id).GetAwaiter().GetResult();
+
+                    // Update remaining alternates to point to new primary
+                    foreach (var alternate in alternateVersions.Skip(1))
+                    {
+                        alternate.SetPrimaryVersionId(newPrimary.Id);
+                        // Only set OwnerId for local alternates; linked alternates are independent items
+                        alternate.OwnerId = localAlternateIds.Contains(alternate.Id) ? newPrimary.Id : Guid.Empty;
+                        alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                    }
+                }
+            }
+            else if (item is Video alternateVideo && alternateVideo.PrimaryVersionId.HasValue)
+            {
+                // If deleting an alternate version, re-route references to its primary
+                RerouteLinkedChildReferencesAsync(alternateVideo.Id, alternateVideo.PrimaryVersionId.Value).GetAwaiter().GetResult();
+
+                // Remove deleted alternate from primary's LinkedAlternateVersions
+                if (GetItemById(alternateVideo.PrimaryVersionId.Value) is Video primaryVideo)
+                {
+                    primaryVideo.LinkedAlternateVersions = primaryVideo.LinkedAlternateVersions
+                        .Where(lc => !lc.ItemId.HasValue || !lc.ItemId.Value.Equals(alternateVideo.Id))
+                        .ToArray();
+                    primaryVideo.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                }
             }
 
             var children = item.IsFolder
@@ -450,7 +570,7 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
+            _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
@@ -576,6 +696,9 @@ namespace Emby.Server.Implementations.Library
                 // Trickplay
                 list.Add(_pathManager.GetTrickplayDirectory(video));
 
+                // Chapter Images
+                list.Add(_pathManager.GetChapterImageFolderPath(video));
+
                 // Subtitles and attachments
                 foreach (var mediaSource in item.GetMediaSources(false))
                 {
@@ -657,8 +780,63 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem? ResolvePath(FileSystemMetadata fileInfo, Folder? parent = null, IDirectoryService? directoryService = null)
-            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent);
+        public BaseItem? ResolvePath(
+            FileSystemMetadata fileInfo,
+            Folder? parent = null,
+            IDirectoryService? directoryService = null,
+            CollectionType? collectionType = null)
+            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
+
+        /// <inheritdoc />
+        public Video? ResolveAlternateVersion(string path, Type expectedVideoType, Folder? parent, CollectionType? collectionType)
+        {
+            // Clean up any existing item saved with wrong type (e.g. Video instead of Movie).
+            // This happens when items were previously resolved without proper type context
+            // in mixed-content libraries where collectionType is null.
+            var expectedId = GetNewItemId(path, expectedVideoType);
+            if (expectedVideoType != typeof(Video))
+            {
+                var wrongTypeId = GetNewItemId(path, typeof(Video));
+                if (!wrongTypeId.Equals(expectedId) && GetItemById(wrongTypeId) is Video wrongTypeItem)
+                {
+                    _logger.LogInformation(
+                        "Removing alternate version with wrong type {WrongType}, expected {ExpectedType}: {Path}",
+                        wrongTypeItem.GetType().Name,
+                        expectedVideoType.Name,
+                        path);
+                    DeleteItem(wrongTypeItem, new DeleteOptions { DeleteFileLocation = false });
+                }
+            }
+
+            var resolved = ResolvePath(
+                _fileSystem.GetFileSystemInfo(path),
+                parent,
+                collectionType: collectionType) as Video;
+
+            if (resolved is null)
+            {
+                return null;
+            }
+
+            // Ensure the alternate version has the same concrete type as the primary video.
+            // ResolvePath may return a generic Video for files in mixed-content libraries
+            // where collectionType is null, even though the primary is a Movie/Episode/etc.
+            if (resolved.GetType() != expectedVideoType)
+            {
+                if (Activator.CreateInstance(expectedVideoType) is Video correctVideo)
+                {
+                    correctVideo.Path = resolved.Path;
+                    correctVideo.Name = resolved.Name;
+                    correctVideo.VideoType = resolved.VideoType;
+                    correctVideo.ProductionYear = resolved.ProductionYear;
+                    correctVideo.ExtraType = resolved.ExtraType;
+                    resolved = correctVideo;
+                }
+            }
+
+            resolved.Id = expectedId;
+            return resolved;
+        }
 
         private BaseItem? ResolvePath(
             FileSystemMetadata fileInfo,
@@ -1041,7 +1219,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyDictionary<string, MusicArtist[]> GetArtists(IReadOnlyList<string> names)
         {
-            return _itemRepository.FindArtists(names);
+            return _linkedChildrenService.FindArtists(names);
         }
 
         public MusicArtist GetArtist(string name, DtoOptions options)
@@ -1131,6 +1309,7 @@ namespace Emby.Server.Implementations.Library
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             IsScanRunning = true;
+            ClearIgnoreRuleCache();
             LibraryMonitor.Stop();
 
             try
@@ -1139,6 +1318,7 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
+                ClearIgnoreRuleCache();
                 LibraryMonitor.Start();
                 IsScanRunning = false;
             }
@@ -1146,6 +1326,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
+            ClearIgnoreRuleCache();
             RootFolder.Children = null;
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
@@ -1186,8 +1367,16 @@ namespace Emby.Server.Implementations.Library
 
             if (toDelete.Count > 0)
             {
-                _itemRepository.DeleteItem(toDelete.ToArray());
+                _persistenceService.DeleteItem(toDelete.ToArray());
             }
+
+            ClearIgnoreRuleCache();
+        }
+
+        /// <inheritdoc />
+        public void ClearIgnoreRuleCache()
+        {
+            _dotIgnoreIgnoreRule.ClearDirectoryCache();
         }
 
         private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
@@ -1262,7 +1451,7 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
-            _itemRepository.UpdateInheritedValues();
+            _persistenceService.UpdateInheritedValues();
 
             progress.Report(100);
         }
@@ -1421,14 +1610,7 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User, allowExternalContent);
             }
 
-            var itemList = _itemRepository.GetItemList(query);
-            var user = query.User;
-            if (user is not null)
-            {
-                return itemList.Where(i => i.IsVisible(user)).ToList();
-            }
-
-            return itemList;
+            return _itemRepository.GetItemList(query);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1452,7 +1634,7 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return _itemRepository.GetCount(query);
+            return _countService.GetCount(query);
         }
 
         public ItemCounts GetItemCounts(InternalItemsQuery query)
@@ -1471,7 +1653,30 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return _itemRepository.GetItemCounts(query);
+            return _countService.GetItemCounts(query);
+        }
+
+        /// <inheritdoc/>
+        public ItemCounts GetItemCountsForNameItem(BaseItemKind kind, Guid id, BaseItemKind[] relatedItemKinds, User? user)
+        {
+            var query = new InternalItemsQuery(user);
+            if (user is not null)
+            {
+                AddUserToQuery(query, user);
+            }
+
+            return _countService.GetItemCountsForNameItem(kind, id, relatedItemKinds, query);
+        }
+
+        public Dictionary<Guid, int> GetChildCountBatch(IReadOnlyList<Guid> parentIds, Guid? userId)
+        {
+            return _countService.GetChildCountBatch(parentIds, userId);
+        }
+
+        /// <inheritdoc/>
+        public Dictionary<Guid, (int Played, int Total)> GetPlayedAndTotalCountBatch(IReadOnlyList<Guid> folderIds, User user)
+        {
+            return _countService.GetPlayedAndTotalCountBatch(folderIds, user);
         }
 
         public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
@@ -1516,7 +1721,17 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return _itemRepository.GetNextUpSeriesKeys(query, dateCutoff);
+            return _nextUpService.GetNextUpSeriesKeys(query, dateCutoff);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<string, MediaBrowser.Controller.Persistence.NextUpEpisodeBatchResult> GetNextUpEpisodesBatch(
+            InternalItemsQuery query,
+            IReadOnlyList<string> seriesKeys,
+            bool includeSpecials,
+            bool includeWatchedForRewatching)
+        {
+            return _nextUpService.GetNextUpEpisodesBatch(query, seriesKeys, includeSpecials, includeWatchedForRewatching);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1683,6 +1898,25 @@ namespace Emby.Server.Implementations.Library
                     query.TopParentIds = [Guid.NewGuid()];
                 }
             }
+            else if (parents.Count == 1 && parents.First() is Folder folder
+                && (folder is Playlist || folder is BoxSet)
+                && folder.LinkedChildren.Length > 0)
+            {
+                // Playlists and BoxSets store their contents in LinkedChildren and never
+                // populate AncestorIds for those items, so a recursive AncestorIds query
+                // would return zero rows. Resolve to the linked child IDs up front and
+                // route through the existing indexed ItemIds filter.
+                query.ItemIds = folder.LinkedChildren
+                    .Where(lc => lc.ItemId.HasValue && !lc.ItemId.Value.IsEmpty())
+                    .Select(lc => lc.ItemId!.Value)
+                    .ToArray();
+
+                // Empty linked-children should still return empty rather than scanning everything.
+                if (query.ItemIds.Length == 0)
+                {
+                    query.ItemIds = [Guid.NewGuid()];
+                }
+            }
             else
             {
                 // We need to be able to query from any arbitrary ancestor up the tree
@@ -1700,6 +1934,11 @@ namespace Emby.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
+            if (query.User is null)
+            {
+                query.SetUser(user);
+            }
+
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.IsEmpty() &&
                 query.ChannelIds.Count == 0 &&
@@ -1723,6 +1962,15 @@ namespace Emby.Server.Implementations.Library
                     query.TopParentIds = [Guid.NewGuid()];
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public void ConfigureUserAccess(InternalItemsQuery query, User user)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+            ArgumentNullException.ThrowIfNull(user);
+
+            AddUserToQuery(query, user);
         }
 
         private IEnumerable<Guid> GetTopParentIdsForQuery(BaseItem item, User? user)
@@ -1890,6 +2138,44 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IEnumerable<Guid> GetLocalAlternateVersionIds(Video video)
+        {
+            ArgumentNullException.ThrowIfNull(video);
+
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LocalAlternateVersion);
+            if (linkedIds.Count > 0)
+            {
+                return linkedIds;
+            }
+
+            return [];
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Video> GetLinkedAlternateVersions(Video video)
+        {
+            ArgumentNullException.ThrowIfNull(video);
+
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
+            if (linkedIds.Count > 0)
+            {
+                return linkedIds
+                    .Select(id => GetItemById(id))
+                    .Where(i => i is not null)
+                    .OfType<Video>()
+                    .OrderBy(i => i.SortName);
+            }
+
+            return [];
+        }
+
+        /// <inheritdoc />
+        public void UpsertLinkedChild(Guid parentId, Guid childId, MediaBrowser.Controller.Entities.LinkedChildType childType)
+        {
+            _linkedChildrenService.UpsertLinkedChild(parentId, childId, childType);
+        }
+
+        /// <inheritdoc />
         public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User? user, IEnumerable<ItemSortBy> sortBy, SortOrder sortOrder)
         {
             IOrderedEnumerable<BaseItem>? orderedItems = null;
@@ -1993,9 +2279,44 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public void CreateItems(IReadOnlyList<BaseItem> items, BaseItem? parent, CancellationToken cancellationToken)
         {
-            _itemRepository.SaveItems(items, cancellationToken);
-
+            // Resolve and add any local alternate version items that don't exist yet
+            // This ensures they exist in the database when LinkedChildren are processed
+            var allItems = new List<BaseItem>(items);
+            var parentFolder = parent as Folder;
+            var parentCollectionType = parent is not null ? GetTopFolderContentType(parent) : null;
             foreach (var item in items)
+            {
+                if (item is Video video && video.LocalAlternateVersions.Length > 0)
+                {
+                    var videoType = video.GetType();
+                    foreach (var path in video.LocalAlternateVersions)
+                    {
+                        if (string.IsNullOrEmpty(path))
+                        {
+                            continue;
+                        }
+
+                        // Use the primary video's type for ID calculation to ensure consistency
+                        var altId = GetNewItemId(path, videoType);
+                        if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
+                        {
+                            // Alternate version doesn't exist, resolve and create it
+                            // ensuring it has the same type as the primary video
+                            var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
+                            if (altVideo is not null)
+                            {
+                                altVideo.OwnerId = video.Id;
+                                altVideo.SetPrimaryVersionId(video.Id);
+                                allItems.Add(altVideo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _persistenceService.SaveItems(allItems, cancellationToken);
+
+            foreach (var item in allItems)
             {
                 RegisterItem(item);
             }
@@ -2144,7 +2465,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            await _itemRepository.SaveImagesAsync(item).ConfigureAwait(false);
+            await _persistenceService.SaveImagesAsync(item).ConfigureAwait(false);
 
             RegisterItem(item);
         }
@@ -2161,7 +2482,50 @@ namespace Emby.Server.Implementations.Library
                 item.DateLastSaved = DateTime.UtcNow;
             }
 
-            _itemRepository.SaveItems(items, cancellationToken);
+            // Resolve and add any local alternate version items that don't exist yet
+            // This ensures they exist in the database when LinkedChildren are processed
+            var allItems = new List<BaseItem>(items);
+            var parentFolder = parent as Folder;
+            var parentCollectionType = GetTopFolderContentType(parent);
+            foreach (var item in items)
+            {
+                if (item is Video video && video.LocalAlternateVersions.Length > 0)
+                {
+                    var videoType = video.GetType();
+                    foreach (var path in video.LocalAlternateVersions)
+                    {
+                        if (string.IsNullOrEmpty(path))
+                        {
+                            continue;
+                        }
+
+                        // Use the primary video's type for ID calculation to ensure consistency
+                        var altId = GetNewItemId(path, videoType);
+                        if (GetItemById(altId) is null && !allItems.Any(i => i.Id.Equals(altId)))
+                        {
+                            // Alternate version doesn't exist, resolve and create it
+                            // ensuring it has the same type as the primary video
+                            var altVideo = ResolveAlternateVersion(path, videoType, parentFolder, parentCollectionType);
+                            if (altVideo is not null)
+                            {
+                                altVideo.OwnerId = video.Id;
+                                altVideo.SetPrimaryVersionId(video.Id);
+                                allItems.Add(altVideo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            _persistenceService.SaveItems(allItems, cancellationToken);
+
+            foreach (var item in allItems)
+            {
+                if (!items.Contains(item))
+                {
+                    RegisterItem(item);
+                }
+            }
 
             if (parent is Folder folder)
             {
@@ -2205,7 +2569,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task ReattachUserDataAsync(BaseItem item, CancellationToken cancellationToken)
         {
-            await _itemRepository.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
+            await _persistenceService.ReattachUserDataAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
@@ -2833,8 +3197,9 @@ namespace Emby.Server.Implementations.Library
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             // Apply .ignore rules
-            var filtered = fileSystemChildren.Where(c => !DotIgnoreIgnoreRule.IsIgnored(c, owner)).ToList();
-            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
+            var filtered = fileSystemChildren.Where(c => !_dotIgnoreIgnoreRule.ShouldIgnore(c, owner)).ToList();
+            var isFolder = owner.IsFolder || (owner is Video video && (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd));
+            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, isFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {
                 yield break;
@@ -2896,10 +3261,16 @@ namespace Emby.Server.Implementations.Library
                     extra.ExtraType = extraType;
                 }
 
-                extra.ParentId = Guid.Empty;
-                extra.OwnerId = owner.Id;
-                extra.IsInMixedFolder = isInMixedFolder;
-                return extra;
+                // Only return items that are actual extras (have ExtraType set)
+                // Note: OwnerId and ParentId are set by RefreshExtras, not here,
+                // so that RefreshExtras can detect when they need updating and set ForceSave.
+                if (extra.ExtraType is not null)
+                {
+                    extra.IsInMixedFolder = isInMixedFolder;
+                    return extra;
+                }
+
+                return null;
             }
         }
 
@@ -2918,7 +3289,7 @@ namespace Emby.Server.Implementations.Library
 
         public IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeople(query);
+            return _peopleRepository.GetPeople(query).Items;
         }
 
         public IReadOnlyList<PersonInfo> GetPeople(BaseItem item)
@@ -2939,24 +3310,33 @@ namespace Emby.Server.Implementations.Library
             return [];
         }
 
-        public IReadOnlyList<Person> GetPeopleItems(InternalPeopleQuery query)
+        public QueryResult<BaseItem> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _peopleRepository.GetPeopleNames(query)
-            .Select(i =>
+            var queryResult = _peopleRepository.GetPeople(query);
+            var baseItems = queryResult.Items.Select(i =>
+                {
+                    try
+                    {
+                        return GetPerson(i.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "error retrieving BaseItem for person: {0}", i.Name);
+                        return null;
+                    }
+                })
+                .Where(i => i is not null)
+                .Where(i => query.User is null || i!.IsVisible(query.User))
+                .OfType<BaseItem>()
+                .ToList()
+                .AsReadOnly();
+
+            return new QueryResult<BaseItem>
             {
-                try
-                {
-                    return GetPerson(i);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting person");
-                    return null;
-                }
-            })
-            .Where(i => i is not null)
-            .Where(i => query.User is null || i!.IsVisible(query.User))
-            .ToList()!; // null values are filtered out
+                StartIndex = queryResult.StartIndex,
+                TotalRecordCount = queryResult.TotalRecordCount,
+                Items = baseItems,
+            };
         }
 
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
@@ -3384,6 +3764,41 @@ namespace Emby.Server.Implementations.Library
 
             _fileSystem.CreateShortcut(lnk, _appHost.ReverseVirtualPath(path));
             RemoveContentTypeOverrides(path);
+        }
+
+        /// <inheritdoc />
+        public async Task RerouteLinkedChildReferencesAsync(Guid fromChildId, Guid toChildId)
+        {
+            var affectedParentIds = _linkedChildrenService.RerouteLinkedChildren(fromChildId, toChildId);
+
+            // Update in-memory LinkedChildren and re-save metadata (NFO) for affected parents
+            foreach (var parentId in affectedParentIds)
+            {
+                if (GetItemById(parentId) is Folder parent)
+                {
+                    foreach (var lc in parent.LinkedChildren)
+                    {
+                        if (lc.ItemId.HasValue && lc.ItemId.Value.Equals(fromChildId))
+                        {
+                            lc.ItemId = toChildId;
+                        }
+                    }
+
+                    await RunMetadataSavers(parent, ItemUpdateType.MetadataEdit).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetQueryFiltersLegacy(query);
         }
     }
 }

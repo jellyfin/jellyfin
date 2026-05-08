@@ -70,6 +70,16 @@ namespace Emby.Server.Implementations.Library
                 return match ? imdbId.ToString() : null;
             }
 
+            // Allow tmdb as an alias for tmdbid
+            if (attribute.Equals("tmdbid", StringComparison.OrdinalIgnoreCase))
+            {
+                var tmdbValue = str.GetAttributeValue("tmdb");
+                if (tmdbValue is not null)
+                {
+                    return tmdbValue;
+                }
+            }
+
             return null;
         }
 

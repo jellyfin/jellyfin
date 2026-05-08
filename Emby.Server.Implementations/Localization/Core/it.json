@@ -126,8 +126,6 @@
     "HearingImpaired": "Non udenti",
     "TaskRefreshTrickplayImages": "Genera immagini Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Crea anteprime trickplay per i video nelle librerie abilitate.",
-    "TaskCleanCollectionsAndPlaylists": "Ripulisci le collezioni e le scalette",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Rimuove gli elementi dalle collezioni e dalle scalette che non esistono più.",
     "TaskAudioNormalization": "Normalizzazione dell'audio",
     "TaskAudioNormalizationDescription": "Scansiona i file alla ricerca dei dati per la normalizzazione dell'audio.",
     "TaskDownloadMissingLyricsDescription": "Scarica testi per le canzoni",
