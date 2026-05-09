@@ -92,6 +92,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IMetricsCollector, UserMetrics>();
             serviceCollection.AddSingleton<IMetricsCollector, SessionMetrics>();
             serviceCollection.AddSingleton<IMetricsCollector, LibraryMetrics>();
+            serviceCollection.AddSingleton<IMetricsCollector, TranscodingMetrics>();
             serviceCollection.AddHostedService<MetricsHostedService>();
 
             // TODO search the assemblies instead of adding them manually?
