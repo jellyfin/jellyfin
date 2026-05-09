@@ -747,8 +747,7 @@ public class LibraryController : BaseJellyfinApiController
         var normalizedStartIndex = Math.Max(startIndex ?? 0, 0);
         var normalizedLimit = limit.HasValue ? Math.Max(limit.Value, 0) : int.MaxValue;
 
-        var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User);
+        var dtoOptions = new DtoOptions { Fields = fields };
 
         var collections = _collectionManager
             .GetCollectionsContainingItem(user, item.Id)
