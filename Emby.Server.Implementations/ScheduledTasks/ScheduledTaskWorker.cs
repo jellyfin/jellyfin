@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using Jellyfin.Data.Events;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Telemetry;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -312,6 +314,10 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
 
         _logger.LogDebug("Executing {0}", Name);
 
+        using var activity = JellyfinTelemetry.ActivitySource.StartActivity("ScheduledTask.Execute");
+        activity?.SetTag("jellyfin.task.name", Name);
+        activity?.SetTag("jellyfin.task.key", ScheduledTask.Key);
+
         ((TaskManager)_taskManager).OnTaskExecuting(this);
 
         progress.ProgressChanged += OnProgressChanged;
@@ -343,6 +349,12 @@ public class ScheduledTaskWorker : IScheduledTaskWorker
             failureException = ex;
 
             status = TaskCompletionStatus.Failed;
+        }
+
+        activity?.SetTag("jellyfin.task.status", status.ToString());
+        if (failureException is not null)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, failureException.Message);
         }
 
         var startTime = CurrentExecutionStartTime;

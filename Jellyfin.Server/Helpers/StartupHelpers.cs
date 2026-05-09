@@ -28,6 +28,11 @@ public static class StartupHelpers
     private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
     /// <summary>
+    /// Gets the <see cref="ILoggerProvider"/>s Serilog forwards log events to.
+    /// </summary>
+    public static LoggerProviderCollection RuntimeLoggerProviders { get; } = new LoggerProviderCollection();
+
+    /// <summary>
     /// Logs relevant environment variables and information about the host.
     /// </summary>
     /// <param name="logger">The logger to use.</param>
@@ -265,7 +270,11 @@ public static class StartupHelpers
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
-                .WriteTo.Async(e => e.Providers(startupLogger))
+                .WriteTo.Async(e =>
+                {
+                    e.Providers(startupLogger);
+                    e.Providers(RuntimeLoggerProviders);
+                })
                 .CreateLogger();
         }
         catch (Exception ex)
@@ -280,6 +289,7 @@ public static class StartupHelpers
                     outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
                     formatProvider: CultureInfo.InvariantCulture,
                     encoding: Encoding.UTF8))
+                .WriteTo.Providers(RuntimeLoggerProviders)
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId()
                 .CreateLogger();

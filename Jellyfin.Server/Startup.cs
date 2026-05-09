@@ -18,7 +18,10 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.ServerSetupApp;
+using Jellyfin.Server.Telemetry;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Telemetry;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.XbmcMetadata;
@@ -72,6 +75,15 @@ namespace Jellyfin.Server
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
             services.AddJellyfinApiSwagger();
+            services.AddJellyfinOpenTelemetry(
+                _serverConfigurationManager.GetTelemetryConfiguration(),
+                _serverApplicationHost,
+                StartupLogger.Logger);
+
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                services.AddHostedService<PrometheusMetricsServer>();
+            }
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
@@ -246,10 +258,6 @@ namespace Jellyfin.Server
                 mainApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    if (_serverConfigurationManager.Configuration.EnableMetrics)
-                    {
-                        endpoints.MapMetrics();
-                    }
 
                     endpoints.MapHealthChecks("/health");
                 });
