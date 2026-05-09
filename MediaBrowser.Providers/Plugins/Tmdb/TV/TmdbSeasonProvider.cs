@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 result.Item.Name = seasonResult.Name;
             }
 
-            result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
+            result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds?.TvdbId);
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
@@ -120,9 +120,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                         CrewMember = crewMember,
                         PersonType = TmdbUtils.MapCrewToPersonType(crewMember)
                     })
-                    .Where(entry =>
-                        TmdbUtils.WantedCrewKinds.Contains(entry.PersonType) ||
-                        TmdbUtils.WantedCrewTypes.Contains(entry.CrewMember.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+                    .Where(entry => TmdbUtils.WantedCrewKinds.Contains(entry.PersonType));
 
                 if (config.HideMissingCrewMembers)
                 {

@@ -67,10 +67,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
                 result.SetProviderId(MetadataProvider.Tmdb, collection.Id.ToString(CultureInfo.InvariantCulture));
 
-                return new[] { result };
+                return [result];
             }
 
             var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, searchInfo.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+            if (collectionSearchResults is null)
+            {
+                return [];
+            }
 
             var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)

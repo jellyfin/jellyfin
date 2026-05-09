@@ -38,6 +38,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
     private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
@@ -122,7 +123,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -167,29 +167,28 @@ public class DynamicHlsController : BaseJellyfinApiController
     [ProducesPlaylistFile]
     public async Task<ActionResult> GetLiveHlsStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? container,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -208,8 +207,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -238,7 +237,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate,
@@ -364,7 +362,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -416,23 +413,22 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -453,8 +449,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -481,7 +477,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate,
@@ -543,7 +538,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
@@ -592,16 +586,15 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery, Required] string mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? maxStreamingBitrate,
@@ -609,7 +602,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -628,8 +621,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -654,7 +647,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate ?? maxStreamingBitrate,
@@ -713,7 +705,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -762,23 +753,22 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -799,8 +789,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -826,7 +816,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate,
@@ -887,7 +876,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
@@ -934,16 +922,15 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? maxStreamingBitrate,
@@ -951,7 +938,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -970,8 +957,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -996,7 +983,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate ?? maxStreamingBitrate,
@@ -1060,7 +1046,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
@@ -1107,7 +1092,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
         [FromRoute, Required] int segmentId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
         [FromQuery, Required] long runtimeTicks,
         [FromQuery, Required] long actualSegmentLengthTicks,
         [FromQuery] bool? @static,
@@ -1115,23 +1100,22 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? audioBitRate,
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -1152,8 +1136,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1181,7 +1165,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate,
@@ -1247,7 +1230,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="enableAutoStreamCopy">Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.</param>
     /// <param name="allowVideoStreamCopy">Whether or not to allow copying of the video stream url.</param>
     /// <param name="allowAudioStreamCopy">Whether or not to allow copying of the audio stream url.</param>
-    /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
     /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
@@ -1292,7 +1274,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
         [FromRoute, Required] int segmentId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
         [FromQuery, Required] long runtimeTicks,
         [FromQuery, Required] long actualSegmentLengthTicks,
         [FromQuery] bool? @static,
@@ -1300,16 +1282,15 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
-        [FromQuery] bool? breakOnNonKeyFrames,
         [FromQuery] int? audioSampleRate,
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] int? maxStreamingBitrate,
@@ -1317,7 +1298,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -1336,8 +1317,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -1364,7 +1345,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
             AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
             AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
-            BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
             AudioSampleRate = audioSampleRate,
             MaxAudioChannels = maxAudioChannels,
             AudioBitRate = audioBitRate ?? maxStreamingBitrate,
@@ -1421,10 +1401,20 @@ public class DynamicHlsController : BaseJellyfinApiController
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
         var mediaSourceId = state.BaseRequest.MediaSourceId;
+        double fps = state.TargetFramerate ?? 0.0f;
+        int segmentLength = state.SegmentLength * 1000;
+
+        // If video is transcoded and framerate is fractional (i.e. 23.976), we need to slightly adjust segment length
+        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && Math.Abs(fps - Math.Floor(fps + 0.001f)) > 0.001)
+        {
+            double nearestIntFramerate = Math.Ceiling(fps);
+            segmentLength = (int)Math.Ceiling(segmentLength * (nearestIntFramerate / fps));
+        }
+
         var request = new CreateMainPlaylistRequest(
             mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
             state.MediaPath,
-            state.SegmentLength * 1000,
+            segmentLength,
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
@@ -1586,16 +1576,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
         var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
 
-        if (state.BaseRequest.BreakOnNonKeyFrames)
-        {
-            // FIXME: this is actually a workaround, as ideally it really should be the client which decides whether non-keyframe
-            //        breakpoints are supported; but current implementation always uses "ffmpeg input seeking" which is liable
-            //        to produce a missing part of video stream before first keyframe is encountered, which may lead to
-            //        awkward cases like a few starting HLS segments having no video whatsoever, which breaks hls.js
-            _logger.LogInformation("Current HLS implementation doesn't support non-keyframe breaks but one is requested, ignoring that request");
-            state.BaseRequest.BreakOnNonKeyFrames = false;
-        }
-
         var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
         var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
@@ -1746,11 +1726,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
             var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
-            if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
-            {
-                return copyArgs + " -copypriorss:a:0 0";
-            }
-
             return copyArgs;
         }
 
@@ -1839,8 +1814,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 if (isActualOutputVideoCodecHevc)
                 {
-                    // Prefer dvh1 to dvhe
-                    args += " -tag:v:0 dvh1 -strict -2";
+                    // Use hvc1 for 8.4. This is what Dolby uses for its official sample streams. Tagging with dvh1 would break some players with strict tag checking like Apple Safari.
+                    var codecTag = state.VideoStream.VideoRangeType == VideoRangeType.DOVIWithHLG ? "hvc1" : "dvh1";
+                    args += $" -tag:v:0 {codecTag} -strict -2";
                 }
                 else if (isActualOutputVideoCodecAv1)
                 {

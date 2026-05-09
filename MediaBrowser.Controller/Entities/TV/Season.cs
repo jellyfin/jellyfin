@@ -175,9 +175,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-
-            var items = GetEpisodes(user, query.DtoOptions, true).Where(filter);
+            var items = UserViewBuilder.Filter(GetEpisodes(user, query.DtoOptions, true), user, query, UserDataManager, LibraryManager);
 
             return PostFilterAndSort(items, query);
         }
@@ -201,12 +199,17 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options, bool shouldIncludeMissingEpisodes)
         {
+            if (series is null)
+            {
+                return [];
+            }
+
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options, shouldIncludeMissingEpisodes);
         }
 
         public List<BaseItem> GetEpisodes()
         {
-            return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true), true);
+            return GetEpisodes(Series, null, null, new DtoOptions(true), true);
         }
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)

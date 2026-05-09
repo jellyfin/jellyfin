@@ -104,8 +104,6 @@
     "TaskDownloadMissingSubtitles": "Fehlend Ënnertitelen eroflueden",
     "TaskOptimizeDatabase": "Datebank optiméieren",
     "TaskKeyframeExtractor": "Schlësselbild Extrakter",
-    "TaskCleanCollectionsAndPlaylists": "Sammlungen a Playlisten botzen",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Ewechhuele vun Elementer aus Sammlungen a Playlisten, déi net méi existéieren.",
     "TaskExtractMediaSegments": "Mediesegment-Scan",
     "NewVersionIsAvailable": "Nei Versioun fir Jellyfin Server ass verfügbar.",
     "CameraImageUploadedFrom": "En neit Kamera Bild gouf vu {0} eropgelueden",

@@ -40,11 +40,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         private readonly List<(IWebSocketConnection Connection, CancellationTokenSource CancellationTokenSource, TStateType State)> _activeConnections = new();
 
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected readonly ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
-
         private readonly Task _messageConsumerTask;
 
         protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
@@ -55,6 +50,11 @@ namespace MediaBrowser.Controller.Net
 
             _messageConsumerTask = HandleMessages();
         }
+
+        /// <summary>
+        /// Gets the Logger.
+        /// </summary>
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger { get; }
 
         /// <summary>
         /// Gets the type used for the messages sent to the client.

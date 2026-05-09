@@ -793,6 +793,16 @@ namespace Emby.Server.Implementations.Session
                 PlaySessionId = info.PlaySessionId
             };
 
+            if (info.Item is not null)
+            {
+                _logger.LogInformation(
+                    "User {0} started playback of '{1}' ({2} {3})",
+                    session.UserName,
+                    info.Item.Name,
+                    session.Client,
+                    session.ApplicationVersion);
+            }
+
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
 
             // Nothing to save here
@@ -821,10 +831,6 @@ namespace Emby.Server.Implementations.Session
             if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
             {
                 data.Played = true;
-            }
-            else
-            {
-                data.Played = false;
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
@@ -950,7 +956,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var tracksChanged = UpdatePlaybackSettings(user, info, data);
-            if (!tracksChanged)
+            if (tracksChanged)
             {
                 changed = true;
             }
@@ -967,7 +973,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user.RememberAudioSelections)
             {
-                if (data.AudioStreamIndex != info.AudioStreamIndex)
+                if (info.AudioStreamIndex.HasValue && data.AudioStreamIndex != info.AudioStreamIndex)
                 {
                     data.AudioStreamIndex = info.AudioStreamIndex;
                     changed = true;
@@ -984,7 +990,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user.RememberSubtitleSelections)
             {
-                if (data.SubtitleStreamIndex != info.SubtitleStreamIndex)
+                if (info.SubtitleStreamIndex.HasValue && data.SubtitleStreamIndex != info.SubtitleStreamIndex)
                 {
                     data.SubtitleStreamIndex = info.SubtitleStreamIndex;
                     changed = true;
@@ -1015,14 +1021,21 @@ namespace Emby.Server.Implementations.Session
 
             ArgumentNullException.ThrowIfNull(info);
 
-            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
-            }
-
             var session = GetSession(info.SessionId);
 
             session.StopAutomaticProgress();
+
+            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
+            {
+                // Ensure live stream is cleaned up before throwing, to prevent tuner
+                // resource leaks when stalled clients report a negative PositionTicks.
+                if (!string.IsNullOrEmpty(info.LiveStreamId))
+                {
+                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
+            }
 
             var libraryItem = info.ItemId.IsEmpty()
                 ? null
@@ -1060,11 +1073,12 @@ namespace Emby.Server.Implementations.Session
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
                 _logger.LogInformation(
-                    "Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
-                    session.Client,
-                    session.ApplicationVersion,
+                    "User {0} stopped playback of '{1}' at {2}ms ({3} {4})",
+                    session.UserName,
                     info.Item.Name,
-                    msString);
+                    msString,
+                    session.Client,
+                    session.ApplicationVersion);
             }
 
             if (info.NowPlayingQueue is not null)
@@ -1175,7 +1189,8 @@ namespace Emby.Server.Implementations.Session
             return session;
         }
 
-        private SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
+        /// <inheritdoc />
+        public SessionInfoDto ToSessionInfoDto(SessionInfo sessionInfo)
         {
             return new SessionInfoDto
             {
@@ -1820,7 +1835,6 @@ namespace Emby.Server.Implementations.Session
                 fields.Remove(ItemFields.Settings);
                 fields.Remove(ItemFields.SortName);
                 fields.Remove(ItemFields.Tags);
-                fields.Remove(ItemFields.ExtraIds);
 
                 dtoOptions.Fields = fields.ToArray();
 
@@ -2042,7 +2056,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var adminUserIds = _userManager.Users
+            var adminUserIds = _userManager.GetUsers()
                 .Where(i => i.HasPermission(PermissionKind.IsAdministrator))
                 .Select(i => i.Id)
                 .ToList();

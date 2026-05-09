@@ -73,7 +73,6 @@
     "Shows": "Seriály",
     "Songs": "Skladby",
     "StartupEmbyServerIsLoading": "Jellyfin Server je spouštěn. Zkuste to prosím v brzké době znovu.",
-    "SubtitleDownloadFailureForItem": "Stahování titulků selhalo pro {0}",
     "SubtitleDownloadFailureFromForItem": "Stažení titulků pro {1} z {0} selhalo",
     "Sync": "Synchronizace",
     "System": "Systém",
@@ -127,8 +126,6 @@
     "HearingImpaired": "Sluchově postižení",
     "TaskRefreshTrickplayImages": "Generovat obrázky pro Trickplay",
     "TaskRefreshTrickplayImagesDescription": "Obrázky Trickplay se používají k zobrazení náhledů u videí v knihovnách, kde je to povoleno.",
-    "TaskCleanCollectionsAndPlaylists": "Pročistit kolekce a seznamy přehrávání",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Odstraní neexistující položky z kolekcí a seznamů přehrávání.",
     "TaskAudioNormalization": "Normalizace zvuku",
     "TaskAudioNormalizationDescription": "Skenovat soubory za účelem normalizace zvuku.",
     "TaskDownloadMissingLyrics": "Stáhnout chybějící texty k písni",
@@ -138,5 +135,6 @@
     "TaskMoveTrickplayImages": "Přesunout úložiště obrázků Trickplay",
     "TaskMoveTrickplayImagesDescription": "Přesune existující soubory Trickplay podle nastavení knihovny.",
     "CleanupUserDataTaskDescription": "Odstraní všechna uživatelská data (stav zhlédnutí, oblíbené atd.) z médií, které již neexistují více než 90 dní.",
-    "CleanupUserDataTask": "Pročistit uživatelská data"
+    "CleanupUserDataTask": "Pročistit uživatelská data",
+    "Original": "Originál"
 }

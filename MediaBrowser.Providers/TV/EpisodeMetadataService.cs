@@ -109,5 +109,15 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
         {
             targetItem.IndexNumberEnd = sourceItem.IndexNumberEnd;
         }
+
+        // Episode season numbers can be set from path parsing before local metadata is merged.
+        // When a provider supplies an explicit season, prefer it during provider->temp and temp->item merges,
+        // but avoid clobbering provider data when existing metadata is backfilled into temp.
+        if (mergeMetadataSettings
+            && sourceItem.ParentIndexNumber.HasValue
+            && targetItem.ParentIndexNumber != sourceItem.ParentIndexNumber)
+        {
+            targetItem.ParentIndexNumber = sourceItem.ParentIndexNumber;
+        }
     }
 }

@@ -158,7 +158,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 devices = devices.Skip(query.Skip.Value);
             }
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 devices = devices.Take(query.Limit.Value);
             }

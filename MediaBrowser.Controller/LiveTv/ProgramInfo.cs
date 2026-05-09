@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -12,45 +10,45 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public ProgramInfo()
         {
-            Genres = new List<string>();
+            Genres = [];
 
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ProviderIds = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            SeriesProviderIds = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Gets or sets the id of the program.
         /// </summary>
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
-        public string ChannelId { get; set; }
+        public string? ChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the program.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
-        public string OfficialRating { get; set; }
+        public string? OfficialRating { get; set; }
 
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
-        public string Overview { get; set; }
+        public string? Overview { get; set; }
 
         /// <summary>
         /// Gets or sets the short overview.
         /// </summary>
         /// <value>The short overview.</value>
-        public string ShortOverview { get; set; }
+        public string? ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the start date of the program, in UTC.
@@ -108,25 +106,25 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the episode title.
         /// </summary>
         /// <value>The episode title.</value>
-        public string EpisodeTitle { get; set; }
+        public string? EpisodeTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
-        public string ImagePath { get; set; }
+        public string? ImagePath { get; set; }
 
         /// <summary>
         /// Gets or sets the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
-        public string ThumbImageUrl { get; set; }
+        public string? ThumbImageUrl { get; set; }
 
-        public string LogoImageUrl { get; set; }
+        public string? LogoImageUrl { get; set; }
 
-        public string BackdropImageUrl { get; set; }
+        public string? BackdropImageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has image.
@@ -188,19 +186,19 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the home page URL.
         /// </summary>
         /// <value>The home page URL.</value>
-        public string HomePageUrl { get; set; }
+        public string? HomePageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the series identifier.
         /// </summary>
         /// <value>The series identifier.</value>
-        public string SeriesId { get; set; }
+        public string? SeriesId { get; set; }
 
         /// <summary>
         /// Gets or sets the show identifier.
         /// </summary>
         /// <value>The show identifier.</value>
-        public string ShowId { get; set; }
+        public string? ShowId { get; set; }
 
         /// <summary>
         /// Gets or sets the season number.
@@ -218,10 +216,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the etag.
         /// </summary>
         /// <value>The etag.</value>
-        public string Etag { get; set; }
+        public string? Etag { get; set; }
 
-        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string?> ProviderIds { get; set; }
 
-        public Dictionary<string, string> SeriesProviderIds { get; set; }
+        public Dictionary<string, string?> SeriesProviderIds { get; set; }
     }
 }

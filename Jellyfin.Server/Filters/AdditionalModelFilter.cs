@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
-using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Filters
@@ -25,7 +24,7 @@ namespace Jellyfin.Server.Filters
     public class AdditionalModelFilter : IDocumentFilter
     {
         // Array of options that should not be visible in the api spec.
-        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions) };
+        private static readonly Type[] _ignoredConfigurations = [typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions)];
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -48,8 +47,8 @@ namespace Jellyfin.Server.Filters
                             && t != typeof(WebSocketMessageInfo))
                 .ToList();
 
-            var inboundWebSocketSchemas = new List<OpenApiSchema>();
-            var inboundWebSocketDiscriminators = new Dictionary<string, string>();
+            var inboundWebSocketSchemas = new List<IOpenApiSchema>();
+            var inboundWebSocketDiscriminators = new Dictionary<string, OpenApiSchemaReference>();
             foreach (var type in webSocketTypes.Where(t => typeof(IInboundWebSocketMessage).IsAssignableFrom(t)))
             {
                 var messageType = (SessionMessageType?)type.GetProperty(nameof(WebSocketMessage.MessageType))?.GetCustomAttribute<DefaultValueAttribute>()?.Value;
@@ -60,18 +59,16 @@ namespace Jellyfin.Server.Filters
 
                 var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
                 inboundWebSocketSchemas.Add(schema);
-                inboundWebSocketDiscriminators[messageType.ToString()!] = schema.Reference.ReferenceV3;
+                if (schema is OpenApiSchemaReference schemaRef)
+                {
+                    inboundWebSocketDiscriminators[messageType.ToString()!] = schemaRef;
+                }
             }
 
             var inboundWebSocketMessageSchema = new OpenApiSchema
             {
-                Type = "object",
+                Type = JsonSchemaType.Object,
                 Description = "Represents the list of possible inbound websocket types",
-                Reference = new OpenApiReference
-                {
-                    Id = nameof(InboundWebSocketMessage),
-                    Type = ReferenceType.Schema
-                },
                 OneOf = inboundWebSocketSchemas,
                 Discriminator = new OpenApiDiscriminator
                 {
@@ -82,8 +79,8 @@ namespace Jellyfin.Server.Filters
 
             context.SchemaRepository.AddDefinition(nameof(InboundWebSocketMessage), inboundWebSocketMessageSchema);
 
-            var outboundWebSocketSchemas = new List<OpenApiSchema>();
-            var outboundWebSocketDiscriminators = new Dictionary<string, string>();
+            var outboundWebSocketSchemas = new List<IOpenApiSchema>();
+            var outboundWebSocketDiscriminators = new Dictionary<string, OpenApiSchemaReference>();
             foreach (var type in webSocketTypes.Where(t => typeof(IOutboundWebSocketMessage).IsAssignableFrom(t)))
             {
                 var messageType = (SessionMessageType?)type.GetProperty(nameof(WebSocketMessage.MessageType))?.GetCustomAttribute<DefaultValueAttribute>()?.Value;
@@ -94,58 +91,55 @@ namespace Jellyfin.Server.Filters
 
                 var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
                 outboundWebSocketSchemas.Add(schema);
-                outboundWebSocketDiscriminators.Add(messageType.ToString()!, schema.Reference.ReferenceV3);
+                if (schema is OpenApiSchemaReference schemaRef)
+                {
+                    outboundWebSocketDiscriminators.Add(messageType.ToString()!, schemaRef);
+                }
             }
 
             // Add custom "SyncPlayGroupUpdateMessage" schema because Swashbuckle cannot generate it for us
             var syncPlayGroupUpdateMessageSchema = new OpenApiSchema
             {
-                Type = "object",
+                Type = JsonSchemaType.Object,
                 Description = "Untyped sync play command.",
-                Properties = new Dictionary<string, OpenApiSchema>
+                Properties = new Dictionary<string, IOpenApiSchema>
                 {
                     {
                         "Data", new OpenApiSchema
                         {
-                            AllOf =
-                            [
-                                new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = nameof(GroupUpdate<object>) } }
-                            ],
+                            AllOf = new List<IOpenApiSchema>
+                            {
+                                new OpenApiSchemaReference(nameof(GroupUpdate<object>), null, null)
+                            },
                             Description = "Group update data",
-                            Nullable = false,
                         }
                     },
-                    { "MessageId", new OpenApiSchema { Type = "string", Format = "uuid", Description = "Gets or sets the message id." } },
+                    { "MessageId", new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid", Description = "Gets or sets the message id." } },
                     {
                         "MessageType", new OpenApiSchema
                         {
-                            Enum = Enum.GetValues<SessionMessageType>().Select(type => new OpenApiString(type.ToString())).ToList<IOpenApiAny>(),
-                            AllOf =
-                            [
-                                new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = nameof(SessionMessageType) } }
-                            ],
+                            Enum = Enum.GetValues<SessionMessageType>().Select(type => (JsonNode)JsonValue.Create(type.ToString())!).ToList(),
+                            AllOf = new List<IOpenApiSchema>
+                            {
+                                new OpenApiSchemaReference(nameof(SessionMessageType), null, null)
+                            },
                             Description = "The different kinds of messages that are used in the WebSocket api.",
-                            Default = new OpenApiString(nameof(SessionMessageType.SyncPlayGroupUpdate)),
+                            Default = JsonValue.Create(nameof(SessionMessageType.SyncPlayGroupUpdate)),
                             ReadOnly = true
                         }
                     },
                 },
                 AdditionalPropertiesAllowed = false,
-                Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = "SyncPlayGroupUpdateMessage" }
             };
             context.SchemaRepository.AddDefinition("SyncPlayGroupUpdateMessage", syncPlayGroupUpdateMessageSchema);
-            outboundWebSocketSchemas.Add(syncPlayGroupUpdateMessageSchema);
-            outboundWebSocketDiscriminators[nameof(SessionMessageType.SyncPlayGroupUpdate)] = syncPlayGroupUpdateMessageSchema.Reference.ReferenceV3;
+            var syncPlayRef = new OpenApiSchemaReference("SyncPlayGroupUpdateMessage", null, null);
+            outboundWebSocketSchemas.Add(syncPlayRef);
+            outboundWebSocketDiscriminators[nameof(SessionMessageType.SyncPlayGroupUpdate)] = syncPlayRef;
 
             var outboundWebSocketMessageSchema = new OpenApiSchema
             {
-                Type = "object",
+                Type = JsonSchemaType.Object,
                 Description = "Represents the list of possible outbound websocket types",
-                Reference = new OpenApiReference
-                {
-                    Id = nameof(OutboundWebSocketMessage),
-                    Type = ReferenceType.Schema
-                },
                 OneOf = outboundWebSocketSchemas,
                 Discriminator = new OpenApiDiscriminator
                 {
@@ -159,17 +153,12 @@ namespace Jellyfin.Server.Filters
                 nameof(WebSocketMessage),
                 new OpenApiSchema
                 {
-                    Type = "object",
+                    Type = JsonSchemaType.Object,
                     Description = "Represents the possible websocket types",
-                    Reference = new OpenApiReference
+                    OneOf = new List<IOpenApiSchema>
                     {
-                        Id = nameof(WebSocketMessage),
-                        Type = ReferenceType.Schema
-                    },
-                    OneOf = new[]
-                    {
-                        inboundWebSocketMessageSchema,
-                        outboundWebSocketMessageSchema
+                        new OpenApiSchemaReference(nameof(InboundWebSocketMessage), null, null),
+                        new OpenApiSchemaReference(nameof(OutboundWebSocketMessage), null, null)
                     }
                 });
 
@@ -180,8 +169,8 @@ namespace Jellyfin.Server.Filters
                             && t.BaseType.GetGenericTypeDefinition() == typeof(GroupUpdate<>))
                 .ToList();
 
-            var groupUpdateSchemas = new List<OpenApiSchema>();
-            var groupUpdateDiscriminators = new Dictionary<string, string>();
+            var groupUpdateSchemas = new List<IOpenApiSchema>();
+            var groupUpdateDiscriminators = new Dictionary<string, OpenApiSchemaReference>();
             foreach (var type in groupUpdateTypes)
             {
                 var groupUpdateType = (GroupUpdateType?)type.GetProperty(nameof(GroupUpdate<object>.Type))?.GetCustomAttribute<DefaultValueAttribute>()?.Value;
@@ -192,18 +181,16 @@ namespace Jellyfin.Server.Filters
 
                 var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
                 groupUpdateSchemas.Add(schema);
-                groupUpdateDiscriminators[groupUpdateType.ToString()!] = schema.Reference.ReferenceV3;
+                if (schema is OpenApiSchemaReference schemaRef)
+                {
+                    groupUpdateDiscriminators[groupUpdateType.ToString()!] = schemaRef;
+                }
             }
 
             var groupUpdateSchema = new OpenApiSchema
             {
-                Type = "object",
+                Type = JsonSchemaType.Object,
                 Description = "Represents the list of possible group update types",
-                Reference = new OpenApiReference
-                {
-                    Id = nameof(GroupUpdate<object>),
-                    Type = ReferenceType.Schema
-                },
                 OneOf = groupUpdateSchemas,
                 Discriminator = new OpenApiDiscriminator
                 {
@@ -225,15 +212,6 @@ namespace Jellyfin.Server.Filters
 
                 context.SchemaGenerator.GenerateSchema(configuration.ConfigurationType, context.SchemaRepository);
             }
-
-            context.SchemaRepository.AddDefinition(nameof(TranscodeReason), new OpenApiSchema
-            {
-                Type = "string",
-                Enum = Enum.GetNames<TranscodeReason>()
-                    .Select(e => new OpenApiString(e))
-                    .Cast<IOpenApiAny>()
-                    .ToArray()
-            });
         }
     }
 }

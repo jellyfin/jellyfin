@@ -103,11 +103,11 @@ namespace MediaBrowser.Common.Configuration
         void MakeSanityCheckOrThrow();
 
         /// <summary>
-        /// Checks and creates the given path and adds it with a marker file if non existant.
+        /// Checks and creates the given path and adds it with a marker file if non existent.
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <param name="markerName">The common marker file name.</param>
-        /// <param name="recursive">Check for other settings paths recursivly.</param>
+        /// <param name="recursive">Check for other settings paths recursively.</param>
         void CreateAndCheckMarker(string path, string markerName, bool recursive = false);
     }
 }

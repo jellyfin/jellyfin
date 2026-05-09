@@ -396,7 +396,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(_mediaEncoder.EncoderPath);
 
         // If subtitles get burned in fonts may need to be extracted from the media file
-        if (state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+        if (state.SubtitleStream is not null && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode || state.BaseRequest.AlwaysBurnInSubtitleWhenTranscoding))
         {
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
@@ -673,7 +673,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
             if (state.VideoRequest is not null)
             {
-                _encodingHelper.TryStreamCopy(state);
+                _encodingHelper.TryStreamCopy(state, encodingOptions);
             }
         }
 

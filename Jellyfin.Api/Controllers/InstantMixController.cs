@@ -90,7 +90,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -134,7 +133,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -178,7 +176,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -214,7 +211,6 @@ public class InstantMixController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromGenres(new[] { name }, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -258,7 +254,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -302,7 +297,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
@@ -326,6 +320,7 @@ public class InstantMixController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("Use GetInstantMixFromArtists")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists2(
         [FromQuery, Required] Guid id,
         [FromQuery] Guid? userId,
@@ -364,6 +359,7 @@ public class InstantMixController : BaseJellyfinApiController
     [HttpGet("MusicGenres/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Obsolete("Use GetInstantMixFromMusicGenreByName")]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
         [FromQuery, Required] Guid id,
         [FromQuery] Guid? userId,
@@ -385,7 +381,6 @@ public class InstantMixController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
-            .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
         var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);

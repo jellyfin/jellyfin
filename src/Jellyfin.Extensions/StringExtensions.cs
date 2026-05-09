@@ -131,7 +131,7 @@ namespace Jellyfin.Extensions
         /// </summary>
         /// <param name="values">The enumerable of strings to trim.</param>
         /// <returns>The enumeration of trimmed strings.</returns>
-        public static IEnumerable<string> Trimmed(this IEnumerable<string> values)
+        public static IEnumerable<string> Trimmed(this IEnumerable<string?> values)
         {
             return values.Select(i => (i ?? string.Empty).Trim());
         }
@@ -147,6 +147,31 @@ namespace Jellyfin.Extensions
         public static string TruncateAtNull(this string text)
         {
             return string.IsNullOrEmpty(text) ? text : text.AsSpan().LeftPart('\0').ToString();
+        }
+
+        /// <summary>
+        /// Normalizes a string for comparison by removing diacritics, converting to lowercase,
+        /// replacing punctuation/special characters with spaces, and collapsing whitespace.
+        /// </summary>
+        /// <param name="value">The string to normalize.</param>
+        /// <returns>The normalized string, or the original if null/whitespace.</returns>
+        public static string GetCleanValue(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            // Remove diacritics and convert to lowercase
+            var cleaned = value.RemoveDiacritics().ToLowerInvariant();
+
+            // Replace all punctuation and special characters with spaces
+            cleaned = Regex.Replace(cleaned, @"[^\p{L}\p{N}\s]", " ");
+
+            // Collapse multiple spaces into single space and trim
+            cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
+
+            return cleaned;
         }
     }
 }

@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieTmdbId <= 0)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
@@ -89,17 +89,28 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movie?.Images is null)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             var posters = movie.Images.Posters;
             var backdrops = movie.Images.Backdrops;
             var logos = movie.Images.Logos;
-            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
+            var remoteImages = new List<RemoteImageInfo>(posters?.Count ?? 0 + backdrops?.Count ?? 0 + logos?.Count ?? 0);
 
-            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            if (posters is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            }
+
+            if (backdrops is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            }
+
+            if (logos is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            }
 
             return remoteImages;
         }

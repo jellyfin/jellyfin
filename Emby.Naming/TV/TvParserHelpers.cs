@@ -18,7 +18,7 @@ public static class TvParserHelpers
     /// <param name="status">The status string.</param>
     /// <param name="enumValue">The <see cref="SeriesStatus"/>.</param>
     /// <returns>Returns true if parsing was successful.</returns>
-    public static bool TryParseSeriesStatus(string status, out SeriesStatus? enumValue)
+    public static bool TryParseSeriesStatus(string? status, out SeriesStatus? enumValue)
     {
         if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
         {

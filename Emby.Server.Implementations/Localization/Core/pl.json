@@ -73,7 +73,6 @@
     "Shows": "Seriale",
     "Songs": "Utwory",
     "StartupEmbyServerIsLoading": "Trwa wczytywanie serwera Jellyfin. Spróbuj ponownie za chwilę.",
-    "SubtitleDownloadFailureForItem": "Pobieranie napisów dla {0} zakończone niepowodzeniem",
     "SubtitleDownloadFailureFromForItem": "Nieudane pobieranie napisów z {0} dla {1}",
     "Sync": "Synchronizacja",
     "System": "System",
@@ -125,10 +124,8 @@
     "TaskKeyframeExtractorDescription": "Wyodrębnia klatki kluczowe z plików wideo w celu utworzenia bardziej precyzyjnych list odtwarzania HLS. To zadanie może trwać przez długi czas.",
     "TaskKeyframeExtractor": "Ekstraktor klatek kluczowych",
     "HearingImpaired": "Niedosłyszący",
-    "TaskRefreshTrickplayImages": "Generuj obrazy trickplay",
-    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Usuwa elementy z kolekcji i list odtwarzania, które już nie istnieją.",
-    "TaskCleanCollectionsAndPlaylists": "Oczyść kolekcje i listy odtwarzania",
+    "TaskRefreshTrickplayImages": "Generuj obrazy Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy Trickplay dla filmów we włączonych bibliotekach.",
     "TaskAudioNormalization": "Normalizacja dźwięku",
     "TaskAudioNormalizationDescription": "Skanuje pliki w poszukiwaniu danych normalizacji dźwięku.",
     "TaskDownloadMissingLyrics": "Pobierz brakujące słowa",
@@ -138,5 +135,6 @@
     "TaskExtractMediaSegmentsDescription": "Wyodrębnia lub pobiera segmenty mediów z wtyczek obsługujących MediaSegment.",
     "TaskMoveTrickplayImagesDescription": "Przenosi istniejące pliki Trickplay zgodnie z ustawieniami biblioteki.",
     "CleanupUserDataTaskDescription": "Usuwa wszystkie dane użytkownika (stan oglądanych, status ulubionych itp.) z mediów, które nie są dostępne od co najmniej 90 dni.",
-    "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika"
+    "CleanupUserDataTask": "Zadanie czyszczenia danych użytkownika",
+    "Original": "Oryginalny"
 }

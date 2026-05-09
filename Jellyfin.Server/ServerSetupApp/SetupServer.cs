@@ -142,6 +142,7 @@ public sealed class SetupServer : IDisposable
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
         var config = _configurationManager.GetNetworkConfiguration()!;
+        _startupServer?.Dispose();
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
             .UseSerilog()
@@ -162,7 +163,7 @@ public sealed class SetupServer : IDisposable
                                 {
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(_loggerFactory.CreateLogger<NetworkManager>(), false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,
@@ -249,6 +250,7 @@ public sealed class SetupServer : IDisposable
                                             {
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
+                                                { "version", typeof(Emby.Server.Implementations.ApplicationHost).Assembly.GetName().Version! },
                                                 { "logs", startupLogEntries },
                                                 { "networkManagerReady", networkManager is not null },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }

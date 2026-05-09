@@ -287,7 +287,7 @@ namespace Jellyfin.LiveTv
                 GenreIds = query.GenreIds
             };
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 internalQuery.Limit = Math.Max(query.Limit.Value * 4, 200);
             }
@@ -305,7 +305,7 @@ namespace Jellyfin.LiveTv
 
             IEnumerable<BaseItem> programs = orderedPrograms;
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 programs = programs.Take(query.Limit.Value);
             }
@@ -1204,7 +1204,7 @@ namespace Jellyfin.LiveTv
             {
                 Services = services,
                 IsEnabled = services.Length > 0,
-                EnabledUsers = _userManager.Users
+                EnabledUsers = _userManager.GetUsers()
                     .Where(IsLiveTvEnabled)
                     .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
                     .ToArray()
@@ -1220,7 +1220,7 @@ namespace Jellyfin.LiveTv
 
         public IEnumerable<User> GetEnabledUsers()
         {
-            return _userManager.Users
+            return _userManager.GetUsers()
                 .Where(IsLiveTvEnabled);
         }
 

@@ -610,7 +610,6 @@ namespace MediaBrowser.Model.Dlna
             playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
             playlistItem.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
 
-            playlistItem.BreakOnNonKeyFrames = transcodingProfile.BreakOnNonKeyFrames;
             playlistItem.EnableAudioVbrEncoding = transcodingProfile.EnableAudioVbrEncoding;
 
             if (transcodingProfile.MinSegments > 0)
@@ -1556,7 +1555,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!subtitleStream.IsExternal && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
+                if (!subtitleStream.IsExternal && playMethod == PlayMethod.Transcode && !transcoderSupport.CanExtractSubtitles(subtitleStream.Codec))
                 {
                     continue;
                 }
@@ -2010,7 +2009,7 @@ namespace MediaBrowser.Model.Dlna
                             }
                             else if (condition.Condition == ProfileConditionType.NotEquals)
                             {
-                                item.SetOption(qualifier, "rangetype", string.Join(',', Enum.GetNames(typeof(VideoRangeType)).Except(values)));
+                                item.SetOption(qualifier, "rangetype", string.Join(',', Enum.GetNames<VideoRangeType>().Except(values)));
                             }
                             else if (condition.Condition == ProfileConditionType.EqualsAny)
                             {

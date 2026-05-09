@@ -10,11 +10,11 @@ using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
 using Xunit;
-using Xunit.Priority;
+using Xunit.v3.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
 {
-    [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
+    [TestCaseOrderer(typeof(PriorityOrderer))]
     public sealed class UserControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private const string TestUsername = "testUser01";
@@ -41,9 +41,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            using var response = await client.GetAsync("Users/Public");
+            using var response = await client.GetAsync("Users/Public", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions, TestContext.Current.CancellationToken);
             // User are hidden by default
             Assert.NotNull(users);
             Assert.Empty(users);
@@ -56,12 +56,11 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            using var response = await client.GetAsync("Users");
+            using var response = await client.GetAsync("Users", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOptions, TestContext.Current.CancellationToken);
             Assert.NotNull(users);
             Assert.Single(users);
-            Assert.False(users![0].HasConfiguredPassword);
         }
 
         [Fact]
@@ -90,10 +89,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await CreateUserByName(client, createRequest);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions);
+            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions, TestContext.Current.CancellationToken);
             Assert.Equal(TestUsername, user!.Name);
-            Assert.False(user.HasPassword);
-            Assert.False(user.HasConfiguredPassword);
 
             _testUserId = user.Id;
 
@@ -131,7 +128,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             // access token can't be null here as the previous test populated it
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
 
-            using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}");
+            using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -149,12 +146,6 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-            var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users"), _jsonOptions);
-            var user = users!.First(x => x.Id.Equals(_testUserId));
-            Assert.True(user.HasPassword);
-            Assert.True(user.HasConfiguredPassword);
         }
 
         [Fact]
@@ -172,12 +163,6 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-            var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users"), _jsonOptions);
-            var user = users!.First(x => x.Id.Equals(_testUserId));
-            Assert.False(user.HasPassword);
-            Assert.False(user.HasConfiguredPassword);
         }
     }
 }

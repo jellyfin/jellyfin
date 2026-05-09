@@ -156,6 +156,13 @@ namespace Jellyfin.LiveTv.IO
             if (mediaSource.ReadAtNativeFramerate)
             {
                 inputModifier += " -re";
+
+                // Set a larger catchup value to revert to the old behavior,
+                // otherwise, remuxing might stall due to this new option
+                if (_mediaEncoder.EncoderVersion >= new Version(8, 0))
+                {
+                    inputModifier += " -readrate_catchup 100";
+                }
             }
 
             if (mediaSource.RequiresLooping)

@@ -79,11 +79,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var posters = series.Images.Posters;
             var backdrops = series.Images.Backdrops;
             var logos = series.Images.Logos;
-            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
+            var remoteImages = new List<RemoteImageInfo>(posters?.Count ?? 0 + backdrops?.Count ?? 0 + logos?.Count ?? 0);
 
-            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
-            remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            if (posters is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            }
+
+            if (backdrops is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            }
+
+            if (logos is not null)
+            {
+                remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
+            }
 
             return remoteImages;
         }

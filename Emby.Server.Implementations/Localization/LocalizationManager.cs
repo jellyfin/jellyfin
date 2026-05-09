@@ -38,6 +38,7 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
+        private readonly ConcurrentDictionary<string, CultureDto?> _cultureCache = new(StringComparer.OrdinalIgnoreCase);
         private List<CultureDto> _cultures = [];
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
@@ -137,7 +138,7 @@ namespace Emby.Server.Implementations.Localization
                     string twoCharName = parts[2];
                     if (string.IsNullOrWhiteSpace(twoCharName))
                     {
-                        continue;
+                        twoCharName = string.Empty;
                     }
                     else if (twoCharName.Contains('-', StringComparison.OrdinalIgnoreCase))
                     {
@@ -161,6 +162,7 @@ namespace Emby.Server.Implementations.Localization
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
+                _cultureCache.Clear();
                 _cultures = list;
                 _iso6392BtoT = iso6392BtoTdict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
             }
@@ -169,20 +171,31 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public CultureDto? FindLanguageInfo(string language)
         {
-            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
-            for (var i = 0; i < _cultures.Count; i++)
+            if (string.IsNullOrEmpty(language))
             {
-                var culture = _cultures[i];
-                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
-                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
-                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return culture;
-                }
+                return null;
             }
 
-            return default;
+            return _cultureCache.GetOrAdd(
+                language,
+                static (lang, cultures) =>
+                {
+                    // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+                    for (var i = 0; i < cultures.Count; i++)
+                    {
+                        var culture = cultures[i];
+                        if (lang.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                            || culture.ThreeLetterISOLanguageNames.Contains(lang, StringComparison.OrdinalIgnoreCase)
+                            || lang.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return culture;
+                        }
+                    }
+
+                    return null;
+                },
+                _cultures);
         }
 
         /// <inheritdoc />
@@ -307,19 +320,31 @@ namespace Emby.Server.Implementations.Localization
                 {
                     return value;
                 }
+
+                if (ratingsDictionary is not null && rating.Length > countryCode.Length
+                    && rating.StartsWith(countryCode, StringComparison.OrdinalIgnoreCase)
+                    && (rating[countryCode.Length] == '-' || rating[countryCode.Length] == ':')
+                    && ratingsDictionary.TryGetValue(rating[(countryCode.Length + 1)..].Trim(), out var normalizedValue))
+                {
+                    return normalizedValue;
+                }
             }
             else
             {
                 // Fall back to server default language for ratings check
-                // If it has no ratings, use the US ratings
-                var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
+                var ratingsDictionary = GetParentalRatingsDictionary();
                 if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRatingScore? value))
                 {
                     return value;
                 }
             }
 
-            // If we don't find anything, check all ratings systems
+            // If we don't find anything, check all ratings systems, starting with US
+            if (_allParentalRatings.TryGetValue("us", out var usRatings) && usRatings.TryGetValue(rating, out var usValue))
+            {
+                return usValue;
+            }
+
             foreach (var dictionary in _allParentalRatings.Values)
             {
                 if (dictionary.TryGetValue(rating, out var value))
@@ -328,33 +353,68 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // Try splitting by : to handle "Germany: FSK-18"
-            if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
+            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18"
+            if (TryGetRatingScoreBySeparator(rating, ':', out var result)
+                || TryGetRatingScoreBySeparator(rating, '-', out result))
             {
-                var ratingLevelRightPart = rating.AsSpan().RightPart(':');
-                if (ratingLevelRightPart.Length != 0)
-                {
-                    return GetRatingScore(ratingLevelRightPart.ToString());
-                }
-            }
-
-            // Handle prefix country code to handle "DE-18"
-            if (rating.Contains('-', StringComparison.OrdinalIgnoreCase))
-            {
-                var ratingSpan = rating.AsSpan();
-
-                // Extract culture from country prefix
-                var culture = FindLanguageInfo(ratingSpan.LeftPart('-').ToString());
-
-                var ratingLevelRightPart = ratingSpan.RightPart('-');
-                if (ratingLevelRightPart.Length != 0)
-                {
-                    // Check rating system of culture
-                    return GetRatingScore(ratingLevelRightPart.ToString(), culture?.TwoLetterISOLanguageName);
-                }
+                return result;
             }
 
             return null;
+        }
+
+        private bool TryGetRatingScoreBySeparator(string rating, char separator, out ParentalRatingScore? result)
+        {
+            result = null;
+
+            if (rating.IndexOf(separator, StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            var ratingSpan = rating.AsSpan();
+            var countryPart = ratingSpan.LeftPart(separator).Trim().ToString();
+            var ratingPart = ratingSpan.RightPart(separator).Trim().ToString();
+            if (ratingPart.Length == 0)
+            {
+                return false;
+            }
+
+            string? resolvedCountryCode = null;
+
+            if (_allParentalRatings.ContainsKey(countryPart))
+            {
+                resolvedCountryCode = countryPart;
+            }
+            else
+            {
+                var culture = FindLanguageInfo(countryPart);
+                if (culture is not null)
+                {
+                    resolvedCountryCode = culture.TwoLetterISOLanguageName;
+                }
+            }
+
+            if (resolvedCountryCode is not null
+                && _allParentalRatings.TryGetValue(resolvedCountryCode, out var countryRatings))
+            {
+                if (countryRatings.TryGetValue(ratingPart, out result))
+                {
+                    return true;
+                }
+
+                _logger.LogWarning(
+                    "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
+                    rating,
+                    resolvedCountryCode);
+
+                return true;
+            }
+
+            // Country not identified or no rating data available, try recursive lookup
+            result = GetRatingScore(ratingPart, resolvedCountryCode);
+
+            return true;
         }
 
         /// <inheritdoc />

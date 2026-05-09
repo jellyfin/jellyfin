@@ -216,8 +216,7 @@ public class StreamInfoTests
 
         string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
-        // New version will return and & after the ? due to optional parameters.
-        string newUrl = streamInfo.ToUrl(BaseUrl, "123", null).Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
+        string newUrl = streamInfo.ToUrl(BaseUrl, "123", null);
 
         Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
     }
@@ -234,8 +233,7 @@ public class StreamInfoTests
             FillAllProperties(streamInfo);
             string legacyUrl = streamInfo.ToUrl_Original(BaseUrl, "123");
 
-            // New version will return and & after the ? due to optional parameters.
-            string newUrl = streamInfo.ToUrl(BaseUrl, "123", null).Replace("?&", "?", StringComparison.OrdinalIgnoreCase);
+            string newUrl = streamInfo.ToUrl(BaseUrl, "123", null);
 
             Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
         }

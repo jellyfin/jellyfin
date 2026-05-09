@@ -37,9 +37,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the display order.
@@ -124,7 +122,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (sortBy == ItemSortBy.Default)
             {
-              return items;
+                return items;
             }
 
             return LibraryManager.Sort(items, user, new[] { sortBy }, SortOrder.Ascending);
@@ -133,6 +131,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
+            return Sort(children, user).ToArray();
+        }
+
+        public override IReadOnlyList<BaseItem> GetChildren(User user, bool includeLinkedChildren, out int totalItemCount, InternalItemsQuery query = null)
+        {
+            var children = base.GetChildren(user, includeLinkedChildren, out totalItemCount, query);
             return Sort(children, user).ToArray();
         }
 
@@ -154,25 +158,68 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return base.IsVisible(user, skipAllowedTagsCheck);
             }
 
-            if (base.IsVisible(user, skipAllowedTagsCheck))
+            if (!IsParentalAllowed(user, skipAllowedTagsCheck))
             {
-                if (LinkedChildren.Length == 0)
-                {
-                    return true;
-                }
-
-                var userLibraryFolderIds = GetLibraryFolderIds(user);
-                var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
-
-                if (libraryFolderIds.Length == 0)
-                {
-                    return true;
-                }
-
-                return userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i));
+                return false;
             }
 
-            return false;
+            if (LinkedChildren.Length == 0)
+            {
+                return true;
+            }
+
+            var userLibraryFolderIds = GetLibraryFolderIds(user);
+            var libraryFolderIds = LibraryFolderIds ?? GetLibraryFolderIds();
+
+            if (libraryFolderIds.Length == 0)
+            {
+                return true;
+            }
+
+            if (!userLibraryFolderIds.Any(i => libraryFolderIds.Contains(i)))
+            {
+                return false;
+            }
+
+            // If user has parental controls, hide the BoxSet when all children are restricted
+            if (user.MaxParentalRatingScore.HasValue)
+            {
+                var linkedItems = GetLinkedChildren();
+                if (linkedItems.Count > 0 && linkedItems.All(child => !child.IsParentalAllowed(user, true)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override void MarkPlayed(User user, DateTime? datePlayed, bool resetPosition)
+        {
+            if (IsLegacyBoxSet)
+            {
+                base.MarkPlayed(user, datePlayed, resetPosition);
+                return;
+            }
+
+            foreach (var item in GetLinkedChildren(user))
+            {
+                item.MarkPlayed(user, datePlayed, resetPosition);
+            }
+        }
+
+        public override void MarkUnplayed(User user)
+        {
+            if (IsLegacyBoxSet)
+            {
+                base.MarkUnplayed(user);
+                return;
+            }
+
+            foreach (var item in GetLinkedChildren(user))
+            {
+                item.MarkUnplayed(user);
+            }
         }
 
         public override bool IsVisibleStandalone(User user)

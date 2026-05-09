@@ -240,12 +240,9 @@ namespace Jellyfin.LiveTv.Channels
             var all = channels;
             var totalCount = all.Count;
 
-            if (query.StartIndex.HasValue || query.Limit.HasValue)
-            {
-                int startIndex = query.StartIndex ?? 0;
-                int count = query.Limit is null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
-                all = all.GetRange(startIndex, count);
-            }
+            int startIndex = query.StartIndex ?? 0;
+            int count = (query.Limit ?? 0) > 0 ? Math.Min(query.Limit.Value, totalCount - startIndex) : totalCount - startIndex;
+            all = all.GetRange(query.StartIndex ?? 0, count);
 
             if (query.RefreshLatestChannelItems)
             {

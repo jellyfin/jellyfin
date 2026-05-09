@@ -43,8 +43,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool AllowAudioStreamCopy { get; set; }
 
-        public bool BreakOnNonKeyFrames { get; set; }
-
         /// <summary>
         /// Gets or sets the audio sample rate.
         /// </summary>

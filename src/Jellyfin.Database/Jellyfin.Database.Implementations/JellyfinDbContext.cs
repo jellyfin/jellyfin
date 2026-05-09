@@ -144,6 +144,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<PeopleBaseItemMap> PeopleBaseItemMap => Set<PeopleBaseItemMap>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing linked children relationships.
+    /// </summary>
+    public DbSet<LinkedChildEntity> LinkedChildren => Set<LinkedChildEntity>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the referenced Providers with ids.
     /// </summary>
     public DbSet<BaseItemProvider> BaseItemProviders => Set<BaseItemProvider>();

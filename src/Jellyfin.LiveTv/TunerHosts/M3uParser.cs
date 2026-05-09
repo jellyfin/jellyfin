@@ -93,6 +93,13 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
+                    if (!IsValidChannelUrl(trimmedLine))
+                    {
+                        _logger.LogWarning("Skipping M3U channel entry with non-HTTP path: {Path}", trimmedLine);
+                        extInf = string.Empty;
+                        continue;
+                    }
+
                     var channel = GetChannelInfo(extInf, tunerHostId, trimmedLine);
                     channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -245,6 +252,16 @@ namespace Jellyfin.LiveTv.TunerHosts
             }
 
             return numberString;
+        }
+
+        private static bool IsValidChannelUrl(string url)
+        {
+            return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                && (string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtsp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "udp", StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool IsValidChannelNumber(string numberString)

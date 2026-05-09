@@ -16,6 +16,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Quick connect controller.
 /// </summary>
+[Tags("Authentication")]
 public class QuickConnectController : BaseJellyfinApiController
 {
     private readonly IQuickConnect _quickConnect;
@@ -52,6 +53,7 @@ public class QuickConnectController : BaseJellyfinApiController
     /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
     [HttpPost("Initiate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<QuickConnectResult>> InitiateQuickConnect()
     {
         try
@@ -64,16 +66,6 @@ public class QuickConnectController : BaseJellyfinApiController
             return Unauthorized("Quick connect is disabled");
         }
     }
-
-    /// <summary>
-    /// Old version of <see cref="InitiateQuickConnect" /> using a GET method.
-    /// Still available to avoid breaking compatibility.
-    /// </summary>
-    /// <returns>The result of <see cref="InitiateQuickConnect" />.</returns>
-    [Obsolete("Use POST request instead")]
-    [HttpGet("Initiate")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public Task<ActionResult<QuickConnectResult>> InitiateQuickConnectLegacy() => InitiateQuickConnect();
 
     /// <summary>
     /// Attempts to retrieve authentication information.

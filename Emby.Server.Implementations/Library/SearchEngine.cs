@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Library
                 results = results.GetRange(query.StartIndex.Value, totalRecordCount - query.StartIndex.Value);
             }
 
-            if (query.Limit.HasValue)
+            if (query.Limit.HasValue && query.Limit.Value > 0)
             {
                 results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
             }

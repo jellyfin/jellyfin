@@ -41,8 +41,8 @@ public class OfficialRatingComparer : IBaseItemComparer
         ArgumentNullException.ThrowIfNull(y);
         var zeroRating = new ParentalRatingScore(0, 0);
 
-        var ratingX = string.IsNullOrEmpty(x.OfficialRating) ? zeroRating : _localizationManager.GetRatingScore(x.OfficialRating) ?? zeroRating;
-        var ratingY = string.IsNullOrEmpty(y.OfficialRating) ? zeroRating : _localizationManager.GetRatingScore(y.OfficialRating) ?? zeroRating;
+        var ratingX = string.IsNullOrEmpty(x.OfficialRating) ? zeroRating : _localizationManager.GetRatingScore(x.OfficialRating, x.GetPreferredMetadataCountryCode()) ?? zeroRating;
+        var ratingY = string.IsNullOrEmpty(y.OfficialRating) ? zeroRating : _localizationManager.GetRatingScore(y.OfficialRating, y.GetPreferredMetadataCountryCode()) ?? zeroRating;
         var scoreCompare = ratingX.Score.CompareTo(ratingY.Score);
         if (scoreCompare is 0)
         {

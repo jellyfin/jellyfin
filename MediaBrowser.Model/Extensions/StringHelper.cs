@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Extensions
 {
     /// <summary>
@@ -25,14 +27,11 @@ namespace MediaBrowser.Model.Extensions
 
             return string.Create(
                 str.Length,
-                str,
+                str.AsSpan(),
                 (chars, buf) =>
                 {
                     chars[0] = char.ToUpperInvariant(buf[0]);
-                    for (int i = 1; i < chars.Length; i++)
-                    {
-                        chars[i] = buf[i];
-                    }
+                    buf.Slice(1).CopyTo(chars.Slice(1));
                 });
         }
     }

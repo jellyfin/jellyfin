@@ -87,11 +87,6 @@ public class StreamInfo
     public int? MinSegments { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the stream can be broken on non-keyframes.
-    /// </summary>
-    public bool BreakOnNonKeyFrames { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the stream requires AVC.
     /// </summary>
     public bool RequireAvc { get; set; }
@@ -900,7 +895,7 @@ public class StreamInfo
 
         if (SubProtocol == MediaStreamProtocol.hls)
         {
-            sb.Append("/master.m3u8?");
+            sb.Append("/master.m3u8");
         }
         else
         {
@@ -911,9 +906,9 @@ public class StreamInfo
                 sb.Append('.');
                 sb.Append(Container);
             }
-
-            sb.Append('?');
         }
+
+        var queryStart = sb.Length;
 
         if (!string.IsNullOrEmpty(DeviceProfileId))
         {
@@ -1018,9 +1013,6 @@ public class StreamInfo
                 sb.Append("&MinSegments=");
                 sb.Append(MinSegments.Value.ToString(CultureInfo.InvariantCulture));
             }
-
-            sb.Append("&BreakOnNonKeyFrames=");
-            sb.Append(BreakOnNonKeyFrames.ToString(CultureInfo.InvariantCulture));
         }
         else
         {
@@ -1141,6 +1133,12 @@ public class StreamInfo
             sb.Append(query);
         }
 
+        // Replace the first '&' with '?' to form a valid query string.
+        if (sb.Length > queryStart)
+        {
+            sb[queryStart] = '?';
+        }
+
         return sb.ToString();
     }
 
@@ -1250,29 +1248,36 @@ public class StreamInfo
 
         if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
         {
-            if (MediaSource.Protocol == MediaProtocol.File || !string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) || !stream.IsExternal)
-            {
-                info.Url = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
-                    baseUrl,
-                    ItemId,
-                    MediaSourceId,
-                    stream.Index.ToString(CultureInfo.InvariantCulture),
-                    startPositionTicks.ToString(CultureInfo.InvariantCulture),
-                    subtitleProfile.Format);
+            // Default to using the API URL
+            info.Url = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                baseUrl,
+                ItemId,
+                MediaSourceId,
+                stream.Index.ToString(CultureInfo.InvariantCulture),
+                startPositionTicks.ToString(CultureInfo.InvariantCulture),
+                subtitleProfile.Format);
+            info.IsExternalUrl = false;
 
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    info.Url += "?ApiKey=" + accessToken;
-                }
-
-                info.IsExternalUrl = false;
-            }
-            else
+            // Check conditions for potentially using the direct path
+            if (stream.IsExternal // Must be external
+                && stream.SupportsExternalStream
+                && string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) // Format must match (no conversion needed)
+                && !string.IsNullOrEmpty(stream.Path) // Path must exist
+                && Uri.TryCreate(stream.Path, UriKind.Absolute, out Uri? uriResult) // Path must be an absolute URI
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)) // Scheme must be HTTP or HTTPS
             {
+                // All conditions met, override with the direct path
                 info.Url = stream.Path;
                 info.IsExternalUrl = true;
+            }
+
+            // Append ApiKey only if we are using the API URL
+            if (!info.IsExternalUrl && !string.IsNullOrEmpty(accessToken))
+            {
+                // Use "?ApiKey=" as seen in HEAD and other parts of the code
+                info.Url += "?ApiKey=" + accessToken;
             }
         }
 

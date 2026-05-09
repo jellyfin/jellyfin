@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers;
 /// Display Preferences Controller.
 /// </summary>
 [Authorize]
+[Tags("DisplayPreference")]
 public class DisplayPreferencesController : BaseJellyfinApiController
 {
     private readonly IDisplayPreferencesManager _displayPreferencesManager;
@@ -156,13 +157,13 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
                                                         && !string.IsNullOrEmpty(skipBackLength)
             ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
-            : 10000;
+            : 15000;
         displayPreferences.CustomPrefs.Remove("skipBackLength");
 
         existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
                                                        && !string.IsNullOrEmpty(skipForwardLength)
             ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
-            : 30000;
+            : 15000;
         displayPreferences.CustomPrefs.Remove("skipForwardLength");
 
         existingDisplayPreferences.DashboardTheme = displayPreferences.CustomPrefs.TryGetValue("dashboardTheme", out var theme)
@@ -191,9 +192,17 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
         {
-            if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out _))
+            var viewType = displayPreferences.CustomPrefs[key];
+
+            if (string.IsNullOrEmpty(viewType))
             {
-                _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
+                displayPreferences.CustomPrefs.Remove(key);
+                continue;
+            }
+
+            if (!Enum.TryParse<ViewType>(viewType, true, out _))
+            {
+                _logger.LogError("Invalid ViewType: {LandingScreenOption}", viewType);
                 displayPreferences.CustomPrefs.Remove(key);
             }
         }

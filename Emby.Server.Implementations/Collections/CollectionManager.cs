@@ -313,7 +313,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var childItem = _libraryManager.GetItemById(guidId);
 
-                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem is not null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
+                var child = collection.LinkedChildren.FirstOrDefault(i => i.ItemId.HasValue && i.ItemId.Value.Equals(guidId));
 
                 if (child is null)
                 {
@@ -389,7 +389,7 @@ namespace Emby.Server.Implementations.Collections
                     // this is kind of a performance hack because only Video has alternate versions that should be in a box set?
                     if (item is Video video)
                     {
-                        foreach (var childId in video.GetLocalAlternateVersionIds())
+                        foreach (var childId in _libraryManager.GetLocalAlternateVersionIds(video))
                         {
                             if (!results.ContainsKey(childId))
                             {

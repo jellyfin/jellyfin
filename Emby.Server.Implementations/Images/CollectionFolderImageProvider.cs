@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Images
                     includeItemTypes = new[] { BaseItemKind.Series };
                     break;
                 case CollectionType.music:
-                    includeItemTypes = new[] { BaseItemKind.MusicAlbum };
+                    includeItemTypes = new[] { BaseItemKind.MusicArtist };  // Music albums usually don't have dedicated backdrops, so use artist instead
                     break;
                 case CollectionType.musicvideos:
                     includeItemTypes = new[] { BaseItemKind.MusicVideo };
@@ -97,6 +97,12 @@ namespace Emby.Server.Implementations.Images
             }
 
             return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
+        }
+
+        protected override bool HasChangedByDate(BaseItem item, ItemImageInfo image)
+        {
+            var age = DateTime.UtcNow - image.DateModified;
+            return age.TotalDays > 7;
         }
     }
 }
