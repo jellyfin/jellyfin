@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -168,55 +169,66 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
 
     private async Task RefreshPeopleImagesAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var people = _libraryManager.GetPeopleNames(new InternalPeopleQuery());
-        var numPeople = people.Count;
-        var numComplete = 0;
-        var numRefreshed = 0;
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+        var personTypeName = typeof(Person).FullName!;
 
-        _logger.LogDebug("Checking {Count} people for missing images", numPeople);
-
-        foreach (var person in people)
+        var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            var peopleIds = await context.BaseItems
+                .AsNoTracking()
+                .Where(b => b.Type == personTypeName)
+                .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
+                .Where(b =>
+                    !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
+                    string.IsNullOrEmpty(b.Overview))
+                .Select(b => b.Id)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-            try
+            var numPeople = peopleIds.Count;
+            var numComplete = 0;
+            var numRefreshed = 0;
+
+            _logger.LogDebug("Found {Count} people needing image/overview refresh", numPeople);
+
+            foreach (var personId in peopleIds)
             {
-                var item = _libraryManager.GetPerson(person);
-                if (item is null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    continue;
+                    if (_libraryManager.GetItemById(personId) is not Person item)
+                    {
+                        continue;
+                    }
+
+                    var hasImage = item.HasImage(ImageType.Primary, 0);
+                    var hasOverview = !string.IsNullOrWhiteSpace(item.Overview);
+
+                    var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
+                        MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+                    };
+
+                    await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                    numRefreshed++;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error refreshing images for person {PersonId}", personId);
                 }
 
-                var hasImage = item.HasImage(ImageType.Primary, 0);
-                var hasOverview = !string.IsNullOrWhiteSpace(item.Overview);
-
-                if ((hasImage && hasOverview) || (DateTime.UtcNow - item.DateLastRefreshed).TotalDays < 30)
-                {
-                    continue;
-                }
-
-                var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
-                    MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
-                };
-
-                await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
-                numRefreshed++;
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error refreshing images for {Person}", person);
+                numComplete++;
+                progress.Report(100.0 * numComplete / numPeople);
             }
 
-            numComplete++;
-            progress.Report(100.0 * numComplete / numPeople);
+            _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
         }
-
-        _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
     }
 }
