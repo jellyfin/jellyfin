@@ -112,14 +112,14 @@ namespace Emby.Server.Implementations.Collections
             return FindFolders(path).First();
         }
 
-        private void OnItemRemoved(object? sender, ItemChangeEventArgs e)
+        private async void OnItemRemoved(object? sender, ItemChangeEventArgs e)
         {
             if (e.Item is not BoxSet)
             {
                 return;
             }
 
-            var folder = GetCollectionsFolder(false).GetAwaiter().GetResult();
+            var folder = await GetCollectionsFolder(false).ConfigureAwait(false);
             if (folder is not null)
             {
                 // When a collection is deleted, force the shared folder to reload its children.
