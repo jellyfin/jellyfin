@@ -9,7 +9,6 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
@@ -175,41 +174,43 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            var peopleIds = await context.BaseItems
+            var people = await context.BaseItems
                 .AsNoTracking()
                 .Where(b => b.Type == personTypeName)
                 .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
                 .Where(b =>
                     !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
                     string.IsNullOrEmpty(b.Overview))
-                .Select(b => b.Id)
+                .Select(b => new
+                {
+                    b.Id,
+                    HasImage = b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary),
+                    HasOverview = !string.IsNullOrEmpty(b.Overview)
+                })
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var numPeople = peopleIds.Count;
+            var numPeople = people.Count;
             var numComplete = 0;
             var numRefreshed = 0;
 
             _logger.LogDebug("Found {Count} people needing image/overview refresh", numPeople);
 
-            foreach (var personId in peopleIds)
+            foreach (var entry in people)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    if (_libraryManager.GetItemById(personId) is not Person item)
+                    if (_libraryManager.GetItemById(entry.Id) is not Person item)
                     {
                         continue;
                     }
 
-                    var hasImage = item.HasImage(ImageType.Primary, 0);
-                    var hasOverview = !string.IsNullOrWhiteSpace(item.Overview);
-
                     var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
-                        ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
-                        MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+                        ImageRefreshMode = entry.HasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
+                        MetadataRefreshMode = entry.HasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
                     };
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
@@ -221,7 +222,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error refreshing images for person {PersonId}", personId);
+                    _logger.LogError(ex, "Error refreshing images for person {PersonId}", entry.Id);
                 }
 
                 numComplete++;
