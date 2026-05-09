@@ -67,7 +67,21 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
     /// </summary>
+    /// <remarks>
+    /// The metrics are served from their own listener, see <see cref="MetricsBindAddress"/> and
+    /// <see cref="MetricsPort"/>, never from the port the API and web client are served on.
+    /// </remarks>
     public bool EnableMetrics { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the address the prometheus metrics endpoint binds to.
+    /// </summary>
+    public string MetricsBindAddress { get; set; } = "127.0.0.1";
+
+    /// <summary>
+    /// Gets or sets the port the prometheus metrics endpoint is served on.
+    /// </summary>
+    public int MetricsPort { get; set; } = 9091;
 
     public bool EnableNormalizedItemByNameIds { get; set; } = true;
 

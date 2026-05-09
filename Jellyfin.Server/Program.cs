@@ -167,6 +167,7 @@ namespace Jellyfin.Server
             try
             {
                 _jellyfinHost = Host.CreateDefaultBuilder()
+                    .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
                     .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder =>
@@ -179,7 +180,7 @@ namespace Jellyfin.Server
                         }
                     })
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
-                    .UseSerilog()
+                    .UseSerilog(providers: StartupHelpers.RuntimeLoggerProviders)
                     .ConfigureServices(e => e
                         .RegisterStartupLogger()
                         .AddSingleton<IServiceCollection>(e))
