@@ -107,7 +107,8 @@ namespace MediaBrowser.Controller.Providers
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds,
-            IEnumerable<IExternalUrlProvider> externalUrlProviders);
+            IEnumerable<IExternalUrlProvider> externalUrlProviders,
+            IEnumerable<IItemSimilarityProvider> similarityProviders = null);
 
         /// <summary>
         /// Gets the available remote images.
@@ -150,6 +151,21 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="libraryOptions">The library options.</param>
         /// <returns>The metadata savers.</returns>
         IEnumerable<IMetadataSaver> GetMetadataSavers(BaseItem item, LibraryOptions libraryOptions);
+
+        /// <summary>
+        /// Gets the similarity providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The similarity providers for the item.</returns>
+        IEnumerable<IItemSimilarityProvider<T>> GetSimilarityProviders<T>(T item)
+            where T : BaseItem;
+
+        /// <summary>
+        /// Adds similarity providers.
+        /// </summary>
+        /// <param name="providers">The providers to add.</param>
+        void AddSimilarityProviders(IEnumerable<IItemSimilarityProvider> providers);
 
         /// <summary>
         /// Gets all metadata plugins.
