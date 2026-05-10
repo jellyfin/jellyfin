@@ -101,6 +101,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataSavers">Metadata savers to use.</param>
         /// <param name="externalIds">External IDs to use.</param>
         /// <param name="externalUrlProviders">The list of external url providers.</param>
+        /// <param name="similarityProviders">The similarity providers to use.</param>
         void AddParts(
             IEnumerable<IImageProvider> imageProviders,
             IEnumerable<IMetadataService> metadataServices,

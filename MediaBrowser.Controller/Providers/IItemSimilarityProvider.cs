@@ -9,11 +9,11 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Providers;
 
 // Example plugin implementation:
-// 
+//
 // public class AudioMuseAISimilarityProvider : IItemSimilarityProvider<Audio>, IItemSimilarityProvider<MusicAlbum>
 // {
 //     public string Name => "AudioMuse-AI";
-//     
+//
 //     public async Task<IEnumerable<Guid>> GetSimilarItems(
 //         Audio item,
 //         int limit,
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers;
 //         var response = await _httpClient.GetAsync(
 //             $"http://audiomuse:8000/similar_tracks?item_id={item.Id}&n={limit}",
 //             cancellationToken);
-//         
+//
 //         var json = await response.Content.ReadAsAsync<AudioMuseResponse>(cancellationToken);
 //         return json.SimilarItems.Select(i => i.JellyfinId).Take(limit);
 //     }
