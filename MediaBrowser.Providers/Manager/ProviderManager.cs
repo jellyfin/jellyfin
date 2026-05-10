@@ -102,6 +102,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="mediaSegmentManager">The media segment manager.</param>
+        /// <param name="similarityProviders">The similarity providers.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -114,7 +115,8 @@ namespace MediaBrowser.Providers.Manager
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
             IMemoryCache memoryCache,
-            IMediaSegmentManager mediaSegmentManager)
+            IMediaSegmentManager mediaSegmentManager,
+            IEnumerable<IItemSimilarityProvider> similarityProviders)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -128,6 +130,7 @@ namespace MediaBrowser.Providers.Manager
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
             _mediaSegmentManager = mediaSegmentManager;
+            _similarityProviders = similarityProviders.ToArray();
 
             CollectionFolder.LibraryOptionsUpdated += OnLibraryOptionsUpdated;
         }
@@ -148,8 +151,7 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds,
-            IEnumerable<IExternalUrlProvider> externalUrlProviders,
-            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
+            IEnumerable<IExternalUrlProvider> externalUrlProviders)
         {
             _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
@@ -158,10 +160,38 @@ namespace MediaBrowser.Providers.Manager
             _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
+        }
 
-            if (similarityProviders != null)
+        /// <inheritdoc/>
+        public IEnumerable<IItemSimilarityProvider> GetSimilarityProviders(BaseItem item)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            foreach (var provider in _similarityProviders)
             {
-                AddSimilarityProviders(similarityProviders);
+                if (TrySupportsSimilarityProvider(provider, item, out var supports) && supports)
+                {
+                    yield return provider;
+                }
+            }
+        }
+
+        private bool TrySupportsSimilarityProvider(IItemSimilarityProvider provider, BaseItem item, out bool supports)
+        {
+            try
+            {
+                supports = provider.Supports(item);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Error in {ProviderName} Supports while resolving similarity providers for {ItemType}",
+                    provider.Name,
+                    item.GetType().Name);
+                supports = false;
+                return false;
             }
         }
 
@@ -1290,19 +1320,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _logger.LogDebug("Invalidated metadata provider cache for library: {LibraryPath}", e.LibraryPath);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<IItemSimilarityProvider<T>> GetSimilarityProviders<T>(T item)
-            where T : BaseItem
-        {
-            return _similarityProviders.OfType<IItemSimilarityProvider<T>>();
-        }
-
-        /// <inheritdoc />
-        public void AddSimilarityProviders(IEnumerable<IItemSimilarityProvider> providers)
-        {
-            _similarityProviders = providers.ToArray();
         }
 
         internal void ClearMetadataProviderCache()

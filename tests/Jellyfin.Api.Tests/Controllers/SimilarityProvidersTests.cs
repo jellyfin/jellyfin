@@ -39,4 +39,15 @@ public class SimilarityProvidersTests
         Assert.NotNull(result);
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task GetSimilarItems_WithProviderThrowing_Throws()
+    {
+        // Arrange
+        var item = new Audio { Id = Guid.NewGuid(), Name = "Test Song" };
+        var provider = new FailingSimilarityProvider();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => provider.GetSimilarItems(item, 10, CancellationToken.None));
+    }
 }

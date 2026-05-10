@@ -1,38 +1,32 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers;
 
-// Example plugin implementation:
-//
-// public class AudioMuseAISimilarityProvider : IItemSimilarityProvider<Audio>, IItemSimilarityProvider<MusicAlbum>
-// {
-//     public string Name => "AudioMuse-AI";
-//
-//     public async Task<IEnumerable<Guid>> GetSimilarItems(
-//         Audio item,
-//         int limit,
-//         CancellationToken cancellationToken)
-//     {
-//         var response = await _httpClient.GetAsync(
-//             $"http://audiomuse:8000/similar_tracks?item_id={item.Id}&n={limit}",
-//             cancellationToken);
-//
-//         var json = await response.Content.ReadAsAsync<AudioMuseResponse>(cancellationToken);
-//         return json.SimilarItems.Select(i => i.JellyfinId).Take(limit);
-//     }
-// }
-
 /// <summary>
 /// Marker interface for item similarity providers.
 /// </summary>
 public interface IItemSimilarityProvider : IMetadataProvider
 {
+    /// <summary>
+    /// Returns whether this provider can compute similar items for the specified item.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <returns><c>true</c> if this provider handles the item.</returns>
+    bool Supports(BaseItem item);
+
+    /// <summary>
+    /// Gets similar item ids for an item handled by this provider.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="limit">The maximum count of ids to consider returning.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Similar item ids.</returns>
+    Task<IEnumerable<Guid>> GetSimilarItems(BaseItem item, int limit, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -53,4 +47,18 @@ public interface IItemSimilarityProvider<TItemType> : IMetadataProvider<TItemTyp
         TItemType item,
         int limit,
         CancellationToken cancellationToken);
+
+    /// <inheritdoc />
+    bool IItemSimilarityProvider.Supports(BaseItem item) => item is TItemType;
+
+    /// <inheritdoc />
+    async Task<IEnumerable<Guid>> IItemSimilarityProvider.GetSimilarItems(BaseItem item, int limit, CancellationToken cancellationToken)
+    {
+        if (item is not TItemType typed)
+        {
+            return Enumerable.Empty<Guid>();
+        }
+
+        return await GetSimilarItems(typed, limit, cancellationToken).ConfigureAwait(false);
+    }
 }

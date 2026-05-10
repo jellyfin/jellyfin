@@ -101,15 +101,13 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataSavers">Metadata savers to use.</param>
         /// <param name="externalIds">External IDs to use.</param>
         /// <param name="externalUrlProviders">The list of external url providers.</param>
-        /// <param name="similarityProviders">The similarity providers to use.</param>
         void AddParts(
             IEnumerable<IImageProvider> imageProviders,
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds,
-            IEnumerable<IExternalUrlProvider> externalUrlProviders,
-            IEnumerable<IItemSimilarityProvider> similarityProviders = null);
+            IEnumerable<IExternalUrlProvider> externalUrlProviders);
 
         /// <summary>
         /// Gets the available remote images.
@@ -157,16 +155,8 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the similarity providers for the provided item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <typeparam name="T">The type of item.</typeparam>
         /// <returns>The similarity providers for the item.</returns>
-        IEnumerable<IItemSimilarityProvider<T>> GetSimilarityProviders<T>(T item)
-            where T : BaseItem;
-
-        /// <summary>
-        /// Adds similarity providers.
-        /// </summary>
-        /// <param name="providers">The providers to add.</param>
-        void AddSimilarityProviders(IEnumerable<IItemSimilarityProvider> providers);
+        IEnumerable<IItemSimilarityProvider> GetSimilarityProviders(BaseItem item);
 
         /// <summary>
         /// Gets all metadata plugins.

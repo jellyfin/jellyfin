@@ -746,8 +746,8 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields };
-        IEnumerable<Guid>? similarItemIds = null;
-        var limitValue = limit ?? 20;
+        IReadOnlyList<Guid>? similarItemIds = null;
+        int limitValue = limit ?? 20;
 
         // Try similarity providers first
         try
@@ -759,13 +759,14 @@ public class LibraryController : BaseJellyfinApiController
                 try
                 {
                     var providerResults = await provider.GetSimilarItems(item, limitValue, CancellationToken.None).ConfigureAwait(false);
-                    if (providerResults?.Any() == true)
+                    var resultsList = providerResults?.ToList();
+                    if (resultsList?.Count > 0)
                     {
-                        similarItemIds = providerResults;
+                        similarItemIds = resultsList;
                         _logger.LogDebug(
                             "Similarity provider {ProviderName} returned {Count} similar items for {ItemName}",
                             provider.Name,
-                            similarItemIds.Count(),
+                            similarItemIds.Count,
                             item.Name);
                         break;
                     }
@@ -784,8 +785,11 @@ public class LibraryController : BaseJellyfinApiController
             _logger.LogWarning(ex, "Error querying similarity providers, falling back to default algorithm");
         }
 
+        var startIndex = 0;
+        var totalRecordCount = 0;
+
         // Fallback to default metadata-based algorithm
-        if (similarItemIds == null || !similarItemIds.Any())
+        if (similarItemIds == null || similarItemIds.Count == 0)
         {
             var program = item as IHasProgramAttributes;
             bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
@@ -830,7 +834,13 @@ public class LibraryController : BaseJellyfinApiController
             }
 
             var itemsResult = _libraryManager.GetItemList(query);
-            similarItemIds = itemsResult.Select(i => i.Id);
+            similarItemIds = itemsResult.Select(i => i.Id).ToList();
+            startIndex = query.StartIndex ?? 0;
+            totalRecordCount = itemsResult.Count;
+        }
+        else
+        {
+            totalRecordCount = similarItemIds.Count;
         }
 
         // Convert IDs to DTOs
@@ -844,7 +854,7 @@ public class LibraryController : BaseJellyfinApiController
             }
         }
 
-        return new QueryResult<BaseItemDto>(0, items.Count, items);
+        return new QueryResult<BaseItemDto>(startIndex, totalRecordCount, items);
     }
 
     /// <summary>

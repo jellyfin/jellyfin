@@ -9,6 +9,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
@@ -554,7 +555,8 @@ namespace Jellyfin.Providers.Tests.Manager
         private static ProviderManager GetProviderManager(
             ServerConfiguration? serverConfiguration = null,
             LibraryOptions? libraryOptions = null,
-            IBaseItemManager? baseItemManager = null)
+            IBaseItemManager? baseItemManager = null,
+            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
@@ -576,7 +578,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 baseItemManager!,
                 Mock.Of<ILyricManager>(),
                 Mock.Of<IMemoryCache>(),
-                Mock.Of<IMediaSegmentManager>());
+                Mock.Of<IMediaSegmentManager>(),
+                similarityProviders ?? Array.Empty<IItemSimilarityProvider>());
 
             return providerManager;
         }
@@ -598,6 +601,51 @@ namespace Jellyfin.Providers.Tests.Manager
             externalUrlProviders ??= Array.Empty<IExternalUrlProvider>();
 
             providerManager.AddParts(imageProviders, metadataServices, metadataProviders, metadataSavers, externalIds, externalUrlProviders);
+        }
+
+        [Fact]
+        public void GetSimilarityProviders_FiltersBySupports()
+        {
+            var audio = new Audio();
+            var providers = new List<IItemSimilarityProvider>
+            {
+                new SimilarityProviderForBase(),
+                new SimilarityProviderForAudio(),
+                new SimilarityProviderForMovie()
+            };
+
+            using var providerManager = GetProviderManager(similarityProviders: providers);
+
+            var result = providerManager.GetSimilarityProviders(audio).ToArray();
+
+            Assert.Equal(2, result.Length);
+            Assert.Contains(result, p => p.Name == nameof(SimilarityProviderForBase));
+            Assert.Contains(result, p => p.Name == nameof(SimilarityProviderForAudio));
+            Assert.DoesNotContain(result, p => p.Name == nameof(SimilarityProviderForMovie));
+        }
+
+        private sealed class SimilarityProviderForBase : IItemSimilarityProvider<BaseItem>
+        {
+            public string Name => nameof(SimilarityProviderForBase);
+
+            public Task<IEnumerable<Guid>> GetSimilarItems(BaseItem item, int limit, CancellationToken cancellationToken)
+                => Task.FromResult<IEnumerable<Guid>>(Array.Empty<Guid>());
+        }
+
+        private sealed class SimilarityProviderForAudio : IItemSimilarityProvider<Audio>
+        {
+            public string Name => nameof(SimilarityProviderForAudio);
+
+            public Task<IEnumerable<Guid>> GetSimilarItems(Audio item, int limit, CancellationToken cancellationToken)
+                => Task.FromResult<IEnumerable<Guid>>(Array.Empty<Guid>());
+        }
+
+        private sealed class SimilarityProviderForMovie : IItemSimilarityProvider<Movie>
+        {
+            public string Name => nameof(SimilarityProviderForMovie);
+
+            public Task<IEnumerable<Guid>> GetSimilarItems(Movie item, int limit, CancellationToken cancellationToken)
+                => Task.FromResult<IEnumerable<Guid>>(Array.Empty<Guid>());
         }
 
         /// <summary>
