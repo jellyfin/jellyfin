@@ -3,6 +3,8 @@ using Emby.Server.Implementations.Sorting;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Sorting
@@ -24,6 +26,82 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
         {
             Assert.Equal(expected, _cmp.Compare(x, y));
             Assert.Equal(-expected, _cmp.Compare(y, x));
+        }
+
+        [Fact]
+        public void Compare_StackedEpisodeParts_SortsByAdditionalPartOrder()
+        {
+            var ownerId = Guid.NewGuid();
+            var owner = new Episode
+            {
+                Id = ownerId,
+                ParentIndexNumber = 1,
+                IndexNumber = 1,
+                Path = "/series/Season 01/Show - S01E01 - part1.mkv",
+                AdditionalParts =
+                [
+                    "/series/Season 01/Show - S01E01 - part2.mkv",
+                    "/series/Season 01/Show - S01E01 - part3.mkv"
+                ]
+            };
+            var part2 = new Episode
+            {
+                OwnerId = ownerId,
+                ParentIndexNumber = 1,
+                IndexNumber = 1,
+                Path = "/series/Season 01/Show - S01E01 - part2.mkv"
+            };
+            var part3 = new Episode
+            {
+                OwnerId = ownerId,
+                ParentIndexNumber = 1,
+                IndexNumber = 1,
+                Path = "/series/Season 01/Show - S01E01 - part3.mkv"
+            };
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(i => i.GetItemById(ownerId)).Returns(owner);
+            var previousLibraryManager = BaseItem.LibraryManager;
+            try
+            {
+                BaseItem.LibraryManager = libraryManager.Object;
+
+                Assert.True(_cmp.Compare(owner, part2) < 0);
+                Assert.True(_cmp.Compare(part2, part3) < 0);
+                Assert.True(_cmp.Compare(part3, owner) > 0);
+            }
+            finally
+            {
+                BaseItem.LibraryManager = previousLibraryManager;
+            }
+        }
+
+        [Theory]
+        [InlineData(
+            "/series/Season 01/Show S01E01-part-1 - Pilot.mkv",
+            "/series/Season 01/Show S01E01-part-2 - Pilot.mkv")]
+        [InlineData(
+            "/series/Season 01/Show S01E01 pt A - Pilot.mkv",
+            "/series/Season 01/Show S01E01 pt B - Pilot.mkv")]
+        public void Compare_DuplicateEpisodeFilenameParts_SortsByPartNumber(string firstPartPath, string secondPartPath)
+        {
+            var firstPart = new Episode
+            {
+                ParentIndexNumber = 1,
+                IndexNumber = 1,
+                Path = firstPartPath,
+                PremiereDate = new DateTime(2021, 09, 12, 0, 0, 0)
+            };
+            var secondPart = new Episode
+            {
+                ParentIndexNumber = 1,
+                IndexNumber = 1,
+                Path = secondPartPath,
+                PremiereDate = new DateTime(2021, 09, 11, 0, 0, 0)
+            };
+
+            Assert.True(_cmp.Compare(firstPart, secondPart) < 0);
+            Assert.True(_cmp.Compare(secondPart, firstPart) > 0);
         }
 
         private sealed class EpisodeBadData : TheoryData<BaseItem?, BaseItem?>
