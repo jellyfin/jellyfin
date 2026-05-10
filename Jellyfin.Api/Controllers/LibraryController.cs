@@ -707,7 +707,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="excludeArtistIds">Exclude artist ids.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
-    /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
     /// <response code="200">Similar items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
     [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists")]
@@ -718,7 +718,7 @@ public class LibraryController : BaseJellyfinApiController
     [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetSimilarItems(
         [FromRoute, Required] Guid itemId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery] Guid? userId,
@@ -734,6 +734,7 @@ public class LibraryController : BaseJellyfinApiController
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById<BaseItem>(itemId, user);
+
         if (item is null)
         {
             return NotFound();
@@ -745,60 +746,105 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions { Fields = fields };
+        IEnumerable<Guid>? similarItemIds = null;
+        var limitValue = limit ?? 20;
 
-        var program = item as IHasProgramAttributes;
-        bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
-        bool? isSeries = item is Series || (program is not null && program.IsSeries);
-
-        var includeItemTypes = new List<BaseItemKind>();
-        if (isMovie.Value)
+        // Try similarity providers first
+        try
         {
-            includeItemTypes.Add(BaseItemKind.Movie);
-            if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+            var providers = _providerManager.GetSimilarityProviders(item);
+
+            foreach (var provider in providers)
             {
-                includeItemTypes.Add(BaseItemKind.Trailer);
-                includeItemTypes.Add(BaseItemKind.LiveTvProgram);
+                try
+                {
+                    var providerResults = await provider.GetSimilarItems(item, limitValue, CancellationToken.None).ConfigureAwait(false);
+                    if (providerResults?.Any() == true)
+                    {
+                        similarItemIds = providerResults;
+                        _logger.LogDebug(
+                            "Similarity provider {ProviderName} returned {Count} similar items for {ItemName}",
+                            provider.Name,
+                            similarItemIds.Count(),
+                            item.Name);
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Error getting similar items from provider {ProviderName}",
+                        provider.Name);
+                }
             }
         }
-        else if (isSeries.Value)
+        catch (Exception ex)
         {
-            includeItemTypes.Add(BaseItemKind.Series);
-        }
-        else
-        {
-            // For non series and movie types these columns are typically null
-            // isSeries = null;
-            isMovie = null;
-            includeItemTypes.Add(item.GetBaseItemKind());
+            _logger.LogWarning(ex, "Error querying similarity providers, falling back to default algorithm");
         }
 
-        var query = new InternalItemsQuery(user)
+        // Fallback to default metadata-based algorithm
+        if (similarItemIds == null || !similarItemIds.Any())
         {
-            Genres = item.Genres,
-            Tags = item.Tags,
-            Limit = limit,
-            IncludeItemTypes = includeItemTypes.ToArray(),
-            DtoOptions = dtoOptions,
-            EnableTotalRecordCount = !isMovie ?? true,
-            EnableGroupByMetadataKey = isMovie ?? false,
-            ExcludeItemIds = [itemId],
-            OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
-        };
+            var program = item as IHasProgramAttributes;
+            bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
+            bool? isSeries = item is Series || (program is not null && program.IsSeries);
 
-        // ExcludeArtistIds
-        if (excludeArtistIds.Length != 0)
-        {
-            query.ExcludeArtistIds = excludeArtistIds;
+            var includeItemTypes = new List<BaseItemKind>();
+            if (isMovie.Value)
+            {
+                includeItemTypes.Add(BaseItemKind.Movie);
+                if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+                {
+                    includeItemTypes.Add(BaseItemKind.Trailer);
+                    includeItemTypes.Add(BaseItemKind.LiveTvProgram);
+                }
+            }
+            else if (isSeries.Value)
+            {
+                includeItemTypes.Add(BaseItemKind.Series);
+            }
+            else
+            {
+                isMovie = null;
+                includeItemTypes.Add(item.GetBaseItemKind());
+            }
+
+            var query = new InternalItemsQuery(user)
+            {
+                Genres = item.Genres,
+                Tags = item.Tags,
+                Limit = limitValue,
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                DtoOptions = dtoOptions,
+                EnableTotalRecordCount = !isMovie ?? true,
+                EnableGroupByMetadataKey = isMovie ?? false,
+                ExcludeItemIds = [itemId],
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
+            };
+
+            if (excludeArtistIds.Length != 0)
+            {
+                query.ExcludeArtistIds = excludeArtistIds;
+            }
+
+            var itemsResult = _libraryManager.GetItemList(query);
+            similarItemIds = itemsResult.Select(i => i.Id);
         }
 
-        var itemsResult = _libraryManager.GetItemList(query);
+        // Convert IDs to DTOs
+        var items = new List<BaseItemDto>();
+        foreach (var id in similarItemIds)
+        {
+            var similarItem = _libraryManager.GetItemById<BaseItem>(id, user);
+            if (similarItem is not null)
+            {
+                items.Add(_dtoService.GetBaseItemDto(similarItem, dtoOptions, user));
+            }
+        }
 
-        var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
-
-        return new QueryResult<BaseItemDto>(
-            query.StartIndex,
-            itemsResult.Count,
-            returnList);
+        return new QueryResult<BaseItemDto>(0, items.Count, items);
     }
 
     /// <summary>
