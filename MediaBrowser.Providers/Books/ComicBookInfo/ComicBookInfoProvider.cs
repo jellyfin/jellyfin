@@ -79,9 +79,9 @@ public class ComicBookInfoProvider : IComicProvider
                 return SaveMetadata(comicBookMetadata);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError("failed to load ComicBookInfo metadata: {Path}", info.Path);
+            _logger.LogError(ex, "failed to load ComicBookInfo metadata: {Path}", info.Path);
             return new MetadataResult<Book> { HasMetadata = false };
         }
     }
