@@ -708,6 +708,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Similar items returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
     [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists")]
@@ -723,7 +724,8 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] excludeArtistIds,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
+        CancellationToken cancellationToken)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.IsNullOrEmpty()
@@ -758,7 +760,7 @@ public class LibraryController : BaseJellyfinApiController
             {
                 try
                 {
-                    var providerResults = await provider.GetSimilarItems(item, limitValue, CancellationToken.None).ConfigureAwait(false);
+                    var providerResults = await provider.GetSimilarItems(item, limitValue, cancellationToken).ConfigureAwait(false);
                     var resultsList = providerResults?.ToList();
                     if (resultsList?.Count > 0)
                     {
@@ -923,6 +925,16 @@ public class LibraryController : BaseJellyfinApiController
 
         result.MediaSegmentProviders = plugins
             .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MediaSegmentProvider))
+            .Select(i => new LibraryOptionInfoDto
+            {
+                Name = i.Name,
+                DefaultEnabled = true
+            })
+            .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        result.SimilarityProviders = plugins
+            .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.SimilarityProvider))
             .Select(i => new LibraryOptionInfoDto
             {
                 Name = i.Name,

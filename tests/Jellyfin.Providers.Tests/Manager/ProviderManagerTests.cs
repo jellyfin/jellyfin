@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -555,8 +556,7 @@ namespace Jellyfin.Providers.Tests.Manager
         private static ProviderManager GetProviderManager(
             ServerConfiguration? serverConfiguration = null,
             LibraryOptions? libraryOptions = null,
-            IBaseItemManager? baseItemManager = null,
-            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
+            IBaseItemManager? baseItemManager = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
@@ -566,6 +566,10 @@ namespace Jellyfin.Providers.Tests.Manager
             libraryManager.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
                 .Returns(libraryOptions ?? new LibraryOptions());
 
+            var appPaths = new Mock<IServerApplicationPaths>();
+            appPaths.Setup(p => p.InternalMetadataPath)
+                .Returns(Path.Combine(Path.GetTempPath(), "ProviderManagerTests-metadata"));
+
             var providerManager = new ProviderManager(
                 Mock.Of<IHttpClientFactory>(),
                 Mock.Of<ISubtitleManager>(),
@@ -573,13 +577,12 @@ namespace Jellyfin.Providers.Tests.Manager
                 Mock.Of<ILibraryMonitor>(),
                 _logger,
                 Mock.Of<IFileSystem>(),
-                Mock.Of<IServerApplicationPaths>(),
+                appPaths.Object,
                 libraryManager.Object,
                 baseItemManager!,
                 Mock.Of<ILyricManager>(),
                 Mock.Of<IMemoryCache>(),
-                Mock.Of<IMediaSegmentManager>(),
-                similarityProviders ?? Array.Empty<IItemSimilarityProvider>());
+                Mock.Of<IMediaSegmentManager>());
 
             return providerManager;
         }
@@ -591,7 +594,8 @@ namespace Jellyfin.Providers.Tests.Manager
             IEnumerable<IMetadataProvider>? metadataProviders = null,
             IEnumerable<IMetadataSaver>? metadataSavers = null,
             IEnumerable<IExternalId>? externalIds = null,
-            IEnumerable<IExternalUrlProvider>? externalUrlProviders = null)
+            IEnumerable<IExternalUrlProvider>? externalUrlProviders = null,
+            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
         {
             imageProviders ??= Array.Empty<IImageProvider>();
             metadataServices ??= Array.Empty<IMetadataService>();
@@ -600,7 +604,7 @@ namespace Jellyfin.Providers.Tests.Manager
             externalIds ??= Array.Empty<IExternalId>();
             externalUrlProviders ??= Array.Empty<IExternalUrlProvider>();
 
-            providerManager.AddParts(imageProviders, metadataServices, metadataProviders, metadataSavers, externalIds, externalUrlProviders);
+            providerManager.AddParts(imageProviders, metadataServices, metadataProviders, metadataSavers, externalIds, externalUrlProviders, similarityProviders);
         }
 
         [Fact]
@@ -614,7 +618,8 @@ namespace Jellyfin.Providers.Tests.Manager
                 new SimilarityProviderForMovie()
             };
 
-            using var providerManager = GetProviderManager(similarityProviders: providers);
+            using var providerManager = GetProviderManager();
+            AddParts(providerManager, similarityProviders: providers);
 
             var result = providerManager.GetSimilarityProviders(audio).ToArray();
 

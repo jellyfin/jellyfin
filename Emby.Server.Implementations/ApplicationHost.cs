@@ -692,7 +692,8 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>(),
-                GetExports<IExternalUrlProvider>());
+                GetExports<IExternalUrlProvider>(),
+                GetExports<IItemSimilarityProvider>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
         }

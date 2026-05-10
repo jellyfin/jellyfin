@@ -34,6 +34,11 @@ public class LibraryOptionsResultDto
     public IReadOnlyList<LibraryOptionInfoDto> MediaSegmentProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
     /// <summary>
+    /// Gets or sets the similarity providers exposed to the Similar row.
+    /// </summary>
+    public IReadOnlyList<LibraryOptionInfoDto> SimilarityProviders { get; set; } = Array.Empty<LibraryOptionInfoDto>();
+
+    /// <summary>
     /// Gets or sets the type options.
     /// </summary>
     public IReadOnlyList<LibraryTypeOptionsDto> TypeOptions { get; set; } = Array.Empty<LibraryTypeOptionsDto>();

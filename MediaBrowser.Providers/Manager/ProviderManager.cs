@@ -102,7 +102,6 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lyricManager">The lyric manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="mediaSegmentManager">The media segment manager.</param>
-        /// <param name="similarityProviders">The similarity providers.</param>
         public ProviderManager(
             IHttpClientFactory httpClientFactory,
             ISubtitleManager subtitleManager,
@@ -115,8 +114,7 @@ namespace MediaBrowser.Providers.Manager
             IBaseItemManager baseItemManager,
             ILyricManager lyricManager,
             IMemoryCache memoryCache,
-            IMediaSegmentManager mediaSegmentManager,
-            IEnumerable<IItemSimilarityProvider> similarityProviders)
+            IMediaSegmentManager mediaSegmentManager)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -130,7 +128,6 @@ namespace MediaBrowser.Providers.Manager
             _lyricManager = lyricManager;
             _memoryCache = memoryCache;
             _mediaSegmentManager = mediaSegmentManager;
-            _similarityProviders = similarityProviders.ToArray();
 
             CollectionFolder.LibraryOptionsUpdated += OnLibraryOptionsUpdated;
         }
@@ -151,7 +148,8 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds,
-            IEnumerable<IExternalUrlProvider> externalUrlProviders)
+            IEnumerable<IExternalUrlProvider> externalUrlProviders,
+            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
         {
             _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
@@ -160,6 +158,14 @@ namespace MediaBrowser.Providers.Manager
             _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
+
+            if (similarityProviders is not null)
+            {
+                _similarityProviders = similarityProviders
+                    .OrderBy(GetDefaultOrder)
+                    .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+            }
         }
 
         /// <inheritdoc/>
@@ -723,6 +729,20 @@ namespace MediaBrowser.Providers.Manager
                 Name = i.Name,
                 Type = MetadataPluginType.MediaSegmentProvider
             }));
+
+            foreach (var similarityProvider in _similarityProviders)
+            {
+                if (!TrySupportsSimilarityProvider(similarityProvider, dummy, out var supported) || !supported)
+                {
+                    continue;
+                }
+
+                pluginList.Add(new MetadataPlugin
+                {
+                    Name = similarityProvider.Name,
+                    Type = MetadataPluginType.SimilarityProvider
+                });
+            }
 
             summary.Plugins = pluginList.ToArray();
 
