@@ -83,6 +83,7 @@ namespace MediaBrowser.Providers.Manager
         private IMetadataSaver[] _savers = [];
         private IExternalId[] _externalIds = [];
         private IExternalUrlProvider[] _externalUrlProviders = [];
+        private IItemSimilarityProvider[] _similarityProviders = [];
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -147,7 +148,8 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds,
-            IEnumerable<IExternalUrlProvider> externalUrlProviders)
+            IEnumerable<IExternalUrlProvider> externalUrlProviders,
+            IEnumerable<IItemSimilarityProvider>? similarityProviders = null)
         {
             _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
@@ -156,6 +158,11 @@ namespace MediaBrowser.Providers.Manager
             _externalUrlProviders = externalUrlProviders.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.ToArray();
+
+            if (similarityProviders != null)
+            {
+                AddSimilarityProviders(similarityProviders);
+            }
         }
 
         /// <inheritdoc/>
@@ -1283,6 +1290,19 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _logger.LogDebug("Invalidated metadata provider cache for library: {LibraryPath}", e.LibraryPath);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<IItemSimilarityProvider<T>> GetSimilarityProviders<T>(T item)
+            where T : BaseItem
+        {
+            return _similarityProviders.OfType<IItemSimilarityProvider<T>>();
+        }
+
+        /// <inheritdoc />
+        public void AddSimilarityProviders(IEnumerable<IItemSimilarityProvider> providers)
+        {
+            _similarityProviders = providers.ToArray();
         }
 
         internal void ClearMetadataProviderCache()
