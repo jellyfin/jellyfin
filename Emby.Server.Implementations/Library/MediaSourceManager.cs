@@ -46,7 +46,6 @@ namespace Emby.Server.Implementations.Library
         private const char LiveStreamIdDelimiter = '_';
 
         private readonly IServerApplicationHost _appHost;
-        private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
@@ -58,7 +57,6 @@ namespace Emby.Server.Implementations.Library
         private readonly IDirectoryService _directoryService;
         private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly IMediaAttachmentRepository _mediaAttachmentRepository;
-        private readonly IServerAddressesFeature _serverAddresses;
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly AsyncNonKeyedLocker _liveStreamLocker = new(1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -67,7 +65,6 @@ namespace Emby.Server.Implementations.Library
 
         public MediaSourceManager(
             IServerApplicationHost appHost,
-            IItemRepository itemRepo,
             IApplicationPaths applicationPaths,
             ILocalizationManager localizationManager,
             IUserManager userManager,
@@ -78,11 +75,9 @@ namespace Emby.Server.Implementations.Library
             IMediaEncoder mediaEncoder,
             IDirectoryService directoryService,
             IMediaStreamRepository mediaStreamRepository,
-            IMediaAttachmentRepository mediaAttachmentRepository,
-            IServer server)
+            IMediaAttachmentRepository mediaAttachmentRepository)
         {
             _appHost = appHost;
-            _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
@@ -94,7 +89,6 @@ namespace Emby.Server.Implementations.Library
             _directoryService = directoryService;
             _mediaStreamRepository = mediaStreamRepository;
             _mediaAttachmentRepository = mediaAttachmentRepository;
-            _serverAddresses = server.Features.Get<IServerAddressesFeature>();
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
