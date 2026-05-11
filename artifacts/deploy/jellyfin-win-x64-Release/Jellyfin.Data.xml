@@ -1,0 +1,1203 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Data</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Data.Attributes.OpenApiIgnoreEnumAttribute">
+            <summary>
+            Attribute to specify that the enum value is to be ignored when generating the openapi spec.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Dtos.DeviceOptionsDto">
+            <summary>
+            A dto representing custom options for a device.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Dtos.DeviceOptionsDto.Id">
+            <summary>
+            Gets or sets the id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Dtos.DeviceOptionsDto.DeviceId">
+            <summary>
+            Gets or sets the device id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Dtos.DeviceOptionsDto.CustomName">
+            <summary>
+            Gets or sets the custom name.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.ActivityLogSortBy">
+            <summary>
+            Activity log sorting options.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.Name">
+            <summary>
+            Sort by name.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.Overiew">
+            <summary>
+            Sort by overview.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.ShortOverview">
+            <summary>
+            Sort by short overview.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.Type">
+            <summary>
+            Sort by type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.DateCreated">
+            <summary>
+            Sort by date.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.Username">
+            <summary>
+            Sort by username.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ActivityLogSortBy.LogSeverity">
+            <summary>
+            Sort by severity.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.AudioSpatialFormat">
+            <summary>
+            An enum representing formats of spatial audio.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.AudioSpatialFormat.None">
+            <summary>
+            None audio spatial format.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.AudioSpatialFormat.DolbyAtmos">
+            <summary>
+            Dolby Atmos audio spatial format.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.AudioSpatialFormat.DTSX">
+            <summary>
+            DTS:X audio spatial format.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.BaseItemKind">
+            <summary>
+            The base item kind.
+            </summary>
+            <remarks>
+            This enum is generated from all classes that inherit from <c>BaseItem</c>.
+            </remarks>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.AggregateFolder">
+            <summary>
+            Item is aggregate folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Audio">
+            <summary>
+            Item is audio.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.AudioBook">
+            <summary>
+            Item is audio book.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.BasePluginFolder">
+            <summary>
+            Item is base plugin folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Book">
+            <summary>
+            Item is book.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.BoxSet">
+            <summary>
+            Item is box set.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Channel">
+            <summary>
+            Item is channel.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.ChannelFolderItem">
+            <summary>
+            Item is channel folder item.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.CollectionFolder">
+            <summary>
+            Item is collection folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Episode">
+            <summary>
+            Item is episode.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Folder">
+            <summary>
+            Item is folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Genre">
+            <summary>
+            Item is genre.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.ManualPlaylistsFolder">
+            <summary>
+            Item is manual playlists folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Movie">
+            <summary>
+            Item is movie.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.LiveTvChannel">
+            <summary>
+            Item is a live tv channel.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.LiveTvProgram">
+            <summary>
+            Item is a live tv program.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.MusicAlbum">
+            <summary>
+            Item is music album.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.MusicArtist">
+            <summary>
+            Item is music artist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.MusicGenre">
+            <summary>
+            Item is music genre.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.MusicVideo">
+            <summary>
+            Item is music video.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Person">
+            <summary>
+            Item is person.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Photo">
+            <summary>
+            Item is photo.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.PhotoAlbum">
+            <summary>
+            Item is photo album.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Playlist">
+            <summary>
+            Item is playlist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.PlaylistsFolder">
+            <summary>
+            Item is playlist folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Program">
+            <summary>
+            Item is program.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Recording">
+            <summary>
+            Item is recording.
+            </summary>
+            <remarks>
+            Manually added.
+            </remarks>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Season">
+            <summary>
+            Item is season.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Series">
+            <summary>
+            Item is series.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Studio">
+            <summary>
+            Item is studio.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Trailer">
+            <summary>
+            Item is trailer.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.TvChannel">
+            <summary>
+            Item is live tv channel.
+            </summary>
+            <remarks>
+            Type is overridden.
+            </remarks>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.TvProgram">
+            <summary>
+            Item is live tv program.
+            </summary>
+            <remarks>
+            Type is overridden.
+            </remarks>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.UserRootFolder">
+            <summary>
+            Item is user root folder.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.UserView">
+            <summary>
+            Item is user view.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Video">
+            <summary>
+            Item is video.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.BaseItemKind.Year">
+            <summary>
+            Item is year.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.CollectionType">
+            <summary>
+            Collection type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.unknown">
+            <summary>
+            Unknown collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.movies">
+            <summary>
+            Movies collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvshows">
+            <summary>
+            Tv shows collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.music">
+            <summary>
+            Music collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.musicvideos">
+            <summary>
+            Music videos collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.trailers">
+            <summary>
+            Trailers collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.homevideos">
+            <summary>
+            Home videos collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.boxsets">
+            <summary>
+            Box sets collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.books">
+            <summary>
+            Books collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.photos">
+            <summary>
+            Photos collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.livetv">
+            <summary>
+            Live tv collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.playlists">
+            <summary>
+            Playlists collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.folders">
+            <summary>
+            Folders collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvshowseries">
+            <summary>
+            Tv show series collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvgenres">
+            <summary>
+            Tv genres collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvgenre">
+            <summary>
+            Tv genre collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvlatest">
+            <summary>
+            Tv latest collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvnextup">
+            <summary>
+            Tv next up collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvresume">
+            <summary>
+            Tv resume collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvfavoriteseries">
+            <summary>
+            Tv favorite series collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.tvfavoriteepisodes">
+            <summary>
+            Tv favorite episodes collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.movielatest">
+            <summary>
+            Latest movies collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.movieresume">
+            <summary>
+            Movies to resume collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.moviemovies">
+            <summary>
+            Movie movie collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.moviecollection">
+            <summary>
+            Movie collections collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.moviefavorites">
+            <summary>
+            Movie favorites collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.moviegenres">
+            <summary>
+            Movie genres collection.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.CollectionType.moviegenre">
+            <summary>
+            Movie genre collection.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.ItemSortBy">
+            <summary>
+            These represent sort orders.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Default">
+            <summary>
+            Default sort order.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.AiredEpisodeOrder">
+            <summary>
+            The aired episode order.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Album">
+            <summary>
+            The album.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.AlbumArtist">
+            <summary>
+            The album artist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Artist">
+            <summary>
+            The artist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.DateCreated">
+            <summary>
+            The date created.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.OfficialRating">
+            <summary>
+            The official rating.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.DatePlayed">
+            <summary>
+            The date played.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.PremiereDate">
+            <summary>
+            The premiere date.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.StartDate">
+            <summary>
+            The start date.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.SortName">
+            <summary>
+            The sort name.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Name">
+            <summary>
+            The name.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Random">
+            <summary>
+            The random.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Runtime">
+            <summary>
+            The runtime.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.CommunityRating">
+            <summary>
+            The community rating.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.ProductionYear">
+            <summary>
+            The production year.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.PlayCount">
+            <summary>
+            The play count.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.CriticRating">
+            <summary>
+            The critic rating.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.IsFolder">
+            <summary>
+            The IsFolder boolean.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.IsUnplayed">
+            <summary>
+            The IsUnplayed boolean.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.IsPlayed">
+            <summary>
+            The IsPlayed boolean.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.SeriesSortName">
+            <summary>
+            The series sort.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.VideoBitRate">
+            <summary>
+            The video bitrate.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.AirTime">
+            <summary>
+            The air time.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.Studio">
+            <summary>
+            The studio.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.IsFavoriteOrLiked">
+            <summary>
+            The IsFavouriteOrLiked boolean.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.DateLastContentAdded">
+            <summary>
+            The last content added date.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.SeriesDatePlayed">
+            <summary>
+            The series last played date.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.ParentIndexNumber">
+            <summary>
+            The parent index number.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.ItemSortBy.IndexNumber">
+            <summary>
+            The index number.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.MediaStreamProtocol">
+            <summary>
+            Media streaming protocol.
+            Lowercase for backwards compatibility.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaStreamProtocol.http">
+            <summary>
+            HTTP.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaStreamProtocol.hls">
+            <summary>
+            HTTP Live Streaming.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.MediaType">
+            <summary>
+            Media types.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaType.Unknown">
+            <summary>
+            Unknown media type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaType.Video">
+            <summary>
+            Video media.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaType.Audio">
+            <summary>
+            Audio media.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaType.Photo">
+            <summary>
+            Photo media.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.MediaType.Book">
+            <summary>
+            Book media.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.PersonKind">
+            <summary>
+            The person kind.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Unknown">
+            <summary>
+            An unknown person kind.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Actor">
+            <summary>
+            A person whose profession is acting on the stage, in films, or on television.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Director">
+            <summary>
+            A person who supervises the actors and other staff in a film, play, or similar production.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Composer">
+            <summary>
+            A person who writes music, especially as a professional occupation.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Writer">
+            <summary>
+            A writer of a book, article, or document. Can also be used as a generic term for music writer if there is a lack of specificity.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.GuestStar">
+            <summary>
+            A well-known actor or other performer who appears in a work in which they do not have a regular role.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Producer">
+            <summary>
+            A person responsible for the financial and managerial aspects of the making of a film or broadcast or for staging a play, opera, etc.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Conductor">
+            <summary>
+            A person who directs the performance of an orchestra or choir.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Lyricist">
+            <summary>
+            A person who writes the words to a song or musical.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Arranger">
+            <summary>
+            A person who adapts a musical composition for performance.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Engineer">
+            <summary>
+            An audio engineer who performed a general engineering role.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Mixer">
+            <summary>
+            An engineer responsible for using a mixing console to mix a recorded track into a single piece of music suitable for release.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Remixer">
+            <summary>
+            A person who remixed a recording by taking one or more other tracks, substantially altering them and mixing them together with other material.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Creator">
+            <summary>
+            A person who created the material.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Artist">
+            <summary>
+            A person who was the artist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.AlbumArtist">
+            <summary>
+            A person who was the album artist.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Author">
+            <summary>
+            A person who was the author.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Illustrator">
+            <summary>
+            A person who was the illustrator.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Penciller">
+            <summary>
+            A person responsible for drawing the art.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Inker">
+            <summary>
+            A person responsible for inking the pencil art.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Colorist">
+            <summary>
+            A person responsible for applying color to drawings.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Letterer">
+            <summary>
+            A person responsible for drawing text and speech bubbles.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.CoverArtist">
+            <summary>
+            A person responsible for drawing the cover art.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Editor">
+            <summary>
+            A person contributing to a resource by revising or elucidating the content, e.g., adding an introduction, notes, or other critical matter.
+            An editor may also prepare a resource for production, publication, or distribution.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Translator">
+            <summary>
+            A person who renders a text from one language into another.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.PersonKind.Narrator">
+            <summary>
+            A person who narrates a book or other work.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.SyncPlayAccessRequirementType">
+            <summary>
+            Enum SyncPlayAccessRequirementType.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.SyncPlayAccessRequirementType.HasAccess">
+            <summary>
+            User must have access to SyncPlay, in some form.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.SyncPlayAccessRequirementType.CreateGroup">
+            <summary>
+            User must be able to create groups.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.SyncPlayAccessRequirementType.JoinGroup">
+            <summary>
+            User must be able to join groups.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.SyncPlayAccessRequirementType.IsInGroup">
+            <summary>
+            User must be in a group.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.UnratedItem">
+            <summary>
+            An enum representing an unrated item.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Movie">
+            <summary>
+            A movie.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Trailer">
+            <summary>
+            A trailer.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Series">
+            <summary>
+            A series.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Music">
+            <summary>
+            Music.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Book">
+            <summary>
+            A book.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.LiveTvChannel">
+            <summary>
+            A live TV channel.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.LiveTvProgram">
+            <summary>
+            A live TV program.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.ChannelContent">
+            <summary>
+            Channel content.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.UnratedItem.Other">
+            <summary>
+            Another type, not covered by the other fields.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.VideoRange">
+            <summary>
+            An enum representing video ranges.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRange.Unknown">
+            <summary>
+            Unknown video range.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRange.SDR">
+            <summary>
+            SDR video range.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRange.HDR">
+            <summary>
+            HDR video range.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Enums.VideoRangeType">
+            <summary>
+            An enum representing types of video ranges.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.Unknown">
+            <summary>
+            Unknown video range type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.SDR">
+            <summary>
+            SDR video range type (8bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.HDR10">
+            <summary>
+            HDR10 video range type (10bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.HLG">
+            <summary>
+            HLG video range type (10bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVI">
+            <summary>
+            Dolby Vision video range type (10bit encoded / 12bit remapped).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithHDR10">
+            <summary>
+            Dolby Vision with HDR10 video range fallback (10bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithHLG">
+            <summary>
+            Dolby Vision with HLG video range fallback (10bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithSDR">
+            <summary>
+            Dolby Vision with SDR video range fallback (8bit / 10bit).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithEL">
+            <summary>
+            Dolby Vision with Enhancment Layer (Profile 7).
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithHDR10Plus">
+            <summary>
+            Dolby Vision and HDR10+ Metadata coexists.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIWithELHDR10Plus">
+            <summary>
+            Dolby Vision with Enhancment Layer (Profile 7) and HDR10+ Metadata coexists.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.DOVIInvalid">
+            <summary>
+            Dolby Vision with invalid configuration. e.g. Profile 8 compat id 6.
+            When using this range, the server would assume the video is still HDR10 after removing the Dolby Vision metadata.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.Enums.VideoRangeType.HDR10Plus">
+            <summary>
+            HDR10+ video range type (10bit to 16bit).
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Events.GenericEventArgs`1">
+            <summary>
+            Provides a generic EventArgs subclass that can hold any kind of object.
+            </summary>
+            <typeparam name="T">The type of this event.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Data.Events.GenericEventArgs`1.#ctor(`0)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.GenericEventArgs`1"/> class.
+            </summary>
+            <param name="arg">The argument.</param>
+        </member>
+        <member name="P:Jellyfin.Data.Events.GenericEventArgs`1.Argument">
+            <summary>
+            Gets the argument.
+            </summary>
+            <value>The argument.</value>
+        </member>
+        <member name="T:Jellyfin.Data.Events.System.PendingRestartEventArgs">
+            <summary>
+            An event that occurs when there is a pending restart.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Events.Users.UserCreatedEventArgs">
+            <summary>
+            An event that occurs when a user is created.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.Events.Users.UserCreatedEventArgs.#ctor(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.Users.UserCreatedEventArgs"/> class.
+            </summary>
+            <param name="arg">The user.</param>
+        </member>
+        <member name="T:Jellyfin.Data.Events.Users.UserDeletedEventArgs">
+            <summary>
+            An event that occurs when a user is deleted.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.Events.Users.UserDeletedEventArgs.#ctor(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.Users.UserDeletedEventArgs"/> class.
+            </summary>
+            <param name="arg">The user.</param>
+        </member>
+        <member name="T:Jellyfin.Data.Events.Users.UserLockedOutEventArgs">
+            <summary>
+            An event that occurs when a user is locked out.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.Events.Users.UserLockedOutEventArgs.#ctor(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.Users.UserLockedOutEventArgs"/> class.
+            </summary>
+            <param name="arg">The user.</param>
+        </member>
+        <member name="T:Jellyfin.Data.Events.Users.UserPasswordChangedEventArgs">
+            <summary>
+            An event that occurs when a user's password has changed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.Events.Users.UserPasswordChangedEventArgs.#ctor(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.Users.UserPasswordChangedEventArgs"/> class.
+            </summary>
+            <param name="arg">The user.</param>
+        </member>
+        <member name="T:Jellyfin.Data.Events.Users.UserUpdatedEventArgs">
+            <summary>
+            An event that occurs when a user is updated.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.Events.Users.UserUpdatedEventArgs.#ctor(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Data.Events.Users.UserUpdatedEventArgs"/> class.
+            </summary>
+            <param name="arg">The user.</param>
+        </member>
+        <member name="T:Jellyfin.Data.Queries.ActivityLogQuery">
+            <summary>
+            A class representing a query to the activity logs.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.HasUserId">
+            <summary>
+            Gets or sets a value indicating whether to take entries with a user id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.MinDate">
+            <summary>
+            Gets or sets the minimum date to query for.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.MaxDate">
+            <summary>
+            Gets or sets the maximum date to query for.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.Name">
+            <summary>
+            Gets or sets the name filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.Overview">
+            <summary>
+            Gets or sets the overview filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.ShortOverview">
+            <summary>
+            Gets or sets the short overview filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.Type">
+            <summary>
+            Gets or sets the type filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.ItemId">
+            <summary>
+            Gets or sets the item filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.Username">
+            <summary>
+            Gets or sets the username filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.Severity">
+            <summary>
+            Gets or sets the log level filter.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.ActivityLogQuery.OrderBy">
+            <summary>
+            Gets or sets the result ordering.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Queries.DeviceQuery">
+            <summary>
+            A query to retrieve devices.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.DeviceQuery.UserId">
+            <summary>
+            Gets or sets the user id of the device.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.DeviceQuery.DeviceId">
+            <summary>
+            Gets or sets the device id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.DeviceQuery.AccessToken">
+            <summary>
+            Gets or sets the access token.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.Queries.PaginatedQuery">
+            <summary>
+            An abstract class for paginated queries.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.PaginatedQuery.Skip">
+            <summary>
+            Gets or sets the index to start at.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Data.Queries.PaginatedQuery.Limit">
+            <summary>
+            Gets or sets the maximum number of items to include.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Data.UserEntityExtensions">
+            <summary>
+            Contains extension methods for manipulation of <see cref="T:Jellyfin.Database.Implementations.Entities.User"/> entities.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Data.UserEntityExtensions.Delimiter">
+            <summary>
+            The values being delimited here are Guids, so commas work as they do not appear in Guids.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.HasPermission(Jellyfin.Database.Implementations.Interfaces.IHasPermissions,Jellyfin.Database.Implementations.Enums.PermissionKind)">
+            <summary>
+            Checks whether the user has the specified permission.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="kind">The permission kind.</param>
+            <returns><c>True</c> if the user has the specified permission.</returns>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.SetPermission(Jellyfin.Database.Implementations.Interfaces.IHasPermissions,Jellyfin.Database.Implementations.Enums.PermissionKind,System.Boolean)">
+            <summary>
+            Sets the given permission kind to the provided value.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="kind">The permission kind.</param>
+            <param name="value">The value to set.</param>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.GetPreference(Jellyfin.Database.Implementations.Entities.User,Jellyfin.Database.Implementations.Enums.PreferenceKind)">
+            <summary>
+            Gets the user's preferences for the given preference kind.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="preference">The preference kind.</param>
+            <returns>A string array containing the user's preferences.</returns>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.GetPreferenceValues``1(Jellyfin.Database.Implementations.Entities.User,Jellyfin.Database.Implementations.Enums.PreferenceKind)">
+            <summary>
+            Gets the user's preferences for the given preference kind.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="preference">The preference kind.</param>
+            <typeparam name="T">Type of preference.</typeparam>
+            <returns>A {T} array containing the user's preference.</returns>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.SetPreference(Jellyfin.Database.Implementations.Entities.User,Jellyfin.Database.Implementations.Enums.PreferenceKind,System.String[])">
+            <summary>
+            Sets the specified preference to the given value.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="preference">The preference kind.</param>
+            <param name="values">The values.</param>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.SetPreference``1(Jellyfin.Database.Implementations.Entities.User,Jellyfin.Database.Implementations.Enums.PreferenceKind,``0[])">
+            <summary>
+            Sets the specified preference to the given value.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="preference">The preference kind.</param>
+            <param name="values">The values.</param>
+            <typeparam name="T">The type of value.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.IsParentalScheduleAllowed(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Checks whether this user is currently allowed to use the server.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <returns><c>True</c> if the current time is within an access schedule, or there are no access schedules.</returns>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.IsFolderGrouped(Jellyfin.Database.Implementations.Entities.User,System.Guid)">
+            <summary>
+            Checks whether the provided folder is in this user's grouped folders.
+            </summary>
+            <param name="entity">The entity to update.</param>
+            <param name="id">The Guid of the folder.</param>
+            <returns><c>True</c> if the folder is in the user's grouped folders.</returns>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.AddDefaultPermissions(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes the default permissions for a user. Should only be called on user creation.
+            </summary>
+            <param name="entity">The entity to update.</param>
+        </member>
+        <member name="M:Jellyfin.Data.UserEntityExtensions.AddDefaultPreferences(Jellyfin.Database.Implementations.Entities.User)">
+            <summary>
+            Initializes the default preferences. Should only be called on user creation.
+            </summary>
+            <param name="entity">The entity to update.</param>
+        </member>
+    </members>
+</doc>

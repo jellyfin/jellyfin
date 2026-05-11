@@ -1,0 +1,721 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Extensions</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Extensions.CopyToExtensions">
+            <summary>
+            Provides <c>CopyTo</c> extensions methods for <see cref="T:System.Collections.Generic.IReadOnlyList`1" />.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.CopyToExtensions.CopyTo``1(System.Collections.Generic.IReadOnlyList{``0},System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>
+            Copies all the elements of the current collection to the specified list
+            starting at the specified destination array index. The index is specified as a 32-bit integer.
+            </summary>
+            <param name="source">The current collection that is the source of the elements.</param>
+            <param name="destination">The list that is the destination of the elements copied from the current collection.</param>
+            <param name="index">A 32-bit integer that represents the index in <c>destination</c> at which copying begins.</param>
+            <typeparam name="T">The type of the array.</typeparam>
+        </member>
+        <member name="T:Jellyfin.Extensions.DictionaryExtensions">
+            <summary>
+            Static extensions for the <see cref="T:System.Collections.Generic.IReadOnlyDictionary`2"/> interface.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.DictionaryExtensions.GetFirstNotNullNorWhiteSpaceValue(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String,System.String,System.String,System.String)">
+            <summary>
+            Gets a string from a string dictionary, checking all keys sequentially,
+            stopping at the first key that returns a result that's neither null nor blank.
+            </summary>
+            <param name="dictionary">The dictionary.</param>
+            <param name="key1">The first checked key.</param>
+            <param name="key2">The second checked key.</param>
+            <param name="key3">The third checked key.</param>
+            <param name="key4">The fourth checked key.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.EnumerableExtensions">
+            <summary>
+            Static extensions for the <see cref="T:System.Collections.Generic.IEnumerable`1"/> interface.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.EnumerableExtensions.Contains(System.Collections.Generic.IEnumerable{System.String},System.ReadOnlySpan{System.Char},System.StringComparison)">
+            <summary>
+            Determines whether the value is contained in the source collection.
+            </summary>
+            <param name="source">An instance of the <see cref="T:System.Collections.Generic.IEnumerable`1"/> interface.</param>
+            <param name="value">The value to look for in the collection.</param>
+            <param name="stringComparison">The string comparison.</param>
+            <returns>A value indicating whether the value is contained in the collection.</returns>
+            <exception cref="T:System.ArgumentNullException">The source is null.</exception>
+        </member>
+        <member name="M:Jellyfin.Extensions.EnumerableExtensions.SingleItemAsEnumerable``1(``0)">
+            <summary>
+            Gets an IEnumerable from a single item.
+            </summary>
+            <param name="item">The item to return.</param>
+            <typeparam name="T">The type of item.</typeparam>
+            <returns>The IEnumerable{T}.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.EnumerableExtensions.GetUniqueFlags``1(``0)">
+            <summary>
+            Gets an IEnumerable consisting of all flags of an enum.
+            </summary>
+            <param name="flags">The flags enum.</param>
+            <typeparam name="T">The type of item.</typeparam>
+            <returns>The IEnumerable{Enum}.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.FileHelper">
+            <summary>
+            Provides helper functions for <see cref="T:System.IO.File" />.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.FileHelper.CreateEmpty(System.String)">
+            <summary>
+            Creates, or truncates a file in the specified path.
+            </summary>
+            <param name="path">The path and name of the file to create.</param>
+        </member>
+        <member name="T:Jellyfin.Extensions.FormattingStreamWriter">
+            <summary>
+            A custom StreamWriter which supports setting a IFormatProvider.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.FormattingStreamWriter.#ctor(System.IO.Stream,System.IFormatProvider)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.FormattingStreamWriter"/> class.
+            </summary>
+            <param name="stream">The stream to write to.</param>
+            <param name="formatProvider">The format provider to use.</param>
+        </member>
+        <member name="M:Jellyfin.Extensions.FormattingStreamWriter.#ctor(System.String,System.IFormatProvider)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.FormattingStreamWriter"/> class.
+            </summary>
+            <param name="path">The complete file path to write to.</param>
+            <param name="formatProvider">The format provider to use.</param>
+        </member>
+        <member name="P:Jellyfin.Extensions.FormattingStreamWriter.FormatProvider">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.GuidExtensions">
+            <summary>
+            Guid specific extensions.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.GuidExtensions.IsEmpty(System.Guid)">
+            <summary>
+            Determine whether the guid is default.
+            </summary>
+            <param name="guid">The guid.</param>
+            <returns>Whether the guid is the default value.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.GuidExtensions.IsNullOrEmpty(System.Nullable{System.Guid})">
+            <summary>
+            Determine whether the guid is null or default.
+            </summary>
+            <param name="guid">The guid.</param>
+            <returns>Whether the guid is null or the default valueF.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonBoolNumberConverter">
+            <summary>
+            Converts a number to a boolean.
+            This is needed for HDHomerun.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonBoolNumberConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonBoolNumberConverter.Write(System.Text.Json.Utf8JsonWriter,System.Boolean,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonBoolStringConverter">
+            <summary>
+            Converts a string to a boolean.
+            This is needed for FFprobe.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonBoolStringConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonBoolStringConverter.Write(System.Text.Json.Utf8JsonWriter,System.Boolean,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverter`1">
+            <summary>
+            Convert comma delimited string to collection of type.
+            </summary>
+            <typeparam name="T">Type to convert to.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverter`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverter`1"/> class.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverter`1.Delimiter">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverterFactory">
+            <summary>
+            Json comma delimited collection converter factory.
+            </summary>
+            <remarks>
+            This must be applied as an attribute, adding to the JsonConverter list causes stack overflow.
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverterFactory.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonCommaDelimitedCollectionConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonDateTimeConverter">
+            <summary>
+            Legacy DateTime converter.
+            Milliseconds aren't output if zero by default.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDateTimeConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDateTimeConverter.Write(System.Text.Json.Utf8JsonWriter,System.DateTime,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverter`1">
+            <summary>
+            Json unknown enum converter.
+            </summary>
+            <typeparam name="T">The type of enum.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverter`1.#ctor(System.Text.Json.Serialization.JsonConverter{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverter`1"/> class.
+            </summary>
+            <param name="baseConverter">The base json converter.</param>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverter`1.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverter`1.Write(System.Text.Json.Utf8JsonWriter,`0,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverterFactory">
+            <summary>
+            Utilizes the JsonStringEnumConverter and sets a default value if not provided.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverterFactory.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDefaultStringEnumConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1">
+            <summary>
+            Convert delimited string to array of type.
+            </summary>
+            <typeparam name="T">Type to convert to.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1"/> class.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1.Delimiter">
+            <summary>
+            Gets the array delimiter.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonDelimitedCollectionConverter`1.Write(System.Text.Json.Utf8JsonWriter,System.Collections.Generic.IReadOnlyCollection{`0},System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverter`1">
+            <summary>
+            Enum flag to json array converter.
+            </summary>
+            <typeparam name="T">The type of enum.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverter`1.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverter`1.Write(System.Text.Json.Utf8JsonWriter,`0,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverterFactory">
+            <summary>
+            Json flag enum converter factory.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverterFactory.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonFlagEnumConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonGuidConverter">
+            <summary>
+            Converts a GUID object or value to/from JSON.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonGuidConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonGuidConverter.Write(System.Text.Json.Utf8JsonWriter,System.Guid,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonNullableGuidConverter">
+            <summary>
+            Converts a GUID object or value to/from JSON.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableGuidConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableGuidConverter.Write(System.Text.Json.Utf8JsonWriter,System.Nullable{System.Guid},System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverter`1">
+            <summary>
+            Converts a nullable struct or value to/from JSON.
+            Required - some clients send an empty string.
+            </summary>
+            <typeparam name="TStruct">The struct type.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverter`1.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverter`1.Write(System.Text.Json.Utf8JsonWriter,System.Nullable{`0},System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverterFactory">
+            <summary>
+            Json nullable struct converter factory.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverterFactory.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonNullableStructConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverter`1">
+            <summary>
+            Convert Pipe delimited string to array of type.
+            </summary>
+            <typeparam name="T">Type to convert to.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverter`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverter`1"/> class.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverter`1.Delimiter">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverterFactory">
+            <summary>
+            Json Pipe delimited collection converter factory.
+            </summary>
+            <remarks>
+            This must be applied as an attribute, adding to the JsonConverter list causes stack overflow.
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverterFactory.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonPipeDelimitedCollectionConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonStringConverter">
+            <summary>
+            Converter to allow the serializer to read strings.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonStringConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonStringConverter.Write(System.Text.Json.Utf8JsonWriter,System.String,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Converters.JsonVersionConverter">
+            <summary>
+            Converts a Version object or value to/from JSON.
+            </summary>
+            <remarks>
+            Required to send <see cref="T:System.Version"/> as a string instead of an object.
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonVersionConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Converters.JsonVersionConverter.Write(System.Text.Json.Utf8JsonWriter,System.Version,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.JsonDefaults">
+            <summary>
+            Helper class for having compatible JSON throughout the codebase.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Extensions.Json.JsonDefaults.PascalCaseMediaType">
+            <summary>
+            Pascal case json profile media type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Extensions.Json.JsonDefaults.CamelCaseMediaType">
+            <summary>
+            Camel case json profile media type.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Extensions.Json.JsonDefaults._jsonSerializerOptions">
+            <summary>
+            When changing these options, update
+             Jellyfin.Server/Extensions/ApiServiceCollectionExtensions.cs
+              -> AddJellyfinApi
+               -> AddJsonOptions.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.JsonDefaults.Options">
+            <summary>
+            Gets the default <see cref="T:System.Text.Json.JsonSerializerOptions" /> options.
+            </summary>
+            <remarks>
+            The return value must not be modified.
+            If the defaults must be modified the author must use the copy constructor.
+            </remarks>
+            <returns>The default <see cref="T:System.Text.Json.JsonSerializerOptions" /> options.</returns>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.JsonDefaults.CamelCaseOptions">
+            <summary>
+            Gets camelCase json options.
+            </summary>
+            <remarks>
+            The return value must not be modified.
+            If the defaults must be modified the author must use the copy constructor.
+            </remarks>
+            <returns>The camelCase <see cref="T:System.Text.Json.JsonSerializerOptions" /> options.</returns>
+        </member>
+        <member name="P:Jellyfin.Extensions.Json.JsonDefaults.PascalCaseOptions">
+            <summary>
+            Gets PascalCase json options.
+            </summary>
+            <remarks>
+            The return value must not be modified.
+            If the defaults must be modified the author must use the copy constructor.
+            </remarks>
+            <returns>The PascalCase <see cref="T:System.Text.Json.JsonSerializerOptions" /> options.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.Json.Utf8JsonExtensions">
+            <summary>
+            Extensions for Utf8JsonReader and Utf8JsonWriter.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Utf8JsonExtensions.IsEmptyString(System.Text.Json.Utf8JsonReader)">
+            <summary>
+            Determines if the reader contains an empty string.
+            </summary>
+            <param name="reader">The reader.</param>
+            <returns>Whether the reader contains an empty string.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.Json.Utf8JsonExtensions.IsNull(System.Text.Json.Utf8JsonReader)">
+            <summary>
+            Determines if the reader contains a null value.
+            </summary>
+            <param name="reader">The reader.</param>
+            <returns>Whether the reader contains null.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.ReadOnlyListExtension">
+            <summary>
+            Static extensions for the <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> interface.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.ReadOnlyListExtension.IndexOf``1(System.Collections.Generic.IReadOnlyList{``0},``0)">
+            <summary>
+            Finds the index of the desired item.
+            </summary>
+            <param name="source">The source list.</param>
+            <param name="value">The value to fine.</param>
+            <typeparam name="T">The type of item to find.</typeparam>
+            <returns>Index if found, else -1.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.ReadOnlyListExtension.FindIndex``1(System.Collections.Generic.IReadOnlyList{``0},System.Predicate{``0})">
+            <summary>
+            Finds the index of the predicate.
+            </summary>
+            <param name="source">The source list.</param>
+            <param name="match">The value to find.</param>
+            <typeparam name="T">The type of item to find.</typeparam>
+            <returns>Index if found, else -1.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.ReadOnlyListExtension.FirstOrDefault``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>
+            Get the first or default item from a list.
+            </summary>
+            <param name="source">The source list.</param>
+            <typeparam name="T">The type of item.</typeparam>
+            <returns>The first item or default if list is empty.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.ShuffleExtensions">
+            <summary>
+            Provides <c>Shuffle</c> extensions methods for <see cref="T:System.Collections.Generic.IList`1" />.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.ShuffleExtensions.Shuffle``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            Shuffles the items in a list.
+            </summary>
+            <param name="list">The list that should get shuffled.</param>
+            <typeparam name="T">The type.</typeparam>
+        </member>
+        <member name="M:Jellyfin.Extensions.ShuffleExtensions.Shuffle``1(System.Collections.Generic.IList{``0},System.Random)">
+            <summary>
+            Shuffles the items in a list.
+            </summary>
+            <param name="list">The list that should get shuffled.</param>
+            <param name="rng">The random number generator to use.</param>
+            <typeparam name="T">The type.</typeparam>
+        </member>
+        <member name="T:Jellyfin.Extensions.SplitStringExtensions">
+            <summary>
+            Extension class for splitting lines without unnecessary allocations.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.SplitStringExtensions.SpanSplit(System.String,System.Char)">
+            <summary>
+            Creates a new string split enumerator.
+            </summary>
+            <param name="str">The string to split.</param>
+            <param name="separator">The separator to split on.</param>
+            <returns>The enumerator struct.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.SplitStringExtensions.Split(System.ReadOnlySpan{System.Char},System.Char)">
+            <summary>
+            Creates a new span split enumerator.
+            </summary>
+            <param name="str">The span to split.</param>
+            <param name="separator">The separator to split on.</param>
+            <returns>The enumerator struct.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.SplitStringExtensions.Enumerator">
+            <summary>
+            Provides an enumerator for the substrings separated by the separator.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.SplitStringExtensions.Enumerator.#ctor(System.ReadOnlySpan{System.Char},System.Char)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Extensions.SplitStringExtensions.Enumerator"/> struct.
+            </summary>
+            <param name="str">The span to split.</param>
+            <param name="separator">The separator to split on.</param>
+        </member>
+        <member name="P:Jellyfin.Extensions.SplitStringExtensions.Enumerator.Current">
+            <summary>
+            Gets a reference to the item at the current position of the enumerator.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.SplitStringExtensions.Enumerator.GetEnumerator">
+            <summary>
+            Returns <c>this</c>.
+            </summary>
+            <returns><c>this</c>.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.SplitStringExtensions.Enumerator.MoveNext">
+            <summary>
+            Advances the enumerator to the next item.
+            </summary>
+            <returns><c>true</c> if there is a next element; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.StreamExtensions">
+            <summary>
+            Class BaseExtensions.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.StreamExtensions.ReadAllLines(System.IO.Stream)">
+            <summary>
+            Reads all lines in the <see cref="T:System.IO.Stream" />.
+            </summary>
+            <param name="stream">The <see cref="T:System.IO.Stream" /> to read from.</param>
+            <returns>All lines in the stream.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StreamExtensions.ReadAllLines(System.IO.Stream,System.Text.Encoding)">
+            <summary>
+            Reads all lines in the <see cref="T:System.IO.Stream" />.
+            </summary>
+            <param name="stream">The <see cref="T:System.IO.Stream" /> to read from.</param>
+            <param name="encoding">The character encoding to use.</param>
+            <returns>All lines in the stream.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StreamExtensions.ReadAllLines(System.IO.TextReader)">
+            <summary>
+            Reads all lines in the <see cref="T:System.IO.TextReader" />.
+            </summary>
+            <param name="reader">The <see cref="T:System.IO.TextReader" /> to read from.</param>
+            <returns>All lines in the stream.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StreamExtensions.ReadAllLinesAsync(System.IO.TextReader,System.Threading.CancellationToken)">
+            <summary>
+            Reads all lines in the <see cref="T:System.IO.TextReader" />.
+            </summary>
+            <param name="reader">The <see cref="T:System.IO.TextReader" /> to read from.</param>
+            <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+            <returns>All lines in the stream.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.StringBuilderExtensions">
+            <summary>
+            Extension methods for the <see cref="T:System.Text.StringBuilder"/> class.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringBuilderExtensions.AppendJoinInSingleQuotes(System.Text.StringBuilder,System.Char,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Concatenates and appends the members of a collection in single quotes using the specified delimiter.
+            </summary>
+            <param name="builder">The string builder.</param>
+            <param name="delimiter">The character delimiter.</param>
+            <param name="values">The collection of strings to concatenate.</param>
+            <returns>The updated string builder.</returns>
+        </member>
+        <member name="T:Jellyfin.Extensions.StringExtensions">
+            <summary>
+            Provides extensions methods for <see cref="T:System.String" />.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.NonConformingUnicodeRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>([\ud800-\udbff](?![\udc00-\udfff]))|((?&lt;![\ud800-\udbff])[\udc00-\udfff])|(�)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match with 3 alternative expressions, atomically.<br/>
+                ○ 1st capture group.<br/>
+                    ○ Match a character in the set [\uD800-\uDBFF].<br/>
+                    ○ Zero-width negative lookahead.<br/>
+                        ○ Match a character in the set [\uDC00-\uDFFF].<br/>
+                ○ 2nd capture group.<br/>
+                    ○ Zero-width negative lookbehind.<br/>
+                        ○ Match a character in the set [\uD800-\uDBFF] right-to-left.<br/>
+                    ○ Match a character in the set [\uDC00-\uDFFF].<br/>
+                ○ 3rd capture group.<br/>
+                    ○ Match '�'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.RemoveDiacritics(System.String)">
+            <summary>
+            Removes the diacritics character from the strings.
+            </summary>
+            <param name="text">The string to act on.</param>
+            <returns>The string without diacritics character.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.HasDiacritics(System.String)">
+            <summary>
+            Checks whether or not the specified string has diacritics in it.
+            </summary>
+            <param name="text">The string to check.</param>
+            <returns>True if the string has diacritics, false otherwise.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.Count(System.ReadOnlySpan{System.Char},System.Char)">
+            <summary>
+            Counts the number of occurrences of [needle] in the string.
+            </summary>
+            <param name="value">The haystack to search in.</param>
+            <param name="needle">The character to search for.</param>
+            <returns>The number of occurrences of the [needle] character.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.LeftPart(System.ReadOnlySpan{System.Char},System.Char)">
+            <summary>
+            Returns the part on the left of the <c>needle</c>.
+            </summary>
+            <param name="haystack">The string to seek.</param>
+            <param name="needle">The needle to find.</param>
+            <returns>The part left of the <paramref name="needle" />.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.RightPart(System.ReadOnlySpan{System.Char},System.Char)">
+            <summary>
+            Returns the part on the right of the <c>needle</c>.
+            </summary>
+            <param name="haystack">The string to seek.</param>
+            <param name="needle">The needle to find.</param>
+            <returns>The part right of the <paramref name="needle" />.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.Transliterated(System.String)">
+            <summary>
+            Returns a transliterated string which only contain ascii characters.
+            </summary>
+            <param name="text">The string to act on.</param>
+            <returns>The transliterated string.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.Trimmed(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Ensures all strings are non-null and trimmed of leading an trailing blanks.
+            </summary>
+            <param name="values">The enumerable of strings to trim.</param>
+            <returns>The enumeration of trimmed strings.</returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.TruncateAtNull(System.String)">
+            <summary>
+            Truncates a string at the first null character ('\0').
+            </summary>
+            <param name="text">The input string.</param>
+            <returns>
+            The substring up to (but not including) the first null character,
+            or the original string if no null character is present.
+            </returns>
+        </member>
+        <member name="M:Jellyfin.Extensions.StringExtensions.GetCleanValue(System.String)">
+            <summary>
+            Normalizes a string for comparison by removing diacritics, converting to lowercase,
+            replacing punctuation/special characters with spaces, and collapsing whitespace.
+            </summary>
+            <param name="value">The string to normalize.</param>
+            <returns>The normalized string, or the original if null/whitespace.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NonConformingUnicodeRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonConformingUnicodeRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.IndexOfNonAsciiOrAny_AEA8CFA2B5BC71ABC904D402F4CC4D3E0211E0681824955E81054C16A76CB030(System.ReadOnlySpan{System.Char})">
+            <summary>Finds the next index of any character that matches a character in the set [\uD800-\uDFFF\uFFFD].</summary>
+        </member>
+    </members>
+</doc>

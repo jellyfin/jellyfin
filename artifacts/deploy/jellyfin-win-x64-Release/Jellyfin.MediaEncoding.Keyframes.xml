@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.MediaEncoding.Keyframes</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.FfProbe.FfProbeKeyframeExtractor">
+            <summary>
+            FfProbe based keyframe extractor.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.FfProbe.FfProbeKeyframeExtractor.GetKeyframeData(System.String,System.String)">
+            <summary>
+            Extracts the keyframes using the ffprobe executable at the specified path.
+            </summary>
+            <param name="ffProbePath">The path to the ffprobe executable.</param>
+            <param name="filePath">The file path.</param>
+            <returns>An instance of <see cref="T:Jellyfin.MediaEncoding.Keyframes.KeyframeData"/>.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.FfTool.FfToolKeyframeExtractor">
+            <summary>
+            FfTool based keyframe extractor.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.FfTool.FfToolKeyframeExtractor.GetKeyframeData(System.String,System.String)">
+            <summary>
+            Extracts the keyframes using the fftool executable at the specified path.
+            </summary>
+            <param name="ffToolPath">The path to the fftool executable.</param>
+            <param name="filePath">The file path.</param>
+            <returns>An instance of <see cref="T:Jellyfin.MediaEncoding.Keyframes.KeyframeData"/>.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.KeyframeData">
+            <summary>
+            Keyframe information for a specific file.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.KeyframeData.#ctor(System.Int64,System.Collections.Generic.IReadOnlyList{System.Int64})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Keyframes.KeyframeData"/> class.
+            </summary>
+            <param name="totalDuration">The total duration of the video stream in ticks.</param>
+            <param name="keyframeTicks">The video keyframes in ticks.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.KeyframeData.TotalDuration">
+            <summary>
+            Gets the total duration of the stream in ticks.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.KeyframeData.KeyframeTicks">
+            <summary>
+            Gets the keyframes in ticks.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions">
+            <summary>
+            Extension methods for the <see cref="T:NEbml.Core.EbmlReader"/> class.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions.FindElement(NEbml.Core.EbmlReader,System.UInt64)">
+            <summary>
+            Traverses the current container to find the element with <paramref name="identifier"/> identifier.
+            </summary>
+            <param name="reader">An instance of <see cref="T:NEbml.Core.EbmlReader"/>.</param>
+            <param name="identifier">The element identifier.</param>
+            <returns>A value indicating whether the element was found.</returns>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions.ReadUIntFromBinary(NEbml.Core.EbmlReader)">
+            <summary>
+            Reads the current position in the file as an unsigned integer converted from binary.
+            </summary>
+            <param name="reader">An instance of <see cref="T:NEbml.Core.EbmlReader"/>.</param>
+            <returns>The unsigned integer.</returns>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions.ReadSeekHead(NEbml.Core.EbmlReader)">
+            <summary>
+            Reads from the start of the file to retrieve the SeekHead segment.
+            </summary>
+            <param name="reader">An instance of <see cref="T:NEbml.Core.EbmlReader"/>.</param>
+            <returns>Instance of <see cref="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead"/>.</returns>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions.ReadInfo(NEbml.Core.EbmlReader,System.Int64)">
+            <summary>
+            Reads from SegmentContainer to retrieve the Info segment.
+            </summary>
+            <param name="reader">An instance of <see cref="T:NEbml.Core.EbmlReader"/>.</param>
+            <param name="position">The position of the info segment relative to the Segment container.</param>
+            <returns>Instance of <see cref="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info"/>.</returns>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions.EbmlReaderExtensions.FindFirstTrackNumberByType(NEbml.Core.EbmlReader,System.Int64,System.UInt64)">
+            <summary>
+            Enters the Tracks segment and reads all tracks to find the specified type.
+            </summary>
+            <param name="reader">Instance of <see cref="T:NEbml.Core.EbmlReader"/>.</param>
+            <param name="tracksPosition">The relative position of the tracks segment.</param>
+            <param name="type">The track type identifier.</param>
+            <returns>The first track number with the specified type.</returns>
+            <exception cref="T:System.InvalidOperationException">Stream type is not found.</exception>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.Matroska.MatroskaConstants">
+            <summary>
+            Constants for the Matroska identifiers.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.Matroska.MatroskaKeyframeExtractor">
+            <summary>
+            The keyframe extractor for the matroska container.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.MatroskaKeyframeExtractor.GetKeyframeData(System.String)">
+            <summary>
+            Extracts the keyframes in ticks (scaled using the container timestamp scale) from the matroska container.
+            </summary>
+            <param name="filePath">The file path.</param>
+            <returns>An instance of <see cref="T:Jellyfin.MediaEncoding.Keyframes.KeyframeData"/>.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info">
+            <summary>
+            The matroska Info segment.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info.#ctor(System.Int64,System.Nullable{System.Double})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info"/> class.
+            </summary>
+            <param name="timestampScale">The timestamp scale in nanoseconds.</param>
+            <param name="duration">The duration of the entire file.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info.TimestampScale">
+            <summary>
+            Gets the timestamp scale in nanoseconds.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.Info.Duration">
+            <summary>
+            Gets the total duration of the file.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead">
+            <summary>
+            The matroska SeekHead segment. All positions are relative to the Segment container.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead.#ctor(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead"/> class.
+            </summary>
+            <param name="infoPosition">The relative file position of the info segment.</param>
+            <param name="tracksPosition">The relative file position of the tracks segment.</param>
+            <param name="cuesPosition">The relative file position of the cues segment.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead.InfoPosition">
+            <summary>
+            Gets relative file position of the info segment.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead.TracksPosition">
+            <summary>
+            Gets the relative file position of the tracks segment.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Keyframes.Matroska.Models.SeekHead.CuesPosition">
+            <summary>
+            Gets the relative file position of the cues segment.
+            </summary>
+        </member>
+    </members>
+</doc>

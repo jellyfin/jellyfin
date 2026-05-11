@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Drawing</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Drawing.ImageProcessor">
+            <summary>
+            Class ImageProcessor.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Drawing.ImageProcessor},MediaBrowser.Controller.IServerApplicationPaths,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Drawing.IImageEncoder,MediaBrowser.Controller.Configuration.IServerConfigurationManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Drawing.ImageProcessor"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="appPaths">The server application paths.</param>
+            <param name="fileSystem">The filesystem.</param>
+            <param name="imageEncoder">The image encoder.</param>
+            <param name="config">The configuration.</param>
+        </member>
+        <member name="P:Jellyfin.Drawing.ImageProcessor.SupportedInputFormats">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Drawing.ImageProcessor.SupportsImageCollageCreation">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetSupportedImageOutputFormats">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.ProcessImage(MediaBrowser.Controller.Drawing.ImageProcessingOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetCacheFilePath(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Int32,System.DateTime,MediaBrowser.Model.Drawing.ImageFormat,System.Double,System.Nullable{System.Int32},System.Nullable{System.Int32},System.String,System.String)">
+            <summary>
+            Gets the cache file path based on a set of parameters.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageDimensions(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Entities.ItemImageInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageDimensions(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageBlurHash(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageBlurHash(System.String,MediaBrowser.Model.Drawing.ImageDimensions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(System.String,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Entities.ItemImageInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(MediaBrowser.Model.Dto.BaseItemDto,MediaBrowser.Controller.Entities.ItemImageInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(MediaBrowser.Model.Dto.BaseItemDto,MediaBrowser.Model.Entities.ChapterInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Model.Entities.ChapterInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetImageCacheTag(Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetCachePath(System.String,System.String,System.String)">
+            <summary>
+            Gets the cache path.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="uniqueName">Name of the unique.</param>
+            <param name="fileExtension">The file extension.</param>
+            <returns>System.String.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            path
+            or
+            uniqueName
+            or
+            fileExtension.
+            </exception>
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.GetCachePath(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char})">
+            <summary>
+            Gets the cache path.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="filename">The filename.</param>
+            <returns>System.String.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            path
+            or
+            filename.
+            </exception>
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.CreateImageCollage(MediaBrowser.Controller.Drawing.ImageCollageOptions,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.ImageProcessor.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Drawing.NullImageEncoder">
+            <summary>
+            A fallback implementation of <see cref="T:MediaBrowser.Controller.Drawing.IImageEncoder" />.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Drawing.NullImageEncoder.SupportedInputFormats">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Drawing.NullImageEncoder.SupportedOutputFormats">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Drawing.NullImageEncoder.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Drawing.NullImageEncoder.SupportsImageCollageCreation">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Drawing.NullImageEncoder.SupportsImageEncoding">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.GetImageSize(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.EncodeImage(System.String,System.DateTime,System.String,System.Boolean,System.Nullable{MediaBrowser.Model.Drawing.ImageOrientation},System.Int32,MediaBrowser.Controller.Drawing.ImageProcessingOptions,MediaBrowser.Model.Drawing.ImageFormat)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.CreateImageCollage(MediaBrowser.Controller.Drawing.ImageCollageOptions,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.CreateSplashscreen(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.CreateTrickplayTile(MediaBrowser.Controller.Drawing.ImageCollageOptions,System.Int32,System.Int32,System.Nullable{System.Int32})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Drawing.NullImageEncoder.GetImageBlurHash(System.Int32,System.Int32,System.String)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

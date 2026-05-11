@@ -1,0 +1,501 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MediaBrowser.LocalMetadata</name>
+    </assembly>
+    <members>
+        <member name="T:MediaBrowser.LocalMetadata.BaseXmlProvider`1">
+            <summary>
+            The BaseXmlProvider.
+            </summary>
+            <typeparam name="T">Type of provider.</typeparam>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.BaseXmlProvider`1.#ctor(MediaBrowser.Model.IO.IFileSystem)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.BaseXmlProvider`1"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.BaseXmlProvider`1.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.BaseXmlProvider`1.Order">
+            After Nfo
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.BaseXmlProvider`1.FileSystem">
+            <summary>
+            Gets the IFileSystem.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.BaseXmlProvider`1.GetMetadata(MediaBrowser.Controller.Providers.ItemInfo,MediaBrowser.Controller.Providers.IDirectoryService,System.Threading.CancellationToken)">
+            <summary>
+            Gets metadata for item.
+            </summary>
+            <param name="info">The item info.</param>
+            <param name="directoryService">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IDirectoryService"/> interface.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>The metadata for item.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.BaseXmlProvider`1.Fetch(MediaBrowser.Controller.Providers.MetadataResult{`0},System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get metadata from path.
+            </summary>
+            <param name="result">Resulting metadata.</param>
+            <param name="path">The path.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.BaseXmlProvider`1.GetXmlFile(MediaBrowser.Controller.Providers.ItemInfo,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <summary>
+            Get metadata from xml file.
+            </summary>
+            <param name="info">Item inf.</param>
+            <param name="directoryService">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IDirectoryService"/> interface.</param>
+            <returns>The file system metadata.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.BaseXmlProvider`1.HasChanged(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider">
+            <summary>
+            Collection folder local image provider.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider.#ctor(MediaBrowser.Model.IO.IFileSystem)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider.Order">
+            Run after LocalImageProvider
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider.Supports(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.CollectionFolderLocalImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Images.EpisodeLocalImageProvider">
+            <summary>
+            Episode local image provider.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.EpisodeLocalImageProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.EpisodeLocalImageProvider.Order">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.EpisodeLocalImageProvider.Supports(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.EpisodeLocalImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider">
+            <summary>
+            Internal metadata folder image provider.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider.#ctor(MediaBrowser.Model.IO.IFileSystem,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider})">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider.Order">
+            Make sure this is last so that all other locations are scanned first
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider.Supports(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.InternalMetadataFolderImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Images.LocalImageProvider">
+            <summary>
+            Local image provider.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.LocalImageProvider.#ctor(MediaBrowser.Model.IO.IFileSystem)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Images.LocalImageProvider"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.LocalImageProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Images.LocalImageProvider.Order">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.LocalImageProvider.Supports(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.LocalImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.LocalImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,System.String,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <summary>
+            Get images for item.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="path">The images path.</param>
+            <param name="directoryService">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IDirectoryService"/> interface.</param>
+            <returns>The local image info.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Images.LocalImageProvider.GetImages(MediaBrowser.Controller.Entities.BaseItem,System.Collections.Generic.IEnumerable{System.String},MediaBrowser.Controller.Providers.IDirectoryService)">
+            <summary>
+            Get images for item from multiple paths.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="paths">The image paths.</param>
+            <param name="directoryService">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IDirectoryService"/> interface.</param>
+            <returns>The local image info.</returns>
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1">
+            <summary>
+            Provides a base class for parsing metadata xml.
+            </summary>
+            <typeparam name="T">Type of item xml parser.</typeparam>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.#ctor(Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser{`0}},MediaBrowser.Controller.Providers.IProviderManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1" /> class.
+            </summary>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+            <param name="providerManager">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.Logger">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.ProviderManager">
+            <summary>
+            Gets the provider manager.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.Fetch(MediaBrowser.Controller.Providers.MetadataResult{`0},System.String,System.Threading.CancellationToken)">
+            <summary>
+            Fetches metadata for an item from one xml file.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="metadataFile">The metadata file.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <exception cref="T:System.ArgumentNullException">Item is null.</exception>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.Fetch(MediaBrowser.Controller.Providers.MetadataResult{`0},System.String,System.Xml.XmlReaderSettings,System.Text.Encoding,System.Threading.CancellationToken)">
+            <summary>
+            Fetches the specified item.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="metadataFile">The metadata file.</param>
+            <param name="settings">The settings.</param>
+            <param name="encoding">The encoding.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.FetchDataFromXmlNode(System.Xml.XmlReader,MediaBrowser.Controller.Providers.MetadataResult{`0})">
+            <summary>
+            Fetches metadata from one Xml Element.
+            </summary>
+            <param name="reader">The reader.</param>
+            <param name="itemResult">The item result.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.FetchFromTaglinesNode(System.Xml.XmlReader,`0)">
+            <summary>
+            Fetches from taglines node.
+            </summary>
+            <param name="reader">The reader.</param>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.FetchFromGenresNode(System.Xml.XmlReader,`0)">
+            <summary>
+            Fetches from genres node.
+            </summary>
+            <param name="reader">The reader.</param>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.FetchDataFromPersonsNode(System.Xml.XmlReader,MediaBrowser.Controller.Providers.MetadataResult{`0})">
+            <summary>
+            Fetches the data from persons node.
+            </summary>
+            <param name="reader">The reader.</param>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.FetchFromStudiosNode(System.Xml.XmlReader,`0)">
+            <summary>
+            Fetches from studios node.
+            </summary>
+            <param name="reader">The reader.</param>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.GetLinkedChild(System.Xml.XmlReader)">
+            <summary>
+            Get linked child from XML. Uses deprecated Path/LibraryItemId properties for backward compatibility
+            with existing XML files. These will be resolved to ItemId when the linked child is accessed.
+            </summary>
+            <param name="reader">The xml reader.</param>
+            <returns>The linked child.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BaseItemXmlParser`1.GetShare(System.Xml.XmlReader)">
+            <summary>
+            Get share.
+            </summary>
+            <param name="reader">The xml reader.</param>
+            <returns>The share.</returns>
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser">
+            <summary>
+            The box set xml parser.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser.#ctor(Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser},MediaBrowser.Controller.Providers.IProviderManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser"/> class.
+            </summary>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+            <param name="providerManager">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser.FetchDataFromXmlNode(System.Xml.XmlReader,MediaBrowser.Controller.Providers.MetadataResult{MediaBrowser.Controller.Entities.Movies.BoxSet})">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser">
+            <summary>
+            Playlist xml parser.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser.#ctor(Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser},MediaBrowser.Controller.Providers.IProviderManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser"/> class.
+            </summary>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+            <param name="providerManager">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser.FetchDataFromXmlNode(System.Xml.XmlReader,MediaBrowser.Controller.Providers.MetadataResult{MediaBrowser.Controller.Playlists.Playlist})">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Providers.BoxSetXmlProvider">
+            <summary>
+            Class BoxSetXmlProvider.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.BoxSetXmlProvider.#ctor(MediaBrowser.Model.IO.IFileSystem,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Parsers.BoxSetXmlParser},MediaBrowser.Controller.Providers.IProviderManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Providers.BoxSetXmlProvider"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+            <param name="providerManager">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.BoxSetXmlProvider.Fetch(MediaBrowser.Controller.Providers.MetadataResult{MediaBrowser.Controller.Entities.Movies.BoxSet},System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.BoxSetXmlProvider.GetXmlFile(MediaBrowser.Controller.Providers.ItemInfo,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Providers.PlaylistXmlProvider">
+            <summary>
+            Playlist xml provider.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.PlaylistXmlProvider.#ctor(MediaBrowser.Model.IO.IFileSystem,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Parsers.PlaylistXmlParser},MediaBrowser.Controller.Providers.IProviderManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Providers.PlaylistXmlProvider"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+            <param name="providerManager">Instance of the <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.PlaylistXmlProvider.Fetch(MediaBrowser.Controller.Providers.MetadataResult{MediaBrowser.Controller.Playlists.Playlist},System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Providers.PlaylistXmlProvider.GetXmlFile(MediaBrowser.Controller.Providers.ItemInfo,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.#ctor(MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Controller.Library.ILibraryManager,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Savers.BaseXmlSaver})">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="configurationManager">Instance of the <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/> interface.</param>
+            <param name="libraryManager">Instance of the <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.FileSystem">
+            <summary>
+            Gets the file system.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.ConfigurationManager">
+            <summary>
+            Gets the configuration manager.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.LibraryManager">
+            <summary>
+            Gets the library manager.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.Logger">
+            <summary>
+            Gets the logger.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.Name">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.GetSavePath(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.GetLocalSavePath(MediaBrowser.Controller.Entities.BaseItem)">
+            <summary>
+            Gets the save path.
+            </summary>
+            <param name="item">The item.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.GetRootElementName(MediaBrowser.Controller.Entities.BaseItem)">
+            <summary>
+            Gets the name of the root element.
+            </summary>
+            <param name="item">The item.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.IsEnabledFor(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Library.ItemUpdateType)">
+            <summary>
+            Determines whether [is enabled for] [the specified item].
+            </summary>
+            <param name="item">The item.</param>
+            <param name="updateType">Type of the update.</param>
+            <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.SaveAsync(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.WriteCustomElementsAsync(MediaBrowser.Controller.Entities.BaseItem,System.Xml.XmlWriter)">
+            <summary>
+            Write custom elements.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="writer">The xml writer.</param>
+            <returns>The task object representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.AddCommonNodesAsync(MediaBrowser.Controller.Entities.BaseItem,System.Xml.XmlWriter)">
+            <summary>
+            Adds the common nodes.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="writer">The xml writer.</param>
+            <returns>The task object representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.AddSharesAsync(MediaBrowser.Model.Entities.IHasShares,System.Xml.XmlWriter)">
+            <summary>
+            Add shares.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="writer">The xml writer.</param>
+            <returns>The task object representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.AddMediaInfo``1(``0,System.Xml.XmlWriter)">
+            <summary>
+            Appends the media info.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="writer">The xml writer.</param>
+            <typeparam name="T">Type of item.</typeparam>
+            <returns>The task object representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BaseXmlSaver.AddLinkedChildren(MediaBrowser.Controller.Entities.Folder,System.Xml.XmlWriter,System.String,System.String)">
+            <summary>
+            Add linked children.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="writer">The xml writer.</param>
+            <param name="pluralNodeName">The plural node name.</param>
+            <param name="singularNodeName">The singular node name.</param>
+            <returns>The task object representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver">
+            <summary>
+            Box set xml saver.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver.#ctor(MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Controller.Library.ILibraryManager,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver})">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="configurationManager">Instance of the <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/> interface.</param>
+            <param name="libraryManager">Instance of the <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver.IsEnabledFor(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Library.ItemUpdateType)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver.WriteCustomElementsAsync(MediaBrowser.Controller.Entities.BaseItem,System.Xml.XmlWriter)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.BoxSetXmlSaver.GetLocalSavePath(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver">
+            <summary>
+            Playlist xml saver.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.DefaultPlaylistFilename">
+            <summary>
+            The default file name to use when creating a new playlist.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.#ctor(MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Controller.Library.ILibraryManager,Microsoft.Extensions.Logging.ILogger{MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver})">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver"/> class.
+            </summary>
+            <param name="fileSystem">Instance of the <see cref="T:MediaBrowser.Model.IO.IFileSystem"/> interface.</param>
+            <param name="configurationManager">Instance of the <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/> interface.</param>
+            <param name="libraryManager">Instance of the <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/> interface.</param>
+            <param name="logger">Instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.IsEnabledFor(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Library.ItemUpdateType)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.WriteCustomElementsAsync(MediaBrowser.Controller.Entities.BaseItem,System.Xml.XmlWriter)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.GetLocalSavePath(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.LocalMetadata.Savers.PlaylistXmlSaver.GetSavePath(System.String)">
+            <summary>
+            Get the save path.
+            </summary>
+            <param name="itemPath">The item path.</param>
+            <returns>The save path.</returns>
+        </member>
+        <member name="T:MediaBrowser.LocalMetadata.XmlProviderUtils">
+            <summary>
+            The xml provider utils.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.LocalMetadata.XmlProviderUtils.Name">
+            <summary>
+            Gets the name.
+            </summary>
+        </member>
+    </members>
+</doc>

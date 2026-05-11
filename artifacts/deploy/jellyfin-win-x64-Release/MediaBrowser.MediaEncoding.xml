@@ -1,0 +1,1793 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MediaBrowser.MediaEncoding</name>
+    </assembly>
+    <members>
+        <member name="T:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor">
+            <inheritdoc cref="T:MediaBrowser.Controller.MediaEncoding.IAttachmentExtractor"/>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor.#ctor(Microsoft.Extensions.Logging.ILogger{MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor},MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.MediaEncoding.IMediaEncoder,MediaBrowser.Controller.Library.IMediaSourceManager,MediaBrowser.Controller.IO.IPathManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/>.</param>
+            <param name="fileSystem">The <see cref="T:MediaBrowser.Model.IO.IFileSystem"/>.</param>
+            <param name="mediaEncoder">The <see cref="T:MediaBrowser.Controller.MediaEncoding.IMediaEncoder"/>.</param>
+            <param name="mediaSourceManager">The <see cref="T:MediaBrowser.Controller.Library.IMediaSourceManager"/>.</param>
+            <param name="pathManager">The <see cref="T:MediaBrowser.Controller.IO.IPathManager"/>.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor.GetAttachment(MediaBrowser.Controller.Entities.BaseItem,System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor.ExtractAllAttachments(System.String,MediaBrowser.Model.Dto.MediaSourceInfo,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo">
+            <summary>
+            Class BdInfoDirectoryInfo.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.#ctor(MediaBrowser.Model.IO.IFileSystem,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo" /> class.
+            </summary>
+            <param name="fileSystem">The filesystem.</param>
+            <param name="path">The path.</param>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.Name">
+            <summary>
+            Gets the name.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.FullName">
+            <summary>
+            Gets the full name.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.Parent">
+            <summary>
+            Gets the parent directory information.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.GetDirectories">
+            <summary>
+            Gets the directories.
+            </summary>
+            <returns>An array with all directories.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.GetFiles">
+            <summary>
+            Gets the files.
+            </summary>
+            <returns>All files of the directory.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.GetFiles(System.String)">
+            <summary>
+            Gets the files matching a pattern.
+            </summary>
+            <param name="searchPattern">The search pattern.</param>
+            <returns>All files of the directory matching the search pattern.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.GetFiles(System.String,System.IO.SearchOption)">
+            <summary>
+            Gets the files matching a pattern and search options.
+            </summary>
+            <param name="searchPattern">The search pattern.</param>
+            <param name="searchOption">The search option.</param>
+            <returns>All files of the directory matching the search pattern and options.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoDirectoryInfo.FromFileSystemPath(MediaBrowser.Model.IO.IFileSystem,System.String)">
+            <summary>
+            Gets the bdinfo of a file system path.
+            </summary>
+            <param name="fs">The file system.</param>
+            <param name="path">The path.</param>
+            <returns>The BD directory information of the path on the file system.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer">
+            <summary>
+            Class BdInfoExaminer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer.#ctor(MediaBrowser.Model.IO.IFileSystem)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer" /> class.
+            </summary>
+            <param name="fileSystem">The filesystem.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer.GetDiscInfo(System.String)">
+            <summary>
+            Gets the disc info.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>BlurayDiscInfo.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer.AddVideoStream(System.Collections.Generic.List{MediaBrowser.Model.Entities.MediaStream},System.Int32,BDInfo.TSVideoStream)">
+            <summary>
+            Adds the video stream.
+            </summary>
+            <param name="streams">The streams.</param>
+            <param name="index">The stream index.</param>
+            <param name="videoStream">The video stream.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer.AddAudioStream(System.Collections.Generic.List{MediaBrowser.Model.Entities.MediaStream},System.Int32,BDInfo.TSAudioStream)">
+            <summary>
+            Adds the audio stream.
+            </summary>
+            <param name="streams">The streams.</param>
+            <param name="index">The stream index.</param>
+            <param name="audioStream">The audio stream.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoExaminer.AddSubtitleStream(System.Collections.Generic.List{MediaBrowser.Model.Entities.MediaStream},System.Int32,BDInfo.TSStream)">
+            <summary>
+            Adds the subtitle stream.
+            </summary>
+            <param name="streams">The streams.</param>
+            <param name="index">The stream index.</param>
+            <param name="stream">The stream.</param>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo">
+            <summary>
+            Class BdInfoFileInfo.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.#ctor(MediaBrowser.Model.IO.FileSystemMetadata)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo" /> class.
+            </summary>
+            <param name="impl">The <see cref="T:MediaBrowser.Model.IO.FileSystemMetadata" />.</param>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.Name">
+            <summary>
+            Gets the name.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.FullName">
+            <summary>
+            Gets the full name.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.Extension">
+            <summary>
+            Gets the extension.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.Length">
+            <summary>
+            Gets the length.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.IsDir">
+            <summary>
+            Gets a value indicating whether this is a directory.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.OpenRead">
+            <summary>
+            Gets a file as file stream.
+            </summary>
+            <returns>A <see cref="T:System.IO.FileStream" /> for the file.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.BdInfo.BdInfoFileInfo.OpenText">
+            <summary>
+            Gets a files's content with a stream reader.
+            </summary>
+            <returns>A <see cref="T:System.IO.StreamReader" /> for the file's content.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Encoder.ApplePlatformHelper">
+            <summary>
+            Helper class for Apple platform specific operations.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.ApplePlatformHelper.HasAv1HardwareAccel(Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Check if the current system has hardware acceleration for AV1 decoding.
+            </summary>
+            <param name="logger">The logger used for error logging.</param>
+            <returns>Boolean indicates the hwaccel support.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.FfmpegVersionRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>^ffmpeg version n?((?:[0-9]+\\.?)+)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match the string "ffmpeg version ".<br/>
+            ○ Match 'n' atomically, optionally.<br/>
+            ○ 1st capture group.<br/>
+                ○ Loop atomically at least once.<br/>
+                    ○ Match a character in the set [0-9] greedily at least once.<br/>
+                    ○ Match '.' atomically, optionally.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.LibraryRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>((?&lt;name&gt;lib\\w+)\\s+(?&lt;major&gt;[0-9]+)\\.\\s*(?&lt;minor&gt;[0-9]+))</code><br/>
+            Options:<br/>
+            <code>RegexOptions.Multiline</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ 1st capture group.<br/>
+                ○ "name" capture group.<br/>
+                    ○ Match the string "lib".<br/>
+                    ○ Match a word character atomically at least once.<br/>
+                ○ Match a whitespace character atomically at least once.<br/>
+                ○ "major" capture group.<br/>
+                    ○ Match a character in the set [0-9] atomically at least once.<br/>
+                ○ Match '.'.<br/>
+                ○ Match a whitespace character atomically any number of times.<br/>
+                ○ "minor" capture group.<br/>
+                    ○ Match a character in the set [0-9] atomically at least once.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.GetFFmpegVersionInternal(System.String)">
+            <summary>
+            Using the output from "ffmpeg -version" work out the FFmpeg version.
+            For pre-built binaries the first line should contain a string like "ffmpeg version x.y", which is easy
+            to parse. If this is not available, then we try to match known library versions to FFmpeg versions.
+            If that fails then we test the libraries to determine if they're newer than our minimum versions.
+            </summary>
+            <param name="output">The output from "ffmpeg -version".</param>
+            <returns>The FFmpeg version.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.GetFFmpegLibraryVersions(System.String)">
+            <summary>
+            Grabs the library names and major.minor version numbers from the 'ffmpeg -version' output
+            and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc.".
+            </summary>
+            <param name="output">The 'ffmpeg -version' output.</param>
+            <returns>The library names and major.minor version numbers.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.CodecRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s\\S{6}\\s(?&lt;codec&gt;[\\w|-]+)\\s+.+$</code><br/>
+            Options:<br/>
+            <code>RegexOptions.Multiline</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of a line.<br/>
+            ○ Match a whitespace character.<br/>
+            ○ Match any character other than a whitespace character exactly 6 times.<br/>
+            ○ Match a whitespace character.<br/>
+            ○ "codec" capture group.<br/>
+                ○ Match a character in the set [\-|\w] greedily at least once.<br/>
+            ○ Match a whitespace character greedily at least once.<br/>
+            ○ Match a character other than '\n' greedily at least once.<br/>
+            ○ Match if at the end of a line.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncoderValidator.FilterRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s\\S{2,3}\\s(?&lt;filter&gt;[\\w|-]+)\\s+.+$</code><br/>
+            Options:<br/>
+            <code>RegexOptions.Multiline</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of a line.<br/>
+            ○ Match a whitespace character.<br/>
+            ○ Match any character other than a whitespace character atomically at least 2 and at most 3 times.<br/>
+            ○ Match a whitespace character.<br/>
+            ○ "filter" capture group.<br/>
+                ○ Match a character in the set [\-|\w] greedily at least once.<br/>
+            ○ Match a whitespace character greedily at least once.<br/>
+            ○ Match a character other than '\n' greedily at least once.<br/>
+            ○ Match if at the end of a line.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncodingUtils.GetConcatInputArgument(System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>
+            Gets the concat input argument.
+            </summary>
+            <param name="inputFiles">The input files.</param>
+            <param name="inputPrefix">The input prefix.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncodingUtils.GetFileInputArgument(System.String,System.String)">
+            <summary>
+            Gets the file input argument.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="inputPrefix">The path prefix.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.EncodingUtils.NormalizePath(System.String)">
+            <summary>
+            Normalizes the path.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Encoder.MediaEncoder">
+            <summary>
+            Class MediaEncoder.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.DefaultSdrImageExtractionTimeout">
+            <summary>
+            The default SDR image extraction timeout in milliseconds.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.DefaultHdrImageExtractionTimeout">
+            <summary>
+            The default HDR image extraction timeout in milliseconds.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.EncoderPath">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ProbePath">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.EncoderVersion">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsPkeyPauseSupported">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsVaapiDeviceAmd">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsVaapiDeviceInteliHD">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsVaapiDeviceInteli965">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsVaapiDeviceSupportVulkanDrmModifier">
+            <inheritdoc />
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.FfprobePathRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>[^\\/\\\\]+?(\\.[^\\/\\\\\\n.]+)?$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [^/\\] lazily at least once.<br/>
+            ○ Optional (greedy).<br/>
+                ○ 1st capture group.<br/>
+                    ○ Match '.'.<br/>
+                    ○ Match a character in the set [^\n./\\] atomically at least once.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SetFFmpegPath">
+            <summary>
+            Run at startup to validate ffmpeg.
+            Sets global variables FFmpegPath.
+            Precedence is: CLI/Env var > Config > $PATH.
+            </summary>
+            <returns>bool indicates whether a valid ffmpeg is found.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ValidatePath(System.String)">
+            <summary>
+            Validates the supplied FQPN to ensure it is a ffmpeg utility.
+            If checks pass, global variable FFmpegPath is updated.
+            </summary>
+            <param name="path">FQPN to test.</param>
+            <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SupportsEncoder(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SupportsDecoder(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SupportsHwaccel(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SupportsFilter(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.SupportsFilterWithOption(MediaBrowser.Controller.MediaEncoding.FilterOptionType)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetMediaInfo(MediaBrowser.Controller.MediaEncoding.MediaInfoRequest,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetInputArgument(System.Collections.Generic.IReadOnlyList{System.String},MediaBrowser.Model.Dto.MediaSourceInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetInputArgument(System.String,MediaBrowser.Model.Dto.MediaSourceInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetExternalSubtitleInputArgument(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetMediaInfoInternal(System.String,System.String,MediaBrowser.Model.MediaInfo.MediaProtocol,System.Boolean,System.String,System.Boolean,System.Nullable{MediaBrowser.Model.Entities.VideoType},System.Threading.CancellationToken)">
+            <summary>
+            Gets the media info internal.
+            </summary>
+            <returns>Task{MediaInfoResult}.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ExtractAudioImage(System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ExtractVideoImage(System.String,System.String,MediaBrowser.Model.Dto.MediaSourceInfo,MediaBrowser.Model.Entities.MediaStream,System.Nullable{MediaBrowser.Model.Entities.Video3DFormat},System.Nullable{System.TimeSpan},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ExtractVideoImage(System.String,System.String,MediaBrowser.Model.Dto.MediaSourceInfo,MediaBrowser.Model.Entities.MediaStream,System.Nullable{System.Int32},System.Nullable{MediaBrowser.Model.Drawing.ImageFormat},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ExtractVideoImagesOnIntervalAccelerated(System.String,System.String,MediaBrowser.Model.Dto.MediaSourceInfo,MediaBrowser.Model.Entities.MediaStream,System.Int32,System.TimeSpan,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Diagnostics.ProcessPriorityClass},System.Boolean,MediaBrowser.Controller.MediaEncoding.EncodingHelper,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and - optionally - managed resources.
+            </summary>
+            <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.ConvertImage(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetPrimaryPlaylistVobFiles(System.String,System.Nullable{System.UInt32})">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetPrimaryPlaylistM2tsFiles(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetInputPathArgument(MediaBrowser.Controller.MediaEncoding.EncodingJobInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GetInputPathArgument(System.String,MediaBrowser.Model.Dto.MediaSourceInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Encoder.MediaEncoder.GenerateConcatConfig(MediaBrowser.Model.Dto.MediaSourceInfo,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.CodecType">
+            <summary>
+            FFmpeg Codec Type.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Probing.CodecType.Video">
+            <summary>
+            Video.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Probing.CodecType.Audio">
+            <summary>
+            Audio.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Probing.CodecType.Data">
+            <summary>
+            Opaque data information usually continuous.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Probing.CodecType.Subtitle">
+            <summary>
+            Subtitles.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Probing.CodecType.Attachment">
+            <summary>
+            Opaque data information usually sparse.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.FFProbeHelpers">
+            <summary>
+            Class containing helper methods for working with FFprobe output.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.FFProbeHelpers.NormalizeFFProbeResult(MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult)">
+            <summary>
+            Normalizes the FF probe result.
+            </summary>
+            <param name="result">The result.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.FFProbeHelpers.GetDictionaryNumericValue(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String)">
+            <summary>
+            Gets an int from an FFProbeResult tags dictionary.
+            </summary>
+            <param name="tags">The tags.</param>
+            <param name="key">The key.</param>
+            <returns>System.Nullable{System.Int32}.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.FFProbeHelpers.GetDictionaryDateTime(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String)">
+            <summary>
+            Gets a DateTime from an FFProbeResult tags dictionary.
+            </summary>
+            <param name="tags">The tags.</param>
+            <param name="key">The key.</param>
+            <returns>System.Nullable{DateTime}.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.FFProbeHelpers.ConvertDictionaryToCaseInsensitive(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})">
+            <summary>
+            Converts a dictionary to case-insensitive.
+            </summary>
+            <param name="dict">The dict.</param>
+            <returns>Dictionary{System.StringSystem.String}.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult">
+            <summary>
+            Class MediaInfoResult.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult.Streams">
+            <summary>
+            Gets or sets the streams.
+            </summary>
+            <value>The streams.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult.Format">
+            <summary>
+            Gets or sets the format.
+            </summary>
+            <value>The format.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult.Chapters">
+            <summary>
+            Gets or sets the chapters.
+            </summary>
+            <value>The chapters.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult.Frames">
+            <summary>
+            Gets or sets the frames.
+            </summary>
+            <value>The streams.</value>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaChapter">
+            <summary>
+            Class MediaChapter.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo">
+            <summary>
+            Class MediaFormat.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.FileName">
+            <summary>
+            Gets or sets the filename.
+            </summary>
+            <value>The filename.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.NbStreams">
+            <summary>
+            Gets or sets the nb_streams.
+            </summary>
+            <value>The nb_streams.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.FormatName">
+            <summary>
+            Gets or sets the format_name.
+            </summary>
+            <value>The format_name.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.FormatLongName">
+            <summary>
+            Gets or sets the format_long_name.
+            </summary>
+            <value>The format_long_name.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.StartTime">
+            <summary>
+            Gets or sets the start_time.
+            </summary>
+            <value>The start_time.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.Duration">
+            <summary>
+            Gets or sets the duration.
+            </summary>
+            <value>The duration.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.Size">
+            <summary>
+            Gets or sets the size.
+            </summary>
+            <value>The size.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.BitRate">
+            <summary>
+            Gets or sets the bit_rate.
+            </summary>
+            <value>The bit_rate.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.ProbeScore">
+            <summary>
+            Gets or sets the probe_score.
+            </summary>
+            <value>The probe_score.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFormatInfo.Tags">
+            <summary>
+            Gets or sets the tags.
+            </summary>
+            <value>The tags.</value>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo">
+            <summary>
+            Class MediaFrameInfo.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.MediaType">
+            <summary>
+            Gets or sets the media type.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.StreamIndex">
+            <summary>
+            Gets or sets the StreamIndex.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.KeyFrame">
+            <summary>
+            Gets or sets the KeyFrame.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.Pts">
+            <summary>
+            Gets or sets the Pts.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.PtsTime">
+            <summary>
+            Gets or sets the PtsTime.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.BestEffortTimestamp">
+            <summary>
+            Gets or sets the BestEffortTimestamp.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.BestEffortTimestampTime">
+            <summary>
+            Gets or sets the BestEffortTimestampTime.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.Duration">
+            <summary>
+            Gets or sets the Duration.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.DurationTime">
+            <summary>
+            Gets or sets the DurationTime.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.PktPos">
+            <summary>
+            Gets or sets the PktPos.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.PktSize">
+            <summary>
+            Gets or sets the PktSize.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.Width">
+            <summary>
+            Gets or sets the Width.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.Height">
+            <summary>
+            Gets or sets the Height.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.CropTop">
+            <summary>
+            Gets or sets the CropTop.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.CropBottom">
+            <summary>
+            Gets or sets the CropBottom.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.CropLeft">
+            <summary>
+            Gets or sets the CropLeft.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.CropRight">
+            <summary>
+            Gets or sets the CropRight.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.PixFmt">
+            <summary>
+            Gets or sets the PixFmt.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.SampleAspectRatio">
+            <summary>
+            Gets or sets the SampleAspectRatio.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.PictType">
+            <summary>
+            Gets or sets the PictType.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.InterlacedFrame">
+            <summary>
+            Gets or sets the InterlacedFrame.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.TopFieldFirst">
+            <summary>
+            Gets or sets the TopFieldFirst.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.RepeatPict">
+            <summary>
+            Gets or sets the RepeatPict.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.ColorRange">
+            <summary>
+            Gets or sets the ColorRange.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.ColorSpace">
+            <summary>
+            Gets or sets the ColorSpace.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.ColorPrimaries">
+            <summary>
+            Gets or sets the ColorPrimaries.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.ColorTransfer">
+            <summary>
+            Gets or sets the ColorTransfer.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.ChromaLocation">
+            <summary>
+            Gets or sets the ChromaLocation.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameInfo.SideDataList">
+            <summary>
+            Gets or sets the SideDataList.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaFrameSideDataInfo">
+            <summary>
+            Class MediaFrameSideDataInfo.
+            Currently only records the SideDataType for HDR10+ detection.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaFrameSideDataInfo.SideDataType">
+            <summary>
+            Gets or sets the SideDataType.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo">
+            <summary>
+            Represents a stream within the output.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Index">
+            <summary>
+            Gets or sets the index.
+            </summary>
+            <value>The index.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Profile">
+            <summary>
+            Gets or sets the profile.
+            </summary>
+            <value>The profile.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecName">
+            <summary>
+            Gets or sets the codec_name.
+            </summary>
+            <value>The codec_name.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecLongName">
+            <summary>
+            Gets or sets the codec_long_name.
+            </summary>
+            <value>The codec_long_name.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecType">
+            <summary>
+            Gets or sets the codec_type.
+            </summary>
+            <value>The codec_type.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.SampleRate">
+            <summary>
+            Gets or sets the sample_rate.
+            </summary>
+            <value>The sample_rate.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Channels">
+            <summary>
+            Gets or sets the channels.
+            </summary>
+            <value>The channels.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.ChannelLayout">
+            <summary>
+            Gets or sets the channel_layout.
+            </summary>
+            <value>The channel_layout.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.AverageFrameRate">
+            <summary>
+            Gets or sets the avg_frame_rate.
+            </summary>
+            <value>The avg_frame_rate.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Duration">
+            <summary>
+            Gets or sets the duration.
+            </summary>
+            <value>The duration.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.BitRate">
+            <summary>
+            Gets or sets the bit_rate.
+            </summary>
+            <value>The bit_rate.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+            <value>The width.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Refs">
+            <summary>
+            Gets or sets the refs.
+            </summary>
+            <value>The refs.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+            <value>The height.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.DisplayAspectRatio">
+            <summary>
+            Gets or sets the display_aspect_ratio.
+            </summary>
+            <value>The display_aspect_ratio.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Tags">
+            <summary>
+            Gets or sets the tags.
+            </summary>
+            <value>The tags.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.BitsPerSample">
+            <summary>
+            Gets or sets the bits_per_sample.
+            </summary>
+            <value>The bits_per_sample.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.BitsPerRawSample">
+            <summary>
+            Gets or sets the bits_per_raw_sample.
+            </summary>
+            <value>The bits_per_raw_sample.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.RFrameRate">
+            <summary>
+            Gets or sets the r_frame_rate.
+            </summary>
+            <value>The r_frame_rate.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.HasBFrames">
+            <summary>
+            Gets or sets the has_b_frames.
+            </summary>
+            <value>The has_b_frames.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.SampleAspectRatio">
+            <summary>
+            Gets or sets the sample_aspect_ratio.
+            </summary>
+            <value>The sample_aspect_ratio.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.PixelFormat">
+            <summary>
+            Gets or sets the pix_fmt.
+            </summary>
+            <value>The pix_fmt.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Level">
+            <summary>
+            Gets or sets the level.
+            </summary>
+            <value>The level.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.TimeBase">
+            <summary>
+            Gets or sets the time_base.
+            </summary>
+            <value>The time_base.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.StartTime">
+            <summary>
+            Gets or sets the start_time.
+            </summary>
+            <value>The start_time.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecTimeBase">
+            <summary>
+            Gets or sets the codec_time_base.
+            </summary>
+            <value>The codec_time_base.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecTag">
+            <summary>
+            Gets or sets the codec_tag.
+            </summary>
+            <value>The codec_tag.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.CodecTagString">
+            <summary>
+            Gets or sets the codec_tag_string?.
+            </summary>
+            <value>The codec_tag_string?.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.SampleFmt">
+            <summary>
+            Gets or sets the sample_fmt.
+            </summary>
+            <value>The sample_fmt.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.DmixMode">
+            <summary>
+            Gets or sets the dmix_mode.
+            </summary>
+            <value>The dmix_mode.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.StartPts">
+            <summary>
+            Gets or sets the start_pts.
+            </summary>
+            <value>The start_pts.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.IsAvc">
+            <summary>
+            Gets or sets a value indicating whether the stream is AVC.
+            </summary>
+            <value>The is_avc.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.NalLengthSize">
+            <summary>
+            Gets or sets the nal_length_size.
+            </summary>
+            <value>The nal_length_size.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.LtrtCmixlev">
+            <summary>
+            Gets or sets the ltrt_cmixlev.
+            </summary>
+            <value>The ltrt_cmixlev.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.LtrtSurmixlev">
+            <summary>
+            Gets or sets the ltrt_surmixlev.
+            </summary>
+            <value>The ltrt_surmixlev.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.LoroCmixlev">
+            <summary>
+            Gets or sets the loro_cmixlev.
+            </summary>
+            <value>The loro_cmixlev.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.LoroSurmixlev">
+            <summary>
+            Gets or sets the loro_surmixlev.
+            </summary>
+            <value>The loro_surmixlev.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.FieldOrder">
+            <summary>
+            Gets or sets the field_order.
+            </summary>
+            <value>The field_order.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.Disposition">
+            <summary>
+            Gets or sets the disposition.
+            </summary>
+            <value>The disposition.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.ColorRange">
+            <summary>
+            Gets or sets the color range.
+            </summary>
+            <value>The color range.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.ColorSpace">
+            <summary>
+            Gets or sets the color space.
+            </summary>
+            <value>The color space.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.ColorTransfer">
+            <summary>
+            Gets or sets the color transfer.
+            </summary>
+            <value>The color transfer.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.ColorPrimaries">
+            <summary>
+            Gets or sets the color primaries.
+            </summary>
+            <value>The color primaries.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfo.SideDataList">
+            <summary>
+            Gets or sets the side_data_list.
+            </summary>
+            <value>The side_data_list.</value>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData">
+            <summary>
+            Class MediaStreamInfoSideData.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.SideDataType">
+            <summary>
+            Gets or sets the SideDataType.
+            </summary>
+            <value>The SideDataType.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.DvVersionMajor">
+            <summary>
+            Gets or sets the DvVersionMajor.
+            </summary>
+            <value>The DvVersionMajor.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.DvVersionMinor">
+            <summary>
+            Gets or sets the DvVersionMinor.
+            </summary>
+            <value>The DvVersionMinor.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.DvProfile">
+            <summary>
+            Gets or sets the DvProfile.
+            </summary>
+            <value>The DvProfile.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.DvLevel">
+            <summary>
+            Gets or sets the DvLevel.
+            </summary>
+            <value>The DvLevel.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.RpuPresentFlag">
+            <summary>
+            Gets or sets the RpuPresentFlag.
+            </summary>
+            <value>The RpuPresentFlag.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.ElPresentFlag">
+            <summary>
+            Gets or sets the ElPresentFlag.
+            </summary>
+            <value>The ElPresentFlag.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.BlPresentFlag">
+            <summary>
+            Gets or sets the BlPresentFlag.
+            </summary>
+            <value>The BlPresentFlag.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.DvBlSignalCompatibilityId">
+            <summary>
+            Gets or sets the DvBlSignalCompatibilityId.
+            </summary>
+            <value>The DvBlSignalCompatibilityId.</value>
+        </member>
+        <member name="P:MediaBrowser.MediaEncoding.Probing.MediaStreamInfoSideData.Rotation">
+            <summary>
+            Gets or sets the Rotation in degrees.
+            </summary>
+            <value>The Rotation.</value>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer">
+            <summary>
+            Class responsible for normalizing FFprobe output.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.#ctor(Microsoft.Extensions.Logging.ILogger,MediaBrowser.Model.Globalization.ILocalizationManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> for use with the <see cref="T:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer"/> instance.</param>
+            <param name="localization">The <see cref="T:MediaBrowser.Model.Globalization.ILocalizationManager"/> for use with the <see cref="T:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer"/> instance.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetMediaInfo(MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult,System.Nullable{MediaBrowser.Model.Entities.VideoType},System.Boolean,System.String,MediaBrowser.Model.MediaInfo.MediaProtocol)">
+            <summary>
+            Transforms a FFprobe response into its <see cref="T:MediaBrowser.Model.MediaInfo.MediaInfo"/> equivalent.
+            </summary>
+            <param name="data">The <see cref="T:MediaBrowser.MediaEncoding.Probing.InternalMediaInfoResult"/>.</param>
+            <param name="videoType">The <see cref="T:MediaBrowser.Model.Entities.VideoType"/>.</param>
+            <param name="isAudio">A boolean indicating whether the media is audio.</param>
+            <param name="path">Path to media file.</param>
+            <param name="protocol">Path media protocol.</param>
+            <returns>The <see cref="T:MediaBrowser.Model.MediaInfo.MediaInfo"/>.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetMediaAttachment(MediaBrowser.MediaEncoding.Probing.MediaStreamInfo)">
+            <summary>
+            Converts ffprobe stream info to our MediaAttachment class.
+            </summary>
+            <param name="streamInfo">The stream info.</param>
+            <returns>MediaAttachments.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetMediaStream(System.Boolean,MediaBrowser.MediaEncoding.Probing.MediaStreamInfo,MediaBrowser.MediaEncoding.Probing.MediaFormatInfo,System.Collections.Generic.IReadOnlyList{MediaBrowser.MediaEncoding.Probing.MediaFrameInfo})">
+            <summary>
+            Converts ffprobe stream info to our MediaStream class.
+            </summary>
+            <param name="isAudio">if set to <c>true</c> [is info].</param>
+            <param name="streamInfo">The stream info.</param>
+            <param name="formatInfo">The format info.</param>
+            <param name="frameInfoList">The frame info.</param>
+            <returns>MediaStream.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetDictionaryValue(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String)">
+            <summary>
+            Gets a string from an FFProbeResult tags dictionary.
+            </summary>
+            <param name="tags">The tags.</param>
+            <param name="key">The key.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.IsNearSquarePixelSar(System.String)">
+            <summary>
+            Determines whether a sample aspect ratio represents square (or near-square) pixels.
+            Some encoders produce SARs like 3201:3200 for content that is effectively 1:1,
+            which would be falsely classified as anamorphic by an exact string comparison.
+            A 1% tolerance safely covers encoder rounding artifacts while preserving detection
+            of genuine anamorphic content (closest standard is PAL 4:3 at 16:15 = 6.67% off).
+            </summary>
+            <param name="sar">The sample aspect ratio string in "N:D" format.</param>
+            <returns><c>true</c> if the SAR is within 1% of 1:1; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetFrameRate(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Gets a frame rate from a string value in ffprobe output
+            This could be a number or in the format of 2997/125.
+            </summary>
+            <param name="value">The value.</param>
+            <returns>System.Nullable{System.Single}.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.Split(System.String,System.Boolean)">
+            <summary>
+            Splits the specified val.
+            </summary>
+            <param name="val">The val.</param>
+            <param name="allowCommaDelimiter">if set to <c>true</c> [allow comma delimiter].</param>
+            <returns>System.String[][].</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.FetchStudios(MediaBrowser.Model.MediaInfo.MediaInfo,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String)">
+            <summary>
+            Gets the studios from the tags collection.
+            </summary>
+            <param name="info">The info.</param>
+            <param name="tags">The tags.</param>
+            <param name="tagName">Name of the tag.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.FetchGenres(MediaBrowser.Model.MediaInfo.MediaInfo,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})">
+            <summary>
+            Gets the genres from the tags collection.
+            </summary>
+            <param name="info">The information.</param>
+            <param name="tags">The tags.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.GetDictionaryTrackOrDiscNumber(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String)">
+            <summary>
+            Gets the track or disc number, which can be in the form of '1', or '1/3'.
+            </summary>
+            <param name="tags">The tags.</param>
+            <param name="tagName">Name of the tag.</param>
+            <returns>The track or disc number, or null, if missing or not parseable.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Probing.ProbeResultNormalizer.PerformerRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>(?&lt;name&gt;.*) \\((?&lt;instrument&gt;.*)\\)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ "name" capture group.<br/>
+                ○ Match a character other than '\n' greedily any number of times.<br/>
+            ○ Match the string " (".<br/>
+            ○ "instrument" capture group.<br/>
+                ○ Match a character other than '\n' greedily any number of times.<br/>
+            ○ Match ')'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.AssWriter">
+            <summary>
+            ASS subtitle writer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.AssWriter.NewLineRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\n</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '\n'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.AssWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.ISubtitleParser.Parse(System.IO.Stream,System.String)">
+            <summary>
+            Parses the specified stream.
+            </summary>
+            <param name="stream">The stream.</param>
+            <param name="fileExtension">The file extension.</param>
+            <returns>SubtitleTrackInfo.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.ISubtitleParser.SupportsFileExtension(System.String)">
+            <summary>
+            Determines whether the file extension is supported by the parser.
+            </summary>
+            <param name="fileExtension">The file extension.</param>
+            <returns>A value indicating whether the file extension is supported.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.ISubtitleWriter">
+            <summary>
+            Interface ISubtitleWriter.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.ISubtitleWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>
+            Writes the specified information.
+            </summary>
+            <param name="info">The information.</param>
+            <param name="stream">The stream.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.JsonWriter">
+            <summary>
+            JSON subtitle writer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.JsonWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.SrtWriter">
+            <summary>
+            SRT subtitle writer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SrtWriter.NewLineEscapedRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\\\n</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '\\'.<br/>
+            ○ Match a character in the set [Nn].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SrtWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.SsaWriter">
+            <summary>
+            SSA subtitle writer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SsaWriter.NewLineRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\n</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '\n'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SsaWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser">
+            <summary>
+            SubStation Alpha subtitle parser.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser.#ctor(Microsoft.Extensions.Logging.ILogger{MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser})">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser.Parse(System.IO.Stream,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEditParser.SupportsFileExtension(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="F:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder._semaphoreLocks">
+            <summary>
+            The _semaphoreLocks.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.ConvertTextSubtitleToSrt(MediaBrowser.Model.Entities.MediaStream,MediaBrowser.Model.Dto.MediaSourceInfo,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Converts the text subtitle to SRT.
+            </summary>
+            <param name="subtitleStream">The subtitle stream.</param>
+            <param name="mediaSource">The input mediaSource.</param>
+            <param name="outputPath">The output path.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.ConvertTextSubtitleToSrtInternal(MediaBrowser.Model.Entities.MediaStream,MediaBrowser.Model.Dto.MediaSourceInfo,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Converts the text subtitle to SRT internal.
+            </summary>
+            <param name="subtitleStream">The subtitle stream.</param>
+            <param name="mediaSource">The input mediaSource.</param>
+            <param name="outputPath">The output path.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            The <c>inputPath</c> or <c>outputPath</c> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.ExtractAllExtractableSubtitles(MediaBrowser.Model.Dto.MediaSourceInfo,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.ExtractTextSubtitle(MediaBrowser.Model.Dto.MediaSourceInfo,MediaBrowser.Model.Entities.MediaStream,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Extracts the text subtitle.
+            </summary>
+            <param name="mediaSource">The mediaSource.</param>
+            <param name="subtitleStream">The subtitle stream.</param>
+            <param name="outputCodec">The output codec.</param>
+            <param name="outputPath">The output path.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task.</returns>
+            <exception cref="T:System.ArgumentException">Must use inputPath list overload.</exception>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.SetAssFont(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Sets the ass font.
+            </summary>
+            <param name="file">The file.</param>
+            <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <c>System.Threading.CancellationToken.None</c>.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.GetSubtitleFileCharacterSet(MediaBrowser.Model.Entities.MediaStream,System.String,MediaBrowser.Model.Dto.MediaSourceInfo,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.SubtitleFormatExtensions.TryGetErrors(Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat,System.String@)">
+            <summary>
+            Will try to find errors if supported by provider.
+            </summary>
+            <param name="format">The subtitle format.</param>
+            <param name="errors">The out errors value.</param>
+            <returns>True if errors are available for given format.</returns>
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.TtmlWriter">
+            <summary>
+            TTML subtitle writer.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.TtmlWriter.NewLineEscapeRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\\\n</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '\\'.<br/>
+            ○ Match a character in the set [Nn].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.TtmlWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Subtitles.VttWriter">
+            <summary>
+            Subtitle writer for the WebVTT format.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.VttWriter.NewlineEscapeRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\\\n</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '\\'.<br/>
+            ○ Match a character in the set [Nn].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Subtitles.VttWriter.Write(MediaBrowser.Model.MediaInfo.SubtitleTrackInfo,System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager">
+            <inheritdoc cref="T:MediaBrowser.Controller.MediaEncoding.ITranscodeManager"/>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.#ctor(Microsoft.Extensions.Logging.ILoggerFactory,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Common.Configuration.IApplicationPaths,MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Controller.Library.IUserManager,MediaBrowser.Controller.Session.ISessionManager,MediaBrowser.Controller.MediaEncoding.EncodingHelper,MediaBrowser.Controller.MediaEncoding.IMediaEncoder,MediaBrowser.Controller.Library.IMediaSourceManager,MediaBrowser.Controller.MediaEncoding.IAttachmentExtractor)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager"/> class.
+            </summary>
+            <param name="loggerFactory">The <see cref="T:Microsoft.Extensions.Logging.ILoggerFactory"/>.</param>
+            <param name="fileSystem">The <see cref="T:MediaBrowser.Model.IO.IFileSystem"/>.</param>
+            <param name="appPaths">The <see cref="T:MediaBrowser.Common.Configuration.IApplicationPaths"/>.</param>
+            <param name="serverConfigurationManager">The <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/>.</param>
+            <param name="userManager">The <see cref="T:MediaBrowser.Controller.Library.IUserManager"/>.</param>
+            <param name="sessionManager">The <see cref="T:MediaBrowser.Controller.Session.ISessionManager"/>.</param>
+            <param name="encodingHelper">The <see cref="T:MediaBrowser.Controller.MediaEncoding.EncodingHelper"/>.</param>
+            <param name="mediaEncoder">The <see cref="T:MediaBrowser.Controller.MediaEncoding.IMediaEncoder"/>.</param>
+            <param name="mediaSourceManager">The <see cref="T:MediaBrowser.Controller.Library.IMediaSourceManager"/>.</param>
+            <param name="attachmentExtractor">The <see cref="T:MediaBrowser.Controller.MediaEncoding.IAttachmentExtractor"/>.</param>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.GetTranscodingJob(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.GetTranscodingJob(System.String,MediaBrowser.Controller.MediaEncoding.TranscodingJobType)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.PingTranscodingJob(System.String,System.Nullable{System.Boolean})">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.KillTranscodingJobs(System.String,System.String,System.Func{System.String,System.Boolean})">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.ReportTranscodingProgress(MediaBrowser.Controller.MediaEncoding.TranscodingJob,MediaBrowser.Controller.Streaming.StreamState,System.Nullable{System.TimeSpan},System.Nullable{System.Single},System.Nullable{System.Double},System.Nullable{System.Int64},System.Nullable{System.Int32})">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.StartFfMpeg(MediaBrowser.Controller.Streaming.StreamState,System.String,System.String,System.Guid,MediaBrowser.Controller.MediaEncoding.TranscodingJobType,System.Threading.CancellationTokenSource,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.OnTranscodeEndRequest(MediaBrowser.Controller.MediaEncoding.TranscodingJob)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.OnTranscodeBeginRequest(System.String,MediaBrowser.Controller.MediaEncoding.TranscodingJobType)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.LockAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Transcoding lock.
+            </summary>
+            <param name="outputPath">The output path of the transcoded file.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>An <see cref="T:System.IDisposable"/>.</returns>
+        </member>
+        <member name="M:MediaBrowser.MediaEncoding.Transcoding.TranscodeManager.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the FfmpegVersionRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfmpegVersionRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LibraryRegex_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LibraryRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.LibraryRegex_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LibraryRegex_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LibraryRegex_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CodecRegex_2">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the CodecRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.CodecRegex_2.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CodecRegex_2.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CodecRegex_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FilterRegex_3">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the FilterRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.FilterRegex_3.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FilterRegex_3.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FilterRegex_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfprobePathRegex_4">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the FfprobePathRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FfprobePathRegex_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PerformerRegex_5">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the PerformerRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.PerformerRegex_5.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PerformerRegex_5.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PerformerRegex_5.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineRegex_6">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NewLineRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.NewLineRegex_6.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineRegex_6.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineRegex_6.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineRegex_6.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineRegex_6.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineRegex_6.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineRegex_6.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NewLineEscapedRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NewLineEscapedRegex_7.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.IsWordChar(System.Char)">
+            <summary>Determines whether the character is part of the [\w] set.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPop(System.Int32[],System.Int32@,System.Int32@,System.Int32@)">
+            <summary>Pops 2 values from the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
+            <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32,System.Int32)">
+            <summary>Pushes 3 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.WordCategoriesMask">
+            <summary>Provides a mask of Unicode categories that combine to form [\w].</summary>
+        </member>
+        <member name="P:System.Text.RegularExpressions.Generated.Utilities.WordCharBitmap">
+            <summary>Gets a bitmap for whether each character 0 through 127 is in [\w]</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_4000000C000000000001000000000">
+            <summary>Supports searching for characters in or not in "\n./\\".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_2ABDA7C4B955FCACA9A21033B020684C78CDD0CEEEAD5068734FA622E4052308">
+            <summary>Supports searching for the string "\\n".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_lib_Ordinal">
+            <summary>Supports searching for the string "lib".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_whitespace">
+            <summary>Supports searching for characters in or not in "\t\n\v\f\r \u0085             \u2028\u2029  　".</summary>
+        </member>
+    </members>
+</doc>

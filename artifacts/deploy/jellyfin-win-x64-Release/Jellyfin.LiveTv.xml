@@ -1,0 +1,1698 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.LiveTv</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.LiveTv.Channels.ChannelDynamicMediaSourceProvider">
+            <summary>
+            A media source provider for channels.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelDynamicMediaSourceProvider.#ctor(MediaBrowser.Controller.Channels.IChannelManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Channels.ChannelDynamicMediaSourceProvider"/> class.
+            </summary>
+            <param name="channelManager">The channel manager.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelDynamicMediaSourceProvider.GetMediaSources(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelDynamicMediaSourceProvider.OpenMediaSource(System.String,System.Collections.Generic.List{MediaBrowser.Controller.Library.ILiveStream},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Channels.ChannelImageProvider">
+            <summary>
+            An image provider for channels.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelImageProvider.#ctor(MediaBrowser.Controller.Channels.IChannelManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Channels.ChannelImageProvider"/> class.
+            </summary>
+            <param name="channelManager">The channel manager.</param>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.ChannelImageProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelImageProvider.GetSupportedImages(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelImageProvider.GetImage(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Model.Entities.ImageType,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelImageProvider.Supports(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelImageProvider.HasChanged(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Channels.ChannelManager">
+            <summary>
+            The LiveTV channel manager.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.#ctor(MediaBrowser.Controller.Library.IUserManager,MediaBrowser.Controller.Dto.IDtoService,MediaBrowser.Controller.Library.ILibraryManager,Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Channels.ChannelManager},MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Library.IUserDataManager,MediaBrowser.Controller.Providers.IProviderManager,Microsoft.Extensions.Caching.Memory.IMemoryCache,System.Collections.Generic.IEnumerable{MediaBrowser.Controller.Channels.IChannel})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Channels.ChannelManager"/> class.
+            </summary>
+            <param name="userManager">The user manager.</param>
+            <param name="dtoService">The dto service.</param>
+            <param name="libraryManager">The library manager.</param>
+            <param name="logger">The logger.</param>
+            <param name="config">The server configuration manager.</param>
+            <param name="fileSystem">The filesystem.</param>
+            <param name="userDataManager">The user data manager.</param>
+            <param name="providerManager">The provider manager.</param>
+            <param name="memoryCache">The memory cache.</param>
+            <param name="channels">The channels.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.EnableMediaSourceDisplay(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.CanDelete(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.DeleteItem(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetInstalledChannelIds">
+            <summary>
+            Get the installed channel IDs.
+            </summary>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> containing installed channel IDs.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelsInternalAsync(MediaBrowser.Model.Channels.ChannelQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelsAsync(MediaBrowser.Model.Channels.ChannelQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.RefreshChannels(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <summary>
+            Refreshes the associated channels.
+            </summary>
+            <param name="progress">The progress.</param>
+            <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+            <returns>The completed task.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetStaticMediaSources(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetDynamicMediaSources(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <summary>
+            Gets the dynamic media sources based on the provided item.
+            </summary>
+            <param name="item">The item.</param>
+            <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+            <returns>The task representing the operation to get the media sources.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannel(System.Guid)">
+            <summary>
+            Gets a channel with the provided Guid.
+            </summary>
+            <param name="id">The Guid.</param>
+            <returns>The corresponding channel.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannel(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetAllChannelFeatures">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelFeatures(System.Nullable{System.Guid})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelFeaturesDto(MediaBrowser.Controller.Channels.Channel,MediaBrowser.Controller.Channels.IChannel,MediaBrowser.Controller.Channels.InternalChannelFeatures)">
+            <summary>
+            Gets the provided channel's supported features.
+            </summary>
+            <param name="channel">The channel.</param>
+            <param name="provider">The provider.</param>
+            <param name="features">The features.</param>
+            <returns>The supported features.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetLatestChannelItems(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetLatestChannelItemsInternal(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelItemsInternal(MediaBrowser.Controller.Entities.InternalItemsQuery,System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.GetChannelItems(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelManager.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and optionally managed resources.
+            </summary>
+            <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Channels.ChannelPostScanTask">
+            <summary>
+            A task to remove all non-installed channels from the database.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelPostScanTask.#ctor(MediaBrowser.Controller.Channels.IChannelManager,Microsoft.Extensions.Logging.ILogger,MediaBrowser.Controller.Library.ILibraryManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Channels.ChannelPostScanTask"/> class.
+            </summary>
+            <param name="channelManager">The channel manager.</param>
+            <param name="logger">The logger.</param>
+            <param name="libraryManager">The library manager.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.ChannelPostScanTask.Run(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <summary>
+            Runs this task.
+            </summary>
+            <param name="progress">The progress.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>The completed task.</returns>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask">
+            <summary>
+            The "Refresh Channels" scheduled task.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.#ctor(MediaBrowser.Controller.Channels.IChannelManager,Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask},MediaBrowser.Controller.Library.ILibraryManager,MediaBrowser.Model.Globalization.ILocalizationManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask"/> class.
+            </summary>
+            <param name="channelManager">The channel manager.</param>
+            <param name="logger">The logger.</param>
+            <param name="libraryManager">The library manager.</param>
+            <param name="localization">The localization manager.</param>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.Category">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.IsHidden">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.IsEnabled">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.IsLogged">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.Key">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.ExecuteAsync(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Channels.RefreshChannelsScheduledTask.GetDefaultTriggers">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Configuration.LiveTvConfigurationExtensions">
+            <summary>
+            <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/> extensions for Live TV.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Configuration.LiveTvConfigurationExtensions.GetLiveTvConfiguration(MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Gets the <see cref="T:MediaBrowser.Model.LiveTv.LiveTvOptions"/>.
+            </summary>
+            <param name="configurationManager">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <returns>The <see cref="T:MediaBrowser.Model.LiveTv.LiveTvOptions"/>.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Configuration.LiveTvConfigurationExtensions.GetNfoConfiguration(MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Gets the <see cref="T:MediaBrowser.Model.Configuration.XbmcMetadataOptions"/>.
+            </summary>
+            <param name="configurationManager">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <returns>The <see cref="T:MediaBrowser.Model.Configuration.XbmcMetadataOptions"/>.</returns>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Configuration.LiveTvConfigurationFactory">
+            <summary>
+            <see cref="T:MediaBrowser.Common.Configuration.IConfigurationFactory" /> implementation for <see cref="T:MediaBrowser.Model.LiveTv.LiveTvOptions" />.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Configuration.LiveTvConfigurationFactory.GetConfigurations">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.DefaultLiveTvService.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.DefaultLiveTvService.HomePageUrl">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Extensions.LiveTvServiceCollectionExtensions">
+            <summary>
+            Live TV extensions for <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Extensions.LiveTvServiceCollectionExtensions.AddLiveTvServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds Live TV services to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>.
+            </summary>
+            <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add services to.</param>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Guide.GuideManager">
+            <inheritdoc />
+        </member>
+        <member name="F:Jellyfin.LiveTv.Guide.GuideManager.MaxCacheDays">
+            <summary>
+            Amount of days images are pre-cached from external sources.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.GuideManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Guide.GuideManager},MediaBrowser.Common.Configuration.IConfigurationManager,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Persistence.IItemRepository,MediaBrowser.Controller.Library.ILibraryManager,MediaBrowser.Controller.LiveTv.ILiveTvManager,MediaBrowser.Controller.LiveTv.ITunerHostManager,MediaBrowser.Controller.LiveTv.IRecordingsManager,MediaBrowser.Controller.LiveTv.ISchedulesDirectService,Jellyfin.LiveTv.LiveTvDtoService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Guide.GuideManager"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/>.</param>
+            <param name="config">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <param name="fileSystem">The <see cref="T:MediaBrowser.Model.IO.IFileSystem"/>.</param>
+            <param name="itemRepo">The <see cref="T:MediaBrowser.Controller.Persistence.IItemRepository"/>.</param>
+            <param name="libraryManager">The <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/>.</param>
+            <param name="liveTvManager">The <see cref="T:MediaBrowser.Controller.LiveTv.ILiveTvManager"/>.</param>
+            <param name="tunerHostManager">The <see cref="T:MediaBrowser.Controller.LiveTv.ITunerHostManager"/>.</param>
+            <param name="recordingsManager">The <see cref="T:MediaBrowser.Controller.LiveTv.IRecordingsManager"/>.</param>
+            <param name="schedulesDirectService">The <see cref="T:MediaBrowser.Controller.LiveTv.ISchedulesDirectService"/>.</param>
+            <param name="tvDtoService">The <see cref="T:Jellyfin.LiveTv.LiveTvDtoService"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.GuideManager.GetGuideInfo">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.GuideManager.RefreshGuide(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask">
+            <summary>
+            The "Refresh Guide" scheduled task.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.#ctor(MediaBrowser.Controller.LiveTv.ILiveTvManager,MediaBrowser.Controller.LiveTv.IGuideManager,MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask"/> class.
+            </summary>
+            <param name="liveTvManager">The live tv manager.</param>
+            <param name="guideManager">The guide manager.</param>
+            <param name="config">The configuration manager.</param>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.Category">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.IsHidden">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.IsEnabled">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.IsLogged">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.Key">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.ExecuteAsync(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Guide.RefreshGuideScheduledTask.GetDefaultTriggers">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.DirectRecorder.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.EncodedRecorder.OnFfMpegProcessExited(System.Diagnostics.Process)">
+            <summary>
+            Processes the exited.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.EncodedRecorder.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.EncodedRecorder.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and optionally managed resources.
+            </summary>
+            <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.ExclusiveLiveStream.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.IO.IRecorder.Record(MediaBrowser.Controller.Library.IDirectStreamProvider,MediaBrowser.Model.Dto.MediaSourceInfo,System.String,System.TimeSpan,System.Action,System.Threading.CancellationToken)">
+            <summary>
+            Records the specified media source.
+            </summary>
+            <param name="directStreamProvider">The direct stream provider, or <c>null</c>.</param>
+            <param name="mediaSource">The media source.</param>
+            <param name="targetFile">The target file.</param>
+            <param name="duration">The duration to record.</param>
+            <param name="onStarted">An action to perform when recording starts.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that represents the recording operation.</returns>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.ListingsManager">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Listings.ListingsManager},MediaBrowser.Common.Configuration.IConfigurationManager,MediaBrowser.Model.Tasks.ITaskManager,MediaBrowser.Controller.LiveTv.ITunerHostManager,System.Collections.Generic.IEnumerable{MediaBrowser.Controller.LiveTv.IListingsProvider})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Listings.ListingsManager"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/>.</param>
+            <param name="config">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <param name="taskManager">The <see cref="T:MediaBrowser.Model.Tasks.ITaskManager"/>.</param>
+            <param name="tunerHostManager">The <see cref="T:MediaBrowser.Controller.LiveTv.ITunerHostManager"/>.</param>
+            <param name="listingsProviders">The <see cref="T:MediaBrowser.Controller.LiveTv.IListingsProvider"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.SaveListingProvider(MediaBrowser.Model.LiveTv.ListingsProviderInfo,System.Boolean,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.DeleteListingsProvider(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.GetLineups(System.String,System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.GetProgramsAsync(MediaBrowser.Controller.LiveTv.ChannelInfo,System.DateTime,System.DateTime,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.AddProviderMetadata(System.Collections.Generic.IList{MediaBrowser.Controller.LiveTv.ChannelInfo},System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.GetChannelMappingOptions(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.ListingsManager.SetChannelMapping(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirect.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirect.Type">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirect.GetAvailableCountries(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirect.IsServiceAvailable">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirect.IsImageDailyLimitActive">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirect.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirect.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and optionally managed resources.
+            </summary>
+            <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.BroadcasterDto">
+            <summary>
+            Broadcaster dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.BroadcasterDto.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.BroadcasterDto.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.BroadcasterDto.Postalcode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.BroadcasterDto.Country">
+            <summary>
+            Gets or sets the country.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CaptionDto">
+            <summary>
+            Caption dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CaptionDto.Content">
+            <summary>
+            Gets or sets the content.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CaptionDto.Lang">
+            <summary>
+            Gets or sets the lang.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto">
+            <summary>
+            Cast dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.BillingOrder">
+            <summary>
+            Gets or sets the billing order.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.Role">
+            <summary>
+            Gets or sets the role.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.NameId">
+            <summary>
+            Gets or sets the name id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.PersonId">
+            <summary>
+            Gets or sets the person id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CastDto.CharacterName">
+            <summary>
+            Gets or sets the character name.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ChannelDto">
+            <summary>
+            Channel dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ChannelDto.Map">
+            <summary>
+            Gets or sets the list of maps.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ChannelDto.Stations">
+            <summary>
+            Gets or sets the list of stations.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ChannelDto.Metadata">
+            <summary>
+            Gets or sets the metadata.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ContentRatingDto">
+            <summary>
+            Content rating dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ContentRatingDto.Body">
+            <summary>
+            Gets or sets the body.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ContentRatingDto.Code">
+            <summary>
+            Gets or sets the code.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto">
+            <summary>
+            Crew dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto.BillingOrder">
+            <summary>
+            Gets or sets the billing order.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto.Role">
+            <summary>
+            Gets or sets the role.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto.NameId">
+            <summary>
+            Gets or sets the name id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto.PersonId">
+            <summary>
+            Gets or sets the person id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.CrewDto.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DayDto">
+            <summary>
+            Day dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DayDto.StationId">
+            <summary>
+            Gets or sets the station id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DayDto.Programs">
+            <summary>
+            Gets or sets the list of programs.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DayDto.Metadata">
+            <summary>
+            Gets or sets the metadata schedule.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description1000Dto">
+            <summary>
+            Description 1_000 dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description1000Dto.DescriptionLanguage">
+            <summary>
+            Gets or sets the description language.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description1000Dto.Description">
+            <summary>
+            Gets or sets the description.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description100Dto">
+            <summary>
+            Description 100 dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description100Dto.DescriptionLanguage">
+            <summary>
+            Gets or sets the description language.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.Description100Dto.Description">
+            <summary>
+            Gets or sets the description.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DescriptionsProgramDto">
+            <summary>
+            Descriptions program dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DescriptionsProgramDto.Description100">
+            <summary>
+            Gets or sets the list of description 100.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.DescriptionsProgramDto.Description1000">
+            <summary>
+            Gets or sets the list of description1000.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.EventDetailsDto">
+            <summary>
+            Event details dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.EventDetailsDto.SubType">
+            <summary>
+            Gets or sets the sub type.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.GracenoteDto">
+            <summary>
+            Gracenote dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.GracenoteDto.Season">
+            <summary>
+            Gets or sets the season.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.GracenoteDto.Episode">
+            <summary>
+            Gets or sets the episode.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.HeadendsDto">
+            <summary>
+            Headends dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.HeadendsDto.Headend">
+            <summary>
+            Gets or sets the headend.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.HeadendsDto.Transport">
+            <summary>
+            Gets or sets the transport.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.HeadendsDto.Location">
+            <summary>
+            Gets or sets the location.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.HeadendsDto.Lineups">
+            <summary>
+            Gets or sets the list of lineups.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataArrayConverter">
+            <summary>
+            Converter for the <c>data</c> field in SD image responses.
+            The Schedules Direct API may return a non-array value (e.g. a string error message)
+            instead of the expected image data array for programs with errors.
+            This converter returns an empty list for any non-array value.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataArrayConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataArrayConverter.Write(System.Text.Json.Utf8JsonWriter,System.Collections.Generic.IReadOnlyList{Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto},System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto">
+            <summary>
+            Image data dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Uri">
+            <summary>
+            Gets or sets the uri.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Size">
+            <summary>
+            Gets or sets the size.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Aspect">
+            <summary>
+            Gets or sets the aspect.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Category">
+            <summary>
+            Gets or sets the category.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Text">
+            <summary>
+            Gets or sets the text.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Primary">
+            <summary>
+            Gets or sets the primary.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Tier">
+            <summary>
+            Gets or sets the tier.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ImageDataDto.Caption">
+            <summary>
+            Gets or sets the caption.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto">
+            <summary>
+            The lineup dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.Lineup">
+            <summary>
+            Gets or sets the lineup.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.Name">
+            <summary>
+            Gets or sets the lineup name.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.Transport">
+            <summary>
+            Gets or sets the transport.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.Location">
+            <summary>
+            Gets or sets the location.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.Uri">
+            <summary>
+            Gets or sets the uri.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupDto.IsDeleted">
+            <summary>
+            Gets or sets a value indicating whether this lineup was deleted.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupsDto">
+            <summary>
+            Lineups dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupsDto.Code">
+            <summary>
+            Gets or sets the response code.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupsDto.ServerId">
+            <summary>
+            Gets or sets the server id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupsDto.LineupTimestamp">
+            <summary>
+            Gets or sets the datetime.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LineupsDto.Lineups">
+            <summary>
+            Gets or sets the list of lineups.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LogoDto">
+            <summary>
+            Logo dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LogoDto.Url">
+            <summary>
+            Gets or sets the url.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LogoDto.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LogoDto.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.LogoDto.Md5">
+            <summary>
+            Gets or sets the md5.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto">
+            <summary>
+            Map dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.StationId">
+            <summary>
+            Gets or sets the station id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.Channel">
+            <summary>
+            Gets or sets the channel.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.ProviderCallsign">
+            <summary>
+            Gets or sets the provider callsign.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.LogicalChannelNumber">
+            <summary>
+            Gets or sets the logical channel number.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.UhfVhf">
+            <summary>
+            Gets or sets the uhfvhf.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.AtscMajor">
+            <summary>
+            Gets or sets the atsc major.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.AtscMinor">
+            <summary>
+            Gets or sets the atsc minor.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MapDto.MatchType">
+            <summary>
+            Gets or sets the match type.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataDto">
+            <summary>
+            Metadata dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataDto.Lineup">
+            <summary>
+            Gets or sets the lineup.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataDto.Modified">
+            <summary>
+            Gets or sets the modified timestamp.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataDto.Transport">
+            <summary>
+            Gets or sets the transport.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataProgramsDto">
+            <summary>
+            Metadata programs dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataProgramsDto.Gracenote">
+            <summary>
+            Gets or sets the gracenote object.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto">
+            <summary>
+            Metadata schedule dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto.Modified">
+            <summary>
+            Gets or sets the modified timestamp.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto.Md5">
+            <summary>
+            Gets or sets the md5.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto.StartDate">
+            <summary>
+            Gets or sets the start date.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto.EndDate">
+            <summary>
+            Gets or sets the end date.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MetadataScheduleDto.Days">
+            <summary>
+            Gets or sets the days count.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MovieDto">
+            <summary>
+            Movie dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MovieDto.Year">
+            <summary>
+            Gets or sets the year.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MovieDto.Duration">
+            <summary>
+            Gets or sets the duration.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MovieDto.QualityRating">
+            <summary>
+            Gets or sets the list of quality rating.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MultipartDto">
+            <summary>
+            Multipart dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MultipartDto.PartNumber">
+            <summary>
+            Gets or sets the part number.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.MultipartDto.TotalParts">
+            <summary>
+            Gets or sets the total parts.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto">
+            <summary>
+            Program details dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Audience">
+            <summary>
+            Gets or sets the audience.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ProgramId">
+            <summary>
+            Gets or sets the program id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Titles">
+            <summary>
+            Gets or sets the list of titles.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.EventDetails">
+            <summary>
+            Gets or sets the event details object.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Descriptions">
+            <summary>
+            Gets or sets the descriptions.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.OriginalAirDate">
+            <summary>
+            Gets or sets the original air date.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Genres">
+            <summary>
+            Gets or sets the list of genres.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.EpisodeTitle150">
+            <summary>
+            Gets or sets the episode title.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Metadata">
+            <summary>
+            Gets or sets the list of metadata.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ContentRating">
+            <summary>
+            Gets or sets the list of content ratings.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Cast">
+            <summary>
+            Gets or sets the list of cast.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Crew">
+            <summary>
+            Gets or sets the list of crew.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.EntityType">
+            <summary>
+            Gets or sets the entity type.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ShowType">
+            <summary>
+            Gets or sets the show type.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.HasImageArtwork">
+            <summary>
+            Gets or sets a value indicating whether there is image artwork.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.PrimaryImage">
+            <summary>
+            Gets or sets the primary image.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ThumbImage">
+            <summary>
+            Gets or sets the thumb image.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.BackdropImage">
+            <summary>
+            Gets or sets the backdrop image.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.BannerImage">
+            <summary>
+            Gets or sets the banner image.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ImageId">
+            <summary>
+            Gets or sets the image id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Md5">
+            <summary>
+            Gets or sets the md5.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.ContentAdvisory">
+            <summary>
+            Gets or sets the list of content advisory.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Movie">
+            <summary>
+            Gets or sets the movie object.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDetailsDto.Recommendations">
+            <summary>
+            Gets or sets the list of recommendations.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto">
+            <summary>
+            Program dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.ProgramId">
+            <summary>
+            Gets or sets the program id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.AirDateTime">
+            <summary>
+            Gets or sets the air date time.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Duration">
+            <summary>
+            Gets or sets the duration.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Md5">
+            <summary>
+            Gets or sets the md5.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.AudioProperties">
+            <summary>
+            Gets or sets the list of audio properties.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.VideoProperties">
+            <summary>
+            Gets or sets the list of video properties.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Ratings">
+            <summary>
+            Gets or sets the list of ratings.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.New">
+            <summary>
+            Gets or sets a value indicating whether this program is new.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Multipart">
+            <summary>
+            Gets or sets the multipart object.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.LiveTapeDelay">
+            <summary>
+            Gets or sets the live tape delay.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Premiere">
+            <summary>
+            Gets or sets a value indicating whether this is the premiere.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.Repeat">
+            <summary>
+            Gets or sets a value indicating whether this is a repeat.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ProgramDto.IsPremiereOrFinale">
+            <summary>
+            Gets or sets the premiere or finale.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto">
+            <summary>
+            Quality rating dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto.RatingsBody">
+            <summary>
+            Gets or sets the ratings body.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto.Rating">
+            <summary>
+            Gets or sets the rating.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto.MinRating">
+            <summary>
+            Gets or sets the min rating.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto.MaxRating">
+            <summary>
+            Gets or sets the max rating.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.QualityRatingDto.Increment">
+            <summary>
+            Gets or sets the increment.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RatingDto">
+            <summary>
+            Rating dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RatingDto.Body">
+            <summary>
+            Gets or sets the body.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RatingDto.Code">
+            <summary>
+            Gets or sets the code.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RecommendationDto">
+            <summary>
+            Recommendation dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RecommendationDto.ProgramId">
+            <summary>
+            Gets or sets the program id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RecommendationDto.Title120">
+            <summary>
+            Gets or sets the title.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RequestScheduleForChannelDto">
+            <summary>
+            Request schedule for channel dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RequestScheduleForChannelDto.StationId">
+            <summary>
+            Gets or sets the station id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.RequestScheduleForChannelDto.Date">
+            <summary>
+            Gets or sets the list of dates.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode">
+            <summary>
+            Schedules Direct API error codes.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.InvalidUser">
+            <summary>
+            Invalid user.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.InvalidHash">
+            <summary>
+            Invalid password hash.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.AccountLocked">
+            <summary>
+            Account locked or disabled.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.AccountExpired">
+            <summary>
+            Account expired.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.TokenExpired">
+            <summary>
+            Token has expired.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.PasswordRequired">
+            <summary>
+            Password is required.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.MaxLoginAttempts">
+            <summary>
+            Maximum login attempts exceeded.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.TemporaryLockout">
+            <summary>
+            Temporary lockout.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.MaxImageDownloads">
+            <summary>
+            Maximum image downloads reached for the day.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.SdErrorCode.MaxScheduleRequests">
+            <summary>
+            Maximum schedule/metadata requests reached for the day.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ShowImagesDto">
+            <summary>
+            Show image dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ShowImagesDto.ProgramId">
+            <summary>
+            Gets or sets the program id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ShowImagesDto.Code">
+            <summary>
+            Gets or sets the SD error code, if the request for this program failed.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ShowImagesDto.Message">
+            <summary>
+            Gets or sets the SD error message, if the request for this program failed.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.ShowImagesDto.Data">
+            <summary>
+            Gets or sets the list of data.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto">
+            <summary>
+            Station dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.StationId">
+            <summary>
+            Gets or sets the station id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.Callsign">
+            <summary>
+            Gets or sets the callsign.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.BroadcastLanguage">
+            <summary>
+            Gets or sets the broadcast language.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.DescriptionLanguage">
+            <summary>
+            Gets or sets the description language.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.Broadcaster">
+            <summary>
+            Gets or sets the broadcaster.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.Affiliate">
+            <summary>
+            Gets or sets the affiliate.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.Logo">
+            <summary>
+            Gets or sets the logo.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.StationDto.IsCommercialFree">
+            <summary>
+            Gets or sets a value indicating whether it is commercial free.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TitleDto">
+            <summary>
+            Title dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TitleDto.Title120">
+            <summary>
+            Gets or sets the title.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto">
+            <summary>
+            The token dto.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.Code">
+            <summary>
+            Gets or sets the response code.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.Message">
+            <summary>
+            Gets or sets the response message.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.ServerId">
+            <summary>
+            Gets or sets the server id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.Token">
+            <summary>
+            Gets or sets the token.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.TokenTimestamp">
+            <summary>
+            Gets or sets the current datetime.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.Listings.SchedulesDirectDtos.TokenDto.Response">
+            <summary>
+            Gets or sets the response message.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.LiveTv.LiveTvManager">
+            <summary>
+            Class LiveTvManager.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.LiveTv.LiveTvManager.Services">
+            <summary>
+            Gets the services.
+            </summary>
+            <value>The services.</value>
+        </member>
+        <member name="M:Jellyfin.LiveTv.LiveTvManager.ResetTuner(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Resets the tuner.
+            </summary>
+            <param name="id">The identifier.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.LiveTvManager.GetRecordingFoldersAsync(Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.LiveTvMediaSourceProvider.OpenMediaSource(System.String,System.Collections.Generic.List{MediaBrowser.Controller.Library.ILiveStream},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Recordings.RecordingNotifier">
+            <summary>
+            <see cref="T:Microsoft.Extensions.Hosting.IHostedService"/> responsible for notifying users when a LiveTV recording is completed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingNotifier.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Recordings.RecordingNotifier},MediaBrowser.Controller.Session.ISessionManager,MediaBrowser.Controller.Library.IUserManager,MediaBrowser.Controller.LiveTv.ILiveTvManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Recordings.RecordingNotifier"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger"/>.</param>
+            <param name="sessionManager">The <see cref="T:MediaBrowser.Controller.Session.ISessionManager"/>.</param>
+            <param name="userManager">The <see cref="T:MediaBrowser.Controller.Library.IUserManager"/>.</param>
+            <param name="liveTvManager">The <see cref="T:MediaBrowser.Controller.LiveTv.ILiveTvManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingNotifier.StartAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingNotifier.StopAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Recordings.RecordingsHost">
+            <summary>
+            <see cref="T:Microsoft.Extensions.Hosting.IHostedService"/> responsible for Live TV recordings.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsHost.#ctor(MediaBrowser.Controller.LiveTv.IRecordingsManager,Jellyfin.LiveTv.Timers.TimerManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Recordings.RecordingsHost"/> class.
+            </summary>
+            <param name="recordingsManager">The <see cref="T:MediaBrowser.Controller.LiveTv.IRecordingsManager"/>.</param>
+            <param name="timerManager">The <see cref="T:Jellyfin.LiveTv.Timers.TimerManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsHost.StartAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsHost.StopAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Recordings.RecordingsManager">
+            <inheritdoc cref="T:MediaBrowser.Controller.LiveTv.IRecordingsManager" />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Recordings.RecordingsManager},MediaBrowser.Controller.Configuration.IServerConfigurationManager,System.Net.Http.IHttpClientFactory,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.Library.ILibraryManager,MediaBrowser.Controller.Library.ILibraryMonitor,MediaBrowser.Controller.Providers.IProviderManager,MediaBrowser.Controller.MediaEncoding.IMediaEncoder,MediaBrowser.Controller.Library.IMediaSourceManager,MediaBrowser.Model.IO.IStreamHelper,Jellyfin.LiveTv.Timers.TimerManager,Jellyfin.LiveTv.Timers.SeriesTimerManager,Jellyfin.LiveTv.Recordings.RecordingsMetadataManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Recordings.RecordingsManager"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger"/>.</param>
+            <param name="config">The <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/>.</param>
+            <param name="httpClientFactory">The <see cref="T:System.Net.Http.IHttpClientFactory"/>.</param>
+            <param name="fileSystem">The <see cref="T:MediaBrowser.Model.IO.IFileSystem"/>.</param>
+            <param name="libraryManager">The <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/>.</param>
+            <param name="libraryMonitor">The <see cref="T:MediaBrowser.Controller.Library.ILibraryMonitor"/>.</param>
+            <param name="providerManager">The <see cref="T:MediaBrowser.Controller.Providers.IProviderManager"/>.</param>
+            <param name="mediaEncoder">The <see cref="T:MediaBrowser.Controller.MediaEncoding.IMediaEncoder"/>.</param>
+            <param name="mediaSourceManager">The <see cref="T:MediaBrowser.Controller.Library.IMediaSourceManager"/>.</param>
+            <param name="streamHelper">The <see cref="T:MediaBrowser.Model.IO.IStreamHelper"/>.</param>
+            <param name="timerManager">The <see cref="T:Jellyfin.LiveTv.Timers.TimerManager"/>.</param>
+            <param name="seriesTimerManager">The <see cref="T:Jellyfin.LiveTv.Timers.SeriesTimerManager"/>.</param>
+            <param name="recordingsMetadataManager">The <see cref="T:Jellyfin.LiveTv.Recordings.RecordingsMetadataManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.GetActiveRecordingPath(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.GetActiveRecordingInfo(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.GetRecordingFolders">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.CreateRecordingFolders">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.CancelRecording(System.String,MediaBrowser.Controller.LiveTv.TimerInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.RecordStream(MediaBrowser.Controller.LiveTv.ActiveRecordingInfo,MediaBrowser.Controller.Entities.BaseItem,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsManager.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.LiveTv.Recordings.RecordingsMetadataManager">
+            <summary>
+            A service responsible for saving recording metadata.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsMetadataManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.Recordings.RecordingsMetadataManager},MediaBrowser.Common.Configuration.IConfigurationManager,MediaBrowser.Controller.Library.ILibraryManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.Recordings.RecordingsMetadataManager"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger"/>.</param>
+            <param name="config">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <param name="libraryManager">The <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Recordings.RecordingsMetadataManager.SaveRecordingMetadata(MediaBrowser.Controller.LiveTv.TimerInfo,System.String,System.String)">
+            <summary>
+            Saves the metadata for a provided recording.
+            </summary>
+            <param name="timer">The recording timer.</param>
+            <param name="recordingPath">The recording path.</param>
+            <param name="seriesPath">The series path.</param>
+            <returns>A task representing the metadata saving.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.Timers.SeriesTimerManager.Add(MediaBrowser.Controller.LiveTv.SeriesTimerInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.HdHomerun.HdHomerunUdpStream.GetUdpPortFromRange(System.ValueTuple{System.Int32,System.Int32})">
+            <summary>
+            Returns an unused UDP port number in the range specified.
+            Temporarily placed here until future network PR merged.
+            </summary>
+            <param name="range">Upper and Lower boundary of ports to select.</param>
+            <returns>System.Int32.</returns>
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.HdHomerun.LegacyHdHomerunChannelCommands.ChannelAndProgramRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>\\/ch([0-9]+)-?([0-9]*)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "/ch".<br/>
+            ○ 1st capture group.<br/>
+                ○ Match a character in the set [0-9] greedily at least once.<br/>
+            ○ Match '-' atomically, optionally.<br/>
+            ○ 2nd capture group.<br/>
+                ○ Match a character in the set [0-9] atomically any number of times.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.LiveStream.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.M3uParser.KeyValueRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>([a-z0-9\\-_]+)=\\"([^"]+)\\"</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ 1st capture group.<br/>
+                ○ Match a character in the set [\-0-9A-Z_a-z\u0130\u212A] atomically at least once.<br/>
+            ○ Match the string "=\"".<br/>
+            ○ 2nd capture group.<br/>
+                ○ Match a character other than '"' atomically at least once.<br/>
+            ○ Match '"'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:Jellyfin.LiveTv.TunerHosts.TunerHostManager">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.LiveTv.TunerHosts.TunerHostManager},MediaBrowser.Common.Configuration.IConfigurationManager,MediaBrowser.Model.Tasks.ITaskManager,System.Collections.Generic.IEnumerable{MediaBrowser.Controller.LiveTv.ITunerHost})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.LiveTv.TunerHosts.TunerHostManager"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/>.</param>
+            <param name="config">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <param name="taskManager">The <see cref="T:MediaBrowser.Model.Tasks.ITaskManager"/>.</param>
+            <param name="tunerHosts">The <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</param>
+        </member>
+        <member name="P:Jellyfin.LiveTv.TunerHosts.TunerHostManager.TunerHosts">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.GetTunerHostTypes">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.SaveTunerHost(MediaBrowser.Model.LiveTv.TunerHostInfo,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.DeleteTunerHost(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.DiscoverTuners(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.LiveTv.TunerHosts.TunerHostManager.ScanForTunerDeviceChanges(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ChannelAndProgramRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ChannelAndProgramRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.KeyValueRegex_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the KeyValueRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.KeyValueRegex_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.KeyValueRegex_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.KeyValueRegex_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_E259B3D4A399DA464B4E1CC44FFE41A62333860924B8D9A4E135FB11150CED71">
+            <summary>Supports searching for the string "/ch".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_nonAscii_8C2F2194338FB7766529FDFBA25A596ECFA9366AEFC73B56C3E433F518A8DCE7">
+            <summary>Supports searching for characters in or not in "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyzİK".</summary>
+        </member>
+    </members>
+</doc>

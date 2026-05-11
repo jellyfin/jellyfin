@@ -1,0 +1,559 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Database.Providers.Sqlite</name>
+    </assembly>
+    <members>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.DoNotUseReturningClauseConvention.ProcessModelFinalizing(Microsoft.EntityFrameworkCore.Metadata.Builders.IConventionModelBuilder,Microsoft.EntityFrameworkCore.Metadata.Conventions.IConventionContext{Microsoft.EntityFrameworkCore.Metadata.Builders.IConventionModelBuilder})">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddLinkedChildrenTable">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLinkedChildrenTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLinkedChildrenTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLinkedChildrenTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.ChangeOwnerIdToGuid">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangeOwnerIdToGuid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangeOwnerIdToGuid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangeOwnerIdToGuid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddForeignKeyToOwnerId">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddForeignKeyToOwnerId.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddForeignKeyToOwnerId.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddForeignKeyToOwnerId.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.DropExtraIdsColumn">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.DropExtraIdsColumn.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.DropExtraIdsColumn.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.DropExtraIdsColumn.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddLatestItemsDateCreatedIndexes">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLatestItemsDateCreatedIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLatestItemsDateCreatedIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddLatestItemsDateCreatedIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddIndicesToImageInfo">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddIndicesToImageInfo.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddIndicesToImageInfo.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddIndicesToImageInfo.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddBaseItemNameIndex">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddBaseItemNameIndex.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddBaseItemNameIndex.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddBaseItemNameIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.IndexOptimizations">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.IndexOptimizations.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.IndexOptimizations.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.IndexOptimizations.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.ChangePrimaryVersionIdToGuid">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangePrimaryVersionIdToGuid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangePrimaryVersionIdToGuid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.ChangePrimaryVersionIdToGuid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddTypeCleanNameIndex">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddTypeCleanNameIndex.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddTypeCleanNameIndex.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddTypeCleanNameIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.AddPartialIndexForItemCounts">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddPartialIndexForItemCounts.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddPartialIndexForItemCounts.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.Migrations.AddPartialIndexForItemCounts.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.Migrations.SqliteDesignTimeJellyfinDbFactory">
+            <summary>
+            The design time factory for <see cref="T:Jellyfin.Database.Implementations.JellyfinDbContext"/>.
+            This is only used for the creation of migrations and not during runtime.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.ModelBuilderExtensions">
+            <summary>
+            Model builder extensions.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.ModelBuilderExtensions.UseValueConverterForType``1(Microsoft.EntityFrameworkCore.ModelBuilder,Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter)">
+            <summary>
+            Specify value converter for the object type.
+            </summary>
+            <param name="modelBuilder">The model builder.</param>
+            <param name="converter">The <see cref="T:Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter`2"/>.</param>
+            <typeparam name="T">The type to convert.</typeparam>
+            <returns>The modified <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</returns>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.ModelBuilderExtensions.SetDefaultDateTimeKind(Microsoft.EntityFrameworkCore.ModelBuilder,System.DateTimeKind)">
+            <summary>
+            Specify the default <see cref="T:System.DateTimeKind"/>.
+            </summary>
+            <param name="modelBuilder">The model builder to extend.</param>
+            <param name="kind">The <see cref="T:System.DateTimeKind"/> to specify.</param>
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.PragmaConnectionInterceptor">
+            <summary>
+            Injects a series of PRAGMA on each connection starts.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.PragmaConnectionInterceptor.#ctor(Microsoft.Extensions.Logging.ILogger,System.Nullable{System.Int32},System.String,System.Nullable{System.Int32},System.Int32,System.Int32,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Database.Providers.Sqlite.PragmaConnectionInterceptor"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="cacheSize">Cache size.</param>
+            <param name="lockingMode">Locking mode.</param>
+            <param name="journalSizeLimit">Journal Size.</param>
+            <param name="tempStoreMode">The https://sqlite.org/pragma.html#pragma_temp_store pragma.</param>
+            <param name="syncMode">The https://sqlite.org/pragma.html#pragma_synchronous pragma.</param>
+            <param name="customPragma">A list of custom provided Pragma in the list of CustomOptions starting with "#PRAGMA:".</param>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.PragmaConnectionInterceptor.ConnectionOpened(System.Data.Common.DbConnection,Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.PragmaConnectionInterceptor.ConnectionOpenedAsync(System.Data.Common.DbConnection,Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider">
+            <summary>
+            Configures jellyfin to use an SQLite database.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.#ctor(MediaBrowser.Common.Configuration.IApplicationPaths,Microsoft.Extensions.Logging.ILogger{Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider"/> class.
+            </summary>
+            <param name="applicationPaths">Service to construct the fallback when the old data path configuration is used.</param>
+            <param name="logger">A logger.</param>
+        </member>
+        <member name="P:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.DbContextFactory">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.Initialise(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder,Jellyfin.Database.Implementations.DbConfiguration.DatabaseConfigurationOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.RunScheduledOptimisation(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.RunShutdownTask(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.ConfigureConventions(Microsoft.EntityFrameworkCore.ModelConfigurationBuilder)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.MigrationBackupFast(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.RestoreBackupFast(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.DeleteBackup(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider.PurgeDatabase(Jellyfin.Database.Implementations.JellyfinDbContext,System.Collections.Generic.IEnumerable{System.String})">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Database.Providers.Sqlite.ValueConverters.DateTimeKindValueConverter">
+            <summary>
+            ValueConverter to specify kind.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Database.Providers.Sqlite.ValueConverters.DateTimeKindValueConverter.#ctor(System.DateTimeKind,Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Database.Providers.Sqlite.ValueConverters.DateTimeKindValueConverter"/> class.
+            </summary>
+            <param name="kind">The kind to specify.</param>
+            <param name="mappingHints">The mapping hints.</param>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.RemoveEasyPassword">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.RemoveEasyPassword.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.RemoveEasyPassword.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.RemoveEasyPassword.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddTrickplayInfos">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddTrickplayInfos.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddTrickplayInfos.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddTrickplayInfos.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.UserCastReceiver">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.UserCastReceiver.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.UserCastReceiver.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.UserCastReceiver.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddMediaSegments">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddMediaSegments.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddMediaSegments.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddMediaSegments.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.MarkSegmentProviderIdNonNullable">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MarkSegmentProviderIdNonNullable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MarkSegmentProviderIdNonNullable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MarkSegmentProviderIdNonNullable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.LibraryDbMigration">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.LibraryDbMigration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.LibraryDbMigration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.LibraryDbMigration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKey">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKey.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKey.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKey.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKeyKey">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKeyKey.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKeyKey.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddedCustomDataKeyKey.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixAncestorIdConfig">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestorIdConfig.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestorIdConfig.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestorIdConfig.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixMediaStreams">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixMediaStreams2">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixMediaStreams2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.EnforceUniqueItemValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.EnforceUniqueItemValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.EnforceUniqueItemValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.EnforceUniqueItemValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixedCollation">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixedCollation.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixedCollation.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixedCollation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.MakeStartEndDateNullable">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MakeStartEndDateNullable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MakeStartEndDateNullable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.MakeStartEndDateNullable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.ChannelIdGuid">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ChannelIdGuid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ChannelIdGuid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ChannelIdGuid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddInheritedParentalRatingSubValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddInheritedParentalRatingSubValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddInheritedParentalRatingSubValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddInheritedParentalRatingSubValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddKeyframeData">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddKeyframeData.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddKeyframeData.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddKeyframeData.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddHdr10PlusFlag">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddHdr10PlusFlag.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddHdr10PlusFlag.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddHdr10PlusFlag.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixAttachmentMigration">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAttachmentMigration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAttachmentMigration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAttachmentMigration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixAncestors">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestors.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestors.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixAncestors.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.FixItemValuesIndices">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixItemValuesIndices.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixItemValuesIndices.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.FixItemValuesIndices.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.DetachUserDataInsteadOfDelete">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.DetachUserDataInsteadOfDelete.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.DetachUserDataInsteadOfDelete.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.DetachUserDataInsteadOfDelete.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.BaseItemImageInfoDateModifiedNullable">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.BaseItemImageInfoDateModifiedNullable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.BaseItemImageInfoDateModifiedNullable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.BaseItemImageInfoDateModifiedNullable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.ResetJournalMode">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ResetJournalMode.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ResetJournalMode.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ResetJournalMode.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.AddProperParentChildRelationBaseItemWithCascade">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddProperParentChildRelationBaseItemWithCascade.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddProperParentChildRelationBaseItemWithCascade.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.AddProperParentChildRelationBaseItemWithCascade.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Migrations.ExtendPeopleMapKey">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ExtendPeopleMapKey.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ExtendPeopleMapKey.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Migrations.ExtendPeopleMapKey.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

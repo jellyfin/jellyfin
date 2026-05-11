@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.MediaEncoding.Hls</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator.#ctor(MediaBrowser.Controller.Persistence.IKeyframeRepository,Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor,Microsoft.Extensions.Logging.ILogger{Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator"/> class.
+            </summary>
+            <param name="keyframeRepository">An instance of the <see cref="T:MediaBrowser.Controller.Persistence.IKeyframeRepository"/> interface.</param>
+            <param name="keyframeExtractor">An instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor"/> interface.</param>
+            <param name="logger">An instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator.IsMetadataBased">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Cache.CacheDecorator.TryExtractKeyframes(System.Guid,System.String,Jellyfin.MediaEncoding.Keyframes.KeyframeData@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Extensions.MediaEncodingHlsServiceCollectionExtensions">
+            <summary>
+            Extensions for the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> interface.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extensions.MediaEncodingHlsServiceCollectionExtensions.AddHlsPlaylistGenerator(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds the hls playlist generators to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>.
+            </summary>
+            <param name="serviceCollection">An instance of the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> interface.</param>
+            <returns>The updated service collection.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor.#ctor(MediaBrowser.Controller.MediaEncoding.IMediaEncoder,Emby.Naming.Common.NamingOptions,Microsoft.Extensions.Logging.ILogger{Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor"/> class.
+            </summary>
+            <param name="mediaEncoder">An instance of the <see cref="T:MediaBrowser.Controller.MediaEncoding.IMediaEncoder"/> interface.</param>
+            <param name="namingOptions">An instance of <see cref="T:Emby.Naming.Common.NamingOptions"/>.</param>
+            <param name="logger">An instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor.IsMetadataBased">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extractors.FfProbeKeyframeExtractor.TryExtractKeyframes(System.Guid,System.String,Jellyfin.MediaEncoding.Keyframes.KeyframeData@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor">
+            <summary>
+            Keyframe extractor.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor.IsMetadataBased">
+            <summary>
+            Gets a value indicating whether the extractor is based on container metadata.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor.TryExtractKeyframes(System.Guid,System.String,Jellyfin.MediaEncoding.Keyframes.KeyframeData@)">
+            <summary>
+            Attempt to extract keyframes.
+            </summary>
+            <param name="itemId">The item id.</param>
+            <param name="filePath">The path to the file.</param>
+            <param name="keyframeData">The keyframes.</param>
+            <returns>A value indicating whether the keyframe extraction was successful.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor"/> class.
+            </summary>
+            <param name="logger">An instance of the <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> interface.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor.IsMetadataBased">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Extractors.MatroskaKeyframeExtractor.TryExtractKeyframes(System.Guid,System.String,Jellyfin.MediaEncoding.Keyframes.KeyframeData@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest">
+            <summary>
+            Request class for the <see cref="M:Jellyfin.MediaEncoding.Hls.Playlist.IDynamicHlsPlaylistGenerator.CreateMainPlaylist(Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest)"/> method.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.#ctor(System.Nullable{System.Guid},System.String,System.Int32,System.Int64,System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest"/> class.
+            </summary>
+            <param name="mediaSourceId">The media source id.</param>
+            <param name="filePath">The absolute file path to the file.</param>
+            <param name="desiredSegmentLengthMs">The desired segment length in milliseconds.</param>
+            <param name="totalRuntimeTicks">The total duration of the file in ticks.</param>
+            <param name="segmentContainer">The desired segment container eg. "ts".</param>
+            <param name="endpointPrefix">The URI prefix for the relative URL in the playlist.</param>
+            <param name="queryString">The desired query string to append (must start with ?).</param>
+            <param name="isRemuxingVideo">Whether the video is being remuxed.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.MediaSourceId">
+            <summary>
+            Gets the media source id.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.FilePath">
+            <summary>
+            Gets the file path.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.DesiredSegmentLengthMs">
+            <summary>
+            Gets the desired segment length in milliseconds.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.TotalRuntimeTicks">
+            <summary>
+            Gets the total runtime in ticks.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.SegmentContainer">
+            <summary>
+            Gets the segment container.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.EndpointPrefix">
+            <summary>
+            Gets the endpoint prefix for the URL.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.QueryString">
+            <summary>
+            Gets the query string.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest.IsRemuxingVideo">
+            <summary>
+            Gets a value indicating whether the video is being remuxed.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Playlist.DynamicHlsPlaylistGenerator">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Playlist.DynamicHlsPlaylistGenerator.#ctor(MediaBrowser.Controller.Configuration.IServerConfigurationManager,System.Collections.Generic.IEnumerable{Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Playlist.DynamicHlsPlaylistGenerator"/> class.
+            </summary>
+            <param name="serverConfigurationManager">An instance of the see <see cref="T:MediaBrowser.Controller.Configuration.IServerConfigurationManager"/> interface.</param>
+            <param name="extractors">An instance of <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</param>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Playlist.DynamicHlsPlaylistGenerator.CreateMainPlaylist(Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.Playlist.IDynamicHlsPlaylistGenerator">
+            <summary>
+            Generator for dynamic HLS playlists where the segment lengths aren't known in advance.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.Playlist.IDynamicHlsPlaylistGenerator.CreateMainPlaylist(Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest)">
+            <summary>
+            Creates the main playlist containing the main video or audio stream.
+            </summary>
+            <param name="request">An instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.Playlist.CreateMainPlaylistRequest"/> class.</param>
+            <returns>The playlist as a formatted string.</returns>
+        </member>
+        <member name="T:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Controller.Library.ILibraryManager,System.Collections.Generic.IEnumerable{Jellyfin.MediaEncoding.Hls.Extractors.IKeyframeExtractor})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask"/> class.
+            </summary>
+            <param name="localizationManager">An instance of the <see cref="T:MediaBrowser.Model.Globalization.ILocalizationManager"/> interface.</param>
+            <param name="libraryManager">An instance of the <see cref="T:MediaBrowser.Controller.Library.ILibraryManager"/> interface.</param>
+            <param name="keyframeExtractors">The keyframe extractors.</param>
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.Key">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.Category">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.ExecuteAsync(System.IProgress{System.Double},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.MediaEncoding.Hls.ScheduledTasks.KeyframeExtractionScheduledTask.GetDefaultTriggers">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

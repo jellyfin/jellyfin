@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Emby.Photos</name>
+    </assembly>
+    <members>
+        <member name="T:Emby.Photos.PhotoProvider">
+            <summary>
+            Metadata provider for photos.
+            </summary>
+        </member>
+        <member name="M:Emby.Photos.PhotoProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Emby.Photos.PhotoProvider},MediaBrowser.Controller.Drawing.IImageProcessor)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Photos.PhotoProvider" /> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="imageProcessor">The image processor.</param>
+        </member>
+        <member name="P:Emby.Photos.PhotoProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="M:Emby.Photos.PhotoProvider.HasChanged(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.Providers.IDirectoryService)">
+            <inheritdoc />
+        </member>
+        <member name="M:Emby.Photos.PhotoProvider.FetchAsync(MediaBrowser.Controller.Entities.Photo,MediaBrowser.Controller.Providers.MetadataRefreshOptions,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

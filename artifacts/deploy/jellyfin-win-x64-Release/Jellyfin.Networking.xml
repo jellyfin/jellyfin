@@ -1,0 +1,306 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Networking</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Networking.AutoDiscoveryHost">
+            <summary>
+            <see cref="T:Microsoft.Extensions.Hosting.BackgroundService"/> responsible for responding to auto-discovery messages.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.AutoDiscoveryHost.PortNumber">
+            <summary>
+            The port to listen on for auto-discovery messages.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.AutoDiscoveryHost.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Networking.AutoDiscoveryHost},MediaBrowser.Controller.IServerApplicationHost,MediaBrowser.Common.Configuration.IConfigurationManager,MediaBrowser.Common.Net.INetworkManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Networking.AutoDiscoveryHost" /> class.
+            </summary>
+            <param name="logger">The <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/>.</param>
+            <param name="appHost">The <see cref="T:MediaBrowser.Controller.IServerApplicationHost"/>.</param>
+            <param name="configurationManager">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <param name="networkManager">The <see cref="T:MediaBrowser.Common.Net.INetworkManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.Networking.AutoDiscoveryHost.ExecuteAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Networking.HappyEyeballs.HttpClientExtension">
+             <summary>
+             Defines the <see cref="T:Jellyfin.Networking.HappyEyeballs.HttpClientExtension"/> class.
+            
+             Implementation taken from https://github.com/ppy/osu-framework/pull/4191 .
+             </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.HappyEyeballs.HttpClientExtension.UseIPv6">
+            <summary>
+            Gets or sets a value indicating whether the client should use IPv6.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.HappyEyeballs.HttpClientExtension.OnConnect(System.Net.Http.SocketsHttpConnectionContext,System.Threading.CancellationToken)">
+            <summary>
+            Implements the httpclient callback method.
+            </summary>
+            <param name="context">The <see cref="T:System.Net.Http.SocketsHttpConnectionContext"/> instance.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/> instance.</param>
+            <returns>The http steam.</returns>
+        </member>
+        <member name="T:Jellyfin.Networking.Manager.NetworkManager">
+            <summary>
+            Class to take care of network interface management.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._initLock">
+            <summary>
+            Threading lock for network properties.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._publishedServerUrls">
+            <summary>
+            Holds the published server URLs and the IPs to use them on.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._eventfire">
+            <summary>
+            Used to stop "event-racing conditions".
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._interfaces">
+            <summary>
+            Dictionary containing interface addresses and their subnets.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._lanSubnets">
+            <summary>
+            Unfiltered user defined LAN subnets (<see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.LocalNetworkSubnets"/>)
+            or internal interface network subnets if undefined by user.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._excludedSubnets">
+            <summary>
+            User defined list of subnets to excluded from the LAN.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Networking.Manager.NetworkManager._disposed">
+            <summary>
+            True if this object is disposed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.#ctor(MediaBrowser.Common.Configuration.IConfigurationManager,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Jellyfin.Networking.Manager.NetworkManager})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Networking.Manager.NetworkManager"/> class.
+            </summary>
+            <param name="configurationManager">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/> instance.</param>
+            <param name="startupConfig">The <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/> instance holding startup parameters.</param>
+            <param name="logger">Logger to use for messages.</param>
+        </member>
+        <member name="E:Jellyfin.Networking.Manager.NetworkManager.NetworkChanged">
+            <summary>
+            Event triggered on network changes.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.Manager.NetworkManager.MockNetworkSettings">
+            <summary>
+            Gets or sets a value indicating whether testing is taking place.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.Manager.NetworkManager.IsIPv4Enabled">
+            <summary>
+            Gets a value indicating whether IPv4 is enabled.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.Manager.NetworkManager.IsIPv6Enabled">
+            <summary>
+            Gets a value indicating whether IP6 is enabled.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.Manager.NetworkManager.TrustAllIPv6Interfaces">
+            <summary>
+            Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Networking.Manager.NetworkManager.PublishedServerUrls">
+            <summary>
+            Gets the Published server override list.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.OnNetworkAvailabilityChanged(System.Object,System.Net.NetworkInformation.NetworkAvailabilityEventArgs)">
+            <summary>
+            Handler for network change events.
+            </summary>
+            <param name="sender">Sender.</param>
+            <param name="e">A <see cref="T:System.Net.NetworkInformation.NetworkAvailabilityEventArgs"/> containing network availability information.</param>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.OnNetworkAddressChanged(System.Object,System.EventArgs)">
+            <summary>
+            Handler for network change events.
+            </summary>
+            <param name="sender">Sender.</param>
+            <param name="e">An <see cref="T:System.EventArgs"/>.</param>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.HandleNetworkChange">
+            <summary>
+            Triggers our event, and re-loads interface information.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.OnNetworkChange">
+            <summary>
+            Waits for 2 seconds before re-initialising the settings, as typically these events fire multiple times in succession.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.InitializeInterfaces">
+            <summary>
+            Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetInterfacesCore(Microsoft.Extensions.Logging.ILogger,System.Boolean,System.Boolean)">
+            <summary>
+            Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="isIPv4Enabled">If true evaluates IPV4 type ip addresses.</param>
+            <param name="isIPv6Enabled">If true evaluates IPV6 type ip addresses.</param>
+            <returns>A list of all locally known up addresses and submasks that are to be considered usable.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.InitializeLan(MediaBrowser.Common.Net.NetworkConfiguration)">
+            <summary>
+            Initializes internal LAN cache.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.EnforceBindSettings(MediaBrowser.Common.Net.NetworkConfiguration)">
+            <summary>
+            Enforce bind addresses and exclusions on available interfaces.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.FilterBindSettings(MediaBrowser.Common.Net.NetworkConfiguration,System.Collections.Generic.IList{MediaBrowser.Model.Net.IPData},System.Boolean,System.Boolean)">
+            <summary>
+            Filters a list of bind addresses and exclusions on available interfaces.
+            </summary>
+            <param name="config">The network config to be filtered by.</param>
+            <param name="interfaces">A list of possible interfaces to be filtered.</param>
+            <param name="isIPv4Enabled">If true evaluates IPV4 type ip addresses.</param>
+            <param name="isIPv6Enabled">If true evaluates IPV6 type ip addresses.</param>
+            <returns>A list of all locally known up addresses and submasks that are to be considered usable.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.InitializeRemote(MediaBrowser.Common.Net.NetworkConfiguration)">
+            <summary>
+            Initializes the remote address values.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.InitializeOverrides(MediaBrowser.Common.Net.NetworkConfiguration)">
+            <summary>
+            Parses the user defined overrides into the dictionary object.
+            Overrides are the equivalent of localised publishedServerUrl, enabling
+            different addresses to be advertised over different subnets.
+            format is subnet=ipaddress|host|uri
+            when subnet = 0.0.0.0, any external address matches.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.UpdateSettings(System.Object)">
+            <summary>
+            Reloads all settings and re-Initializes the instance.
+            </summary>
+            <param name="configuration">The <see cref="T:MediaBrowser.Common.Net.NetworkConfiguration"/> to use.</param>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.Dispose(System.Boolean)">
+            <summary>
+            Protected implementation of Dispose pattern.
+            </summary>
+            <param name="disposing"><c>True</c> to dispose the managed state.</param>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.TryParseInterface(System.String,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Net.IPData}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.ShouldAllowServerAccess(System.Net.IPAddress)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetLoopbacks">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetAllBindInterfaces(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetAllBindInterfaces(Microsoft.Extensions.Logging.ILogger{Jellyfin.Networking.Manager.NetworkManager},System.Boolean,MediaBrowser.Common.Configuration.IConfigurationManager,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Net.IPData},System.Boolean,System.Boolean)">
+            <summary>
+            Reads the jellyfin configuration of the configuration manager and produces a list of interfaces that should be bound.
+            </summary>
+            <param name="logger">Logger to use for messages.</param>
+            <param name="individualInterfaces">Defines that only known interfaces should be used.</param>
+            <param name="configurationManager">The ConfigurationManager.</param>
+            <param name="knownInterfaces">The known interfaces that gets returned if possible or instructed.</param>
+            <param name="readIpv4">Include IPV4 type interfaces.</param>
+            <param name="readIpv6">Include IPV6 type interfaces.</param>
+            <returns>A list of ip address of which jellyfin should bind to.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetBindAddress(System.String,System.Nullable{System.Int32}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetBindAddress(Microsoft.AspNetCore.Http.HttpRequest,System.Nullable{System.Int32}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetBindAddress(System.Net.IPAddress,System.Nullable{System.Int32}@,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.GetInternalBindAddresses">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.IsInLocalNetwork(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.IsLinkLocalAddress(System.Net.IPAddress)">
+            <summary>
+             Get if the IPAddress is Link-local.
+            </summary>
+            <param name="address">The IP Address.</param>
+            <returns>Bool indicates if the address is link-local.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.IsInLocalNetwork(System.Net.IPAddress)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.CheckIfLanAndNotExcluded(System.Net.IPAddress)">
+            <summary>
+            Check if the address is in the LAN and not excluded.
+            </summary>
+            <param name="address">The IP address to check. The caller should make sure this is not an IPv4MappedToIPv6 address.</param>
+            <returns>Boolean indicates whether the address is in LAN.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.MatchesPublishedServerUrl(System.Net.IPAddress,System.Boolean,System.String@)">
+            <summary>
+            Attempts to match the source against the published server URL overrides.
+            </summary>
+            <param name="source">IP source address to use.</param>
+            <param name="isInExternalSubnet">True if the source is in an external subnet.</param>
+            <param name="bindPreference">The published server URL that matches the source address.</param>
+            <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.MatchesBindInterface(System.Net.IPAddress,System.Boolean,System.String@)">
+            <summary>
+            Attempts to match the source against the user defined bind interfaces.
+            </summary>
+            <param name="source">IP source address to use.</param>
+            <param name="isInExternalSubnet">True if the source is in the external subnet.</param>
+            <param name="result">The result, if a match is found.</param>
+            <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Jellyfin.Networking.Manager.NetworkManager.MatchesExternalInterface(System.Net.IPAddress,System.String@)">
+            <summary>
+            Attempts to match the source against external interfaces.
+            </summary>
+            <param name="source">IP source address to use.</param>
+            <param name="result">The result, if a match is found.</param>
+            <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:Jellyfin.Networking.Udp.SocketFactory">
+            <summary>
+            Factory class to create different kinds of sockets.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Networking.Udp.SocketFactory.CreateUdpBroadcastSocket(System.Int32)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

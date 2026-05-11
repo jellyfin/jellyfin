@@ -1,0 +1,1576 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Server.Implementations</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Server.Implementations.Activity.ActivityManager">
+            <summary>
+            Manages the storage and retrieval of <see cref="T:Jellyfin.Database.Implementations.Entities.ActivityLog"/> instances.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Activity.ActivityManager.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Activity.ActivityManager"/> class.
+            </summary>
+            <param name="provider">The Jellyfin database provider.</param>
+        </member>
+        <member name="E:Jellyfin.Server.Implementations.Activity.ActivityManager.EntryCreated">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Activity.ActivityManager.CreateAsync(Jellyfin.Database.Implementations.Entities.ActivityLog)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Activity.ActivityManager.GetPagedResultAsync(Jellyfin.Data.Queries.ActivityLogQuery)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Activity.ActivityManager.CleanAsync(System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationFactory">
+            <summary>
+            Factory for constructing a database configuration.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationFactory.GetConfigurations">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationStore">
+            <summary>
+            A configuration that stores database related settings.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationStore.StoreKey">
+            <summary>
+            The name of the configuration in the storage.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationStore.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.DatabaseConfiguration.DatabaseConfigurationStore"/> class.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Devices.DeviceManager">
+            <summary>
+            Manages the creation, updating, and retrieval of devices.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Library.IUserManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Devices.DeviceManager"/> class.
+            </summary>
+            <param name="dbProvider">The database provider.</param>
+            <param name="userManager">The user manager.</param>
+        </member>
+        <member name="E:Jellyfin.Server.Implementations.Devices.DeviceManager.DeviceOptionsUpdated">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.SaveCapabilities(System.String,MediaBrowser.Model.Session.ClientCapabilities)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.UpdateDeviceOptions(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.CreateDevice(Jellyfin.Database.Implementations.Entities.Security.Device)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetDeviceOptions(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetCapabilities(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetDevice(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetDevices(Jellyfin.Data.Queries.DeviceQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetDeviceInfos(Jellyfin.Data.Queries.DeviceQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.GetDevicesForUser(System.Nullable{System.Guid})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.DeleteDevice(Jellyfin.Database.Implementations.Entities.Security.Device)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.UpdateDevice(Jellyfin.Database.Implementations.Entities.Security.Device)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.CanAccessDevice(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Devices.DeviceManager.ToClientCapabilitiesDto(MediaBrowser.Model.Session.ClientCapabilities)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Library.LyricDownloadFailureLogger">
+            <summary>
+            Creates an entry in the activity log whenever a lyric download fails.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Library.LyricDownloadFailureLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Library.LyricDownloadFailureLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Library.LyricDownloadFailureLogger.OnEvent(MediaBrowser.Controller.Lyrics.LyricDownloadFailureEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Library.SubtitleDownloadFailureLogger">
+            <summary>
+            Creates an entry in the activity log whenever a subtitle download fails.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Library.SubtitleDownloadFailureLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Library.SubtitleDownloadFailureLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Library.SubtitleDownloadFailureLogger.OnEvent(MediaBrowser.Controller.Subtitles.SubtitleDownloadFailureEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationFailedLogger">
+            <summary>
+            Creates an entry in the activity log when there is a failed login attempt.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationFailedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationFailedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationFailedLogger.OnEvent(MediaBrowser.Controller.Events.Authentication.AuthenticationRequestEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationSucceededLogger">
+            <summary>
+            Creates an entry in the activity log when there is a successful login attempt.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationSucceededLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationSucceededLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Security.AuthenticationSucceededLogger.OnEvent(MediaBrowser.Controller.Events.Authentication.AuthenticationResultEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStartLogger">
+            <summary>
+            Creates an entry in the activity log whenever a user starts playback.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStartLogger.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStartLogger},MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStartLogger"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStartLogger.OnEvent(MediaBrowser.Controller.Library.PlaybackStartEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStopLogger">
+            <summary>
+            Creates an activity log entry whenever a user stops playback.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStopLogger.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStopLogger},MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStopLogger"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.PlaybackStopLogger.OnEvent(MediaBrowser.Controller.Library.PlaybackStopEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionEndedLogger">
+            <summary>
+            Creates an entry in the activity log whenever a session ends.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionEndedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionEndedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionEndedLogger.OnEvent(MediaBrowser.Controller.Events.Session.SessionEndedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionStartedLogger">
+            <summary>
+            Creates an entry in the activity log when a session is started.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionStartedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionStartedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Session.SessionStartedLogger.OnEvent(MediaBrowser.Controller.Events.Session.SessionStartedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.System.PendingRestartNotifier">
+            <summary>
+            Notifies users when there is a pending restart.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.PendingRestartNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.System.PendingRestartNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.PendingRestartNotifier.OnEvent(Jellyfin.Data.Events.System.PendingRestartEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedLogger">
+            <summary>
+            Creates an activity log entry whenever a task is completed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedLogger.OnEvent(MediaBrowser.Model.Tasks.TaskCompletionEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedLogger.CreateValueString(System.Int32,System.String)">
+            <summary>
+            Constructs a string description of a time-span value.
+            </summary>
+            <param name="value">The value of this item.</param>
+            <param name="description">The name of this item (singular form).</param>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedNotifier">
+            <summary>
+            Notifies admin users when a task is completed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.System.TaskCompletedNotifier.OnEvent(MediaBrowser.Model.Tasks.TaskCompletionEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationCancelledNotifier">
+            <summary>
+            Notifies admin users when a plugin installation is cancelled.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationCancelledNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationCancelledNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationCancelledNotifier.OnEvent(MediaBrowser.Controller.Events.Updates.PluginInstallationCancelledEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedLogger">
+            <summary>
+            Creates an entry in the activity log when a package installation fails.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedLogger.OnEvent(MediaBrowser.Common.Updates.InstallationFailedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedNotifier">
+            <summary>
+            Notifies admin users when a plugin installation fails.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallationFailedNotifier.OnEvent(MediaBrowser.Common.Updates.InstallationFailedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledLogger">
+            <summary>
+            Creates an entry in the activity log when a plugin is installed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledLogger.OnEvent(MediaBrowser.Controller.Events.Updates.PluginInstalledEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledNotifier">
+            <summary>
+            Notifies admin users when a plugin is installed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstalledNotifier.OnEvent(MediaBrowser.Controller.Events.Updates.PluginInstalledEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallingNotifier">
+            <summary>
+            Notifies admin users when a plugin is being installed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallingNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallingNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginInstallingNotifier.OnEvent(MediaBrowser.Controller.Events.Updates.PluginInstallingEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledLogger">
+            <summary>
+            Creates an entry in the activity log when a plugin is uninstalled.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledLogger.OnEvent(MediaBrowser.Controller.Events.Updates.PluginUninstalledEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledNotifier">
+            <summary>
+            Notifies admin users when a plugin is uninstalled.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUninstalledNotifier.OnEvent(MediaBrowser.Controller.Events.Updates.PluginUninstalledEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUpdatedLogger">
+            <summary>
+            Creates an entry in the activity log when a plugin is updated.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUpdatedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUpdatedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Updates.PluginUpdatedLogger.OnEvent(MediaBrowser.Controller.Events.Updates.PluginUpdatedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserCreatedLogger">
+            <summary>
+            Creates an entry in the activity log when a user is created.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserCreatedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserCreatedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserCreatedLogger.OnEvent(Jellyfin.Data.Events.Users.UserCreatedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedLogger">
+            <summary>
+            Adds an entry to the activity log when a user is deleted.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedLogger.OnEvent(Jellyfin.Data.Events.Users.UserDeletedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedNotifier">
+            <summary>
+            Notifies the user's sessions when a user is deleted.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedNotifier.#ctor(MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedNotifier"/> class.
+            </summary>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserDeletedNotifier.OnEvent(Jellyfin.Data.Events.Users.UserDeletedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserLockedOutLogger">
+            <summary>
+            Creates an entry in the activity log when a user is locked out.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserLockedOutLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserLockedOutLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserLockedOutLogger.OnEvent(Jellyfin.Data.Events.Users.UserLockedOutEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserPasswordChangedLogger">
+            <summary>
+            Creates an entry in the activity log when a user's password is changed.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserPasswordChangedLogger.#ctor(MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Activity.IActivityManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserPasswordChangedLogger"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="activityManager">The activity manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserPasswordChangedLogger.OnEvent(Jellyfin.Data.Events.Users.UserPasswordChangedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserUpdatedNotifier">
+            <summary>
+            Notifies a user when their account has been updated.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserUpdatedNotifier.#ctor(MediaBrowser.Controller.Library.IUserManager,MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.Consumers.Users.UserUpdatedNotifier"/> class.
+            </summary>
+            <param name="userManager">The user manager.</param>
+            <param name="sessionManager">The session manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.Consumers.Users.UserUpdatedNotifier.OnEvent(Jellyfin.Data.Events.Users.UserUpdatedEventArgs)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.EventingServiceCollectionExtensions">
+            <summary>
+            A class containing extensions to <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> for eventing.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.EventingServiceCollectionExtensions.AddEventServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds the event services to the service collection.
+            </summary>
+            <param name="collection">The service collection.</param>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Events.EventManager">
+            <summary>
+            Handles the firing of events.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.EventManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Events.EventManager},MediaBrowser.Controller.IServerApplicationHost)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Events.EventManager"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="appHost">The application host.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.EventManager.Publish``1(``0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Events.EventManager.PublishAsync``1(``0)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Extensions.ExpressionExtensions">
+            <summary>
+            Provides <see cref="T:System.Linq.Expressions.Expression"/> extension methods.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Extensions.ExpressionExtensions.Or``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines two predicates into a single predicate using a logical OR operation.
+            </summary>
+            <typeparam name="T">The predicate parameter type.</typeparam>
+            <param name="firstPredicate">The first predicate expression to combine.</param>
+            <param name="secondPredicate">The second predicate expression to combine.</param>
+            <returns>A new expression representing the OR combination of the input predicates.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Extensions.ExpressionExtensions.Or``1(System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}}})">
+            <summary>
+            Combines multiple predicates into a single predicate using a logical OR operation.
+            </summary>
+            <typeparam name="T">The predicate parameter type.</typeparam>
+            <param name="predicates">A collection of predicate expressions to combine.</param>
+            <returns>A new expression representing the OR combination of all input predicates.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Extensions.ExpressionExtensions.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines two predicates into a single predicate using a logical AND operation.
+            </summary>
+            <typeparam name="T">The predicate parameter type.</typeparam>
+            <param name="firstPredicate">The first predicate expression to combine.</param>
+            <param name="secondPredicate">The second predicate expression to combine.</param>
+            <returns>A new expression representing the AND combination of the input predicates.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Extensions.ExpressionExtensions.And``1(System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}}})">
+            <summary>
+            Combines multiple predicates into a single predicate using a logical AND operation.
+            </summary>
+            <typeparam name="T">The predicate parameter type.</typeparam>
+            <param name="predicates">A collection of predicate expressions to combine.</param>
+            <returns>A new expression representing the AND combination of all input predicates.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Extensions.ServiceCollectionExtensions">
+            <summary>
+            Extensions for the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> interface.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Extensions.ServiceCollectionExtensions.AddJellyfinDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,MediaBrowser.Controller.Configuration.IServerConfigurationManager,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds the <see cref="T:Microsoft.EntityFrameworkCore.IDbContextFactory`1"/> interface to the service collection with second level caching enabled.
+            </summary>
+            <param name="serviceCollection">An instance of the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> interface.</param>
+            <param name="configurationManager">The server configuration manager.</param>
+            <param name="configuration">The startup Configuration.</param>
+            <returns>The updated service collection.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.FullSystemBackup.BackupManifest">
+            <summary>
+            Manifest type for backups internal structure.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.FullSystemBackup.BackupOptions">
+            <summary>
+            Defines the optional contents of the backup archive.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.FullSystemBackup.BackupService">
+            <summary>
+            Contains methods for creating and restoring backups.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.FullSystemBackup.BackupService},Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.IServerApplicationHost,MediaBrowser.Controller.IServerApplicationPaths,Jellyfin.Database.Implementations.IJellyfinDatabaseProvider,Microsoft.Extensions.Hosting.IHostApplicationLifetime)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.FullSystemBackup.BackupService"/> class.
+            </summary>
+            <param name="logger">A logger.</param>
+            <param name="dbProvider">A Database Factory.</param>
+            <param name="applicationHost">The Application host.</param>
+            <param name="applicationPaths">The application paths.</param>
+            <param name="jellyfinDatabaseProvider">The Jellyfin database Provider in use.</param>
+            <param name="applicationLifetime">The SystemManager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.ScheduleRestoreAndRestartServer(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.RestoreBackupAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.CreateBackupAsync(MediaBrowser.Controller.SystemBackupService.BackupOptionsDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.GetBackupManifest(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.EnumerateBackups">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.FullSystemBackup.BackupService.NormalizePathSeparator(System.String)">
+            <summary>
+            Windows is able to handle '/' as a path seperator in zip files
+            but linux isn't able to handle '\' as a path seperator in zip files,
+            So normalize to '/'.
+            </summary>
+            <param name="path">The path to normalize.</param>
+            <returns>The normalized path. </returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.BaseItemMapper">
+            <summary>
+            Handles mapping between BaseItemEntity (database) and BaseItemDto (domain) objects.
+            </summary>
+        </member>
+        <member name="F:Jellyfin.Server.Implementations.Item.BaseItemMapper._typeMap">
+            <summary>
+            This holds all the types in the running assemblies
+            so that we can de-serialize properly when we don't have strong types.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.Map(Jellyfin.Database.Implementations.Entities.BaseItemEntity,MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.IServerApplicationHost)">
+            <summary>
+            Maps a Entity to the DTO.
+            </summary>
+            <param name="entity">The entity.</param>
+            <param name="dto">The dto base instance.</param>
+            <param name="appHost">The Application server Host.</param>
+            <returns>The dto to map.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.Map(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.IServerApplicationHost)">
+            <summary>
+            Maps a DTO to a database entity.
+            </summary>
+            <param name="dto">The DTO.</param>
+            <param name="appHost">The application host for path resolution.</param>
+            <returns>The database entity.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.MapImageFromEntity(Jellyfin.Database.Implementations.Entities.BaseItemImageInfo,MediaBrowser.Controller.IServerApplicationHost)">
+            <summary>
+            Maps a database image entity to a domain image info.
+            </summary>
+            <param name="e">The database image entity.</param>
+            <param name="appHost">The application host.</param>
+            <returns>The mapped image info.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.MapImageToEntity(System.Guid,MediaBrowser.Controller.Entities.ItemImageInfo)">
+            <summary>
+            Maps a domain image info to a database image entity.
+            </summary>
+            <param name="baseItemId">The parent item ID.</param>
+            <param name="e">The image info to map.</param>
+            <returns>The mapped database entity.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.GetType(System.String)">
+            <summary>
+            Gets the type from a type name string.
+            </summary>
+            <param name="typeName">The type name.</param>
+            <returns>The resolved type, or null.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.TypeRequiresDeserialization(System.Type)">
+            <summary>
+            Checks whether a type requires JSON deserialization.
+            </summary>
+            <param name="type">The type to check.</param>
+            <returns>True if the type requires deserialization.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemMapper.DeserializeBaseItem(Jellyfin.Database.Implementations.Entities.BaseItemEntity,Microsoft.Extensions.Logging.ILogger,MediaBrowser.Controller.IServerApplicationHost,System.Boolean)">
+            <summary>
+            Deserializes a BaseItemEntity and sets all properties.
+            </summary>
+            <param name="baseItemEntity">The DB entity.</param>
+            <param name="logger">Logger.</param>
+            <param name="appHost">The application server Host.</param>
+            <param name="skipDeserialization">If only mapping should be processed.</param>
+            <returns>A mapped BaseItem, or null if the item type is unknown.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.BaseItemRepository">
+            <summary>
+            Handles all storage logic for BaseItems.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetAllArtists(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetArtists(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetAlbumArtists(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetStudios(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetGenres(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetMusicGenres(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetStudioNames">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetAllArtistNames">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetMusicGenreNames">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetGenreNames">
+            <inheritdoc />
+        </member>
+        <member name="F:Jellyfin.Server.Implementations.Item.BaseItemRepository.PlaceholderId">
+            <summary>
+            Gets the placeholder id for UserData detached items.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.IServerApplicationHost,MediaBrowser.Controller.Persistence.IItemTypeLookup,MediaBrowser.Controller.Configuration.IServerConfigurationManager,Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Item.BaseItemRepository})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.BaseItemRepository"/> class.
+            </summary>
+            <param name="dbProvider">The db factory.</param>
+            <param name="appHost">The Application host.</param>
+            <param name="itemTypeLookup">The static type lookup.</param>
+            <param name="serverConfigurationManager">The server Configuration manager.</param>
+            <param name="logger">System logger.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.Map(Jellyfin.Database.Implementations.Entities.BaseItemEntity,MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Controller.IServerApplicationHost,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Maps a Entity to the DTO. Delegates to <see cref="T:Jellyfin.Server.Implementations.Item.BaseItemMapper"/>.
+            </summary>
+            <param name="entity">The database entity.</param>
+            <param name="dto">The target DTO.</param>
+            <param name="appHost">The application host.</param>
+            <param name="logger">The logger.</param>
+            <returns>The mapped DTO.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.Map(MediaBrowser.Controller.Entities.BaseItem)">
+            <summary>
+            Maps a DTO to a database entity. Delegates to <see cref="T:Jellyfin.Server.Implementations.Item.BaseItemMapper"/>.
+            </summary>
+            <param name="dto">The DTO to map.</param>
+            <returns>The mapped database entity.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.DeserializeBaseItem(Jellyfin.Database.Implementations.Entities.BaseItemEntity,Microsoft.Extensions.Logging.ILogger,MediaBrowser.Controller.IServerApplicationHost,System.Boolean)">
+            <summary>
+            Deserializes a BaseItemEntity and sets all properties.
+            </summary>
+            <param name="baseItemEntity">The entity to deserialize.</param>
+            <param name="logger">The logger.</param>
+            <param name="appHost">The application host.</param>
+            <param name="skipDeserialization">Whether to skip JSON deserialization.</param>
+            <returns>The deserialized item, or null.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.PrepareFilterQuery(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.DeserializeBaseItem(Jellyfin.Database.Implementations.Entities.BaseItemEntity,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.PrepareItemQuery(Jellyfin.Database.Implementations.JellyfinDbContext,MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.ApplyNavigations(System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.ApplyOrder(System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},MediaBrowser.Controller.Entities.InternalItemsQuery,Jellyfin.Database.Implementations.JellyfinDbContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.BuildAccessFilteredDescendantsQuery(Jellyfin.Database.Implementations.JellyfinDbContext,MediaBrowser.Controller.Entities.InternalItemsQuery,System.Guid)">
+            <summary>
+            Builds a query for descendants of an ancestor with user access filtering applied.
+            Uses recursive CTE to traverse both hierarchical (AncestorIds) and linked (LinkedChildren) relationships.
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.ApplyAccessFiltering(Jellyfin.Database.Implementations.JellyfinDbContext,System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <summary>
+            Applies user access filtering to a query.
+            Includes TopParentIds, parental rating, and tag filtering.
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.BuildMaxParentalRatingFilter(Jellyfin.Database.Implementations.JellyfinDbContext,MediaBrowser.Model.Entities.ParentalRatingScore)">
+            <summary>
+            Builds a filter expression for max parental rating that handles both rated items
+            and unrated BoxSets/Playlists (which check linked children's ratings).
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetFullyPlayedFolderIdsQuery(Jellyfin.Database.Implementations.JellyfinDbContext,System.Linq.IQueryable{System.Guid},Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetItemIdsList(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetItems(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetItemList(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetLatestItemList(MediaBrowser.Controller.Entities.InternalItemsQuery,Jellyfin.Data.Enums.CollectionType)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetLatestTvShowItems(Jellyfin.Database.Implementations.JellyfinDbContext,System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},MediaBrowser.Controller.Entities.InternalItemsQuery,System.Nullable{System.Int32})">
+            <summary>
+            Gets the latest TV show items with smart Season/Series container selection.
+            </summary>
+            <remarks>
+            <para>
+            This method implements intelligent container selection for TV shows in the "Latest" section.
+            Instead of always showing individual episodes, it analyzes recent additions and may return
+            a Season or Series container when multiple related episodes were recently added.
+            </para>
+            <para>
+            The selection logic is:
+            <list type="bullet">
+                <item>If recent episodes span multiple seasons → return the Series</item>
+                <item>If multiple recent episodes are from one season AND the series has multiple seasons → return the Season</item>
+                <item>If multiple recent episodes are from one season AND the series has only one season → return the Series</item>
+                <item>Otherwise → return the most recent Episode</item>
+            </list>
+            </para>
+            </remarks>
+            <param name="context">The database context.</param>
+            <param name="baseQuery">The base query with filters already applied.</param>
+            <param name="filter">The query filter options.</param>
+            <param name="limit">Maximum number of items to return.</param>
+            <returns>A list of BaseItemDto representing the latest TV content.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.ItemExistsAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.RetrieveItem(System.Guid)">
+            <inheritdoc  />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetIsPlayed(Jellyfin.Database.Implementations.Entities.User,System.Guid,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.GetQueryFiltersLegacy(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.BaseItemRepository.TranslateQuery(System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},Jellyfin.Database.Implementations.JellyfinDbContext,MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.ChapterRepository">
+            <summary>
+            The Chapter manager.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ChapterRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Drawing.IImageProcessor)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.ChapterRepository"/> class.
+            </summary>
+            <param name="dbProvider">The EFCore provider.</param>
+            <param name="imageProcessor">The Image Processor.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ChapterRepository.GetChapter(System.Guid,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ChapterRepository.GetChapters(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ChapterRepository.SaveChapters(System.Guid,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Entities.ChapterInfo})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ChapterRepository.DeleteChaptersAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.FolderAwareFilterExtensions">
+            <summary>
+            Extension methods for applying folder-aware filters that check items and their descendants.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.FolderAwareFilterExtensions.WhereItemOrDescendantMatches(System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},Jellyfin.Database.Implementations.JellyfinDbContext,System.Linq.Expressions.Expression{System.Func{Jellyfin.Database.Implementations.Entities.BaseItemEntity,System.Boolean}})">
+            <summary>
+            Filters items where either the item matches the condition (for non-folders)
+            or any descendant matches (for folders). Uses reverse traversal through AncestorIds.
+            </summary>
+            <param name="query">The query to filter.</param>
+            <param name="context">The database context.</param>
+            <param name="condition">The condition to check on BaseItemEntity.</param>
+            <returns>Filtered query.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.FolderAwareFilterExtensions.WhereNeitherItemNorDescendantMatches(System.Linq.IQueryable{Jellyfin.Database.Implementations.Entities.BaseItemEntity},Jellyfin.Database.Implementations.JellyfinDbContext,System.Linq.Expressions.Expression{System.Func{Jellyfin.Database.Implementations.Entities.BaseItemEntity,System.Boolean}})">
+            <summary>
+            Filters items where neither the item matches the condition (for non-folders)
+            nor any descendant matches (for folders). Uses reverse traversal for infinite depth.
+            </summary>
+            <param name="query">The query to filter.</param>
+            <param name="context">The database context.</param>
+            <param name="condition">The condition that should NOT match.</param>
+            <returns>Filtered query.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.ItemCountService">
+            <summary>
+            Provides item counting and played-status query operations.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Persistence.IItemTypeLookup,MediaBrowser.Controller.Persistence.IItemQueryHelpers)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.ItemCountService"/> class.
+            </summary>
+            <param name="dbProvider">The database context factory.</param>
+            <param name="itemTypeLookup">The item type lookup.</param>
+            <param name="queryHelpers">The shared query helpers.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetCount(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetItemCounts(MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetItemCountsForNameItem(Jellyfin.Data.Enums.BaseItemKind,System.Guid,Jellyfin.Data.Enums.BaseItemKind[],MediaBrowser.Controller.Entities.InternalItemsQuery)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetPlayedCount(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetTotalCount(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetPlayedAndTotalCount(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetPlayedAndTotalCountFromLinkedChildren(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetChildCountBatch(System.Collections.Generic.IReadOnlyList{System.Guid},System.Nullable{System.Guid})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemCountService.GetPlayedAndTotalCountBatch(System.Collections.Generic.IReadOnlyList{System.Guid},Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.ItemPersistenceService">
+            <summary>
+            Handles item persistence operations (save, delete, update).
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.IServerApplicationHost,Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Item.ItemPersistenceService})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.ItemPersistenceService"/> class.
+            </summary>
+            <param name="dbProvider">The database context factory.</param>
+            <param name="appHost">The application host.</param>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.DeleteItem(System.Collections.Generic.IReadOnlyList{System.Guid})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.UpdateInheritedValues">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.SaveItems(System.Collections.Generic.IReadOnlyList{MediaBrowser.Controller.Entities.BaseItem},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.SaveImagesAsync(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.ItemPersistenceService.ReattachUserDataAsync(MediaBrowser.Controller.Entities.BaseItem,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.KeyframeRepository">
+            <summary>
+            Repository for obtaining Keyframe data.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.KeyframeRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.KeyframeRepository"/> class.
+            </summary>
+            <param name="dbProvider">The EFCore db factory.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.KeyframeRepository.GetKeyframeData(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.KeyframeRepository.SaveKeyframeDataAsync(System.Guid,Jellyfin.MediaEncoding.Keyframes.KeyframeData,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.KeyframeRepository.DeleteKeyframeDataAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.LinkedChildrenService">
+            <summary>
+            Provides linked children query and manipulation operations.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Persistence.IItemTypeLookup,MediaBrowser.Controller.Persistence.IItemQueryHelpers)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.LinkedChildrenService"/> class.
+            </summary>
+            <param name="dbProvider">The database context factory.</param>
+            <param name="itemTypeLookup">The item type lookup.</param>
+            <param name="queryHelpers">The shared query helpers.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.GetLinkedChildrenIds(System.Guid,System.Nullable{System.Int32})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.FindArtists(System.Collections.Generic.IReadOnlyList{System.String})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.GetManualLinkedParentIds(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.RerouteLinkedChildren(System.Guid,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.LinkedChildrenService.UpsertLinkedChild(System.Guid,System.Guid,MediaBrowser.Controller.Entities.LinkedChildType)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.MediaAttachmentRepository">
+            <summary>
+            Manager for handling Media Attachments.
+            </summary>
+            <param name="dbProvider">Efcore Factory.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaAttachmentRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext})">
+            <summary>
+            Manager for handling Media Attachments.
+            </summary>
+            <param name="dbProvider">Efcore Factory.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaAttachmentRepository.SaveMediaAttachments(System.Guid,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Entities.MediaAttachment},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaAttachmentRepository.GetMediaAttachments(MediaBrowser.Controller.Persistence.MediaAttachmentQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.MediaStreamRepository">
+            <summary>
+            Repository for obtaining MediaStreams.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaStreamRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.IServerApplicationHost,MediaBrowser.Model.Globalization.ILocalizationManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.MediaStreamRepository"/> class.
+            </summary>
+            <param name="dbProvider">The EFCore db factory.</param>
+            <param name="serverApplicationHost">The Application host.</param>
+            <param name="localization">The Localisation Provider.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaStreamRepository.SaveMediaStreams(System.Guid,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Entities.MediaStream},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.MediaStreamRepository.GetMediaStreams(MediaBrowser.Controller.Persistence.MediaStreamQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.NextUpService">
+            <summary>
+            Provides next-up episode query operations.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.NextUpService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Persistence.IItemTypeLookup,MediaBrowser.Controller.Persistence.IItemQueryHelpers)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.NextUpService"/> class.
+            </summary>
+            <param name="dbProvider">The database context factory.</param>
+            <param name="itemTypeLookup">The item type lookup.</param>
+            <param name="queryHelpers">The shared query helpers.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.NextUpService.GetNextUpSeriesKeys(MediaBrowser.Controller.Entities.InternalItemsQuery,System.DateTime)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.NextUpService.GetNextUpEpisodesBatch(MediaBrowser.Controller.Entities.InternalItemsQuery,System.Collections.Generic.IReadOnlyList{System.String},System.Boolean,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.OrderMapper">
+            <summary>
+            Static class for methods which maps types of ordering to their respecting ordering functions.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.OrderMapper.MapOrderByField(Jellyfin.Data.Enums.ItemSortBy,MediaBrowser.Controller.Entities.InternalItemsQuery,Jellyfin.Database.Implementations.JellyfinDbContext)">
+            <summary>
+            Creates Func to be executed later with a given BaseItemEntity input for sorting items on query.
+            </summary>
+            <param name="sortBy">Item property to sort by.</param>
+            <param name="query">Context Query.</param>
+            <param name="jellyfinDbContext">Context.</param>
+            <returns>Func to be executed later for sorting query.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.OrderMapper.MapSearchRelevanceOrder(System.String)">
+            <summary>
+            Creates an expression to order search results by match quality.
+            Prioritizes: exact match (0) > prefix match with word boundary (1) > prefix match (2) > contains (3).
+            Considers both CleanName and OriginalTitle for matching.
+            </summary>
+            <param name="searchTerm">The search term to match against.</param>
+            <returns>An expression that returns an integer representing match quality (lower is better).</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Item.PeopleRepository">
+            <summary>
+            Manager for handling people.
+            </summary>
+            <param name="dbProvider">Efcore Factory.</param>
+            <param name="itemTypeLookup">Items lookup service.</param>
+            <remarks>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.PeopleRepository"/> class.
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.PeopleRepository.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Persistence.IItemTypeLookup)">
+            <summary>
+            Manager for handling people.
+            </summary>
+            <param name="dbProvider">Efcore Factory.</param>
+            <param name="itemTypeLookup">Items lookup service.</param>
+            <remarks>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Item.PeopleRepository"/> class.
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.PeopleRepository.GetPeople(MediaBrowser.Controller.Entities.InternalPeopleQuery)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.PeopleRepository.GetPeopleNames(MediaBrowser.Controller.Entities.InternalPeopleQuery)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Item.PeopleRepository.UpdatePeople(System.Guid,System.Collections.Generic.IReadOnlyList{MediaBrowser.Controller.Entities.PersonInfo})">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager">
+            <summary>
+            Manages media segments retrieval and storage.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager},Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},System.Collections.Generic.IEnumerable{MediaBrowser.Controller.MediaSegments.IMediaSegmentProvider})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager"/> class.
+            </summary>
+            <param name="logger">Logger.</param>
+            <param name="dbProvider">EFCore Database factory.</param>
+            <param name="segmentProviders">List of all media segment providers.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.RunSegmentPluginProviders(MediaBrowser.Controller.Entities.BaseItem,MediaBrowser.Model.Configuration.LibraryOptions,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.CreateSegmentAsync(MediaBrowser.Model.MediaSegments.MediaSegmentDto,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.DeleteSegmentAsync(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.DeleteSegmentsAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.GetSegmentsAsync(MediaBrowser.Controller.Entities.BaseItem,System.Collections.Generic.IEnumerable{Jellyfin.Database.Implementations.Enums.MediaSegmentType},MediaBrowser.Model.Configuration.LibraryOptions,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.HasSegments(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.IsTypeSupported(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager.GetSupportedProviders(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Security.AuthenticationManager">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthenticationManager.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Security.AuthenticationManager"/> class.
+            </summary>
+            <param name="dbProvider">The database provider.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthenticationManager.CreateApiKey(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthenticationManager.GetApiKeys">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthenticationManager.DeleteApiKey(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthorizationContext.GetAuthorization(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Gets the authorization.
+            </summary>
+            <param name="httpContext">The HTTP context.</param>
+            <returns>Dictionary{System.StringSystem.String}.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthorizationContext.GetAuthorizationDictionary(Microsoft.AspNetCore.Http.HttpRequest)">
+            <summary>
+            Gets the auth.
+            </summary>
+            <param name="httpReq">The HTTP request.</param>
+            <returns>Dictionary{System.StringSystem.String}.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthorizationContext.GetAuthorization(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Gets the authorization.
+            </summary>
+            <param name="authorizationHeader">The authorization header.</param>
+            <returns>Dictionary{System.StringSystem.String}.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Security.AuthorizationContext.GetParts(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Get the authorization header components.
+            </summary>
+            <param name="authorizationHeader">The authorization header.</param>
+            <returns>Dictionary{System.StringSystem.String}.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper">
+            <summary>
+            Contains methods to help with checking for storage and returning storage data for jellyfin folders.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper.TestCommonPathsForStorageCapacity(MediaBrowser.Common.Configuration.IApplicationPaths,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Tests the available storage capacity on the jellyfin paths with estimated minimum values.
+            </summary>
+            <param name="applicationPaths">The application paths.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper.GetFreeSpaceOf(System.String)">
+            <summary>
+            Gets the free space of the parent filesystem of a specific directory.
+            </summary>
+            <param name="path">Path to a folder.</param>
+            <returns>Various details about the parent filesystem containing the directory.</returns>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper.ResolvePath(System.String)">
+            <summary>
+            Walk a path and fully resolve any symlinks within it.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper.TestDataDirectorySize(System.String,Microsoft.Extensions.Logging.ILogger,System.Int64)">
+            <summary>
+            Gets the underlying drive data from a given path and checks if the available storage capacity matches the threshold.
+            </summary>
+            <param name="path">The path to a folder to evaluate.</param>
+            <param name="logger">The logger.</param>
+            <param name="threshold">The threshold to check for or -1 to just log the data.</param>
+            <exception cref="T:System.InvalidOperationException">Thrown when the threshold is not available on the underlying storage.</exception>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.StorageHelpers.StorageHelper.HumanizeStorageSize(System.Int64)">
+            <summary>
+            Formats a size in bytes into a common human readable form.
+            </summary>
+            <remarks>
+            Taken and slightly modified from https://stackoverflow.com/a/4975942/1786007 .
+            </remarks>
+            <param name="byteCount">The size in bytes.</param>
+            <returns>A human readable approximate representation of the argument.</returns>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Trickplay.TrickplayManager">
+            <summary>
+            ITrickplayManager implementation.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Trickplay.TrickplayManager},MediaBrowser.Controller.MediaEncoding.IMediaEncoder,MediaBrowser.Model.IO.IFileSystem,MediaBrowser.Controller.MediaEncoding.EncodingHelper,MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Controller.Drawing.IImageEncoder,Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Common.Configuration.IApplicationPaths,MediaBrowser.Controller.IO.IPathManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Trickplay.TrickplayManager"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="mediaEncoder">The media encoder.</param>
+            <param name="fileSystem">The file system.</param>
+            <param name="encodingHelper">The encoding helper.</param>
+            <param name="config">The server configuration manager.</param>
+            <param name="imageEncoder">The image encoder.</param>
+            <param name="dbProvider">The database provider.</param>
+            <param name="appPaths">The application paths.</param>
+            <param name="pathManager">The path manager.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.MoveGeneratedTrickplayDataAsync(MediaBrowser.Controller.Entities.Video,MediaBrowser.Model.Configuration.LibraryOptions,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.RefreshTrickplayDataAsync(MediaBrowser.Controller.Entities.Video,System.Boolean,MediaBrowser.Model.Configuration.LibraryOptions,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.CreateTiles(System.Collections.Generic.IReadOnlyList{System.String},System.Int32,MediaBrowser.Model.Configuration.TrickplayOptions,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetTrickplayResolutions(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetTrickplayItemsAsync(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.SaveTrickplayInfo(Jellyfin.Database.Implementations.Entities.TrickplayInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.DeleteTrickplayDataAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetTrickplayManifest(MediaBrowser.Controller.Entities.BaseItem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetTrickplayTilePathAsync(MediaBrowser.Controller.Entities.BaseItem,System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetHlsPlaylist(System.Guid,System.Int32,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Trickplay.TrickplayManager.GetTrickplayDirectory(MediaBrowser.Controller.Entities.BaseItem,System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider">
+            <summary>
+            The default authentication provider.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider},MediaBrowser.Model.Cryptography.ICryptoProvider)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+            <param name="cryptographyProvider">The cryptography provider.</param>
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.IsEnabled">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.Authenticate(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.Authenticate(System.String,System.String,Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider.ChangePassword(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider">
+            <summary>
+            The default password reset provider.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider.#ctor(MediaBrowser.Controller.Configuration.IServerConfigurationManager,MediaBrowser.Common.IApplicationHost)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider"/> class.
+            </summary>
+            <param name="configurationManager">The configuration manager.</param>
+            <param name="appHost">The application host.</param>
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider.IsEnabled">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider.RedeemPasswordResetPin(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider.StartForgotPasswordProcess(Jellyfin.Database.Implementations.Entities.User,System.String,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.DeviceAccessHost">
+            <summary>
+            <see cref="T:Microsoft.Extensions.Hosting.IHostedService"/> responsible for managing user device permissions.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DeviceAccessHost.#ctor(MediaBrowser.Controller.Library.IUserManager,MediaBrowser.Controller.Devices.IDeviceManager,MediaBrowser.Controller.Session.ISessionManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Users.DeviceAccessHost"/> class.
+            </summary>
+            <param name="userManager">The <see cref="T:MediaBrowser.Controller.Library.IUserManager"/>.</param>
+            <param name="deviceManager">The <see cref="T:MediaBrowser.Controller.Devices.IDeviceManager"/>.</param>
+            <param name="sessionManager">The <see cref="T:MediaBrowser.Controller.Session.ISessionManager"/>.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DeviceAccessHost.StartAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DeviceAccessHost.StopAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager">
+            <summary>
+            Manages the storage and retrieval of display preferences through Entity Framework.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager"/> class.
+            </summary>
+            <param name="dbContextFactory">The database context factory.</param>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.GetDisplayPreferences(System.Guid,System.Guid,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.GetItemDisplayPreferences(System.Guid,System.Guid,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.ListItemDisplayPreferences(System.Guid,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.ListCustomItemDisplayPreferences(System.Guid,System.Guid,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.SetCustomItemDisplayPreferences(System.Guid,System.Guid,System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.UpdateDisplayPreferences(Jellyfin.Database.Implementations.Entities.DisplayPreferences)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.DisplayPreferencesManager.UpdateItemDisplayPreferences(Jellyfin.Database.Implementations.Entities.ItemDisplayPreferences)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.InvalidAuthProvider">
+            <summary>
+            An invalid authentication provider.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.InvalidAuthProvider.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.InvalidAuthProvider.IsEnabled">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.InvalidAuthProvider.Authenticate(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.InvalidAuthProvider.ChangePassword(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Server.Implementations.Users.UserManager">
+            <summary>
+            Manages the creation and retrieval of <see cref="T:Jellyfin.Database.Implementations.Entities.User"/> instances.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{Jellyfin.Database.Implementations.JellyfinDbContext},MediaBrowser.Controller.Events.IEventManager,MediaBrowser.Common.Net.INetworkManager,MediaBrowser.Common.IApplicationHost,MediaBrowser.Controller.Drawing.IImageProcessor,Microsoft.Extensions.Logging.ILogger{Jellyfin.Server.Implementations.Users.UserManager},MediaBrowser.Controller.Configuration.IServerConfigurationManager,System.Collections.Generic.IEnumerable{MediaBrowser.Controller.Authentication.IPasswordResetProvider},System.Collections.Generic.IEnumerable{MediaBrowser.Controller.Authentication.IAuthenticationProvider})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Server.Implementations.Users.UserManager"/> class.
+            </summary>
+            <param name="dbProvider">The database provider.</param>
+            <param name="eventManager">The event manager.</param>
+            <param name="networkManager">The network manager.</param>
+            <param name="appHost">The application host.</param>
+            <param name="imageProcessor">The image processor.</param>
+            <param name="logger">The logger.</param>
+            <param name="serverConfigurationManager">The system config manager.</param>
+            <param name="passwordResetProviders">The password reset providers.</param>
+            <param name="authenticationProviders">The authentication providers.</param>
+        </member>
+        <member name="E:Jellyfin.Server.Implementations.Users.UserManager.OnUserUpdated">
+            <inheritdoc/>
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.UserManager.Users">
+            <inheritdoc/>
+        </member>
+        <member name="P:Jellyfin.Server.Implementations.Users.UserManager.UsersIds">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.ValidUsernameRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>^(?!\\s)[\\w\\ \\-'._@+]+(?&lt;!\\s)$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Zero-width negative lookahead.<br/>
+                ○ Match a whitespace character.<br/>
+            ○ Match a character in the set [ '+\-.@_\w] greedily at least once.<br/>
+            ○ Zero-width negative lookbehind.<br/>
+                ○ Match a whitespace character right-to-left.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.GetUserById(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.GetUserByName(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.RenameUser(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.UpdateUserAsync(Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.CreateUserAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.DeleteUserAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.ResetPassword(Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.ChangePassword(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.GetUserDto(Jellyfin.Database.Implementations.Entities.User,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.AuthenticateUser(System.String,System.String,System.String,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.StartForgotPasswordProcess(System.String,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.RedeemPasswordResetPin(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.InitializeAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.GetAuthenticationProviders">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.GetPasswordResetProviders">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.UpdateConfigurationAsync(System.Guid,MediaBrowser.Model.Configuration.UserConfiguration)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.UpdatePolicyAsync(System.Guid,MediaBrowser.Model.Users.UserPolicy)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Jellyfin.Server.Implementations.Users.UserManager.ClearProfileImageAsync(Jellyfin.Database.Implementations.Entities.User)">
+            <inheritdoc/>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ValidUsernameRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ValidUsernameRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,2086 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Emby.Naming</name>
+    </assembly>
+    <members>
+        <member name="T:Emby.Naming.AudioBook.AudioBookFileInfo">
+            <summary>
+            Represents a single video file.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookFileInfo.#ctor(System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookFileInfo"/> class.
+            </summary>
+            <param name="path">Path to audiobook file.</param>
+            <param name="container">File type.</param>
+            <param name="partNumber">Number of part this file represents.</param>
+            <param name="chapterNumber">Number of chapter this file represents.</param>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFileInfo.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFileInfo.Container">
+            <summary>
+            Gets or sets the container.
+            </summary>
+            <value>The container.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFileInfo.PartNumber">
+            <summary>
+            Gets or sets the part number.
+            </summary>
+            <value>The part number.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFileInfo.ChapterNumber">
+            <summary>
+            Gets or sets the chapter number.
+            </summary>
+            <value>The chapter number.</value>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookFileInfo.CompareTo(Emby.Naming.AudioBook.AudioBookFileInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookFilePathParser">
+            <summary>
+            Parser class to extract part and/or chapter number from audiobook filename.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookFilePathParser.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookFilePathParser"/> class.
+            </summary>
+            <param name="options">Naming options containing AudioBookPartsExpressions.</param>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookFilePathParser.Parse(System.String)">
+            <summary>
+            Based on regex determines if filename includes part/chapter number.
+            </summary>
+            <param name="path">Path to audiobook file.</param>
+            <returns>Returns <see cref="T:Emby.Naming.AudioBook.AudioBookFilePathParser"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookFilePathParserResult">
+            <summary>
+            Data object for passing result of audiobook part/chapter extraction.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFilePathParserResult.PartNumber">
+            <summary>
+            Gets or sets optional number of path extracted from audiobook filename.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookFilePathParserResult.ChapterNumber">
+            <summary>
+            Gets or sets optional number of chapter extracted from audiobook filename.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookInfo">
+            <summary>
+            Represents a complete video, including all parts and subtitles.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookInfo.#ctor(System.String,System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyList{Emby.Naming.AudioBook.AudioBookFileInfo},System.Collections.Generic.IReadOnlyList{Emby.Naming.AudioBook.AudioBookFileInfo},System.Collections.Generic.IReadOnlyList{Emby.Naming.AudioBook.AudioBookFileInfo})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookInfo" /> class.
+            </summary>
+            <param name="name">Name of audiobook.</param>
+            <param name="year">Year of audiobook release.</param>
+            <param name="files">List of files composing the actual audiobook.</param>
+            <param name="extras">List of extra files.</param>
+            <param name="alternateVersions">Alternative version of files.</param>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookInfo.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookInfo.Year">
+            <summary>
+            Gets or sets the year.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookInfo.Files">
+            <summary>
+            Gets or sets the files.
+            </summary>
+            <value>The files.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookInfo.Extras">
+            <summary>
+            Gets or sets the extras.
+            </summary>
+            <value>The extras.</value>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookInfo.AlternateVersions">
+            <summary>
+            Gets or sets the alternate versions.
+            </summary>
+            <value>The alternate versions.</value>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookListResolver">
+            <summary>
+            Class used to resolve Name, Year, alternative files and extras from stack of files.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookListResolver.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookListResolver"/> class.
+            </summary>
+            <param name="options">Naming options passed along to <see cref="T:Emby.Naming.AudioBook.AudioBookResolver"/> and <see cref="T:Emby.Naming.AudioBook.AudioBookNameParser"/>.</param>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookListResolver.Resolve(System.Collections.Generic.IEnumerable{MediaBrowser.Model.IO.FileSystemMetadata})">
+            <summary>
+            Resolves Name, Year and differentiate alternative files and extras from regular audiobook files.
+            </summary>
+            <param name="files">List of files related to audiobook.</param>
+            <returns>Returns IEnumerable of <see cref="T:Emby.Naming.AudioBook.AudioBookInfo"/>.</returns>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookNameParser">
+            <summary>
+            Helper class to retrieve name and year from audiobook previously retrieved name.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookNameParser.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookNameParser"/> class.
+            </summary>
+            <param name="options">Naming options containing AudioBookNamesExpressions.</param>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookNameParser.Parse(System.String)">
+            <summary>
+            Parse name and year from previously determined name of audiobook.
+            </summary>
+            <param name="name">Name of the audiobook.</param>
+            <returns>Returns <see cref="T:Emby.Naming.AudioBook.AudioBookNameParserResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookNameParserResult">
+            <summary>
+            Data object used to pass result of name and year parsing.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookNameParserResult.Name">
+            <summary>
+            Gets or sets name of audiobook.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.AudioBook.AudioBookNameParserResult.Year">
+            <summary>
+            Gets or sets optional year of release.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.AudioBook.AudioBookResolver">
+            <summary>
+            Resolve specifics (path, container, partNumber, chapterNumber) about audiobook file.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookResolver.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.AudioBook.AudioBookResolver"/> class.
+            </summary>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> containing AudioFileExtensions and also used to pass to AudioBookFilePathParser.</param>
+        </member>
+        <member name="M:Emby.Naming.AudioBook.AudioBookResolver.Resolve(System.String)">
+            <summary>
+            Resolve specifics (path, container, partNumber, chapterNumber) about audiobook file.
+            </summary>
+            <param name="path">Path to audiobook file.</param>
+            <returns>Returns <see cref="T:Emby.Naming.AudioBook.AudioBookResolver"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.Audio.AlbumParser">
+            <summary>
+            Helper class to determine if Album is multipart.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Audio.AlbumParser.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Audio.AlbumParser"/> class.
+            </summary>
+            <param name="options">Naming options containing AlbumStackingPrefixes.</param>
+        </member>
+        <member name="M:Emby.Naming.Audio.AlbumParser.CleanRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>[-\\.\\(\\)\\s]+</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [()\-.\s] atomically at least once.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.Audio.AlbumParser.IsMultiPart(System.String)">
+            <summary>
+            Function that determines if album is multipart.
+            </summary>
+            <param name="path">Path to file.</param>
+            <returns>True if album is multipart.</returns>
+        </member>
+        <member name="T:Emby.Naming.Audio.AudioFileParser">
+            <summary>
+            Static helper class to determine if file at path is audio file.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Audio.AudioFileParser.IsAudioFile(System.String,Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Static helper method to determine if file at path is audio file.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> containing AudioFileExtensions.</param>
+            <returns>True if file at path is audio file.</returns>
+        </member>
+        <member name="T:Emby.Naming.Book.BookFileNameParser">
+            <summary>
+            Helper class to retrieve basic metadata from a book filename.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Book.BookFileNameParser.Parse(System.String)">
+            <summary>
+            Parse a filename name to retrieve the book name, series name, index, and year.
+            </summary>
+            <param name="name">Book filename to parse for information.</param>
+            <returns>Returns <see cref="T:Emby.Naming.Book.BookFileNameParserResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.Book.BookFileNameParserResult">
+            <summary>
+            Data object used to pass metadata parsed from a book filename.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Book.BookFileNameParserResult.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Book.BookFileNameParserResult"/> class.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Book.BookFileNameParserResult.Name">
+            <summary>
+            Gets or sets the name of the book.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Book.BookFileNameParserResult.Index">
+            <summary>
+            Gets or sets the book index.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Book.BookFileNameParserResult.Year">
+            <summary>
+            Gets or sets the publication year.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Book.BookFileNameParserResult.SeriesName">
+            <summary>
+            Gets or sets the series name.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Common.EpisodeExpression">
+            <summary>
+            Regular expressions for parsing TV Episodes.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Common.EpisodeExpression.#ctor(System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Common.EpisodeExpression"/> class.
+            </summary>
+            <param name="expression">Regular expressions.</param>
+            <param name="byDate">True if date is expected.</param>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.Expression">
+            <summary>
+            Gets or sets raw expressions string.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.IsByDate">
+            <summary>
+            Gets or sets a value indicating whether gets or sets property indicating if date can be find in expression.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.IsOptimistic">
+            <summary>
+            Gets or sets a value indicating whether gets or sets property indicating if expression is optimistic.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.IsNamed">
+            <summary>
+            Gets or sets a value indicating whether gets or sets property indicating if expression is named.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.SupportsAbsoluteEpisodeNumbers">
+            <summary>
+            Gets or sets a value indicating whether gets or sets property indicating if expression supports episodes with absolute numbers.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.DateTimeFormats">
+            <summary>
+            Gets or sets optional list of date formats used for date parsing.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.EpisodeExpression.Regex">
+            <summary>
+            Gets a <see cref="P:Emby.Naming.Common.EpisodeExpression.Regex"/> expressions objects (creates it if null).
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Common.MediaType">
+            <summary>
+            Type of audiovisual media.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Common.MediaType.Audio">
+            <summary>
+            The audio.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Common.MediaType.Photo">
+            <summary>
+            The photo.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Common.MediaType.Video">
+            <summary>
+            The video.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Common.NamingOptions">
+            <summary>
+            Big ugly class containing lot of different naming options that should be split and injected instead of passes everywhere.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Common.NamingOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Common.NamingOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.AllExtrasTypesFolderNames">
+            <summary>
+            Gets or sets the folder name to extra types mapping.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.AudioFileExtensions">
+            <summary>
+            Gets or sets list of audio file extensions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.MediaFlagDelimiters">
+            <summary>
+            Gets or sets list of external media flag delimiters.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.MediaForcedFlags">
+            <summary>
+            Gets or sets list of external media forced flags.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.MediaDefaultFlags">
+            <summary>
+            Gets or sets list of external media default flags.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.MediaHearingImpairedFlags">
+            <summary>
+            Gets or sets list of external media hearing impaired flags.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.AlbumStackingPrefixes">
+            <summary>
+            Gets or sets list of album stacking prefixes.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.ArtistSubfolders">
+            <summary>
+            Gets or sets list of artist subfolders.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.SubtitleFileExtensions">
+            <summary>
+            Gets or sets list of subtitle file extensions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.LyricFileExtensions">
+            <summary>
+            Gets the list of lyric file extensions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.EpisodeExpressions">
+            <summary>
+            Gets or sets list of episode regular expressions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.VideoFileExtensions">
+            <summary>
+            Gets or sets list of video file extensions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.StubFileExtensions">
+            <summary>
+            Gets or sets list of video stub file extensions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.AudioBookPartsExpressions">
+            <summary>
+            Gets or sets list of raw audiobook parts regular expressions strings.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.AudioBookNamesExpressions">
+            <summary>
+            Gets or sets list of raw audiobook names regular expressions strings.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.StubTypes">
+            <summary>
+            Gets or sets list of stub type rules.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.VideoFlagDelimiters">
+            <summary>
+            Gets or sets list of video flag delimiters.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.Format3DRules">
+            <summary>
+            Gets or sets list of 3D Format rules.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.VideoFileStackingRules">
+            <summary>
+            Gets the file stacking rules.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.CleanDateTimes">
+            <summary>
+            Gets or sets list of raw clean DateTimes regular expressions strings.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.CleanStrings">
+            <summary>
+            Gets or sets list of raw clean strings regular expressions strings.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.MultipleEpisodeExpressions">
+            <summary>
+            Gets or sets list of multi-episode regular expressions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.VideoExtraRules">
+            <summary>
+            Gets or sets list of extra rules for videos.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.CleanDateTimeRegexes">
+            <summary>
+            Gets list of clean datetime regular expressions.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Common.NamingOptions.CleanStringRegexes">
+            <summary>
+            Gets list of clean string regular expressions.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Common.NamingOptions.Compile">
+            <summary>
+            Compiles raw regex strings into regexes.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.ExternalFiles.ExternalPathParser">
+            <summary>
+            External media file parser class.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.ExternalFiles.ExternalPathParser.#ctor(Emby.Naming.Common.NamingOptions,MediaBrowser.Model.Globalization.ILocalizationManager,MediaBrowser.Model.Dlna.DlnaProfileType)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.ExternalFiles.ExternalPathParser"/> class.
+            </summary>
+            <param name="localizationManager">The localization manager.</param>
+            <param name="namingOptions">The <see cref="T:Emby.Naming.Common.NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
+            <param name="type">The <see cref="T:MediaBrowser.Model.Dlna.DlnaProfileType"/> of the parsed file.</param>
+        </member>
+        <member name="M:Emby.Naming.ExternalFiles.ExternalPathParser.ParseFile(System.String,System.String)">
+            <summary>
+            Parse filename and extract information.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="extraString">Part of the filename only containing the extra information.</param>
+            <returns>Returns null or an <see cref="T:Emby.Naming.ExternalFiles.ExternalPathParserResult"/> object if parsing is successful.</returns>
+        </member>
+        <member name="T:Emby.Naming.ExternalFiles.ExternalPathParserResult">
+            <summary>
+            Class holding information about external files.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.ExternalFiles.ExternalPathParserResult.#ctor(System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.ExternalFiles.ExternalPathParserResult"/> class.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="isDefault">Is default.</param>
+            <param name="isForced">Is forced.</param>
+            <param name="isHearingImpaired">For the hearing impaired.</param>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.Language">
+            <summary>
+            Gets or sets the language.
+            </summary>
+            <value>The language.</value>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.Title">
+            <summary>
+            Gets or sets the title.
+            </summary>
+            <value>The title.</value>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.IsDefault">
+            <summary>
+            Gets or sets a value indicating whether this instance is default.
+            </summary>
+            <value><c>true</c> if this instance is default; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.IsForced">
+            <summary>
+            Gets or sets a value indicating whether this instance is forced.
+            </summary>
+            <value><c>true</c> if this instance is forced; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.ExternalFiles.ExternalPathParserResult.IsHearingImpaired">
+            <summary>
+            Gets or sets a value indicating whether this instance is for the hearing impaired.
+            </summary>
+            <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:Emby.Naming.TV.EpisodeInfo">
+            <summary>
+            Holder object for Episode information.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.EpisodeInfo.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.TV.EpisodeInfo"/> class.
+            </summary>
+            <param name="path">Path to the file.</param>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Container">
+            <summary>
+            Gets or sets the container.
+            </summary>
+            <value>The container.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.SeriesName">
+            <summary>
+            Gets or sets the name of the series.
+            </summary>
+            <value>The name of the series.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Format3D">
+            <summary>
+            Gets or sets the format3 d.
+            </summary>
+            <value>The format3 d.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Is3D">
+            <summary>
+            Gets or sets a value indicating whether [is3 d].
+            </summary>
+            <value><c>true</c> if [is3 d]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.IsStub">
+            <summary>
+            Gets or sets a value indicating whether this instance is stub.
+            </summary>
+            <value><c>true</c> if this instance is stub; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.StubType">
+            <summary>
+            Gets or sets the type of the stub.
+            </summary>
+            <value>The type of the stub.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.SeasonNumber">
+            <summary>
+            Gets or sets optional season number.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.EpisodeNumber">
+            <summary>
+            Gets or sets optional episode number.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.EndingEpisodeNumber">
+            <summary>
+            Gets or sets optional ending episode number. For multi-episode files 1-13.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Year">
+            <summary>
+            Gets or sets optional year of release.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Month">
+            <summary>
+            Gets or sets optional year of release.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.Day">
+            <summary>
+            Gets or sets optional day of release.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodeInfo.IsByDate">
+            <summary>
+            Gets or sets a value indicating whether by date expression was used.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.TV.EpisodePathParser">
+            <summary>
+            Used to parse information about episode from path.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.EpisodePathParser.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.TV.EpisodePathParser"/> class.
+            </summary>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> object containing EpisodeExpressions and MultipleEpisodeExpressions.</param>
+        </member>
+        <member name="M:Emby.Naming.TV.EpisodePathParser.Parse(System.String,System.Boolean,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Boolean)">
+            <summary>
+            Parses information about episode from path.
+            </summary>
+            <param name="path">Path.</param>
+            <param name="isDirectory">Is path for a directory or file.</param>
+            <param name="isNamed">Do we want to use IsNamed expressions.</param>
+            <param name="isOptimistic">Do we want to use Optimistic expressions.</param>
+            <param name="supportsAbsoluteNumbers">Do we want to use expressions supporting absolute episode numbers.</param>
+            <param name="fillExtendedInfo">Should we attempt to retrieve extended information.</param>
+            <returns>Returns <see cref="T:Emby.Naming.TV.EpisodePathParserResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.TV.EpisodePathParserResult">
+            <summary>
+            Holder object for <see cref="T:Emby.Naming.TV.EpisodePathParser"/> result.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.SeasonNumber">
+            <summary>
+            Gets or sets optional season number.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.EpisodeNumber">
+            <summary>
+            Gets or sets optional episode number.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.EndingEpisodeNumber">
+            <summary>
+            Gets or sets optional ending episode number. For multi-episode files 1-13.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.SeriesName">
+            <summary>
+            Gets or sets the name of the series.
+            </summary>
+            <value>The name of the series.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.Success">
+            <summary>
+            Gets or sets a value indicating whether parsing was successful.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.IsByDate">
+            <summary>
+            Gets or sets a value indicating whether by date expression was used.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.Year">
+            <summary>
+            Gets or sets optional year of release.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.Month">
+            <summary>
+            Gets or sets optional year of release.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.EpisodePathParserResult.Day">
+            <summary>
+            Gets or sets optional day of release.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.TV.EpisodeResolver">
+            <summary>
+            Used to resolve information about episode from path.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.EpisodeResolver.#ctor(Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.TV.EpisodeResolver"/> class.
+            </summary>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> object containing VideoFileExtensions and passed to <see cref="T:Emby.Naming.Video.StubResolver"/>, <see cref="T:Emby.Naming.Video.Format3DParser"/> and <see cref="T:Emby.Naming.TV.EpisodePathParser"/>.</param>
+        </member>
+        <member name="M:Emby.Naming.TV.EpisodeResolver.Resolve(System.String,System.Boolean,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Boolean)">
+            <summary>
+            Resolve information about episode from path.
+            </summary>
+            <param name="path">Path.</param>
+            <param name="isDirectory">Is path for a directory or file.</param>
+            <param name="isNamed">Do we want to use IsNamed expressions.</param>
+            <param name="isOptimistic">Do we want to use Optimistic expressions.</param>
+            <param name="supportsAbsoluteNumbers">Do we want to use expressions supporting absolute episode numbers.</param>
+            <param name="fillExtendedInfo">Should we attempt to retrieve extended information.</param>
+            <returns>Returns null or <see cref="T:Emby.Naming.TV.EpisodeInfo"/> object if successful.</returns>
+        </member>
+        <member name="T:Emby.Naming.TV.SeasonPathParser">
+            <summary>
+            Class to parse season paths.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.ProcessPre">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s*((?&lt;seasonnumber&gt;(?&gt;\\d+))(?:st|nd|rd|th|\\.)*(?!\\s*[Ee]\\d+))\\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\\s*(?&lt;rightpart&gt;.*)$</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ 1st capture group.<br/>
+                ○ "seasonnumber" capture group.<br/>
+                    ○ Match a Unicode digit atomically at least once.<br/>
+                ○ Loop greedily any number of times.<br/>
+                    ○ Match with 5 alternative expressions.<br/>
+                        ○ Match a sequence of expressions.<br/>
+                            ○ Match a character in the set [Ss].<br/>
+                            ○ Match a character in the set [Tt].<br/>
+                        ○ Match a sequence of expressions.<br/>
+                            ○ Match a character in the set [Nn].<br/>
+                            ○ Match a character in the set [Dd].<br/>
+                        ○ Match a sequence of expressions.<br/>
+                            ○ Match a character in the set [Rr].<br/>
+                            ○ Match a character in the set [Dd].<br/>
+                        ○ Match a sequence of expressions.<br/>
+                            ○ Match a character in the set [Tt].<br/>
+                            ○ Match a character in the set [Hh].<br/>
+                        ○ Match '.'.<br/>
+                ○ Zero-width negative lookahead.<br/>
+                    ○ Match a whitespace character atomically any number of times.<br/>
+                    ○ Match a character in the set [Ee].<br/>
+                    ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match a whitespace character greedily any number of times.<br/>
+            ○ Match with 6 alternative expressions.<br/>
+                ○ Match a character in the set [[\uC2DC\uC98C] greedily any number of times.<br/>
+                ○ Match a character in the set [\u30B7\u30BA\u30F3\u30FC] greedily any number of times.<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Ss].<br/>
+                    ○ Loop greedily any number of times.<br/>
+                        ○ Match with 8 alternative expressions.<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [\u00C6\u00E6].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Tt].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ff] exactly 2 times.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Ll].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Rr].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Tt].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Gg].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [\u00C4\u00E4].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                                ○ Match a character in the set [Gg].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match with 3 alternative expressions.<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Ii].<br/>
+                                        ○ Match a character in the set [Zz].<br/>
+                                        ○ Match a character in the set [Oo].<br/>
+                                        ○ Match a character in the set [Ee].<br/>
+                                        ○ Match a character in the set [Nn].<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Aa].<br/>
+                                        ○ Match a character in the set [Ss].<br/>
+                                        ○ Match a character in the set [Oo].<br/>
+                                        ○ Match a character in the set [Nn].<br/>
+                                        ○ Match a character in the set [Gg].<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Zz].<br/>
+                                        ○ Match with 3 alternative expressions.<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [Oo].<br/>
+                                                ○ Match with 2 alternative expressions.<br/>
+                                                    ○ Match a character in the set [Nn].<br/>
+                                                    ○ Match a sequence of expressions.<br/>
+                                                        ○ Match a character in the set [Nn].<br/>
+                                                        ○ Match a character in the set [Aa].<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [\u00D3\u00F3].<br/>
+                                                ○ Match a character in the set [Nn].<br/>
+                                                ○ Match a character in the set [Aa].<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [Oo].<br/>
+                                                ○ Match a character in the set [Nn].<br/>
+                                                ○ Match a character in the set [Uu].<br/>
+                                                ○ Match a character in the set [Ll].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Tt].<br/>
+                    ○ Loop greedily any number of times.<br/>
+                        ○ Match a character in the set [Ee].<br/>
+                        ○ Match a character in the set [Mm].<br/>
+                        ○ Match a character in the set [Pp].<br/>
+                        ○ Match a character in the set [Oo].<br/>
+                        ○ Match a character in the set [Rr].<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                        ○ Match a character in the set [Dd].<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Kk\u212A].<br/>
+                    ○ Loop greedily any number of times.<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                        ○ Match a character in the set [Uu].<br/>
+                        ○ Match a character in the set [Ss].<br/>
+                        ○ Match a character in the set [Ii].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [\u0421\u0441].<br/>
+                    ○ Loop greedily any number of times.<br/>
+                        ○ Match a character in the set [\u0415\u0435].<br/>
+                        ○ Match a character in the set [\u0417\u0437].<br/>
+                        ○ Match a character in the set [\u041E\u043E].<br/>
+                        ○ Match a character in the set [\u041D\u043D].<br/>
+            ○ Match a whitespace character greedily any number of times.<br/>
+            ○ "rightpart" capture group.<br/>
+                ○ Match a character other than '\n' greedily any number of times.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.ProcessPost">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\\s*(?&lt;seasonnumber&gt;\\d+?)(?=\\d{3,4}p|[^\\d]|$)(?!\\s*[Ee]\\d)(?&lt;rightpart&gt;.*)$</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match a whitespace character greedily any number of times.<br/>
+            ○ Match with 6 alternative expressions.<br/>
+                ○ Match a character in the set [[\uC2DC\uC98C] atomically any number of times.<br/>
+                ○ Match a character in the set [\u30B7\u30BA\u30F3\u30FC] atomically any number of times.<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Ss].<br/>
+                    ○ Loop greedily any number of times.<br/>
+                        ○ Match with 8 alternative expressions.<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [\u00C6\u00E6].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Tt].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Ff] exactly 2 times.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Ll].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Rr].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Tt].<br/>
+                                ○ Match a character in the set [Aa].<br/>
+                                ○ Match a character in the set [Gg].<br/>
+                                ○ Match a character in the set [Ii].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [\u00C4\u00E4].<br/>
+                                ○ Match a character in the set [Ss].<br/>
+                                ○ Match a character in the set [Oo].<br/>
+                                ○ Match a character in the set [Nn].<br/>
+                                ○ Match a character in the set [Gg].<br/>
+                            ○ Match a sequence of expressions.<br/>
+                                ○ Match a character in the set [Ee].<br/>
+                                ○ Match with 3 alternative expressions.<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Ii].<br/>
+                                        ○ Match a character in the set [Zz].<br/>
+                                        ○ Match a character in the set [Oo].<br/>
+                                        ○ Match a character in the set [Ee].<br/>
+                                        ○ Match a character in the set [Nn].<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Aa].<br/>
+                                        ○ Match a character in the set [Ss].<br/>
+                                        ○ Match a character in the set [Oo].<br/>
+                                        ○ Match a character in the set [Nn].<br/>
+                                        ○ Match a character in the set [Gg].<br/>
+                                    ○ Match a sequence of expressions.<br/>
+                                        ○ Match a character in the set [Zz].<br/>
+                                        ○ Match with 3 alternative expressions.<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [Oo].<br/>
+                                                ○ Match with 2 alternative expressions.<br/>
+                                                    ○ Match a character in the set [Nn].<br/>
+                                                    ○ Match a sequence of expressions.<br/>
+                                                        ○ Match a character in the set [Nn].<br/>
+                                                        ○ Match a character in the set [Aa].<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [\u00D3\u00F3].<br/>
+                                                ○ Match a character in the set [Nn].<br/>
+                                                ○ Match a character in the set [Aa].<br/>
+                                            ○ Match a sequence of expressions.<br/>
+                                                ○ Match a character in the set [Oo].<br/>
+                                                ○ Match a character in the set [Nn].<br/>
+                                                ○ Match a character in the set [Uu].<br/>
+                                                ○ Match a character in the set [Ll].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Tt].<br/>
+                    ○ Loop atomically any number of times.<br/>
+                        ○ Match a character in the set [Ee].<br/>
+                        ○ Match a character in the set [Mm].<br/>
+                        ○ Match a character in the set [Pp].<br/>
+                        ○ Match a character in the set [Oo].<br/>
+                        ○ Match a character in the set [Rr].<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                        ○ Match a character in the set [Dd].<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [Kk\u212A].<br/>
+                    ○ Loop atomically any number of times.<br/>
+                        ○ Match a character in the set [Aa].<br/>
+                        ○ Match a character in the set [Uu].<br/>
+                        ○ Match a character in the set [Ss].<br/>
+                        ○ Match a character in the set [Ii].<br/>
+                ○ Match a sequence of expressions.<br/>
+                    ○ Match a character in the set [\u0421\u0441].<br/>
+                    ○ Loop atomically any number of times.<br/>
+                        ○ Match a character in the set [\u0415\u0435].<br/>
+                        ○ Match a character in the set [\u0417\u0437].<br/>
+                        ○ Match a character in the set [\u041E\u043E].<br/>
+                        ○ Match a character in the set [\u041D\u043D].<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ "seasonnumber" capture group.<br/>
+                ○ Match a Unicode digit lazily at least once.<br/>
+            ○ Zero-width positive lookahead.<br/>
+                ○ Match with 3 alternative expressions, atomically.<br/>
+                    ○ Match a sequence of expressions.<br/>
+                        ○ Match a Unicode digit atomically at least 3 and at most 4 times.<br/>
+                        ○ Match a character in the set [Pp].<br/>
+                    ○ Match any character other than a Unicode digit.<br/>
+                    ○ Match if at the end of the string or if before an ending newline.<br/>
+            ○ Zero-width negative lookahead.<br/>
+                ○ Match a whitespace character atomically any number of times.<br/>
+                ○ Match a character in the set [Ee].<br/>
+                ○ Match a Unicode digit.<br/>
+            ○ "rightpart" capture group.<br/>
+                ○ Match a character other than '\n' greedily any number of times.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.SeasonPrefix">
+            <remarks>
+            Pattern:<br/>
+            <code>[sS](\\d{1,4})(?!\\d|[eE]\\d)(?=\\.|_|-|\\[|\\]|\\s|$)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [Ss].<br/>
+            ○ 1st capture group.<br/>
+                ○ Match a Unicode digit greedily at least 1 and at most 4 times.<br/>
+            ○ Zero-width negative lookahead.<br/>
+                ○ Match with 2 alternative expressions, atomically.<br/>
+                    ○ Match a Unicode digit.<br/>
+                    ○ Match a sequence of expressions.<br/>
+                        ○ Match a character in the set [Ee].<br/>
+                        ○ Match a Unicode digit.<br/>
+            ○ Zero-width positive lookahead.<br/>
+                ○ Match with 2 alternative expressions, atomically.<br/>
+                    ○ Match a character in the set [\-.[]_\s].<br/>
+                    ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.Parse(System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Attempts to parse season number from path.
+            </summary>
+            <param name="path">Path to season.</param>
+            <param name="parentPath">Folder name of the parent.</param>
+            <param name="supportSpecialAliases">Support special aliases when parsing.</param>
+            <param name="supportNumericSeasonFolders">Support numeric season folders when parsing.</param>
+            <returns>Returns <see cref="T:Emby.Naming.TV.SeasonPathParserResult"/> object.</returns>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.GetSeasonNumberFromPath(System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Gets the season number from path.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="parentFolderName">The parent folder name.</param>
+            <param name="supportSpecialAliases">if set to <c>true</c> [support special aliases].</param>
+            <param name="supportNumericSeasonFolders">if set to <c>true</c> [support numeric season folders].</param>
+            <returns>System.Nullable{System.Int32}.</returns>
+        </member>
+        <member name="M:Emby.Naming.TV.SeasonPathParser.GetSeasonNumberFromPathSubstring(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Extracts the season number from the second half of the Season folder name (everything after "Season", or "Staffel").
+            </summary>
+            <param name="path">The path.</param>
+            <returns>System.Nullable{System.Int32}.</returns>
+        </member>
+        <member name="T:Emby.Naming.TV.SeasonPathParserResult">
+            <summary>
+            Data object to pass result of <see cref="T:Emby.Naming.TV.SeasonPathParser"/>.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.SeasonPathParserResult.SeasonNumber">
+            <summary>
+            Gets or sets the season number.
+            </summary>
+            <value>The season number.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.SeasonPathParserResult.Success">
+            <summary>
+            Gets or sets a value indicating whether this <see cref="T:Emby.Naming.TV.SeasonPathParserResult" /> is success.
+            </summary>
+            <value><c>true</c> if success; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.SeasonPathParserResult.IsSeasonFolder">
+            <summary>
+            Gets or sets a value indicating whether "Is season folder".
+            Seems redundant and barely used.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.TV.SeriesInfo">
+            <summary>
+            Holder object for Series information.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.SeriesInfo.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.TV.SeriesInfo"/> class.
+            </summary>
+            <param name="path">Path to the file.</param>
+        </member>
+        <member name="P:Emby.Naming.TV.SeriesInfo.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.SeriesInfo.Name">
+            <summary>
+            Gets or sets the name of the series.
+            </summary>
+            <value>The name of the series.</value>
+        </member>
+        <member name="T:Emby.Naming.TV.SeriesPathParser">
+            <summary>
+            Used to parse information about series from paths containing more information that only the series name.
+            Uses the same regular expressions as the EpisodePathParser but have different success criteria.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.SeriesPathParser.Parse(Emby.Naming.Common.NamingOptions,System.String)">
+            <summary>
+            Parses information about series from path.
+            </summary>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> object containing EpisodeExpressions and MultipleEpisodeExpressions.</param>
+            <param name="path">Path.</param>
+            <returns>Returns <see cref="T:Emby.Naming.TV.SeriesPathParserResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.TV.SeriesPathParserResult">
+            <summary>
+            Holder object for <see cref="T:Emby.Naming.TV.SeriesPathParser"/> result.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.TV.SeriesPathParserResult.SeriesName">
+            <summary>
+            Gets or sets the name of the series.
+            </summary>
+            <value>The name of the series.</value>
+        </member>
+        <member name="P:Emby.Naming.TV.SeriesPathParserResult.Success">
+            <summary>
+            Gets or sets a value indicating whether parsing was successful.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.TV.SeriesResolver">
+            <summary>
+            Used to resolve information about series from path.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.SeriesResolver.SeriesNameRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>((?&lt;a&gt;[^\\._]{2,})[\\._]*)|([\\._](?&lt;b&gt;[^\\._]{2,}))</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match with 2 alternative expressions, atomically.<br/>
+                ○ 1st capture group.<br/>
+                    ○ "a" capture group.<br/>
+                        ○ Match a character in the set [^._] atomically at least twice.<br/>
+                    ○ Match a character in the set [._] atomically any number of times.<br/>
+                ○ 2nd capture group.<br/>
+                    ○ Match a character in the set [._].<br/>
+                    ○ "b" capture group.<br/>
+                        ○ Match a character in the set [^._] atomically at least twice.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.TV.SeriesResolver.TitleWithYearRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>(?&lt;title&gt;.+?)\\s*\\(\\d{4}\\)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ "title" capture group.<br/>
+                ○ Match a character other than '\n' lazily at least once.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ Match '('.<br/>
+            ○ Match a Unicode digit exactly 4 times.<br/>
+            ○ Match ')'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.TV.SeriesResolver.Resolve(Emby.Naming.Common.NamingOptions,System.String)">
+            <summary>
+            Resolve information about series from path.
+            </summary>
+            <param name="options"><see cref="T:Emby.Naming.Common.NamingOptions"/> object passed to <see cref="T:Emby.Naming.TV.SeriesPathParser"/>.</param>
+            <param name="path">Path to series.</param>
+            <returns>SeriesInfo.</returns>
+        </member>
+        <member name="T:Emby.Naming.TV.TvParserHelpers">
+            <summary>
+            Helper class for TV metadata parsing.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.TV.TvParserHelpers.TryParseSeriesStatus(System.String,System.Nullable{MediaBrowser.Model.Entities.SeriesStatus}@)">
+            <summary>
+            Tries to parse a string into <see cref="T:MediaBrowser.Model.Entities.SeriesStatus"/>.
+            </summary>
+            <param name="status">The status string.</param>
+            <param name="enumValue">The <see cref="T:MediaBrowser.Model.Entities.SeriesStatus"/>.</param>
+            <returns>Returns true if parsing was successful.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.CleanDateTimeParser">
+            <summary>
+            <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.CleanDateTimeParser.Clean(System.String,System.Collections.Generic.IReadOnlyList{System.Text.RegularExpressions.Regex})">
+            <summary>
+            Attempts to clean the name.
+            </summary>
+            <param name="name">Name of video.</param>
+            <param name="cleanDateTimeRegexes">Optional list of regexes to clean the name.</param>
+            <returns>Returns <see cref="T:Emby.Naming.Video.CleanDateTimeResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.CleanDateTimeResult">
+            <summary>
+            Holder structure for name and year.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.CleanDateTimeResult.#ctor(System.String,System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.CleanDateTimeResult"/> struct.
+            </summary>
+            <param name="name">Name of video.</param>
+            <param name="year">Year of release.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.CleanDateTimeResult.Name">
+            <summary>
+            Gets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.CleanDateTimeResult.Year">
+            <summary>
+            Gets the year.
+            </summary>
+            <value>The year.</value>
+        </member>
+        <member name="T:Emby.Naming.Video.CleanStringParser">
+            <summary>
+            <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.CleanStringParser.TryClean(System.String,System.Collections.Generic.IReadOnlyList{System.Text.RegularExpressions.Regex},System.String@)">
+            <summary>
+            Attempts to extract clean name with regular expressions.
+            </summary>
+            <param name="name">Name of file.</param>
+            <param name="expressions">List of regex to parse name and year from.</param>
+            <param name="newName">Parsing result string.</param>
+            <returns>True if parsing was successful.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.ExtraResult">
+            <summary>
+            Holder object for passing results from ExtraResolver.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraResult.ExtraType">
+            <summary>
+            Gets or sets the type of the extra.
+            </summary>
+            <value>The type of the extra.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraResult.Rule">
+            <summary>
+            Gets or sets the rule.
+            </summary>
+            <value>The rule.</value>
+        </member>
+        <member name="T:Emby.Naming.Video.ExtraRule">
+            <summary>
+            A rule used to match a file path with an <see cref="T:MediaBrowser.Model.Entities.ExtraType"/>.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.ExtraRule.#ctor(MediaBrowser.Model.Entities.ExtraType,Emby.Naming.Video.ExtraRuleType,System.String,Emby.Naming.Common.MediaType)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.ExtraRule"/> class.
+            </summary>
+            <param name="extraType">Type of extra.</param>
+            <param name="ruleType">Type of rule.</param>
+            <param name="token">Token.</param>
+            <param name="mediaType">Media type.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraRule.Token">
+            <summary>
+            Gets or sets the token to use for matching against the file path.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraRule.ExtraType">
+            <summary>
+            Gets or sets the type of the extra to return when matched.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraRule.RuleType">
+            <summary>
+            Gets or sets the type of the rule.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.ExtraRule.MediaType">
+            <summary>
+            Gets or sets the type of the media to return when matched.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Video.ExtraRuleResolver">
+            <summary>
+            Resolve if file is extra for video.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.ExtraRuleResolver.GetExtraInfo(System.String,Emby.Naming.Common.NamingOptions,System.String)">
+            <summary>
+            Attempts to resolve if file is extra.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="libraryRoot">Top-level folder for the containing library.</param>
+            <returns>Returns <see cref="T:Emby.Naming.Video.ExtraResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.ExtraRuleType">
+            <summary>
+            Extra rules type to determine against what <see cref="P:Emby.Naming.Video.ExtraRule.Token"/> should be matched.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Video.ExtraRuleType.Suffix">
+            <summary>
+            Match <see cref="P:Emby.Naming.Video.ExtraRule.Token"/> against a suffix in the file name.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Video.ExtraRuleType.Filename">
+            <summary>
+            Match <see cref="P:Emby.Naming.Video.ExtraRule.Token"/> against the file name, excluding the file extension.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Video.ExtraRuleType.Regex">
+            <summary>
+            Match <see cref="P:Emby.Naming.Video.ExtraRule.Token"/> against the file name, including the file extension.
+            </summary>
+        </member>
+        <member name="F:Emby.Naming.Video.ExtraRuleType.DirectoryName">
+            <summary>
+            Match <see cref="P:Emby.Naming.Video.ExtraRule.Token"/> against the name of the directory containing the file.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Video.FileStack">
+            <summary>
+            Object holding list of files paths with additional information.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.FileStack.#ctor(System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.FileStack"/> class.
+            </summary>
+            <param name="name">The stack name.</param>
+            <param name="isDirectory">Whether the stack files are directories.</param>
+            <param name="files">The stack files.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.FileStack.Name">
+            <summary>
+            Gets the name of file stack.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.FileStack.Files">
+            <summary>
+            Gets the list of paths in stack.
+            </summary>
+        </member>
+        <member name="P:Emby.Naming.Video.FileStack.IsDirectoryStack">
+            <summary>
+            Gets a value indicating whether stack is directory stack.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.FileStack.ContainsFile(System.String,System.Boolean)">
+            <summary>
+            Helper function to determine if path is in the stack.
+            </summary>
+            <param name="file">Path of desired file.</param>
+            <param name="isDirectory">Requested type of stack.</param>
+            <returns>True if file is in the stack.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.FileStackRule">
+            <summary>
+            Regex based rule for file stacking (eg. disc1, disc2).
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.FileStackRule.#ctor(System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.FileStackRule"/> class.
+            </summary>
+            <param name="token">Token.</param>
+            <param name="isNumerical">Whether the file stack rule uses numerical or alphabetical numbering.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.FileStackRule.IsNumerical">
+            <summary>
+            Gets a value indicating whether the rule uses numerical or alphabetical numbering.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.FileStackRule.Match(System.String,System.Nullable{System.ValueTuple{System.String,System.String,System.String}}@)">
+            <summary>
+            Match the input against the rule regex.
+            </summary>
+            <param name="input">The input.</param>
+            <param name="result">The part type and number or <c>null</c>.</param>
+            <returns>A value indicating whether the input matched the rule.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.Format3DParser">
+            <summary>
+            Parse 3D format related flags.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.Format3DParser.Parse(System.ReadOnlySpan{System.Char},Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Parse 3D format related flags.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>Returns <see cref="T:Emby.Naming.Video.Format3DResult"/> object.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.Format3DResult">
+            <summary>
+            Helper object to return data from <see cref="T:Emby.Naming.Video.Format3DParser"/>.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.Format3DResult.#ctor(System.Boolean,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.Format3DResult"/> class.
+            </summary>
+            <param name="is3D">A value indicating whether the parsed string contains 3D tokens.</param>
+            <param name="format3D">The 3D format. Value might be null if [is3D] is <c>false</c>.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.Format3DResult.Is3D">
+            <summary>
+            Gets a value indicating whether [is3 d].
+            </summary>
+            <value><c>true</c> if [is3 d]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.Format3DResult.Format3D">
+            <summary>
+            Gets the format3 d.
+            </summary>
+            <value>The format3 d.</value>
+        </member>
+        <member name="T:Emby.Naming.Video.Format3DRule">
+            <summary>
+            Data holder class for 3D format rule.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.Format3DRule.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.Format3DRule"/> class.
+            </summary>
+            <param name="token">Token.</param>
+            <param name="precedingToken">Token present before current token.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.Format3DRule.Token">
+            <summary>
+            Gets or sets the token.
+            </summary>
+            <value>The token.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.Format3DRule.PrecedingToken">
+            <summary>
+            Gets or sets the preceding token.
+            </summary>
+            <value>The preceding token.</value>
+        </member>
+        <member name="T:Emby.Naming.Video.StackResolver">
+            <summary>
+            Resolve <see cref="T:Emby.Naming.Video.FileStack"/> from list of paths.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.StackResolver.ResolveDirectories(System.Collections.Generic.IEnumerable{System.String},Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Resolves only directories from paths.
+            </summary>
+            <param name="files">List of paths.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>Enumerable <see cref="T:Emby.Naming.Video.FileStack"/> of directories.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.StackResolver.ResolveFiles(System.Collections.Generic.IEnumerable{System.String},Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Resolves only files from paths.
+            </summary>
+            <param name="files">List of paths.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>Enumerable <see cref="T:Emby.Naming.Video.FileStack"/> of files.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.StackResolver.ResolveAudioBooks(System.Collections.Generic.IEnumerable{Emby.Naming.AudioBook.AudioBookFileInfo})">
+            <summary>
+            Resolves audiobooks from paths.
+            </summary>
+            <param name="files">List of paths.</param>
+            <returns>Enumerable <see cref="T:Emby.Naming.Video.FileStack"/> of directories.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.StackResolver.Resolve(System.Collections.Generic.IEnumerable{MediaBrowser.Model.IO.FileSystemMetadata},Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Resolves videos from paths.
+            </summary>
+            <param name="files">List of paths.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>Enumerable <see cref="T:Emby.Naming.Video.FileStack"/> of videos.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.StubResolver">
+            <summary>
+            Resolve if file is stub (.disc).
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.StubResolver.TryResolveFile(System.String,Emby.Naming.Common.NamingOptions,System.String@)">
+            <summary>
+            Tries to resolve if file is stub (.disc).
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="options">NamingOptions containing StubFileExtensions and StubTypes.</param>
+            <param name="stubType">Stub type.</param>
+            <returns>True if file is a stub.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.StubTypeRule">
+            <summary>
+            Data class holding information about Stub type rule.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.StubTypeRule.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.StubTypeRule"/> class.
+            </summary>
+            <param name="token">Token.</param>
+            <param name="stubType">Stub type.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.StubTypeRule.Token">
+            <summary>
+            Gets or sets the token.
+            </summary>
+            <value>The token.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.StubTypeRule.StubType">
+            <summary>
+            Gets or sets the type of the stub.
+            </summary>
+            <value>The type of the stub.</value>
+        </member>
+        <member name="T:Emby.Naming.Video.VideoFileInfo">
+            <summary>
+            Represents a single video file.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoFileInfo.#ctor(System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{MediaBrowser.Model.Entities.ExtraType},Emby.Naming.Video.ExtraRule,System.String,System.Boolean,System.Boolean,System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.VideoFileInfo"/> class.
+            </summary>
+            <param name="name">Name of file.</param>
+            <param name="path">Path to the file.</param>
+            <param name="container">Container type.</param>
+            <param name="year">Year of release.</param>
+            <param name="extraType">Extra type.</param>
+            <param name="extraRule">Extra rule.</param>
+            <param name="format3D">Format 3D.</param>
+            <param name="is3D">Is 3D.</param>
+            <param name="isStub">Is Stub.</param>
+            <param name="stubType">Stub type.</param>
+            <param name="isDirectory">Is directory.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Container">
+            <summary>
+            Gets or sets the container.
+            </summary>
+            <value>The container.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Year">
+            <summary>
+            Gets or sets the year.
+            </summary>
+            <value>The year.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.ExtraType">
+            <summary>
+            Gets or sets the type of the extra, e.g. trailer, theme song, behind the scenes, etc.
+            </summary>
+            <value>The type of the extra.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.ExtraRule">
+            <summary>
+            Gets or sets the extra rule.
+            </summary>
+            <value>The extra rule.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Format3D">
+            <summary>
+            Gets or sets the format3 d.
+            </summary>
+            <value>The format3 d.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.Is3D">
+            <summary>
+            Gets or sets a value indicating whether [is3 d].
+            </summary>
+            <value><c>true</c> if [is3 d]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.IsStub">
+            <summary>
+            Gets or sets a value indicating whether this instance is stub.
+            </summary>
+            <value><c>true</c> if this instance is stub; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.StubType">
+            <summary>
+            Gets or sets the type of the stub.
+            </summary>
+            <value>The type of the stub.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.IsDirectory">
+            <summary>
+            Gets or sets a value indicating whether this instance is a directory.
+            </summary>
+            <value>The type.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoFileInfo.FileNameWithoutExtension">
+            <summary>
+            Gets the file name without extension.
+            </summary>
+            <value>The file name without extension.</value>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoFileInfo.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Emby.Naming.Video.VideoInfo">
+            <summary>
+            Represents a complete video, including all parts and subtitles.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoInfo.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Emby.Naming.Video.VideoInfo" /> class.
+            </summary>
+            <param name="name">The name.</param>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoInfo.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoInfo.Year">
+            <summary>
+            Gets or sets the year.
+            </summary>
+            <value>The year.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoInfo.Files">
+            <summary>
+            Gets or sets the files.
+            </summary>
+            <value>The files.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoInfo.AlternateVersions">
+            <summary>
+            Gets or sets the alternate versions.
+            </summary>
+            <value>The alternate versions.</value>
+        </member>
+        <member name="P:Emby.Naming.Video.VideoInfo.ExtraType">
+            <summary>
+            Gets or sets the extra type.
+            </summary>
+        </member>
+        <member name="T:Emby.Naming.Video.VideoListResolver">
+            <summary>
+            Resolves alternative versions and extras from list of video files.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoListResolver.ResolutionRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>[0-9]{2}[0-9]+[ip]</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [0-9] atomically at least 3 times.<br/>
+            ○ Match a character in the set [IPip].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoListResolver.CheckMultiVersionRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\[([^]]*)\\]</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match '['.<br/>
+            ○ 1st capture group.<br/>
+                ○ Match a character other than ']' atomically any number of times.<br/>
+            ○ Match ']'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoListResolver.Resolve(System.Collections.Generic.IReadOnlyList{Emby.Naming.Video.VideoFileInfo},Emby.Naming.Common.NamingOptions,System.Boolean,System.Boolean,System.String)">
+            <summary>
+            Resolves alternative versions and extras from list of video files.
+            </summary>
+            <param name="videoInfos">List of related video files.</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
+            <param name="parseName">Whether to parse the name or use the filename.</param>
+            <param name="libraryRoot">Top-level folder for the containing library.</param>
+            <returns>Returns enumerable of <see cref="T:Emby.Naming.Video.VideoInfo"/> which groups files together when related.</returns>
+        </member>
+        <member name="T:Emby.Naming.Video.VideoResolver">
+            <summary>
+            Resolves <see cref="T:Emby.Naming.Video.VideoFileInfo"/> from file path.
+            </summary>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.ResolveDirectory(System.String,Emby.Naming.Common.NamingOptions,System.Boolean,System.String)">
+            <summary>
+            Resolves the directory.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="parseName">Whether to parse the name or use the filename.</param>
+            <param name="libraryRoot">Top-level folder for the containing library.</param>
+            <returns>VideoFileInfo.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.ResolveFile(System.String,Emby.Naming.Common.NamingOptions,System.String)">
+            <summary>
+            Resolves the file.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="libraryRoot">Top-level folder for the containing library.</param>
+            <returns>VideoFileInfo.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.Resolve(System.String,System.Boolean,Emby.Naming.Common.NamingOptions,System.Boolean,System.String)">
+            <summary>
+            Resolves the specified path.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="isDirectory">if set to <c>true</c> [is folder].</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="parseName">Whether or not the name should be parsed for info.</param>
+            <param name="libraryRoot">Top-level folder for the containing library.</param>
+            <returns>VideoFileInfo.</returns>
+            <exception cref="T:System.ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.IsVideoFile(System.String,Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Determines if path is video file based on extension.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>True if is video file.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.IsStubFile(System.String,Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Determines if path is video file stub based on extension.
+            </summary>
+            <param name="path">Path to file.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>True if is video file stub.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.TryCleanString(System.String,Emby.Naming.Common.NamingOptions,System.String@)">
+            <summary>
+            Tries to clean name of clutter.
+            </summary>
+            <param name="name">Raw name.</param>
+            <param name="namingOptions">The naming options.</param>
+            <param name="newName">Clean name.</param>
+            <returns>True if cleaning of name was successful.</returns>
+        </member>
+        <member name="M:Emby.Naming.Video.VideoResolver.CleanDateTime(System.String,Emby.Naming.Common.NamingOptions)">
+            <summary>
+            Tries to get name and year from raw name.
+            </summary>
+            <param name="name">Raw name.</param>
+            <param name="namingOptions">The naming options.</param>
+            <returns>Returns <see cref="T:Emby.Naming.Video.CleanDateTimeResult"/> with name and optional year.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CleanRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the CleanRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.CleanRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CleanRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CleanRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPre_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ProcessPre method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ProcessPre_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPre_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPre_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPost_2">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ProcessPost method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ProcessPost_2.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPost_2.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ProcessPost_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeasonPrefix_3">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the SeasonPrefix method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.SeasonPrefix_3.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeasonPrefix_3.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeasonPrefix_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeriesNameRegex_4">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the SeriesNameRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SeriesNameRegex_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the TitleWithYearRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TitleWithYearRegex_5.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ResolutionRegex_6">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ResolutionRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ResolutionRegex_6.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ResolutionRegex_6.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ResolutionRegex_6.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the CheckMultiVersionRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CheckMultiVersionRegex_7.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.IndexOfNonAsciiOrAny_094414B33327C614B4460DC7B5A6D948AA36895516B236C0CF4FD32A473A886B(System.ReadOnlySpan{System.Char})">
+            <summary>Finds the next index of any character that matches a character in the set [()\-.\s].</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPop(System.Int32[],System.Int32@,System.Int32@,System.Int32@)">
+            <summary>Pops 2 values from the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
+            <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32,System.Int32)">
+            <summary>Pushes 3 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_2010000020100">
+            <summary>Supports searching for characters in or not in "IPip".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_FFC1FFFFFE9CFFFFFFFFFFFFFFFFFFFF">
+            <summary>Supports searching for characters in or not in "\0\u0001\u0002\u0003\u0004\u0005\u0006\a\b\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f!\"#$%&amp;'*+,/0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u007f".</summary>
+        </member>
+    </members>
+</doc>

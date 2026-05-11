@@ -1,0 +1,21 @@
+{
+  "runtimeOptions": {
+    "tfm": "net10.0",
+    "includedFrameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "10.0.6"
+      },
+      {
+        "name": "Microsoft.AspNetCore.App",
+        "version": "10.0.6"
+      }
+    ],
+    "configProperties": {
+      "System.GC.Server": false,
+      "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+      "System.Reflection.NullabilityInfoContext.IsSupported": true,
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false
+    }
+  }
+}

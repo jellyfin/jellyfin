@@ -1,0 +1,1904 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MediaBrowser.Common</name>
+    </assembly>
+    <members>
+        <member name="T:MediaBrowser.Common.Api.Policies">
+            <summary>
+            Policies for the API authorization.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.FirstTimeSetupOrElevated">
+            <summary>
+            Policy name for requiring first time setup or elevated privileges.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.RequiresElevation">
+            <summary>
+            Policy name for requiring elevated privileges.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.LocalAccessOnly">
+            <summary>
+            Policy name for allowing local access only.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.IgnoreParentalControl">
+            <summary>
+            Policy name for escaping schedule controls.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.Download">
+            <summary>
+            Policy name for requiring download permission.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.FirstTimeSetupOrDefault">
+            <summary>
+            Policy name for requiring first time setup or default permissions.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.LocalAccessOrRequiresElevation">
+            <summary>
+            Policy name for requiring local access or elevated privileges.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.AnonymousLanAccessPolicy">
+            <summary>
+            Policy name for requiring (anonymous) LAN access.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.FirstTimeSetupOrIgnoreParentalControl">
+            <summary>
+            Policy name for escaping schedule controls or requiring first time setup.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.SyncPlayHasAccess">
+            <summary>
+            Policy name for accessing SyncPlay.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.SyncPlayCreateGroup">
+            <summary>
+            Policy name for creating a SyncPlay group.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.SyncPlayJoinGroup">
+            <summary>
+            Policy name for joining a SyncPlay group.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.SyncPlayIsInGroup">
+            <summary>
+            Policy name for accessing a SyncPlay group.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.CollectionManagement">
+            <summary>
+            Policy name for accessing collection management.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.LiveTvAccess">
+            <summary>
+            Policy name for accessing LiveTV.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.LiveTvManagement">
+            <summary>
+            Policy name for managing LiveTV.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.SubtitleManagement">
+            <summary>
+            Policy name for accessing subtitles management.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Api.Policies.LyricManagement">
+            <summary>
+            Policy name for accessing lyric management.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.ConfigurationStore">
+            <summary>
+            Describes a single entry in the application configuration.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.ConfigurationStore.Key">
+            <summary>
+            Gets or sets the unique identifier for the configuration.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.ConfigurationStore.ConfigurationType">
+            <summary>
+            Gets or sets the type used to store the data for this configuration entry.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.ConfigurationUpdateEventArgs">
+            <summary>
+            <see cref="T:System.EventArgs" /> for the ConfigurationUpdated event.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.ConfigurationUpdateEventArgs.#ctor(System.String,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Configuration.ConfigurationUpdateEventArgs"/> class.
+            </summary>
+            <param name="key">The configuration key.</param>
+            <param name="newConfiguration">The new configuration.</param>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.ConfigurationUpdateEventArgs.Key">
+            <summary>
+            Gets the key.
+            </summary>
+            <value>The key.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.ConfigurationUpdateEventArgs.NewConfiguration">
+            <summary>
+            Gets the new configuration.
+            </summary>
+            <value>The new configuration.</value>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.EncodingConfigurationExtensions">
+            <summary>
+            Class containing extension methods for working with the encoding configuration.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.EncodingConfigurationExtensions.GetEncodingOptions(MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Gets the encoding options.
+            </summary>
+            <param name="configurationManager">The configuration manager.</param>
+            <returns>The encoding options.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.EncodingConfigurationExtensions.GetTranscodePath(MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Retrieves the transcoding temp path from the encoding configuration, falling back to a default if no path
+            is specified in configuration. If the directory does not exist, it will be created.
+            </summary>
+            <param name="configurationManager">The configuration manager.</param>
+            <returns>The transcoding temp path.</returns>
+            <exception cref="T:System.UnauthorizedAccessException">If the directory does not exist, and the caller does not have the required permission to create it.</exception>
+            <exception cref="T:System.NotSupportedException">If there is a custom path transcoding path specified, but it is invalid.</exception>
+            <exception cref="T:System.IO.IOException">If the directory does not exist, and it also could not be created.</exception>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.IApplicationPaths">
+            <summary>
+            Interface IApplicationPaths.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.ProgramDataPath">
+            <summary>
+            Gets the path to the program data folder.
+            </summary>
+            <value>The program data path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.WebPath">
+            <summary>
+            Gets the path to the web UI resources folder.
+            </summary>
+            <remarks>
+            This value is not relevant if the server is configured to not host any static web content.
+            </remarks>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.ProgramSystemPath">
+            <summary>
+            Gets the path to the program system folder.
+            </summary>
+            <value>The program data path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.DataPath">
+            <summary>
+            Gets the folder path to the data directory.
+            </summary>
+            <value>The data directory.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.ImageCachePath">
+            <summary>
+            Gets the image cache path.
+            </summary>
+            <value>The image cache path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.PluginsPath">
+            <summary>
+            Gets the path to the plugin directory.
+            </summary>
+            <value>The plugins path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.PluginConfigurationsPath">
+            <summary>
+            Gets the path to the plugin configurations directory.
+            </summary>
+            <value>The plugin configurations path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.LogDirectoryPath">
+            <summary>
+            Gets the path to the log directory.
+            </summary>
+            <value>The log directory path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.ConfigurationDirectoryPath">
+            <summary>
+            Gets the path to the application configuration root directory.
+            </summary>
+            <value>The configuration directory path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.SystemConfigurationFilePath">
+            <summary>
+            Gets the path to the system configuration file.
+            </summary>
+            <value>The system configuration file path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.CachePath">
+            <summary>
+            Gets the folder path to the cache directory.
+            </summary>
+            <value>The cache directory.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.TempDirectory">
+            <summary>
+            Gets the folder path to the temp directory within the cache folder.
+            </summary>
+            <value>The temp directory.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.VirtualDataPath">
+            <summary>
+            Gets the magic string used for virtual path manipulation.
+            </summary>
+            <value>The magic string used for virtual path manipulation.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.TrickplayPath">
+            <summary>
+            Gets the path used for storing trickplay files.
+            </summary>
+            <value>The trickplay path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IApplicationPaths.BackupPath">
+            <summary>
+            Gets the path used for storing backup archives.
+            </summary>
+            <value>The backup path.</value>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IApplicationPaths.MakeSanityCheckOrThrow">
+            <summary>
+            Checks and creates all known base paths.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IApplicationPaths.CreateAndCheckMarker(System.String,System.String,System.Boolean)">
+            <summary>
+            Checks and creates the given path and adds it with a marker file if non existent.
+            </summary>
+            <param name="path">The path to check.</param>
+            <param name="markerName">The common marker file name.</param>
+            <param name="recursive">Check for other settings paths recursively.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.IConfigurationFactory">
+            <summary>
+            Provides an interface to retrieve a configuration store. Classes with this interface are scanned for at
+            application start to dynamically register configuration for various modules/plugins.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationFactory.GetConfigurations">
+            <summary>
+            Get the configuration store for this module.
+            </summary>
+            <returns>The configuration store.</returns>
+        </member>
+        <member name="E:MediaBrowser.Common.Configuration.IConfigurationManager.NamedConfigurationUpdating">
+            <summary>
+            Occurs when [configuration updating].
+            </summary>
+        </member>
+        <member name="E:MediaBrowser.Common.Configuration.IConfigurationManager.ConfigurationUpdated">
+            <summary>
+            Occurs when [configuration updated].
+            </summary>
+        </member>
+        <member name="E:MediaBrowser.Common.Configuration.IConfigurationManager.NamedConfigurationUpdated">
+            <summary>
+            Occurs when [named configuration updated].
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IConfigurationManager.CommonApplicationPaths">
+            <summary>
+            Gets the application paths.
+            </summary>
+            <value>The application paths.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Configuration.IConfigurationManager.CommonConfiguration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>The configuration.</value>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.SaveConfiguration">
+            <summary>
+            Saves the configuration.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.ReplaceConfiguration(MediaBrowser.Model.Configuration.BaseApplicationConfiguration)">
+            <summary>
+            Replaces the configuration.
+            </summary>
+            <param name="newConfiguration">The new configuration.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.RegisterConfiguration``1">
+            <summary>
+            Manually pre-loads a factory so that it is available pre system initialisation.
+            </summary>
+            <typeparam name="T">Class to register.</typeparam>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.GetConfiguration(System.String)">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>System.Object.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.GetConfigurationStores">
+            <summary>
+            Gets the array of configuration stores.
+            </summary>
+            <returns>Array of ConfigurationStore.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.GetConfigurationType(System.String)">
+            <summary>
+            Gets the type of the configuration.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>Type.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.SaveConfiguration(System.String,System.Object)">
+            <summary>
+            Saves the configuration.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IConfigurationManager.AddParts(System.Collections.Generic.IEnumerable{MediaBrowser.Common.Configuration.IConfigurationFactory})">
+            <summary>
+            Adds the parts.
+            </summary>
+            <param name="factories">The factories.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Configuration.IValidatingConfiguration">
+            <summary>
+            A configuration store that can be validated.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Configuration.IValidatingConfiguration.Validate(System.Object,System.Object)">
+            <summary>
+            Validation method to be invoked before saving the configuration.
+            </summary>
+            <param name="oldConfig">The old configuration.</param>
+            <param name="newConfig">The new configuration.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Events.EventHelper">
+            <summary>
+            Class EventHelper.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Events.EventHelper.QueueEventIfNotNull(System.EventHandler,System.Object,System.EventArgs,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Fires the event.
+            </summary>
+            <param name="handler">The handler.</param>
+            <param name="sender">The sender.</param>
+            <param name="args">The <see cref="T:System.EventArgs" /> instance containing the event data.</param>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Events.EventHelper.QueueEventIfNotNull``1(System.EventHandler{``0},System.Object,``0,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Queues the event.
+            </summary>
+            <typeparam name="T">Argument type for the <c>handler</c>.</typeparam>
+            <param name="handler">The handler.</param>
+            <param name="sender">The sender.</param>
+            <param name="args">The args.</param>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Extensions.BaseExtensions">
+            <summary>
+            Class BaseExtensions.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.BaseExtensions.StripHtmlRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>&lt;(.|\\n)*?&gt;</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '&lt;'.<br/>
+            ○ Loop lazily any number of times.<br/>
+                ○ 1st capture group.<br/>
+                    ○ Match with 2 alternative expressions.<br/>
+                        ○ Match any character other than '\n'.<br/>
+                        ○ Match '\n'.<br/>
+            ○ Match '&gt;'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.BaseExtensions.StripHtml(System.String)">
+            <summary>
+            Strips the HTML.
+            </summary>
+            <param name="htmlString">The HTML string.</param>
+            <returns><see cref="T:System.String" />.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.BaseExtensions.GetMD5(System.String)">
+            <summary>
+            Gets the Md5.
+            </summary>
+            <param name="str">The string.</param>
+            <returns><see cref="T:System.Guid" />.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Extensions.HttpContextExtensions">
+            <summary>
+            Static class containing extension methods for <see cref="T:Microsoft.AspNetCore.Http.HttpContext"/>.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.HttpContextExtensions.IsLocal(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Checks the origin of the HTTP context.
+            </summary>
+            <param name="context">The incoming HTTP context.</param>
+            <returns><c>true</c> if the request is coming from the same machine as is running the server, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.HttpContextExtensions.GetNormalizedRemoteIP(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Extracts the remote IP address of the caller of the HTTP context.
+            </summary>
+            <param name="context">The HTTP context.</param>
+            <returns>The remote caller IP address.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Extensions.MethodNotAllowedException">
+            <summary>
+            Class MethodNotAllowedException.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.MethodNotAllowedException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.MethodNotAllowedException" /> class.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.MethodNotAllowedException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.MethodNotAllowedException" /> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Extensions.ProcessExtensions">
+            <summary>
+            Extension methods for <see cref="T:System.Diagnostics.Process"/>.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.ProcessExtensions.WaitForExitAsync(System.Diagnostics.Process,System.TimeSpan)">
+            <summary>
+            Asynchronously wait for the process to exit.
+            </summary>
+            <param name="process">The process to wait for.</param>
+            <param name="timeout">The duration to wait before cancelling waiting for the task.</param>
+            <returns>A task that will complete when the process has exited, cancellation has been requested, or an error occurs.</returns>
+            <exception cref="T:System.OperationCanceledException">The timeout ended.</exception>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.RateLimitExceededException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.RateLimitExceededException" /> class.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.RateLimitExceededException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.RateLimitExceededException" /> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Extensions.ResourceNotFoundException">
+            <summary>
+            Class ResourceNotFoundException.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.ResourceNotFoundException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.ResourceNotFoundException" /> class.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Extensions.ResourceNotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Extensions.ResourceNotFoundException" /> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.FfmpegException">
+            <summary>
+            Represents errors that occur during interaction with FFmpeg.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.FfmpegException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.FfmpegException"/> class.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.FfmpegException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.FfmpegException"/> class with a specified error message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.FfmpegException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.FfmpegException"/> class with a specified error message and a
+            reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">
+            The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if
+            no inner exception is specified.
+            </param>
+        </member>
+        <member name="T:MediaBrowser.Common.CreationDelegateFactory">
+            <summary>
+            Delegate used with GetExports{T}.
+            </summary>
+            <param name="type">Type to create.</param>
+            <returns>New instance of type <param>type</param>.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.IApplicationHost">
+            <summary>
+            An interface to be implemented by the applications hosting a kernel.
+            </summary>
+        </member>
+        <member name="E:MediaBrowser.Common.IApplicationHost.HasPendingRestartChanged">
+            <summary>
+            Occurs when [has pending restart changed].
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.Name">
+            <summary>
+            Gets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.SystemId">
+            <summary>
+            Gets the device identifier.
+            </summary>
+            <value>The device identifier.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.HasPendingRestart">
+            <summary>
+            Gets a value indicating whether this instance has pending changes requiring a restart.
+            </summary>
+            <value><c>true</c> if this instance has a pending restart; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ShouldRestart">
+            <summary>
+            Gets or sets a value indicating whether the application should restart.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ApplicationVersion">
+            <summary>
+            Gets the application version.
+            </summary>
+            <value>The application version.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ServiceProvider">
+            <summary>
+            Gets or sets the service provider.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ApplicationVersionString">
+            <summary>
+            Gets the application version.
+            </summary>
+            <value>The application version.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ApplicationUserAgent">
+            <summary>
+            Gets the application user agent.
+            </summary>
+            <value>The application user agent.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.IApplicationHost.ApplicationUserAgentAddress">
+            <summary>
+            Gets the email address for use within a comment section of a user agent field.
+            Presently used to provide contact information to MusicBrainz service.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.GetApiPluginAssemblies">
+            <summary>
+            Gets all plugin assemblies which implement a custom rest api.
+            </summary>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> containing the plugin assemblies.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.NotifyPendingRestart">
+            <summary>
+            Notifies the pending restart.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.GetExports``1(System.Boolean)">
+            <summary>
+            Gets the exports.
+            </summary>
+            <typeparam name="T">The type.</typeparam>
+            <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
+            <returns><see cref="T:System.Collections.Generic.IReadOnlyCollection`1" />.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.GetExports``1(MediaBrowser.Common.CreationDelegateFactory,System.Boolean)">
+            <summary>
+            Gets the exports.
+            </summary>
+            <typeparam name="T">The type.</typeparam>
+            <param name="defaultFunc">Delegate function that gets called to create the object.</param>
+            <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
+            <returns><see cref="T:System.Collections.Generic.IReadOnlyCollection`1" />.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.GetExportTypes``1">
+            <summary>
+            Gets the export types.
+            </summary>
+            <typeparam name="T">The type.</typeparam>
+            <returns>IEnumerable{Type}.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.Resolve``1">
+            <summary>
+            Resolves this instance.
+            </summary>
+            <typeparam name="T">The <c>Type</c>.</typeparam>
+            <returns>``0.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.IApplicationHost.Init(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Initializes this instance.
+            </summary>
+            <param name="serviceCollection">Instance of the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> interface.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.INetworkManager">
+            <summary>
+            Interface for the NetworkManager class.
+            </summary>
+        </member>
+        <member name="E:MediaBrowser.Common.Net.INetworkManager.NetworkChanged">
+            <summary>
+            Event triggered on network changes.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.INetworkManager.IsIPv4Enabled">
+            <summary>
+            Gets a value indicating whether IPv4 is enabled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.INetworkManager.IsIPv6Enabled">
+            <summary>
+            Gets a value indicating whether IPv6 is enabled.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetAllBindInterfaces(System.Boolean)">
+            <summary>
+            Calculates the list of interfaces to use for Kestrel.
+            </summary>
+            <returns>A IReadOnlyList{IPData} object containing all the interfaces to bind.
+            If all the interfaces are specified, and none are excluded, it returns zero items
+            to represent any address.</returns>
+            <param name="individualInterfaces">When false, return <see cref="F:System.Net.IPAddress.Any"/> or <see cref="F:System.Net.IPAddress.IPv6Any"/> for all interfaces.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetLoopbacks">
+            <summary>
+            Returns a list containing the loopback interfaces.
+            </summary>
+            <returns>IReadOnlyList{IPData}.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetBindAddress(Microsoft.AspNetCore.Http.HttpRequest,System.Nullable{System.Int32}@)">
+             <summary>
+             Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+             If no bind addresses are specified, an internal interface address is selected.
+             The priority of selection is as follows:-
+            
+             The value contained in the startup parameter --published-server-url.
+            
+             If the user specified custom subnet overrides, the correct subnet for the source address.
+            
+             If the user specified bind interfaces to use:-
+              The bind interface that contains the source subnet.
+              The first bind interface specified that suits best first the source's endpoint. eg. external or internal.
+            
+             If the source is from a public subnet address range and the user hasn't specified any bind addresses:-
+              The first public interface that isn't a loopback and contains the source subnet.
+              The first public interface that isn't a loopback.
+              The first internal interface that isn't a loopback.
+            
+             If the source is from a private subnet address range and the user hasn't specified any bind addresses:-
+              The first private interface that contains the source subnet.
+              The first private interface that isn't a loopback.
+            
+             If no interfaces meet any of these criteria, then a loopback address is returned.
+            
+             Interfaces that have been specifically excluded from binding are not used in any of the calculations.
+             </summary>
+             <param name="source">Source of the request.</param>
+             <param name="port">Optional port returned, if it's part of an override.</param>
+             <returns>IP address to use, or loopback address if all else fails.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetBindAddress(System.Net.IPAddress,System.Nullable{System.Int32}@,System.Boolean)">
+            <summary>
+            Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+            If no bind addresses are specified, an internal interface address is selected.
+            </summary>
+            <param name="source">IP address of the request.</param>
+            <param name="port">Optional port returned, if it's part of an override.</param>
+            <param name="skipOverrides">Optional boolean denoting if published server overrides should be ignored. Defaults to false.</param>
+            <returns>IP address to use, or loopback address if all else fails.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetBindAddress(System.String,System.Nullable{System.Int32}@)">
+            <summary>
+            Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+            If no bind addresses are specified, an internal interface address is selected.
+            (See <see cref="M:MediaBrowser.Common.Net.INetworkManager.GetBindAddress(System.Net.IPAddress,System.Nullable{System.Int32}@,System.Boolean)"/>.
+            </summary>
+            <param name="source">Source of the request.</param>
+            <param name="port">Optional port returned, if it's part of an override.</param>
+            <returns>IP address to use, or loopback address if all else fails.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.IsInLocalNetwork(System.String)">
+            <summary>
+            Returns true if the address is part of the user defined LAN.
+            </summary>
+            <param name="address">IP to check.</param>
+            <returns>True if endpoint is within the LAN range.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.IsInLocalNetwork(System.Net.IPAddress)">
+            <summary>
+            Returns true if the address is part of the user defined LAN.
+            </summary>
+            <param name="address">IP to check.</param>
+            <returns>True if endpoint is within the LAN range.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.TryParseInterface(System.String,System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Net.IPData}@)">
+            <summary>
+            Attempts to convert the interface name to an IP address.
+            eg. "eth1", or "enp3s5".
+            </summary>
+            <param name="intf">Interface name.</param>
+            <param name="result">Resulting object's IP addresses, if successful.</param>
+            <returns>Success of the operation.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.GetInternalBindAddresses">
+            <summary>
+            Returns all internal (LAN) bind interface addresses.
+            </summary>
+            <returns>An list of internal (LAN) interfaces addresses.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.INetworkManager.ShouldAllowServerAccess(System.Net.IPAddress)">
+            <summary>
+            Checks if <paramref name="remoteIP"/> has access to the server.
+            </summary>
+            <param name="remoteIP">IP address of the client.</param>
+            <returns>The result of evaluating the access policy, <c>Allow</c> if it should be allowed.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NamedClient">
+            <summary>
+            Registered http client names.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NamedClient.Default">
+            <summary>
+            Gets the value for the default named http client which implements happy eyeballs.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NamedClient.MusicBrainz">
+            <summary>
+            Gets the value for the MusicBrainz named http client.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NamedClient.Dlna">
+            <summary>
+            Gets the value for the DLNA named http client.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NamedClient.DirectIp">
+            <summary>
+            Non happy eyeballs implementation.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkConfiguration">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Net.NetworkConfiguration" />.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConfiguration.DefaultHttpPort">
+            <summary>
+            The default value for <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.InternalHttpPort"/>.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConfiguration.DefaultHttpsPort">
+            <summary>
+            The default value for <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.PublicHttpsPort"/> and <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.InternalHttpsPort"/>.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.BaseUrl">
+            <summary>
+            Gets or sets a value used to specify the URL prefix that your Jellyfin instance can be accessed at.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnableHttps">
+            <summary>
+            Gets or sets a value indicating whether to use HTTPS.
+            </summary>
+            <remarks>
+            In order for HTTPS to be used, in addition to setting this to true, valid values must also be
+            provided for <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.CertificatePath"/> and <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.CertificatePassword"/>.
+            </remarks>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.RequireHttps">
+            <summary>
+            Gets or sets a value indicating whether the server should force connections over HTTPS.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.CertificatePath">
+            <summary>
+            Gets or sets the filesystem path of an X.509 certificate to use for SSL.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.CertificatePassword">
+            <summary>
+            Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.CertificatePath"/>.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.InternalHttpPort">
+            <summary>
+            Gets or sets the internal HTTP server port.
+            </summary>
+            <value>The HTTP server port.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.InternalHttpsPort">
+            <summary>
+            Gets or sets the internal HTTPS server port.
+            </summary>
+            <value>The HTTPS server port.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.PublicHttpPort">
+            <summary>
+            Gets or sets the public HTTP port.
+            </summary>
+            <value>The public HTTP port.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.PublicHttpsPort">
+            <summary>
+            Gets or sets the public HTTPS port.
+            </summary>
+            <value>The public HTTPS port.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.AutoDiscovery">
+            <summary>
+            Gets or sets a value indicating whether Autodiscovery is enabled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnableUPnP">
+            <summary>
+            Gets or sets a value indicating whether to enable automatic port forwarding.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnableIPv4">
+            <summary>
+            Gets or sets a value indicating whether IPv6 is enabled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnableIPv6">
+            <summary>
+            Gets or sets a value indicating whether IPv6 is enabled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnableRemoteAccess">
+            <summary>
+            Gets or sets a value indicating whether access from outside of the LAN is permitted.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.LocalNetworkSubnets">
+            <summary>
+            Gets or sets the subnets that are deemed to make up the LAN.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.LocalNetworkAddresses">
+            <summary>
+            Gets or sets the interface addresses which Jellyfin will bind to. If empty, all interfaces will be used.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.KnownProxies">
+            <summary>
+            Gets or sets the known proxies.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.IgnoreVirtualInterfaces">
+            <summary>
+            Gets or sets a value indicating whether address names that match <see cref="P:MediaBrowser.Common.Net.NetworkConfiguration.VirtualInterfaceNames"/> should be ignored for the purposes of binding.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.VirtualInterfaceNames">
+            <summary>
+            Gets or sets a value indicating the interface name prefixes that should be ignored. The list can be comma separated and values are case-insensitive. <seealso cref="P:MediaBrowser.Common.Net.NetworkConfiguration.IgnoreVirtualInterfaces"/>.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.EnablePublishedServerUriByRequest">
+            <summary>
+            Gets or sets a value indicating whether the published server uri is based on information in HTTP requests.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.PublishedServerUriBySubnet">
+            <summary>
+            Gets or sets the PublishedServerUriBySubnet
+            Gets or sets PublishedServerUri to advertise for specific subnets.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.RemoteIPFilter">
+            <summary>
+            Gets or sets the filter for remote IP connectivity. Used in conjunction with <seealso cref="P:MediaBrowser.Common.Net.NetworkConfiguration.IsRemoteIPFilterBlacklist"/>.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Net.NetworkConfiguration.IsRemoteIPFilterBlacklist">
+            <summary>
+            Gets or sets a value indicating whether <seealso cref="P:MediaBrowser.Common.Net.NetworkConfiguration.RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkConfigurationExtensions">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Net.NetworkConfigurationExtensions" />.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkConfigurationExtensions.GetNetworkConfiguration(MediaBrowser.Common.Configuration.IConfigurationManager)">
+            <summary>
+            Retrieves the network configuration.
+            </summary>
+            <param name="config">The <see cref="T:MediaBrowser.Common.Configuration.IConfigurationManager"/>.</param>
+            <returns>The <see cref="T:MediaBrowser.Common.Net.NetworkConfiguration"/>.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkConfigurationFactory">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Net.NetworkConfigurationFactory" />.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkConfigurationFactory.GetConfigurations">
+            <summary>
+            The GetConfigurations.
+            </summary>
+            <returns>The <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkConfigurationStore">
+            <summary>
+            A configuration that stores network related settings.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConfigurationStore.StoreKey">
+            <summary>
+            The name of the configuration in the storage.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkConfigurationStore.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Net.NetworkConfigurationStore"/> class.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkConstants">
+            <summary>
+            Networking constants.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4MaskBytes">
+            <summary>
+            IPv4 mask bytes.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv6MaskBytes">
+            <summary>
+            IPv6 mask bytes.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.MinimumIPv4PrefixSize">
+            <summary>
+            Minimum IPv4 prefix size.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.MinimumIPv6PrefixSize">
+            <summary>
+            Minimum IPv6 prefix size.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4Any">
+            <summary>
+            Whole IPv4 address space.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv6Any">
+            <summary>
+            Whole IPv6 address space.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4RFC5735Loopback">
+            <summary>
+            IPv4 Loopback as defined in RFC 5735.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4RFC1918PrivateClassA">
+            <summary>
+            IPv4 private class A as defined in RFC 1918.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4RFC1918PrivateClassB">
+            <summary>
+            IPv4 private class B as defined in RFC 1918.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4RFC1918PrivateClassC">
+            <summary>
+            IPv4 private class C as defined in RFC 1918.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv4RFC3927LinkLocal">
+            <summary>
+            IPv4 Link-Local as defined in RFC 3927.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv6RFC4291Loopback">
+            <summary>
+            IPv6 loopback as defined in RFC 4291.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv6RFC4291SiteLocal">
+            <summary>
+            IPv6 site local as defined in RFC 4291.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.NetworkConstants.IPv6RFC4193UniqueLocal">
+            <summary>
+            IPv6 unique local as defined in RFC 4193.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.NetworkUtils">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Net.NetworkUtils" />.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.FqdnGeneratedRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>(?im)^(?!:\\/\\/)(?=.{1,255}$)((.{1,63}\\.){0,127}(?![0-9]*$)[a-z0-9-]+\\.?)(:(\\d){1,5}){0,1}$</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of a line.<br/>
+            ○ Zero-width negative lookahead.<br/>
+                ○ Match the string "://".<br/>
+            ○ Zero-width positive lookahead.<br/>
+                ○ Match a character other than '\n' greedily at least 1 and at most 255 times.<br/>
+                ○ Match if at the end of a line.<br/>
+            ○ 1st capture group.<br/>
+                ○ Loop greedily at most 127 times.<br/>
+                    ○ 2nd capture group.<br/>
+                        ○ Match a character other than '\n' greedily at least 1 and at most 63 times.<br/>
+                        ○ Match '.'.<br/>
+                ○ Zero-width negative lookahead.<br/>
+                    ○ Match a character in the set [0-9] atomically any number of times.<br/>
+                    ○ Match if at the end of a line.<br/>
+                ○ Match a character in the set [\-0-9A-Za-z\u0130\u212A] greedily at least once.<br/>
+                ○ Match '.' greedily, optionally.<br/>
+            ○ Optional (greedy).<br/>
+                ○ 3rd capture group.<br/>
+                    ○ Match ':'.<br/>
+                    ○ Loop greedily at least 1 and at most 5 times.<br/>
+                        ○ 4th capture group.<br/>
+                            ○ Match a Unicode digit.<br/>
+            ○ Match if at the end of a line.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.IsIPv6LinkLocal(System.Net.IPAddress)">
+            <summary>
+            Returns true if the IPAddress contains an IP6 Local link address.
+            </summary>
+            <param name="address">IPAddress object to check.</param>
+            <returns>True if it is a local link address.</returns>
+            <remarks>
+            See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
+            it appears that the IPAddress.IsIPv6LinkLocal is out of date.
+            </remarks>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.CidrToMask(System.Byte,System.Net.Sockets.AddressFamily)">
+            <summary>
+            Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
+            </summary>
+            <param name="cidr">Subnet mask in CIDR notation.</param>
+            <param name="family">IPv4 or IPv6 family.</param>
+            <returns>String value of the subnet mask in dotted decimal notation.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.CidrToMask(System.Int32,System.Net.Sockets.AddressFamily)">
+            <summary>
+            Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
+            </summary>
+            <param name="cidr">Subnet mask in CIDR notation.</param>
+            <param name="family">IPv4 or IPv6 family.</param>
+            <returns>String value of the subnet mask in dotted decimal notation.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.MaskToCidr(System.Net.IPAddress)">
+            <summary>
+            Convert a subnet mask to a CIDR. IPv4 only.
+            https://stackoverflow.com/questions/36954345/get-cidr-from-netmask.
+            </summary>
+            <param name="mask">Subnet mask.</param>
+            <returns>Byte CIDR representing the mask.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.FormatIPString(System.Net.IPAddress)">
+            <summary>
+            Converts an IPAddress into a string.
+            IPv6 addresses are returned in [ ], with their scope removed.
+            </summary>
+            <param name="address">Address to convert.</param>
+            <returns>URI safe conversion of the address.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.TryParseToSubnets(System.String[],System.Collections.Generic.IReadOnlyList{MediaBrowser.Model.Net.IPData}@,System.Boolean)">
+            <summary>
+            Try parsing an array of strings into <see cref="T:System.Net.IPNetwork"/> objects, respecting exclusions.
+            Elements without a subnet mask will be represented as <see cref="T:System.Net.IPNetwork"/> with a single IP.
+            </summary>
+            <param name="values">Input string array to be parsed.</param>
+            <param name="result">Collection of <see cref="T:System.Net.IPNetwork"/>.</param>
+            <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
+            <returns><c>True</c> if parsing was successful.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.TryParseToSubnet(System.ReadOnlySpan{System.Char},MediaBrowser.Model.Net.IPData@,System.Boolean)">
+            <summary>
+            Try parsing a string into an <see cref="T:MediaBrowser.Model.Net.IPData"/>, respecting exclusions.
+            Inputs without a subnet mask will be represented as <see cref="T:MediaBrowser.Model.Net.IPData"/> with a single IP.
+            </summary>
+            <param name="value">Input string to be parsed.</param>
+            <param name="result">An <see cref="T:MediaBrowser.Model.Net.IPData"/>.</param>
+            <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
+            <returns><c>True</c> if parsing was successful.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.TryParseHost(System.ReadOnlySpan{System.Char},System.Net.IPAddress[]@,System.Boolean,System.Boolean)">
+            <summary>
+            Attempts to parse a host span.
+            </summary>
+            <param name="host">Host name to parse.</param>
+            <param name="addresses">Object representing the span, if it has successfully been parsed.</param>
+            <param name="isIPv4Enabled"><c>true</c> if IPv4 is enabled.</param>
+            <param name="isIPv6Enabled"><c>true</c> if IPv6 is enabled.</param>
+            <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.GetBroadcastAddress(System.Net.IPNetwork)">
+            <summary>
+            Gets the broadcast address for a <see cref="T:System.Net.IPNetwork"/>.
+            </summary>
+            <param name="network">The <see cref="T:System.Net.IPNetwork"/>.</param>
+            <returns>The broadcast address.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Net.NetworkUtils.SubnetContainsAddress(System.Net.IPNetwork,System.Net.IPAddress)">
+            <summary>
+            Check if a subnet contains an address. This method also handles IPv4 mapped to IPv6 addresses.
+            </summary>
+            <param name="network">The <see cref="T:System.Net.IPNetwork"/>.</param>
+            <param name="address">The <see cref="T:System.Net.IPAddress"/>.</param>
+            <returns>Whether the supplied IP is in the supplied network.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Net.RemoteAccessPolicyResult">
+            <summary>
+            Result of <see cref="M:MediaBrowser.Common.Net.INetworkManager.ShouldAllowServerAccess(System.Net.IPAddress)" />.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.RemoteAccessPolicyResult.Allow">
+            <summary>
+            The connection should be allowed.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled">
+            <summary>
+            The connection should be rejected since it is not from a local IP and remote access is disabled.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.RemoteAccessPolicyResult.RejectDueToIPBlocklist">
+            <summary>
+            The connection should be rejected since it is from a blocklisted IP.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Net.RemoteAccessPolicyResult.RejectDueToNotAllowlistedRemoteIP">
+            <summary>
+            The connection should be rejected since it is from a remote IP that is not in the allowlist.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.BasePlugin">
+            <summary>
+            Provides a common base class for all plugins.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.Name">
+            <summary>
+            Gets the name of the plugin.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.Description">
+            <summary>
+            Gets the description.
+            </summary>
+            <value>The description.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.Id">
+            <summary>
+            Gets the unique id.
+            </summary>
+            <value>The unique id.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.Version">
+            <summary>
+            Gets the plugin version.
+            </summary>
+            <value>The version.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.AssemblyFilePath">
+            <summary>
+            Gets the path to the assembly file.
+            </summary>
+            <value>The assembly file path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.DataFolderPath">
+            <summary>
+            Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
+            </summary>
+            <value>The data folder path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin.CanUninstall">
+            <summary>
+            Gets a value indicating whether the plugin can be uninstalled.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin.GetPluginInfo">
+            <summary>
+            Gets the plugin info.
+            </summary>
+            <returns>PluginInfo.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin.OnUninstalling">
+            <summary>
+            Called just before the plugin is uninstalled from the server.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin.SetAttributes(System.String,System.String,System.Version)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin.SetId(System.Guid)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.BasePlugin`1">
+            <summary>
+            Provides a common base class for all plugins.
+            </summary>
+            <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
+        </member>
+        <member name="F:MediaBrowser.Common.Plugins.BasePlugin`1._configurationSyncLock">
+            <summary>
+            The configuration sync lock.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Plugins.BasePlugin`1._configurationSaveLock">
+            <summary>
+            The configuration save lock.
+            </summary>
+        </member>
+        <member name="F:MediaBrowser.Common.Plugins.BasePlugin`1._configuration">
+            <summary>
+            The configuration.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin`1.#ctor(MediaBrowser.Common.Configuration.IApplicationPaths,MediaBrowser.Model.Serialization.IXmlSerializer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Plugins.BasePlugin`1" /> class.
+            </summary>
+            <param name="applicationPaths">The application paths.</param>
+            <param name="xmlSerializer">The XML serializer.</param>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.ApplicationPaths">
+            <summary>
+            Gets the application paths.
+            </summary>
+            <value>The application paths.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.XmlSerializer">
+            <summary>
+            Gets the XML serializer.
+            </summary>
+            <value>The XML serializer.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.ConfigurationType">
+            <summary>
+            Gets the type of configuration this plugin uses.
+            </summary>
+            <value>The type of the configuration.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.ConfigurationChanged">
+            <summary>
+            Gets or sets the event handler that is triggered when this configuration changes.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.AssemblyFileName">
+            <summary>
+            Gets the name the assembly file.
+            </summary>
+            <value>The name of the assembly file.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.Configuration">
+            <summary>
+            Gets or sets the plugin configuration.
+            </summary>
+            <value>The configuration.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.ConfigurationFileName">
+            <summary>
+            Gets the name of the configuration file. Subclasses should override.
+            </summary>
+            <value>The name of the configuration file.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.ConfigurationFilePath">
+            <summary>
+            Gets the full path to the configuration file.
+            </summary>
+            <value>The configuration file path.</value>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.BasePlugin`1.MediaBrowser#Common#Plugins#IHasPluginConfiguration#Configuration">
+            <summary>
+            Gets the plugin configuration.
+            </summary>
+            <value>The configuration.</value>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin`1.SaveConfiguration(`0)">
+            <summary>
+            Saves the current configuration to the file system.
+            </summary>
+            <param name="config">Configuration to save.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin`1.SaveConfiguration">
+            <summary>
+            Saves the current configuration to the file system.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin`1.UpdateConfiguration(MediaBrowser.Model.Plugins.BasePluginConfiguration)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.BasePlugin`1.GetPluginInfo">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.IHasPluginConfiguration">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Plugins.IHasPluginConfiguration" />.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IHasPluginConfiguration.ConfigurationType">
+            <summary>
+            Gets the type of configuration this plugin uses.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IHasPluginConfiguration.Configuration">
+            <summary>
+            Gets the plugin's configuration.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IHasPluginConfiguration.UpdateConfiguration(MediaBrowser.Model.Plugins.BasePluginConfiguration)">
+            <summary>
+            Completely overwrites the current configuration with a new copy.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.IPlugin">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Plugins.IPlugin" />.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.Name">
+            <summary>
+            Gets the name of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.Description">
+            <summary>
+            Gets the Description.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.Id">
+            <summary>
+            Gets the unique id.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.Version">
+            <summary>
+            Gets the plugin version.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.AssemblyFilePath">
+            <summary>
+            Gets the path to the assembly file.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.CanUninstall">
+            <summary>
+            Gets a value indicating whether the plugin can be uninstalled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPlugin.DataFolderPath">
+            <summary>
+            Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPlugin.GetPluginInfo">
+            <summary>
+            Gets the <see cref="T:MediaBrowser.Model.Plugins.PluginInfo"/>.
+            </summary>
+            <returns>PluginInfo.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPlugin.OnUninstalling">
+            <summary>
+            Called when just before the plugin is uninstalled from the server.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.IPluginManager">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Plugins.IPluginManager" />.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.IPluginManager.Plugins">
+            <summary>
+            Gets the Plugins.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.CreatePlugins">
+            <summary>
+            Creates the plugins.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.LoadAssemblies">
+            <summary>
+            Returns all the assemblies.
+            </summary>
+            <returns>An IEnumerable{Assembly}.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers the plugin's services with the DI.
+            Note: DI is not yet instantiated yet.
+            </summary>
+            <param name="serviceCollection">A <see cref="T:Microsoft.Extensions.DependencyInjection.ServiceCollection"/> instance.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.SaveManifest(MediaBrowser.Common.Plugins.PluginManifest,System.String)">
+            <summary>
+            Saves the manifest back to disk.
+            </summary>
+            <param name="manifest">The <see cref="T:MediaBrowser.Common.Plugins.PluginManifest"/> to save.</param>
+            <param name="path">The path where to save the manifest.</param>
+            <returns>True if successful.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.PopulateManifest(MediaBrowser.Model.Updates.PackageInfo,System.Version,System.String,MediaBrowser.Model.Plugins.PluginStatus)">
+            <summary>
+            Generates a manifest from repository data.
+            </summary>
+            <param name="packageInfo">The <see cref="T:MediaBrowser.Model.Updates.PackageInfo"/> used to generate a manifest.</param>
+            <param name="version">Version to be installed.</param>
+            <param name="path">The path where to save the manifest.</param>
+            <param name="status">Initial status of the plugin.</param>
+            <returns>True if successful.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.ImportPluginFrom(System.String)">
+            <summary>
+            Imports plugin details from a folder.
+            </summary>
+            <param name="folder">Folder of the plugin.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.FailPlugin(System.Reflection.Assembly)">
+            <summary>
+            Disable the plugin.
+            </summary>
+            <param name="assembly">The <see cref="T:System.Reflection.Assembly"/> of the plug to disable.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.DisablePlugin(MediaBrowser.Common.Plugins.LocalPlugin)">
+            <summary>
+            Disable the plugin.
+            </summary>
+            <param name="plugin">The <see cref="T:MediaBrowser.Common.Plugins.LocalPlugin"/> of the plug to disable.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.EnablePlugin(MediaBrowser.Common.Plugins.LocalPlugin)">
+            <summary>
+            Enables the plugin, disabling all other versions.
+            </summary>
+            <param name="plugin">The <see cref="T:MediaBrowser.Common.Plugins.LocalPlugin"/> of the plug to disable.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.GetPlugin(System.Guid,System.Version)">
+            <summary>
+            Attempts to find the plugin with and id of <paramref name="id"/>.
+            </summary>
+            <param name="id">Id of plugin.</param>
+            <param name="version">The version of the plugin to locate.</param>
+            <returns>A <see cref="T:MediaBrowser.Common.Plugins.LocalPlugin"/> if located, or null if not.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.IPluginManager.RemovePlugin(MediaBrowser.Common.Plugins.LocalPlugin)">
+            <summary>
+            Removes the plugin.
+            </summary>
+            <param name="plugin">The plugin.</param>
+            <returns>Outcome of the operation.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.LocalPlugin">
+            <summary>
+            Local plugin class.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.#ctor(System.String,System.Boolean,MediaBrowser.Common.Plugins.PluginManifest)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Plugins.LocalPlugin"/> class.
+            </summary>
+            <param name="path">The plugin path.</param>
+            <param name="isSupported"><b>True</b> if Jellyfin supports this version of the plugin.</param>
+            <param name="manifest">The manifest record for this plugin, or null if one does not exist.</param>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Id">
+            <summary>
+            Gets the plugin id.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Name">
+            <summary>
+            Gets the plugin name.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Version">
+            <summary>
+            Gets the plugin version.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Path">
+            <summary>
+            Gets the plugin path.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.DllFiles">
+            <summary>
+            Gets or sets the list of dll files for this plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Instance">
+            <summary>
+            Gets or sets the instance of this plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.IsEnabledAndSupported">
+            <summary>
+            Gets a value indicating whether Jellyfin supports this version of the plugin, and it's enabled.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.LocalPlugin.Manifest">
+            <summary>
+            Gets a value indicating whether the plugin has a manifest.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.Compare(MediaBrowser.Common.Plugins.LocalPlugin,MediaBrowser.Common.Plugins.LocalPlugin)">
+            <summary>
+            Compare two <see cref="T:MediaBrowser.Common.Plugins.LocalPlugin"/>.
+            </summary>
+            <param name="a">The first item.</param>
+            <param name="b">The second item.</param>
+            <returns>Comparison result.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.GetPluginInfo">
+            <summary>
+            Returns the plugin information.
+            </summary>
+            <returns>A <see cref="T:MediaBrowser.Model.Plugins.PluginInfo"/> instance containing the information.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.LocalPlugin.Equals(MediaBrowser.Common.Plugins.LocalPlugin)">
+            <inheritdoc />
+        </member>
+        <member name="T:MediaBrowser.Common.Plugins.PluginManifest">
+            <summary>
+            Defines a Plugin manifest file.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Plugins.PluginManifest.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MediaBrowser.Common.Plugins.PluginManifest"/> class.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Category">
+            <summary>
+            Gets or sets the category of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Changelog">
+            <summary>
+            Gets or sets the changelog information.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Description">
+            <summary>
+            Gets or sets the description of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Id">
+            <summary>
+            Gets or sets the Global Unique Identifier for the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Name">
+            <summary>
+            Gets or sets the Name of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Overview">
+            <summary>
+            Gets or sets an overview of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Owner">
+            <summary>
+            Gets or sets the owner of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.TargetAbi">
+            <summary>
+            Gets or sets the compatibility version for the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Timestamp">
+            <summary>
+            Gets or sets the timestamp of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Version">
+            <summary>
+            Gets or sets the Version number of the plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Status">
+            <summary>
+            Gets or sets a value indicating the operational status of this plugin.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.AutoUpdate">
+            <summary>
+            Gets or sets a value indicating whether this plugin should automatically update.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.ImagePath">
+            <summary>
+            Gets or sets the ImagePath
+            Gets or sets a value indicating whether this plugin has an image.
+            Image must be located in the local plugin folder.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Plugins.PluginManifest.Assemblies">
+            <summary>
+            Gets or sets the collection of assemblies that should be loaded.
+            Paths are considered relative to the plugin folder.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Providers.ProviderIdParsers">
+            <summary>
+            Parsers for provider ids.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Providers.ProviderIdParsers.TryFindImdbId(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Parses an IMDb id from a string.
+            </summary>
+            <param name="text">The text to parse.</param>
+            <param name="imdbId">The parsed IMDb id.</param>
+            <returns>True if parsing was successful, false otherwise.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Providers.ProviderIdParsers.TryFindTmdbMovieId(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Parses an TMDb id from a movie url.
+            </summary>
+            <param name="text">The text with the url to parse.</param>
+            <param name="tmdbId">The parsed TMDb id.</param>
+            <returns>True if parsing was successful, false otherwise.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Providers.ProviderIdParsers.TryFindTmdbSeriesId(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Parses an TMDb id from a series url.
+            </summary>
+            <param name="text">The text with the url to parse.</param>
+            <param name="tmdbId">The parsed TMDb id.</param>
+            <returns>True if parsing was successful, false otherwise.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Providers.ProviderIdParsers.TryFindTvdbId(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Parses an TVDb id from a url.
+            </summary>
+            <param name="text">The text with the url to parse.</param>
+            <param name="tvdbId">The parsed TVDb id.</param>
+            <returns>True if parsing was successful, false otherwise.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.RequiresSourceSerialisationAttribute">
+            <summary>
+            Marks a BaseItem as needing custom serialisation from the Data field of the db.
+            </summary>
+        </member>
+        <member name="T:MediaBrowser.Common.Updates.IInstallationManager">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Updates.IInstallationManager" />.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Updates.IInstallationManager.CompletedInstallations">
+            <summary>
+            Gets the completed installations.
+            </summary>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.GetPackages(System.String,System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Parses a plugin manifest at the supplied URL.
+            </summary>
+            <param name="manifestName">Name of the repository.</param>
+            <param name="manifest">The URL to query.</param>
+            <param name="filterIncompatible">Filter out incompatible plugins.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.GetAvailablePackages(System.Threading.CancellationToken)">
+            <summary>
+            Gets all available packages that are supported by this version.
+            </summary>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.FilterPackages(System.Collections.Generic.IEnumerable{MediaBrowser.Model.Updates.PackageInfo},System.String,System.Guid,System.Version)">
+            <summary>
+            Returns all plugins matching the requirements.
+            </summary>
+            <param name="availablePackages">The available packages.</param>
+            <param name="name">The name of the plugin.</param>
+            <param name="id">The id of the plugin.</param>
+            <param name="specificVersion">The version of the plugin.</param>
+            <returns>All plugins matching the requirements.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.GetCompatibleVersions(System.Collections.Generic.IEnumerable{MediaBrowser.Model.Updates.PackageInfo},System.String,System.Guid,System.Version,System.Version)">
+            <summary>
+            Returns all compatible versions ordered from newest to oldest.
+            </summary>
+            <param name="availablePackages">The available packages.</param>
+            <param name="name">The name.</param>
+            <param name="id">The id of the plugin.</param>
+            <param name="minVersion">The minimum required version of the plugin.</param>
+            <param name="specificVersion">The specific version of the plugin to install.</param>
+            <returns>All compatible versions ordered from newest to oldest.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.GetAvailablePluginUpdates(System.Threading.CancellationToken)">
+            <summary>
+            Returns the available compatible plugin updates.
+            </summary>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>The available plugin updates.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.InstallPackage(MediaBrowser.Model.Updates.InstallationInfo,System.Threading.CancellationToken)">
+            <summary>
+            Installs the package.
+            </summary>
+            <param name="package">The package.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns><see cref="T:System.Threading.Tasks.Task" />.</returns>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.UninstallPlugin(MediaBrowser.Common.Plugins.LocalPlugin)">
+            <summary>
+            Uninstalls a plugin.
+            </summary>
+            <param name="plugin">The plugin.</param>
+        </member>
+        <member name="M:MediaBrowser.Common.Updates.IInstallationManager.CancelInstallation(System.Guid)">
+            <summary>
+            Cancels the installation.
+            </summary>
+            <param name="id">The id of the package that is being installed.</param>
+            <returns>Returns true if the install was cancelled.</returns>
+        </member>
+        <member name="T:MediaBrowser.Common.Updates.InstallationEventArgs">
+            <summary>
+            Defines the <see cref="T:MediaBrowser.Common.Updates.InstallationEventArgs" />.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Updates.InstallationEventArgs.InstallationInfo">
+            <summary>
+            Gets or sets the <see cref="P:MediaBrowser.Common.Updates.InstallationEventArgs.InstallationInfo"/>.
+            </summary>
+        </member>
+        <member name="P:MediaBrowser.Common.Updates.InstallationEventArgs.VersionInfo">
+            <summary>
+            Gets or sets the <see cref="P:MediaBrowser.Common.Updates.InstallationEventArgs.VersionInfo"/>.
+            </summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.StripHtmlRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the StripHtmlRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.StripHtmlRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the FqdnGeneratedRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.FqdnGeneratedRegex_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPop(System.Int32[],System.Int32@,System.Int32@,System.Int32@)">
+            <summary>Pops 2 values from the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32)">
+            <summary>Pushes 1 value onto the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
+            <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32,System.Int32)">
+            <summary>Pushes 3 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_nonAscii_4DD478A1BFD5998368B427524F2975122A041351722B7FE5DDB3D8749A426159">
+            <summary>Supports searching for characters in or not in "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzİK".</summary>
+        </member>
+    </members>
+</doc>

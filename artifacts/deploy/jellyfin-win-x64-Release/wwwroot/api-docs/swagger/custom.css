@@ -1,0 +1,17 @@
+/* logo */
+.topbar-wrapper img[alt="Swagger UI"], .topbar-wrapper span {
+    visibility: collapse;
+}
+
+.topbar-wrapper .link:after {
+    content: '';
+    display: block;
+    background-image: url(../jellyfin.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    box-sizing: border-box;
+    width: 220px;
+    height: 40px;
+}
+/* end logo */
