@@ -222,19 +222,7 @@ namespace MediaBrowser.Controller.Entities
         public string OriginalLanguage
         {
             get => _originalLanguage;
-            set
-            {
-                var culture = LocalizationManager?.FindLanguageInfo(value);
-                if (culture is not null)
-                {
-                    _originalLanguage = culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase)
-                        ? culture.Name
-                        : culture.ThreeLetterISOLanguageName;
-                    return;
-                }
-
-                _originalLanguage = value;
-            }
+            set => _originalLanguage = LocalizationManager?.FindLanguageInfo(value)?.TwoLetterISOLanguageName ?? value;
         }
 
         /// <summary>
