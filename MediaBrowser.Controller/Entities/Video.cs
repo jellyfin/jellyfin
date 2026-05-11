@@ -278,6 +278,12 @@ namespace MediaBrowser.Controller.Entities
             return linkedVersionCount + localVersionCount + 1;
         }
 
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage ?? GetOwner()?.GetInheritedOriginalLanguage();
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
