@@ -744,27 +744,30 @@ public class LibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var normalizedStartIndex = Math.Max(startIndex ?? 0, 0);
-        var normalizedLimit = limit.HasValue ? Math.Max(limit.Value, 0) : int.MaxValue;
-
         var dtoOptions = new DtoOptions { Fields = fields };
 
-        var collections = _collectionManager
+        var visibleCollections = _collectionManager
             .GetCollectionsContainingItem(user, item.Id)
             .OrderBy(i => i.SortName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var pagedCollections = collections
-            .Skip(normalizedStartIndex)
-            .Take(normalizedLimit)
-            .ToList();
+        IEnumerable<BaseItem> pagedCollections = visibleCollections;
+        if (startIndex.HasValue)
+        {
+            pagedCollections = pagedCollections.Skip(startIndex.Value);
+        }
 
-        var dtos = _dtoService.GetBaseItemDtos(pagedCollections, dtoOptions, user);
+        if (limit.HasValue)
+        {
+            pagedCollections = pagedCollections.Take(limit.Value);
+        }
+
+        var dtos = _dtoService.GetBaseItemDtos(pagedCollections.ToList(), dtoOptions, user);
 
         return new QueryResult<BaseItemDto>(
-            normalizedStartIndex,
-            collections.Count,
+            startIndex,
+            visibleCollections.Count,
             dtos);
     }
 
