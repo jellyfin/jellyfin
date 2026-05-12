@@ -77,4 +77,3 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
     }
 }
-
