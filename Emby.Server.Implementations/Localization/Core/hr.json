@@ -135,5 +135,6 @@
     "TaskMoveTrickplayImages": "Premjesti mjesto slika brzog pregledavanja",
     "TaskMoveTrickplayImagesDescription": "Premješta postojeće datoteke brzog pregledavanja u postavke biblioteke.",
     "CleanupUserDataTask": "Zadatak čišćenja korisničkih podataka",
-    "CleanupUserDataTaskDescription": "Briše sve korisničke podatke (stanje gledanja, status favorita itd.) s medija koji više nisu prisutni najmanje 90 dana."
+    "CleanupUserDataTaskDescription": "Briše sve korisničke podatke (stanje gledanja, status favorita itd.) s medija koji više nisu prisutni najmanje 90 dana.",
+    "Original": "Original"
 }

@@ -92,6 +92,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string CodecTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the rotation.
+        /// </summary>
+        /// <value>The video rotation angle, usually 0 or +-90/180.</value>
+        public string Rotation { get; set; }
+
+        /// <summary>
         /// Gets or sets the framerate.
         /// </summary>
         /// <value>The framerate.</value>

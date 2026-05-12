@@ -1067,6 +1067,8 @@ namespace Emby.Server.Implementations.Dto
                 dto.OriginalTitle = item.OriginalTitle;
             }
 
+            dto.OriginalLanguage = item.OriginalLanguage;
+
             if (options.ContainsField(ItemFields.ParentId))
             {
                 dto.ParentId = item.DisplayParentId;

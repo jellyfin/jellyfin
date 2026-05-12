@@ -54,7 +54,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool forceOverwrite, CancellationToken cancellationToken)
     {
         var providers = _segmentProviders
-            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i =>
                 {
                     var index = libraryOptions.MediaSegmentProviderOrder.IndexOf(i.Name);
@@ -224,7 +224,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             if (filterByProvider)
             {
                 var providerIds = _segmentProviders
-                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
                     .Select(f => GetProviderId(f.Name))
                     .ToArray();
                 if (providerIds.Length == 0)

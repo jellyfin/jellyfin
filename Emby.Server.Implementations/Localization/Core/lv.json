@@ -135,5 +135,6 @@
     "TaskDownloadMissingLyrics": "Lejupielādēt trūkstošos vārdus",
     "TaskDownloadMissingLyricsDescription": "Lejupielādēt vārdus dziesmām",
     "CleanupUserDataTask": "Lietotāju datu tīrīšanas uzdevums",
-    "CleanupUserDataTaskDescription": "Notīra visus lietotāja datus (skatīšanās stāvokļus, favorītu statusi utt.) no medijiem, kas vairs nav pieejami vismaz 90 dienas."
+    "CleanupUserDataTaskDescription": "Notīra visus lietotāja datus (skatīšanās stāvokļus, favorītu statusi utt.) no medijiem, kas vairs nav pieejami vismaz 90 dienas.",
+    "Original": "Oriģināls"
 }

@@ -1876,10 +1876,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var sub2videoParam = enableSub2video ? ":sub2video=1" : string.Empty;
 
             var fontPath = _pathManager.GetAttachmentFolderPath(state.MediaSource.Id);
-            var fontParam = string.Format(
-                CultureInfo.InvariantCulture,
-                ":fontsdir='{0}'",
-                _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
+            var fontParam = fontPath is null
+                ? string.Empty
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    ":fontsdir='{0}'",
+                    _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
             if (state.SubtitleStream.IsExternal)
             {
@@ -2459,6 +2461,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         return false;
                     }
+                }
+            }
+
+            var requestedRotations = state.GetRequestedRotations(videoStream.Codec);
+            if (requestedRotations.Length > 0)
+            {
+                var rotation = state.VideoStream?.Rotation ?? 0;
+                if (rotation != 0
+                    && !requestedRotations.Contains(rotation.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
+                {
+                    return false;
                 }
             }
 

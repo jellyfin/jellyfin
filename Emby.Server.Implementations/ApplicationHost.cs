@@ -176,8 +176,6 @@ namespace Emby.Server.Implementations
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
 #pragma warning restore CS0618 // Type or member is obsolete
-
-            _disposableParts.Add(_pluginManager);
         }
 
         /// <summary>
@@ -1040,6 +1038,8 @@ namespace Emby.Server.Implementations
 
                 _pluginManager.Dispose();
                 _disposableParts.Clear();
+
+                _pluginManager?.Dispose();
             }
 
             _disposed = true;

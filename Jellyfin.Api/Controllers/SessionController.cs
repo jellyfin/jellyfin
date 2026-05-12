@@ -432,6 +432,7 @@ public class SessionController : BaseJellyfinApiController
     /// <returns>An <see cref="IEnumerable{NameIdPair}"/> with the auth providers.</returns>
     [HttpGet("Auth/Providers")]
     [Authorize(Policy = Policies.RequiresElevation)]
+    [Tags("Authentication")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<NameIdPair>> GetAuthProviders()
     {
@@ -444,6 +445,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="200">Password reset providers retrieved.</response>
     /// <returns>An <see cref="IEnumerable{NameIdPair}"/> with the password reset providers.</returns>
     [HttpGet("Auth/PasswordResetProviders")]
+    [Tags("Authentication")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.RequiresElevation)]
     public ActionResult<IEnumerable<NameIdPair>> GetPasswordResetProviders()

@@ -6,6 +6,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -92,8 +93,45 @@ namespace Jellyfin.Networking.Tests
         [InlineData("256.128.0.0.0.1")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
+        [InlineData("fd23:184f:2029:0100/56")]
         public static void TryParseInvalidIPStringsFalse(string address)
             => Assert.False(NetworkUtils.TryParseToSubnet(address, out _));
+
+        /// <summary>
+        /// Verifies that <see cref="NetworkUtils.TryParseToSubnets"/> emits a targeted warning
+        /// for IPv6 prefix-only notation and a generic warning for other malformed entries.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_InvalidEntries_LogsWarnings()
+        {
+            var logger = new Mock<ILogger>();
+
+            var values = new[] { "10.0.0.0/8", "fd23:184f:2029:0100/56", "not-an-address" };
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var result, false, logger.Object));
+            Assert.NotNull(result);
+            Assert.Single(result);
+
+            // IPv6 prefix-only notation should produce a specific, actionable warning.
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("IPv6 prefix-only", StringComparison.Ordinal)
+                        && state.ToString()!.Contains("fd23:184f:2029:0100/56", StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+
+            // Other malformed entries should still produce a generic warning.
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("not-an-address", StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
 
         /// <summary>
         /// Checks if IPv4 address is within a defined subnet.

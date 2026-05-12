@@ -44,7 +44,16 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
         else
         {
-            dbQuery = dbQuery.OrderBy(e => e.Name);
+            // The Peoples table has one row per (Name, PersonType), so the same person can
+            // appear multiple times (e.g. as Actor and GuestStar). Collapse to one row per
+            // name so /Persons doesn't return the same BaseItem id repeatedly. Lowercase the
+            // grouping key so case-only duplicates collapse together.
+            var representativeIds = dbQuery
+                .GroupBy(e => e.Name.ToLower())
+                .Select(g => g.Min(e => e.Id));
+            dbQuery = context.Peoples.AsNoTracking()
+                .Where(p => representativeIds.Contains(p.Id))
+                .OrderBy(e => e.Name);
         }
 
         var count = dbQuery.Count();
@@ -94,16 +103,16 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             person.Role = person.Role?.Trim() ?? string.Empty;
         }
 
-        // multiple metadata providers can provide the _same_ person
-        people = people.DistinctBy(e => e.Name + "-" + e.Type).ToArray();
-        var personKeys = people.Select(e => e.Name + "-" + e.Type).ToArray();
+        // multiple metadata providers can provide the _same_ person; dedupe case-insensitively.
+        people = people.DistinctBy(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
+        var personKeys = people.Select(e => e.Name.ToLowerInvariant() + "-" + e.Type).ToArray();
 
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         var existingPersons = context.Peoples.Select(e => new
             {
                 item = e,
-                SelectionKey = e.Name + "-" + e.PersonType
+                SelectionKey = e.Name.ToLower() + "-" + e.PersonType
             })
             .Where(p => personKeys.Contains(p.SelectionKey))
             .Select(f => f.item)
@@ -111,7 +120,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         var toAdd = people
             .Where(e => e.Type is not PersonKind.Artist && e.Type is not PersonKind.AlbumArtist)
-            .Where(e => !existingPersons.Any(f => f.Name == e.Name && f.PersonType == e.Type.ToString()))
+            .Where(e => !existingPersons.Any(f => string.Equals(f.Name, e.Name, StringComparison.OrdinalIgnoreCase) && f.PersonType == e.Type.ToString()))
             .Select(Map);
         context.Peoples.AddRange(toAdd);
         context.SaveChanges();
@@ -129,8 +138,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
                 continue;
             }
 
-            var entityPerson = personsEntities.First(e => e.Name == person.Name && e.PersonType == person.Type.ToString());
-            var existingMap = existingMaps.FirstOrDefault(e => e.People.Name == person.Name && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
+            var entityPerson = personsEntities.First(e => string.Equals(e.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.PersonType == person.Type.ToString());
+            var existingMap = existingMaps.FirstOrDefault(e => string.Equals(e.People.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
             if (existingMap is null)
             {
                 context.PeopleBaseItemMap.Add(new PeopleBaseItemMap()
@@ -231,7 +240,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (queryExcludePersonTypes.Count > 0)
         {
-            query = query.Where(e => !queryPersonTypes.Contains(e.PersonType));
+            query = query.Where(e => !queryExcludePersonTypes.Contains(e.PersonType));
         }
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())

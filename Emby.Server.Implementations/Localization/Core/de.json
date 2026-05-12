@@ -135,5 +135,6 @@
     "TaskMoveTrickplayImages": "Verzeichnis für Trickplay-Bilder migrieren",
     "TaskMoveTrickplayImagesDescription": "Trickplay-Bilder werden entsprechend der Bibliothekseinstellungen verschoben.",
     "CleanupUserDataTask": "Aufgabe zur Bereinigung von Benutzerdaten",
-    "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind."
+    "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind.",
+    "Original": "Original"
 }

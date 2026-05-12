@@ -390,7 +390,8 @@ public sealed partial class BaseItemRepository
         {
             if (filter.UseRawName == true)
             {
-                baseQuery = baseQuery.Where(e => e.Name == filter.Name);
+                var nameLower = filter.Name.ToLowerInvariant();
+                baseQuery = baseQuery.Where(e => e.Name!.ToLower() == nameLower);
             }
             else
             {

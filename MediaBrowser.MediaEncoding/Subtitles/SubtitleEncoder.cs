@@ -213,7 +213,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
                 var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension)
+                    ?? throw new ResourceNotFoundException($"MediaSource {mediaSource.Id} has no subtitle cache (non-GUID Id, e.g. Live TV stream).");
 
                 return new SubtitleInfo()
                 {
@@ -243,7 +244,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
             {
                 // Convert
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt")
+                    ?? throw new ResourceNotFoundException($"MediaSource {mediaSource.Id} has no subtitle cache (non-GUID Id, e.g. Live TV stream).");
 
                 await ConvertTextSubtitleToSrt(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -521,6 +523,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                    if (outputPath is null)
+                    {
+                        continue;
+                    }
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -592,6 +598,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                    if (outputPath is null)
+                    {
+                        continue;
+                    }
+
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
@@ -637,6 +648,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                if (outputPath is null)
+                {
+                    continue;
+                }
+
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
@@ -969,7 +985,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private string GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
+        private string? GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
         {
             return _pathManager.GetSubtitlePath(mediaSource.Id, subtitleStreamIndex, outputSubtitleExtension);
         }
@@ -982,9 +998,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
-                path = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + subtitleCodec);
-                await ExtractTextSubtitle(mediaSource, subtitleStream, subtitleCodec, path, cancellationToken)
-                    .ConfigureAwait(false);
+                var cachePath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + subtitleCodec);
+                if (cachePath is not null)
+                {
+                    path = cachePath;
+                    await ExtractTextSubtitle(mediaSource, subtitleStream, subtitleCodec, path, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
 
             var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);

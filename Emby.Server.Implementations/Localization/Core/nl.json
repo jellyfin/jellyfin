@@ -135,5 +135,6 @@
     "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig zijn.",
     "CleanupUserDataTask": "Opruimtaak gebruikersdata",
     "Albums": "Albums",
-    "Genres": "Genres"
+    "Genres": "Genres",
+    "Original": "Oorspronkelijk"
 }

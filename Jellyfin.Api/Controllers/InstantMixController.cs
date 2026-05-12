@@ -196,6 +196,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
     [HttpGet("MusicGenres/{name}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use GetInstantMixFromItem")]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreByName(
         [FromRoute, Required] string name,
         [FromQuery] Guid? userId,
@@ -359,7 +360,7 @@ public class InstantMixController : BaseJellyfinApiController
     [HttpGet("MusicGenres/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Obsolete("Use GetInstantMixFromMusicGenreByName")]
+    [Obsolete("Use GetInstantMixFromItem")]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
         [FromQuery, Required] Guid id,
         [FromQuery] Guid? userId,
