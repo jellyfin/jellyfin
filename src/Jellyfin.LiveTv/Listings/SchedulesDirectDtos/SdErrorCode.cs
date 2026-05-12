@@ -3,39 +3,59 @@
 namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
 
 /// <summary>
-/// Schedules Direct API error codes.
+/// Schedules Direct API error codes. See: https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#error-response
 /// </summary>
 public enum SdErrorCode
 {
     /// <summary>
-    /// Invalid user.
+    /// Schedules Direct unavailable/out of service.
     /// </summary>
-    InvalidUser = 4001,
+    SvcUnavailable = 3001,
 
     /// <summary>
-    /// Invalid password hash.
+    /// Schedules Direct busy.
     /// </summary>
-    InvalidHash = 4003,
-
-    /// <summary>
-    /// Account locked or disabled.
-    /// </summary>
-    AccountLocked = 4004,
+    SvcBusy = 3002,
 
     /// <summary>
     /// Account expired.
     /// </summary>
-    AccountExpired = 4005,
+    AccountExpired = 4001,
 
     /// <summary>
-    /// Token has expired.
+    /// Invalid password hash.
+    /// </summary>
+    InvalidHash = 4002,
+
+    /// <summary>
+    /// Invalid user or password.
+    /// </summary>
+    InvalidUser = 4003,
+
+    /// <summary>
+    /// Account temporarily locked due to login failures.
+    /// </summary>
+    AccountTempLock = 4004,
+
+    /// <summary>
+    /// Account permanently locked due to abuse.
+    /// </summary>
+    AccountLocked = 4005,
+
+    /// <summary>
+    /// Token has expired. Request a new one.
     /// </summary>
     TokenExpired = 4006,
 
     /// <summary>
-    /// Password is required.
+    /// Application locked out.
     /// </summary>
-    PasswordRequired = 4008,
+    AppLocked = 4007,
+
+    /// <summary>
+    /// Account not active.
+    /// </summary>
+    AccountInactive = 4008,
 
     /// <summary>
     /// Maximum login attempts exceeded.
@@ -43,9 +63,19 @@ public enum SdErrorCode
     MaxLoginAttempts = 4009,
 
     /// <summary>
-    /// Temporary lockout.
+    /// Maximum unique IP attempts reached.
     /// </summary>
-    TemporaryLockout = 4010,
+    MaxIPAttempts = 4010,
+
+    /// <summary>
+    /// Lineup change maximum reached.
+    /// </summary>
+    MaxScheduleRequests = 4100,
+
+    /// <summary>
+    /// Requested image not found.
+    /// </summary>
+    ImageNotFound = 5000,
 
     /// <summary>
     /// Maximum image downloads reached for the day.
@@ -53,7 +83,12 @@ public enum SdErrorCode
     MaxImageDownloads = 5002,
 
     /// <summary>
+    /// Trial specific maximum image downloads reached for the day.
+    /// </summary>
+    MaxImageDownloads2 = 5003,
+
+    /// <summary>
     /// Maximum schedule/metadata requests reached for the day.
     /// </summary>
-    MaxScheduleRequests = 5003
+    MaxInvalidImages = 5004
 }

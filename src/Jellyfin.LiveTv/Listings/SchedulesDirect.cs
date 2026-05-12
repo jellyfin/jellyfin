@@ -684,27 +684,37 @@ namespace Jellyfin.LiveTv.Listings
                 sdCode?.ToString() ?? "N/A",
                 responseBody);
 
-            if (sdCode is SdErrorCode.InvalidUser or SdErrorCode.InvalidHash or SdErrorCode.AccountLocked or SdErrorCode.AccountExpired or SdErrorCode.PasswordRequired)
+            if (sdCode is SdErrorCode.AccountExpired or SdErrorCode.InvalidHash or SdErrorCode.InvalidUser or SdErrorCode.AccountLocked or SdErrorCode.AppLocked or SdErrorCode.AccountInactive)
             {
                 // Permanent account errors — disable SD for this server lifetime.
-                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart", sdCode);
+                _logger.LogError("Schedules Direct account error (code {SdCode}). Disabling SD until server restart.", sdCode);
                 _tokens.Clear();
                 _accountError = true;
             }
-            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.TemporaryLockout)
+            else if (sdCode is SdErrorCode.SvcUnavailable or SdErrorCode.SvcBusy or SdErrorCode.AccountTempLock)
             {
                 // Transient login errors — back off for 30 minutes, then allow retry.
+                _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
                 _tokens.Clear();
                 Interlocked.Exchange(ref _lastErrorResponseTicks, DateTime.UtcNow.Ticks);
             }
-            else if (sdCode is SdErrorCode.MaxImageDownloads)
+            else if (sdCode is SdErrorCode.MaxLoginAttempts or SdErrorCode.MaxIPAttempts)
+            {
+                // 24 hour bans - stop image and metadata requests until SD reset at 00:00 UTC.
+                _logger.LogError("Schedules Direct service limit error (code {SdCode}). Disabling until SD reset.", sdCode);
+                SetImageLimitHit();
+                SetMetadataLimitHit();
+            }
+            else if (sdCode is SdErrorCode.MaxImageDownloads or SdErrorCode.MaxImageDownloads2)
             {
                 // Max image downloads — stop image requests until SD resets at 00:00 UTC.
+                _logger.LogError("Schedules Direct image download limit hit (code {SdCode}). Disabling image acquisition until SD reset.", sdCode);
                 SetImageLimitHit();
             }
             else if (sdCode is SdErrorCode.MaxScheduleRequests)
             {
                 // Max schedule/metadata requests — stop metadata requests until SD resets at 00:00 UTC.
+                _logger.LogError("Schedules Direct metadata download limit hit (code {SdCode}). Disabling metadata acquisition until SD reset.", sdCode);
                 SetMetadataLimitHit();
             }
             else if (enableRetry
