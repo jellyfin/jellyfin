@@ -2009,9 +2009,6 @@ public class ImageController : BaseJellyfinApiController
 
         Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
         Response.Headers.Append(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
-        Response.Headers.Append(HeaderNames.Vary, HeaderNames.Accept);
-
-        Response.Headers.ContentDisposition = "attachment";
 
         if (disableCaching)
         {
