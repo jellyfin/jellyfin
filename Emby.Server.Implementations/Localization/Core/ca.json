@@ -135,5 +135,6 @@
     "TaskMoveTrickplayImages": "Migració de la ubicació de la imatge de previsualització",
     "TaskMoveTrickplayImagesDescription": "Mou els fitxers existents d'imatges de previsualització segons la configuració de la mediateca.",
     "CleanupUserDataTaskDescription": "Neteja totes les dades d'usuari (estat de la visualització, estat dels preferits, etc.) del contingut multimèdia que no ha estat present durant almenys 90 dies.",
-    "CleanupUserDataTask": "Tasca de neteja de dades d'usuari"
+    "CleanupUserDataTask": "Tasca de neteja de dades d'usuari",
+    "Original": "Original"
 }

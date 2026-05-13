@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
@@ -54,6 +53,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the initial startup wizard configuration.</returns>
     [HttpGet("Configuration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use configuration endpoints")]
     public ActionResult<StartupConfigurationDto> GetStartupConfiguration()
     {
         return new StartupConfigurationDto
@@ -73,6 +73,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Configuration")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("Use configuration endpoints")]
     public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
     {
         _config.Configuration.ServerName = startupConfiguration.ServerName ?? string.Empty;
@@ -91,6 +92,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("RemoteAccess")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("Use configuration endpoints")]
     public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
     {
         NetworkConfiguration settings = _config.GetNetworkConfiguration();
@@ -107,6 +109,7 @@ public class StartupController : BaseJellyfinApiController
     [HttpGet("User")]
     [HttpGet("FirstUser", Name = "GetFirstUser_2")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Obsolete("Use authentication endpoints")]
     public async Task<StartupUserDto> GetFirstUser()
     {
         // TODO: Remove this method when startup wizard no longer requires an existing user.

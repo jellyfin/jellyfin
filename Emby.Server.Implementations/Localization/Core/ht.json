@@ -61,5 +61,7 @@
     "TasksMaintenanceCategory": "Antretyen",
     "AppDeviceValues": "Aplikasyon: {0}, Aparèy: {1}",
     "AuthenticationSucceededWithUserName": "{0} otantifye avèk siksè",
-    "CameraImageUploadedFrom": "Une nouvelle image de la caméra a été téléchargée depuis {0}"
+    "CameraImageUploadedFrom": "Une nouvelle image de la caméra a été téléchargée depuis {0}",
+    "Original": "Original",
+    "Playlists": "Pleliss"
 }

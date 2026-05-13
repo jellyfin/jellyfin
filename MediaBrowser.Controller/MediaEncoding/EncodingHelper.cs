@@ -1645,10 +1645,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "hevc_amf", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "av1_amf", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(videoCodec, "hevc_amf", StringComparison.OrdinalIgnoreCase))
             {
-                // Override the too high default qmin 18 in transcoding preset
+                // Override the too high default qmin 18 in transcoding preset in legacy h26x_amf
                 return FormattableString.Invariant($" -rc cbr -qmin 0 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
@@ -1880,10 +1879,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var sub2videoParam = enableSub2video ? ":sub2video=1" : string.Empty;
 
             var fontPath = _pathManager.GetAttachmentFolderPath(state.MediaSource.Id);
-            var fontParam = string.Format(
-                CultureInfo.InvariantCulture,
-                ":fontsdir='{0}'",
-                _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
+            var fontParam = fontPath is null
+                ? string.Empty
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    ":fontsdir='{0}'",
+                    _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
             if (state.SubtitleStream.IsExternal)
             {

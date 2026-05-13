@@ -129,6 +129,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
             var outputFolder = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
+            if (outputFolder is null)
+            {
+                _logger.LogDebug("Skipping attachment extraction for input {InputFile}: MediaSource Id is not a GUID.", inputFile);
+                return;
+            }
+
             using (await _semaphoreLocks.LockAsync(outputFolder, cancellationToken).ConfigureAwait(false))
             {
                 var directory = Directory.CreateDirectory(outputFolder);
@@ -241,9 +247,14 @@ namespace MediaBrowser.MediaEncoding.Attachments
             CancellationToken cancellationToken)
         {
             var attachmentFolderPath = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
+            if (attachmentFolderPath is null)
+            {
+                throw new ResourceNotFoundException($"MediaSource {mediaSource.Id} has no attachment cache (non-GUID Id, e.g. Live TV stream).");
+            }
+
             using (await _semaphoreLocks.LockAsync(attachmentFolderPath, cancellationToken).ConfigureAwait(false))
             {
-                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? mediaAttachment.Index.ToString(CultureInfo.InvariantCulture));
+                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? mediaAttachment.Index.ToString(CultureInfo.InvariantCulture))!;
                 if (!File.Exists(attachmentPath))
                 {
                     await ExtractAttachmentInternal(
