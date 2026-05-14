@@ -1,5 +1,6 @@
 using System;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Updates;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -12,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 public class ReaddDefaultPluginRepository : IMigrationRoutine
 #pragma warning restore CS0618 // Type or member is obsolete
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
 
     private readonly RepositoryInfo _defaultRepositoryInfo = new RepositoryInfo
     {
@@ -23,20 +24,19 @@ public class ReaddDefaultPluginRepository : IMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="ReaddDefaultPluginRepository"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public ReaddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
+    /// <param name="serverConfigurationManager">Instance of the server config.</param>
+    public ReaddDefaultPluginRepository(IWritableOptions<ServerConfiguration> serverConfigurationManager)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfigurationManager;
     }
 
     /// <inheritdoc/>
     public void Perform()
     {
         // Only add if repository list is empty
-        if (_serverConfigurationManager.Configuration.PluginRepositories.Length == 0)
+        if (_serverConfig.Value.PluginRepositories.Length == 0)
         {
-            _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
-            _serverConfigurationManager.SaveConfiguration();
+            _serverConfig.Update(value => value.PluginRepositories = new[] { _defaultRepositoryInfo });
         }
     }
 }

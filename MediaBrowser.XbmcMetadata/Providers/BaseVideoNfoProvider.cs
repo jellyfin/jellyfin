@@ -2,14 +2,15 @@
 
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Parsers;
 using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         where T : Video, new()
     {
         private readonly ILogger<BaseVideoNfoProvider<T>> _logger;
-        private readonly IConfigurationManager _config;
+        private readonly IOptions<XbmcMetadataOptions> _config;
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -26,7 +27,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         protected BaseVideoNfoProvider(
             ILogger<BaseVideoNfoProvider<T>> logger,
             IFileSystem fileSystem,
-            IConfigurationManager config,
+            IOptions<XbmcMetadataOptions> config,
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,

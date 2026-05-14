@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Xml;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -21,19 +22,21 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// Initializes a new instance of the <see cref="SeriesNfoSaver"/> class.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="xbmcMetadataOptions">The NFO metadata options.</param>
+        /// <param name="serverConfig">The server configuration.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="logger">The logger.</param>
         public SeriesNfoSaver(
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager,
+            IOptions<XbmcMetadataOptions> xbmcMetadataOptions,
+            IOptions<ServerConfiguration> serverConfig,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
             ILogger<SeriesNfoSaver> logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+            : base(fileSystem, xbmcMetadataOptions, serverConfig, libraryManager, userManager, userDataManager, logger)
         {
         }
 

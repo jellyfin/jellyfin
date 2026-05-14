@@ -19,10 +19,10 @@ namespace Jellyfin.LiveTv.Timers
     {
         private readonly ConcurrentDictionary<string, Timer> _timers = new(StringComparer.OrdinalIgnoreCase);
 
-        public TimerManager(ILogger<TimerManager> logger, IConfigurationManager config)
+        public TimerManager(ILogger<TimerManager> logger, IApplicationPaths appPaths)
             : base(
                 logger,
-                Path.Combine(config.CommonApplicationPaths.DataPath, "livetv/timers.json"),
+                Path.Combine(appPaths.DataPath, "livetv/timers.json"),
                 (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }

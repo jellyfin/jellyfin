@@ -15,7 +15,7 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -36,9 +36,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public static AudioDbAlbumProvider Current;
 #pragma warning restore SA1401, CA2211
 
-        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        public AudioDbAlbumProvider(IServerApplicationPaths appPaths, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
-            _config = config;
+            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             {
                 await EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = GetAlbumInfoPath(_config.ApplicationPaths, id);
+                var path = GetAlbumInfoPath(_appPaths, id);
 
                 FileStream jsonStream = AsyncFile.OpenRead(path);
                 await using (jsonStream.ConfigureAwait(false))
@@ -150,7 +150,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         internal async Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
-            var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+            var xmlPath = GetAlbumInfoPath(_appPaths, musicBrainzReleaseGroupId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
 
-            var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
+            var path = GetAlbumInfoPath(_appPaths, musicBrainzReleaseGroupId);
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
             if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {

@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -23,7 +22,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public class SubtitleScheduledTask : IScheduledTask
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ILogger<SubtitleScheduledTask> _logger;
         private readonly ILocalizationManager _localization;
@@ -31,14 +29,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public SubtitleScheduledTask(
             ILibraryManager libraryManager,
-            IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             ILogger<SubtitleScheduledTask> logger,
             ILocalizationManager localization,
             IEnumerable<ISubtitleProvider> subtitleProviders)
         {
             _libraryManager = libraryManager;
-            _config = config;
             _subtitleManager = subtitleManager;
             _logger = logger;
             _localization = localization;

@@ -10,7 +10,7 @@ public class DatabaseConfigurationOptions
     /// <summary>
     /// Gets or Sets the type of database jellyfin should use.
     /// </summary>
-    public required string DatabaseType { get; set; }
+    public string? DatabaseType { get; set; }
 
     /// <summary>
     /// Gets or sets the options required to use a custom database provider.

@@ -3,17 +3,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -29,10 +30,8 @@ public class AudioResolverTests
         Video.RecordingsManager = Mock.Of<IRecordingsManager>();
 
         var applicationPaths = new Mock<IServerApplicationPaths>().Object;
-        var serverConfig = new Mock<IServerConfigurationManager>();
-        serverConfig.Setup(c => c.ApplicationPaths)
-            .Returns(applicationPaths);
-        BaseItem.ConfigurationManager = serverConfig.Object;
+        BaseItem.ServerApplicationPaths = applicationPaths;
+        BaseItem.ServerConfigOptions = Options.Create(new ServerConfiguration());
 
         // build resolver to test with
         var localizationManager = Mock.Of<ILocalizationManager>();

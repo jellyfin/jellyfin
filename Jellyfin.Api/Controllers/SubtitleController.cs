@@ -16,12 +16,12 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -40,7 +41,7 @@ namespace Jellyfin.Api.Controllers;
 [Route("")]
 public class SubtitleController : BaseJellyfinApiController
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
     private readonly ILibraryManager _libraryManager;
     private readonly ISubtitleManager _subtitleManager;
     private readonly ISubtitleEncoder _subtitleEncoder;
@@ -52,7 +53,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <summary>
     /// Initializes a new instance of the <see cref="SubtitleController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="encodingOptions">Instance of <see cref="IOptions{EncodingOptions}"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="subtitleManager">Instance of <see cref="ISubtitleManager"/> interface.</param>
     /// <param name="subtitleEncoder">Instance of <see cref="ISubtitleEncoder"/> interface.</param>
@@ -61,7 +62,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
     public SubtitleController(
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<EncodingOptions> encodingOptions,
         ILibraryManager libraryManager,
         ISubtitleManager subtitleManager,
         ISubtitleEncoder subtitleEncoder,
@@ -70,7 +71,7 @@ public class SubtitleController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<SubtitleController> logger)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _encodingOptions = encodingOptions;
         _libraryManager = libraryManager;
         _subtitleManager = subtitleManager;
         _subtitleEncoder = subtitleEncoder;
@@ -499,7 +500,7 @@ public class SubtitleController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IEnumerable<FontFile> GetFallbackFontList()
     {
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+        var encodingOptions = _encodingOptions.Value;
         var fallbackFontPath = encodingOptions.FallbackFontPath;
 
         if (!string.IsNullOrEmpty(fallbackFontPath))
@@ -551,7 +552,7 @@ public class SubtitleController : BaseJellyfinApiController
     [ProducesFile("font/*")]
     public ActionResult GetFallbackFont([FromRoute, Required] string name)
     {
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+        var encodingOptions = _encodingOptions.Value;
         var fallbackFontPath = encodingOptions.FallbackFontPath;
 
         if (!string.IsNullOrEmpty(fallbackFontPath))

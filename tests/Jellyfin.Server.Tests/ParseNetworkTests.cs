@@ -3,14 +3,13 @@ using System.Linq;
 using System.Net;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Server.Tests
 {
@@ -103,13 +102,12 @@ namespace Jellyfin.Server.Tests
             }
         }
 
-        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        private static IOptionsMonitor<NetworkConfiguration> GetMockConfig(NetworkConfiguration conf)
         {
-            var configManager = new Mock<IConfigurationManager>
-            {
-                CallBase = true
-            };
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            var configManager = new Mock<IOptionsMonitor<NetworkConfiguration>>();
+            configManager.Setup(x => x.CurrentValue).Returns(conf);
+            configManager.Setup(x => x.Get(It.IsAny<string>())).Returns(conf);
+            configManager.Setup(x => x.OnChange(It.IsAny<Action<NetworkConfiguration, string?>>())).Returns((IDisposable?)null);
             return configManager.Object;
         }
 

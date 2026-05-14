@@ -7,8 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IServerConfigurationManager _config;
+        private readonly IApplicationPaths _config;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">The media encoder for extracting embedded images.</param>
         /// <param name="config">The server configuration manager for getting image paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
-        public AudioImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
+        public AudioImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IApplicationPaths config, IFileSystem fileSystem)
         {
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _fileSystem = fileSystem;
         }
 
-        private string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
+        private string AudioImagesPath => Path.Combine(_config.CachePath, "extracted-audio-images");
 
         /// <inheritdoc />
         public string Name => "Image Extractor";

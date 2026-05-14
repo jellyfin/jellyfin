@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.BoxSets;
 
@@ -20,26 +22,31 @@ namespace MediaBrowser.Providers.BoxSets;
 /// </summary>
 public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
 {
+    private readonly IServerApplicationPaths _appPaths;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BoxSetMetadataService"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="metadataConfig">Instance of the metadata config.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="externalDataManager">Instance of the <see cref="IExternalDataManager"/> interface.</param>
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
+    /// <param name="appPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     public BoxSetMetadataService(
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<MetadataConfiguration> metadataConfig,
         ILogger<BoxSetMetadataService> logger,
         IProviderManager providerManager,
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IExternalDataManager externalDataManager,
-        IItemRepository itemRepository)
-        : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
+        IItemRepository itemRepository,
+        IServerApplicationPaths appPaths)
+        : base(metadataConfig, logger, providerManager, fileSystem, libraryManager, externalDataManager, itemRepository)
     {
+        _appPaths = appPaths;
     }
 
     /// <inheritdoc />
@@ -74,7 +81,7 @@ public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
             // For internal collections, the database LinkedChildren table is the source of truth.
             var targetPath = targetItem.Path;
             if (!string.IsNullOrEmpty(targetPath)
-                && !FileSystem.ContainsSubPath(ServerConfigurationManager.ApplicationPaths.DataPath, targetPath))
+                && !FileSystem.ContainsSubPath(_appPaths.DataPath, targetPath))
             {
 #pragma warning disable CS0618 // Type or member is obsolete - fallback for legacy path-based dedup
                 targetItem.LinkedChildren = sourceItem.LinkedChildren.Concat(targetItem.LinkedChildren)

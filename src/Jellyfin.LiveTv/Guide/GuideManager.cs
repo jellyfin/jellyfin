@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using Jellyfin.LiveTv.Configuration;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -17,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.Guide;
 
@@ -30,7 +29,7 @@ public class GuideManager : IGuideManager
     private static readonly ParallelOptions _cacheParallelOptions = new() { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10) };
 
     private readonly ILogger<GuideManager> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IOptionsMonitor<LiveTvOptions> _config;
     private readonly IFileSystem _fileSystem;
     private readonly IItemRepository _itemRepo;
     private readonly ILibraryManager _libraryManager;
@@ -49,7 +48,7 @@ public class GuideManager : IGuideManager
     /// Initializes a new instance of the <see cref="GuideManager"/> class.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
-    /// <param name="config">The <see cref="IConfigurationManager"/>.</param>
+    /// <param name="config">The <see cref="IOptionsMonitor{LiveTvOptions}"/>.</param>
     /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
     /// <param name="itemRepo">The <see cref="IItemRepository"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
@@ -60,7 +59,7 @@ public class GuideManager : IGuideManager
     /// <param name="tvDtoService">The <see cref="LiveTvDtoService"/>.</param>
     public GuideManager(
         ILogger<GuideManager> logger,
-        IConfigurationManager config,
+        IOptionsMonitor<LiveTvOptions> config,
         IFileSystem fileSystem,
         IItemRepository itemRepo,
         ILibraryManager libraryManager,
@@ -164,7 +163,7 @@ public class GuideManager : IGuideManager
 
     private double GetGuideDays()
     {
-        var config = _config.GetLiveTvConfiguration();
+        var config = _config.CurrentValue;
 
         return config.GuideDays.HasValue
             ? Math.Clamp(config.GuideDays.Value, 1, MaxGuideDays)

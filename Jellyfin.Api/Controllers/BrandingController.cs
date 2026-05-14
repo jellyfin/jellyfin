@@ -1,8 +1,7 @@
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Branding;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -11,15 +10,15 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 public class BrandingController : BaseJellyfinApiController
 {
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<BrandingOptions> _brandingOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BrandingController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public BrandingController(IServerConfigurationManager serverConfigurationManager)
+    /// <param name="brandingOptions">Instance of the <see cref="IOptions{BrandingOptions}"/> interface.</param>
+    public BrandingController(IOptions<BrandingOptions> brandingOptions)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _brandingOptions = brandingOptions;
     }
 
     /// <summary>
@@ -31,13 +30,13 @@ public class BrandingController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BrandingOptionsDto> GetBrandingOptions()
     {
-        var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+        var opts = _brandingOptions.Value;
 
         var brandingOptionsDto = new BrandingOptionsDto
         {
-            LoginDisclaimer = brandingOptions.LoginDisclaimer,
-            CustomCss = brandingOptions.CustomCss,
-            SplashscreenEnabled = brandingOptions.SplashscreenEnabled
+            LoginDisclaimer = opts.LoginDisclaimer,
+            CustomCss = opts.CustomCss,
+            SplashscreenEnabled = opts.SplashscreenEnabled
         };
 
         return brandingOptionsDto;
@@ -59,7 +58,6 @@ public class BrandingController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult<string> GetBrandingCss()
     {
-        var options = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-        return options.CustomCss ?? string.Empty;
+        return _brandingOptions.Value.CustomCss ?? string.Empty;
     }
 }

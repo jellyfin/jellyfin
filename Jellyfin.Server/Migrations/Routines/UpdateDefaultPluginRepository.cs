@@ -1,5 +1,6 @@
 using System;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -14,22 +15,23 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
     private const string NewRepositoryUrl = "https://repo.jellyfin.org/files/plugin/manifest.json";
     private const string OldRepositoryUrl = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json";
 
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateDefaultPluginRepository"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public UpdateDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
+    /// <param name="serverConfig">Instance of the server config.</param>
+    public UpdateDefaultPluginRepository(IWritableOptions<ServerConfiguration> serverConfig)
     {
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <inheritdoc />
     public void Perform()
     {
         var updated = false;
-        foreach (var repo in _serverConfigurationManager.Configuration.PluginRepositories)
+        var repos = _serverConfig.Value.PluginRepositories;
+        foreach (var repo in repos)
         {
             if (string.Equals(repo.Url, OldRepositoryUrl, StringComparison.OrdinalIgnoreCase))
             {
@@ -40,7 +42,7 @@ public class UpdateDefaultPluginRepository : IMigrationRoutine
 
         if (updated)
         {
-            _serverConfigurationManager.SaveConfiguration();
+            _serverConfig.Update(c => c.PluginRepositories = repos);
         }
     }
 }

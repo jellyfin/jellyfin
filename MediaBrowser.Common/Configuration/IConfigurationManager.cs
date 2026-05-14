@@ -6,6 +6,7 @@ using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Common.Configuration
 {
+    [Obsolete("The configuration manager has been deprecated and will be removed in 13.0 in favour of using dotnets builds in IOption configuration system.")]
     public interface IConfigurationManager
     {
         /// <summary>
@@ -85,13 +86,5 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <param name="factories">The factories.</param>
         void AddParts(IEnumerable<IConfigurationFactory> factories);
-    }
-
-    public static class ConfigurationManagerExtensions
-    {
-        public static T GetConfiguration<T>(this IConfigurationManager manager, string key)
-        {
-            return (T)manager.GetConfiguration(key);
-        }
     }
 }

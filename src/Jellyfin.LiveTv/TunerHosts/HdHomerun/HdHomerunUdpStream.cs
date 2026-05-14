@@ -14,11 +14,13 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
 {
@@ -38,10 +40,11 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             int numTuners,
             IFileSystem fileSystem,
             ILogger logger,
-            IConfigurationManager configurationManager,
+            IOptions<EncodingOptions> encodingOptions,
+            IServerApplicationPaths appPaths,
             IServerApplicationHost appHost,
             IStreamHelper streamHelper)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, encodingOptions, appPaths, streamHelper)
         {
             _appHost = appHost;
             OriginalStreamId = originalStreamId;

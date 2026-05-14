@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using Microsoft.Extensions.Logging;
@@ -16,22 +16,22 @@ namespace Emby.Server.Implementations.Library;
 public class PathManager : IPathManager
 {
     private readonly ILogger<PathManager> _logger;
-    private readonly IServerConfigurationManager _config;
+    private readonly IServerApplicationPaths _serverAppPaths;
     private readonly IApplicationPaths _appPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PathManager"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="config">The server configuration manager.</param>
+    /// <param name="serverAppPaths">The server application paths.</param>
     /// <param name="appPaths">The application paths.</param>
     public PathManager(
         ILogger<PathManager> logger,
-        IServerConfigurationManager config,
+        IServerApplicationPaths serverAppPaths,
         IApplicationPaths appPaths)
     {
         _logger = logger;
-        _config = config;
+        _serverAppPaths = serverAppPaths;
         _appPaths = appPaths;
     }
 
@@ -86,7 +86,7 @@ public class PathManager : IPathManager
 
         return saveWithMedia
             ? Path.Combine(item.ContainingFolderPath, Path.ChangeExtension(Path.GetFileName(item.Path), ".trickplay"))
-            : Path.Join(_config.ApplicationPaths.TrickplayPath, id[..2], id);
+            : Path.Join(_serverAppPaths.TrickplayPath, id[..2], id);
     }
 
     /// <inheritdoc/>

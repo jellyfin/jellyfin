@@ -1,11 +1,10 @@
 using System;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Providers.MediaInfo;
-using Moq;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.MediaInfo;
@@ -16,16 +15,13 @@ public class FFProbeVideoInfoTests
 
     public FFProbeVideoInfoTests()
     {
-        var serverConfiguration = new ServerConfiguration()
+        var serverOptions = Options.Create(new ServerConfiguration()
         {
             DummyChapterDuration = (int)TimeSpan.FromMinutes(5).TotalSeconds
-        };
-        var serverConfig = new Mock<IServerConfigurationManager>();
-        serverConfig.Setup(c => c.Configuration)
-            .Returns(serverConfiguration);
+        });
 
         IFixture fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
-        fixture.Inject(serverConfig);
+        fixture.Inject(serverOptions);
         _fFProbeVideoInfo = fixture.Create<FFProbeVideoInfo>();
     }
 

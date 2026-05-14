@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -43,7 +44,6 @@ public sealed class SetupServer : IDisposable
     private readonly Func<IServerApplicationHost?> _serverFactory;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IConfiguration _startupConfiguration;
-    private readonly ServerConfigurationManager _configurationManager;
     private IRenderer? _startupUiRenderer;
     private IHost? _startupServer;
     private bool _disposed;
@@ -69,9 +69,6 @@ public sealed class SetupServer : IDisposable
         _serverFactory = serverApplicationHostFactory;
         _loggerFactory = loggerFactory;
         _startupConfiguration = startupConfiguration;
-        var xmlSerializer = new MyXmlSerializer();
-        _configurationManager = new ServerConfigurationManager(_applicationPaths, loggerFactory, xmlSerializer);
-        _configurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
     }
 
     internal static ConcurrentQueue<StartupLogTopic>? LogQueue { get; set; } = new();
@@ -141,7 +138,8 @@ public sealed class SetupServer : IDisposable
 
         ThrowIfDisposed();
         var retryAfterValue = TimeSpan.FromSeconds(5);
-        var config = _configurationManager.GetNetworkConfiguration()!;
+        var config = new NetworkConfiguration();
+        _startupConfiguration.GetSection(JellyfinConfigurationConstants.NetworkConfigurationKey).Bind(config);
         _startupServer?.Dispose();
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
@@ -163,7 +161,7 @@ public sealed class SetupServer : IDisposable
                                 {
                                     var knownBindInterfaces = NetworkManager.GetInterfacesCore(_loggerFactory.CreateLogger<SetupServer>(), config.EnableIPv4, config.EnableIPv6);
                                     knownBindInterfaces = NetworkManager.FilterBindSettings(config, knownBindInterfaces.ToList(), config.EnableIPv4, config.EnableIPv6);
-                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(_loggerFactory.CreateLogger<NetworkManager>(), false, _configurationManager, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
+                                    var bindInterfaces = NetworkManager.GetAllBindInterfaces(_loggerFactory.CreateLogger<NetworkManager>(), false, config, knownBindInterfaces, config.EnableIPv4, config.EnableIPv6);
                                     Extensions.WebHostBuilderExtensions.SetupJellyfinWebServer(
                                         bindInterfaces,
                                         config.InternalHttpPort,

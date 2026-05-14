@@ -8,14 +8,13 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using J2N.Collections.Generic.Extensions;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
-using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Networking.Manager;
 
@@ -31,11 +30,13 @@ public class NetworkManager : INetworkManager, IDisposable
 
     private readonly ILogger<NetworkManager> _logger;
 
-    private readonly IConfigurationManager _configurationManager;
+    private readonly IOptionsMonitor<NetworkConfiguration> _networkConfig;
 
     private readonly IConfiguration _startupConfig;
 
     private readonly Lock _networkEventLock;
+
+    private readonly IDisposable? _configChangeRegistration;
 
     /// <summary>
     /// Holds the published server URLs and the IPs to use them on.
@@ -73,16 +74,16 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="NetworkManager"/> class.
     /// </summary>
-    /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
+    /// <param name="networkConfig">The <see cref="IOptionsMonitor{NetworkConfiguration}"/> instance.</param>
     /// <param name="startupConfig">The <see cref="IConfiguration"/> instance holding startup parameters.</param>
     /// <param name="logger">Logger to use for messages.</param>
-    public NetworkManager(IConfigurationManager configurationManager, IConfiguration startupConfig, ILogger<NetworkManager> logger)
+    public NetworkManager(IOptionsMonitor<NetworkConfiguration> networkConfig, IConfiguration startupConfig, ILogger<NetworkManager> logger)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(configurationManager);
+        ArgumentNullException.ThrowIfNull(networkConfig);
 
         _logger = logger;
-        _configurationManager = configurationManager;
+        _networkConfig = networkConfig;
         _startupConfig = startupConfig;
         _initLock = new();
         _interfaces = new List<IPData>();
@@ -92,7 +93,7 @@ public class NetworkManager : INetworkManager, IDisposable
 
         _ = bool.TryParse(startupConfig[DetectNetworkChangeKey], out var detectNetworkChange);
 
-        UpdateSettings(_configurationManager.GetNetworkConfiguration());
+        UpdateSettings(_networkConfig.CurrentValue);
 
         if (detectNetworkChange)
         {
@@ -100,7 +101,7 @@ public class NetworkManager : INetworkManager, IDisposable
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
         }
 
-        _configurationManager.NamedConfigurationUpdated += ConfigurationUpdated;
+        _configChangeRegistration = _networkConfig.OnChange(newConfig => UpdateSettings(newConfig));
     }
 
     /// <summary>
@@ -116,12 +117,12 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <summary>
     /// Gets a value indicating whether IPv4 is enabled.
     /// </summary>
-    public bool IsIPv4Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv4;
+    public bool IsIPv4Enabled => _networkConfig.CurrentValue.EnableIPv4;
 
     /// <summary>
     /// Gets a value indicating whether IP6 is enabled.
     /// </summary>
-    public bool IsIPv6Enabled => _configurationManager.GetNetworkConfiguration().EnableIPv6;
+    public bool IsIPv6Enabled => _networkConfig.CurrentValue.EnableIPv6;
 
     /// <summary>
     /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -186,7 +187,7 @@ public class NetworkManager : INetworkManager, IDisposable
         try
         {
             Thread.Sleep(2000);
-            var networkConfig = _configurationManager.GetNetworkConfiguration();
+            var networkConfig = _networkConfig.CurrentValue;
             if (IsIPv6Enabled && !Socket.OSSupportsIPv6)
             {
                 UpdateSettings(networkConfig);
@@ -584,14 +585,6 @@ public class NetworkManager : INetworkManager, IDisposable
         }
     }
 
-    private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
-    {
-        if (evt.Key.Equals(NetworkConfigurationStore.StoreKey, StringComparison.Ordinal))
-        {
-            UpdateSettings((NetworkConfiguration)evt.NewConfiguration);
-        }
-    }
-
     /// <summary>
     /// Reloads all settings and re-Initializes the instance.
     /// </summary>
@@ -653,7 +646,7 @@ public class NetworkManager : INetworkManager, IDisposable
         {
             if (disposing)
             {
-                _configurationManager.NamedConfigurationUpdated -= ConfigurationUpdated;
+                _configChangeRegistration?.Dispose();
                 NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
                 NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
             }
@@ -686,7 +679,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public RemoteAccessPolicyResult ShouldAllowServerAccess(IPAddress remoteIP)
     {
-        var config = _configurationManager.GetNetworkConfiguration();
+        var config = _networkConfig.CurrentValue;
         if (IsInLocalNetwork(remoteIP))
         {
             return RemoteAccessPolicyResult.Allow;
@@ -747,7 +740,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// <inheritdoc/>
     public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
     {
-        return NetworkManager.GetAllBindInterfaces(_logger, individualInterfaces, _configurationManager, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
+        return NetworkManager.GetAllBindInterfaces(_logger, individualInterfaces, _networkConfig.CurrentValue, _interfaces, IsIPv4Enabled, IsIPv6Enabled);
     }
 
     /// <summary>
@@ -755,7 +748,7 @@ public class NetworkManager : INetworkManager, IDisposable
     /// </summary>
     /// <param name="logger">Logger to use for messages.</param>
     /// <param name="individualInterfaces">Defines that only known interfaces should be used.</param>
-    /// <param name="configurationManager">The ConfigurationManager.</param>
+    /// <param name="networkConfig">The Network Configuration.</param>
     /// <param name="knownInterfaces">The known interfaces that gets returned if possible or instructed.</param>
     /// <param name="readIpv4">Include IPV4 type interfaces.</param>
     /// <param name="readIpv6">Include IPV6 type interfaces.</param>
@@ -763,13 +756,12 @@ public class NetworkManager : INetworkManager, IDisposable
     public static IReadOnlyList<IPData> GetAllBindInterfaces(
         ILogger<NetworkManager> logger,
         bool individualInterfaces,
-        IConfigurationManager configurationManager,
+        NetworkConfiguration networkConfig,
         IReadOnlyList<IPData> knownInterfaces,
         bool readIpv4,
         bool readIpv6)
     {
-        var config = configurationManager.GetNetworkConfiguration();
-        var localNetworkAddresses = config.LocalNetworkAddresses;
+        var localNetworkAddresses = networkConfig.LocalNetworkAddresses;
         if ((localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]) && knownInterfaces.Count > 0) || individualInterfaces)
         {
             return knownInterfaces;

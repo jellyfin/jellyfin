@@ -8,12 +8,13 @@ using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Server.Implementations.Security
@@ -24,20 +25,20 @@ namespace Jellyfin.Server.Implementations.Security
         private readonly IUserManager _userManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IServerApplicationHost _serverApplicationHost;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
         public AuthorizationContext(
             IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
             IDeviceManager deviceManager,
             IServerApplicationHost serverApplicationHost,
-            IServerConfigurationManager configurationManager)
+            IOptions<ServerConfiguration> serverConfig)
         {
             _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
             _deviceManager = deviceManager;
             _serverApplicationHost = serverApplicationHost;
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
         }
 
         public Task<AuthorizationInfo> GetAuthorizationInfo(HttpContext requestContext)
@@ -90,12 +91,12 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_serverConfig.Value.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_serverConfig.Value.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = headers["X-MediaBrowser-Token"];
             }
@@ -105,7 +106,7 @@ namespace Jellyfin.Server.Implementations.Security
                 token = queryString["ApiKey"];
             }
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
+            if (_serverConfig.Value.EnableLegacyAuthorization && string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
             }
@@ -230,7 +231,7 @@ namespace Jellyfin.Server.Implementations.Security
         {
             var auth = httpReq.Headers[HeaderNames.Authorization];
 
-            if (_configurationManager.Configuration.EnableLegacyAuthorization && string.IsNullOrEmpty(auth))
+            if (_serverConfig.Value.EnableLegacyAuthorization && string.IsNullOrEmpty(auth))
             {
                 auth = httpReq.Headers["X-Emby-Authorization"];
             }
@@ -256,7 +257,7 @@ namespace Jellyfin.Server.Implementations.Security
             var name = authorizationHeader[..firstSpace];
 
             var validName = name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase);
-            validName = validName || (_configurationManager.Configuration.EnableLegacyAuthorization && name.Equals("Emby", StringComparison.OrdinalIgnoreCase));
+            validName = validName || (_serverConfig.Value.EnableLegacyAuthorization && name.Equals("Emby", StringComparison.OrdinalIgnoreCase));
 
             if (!validName)
             {

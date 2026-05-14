@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -15,6 +14,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -43,9 +43,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             {
                 UserId = "F38E6443-090B-4F7A-BD12-9CFF5020F7BC"
             };
-            var configManager = new Mock<IConfigurationManager>();
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(nfoConfig);
+            var config = Options.Create(nfoConfig);
 
             var user = new Mock<IUserManager>();
             user.Setup(x => x.GetUserById(It.IsAny<Guid>()))
@@ -72,7 +70,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             _userDataManager = userData.Object;
             _parser = new MovieNfoParser(
                 new NullLogger<MovieNfoParser>(),
-                configManager.Object,
+                config,
                 providerManager.Object,
                 user.Object,
                 userData.Object,

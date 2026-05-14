@@ -11,7 +11,6 @@ using J2N.Collections.Generic.Extensions;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -22,6 +21,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Server.Implementations.Trickplay;
 
@@ -34,7 +34,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
     private readonly EncodingHelper _encodingHelper;
-    private readonly IServerConfigurationManager _config;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly IImageEncoder _imageEncoder;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IApplicationPaths _appPaths;
@@ -50,7 +50,7 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="mediaEncoder">The media encoder.</param>
     /// <param name="fileSystem">The file system.</param>
     /// <param name="encodingHelper">The encoding helper.</param>
-    /// <param name="config">The server configuration manager.</param>
+    /// <param name="config">The server configuration options.</param>
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="dbProvider">The database provider.</param>
     /// <param name="appPaths">The application paths.</param>
@@ -60,7 +60,7 @@ public class TrickplayManager : ITrickplayManager
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
         EncodingHelper encodingHelper,
-        IServerConfigurationManager config,
+        IOptions<ServerConfiguration> config,
         IImageEncoder imageEncoder,
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IApplicationPaths appPaths,
@@ -70,7 +70,7 @@ public class TrickplayManager : ITrickplayManager
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
         _encodingHelper = encodingHelper;
-        _config = config;
+        _serverConfig = config;
         _imageEncoder = imageEncoder;
         _dbProvider = dbProvider;
         _appPaths = appPaths;
@@ -80,7 +80,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task MoveGeneratedTrickplayDataAsync(Video video, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
-        var options = _config.Configuration.TrickplayOptions;
+        var options = _serverConfig.Value.TrickplayOptions;
         if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction || !CanGenerateTrickplay(video, options.Interval))
         {
             return;
@@ -138,7 +138,7 @@ public class TrickplayManager : ITrickplayManager
     /// <inheritdoc />
     public async Task RefreshTrickplayDataAsync(Video video, bool replace, LibraryOptions libraryOptions, CancellationToken cancellationToken)
     {
-        var options = _config.Configuration.TrickplayOptions;
+        var options = _serverConfig.Value.TrickplayOptions;
         if (!CanGenerateTrickplay(video, options.Interval) || libraryOptions is null)
         {
             return;

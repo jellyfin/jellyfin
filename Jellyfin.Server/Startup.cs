@@ -13,12 +13,15 @@ using Jellyfin.LiveTv.Recordings;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking;
 using Jellyfin.Networking.HappyEyeballs;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.XbmcMetadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Prometheus;
 
@@ -39,18 +43,19 @@ namespace Jellyfin.Server
     {
         private readonly CoreAppHost _serverApplicationHost;
         private readonly IConfiguration _configuration;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IServerApplicationPaths _applicationPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="appHost">The server application host.</param>
         /// <param name="configuration">The used Configuration.</param>
-        public Startup(CoreAppHost appHost, IConfiguration configuration)
+        /// <param name="applicationPaths">The application paths.</param>
+        public Startup(CoreAppHost appHost, IConfiguration configuration, IServerApplicationPaths applicationPaths)
         {
             _serverApplicationHost = appHost;
             _configuration = configuration;
-            _serverConfigurationManager = appHost.ConfigurationManager;
+            _applicationPaths = applicationPaths;
         }
 
         /// <summary>
@@ -66,8 +71,10 @@ namespace Jellyfin.Server
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
 
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-            services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
+            services.AddJellyfinApi(
+                _serverApplicationHost.GetApiPluginAssemblies(),
+                _configuration.GetSection(JellyfinConfigurationConstants.NetworkConfigurationKey).Get<NetworkConfiguration>() ?? new NetworkConfiguration());
+            services.AddJellyfinDbContext(_configuration, _applicationPaths);
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
@@ -127,6 +134,10 @@ namespace Jellyfin.Server
             services.AddHlsPlaylistGenerator();
             services.AddLiveTvServices();
 
+            services.AddJellyfinOptions(
+                _configuration,
+                _applicationPaths.ConfigurationDirectoryPath);
+
             services.AddHostedService<RecordingsHost>();
             services.AddHostedService<AutoDiscoveryHost>();
             services.AddHostedService<NfoUserDataSaver>();
@@ -149,7 +160,7 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            var config = _serverConfigurationManager.GetNetworkConfiguration();
+            var config = _configuration.GetSection(JellyfinConfigurationConstants.NetworkConfigurationKey).Get<NetworkConfiguration>() ?? new NetworkConfiguration();
             app.Map(config.BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
@@ -182,12 +193,12 @@ namespace Jellyfin.Server
                     extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseDefaultFiles(new DefaultFilesOptions
                     {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        FileProvider = new PhysicalFileProvider(app.ApplicationServices.GetRequiredService<IServerApplicationPaths>().WebPath),
                         RequestPath = "/web"
                     });
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        FileProvider = new PhysicalFileProvider(app.ApplicationServices.GetRequiredService<IServerApplicationPaths>().WebPath),
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider,
                         OnPrepareResponse = (context) =>
@@ -204,7 +215,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseStaticFiles();
                 mainApp.UseAuthentication();
-                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseJellyfinApiSwagger(mainApp.ApplicationServices.GetRequiredService<IOptions<NetworkConfiguration>>());
                 mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
@@ -213,7 +224,7 @@ namespace Jellyfin.Server
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
 
-                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                if (app.ApplicationServices.GetRequiredService<IOptions<ServerConfiguration>>().Value.EnableMetrics)
                 {
                     // Must be registered after any middleware that could change HTTP response codes or the data will be bad
                     mainApp.UseHttpMetrics();
@@ -222,7 +233,7 @@ namespace Jellyfin.Server
                 mainApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    if (_serverConfigurationManager.Configuration.EnableMetrics)
+                    if (app.ApplicationServices.GetRequiredService<IOptions<ServerConfiguration>>().Value.EnableMetrics)
                     {
                         endpoints.MapMetrics();
                     }

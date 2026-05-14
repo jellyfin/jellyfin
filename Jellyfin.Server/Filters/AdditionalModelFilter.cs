@@ -4,13 +4,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
+using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Migrations;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.OpenApi;
@@ -25,15 +28,24 @@ namespace Jellyfin.Server.Filters
     {
         // Array of options that should not be visible in the api spec.
         private static readonly Type[] _ignoredConfigurations = [typeof(MigrationOptions), typeof(MediaBrowser.Model.Branding.BrandingOptions)];
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+
+        // Non-plugin configuration models exposed by the options system.
+        private static readonly Type[] _knownConfigurations =
+        [
+            typeof(ServerConfiguration),
+            typeof(EncodingOptions),
+            typeof(NetworkConfiguration),
+            typeof(MediaBrowser.Model.Branding.BrandingOptions),
+            typeof(DatabaseConfigurationOptions),
+            typeof(LiveTvOptions),
+            typeof(XbmcMetadataOptions)
+        ];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdditionalModelFilter"/> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public AdditionalModelFilter(IServerConfigurationManager serverConfigurationManager)
+        public AdditionalModelFilter()
         {
-            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <inheritdoc />
@@ -203,14 +215,14 @@ namespace Jellyfin.Server.Filters
 
             context.SchemaGenerator.GenerateSchema(typeof(ServerDiscoveryInfo), context.SchemaRepository);
 
-            foreach (var configuration in _serverConfigurationManager.GetConfigurationStores())
+            foreach (var configuration in _knownConfigurations)
             {
-                if (_ignoredConfigurations.IndexOf(configuration.ConfigurationType) != -1)
+                if (_ignoredConfigurations.IndexOf(configuration) != -1)
                 {
                     continue;
                 }
 
-                context.SchemaGenerator.GenerateSchema(configuration.ConfigurationType, context.SchemaRepository);
+                context.SchemaGenerator.GenerateSchema(configuration, context.SchemaRepository);
             }
         }
     }

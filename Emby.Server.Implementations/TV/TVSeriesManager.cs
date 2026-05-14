@@ -8,12 +8,13 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Options;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
 
@@ -23,13 +24,13 @@ namespace Emby.Server.Implementations.TV
     {
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
-        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public TVSeriesManager(IUserDataManager userDataManager, ILibraryManager libraryManager, IOptions<ServerConfiguration> serverConfig)
         {
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
         }
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
@@ -113,7 +114,7 @@ namespace Emby.Server.Implementations.TV
                 return new QueryResult<BaseItem>();
             }
 
-            var includeSpecials = _configurationManager.Configuration.DisplaySpecialsWithinSeasons;
+            var includeSpecials = _serverConfig.Value.DisplaySpecialsWithinSeasons;
             var includeRewatching = request.EnableRewatching;
 
             var query = new InternalItemsQuery(user)

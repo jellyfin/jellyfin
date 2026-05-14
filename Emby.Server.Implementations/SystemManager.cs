@@ -5,11 +5,12 @@ using Jellyfin.Server.Implementations.StorageHelpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations;
 
@@ -19,7 +20,8 @@ public class SystemManager : ISystemManager
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IServerApplicationHost _applicationHost;
     private readonly IServerApplicationPaths _applicationPaths;
-    private readonly IServerConfigurationManager _configurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
+    private readonly IOptions<EncodingOptions> _encodingOptions;
     private readonly IStartupOptions _startupOptions;
     private readonly IInstallationManager _installationManager;
     private readonly ILibraryManager _libraryManager;
@@ -30,7 +32,8 @@ public class SystemManager : ISystemManager
     /// <param name="applicationLifetime">Instance of <see cref="IHostApplicationLifetime"/>.</param>
     /// <param name="applicationHost">Instance of <see cref="IServerApplicationHost"/>.</param>
     /// <param name="applicationPaths">Instance of <see cref="IServerApplicationPaths"/>.</param>
-    /// <param name="configurationManager">Instance of <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="serverConfig">Instance of <see cref="IOptions{ServerConfiguration}"/>.</param>
+    /// <param name="encodingOptions">Instance of <see cref="IOptions{EncodingOptions}"/>.</param>
     /// <param name="startupOptions">Instance of <see cref="IStartupOptions"/>.</param>
     /// <param name="installationManager">Instance of <see cref="IInstallationManager"/>.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
@@ -38,7 +41,8 @@ public class SystemManager : ISystemManager
         IHostApplicationLifetime applicationLifetime,
         IServerApplicationHost applicationHost,
         IServerApplicationPaths applicationPaths,
-        IServerConfigurationManager configurationManager,
+        IOptions<ServerConfiguration> serverConfig,
+        IOptions<EncodingOptions> encodingOptions,
         IStartupOptions startupOptions,
         IInstallationManager installationManager,
         ILibraryManager libraryManager)
@@ -46,7 +50,8 @@ public class SystemManager : ISystemManager
         _applicationLifetime = applicationLifetime;
         _applicationHost = applicationHost;
         _applicationPaths = applicationPaths;
-        _configurationManager = configurationManager;
+        _serverConfig = serverConfig;
+        _encodingOptions = encodingOptions;
         _startupOptions = startupOptions;
         _installationManager = installationManager;
         _libraryManager = libraryManager;
@@ -71,14 +76,14 @@ public class SystemManager : ISystemManager
             ItemsByNamePath = _applicationPaths.InternalMetadataPath,
             InternalMetadataPath = _applicationPaths.InternalMetadataPath,
             CachePath = _applicationPaths.CachePath,
-            TranscodingTempPath = _configurationManager.GetTranscodePath(),
+            TranscodingTempPath = EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _applicationPaths),
 #pragma warning restore CS0618 // Type or member is obsolete
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
-            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted,
+            StartupWizardCompleted = _serverConfig.Value.IsStartupWizardCompleted,
             SupportsLibraryMonitor = true,
             PackageName = _startupOptions.PackageName,
-            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
+            CastReceiverApplications = _serverConfig.Value.CastReceiverApplications
         };
     }
 
@@ -103,7 +108,7 @@ public class SystemManager : ISystemManager
             ImageCacheFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.ImageCachePath),
             InternalMetadataFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.InternalMetadataPath),
             CacheFolder = StorageHelper.GetFreeSpaceOf(_applicationPaths.CachePath),
-            TranscodingTempFolder = StorageHelper.GetFreeSpaceOf(_configurationManager.GetTranscodePath()),
+            TranscodingTempFolder = StorageHelper.GetFreeSpaceOf(EncodingConfigurationExtensions.GetTranscodePath(_encodingOptions.Value, _applicationPaths)),
             Libraries = virtualFolderInfos.ToArray()
         };
     }
@@ -118,7 +123,7 @@ public class SystemManager : ISystemManager
             Id = _applicationHost.SystemId,
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
-            StartupWizardCompleted = _configurationManager.CommonConfiguration.IsStartupWizardCompleted
+            StartupWizardCompleted = _serverConfig.Value.IsStartupWizardCompleted
         };
     }
 

@@ -15,15 +15,16 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.LiveTv.TunerHosts
@@ -38,23 +39,27 @@ namespace Jellyfin.LiveTv.TunerHosts
         private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
+        private readonly IOptions<EncodingOptions> _encodingOptions;
 
         public M3UTunerHost(
-            IServerConfigurationManager config,
+            IOptions<LiveTvOptions> config,
+            IServerApplicationPaths appPaths,
             IMediaSourceManager mediaSourceManager,
             ILogger<M3UTunerHost> logger,
             IFileSystem fileSystem,
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
-            IStreamHelper streamHelper)
-            : base(config, logger, fileSystem)
+            IStreamHelper streamHelper,
+            IOptions<EncodingOptions> encodingOptions)
+            : base(config, appPaths, logger, fileSystem)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _networkManager = networkManager;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
+            _encodingOptions = encodingOptions;
         }
 
         public override string Type => "m3u";
@@ -111,7 +116,7 @@ namespace Jellyfin.LiveTv.TunerHosts
                         {
                             if (_mimeTypesCanShareHttpStream.Contains(response.Content.Headers.ContentType?.MediaType, StringComparison.OrdinalIgnoreCase))
                             {
-                                return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                                return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, _encodingOptions, ServerApplicationPaths, _appHost, _streamHelper);
                             }
                         }
                     }
@@ -122,11 +127,11 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
                 else if (_extensionsCanShareHttpStream.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                    return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, _encodingOptions, ServerApplicationPaths, _appHost, _streamHelper);
                 }
             }
 
-            return new LiveStream(mediaSource, tunerHost, FileSystem, Logger, Config, _streamHelper);
+            return new LiveStream(mediaSource, tunerHost, FileSystem, Logger, _encodingOptions, ServerApplicationPaths, _streamHelper);
         }
 
         public async Task Validate(TunerHostInfo info)

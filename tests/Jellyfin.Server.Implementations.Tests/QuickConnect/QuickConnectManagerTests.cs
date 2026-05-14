@@ -6,9 +6,9 @@ using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.QuickConnect;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -31,14 +31,13 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
         public QuickConnectManagerTests()
         {
             _config = new ServerConfiguration();
-            var configManager = new Mock<IServerConfigurationManager>();
-            configManager.Setup(x => x.Configuration).Returns(_config);
+            var configOptions = Options.Create(_config);
 
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization
             {
                 ConfigureMembers = true
-            }).Inject(configManager.Object);
+            }).Inject(configOptions);
 
             // User object contains circular references.
             _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()

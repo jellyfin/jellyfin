@@ -10,10 +10,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.Localization
 {
@@ -29,7 +30,7 @@ namespace Emby.Server.Implementations.Localization
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
         private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
 
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly ILogger<LocalizationManager> _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRatingScore?>> _allParentalRatings = new(StringComparer.OrdinalIgnoreCase);
@@ -46,13 +47,13 @@ namespace Emby.Server.Implementations.Localization
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
-        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="serverConfig">The server configuration.</param>
         /// <param name="logger">The logger.</param>
         public LocalizationManager(
-            IServerConfigurationManager configurationManager,
+            IOptions<ServerConfiguration> serverConfig,
             ILogger<LocalizationManager> logger)
         {
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
             _logger = logger;
         }
 
@@ -277,7 +278,7 @@ namespace Emby.Server.Implementations.Localization
             // Fallback to server default if no country code is specified.
             if (string.IsNullOrEmpty(countryCode))
             {
-                countryCode = _configurationManager.Configuration.MetadataCountryCode;
+                countryCode = _serverConfig.Value.MetadataCountryCode;
             }
 
             if (_allParentalRatings.TryGetValue(countryCode, out var countryValue))
@@ -420,7 +421,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
-            return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
+            return GetLocalizedString(phrase, _serverConfig.Value.UICulture);
         }
 
         /// <inheritdoc />
@@ -428,7 +429,7 @@ namespace Emby.Server.Implementations.Localization
         {
             if (string.IsNullOrEmpty(culture))
             {
-                culture = _configurationManager.Configuration.UICulture;
+                culture = _serverConfig.Value.UICulture;
             }
 
             if (string.IsNullOrEmpty(culture))

@@ -6,6 +6,7 @@ namespace MediaBrowser.Controller.Configuration
     /// <summary>
     /// Interface IServerConfigurationManager.
     /// </summary>
+    [System.Obsolete("see IConfigurationManager")]
     public interface IServerConfigurationManager : IConfigurationManager
     {
         /// <summary>

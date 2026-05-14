@@ -19,7 +19,6 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -30,6 +29,7 @@ using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -39,6 +39,7 @@ using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -49,7 +50,7 @@ namespace Emby.Server.Implementations.Session
     public sealed class SessionManager : ISessionManager, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly ILogger<SessionManager> _logger;
         private readonly IEventManager _eventManager;
         private readonly ILibraryManager _libraryManager;
@@ -79,7 +80,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">Instance of <see cref="ILogger{SessionManager}"/> interface.</param>
         /// <param name="eventManager">Instance of <see cref="IEventManager"/> interface.</param>
         /// <param name="userDataManager">Instance of <see cref="IUserDataManager"/> interface.</param>
-        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IOptions{ServerConfiguration}"/> interface.</param>
         /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
         /// <param name="musicManager">Instance of <see cref="IMusicManager"/> interface.</param>
@@ -93,7 +94,7 @@ namespace Emby.Server.Implementations.Session
             ILogger<SessionManager> logger,
             IEventManager eventManager,
             IUserDataManager userDataManager,
-            IServerConfigurationManager serverConfigurationManager,
+            IOptions<ServerConfiguration> serverConfigurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IMusicManager musicManager,
@@ -107,7 +108,7 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _eventManager = eventManager;
             _userDataManager = userDataManager;
-            _config = serverConfigurationManager;
+            _serverConfig = serverConfigurationManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
@@ -613,7 +614,7 @@ namespace Emby.Server.Implementations.Session
         {
             _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
-            if (_config.Configuration.InactiveSessionThreshold > 0)
+            if (_serverConfig.Value.InactiveSessionThreshold > 0)
             {
                 _inactiveTimer ??= new Timer(CheckForInactiveSteams, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             }
@@ -684,11 +685,11 @@ namespace Emby.Server.Implementations.Session
             var inactiveSessions = Sessions.Where(i =>
                     i.NowPlayingItem is not null
                     && i.PlayState.IsPaused
-                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold);
+                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _serverConfig.Value.InactiveSessionThreshold);
 
             foreach (var session in inactiveSessions)
             {
-                _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
+                _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _serverConfig.Value.InactiveSessionThreshold);
 
                 try
                 {

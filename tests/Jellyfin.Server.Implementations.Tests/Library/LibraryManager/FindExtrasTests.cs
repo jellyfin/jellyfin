@@ -6,7 +6,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -32,8 +32,8 @@ public class FindExtrasTests
     {
         var fixture = new Fixture().Customize(new AutoMoqCustomization());
         fixture.Register(() => new NamingOptions());
-        var configMock = fixture.Freeze<Mock<IServerConfigurationManager>>();
-        configMock.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
+        var appPathsMock = fixture.Freeze<Mock<IServerApplicationPaths>>();
+        appPathsMock.Setup(c => c.ProgramDataPath).Returns("/data");
         var itemRepository = fixture.Freeze<Mock<IItemRepository>>();
         itemRepository.Setup(i => i.RetrieveItem(It.IsAny<Guid>())).Returns<BaseItem>(null);
         _fileSystemMock = fixture.Freeze<Mock<IFileSystem>>();

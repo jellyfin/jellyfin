@@ -9,13 +9,14 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -37,7 +38,7 @@ public class ItemUpdateController : BaseJellyfinApiController
     private readonly IProviderManager _providerManager;
     private readonly ILocalizationManager _localizationManager;
     private readonly IFileSystem _fileSystem;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IWritableOptions<ServerConfiguration> _serverConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemUpdateController"/> class.
@@ -46,19 +47,19 @@ public class ItemUpdateController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverConfig">Instance of the <see cref="IWritableOptions{ServerConfiguration}"/> interface.</param>
     public ItemUpdateController(
         IFileSystem fileSystem,
         ILibraryManager libraryManager,
         IProviderManager providerManager,
         ILocalizationManager localizationManager,
-        IServerConfigurationManager serverConfigurationManager)
+        IWritableOptions<ServerConfiguration> serverConfig)
     {
         _libraryManager = libraryManager;
         _providerManager = providerManager;
         _localizationManager = localizationManager;
         _fileSystem = fileSystem;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
     }
 
     /// <summary>
@@ -217,7 +218,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         var path = item.ContainingFolderPath;
 
-        var types = _serverConfigurationManager.Configuration.ContentTypes
+        var types = _serverConfig.Value.ContentTypes
             .Where(i => !string.IsNullOrWhiteSpace(i.Name))
             .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -231,8 +232,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             });
         }
 
-        _serverConfigurationManager.Configuration.ContentTypes = types.ToArray();
-        _serverConfigurationManager.SaveConfiguration();
+        _serverConfig.Update(c => c.ContentTypes = types.ToArray());
         return NoContent();
     }
 

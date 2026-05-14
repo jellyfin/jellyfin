@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
                 name;
 
-            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.ArtistsPath, validName);
+            return System.IO.Path.Combine(ServerApplicationPaths.ArtistsPath, validName);
         }
 
         private string GetRebasedPath()

@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -27,6 +28,8 @@ namespace MediaBrowser.Controller.LiveTv
         {
             IsVirtualItem = true;
         }
+
+        public static IOptionsMonitor<LiveTvOptions> LiveTvOptions { get; set; }
 
         public string SeriesName { get; set; }
 
@@ -222,16 +225,11 @@ namespace MediaBrowser.Controller.LiveTv
             return false;
         }
 
-        private LiveTvOptions GetConfiguration()
-        {
-            return ConfigurationManager.GetConfiguration<LiveTvOptions>("livetv");
-        }
-
         private ListingsProviderInfo GetListingsProviderInfo()
         {
             if (string.Equals(ServiceName, "Emby", StringComparison.OrdinalIgnoreCase))
             {
-                var config = GetConfiguration();
+                var config = LiveTvOptions.CurrentValue;
 
                 return config.ListingProviders.FirstOrDefault(i => !string.IsNullOrEmpty(i.MoviePrefix));
             }

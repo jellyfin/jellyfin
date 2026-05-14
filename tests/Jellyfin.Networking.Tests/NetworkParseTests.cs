@@ -3,27 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Jellyfin.Networking.Manager;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
-        internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        internal static IOptionsMonitor<NetworkConfiguration> GetMockConfig(NetworkConfiguration conf)
         {
-            var configManager = new Mock<IConfigurationManager>
-            {
-                CallBase = true
-            };
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            var configManager = new Mock<IOptionsMonitor<NetworkConfiguration>>();
+            configManager.Setup(x => x.CurrentValue).Returns(conf);
+            configManager.Setup(x => x.Get(It.IsAny<string>())).Returns(conf);
+            configManager.Setup(x => x.OnChange(It.IsAny<Action<NetworkConfiguration, string?>>())).Returns((IDisposable?)null);
             return configManager.Object;
         }
 

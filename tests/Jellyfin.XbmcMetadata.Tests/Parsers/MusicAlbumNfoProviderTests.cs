@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Plugins.MusicBrainz;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -29,16 +29,14 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(new[] { externalIdInfo });
 
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
+            var config = Options.Create(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
             var directoryService = new Mock<IDirectoryService>();
 
             _parser = new BaseNfoParser<MusicAlbum>(
                 new NullLogger<BaseNfoParser<MusicAlbum>>(),
-                config.Object,
+                config,
                 providerManager.Object,
                 user.Object,
                 userData.Object,

@@ -11,11 +11,13 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.TunerHosts
 {
@@ -31,10 +33,11 @@ namespace Jellyfin.LiveTv.TunerHosts
             IFileSystem fileSystem,
             IHttpClientFactory httpClientFactory,
             ILogger logger,
-            IConfigurationManager configurationManager,
+            IOptions<EncodingOptions> encodingOptions,
+            IServerApplicationPaths appPaths,
             IServerApplicationHost appHost,
             IStreamHelper streamHelper)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, encodingOptions, appPaths, streamHelper)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;

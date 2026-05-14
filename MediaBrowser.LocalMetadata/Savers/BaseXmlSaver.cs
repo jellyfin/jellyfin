@@ -7,15 +7,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -26,13 +27,13 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// Initializes a new instance of the <see cref="BaseXmlSaver"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="serverConfig">Instance of the server config.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
-        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<BaseXmlSaver> logger)
+        protected BaseXmlSaver(IFileSystem fileSystem, IOptions<ServerConfiguration> serverConfig, ILibraryManager libraryManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
-            ConfigurationManager = configurationManager;
+            ConfigurationManager = serverConfig;
             LibraryManager = libraryManager;
             Logger = logger;
         }
@@ -45,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <summary>
         /// Gets the configuration manager.
         /// </summary>
-        protected IServerConfigurationManager ConfigurationManager { get; private set; }
+        protected IOptions<ServerConfiguration> ConfigurationManager { get; private set; }
 
         /// <summary>
         /// Gets the library manager.
@@ -140,7 +141,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (ConfigurationManager.Configuration.SaveMetadataHidden)
+            if (ConfigurationManager.Value.SaveMetadataHidden)
             {
                 SetHidden(path, true);
             }

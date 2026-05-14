@@ -7,7 +7,6 @@ using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +17,6 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
 {
     public class IgnoreScheduleHandlerTests
     {
-        private readonly Mock<IConfigurationManager> _configurationManagerMock;
         private readonly List<IAuthorizationRequirement> _requirements;
         private readonly DefaultAuthorizationHandler _sut;
         private readonly Mock<IUserManager> _userManagerMock;
@@ -32,7 +30,6 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
         public IgnoreScheduleHandlerTests()
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
             _requirements = new List<IAuthorizationRequirement> { new DefaultAuthorizationRequirement(validateParentalSchedule: false) };
             _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
             _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
@@ -46,7 +43,6 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
         [InlineData(UserRoles.Guest, true)]
         public async Task ShouldAllowScheduleCorrectly(string role, bool shouldSucceed)
         {
-            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
             var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,

@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Controller.MediaEncoding;
 
@@ -18,7 +18,7 @@ public class TranscodingSegmentCleaner : IDisposable
 {
     private readonly TranscodingJob _job;
     private readonly ILogger<TranscodingSegmentCleaner> _logger;
-    private readonly IConfigurationManager _config;
+    private readonly IOptions<EncodingOptions> _config;
     private readonly IFileSystem _fileSystem;
     private readonly IMediaEncoder _mediaEncoder;
     private Timer? _timer;
@@ -29,11 +29,11 @@ public class TranscodingSegmentCleaner : IDisposable
     /// </summary>
     /// <param name="job">Transcoding job dto.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{TranscodingSegmentCleaner}"/> interface.</param>
-    /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+    /// <param name="config">Instance of the <see cref="IOptions{EncodingOptions}"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="segmentLength">The segment length of this transcoding job.</param>
-    public TranscodingSegmentCleaner(TranscodingJob job, ILogger<TranscodingSegmentCleaner> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder, int segmentLength)
+    public TranscodingSegmentCleaner(TranscodingJob job, ILogger<TranscodingSegmentCleaner> logger, IOptions<EncodingOptions> config, IFileSystem fileSystem, IMediaEncoder mediaEncoder, int segmentLength)
     {
         _job = job;
         _logger = logger;
@@ -82,7 +82,7 @@ public class TranscodingSegmentCleaner : IDisposable
 
     private EncodingOptions GetOptions()
     {
-        return _config.GetEncodingOptions();
+        return _config.Value;
     }
 
     private async void TimerCallback(object? state)

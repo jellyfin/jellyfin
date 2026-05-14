@@ -3,9 +3,10 @@ using System.IO;
 using System.Net.Mime;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,7 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
-    private readonly IServerConfigurationManager _configuration;
+    private readonly IServerApplicationPaths _serverAppPaths;
     private readonly IWebHostEnvironment _hostEnvironment;
 
     /// <summary>
@@ -29,17 +30,17 @@ public class ExceptionMiddleware
     /// </summary>
     /// <param name="next">Next request delegate.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{ExceptionMiddleware}"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverApplicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="hostEnvironment">Instance of the <see cref="IWebHostEnvironment"/> interface.</param>
     public ExceptionMiddleware(
         RequestDelegate next,
         ILogger<ExceptionMiddleware> logger,
-        IServerConfigurationManager serverConfigurationManager,
+        IServerApplicationPaths serverApplicationPaths,
         IWebHostEnvironment hostEnvironment)
     {
         _next = next;
         _logger = logger;
-        _configuration = serverConfigurationManager;
+        _serverAppPaths = serverApplicationPaths;
         _hostEnvironment = hostEnvironment;
     }
 
@@ -139,11 +140,11 @@ public class ExceptionMiddleware
     {
         // Strip any information we don't want to reveal
         return msg.Replace(
-                _configuration.ApplicationPaths.ProgramSystemPath,
+                _serverAppPaths.ProgramSystemPath,
                 string.Empty,
                 StringComparison.OrdinalIgnoreCase)
             .Replace(
-                _configuration.ApplicationPaths.ProgramDataPath,
+                _serverAppPaths.ProgramDataPath,
                 string.Empty,
                 StringComparison.OrdinalIgnoreCase);
     }

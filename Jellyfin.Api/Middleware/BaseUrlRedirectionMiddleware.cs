@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Api.Middleware;
@@ -38,12 +38,12 @@ public class BaseUrlRedirectionMiddleware
     /// Executes the middleware action.
     /// </summary>
     /// <param name="httpContext">The current HTTP context.</param>
-    /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    /// <param name="networkConfig">The server configuration manager.</param>
     /// <returns>The async task.</returns>
-    public async Task Invoke(HttpContext httpContext, IServerConfigurationManager serverConfigurationManager)
+    public async Task Invoke(HttpContext httpContext, IOptions<NetworkConfiguration> networkConfig)
     {
         var localPath = httpContext.Request.Path.ToString();
-        var baseUrlPrefix = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
+        var baseUrlPrefix = networkConfig.Value.BaseUrl;
 
         if (string.IsNullOrEmpty(localPath)
             || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)

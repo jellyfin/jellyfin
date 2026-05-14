@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                     return false;
                 }
 
-                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
+                return !FileSystem.ContainsSubPath(ServerApplicationPaths.DataPath, Path);
             }
         }
 

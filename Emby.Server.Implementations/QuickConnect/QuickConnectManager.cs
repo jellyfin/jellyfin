@@ -6,12 +6,13 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.QuickConnect
 {
@@ -33,7 +34,7 @@ namespace Emby.Server.Implementations.QuickConnect
         private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new();
         private readonly ConcurrentDictionary<string, (DateTime Timestamp, AuthenticationResult AuthenticationResult)> _authorizedSecrets = new();
 
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly ILogger<QuickConnectManager> _logger;
         private readonly ISessionManager _sessionManager;
 
@@ -45,17 +46,17 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <param name="logger">Logger.</param>
         /// <param name="sessionManager">Session Manager.</param>
         public QuickConnectManager(
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> config,
             ILogger<QuickConnectManager> logger,
             ISessionManager sessionManager)
         {
-            _config = config;
+            _serverConfig = config;
             _logger = logger;
             _sessionManager = sessionManager;
         }
 
         /// <inheritdoc />
-        public bool IsEnabled => _config.Configuration.QuickConnectAvailable;
+        public bool IsEnabled => _serverConfig.Value.QuickConnectAvailable;
 
         /// <summary>
         /// Assert that quick connect is currently active and throws an exception if it is not.

@@ -7,16 +7,17 @@ using AutoFixture.Xunit3;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Nikse.SubtitleEdit.Core.Common;
 using Xunit;
@@ -31,7 +32,7 @@ public class UserControllerTests
     private readonly Mock<INetworkManager> _mockNetworkManager;
     private readonly Mock<IDeviceManager> _mockDeviceManager;
     private readonly Mock<IAuthorizationContext> _mockAuthorizationContext;
-    private readonly Mock<IServerConfigurationManager> _mockServerConfigurationManager;
+    private readonly Mock<IOptions<ServerConfiguration>> _mockServerOptions;
     private readonly Mock<ILogger<UserController>> _mockLogger;
     private readonly Mock<IQuickConnect> _mockQuickConnect;
     private readonly Mock<IPlaylistManager> _mockPlaylistManager;
@@ -43,7 +44,7 @@ public class UserControllerTests
         _mockNetworkManager = new Mock<INetworkManager>();
         _mockDeviceManager = new Mock<IDeviceManager>();
         _mockAuthorizationContext = new Mock<IAuthorizationContext>();
-        _mockServerConfigurationManager = new Mock<IServerConfigurationManager>();
+        _mockServerOptions = new Mock<IOptions<ServerConfiguration>>();
         _mockLogger = new Mock<ILogger<UserController>>();
         _mockQuickConnect = new Mock<IQuickConnect>();
         _mockPlaylistManager = new Mock<IPlaylistManager>();
@@ -54,7 +55,7 @@ public class UserControllerTests
             _mockNetworkManager.Object,
             _mockDeviceManager.Object,
             _mockAuthorizationContext.Object,
-            _mockServerConfigurationManager.Object,
+            _mockServerOptions.Object,
             _mockLogger.Object,
             _mockQuickConnect.Object,
             _mockPlaylistManager.Object);

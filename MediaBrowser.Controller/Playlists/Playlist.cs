@@ -98,7 +98,7 @@ namespace MediaBrowser.Controller.Playlists
                     return false;
                 }
 
-                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
+                return FileSystem.ContainsSubPath(ServerApplicationPaths.DataPath, path);
             }
         }
 

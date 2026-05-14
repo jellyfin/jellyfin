@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -25,6 +24,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IChapterManager _chapterManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IChapterManager chapterManager,
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> config,
             ISubtitleManager subtitleManager,
             ILibraryManager libraryManager,
             AudioResolver audioResolver,
@@ -276,7 +276,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
                 || options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length <= 1 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                if (_config.Value.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     chapters = CreateDummyChapters(video);
                 }
@@ -615,8 +615,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         TimeSpan.FromTicks(runtime).TotalMinutes));
             }
 
-            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
-
+            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Value.DummyChapterDuration).Ticks;
             if (runtime <= 0)
             {
                 return [];

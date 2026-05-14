@@ -12,7 +12,6 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -37,15 +36,15 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryStructureController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="serverApplicationPaths">Instance of <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
     public LibraryStructureController(
-        IServerConfigurationManager serverConfigurationManager,
+        IServerApplicationPaths serverApplicationPaths,
         ILibraryManager libraryManager,
         ILibraryMonitor libraryMonitor)
     {
-        _appPaths = serverConfigurationManager.ApplicationPaths;
+        _appPaths = serverApplicationPaths;
         _libraryManager = libraryManager;
         _libraryMonitor = libraryMonitor;
     }

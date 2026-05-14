@@ -1,9 +1,9 @@
 using System;
 using MediaBrowser.Controller.BaseItemManager;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -34,11 +34,9 @@ namespace Jellyfin.Controller.Tests
                 typeConfig.DisabledMetadataFetchers = new[] { "ServerDisabled" };
             }
 
-            var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
-                .Returns(serverConfiguration);
+            var serverConfigurationManager = Options.Create(serverConfiguration);
 
-            var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
+            var baseItemManager = new BaseItemManager(serverConfigurationManager);
             var actual = baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, fetcherName);
 
             Assert.Equal(expected, actual);
@@ -67,11 +65,9 @@ namespace Jellyfin.Controller.Tests
                 typeConfig.DisabledImageFetchers = new[] { "ServerDisabled" };
             }
 
-            var serverConfigurationManager = new Mock<IServerConfigurationManager>();
-            serverConfigurationManager.Setup(scm => scm.Configuration)
-                .Returns(serverConfiguration);
+            var serverConfigurationManager = Options.Create(serverConfiguration);
 
-            var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
+            var baseItemManager = new BaseItemManager(serverConfigurationManager);
             var actual = baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, fetcherName);
 
             Assert.Equal(expected, actual);

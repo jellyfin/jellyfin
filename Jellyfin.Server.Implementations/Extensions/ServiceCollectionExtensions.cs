@@ -8,10 +8,11 @@ using Jellyfin.Database.Implementations.DbConfiguration;
 using Jellyfin.Database.Implementations.Locking;
 using Jellyfin.Database.Providers.Sqlite;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using JellyfinDbProviderFactory = System.Func<System.IServiceProvider, Jellyfin.Database.Implementations.IJellyfinDatabaseProvider>;
 
 namespace Jellyfin.Server.Implementations.Extensions;
@@ -70,75 +71,85 @@ public static class ServiceCollectionExtensions
     /// Adds the <see cref="IDbContextFactory{TContext}"/> interface to the service collection with second level caching enabled.
     /// </summary>
     /// <param name="serviceCollection">An instance of the <see cref="IServiceCollection"/> interface.</param>
-    /// <param name="configurationManager">The server configuration manager.</param>
-    /// <param name="configuration">The startup Configuration.</param>
+    /// <param name="configuration">The Configuration Root.</param>
+    /// <param name="appPaths">Server app paths.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddJellyfinDbContext(
         this IServiceCollection serviceCollection,
-        IServerConfigurationManager configurationManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IServerApplicationPaths appPaths)
     {
-        var efCoreConfiguration = configurationManager.GetConfiguration<DatabaseConfigurationOptions>("database");
-        JellyfinDbProviderFactory? providerFactory = null;
-
-        if (efCoreConfiguration?.DatabaseType is null)
+        serviceCollection.AddSingleton<DatabaseConfigurationOptions>(sp =>
         {
-            var cmdMigrationArgument = configuration.GetValue<string>("migration-provider");
-            if (!string.IsNullOrWhiteSpace(cmdMigrationArgument))
+            var dbConfig = sp.GetRequiredService<IWritableOptions<DatabaseConfigurationOptions>>();
+            var efCoreConfiguration = dbConfig.Value;
+
+            if (efCoreConfiguration?.DatabaseType is null)
             {
-                efCoreConfiguration = new DatabaseConfigurationOptions()
+                var cmdMigrationArgument = configuration.GetValue<string>("migration-provider");
+                if (!string.IsNullOrWhiteSpace(cmdMigrationArgument))
                 {
-                    DatabaseType = cmdMigrationArgument,
-                };
+                    efCoreConfiguration = new DatabaseConfigurationOptions()
+                    {
+                        DatabaseType = cmdMigrationArgument,
+                    };
+                }
+                else
+                {
+                    dbConfig.Update(config =>
+                    {
+                        config.DatabaseType = "Jellyfin-SQLite";
+                        config.LockingBehavior = DatabaseLockingBehaviorTypes.NoLock;
+                        efCoreConfiguration = config;
+                    });
+                    // when nothing is setup via new Database configuration, fallback to SQLite with default settings.
+                }
+            }
+
+            return efCoreConfiguration!;
+        });
+
+        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(sp =>
+        {
+            var efCoreConfiguration = sp.GetRequiredService<DatabaseConfigurationOptions>();
+            JellyfinDbProviderFactory? providerFactory = null;
+
+            if (efCoreConfiguration.DatabaseType?.Equals("PLUGIN_PROVIDER", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                if (efCoreConfiguration.CustomProviderOptions is null)
+                {
+                    throw new InvalidOperationException("The custom database provider must declare the custom provider options to work");
+                }
+
+                providerFactory = LoadDatabasePlugin(efCoreConfiguration.CustomProviderOptions, appPaths);
             }
             else
             {
-                // when nothing is setup via new Database configuration, fallback to SQLite with default settings.
-                efCoreConfiguration = new DatabaseConfigurationOptions()
+                var providers = GetSupportedDbProviders();
+                if (!providers.TryGetValue(efCoreConfiguration.DatabaseType?.ToUpperInvariant() ?? string.Empty, out providerFactory!))
                 {
-                    DatabaseType = "Jellyfin-SQLite",
-                    LockingBehavior = DatabaseLockingBehaviorTypes.NoLock
-                };
-                configurationManager.SaveConfiguration("database", efCoreConfiguration);
+                    throw new InvalidOperationException($"Jellyfin cannot find the database provider of type '{efCoreConfiguration.DatabaseType}'. Supported types are {string.Join(", ", providers.Keys)}");
+                }
             }
-        }
 
-        if (efCoreConfiguration.DatabaseType.Equals("PLUGIN_PROVIDER", StringComparison.OrdinalIgnoreCase))
+            return providerFactory!(sp);
+        });
+
+        serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior>(sp =>
         {
-            if (efCoreConfiguration.CustomProviderOptions is null)
+            var efCoreConfiguration = sp.GetRequiredService<DatabaseConfigurationOptions>();
+            return efCoreConfiguration.LockingBehavior switch
             {
-                throw new InvalidOperationException("The custom database provider must declare the custom provider options to work");
-            }
-
-            providerFactory = LoadDatabasePlugin(efCoreConfiguration.CustomProviderOptions, configurationManager.ApplicationPaths);
-        }
-        else
-        {
-            var providers = GetSupportedDbProviders();
-            if (!providers.TryGetValue(efCoreConfiguration.DatabaseType.ToUpperInvariant(), out providerFactory!))
-            {
-                throw new InvalidOperationException($"Jellyfin cannot find the database provider of type '{efCoreConfiguration.DatabaseType}'. Supported types are {string.Join(", ", providers.Keys)}");
-            }
-        }
-
-        serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
-
-        switch (efCoreConfiguration.LockingBehavior)
-        {
-            case DatabaseLockingBehaviorTypes.NoLock:
-                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, NoLockBehavior>();
-                break;
-            case DatabaseLockingBehaviorTypes.Pessimistic:
-                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, PessimisticLockBehavior>();
-                break;
-            case DatabaseLockingBehaviorTypes.Optimistic:
-                serviceCollection.AddSingleton<IEntityFrameworkCoreLockingBehavior, OptimisticLockBehavior>();
-                break;
-        }
+                DatabaseLockingBehaviorTypes.Pessimistic => (IEntityFrameworkCoreLockingBehavior)ActivatorUtilities.CreateInstance<PessimisticLockBehavior>(sp),
+                DatabaseLockingBehaviorTypes.Optimistic => ActivatorUtilities.CreateInstance<OptimisticLockBehavior>(sp),
+                _ => ActivatorUtilities.CreateInstance<NoLockBehavior>(sp),
+            };
+        });
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+            var efCoreConfiguration = serviceProvider.GetRequiredService<DatabaseConfigurationOptions>();
             provider.Initialise(opt, efCoreConfiguration);
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -307,10 +307,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
         private LocalizationManager Setup(ServerConfiguration config)
         {
-            var mockConfiguration = new Mock<IServerConfigurationManager>();
-            mockConfiguration.SetupGet(x => x.Configuration).Returns(config);
-
-            return new LocalizationManager(mockConfiguration.Object, new NullLogger<LocalizationManager>());
+            return new LocalizationManager(Options.Create(config), new NullLogger<LocalizationManager>());
         }
     }
 }

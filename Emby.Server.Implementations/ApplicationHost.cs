@@ -82,9 +82,11 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.MediaEncoding.Transcoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -100,6 +102,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
@@ -122,6 +125,10 @@ namespace Emby.Server.Implementations
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly PluginManager _pluginManager;
+
+        private IOptionsMonitor<ServerConfiguration> _serverConfigMonitor;
+        private IOptionsMonitor<NetworkConfiguration> _networkConfigMonitor;
+        private IWritableOptions<ServerConfiguration> _writableServerConfig;
 
         private List<Type> _creatingInstances;
 
@@ -159,13 +166,16 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
             _xmlSerializer = new MyXmlSerializer();
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer);
+#pragma warning disable CS0618 // Type or member is obsolete
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _startupConfig);
+
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -211,6 +221,7 @@ namespace Emby.Server.Implementations
         /// Gets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
+        [Obsolete("See IConfigurationManager")]
         public ServerConfigurationManager ConfigurationManager { get; }
 
         /// <summary>
@@ -262,12 +273,17 @@ namespace Emby.Server.Implementations
         public X509Certificate2 Certificate { get; private set; }
 
         /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
+        public bool ListenWithHttps => Certificate is not null
+            && (_networkConfigMonitor?.CurrentValue ?? _startupConfig.GetSection("NetworkConfiguration").Get<NetworkConfiguration>() ?? new NetworkConfiguration()).EnableHttps;
 
-        public string FriendlyName =>
-            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
-                ? Environment.MachineName
-                : ConfigurationManager.Configuration.ServerName;
+        public string FriendlyName
+        {
+            get
+            {
+                var name = (_serverConfigMonitor?.CurrentValue ?? _startupConfig.GetSection("ServerConfiguration").Get<ServerConfiguration>() ?? new ServerConfiguration()).ServerName;
+                return string.IsNullOrEmpty(name) ? Environment.MachineName : name;
+            }
+        }
 
         public string RestoreBackupPath { get; set; }
 
@@ -409,8 +425,8 @@ namespace Emby.Server.Implementations
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-            ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
-            ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
+            _networkConfigMonitor.OnChange((_, _) => OnConfigurationUpdated(this, EventArgs.Empty));
+            _serverConfigMonitor.OnChange((_, _) => OnConfigurationUpdated(this, EventArgs.Empty));
 
             var ffmpegValid = Resolve<IMediaEncoder>().SetFFmpegPath();
 
@@ -431,17 +447,19 @@ namespace Emby.Server.Implementations
         {
             DiscoverTypes();
 
+#pragma warning disable CS0618 // Legacy configuration manager is still populated for plugin compatibility.
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
+#pragma warning restore CS0618
 
-            NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
+            NetManager = new NetworkManager(new NetworkConfigurationOptionsMonitor(_startupConfig), _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
-            if (ConfigurationManager.Configuration.EnableMetrics)
+            if (_startupConfig.GetSection("ServerConfiguration").Get<ServerConfiguration>()?.EnableMetrics is true)
             {
                 _disposableParts.Add(DotNetRuntimeStatsBuilder.Default().StartCollecting());
             }
 
-            var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
+            var networkConfiguration = _startupConfig.GetSection("NetworkConfiguration").Get<NetworkConfiguration>() ?? new NetworkConfiguration();
             HttpPort = networkConfiguration.InternalHttpPort;
             HttpsPort = networkConfiguration.InternalHttpsPort;
 
@@ -470,8 +488,10 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddMemoryCache();
 
-            serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
+#pragma warning disable CS0618 // IConfigurationManager registration retained for plugin compatibility.
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
+            serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
+#pragma warning restore CS0618
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
@@ -498,6 +518,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
             serviceCollection.AddSingleton(ApplicationPaths);
+            serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
@@ -643,7 +664,8 @@ namespace Emby.Server.Implementations
             // For now there's no real way to inject these properly
             BaseItem.ChapterManager = Resolve<IChapterManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
-            BaseItem.ConfigurationManager = ConfigurationManager;
+            BaseItem.ServerConfigOptions = Resolve<IOptions<ServerConfiguration>>();
+            BaseItem.ServerApplicationPaths = ApplicationPaths;
             BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             BaseItem.ItemCountService = Resolve<IItemCountService>();
@@ -662,6 +684,11 @@ namespace Emby.Server.Implementations
             Episode.MediaEncoder = Resolve<IMediaEncoder>();
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             Video.RecordingsManager = Resolve<IRecordingsManager>();
+            LiveTvProgram.LiveTvOptions = Resolve<IOptionsMonitor<LiveTvOptions>>();
+
+            _serverConfigMonitor = Resolve<IOptionsMonitor<ServerConfiguration>>();
+            _networkConfigMonitor = Resolve<IOptionsMonitor<NetworkConfiguration>>();
+            _writableServerConfig = Resolve<IWritableOptions<ServerConfiguration>>();
         }
 
         /// <summary>
@@ -669,10 +696,9 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void FindParts()
         {
-            if (!ConfigurationManager.Configuration.IsPortAuthorized)
+            if (!_writableServerConfig.Value.IsPortAuthorized)
             {
-                ConfigurationManager.Configuration.IsPortAuthorized = true;
-                ConfigurationManager.SaveConfiguration();
+                _writableServerConfig.Update(c => c.IsPortAuthorized = true);
             }
 
             _pluginManager.CreatePlugins();
@@ -745,7 +771,7 @@ namespace Emby.Server.Implementations
         private void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
-            var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
+            var networkConfiguration = _networkConfigMonitor.CurrentValue;
 
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
@@ -754,10 +780,9 @@ namespace Emby.Server.Implementations
                 if (networkConfiguration.InternalHttpPort != HttpPort
                     || networkConfiguration.InternalHttpsPort != HttpsPort)
                 {
-                    if (ConfigurationManager.Configuration.IsPortAuthorized)
+                    if (_writableServerConfig.Value.IsPortAuthorized)
                     {
-                        ConfigurationManager.Configuration.IsPortAuthorized = false;
-                        ConfigurationManager.SaveConfiguration();
+                        _writableServerConfig.Update(c => c.IsPortAuthorized = false);
 
                         requiresRestart = true;
                     }
@@ -891,7 +916,7 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(HttpRequest request)
         {
             // Return the host in the HTTP request as the API URL if not configured otherwise
-            if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
+            if (_networkConfigMonitor.CurrentValue.EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
                 if (requestPort is null
@@ -949,7 +974,7 @@ namespace Emby.Server.Implementations
                 Scheme = scheme,
                 Host = hostname,
                 Port = port ?? (isHttps ? HttpsPort : HttpPort),
-                Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
+                Path = _networkConfigMonitor.CurrentValue.BaseUrl
             }.ToString().TrimEnd('/');
         }
 
@@ -1011,6 +1036,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
+                _pluginManager.Dispose();
                 _disposableParts.Clear();
 
                 _pluginManager?.Dispose();

@@ -8,13 +8,14 @@ using System.Threading;
 using BitFaster.Caching.Lru;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
 
@@ -25,22 +26,22 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
         private readonly IDbContextFactory<JellyfinDbContext> _repository;
         private readonly FastConcurrentLru<string, UserItemData> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDataManager"/> class.
         /// </summary>
-        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="serverConfig">The server configuration.</param>
         /// <param name="repository">Instance of the <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
         public UserDataManager(
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> serverConfig,
             IDbContextFactory<JellyfinDbContext> repository)
         {
-            _config = config;
+            _serverConfig = serverConfig;
             _repository = repository;
-            _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _config.Configuration.CacheSize, StringComparer.OrdinalIgnoreCase);
+            _cache = new FastConcurrentLru<string, UserItemData>(Environment.ProcessorCount, _serverConfig.Value.CacheSize, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -324,12 +325,12 @@ namespace Emby.Server.Implementations.Library
             {
                 var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
-                if (pctIn < _config.Configuration.MinResumePct)
+                if (pctIn < _serverConfig.Value.MinResumePct)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
+                else if (pctIn > _serverConfig.Value.MaxResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
                 {
                     // mark as completed close to the end
                     positionTicks = 0;
@@ -339,7 +340,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < _serverConfig.Value.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
@@ -351,12 +352,12 @@ namespace Emby.Server.Implementations.Library
                 var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
 
-                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
+                if (playbackPositionInMinutes < _serverConfig.Value.MinAudiobookResume)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                else if (remainingTimeInMinutes < _serverConfig.Value.MaxAudiobookResume || positionTicks >= runtimeTicks)
                 {
                     // mark as completed close to the end
                     positionTicks = 0;

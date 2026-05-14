@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -19,11 +18,13 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -58,7 +59,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="blurayExaminer">Instance of the <see cref="IBlurayExaminer"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
         /// <param name="subtitleManager">Instance of the <see cref="ISubtitleManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
@@ -73,7 +74,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IChapterManager chapterManager,
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> config,
             ISubtitleManager subtitleManager,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,

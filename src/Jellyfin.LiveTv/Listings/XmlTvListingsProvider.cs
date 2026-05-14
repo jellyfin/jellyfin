@@ -14,12 +14,14 @@ using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.Listings
 {
@@ -27,16 +29,19 @@ namespace Jellyfin.LiveTv.Listings
     {
         private static readonly TimeSpan _maxCacheAge = TimeSpan.FromHours(1);
 
-        private readonly IServerConfigurationManager _config;
+        private readonly IOptions<ServerConfiguration> _config;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
 
         public XmlTvListingsProvider(
-            IServerConfigurationManager config,
+            IOptions<ServerConfiguration> config,
+            IServerApplicationPaths appPaths,
             IHttpClientFactory httpClientFactory,
             ILogger<XmlTvListingsProvider> logger)
         {
             _config = config;
+            _appPaths = appPaths;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
@@ -52,7 +57,7 @@ namespace Jellyfin.LiveTv.Listings
                 return info.PreferredLanguage;
             }
 
-            return _config.Configuration.PreferredMetadataLanguage;
+            return _config.Value.PreferredMetadataLanguage;
         }
 
         private async Task<string> GetXml(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -60,7 +65,7 @@ namespace Jellyfin.LiveTv.Listings
             _logger.LogInformation("xmltv path: {Path}", info.Path);
 
             string cacheFilename = info.Id + ".xml";
-            string cacheDir = Path.Join(_config.ApplicationPaths.CachePath, "xmltv");
+            string cacheDir = Path.Join(_appPaths.CachePath, "xmltv");
             string cacheFile = Path.Join(cacheDir, cacheFilename);
 
             if (File.Exists(cacheFile))

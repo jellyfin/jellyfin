@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -8,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.Providers.Trickplay;
 
@@ -24,22 +24,22 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
     IHasOrder,
     IForcedProvider
 {
-    private readonly IServerConfigurationManager _config;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly ITrickplayManager _trickplayManager;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayProvider"/> class.
     /// </summary>
-    /// <param name="config">The configuration manager.</param>
+    /// <param name="serverConfig">The configuration manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
     /// <param name="libraryManager">The library manager.</param>
     public TrickplayProvider(
-        IServerConfigurationManager config,
+        IOptions<ServerConfiguration> serverConfig,
         ITrickplayManager trickplayManager,
         ILibraryManager libraryManager)
     {
-        _config = config;
+        _serverConfig = serverConfig;
         _trickplayManager = trickplayManager;
         _libraryManager = libraryManager;
     }
@@ -106,7 +106,7 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
             return ItemUpdateType.None;
         }
 
-        if (_config.Configuration.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
+        if (_serverConfig.Value.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
         {
             await _trickplayManager.RefreshTrickplayDataAsync(video, replace, libraryOptions, cancellationToken).ConfigureAwait(false);
         }

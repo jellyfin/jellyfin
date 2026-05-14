@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             var list = base.GetUserDataKeys();
 
-            if (!ConfigurationManager.Configuration.DisableLiveTvChannelUserDataName)
+            if (!ServerConfigOptions.Value.DisableLiveTvChannelUserDataName)
             {
                 list.Insert(0, GetClientTypeName() + "-" + Name);
             }

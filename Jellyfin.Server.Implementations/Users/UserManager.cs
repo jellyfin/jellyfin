@@ -21,7 +21,6 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -31,6 +30,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -50,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly InvalidAuthProvider _invalidAuthProvider;
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
         private readonly AsyncKeyedLocker<Guid> _userLock = new();
 
@@ -63,7 +63,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="serverConfigurationManager">The system config manager.</param>
+        /// <param name="serverConfigurationManager">The system config options.</param>
         /// <param name="passwordResetProviders">The password reset providers.</param>
         /// <param name="authenticationProviders">The authentication providers.</param>
         public UserManager(
@@ -73,7 +73,7 @@ namespace Jellyfin.Server.Implementations.Users
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
             ILogger<UserManager> logger,
-            IServerConfigurationManager serverConfigurationManager,
+            IOptions<ServerConfiguration> serverConfigurationManager,
             IEnumerable<IPasswordResetProvider> passwordResetProviders,
             IEnumerable<IAuthenticationProvider> authenticationProviders)
         {
@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Implementations.Users
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
-            _serverConfigurationManager = serverConfigurationManager;
+            _serverConfig = serverConfigurationManager;
 
             _passwordResetProviders = passwordResetProviders.ToList();
             _authenticationProviders = authenticationProviders.ToList();
@@ -367,7 +367,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
-            var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
+            var castReceiverApplications = _serverConfig.Value.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
@@ -695,7 +695,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     // Only set cast receiver id if it is passed in and it exists in the server config.
                     if (!string.IsNullOrEmpty(config.CastReceiverId)
-                        && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                        && _serverConfig.Value.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
                     {
                         user.CastReceiverId = config.CastReceiverId;
                     }

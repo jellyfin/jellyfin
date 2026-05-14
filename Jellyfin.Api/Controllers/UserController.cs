@@ -14,7 +14,6 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -28,6 +27,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -42,7 +42,7 @@ public class UserController : BaseJellyfinApiController
     private readonly INetworkManager _networkManager;
     private readonly IDeviceManager _deviceManager;
     private readonly IAuthorizationContext _authContext;
-    private readonly IServerConfigurationManager _config;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly ILogger _logger;
     private readonly IQuickConnect _quickConnectManager;
     private readonly IPlaylistManager _playlistManager;
@@ -55,7 +55,7 @@ public class UserController : BaseJellyfinApiController
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-    /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="config">Instance of the <see cref="IOptions{ServerConfiguration}"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
     /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
@@ -65,7 +65,7 @@ public class UserController : BaseJellyfinApiController
         INetworkManager networkManager,
         IDeviceManager deviceManager,
         IAuthorizationContext authContext,
-        IServerConfigurationManager config,
+        IOptions<ServerConfiguration> config,
         ILogger<UserController> logger,
         IQuickConnect quickConnectManager,
         IPlaylistManager playlistManager)
@@ -75,7 +75,7 @@ public class UserController : BaseJellyfinApiController
         _networkManager = networkManager;
         _deviceManager = deviceManager;
         _authContext = authContext;
-        _config = config;
+        _serverConfig = config;
         _logger = logger;
         _quickConnectManager = quickConnectManager;
         _playlistManager = playlistManager;
@@ -109,7 +109,7 @@ public class UserController : BaseJellyfinApiController
     public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
     {
         // If the startup wizard hasn't been completed then just return all users
-        if (!_config.Configuration.IsStartupWizardCompleted)
+        if (!_serverConfig.Value.IsStartupWizardCompleted)
         {
             return Ok(Get(false, false, false, false));
         }

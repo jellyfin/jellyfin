@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.LiveTv.Configuration;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.LiveTv.Guide;
 
@@ -16,7 +16,7 @@ public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledT
 {
     private readonly ILiveTvManager _liveTvManager;
     private readonly IGuideManager _guideManager;
-    private readonly IConfigurationManager _config;
+    private readonly IOptionsMonitor<LiveTvOptions> _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshGuideScheduledTask"/> class.
@@ -27,7 +27,7 @@ public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledT
     public RefreshGuideScheduledTask(
         ILiveTvManager liveTvManager,
         IGuideManager guideManager,
-        IConfigurationManager config)
+        IOptionsMonitor<LiveTvOptions> config)
     {
         _liveTvManager = liveTvManager;
         _guideManager = guideManager;
@@ -44,7 +44,7 @@ public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledT
     public string Category => "Live TV";
 
     /// <inheritdoc />
-    public bool IsHidden => _liveTvManager.Services.Count == 1 && _config.GetLiveTvConfiguration().TunerHosts.Length == 0;
+    public bool IsHidden => _liveTvManager.Services.Count == 1 && _config.CurrentValue.TunerHosts.Length == 0;
 
     /// <inheritdoc />
     public bool IsEnabled => true;

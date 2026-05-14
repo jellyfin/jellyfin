@@ -10,8 +10,10 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using BaseItemDto = MediaBrowser.Controller.Entities.BaseItem;
 using BaseItemEntity = Jellyfin.Database.Implementations.Entities.BaseItemEntity;
 
@@ -37,7 +39,7 @@ public sealed partial class BaseItemRepository
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
     private readonly IServerApplicationHost _appHost;
     private readonly IItemTypeLookup _itemTypeLookup;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IOptions<ServerConfiguration> _serverConfig;
     private readonly ILogger<BaseItemRepository> _logger;
 
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
@@ -52,19 +54,19 @@ public sealed partial class BaseItemRepository
     /// <param name="dbProvider">The db factory.</param>
     /// <param name="appHost">The Application host.</param>
     /// <param name="itemTypeLookup">The static type lookup.</param>
-    /// <param name="serverConfigurationManager">The server Configuration manager.</param>
+    /// <param name="serverConfig">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost appHost,
         IItemTypeLookup itemTypeLookup,
-        IServerConfigurationManager serverConfigurationManager,
+        IOptions<ServerConfiguration> serverConfig,
         ILogger<BaseItemRepository> logger)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
         _itemTypeLookup = itemTypeLookup;
-        _serverConfigurationManager = serverConfigurationManager;
+        _serverConfig = serverConfig;
         _logger = logger;
     }
 
@@ -219,7 +221,9 @@ public sealed partial class BaseItemRepository
     public BaseItemDto? DeserializeBaseItem(BaseItemEntity entity, bool skipDeserialization = false)
     {
         ArgumentNullException.ThrowIfNull(entity, nameof(entity));
-        if (_serverConfigurationManager?.Configuration is null)
+
+        var serverConfig = _serverConfig.Value;
+        if (serverConfig is null)
         {
             throw new InvalidOperationException("Server Configuration manager or configuration is null");
         }
@@ -229,6 +233,6 @@ public sealed partial class BaseItemRepository
             entity,
             _logger,
             _appHost,
-            skipDeserialization || (_serverConfigurationManager.Configuration.SkipDeserializationForBasicTypes && (typeToSerialise == typeof(Channel) || typeToSerialise == typeof(UserRootFolder))));
+            skipDeserialization || (serverConfig.SkipDeserializationForBasicTypes && (typeToSerialise == typeof(Channel) || typeToSerialise == typeof(UserRootFolder))));
     }
 }

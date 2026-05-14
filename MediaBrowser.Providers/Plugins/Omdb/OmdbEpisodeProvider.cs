@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -23,10 +23,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager)
+            IApplicationPaths applicationPaths)
         {
-            _itemProvider = new OmdbItemProvider(httpClientFactory, libraryManager, fileSystem, configurationManager);
-            _omdbProvider = new OmdbProvider(httpClientFactory, fileSystem, configurationManager);
+            _itemProvider = new OmdbItemProvider(httpClientFactory, libraryManager, fileSystem, applicationPaths);
+            _omdbProvider = new OmdbProvider(httpClientFactory, fileSystem, applicationPaths);
         }
 
         // After TheTvDb

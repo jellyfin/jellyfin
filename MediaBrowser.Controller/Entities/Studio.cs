@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Entities
                 FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
                 name;
 
-            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.StudioPath, validName);
+            return System.IO.Path.Combine(ServerApplicationPaths.StudioPath, validName);
         }
 
         private string GetRebasedPath()

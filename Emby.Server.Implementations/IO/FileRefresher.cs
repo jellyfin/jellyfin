@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -16,19 +17,19 @@ namespace Emby.Server.Implementations.IO
     {
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
         private readonly List<string> _affectedPaths = new();
         private readonly Lock _timerLock = new();
         private Timer? _timer;
         private bool _disposed;
 
-        public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
+        public FileRefresher(string path, IOptions<ServerConfiguration> serverConfig, ILibraryManager libraryManager, ILogger logger)
         {
             logger.LogDebug("New file refresher created for {0}", path);
             Path = path;
 
-            _configurationManager = configurationManager;
+            _serverConfig = serverConfig;
             _libraryManager = libraryManager;
             _logger = logger;
             AddPath(path);
@@ -76,11 +77,11 @@ namespace Emby.Server.Implementations.IO
 
                 if (_timer is null)
                 {
-                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_serverConfig.Value.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _timer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer.Change(TimeSpan.FromSeconds(_serverConfig.Value.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }

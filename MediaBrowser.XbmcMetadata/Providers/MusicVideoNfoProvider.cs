@@ -1,9 +1,10 @@
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{SeasonNfoProvider}"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IOptions{XbmcMetadataOptions}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
@@ -25,7 +26,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         public MusicVideoNfoProvider(
             ILogger<MusicVideoNfoProvider> logger,
             IFileSystem fileSystem,
-            IConfigurationManager config,
+            IOptions<XbmcMetadataOptions> config,
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,

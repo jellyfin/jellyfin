@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Jellyfin.Server.Configuration
 {
@@ -11,21 +12,21 @@ namespace Jellyfin.Server.Configuration
     /// </summary>
     public class CorsPolicyProvider : ICorsPolicyProvider
     {
-        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IOptions<ServerConfiguration> _serverConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorsPolicyProvider"/> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public CorsPolicyProvider(IServerConfigurationManager serverConfigurationManager)
+        /// <param name="serverConfiguration">Instance of the server configuration.</param>
+        public CorsPolicyProvider(IOptions<ServerConfiguration> serverConfiguration)
         {
-            _serverConfigurationManager = serverConfigurationManager;
+            _serverConfig = serverConfiguration;
         }
 
         /// <inheritdoc />
         public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
         {
-            var corsHosts = _serverConfigurationManager.Configuration.CorsHosts;
+            var corsHosts = _serverConfig.Value.CorsHosts;
             var builder = new CorsPolicyBuilder()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
