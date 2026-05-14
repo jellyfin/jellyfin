@@ -119,7 +119,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             .ToArray();
 
         var toAdd = people
-            .Where(e => e.Type is not PersonKind.Artist && e.Type is not PersonKind.AlbumArtist)
             .Where(e => !existingPersons.Any(f => string.Equals(f.Name, e.Name, StringComparison.OrdinalIgnoreCase) && f.PersonType == e.Type.ToString()))
             .Select(Map);
         context.Peoples.AddRange(toAdd);
@@ -133,11 +132,6 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         foreach (var person in people)
         {
-            if (person.Type == PersonKind.Artist || person.Type == PersonKind.AlbumArtist)
-            {
-                continue;
-            }
-
             var entityPerson = personsEntities.First(e => string.Equals(e.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.PersonType == person.Type.ToString());
             var existingMap = existingMaps.FirstOrDefault(e => string.Equals(e.People.Name, person.Name, StringComparison.OrdinalIgnoreCase) && e.People.PersonType == person.Type.ToString() && e.Role == person.Role);
             if (existingMap is null)
