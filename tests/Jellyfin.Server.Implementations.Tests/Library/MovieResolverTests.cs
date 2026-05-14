@@ -32,4 +32,30 @@ public class MovieResolverTests
 
         Assert.NotNull(movieResolver.Resolve(itemResolveArgs));
     }
+
+    [Fact]
+    public void Resolve_MetadataOnlyFolder_ResolvesToMovie()
+    {
+        var movieResolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions, Mock.Of<IDirectoryService>());
+        var itemResolveArgs = new ItemResolveArgs(
+            Mock.Of<IServerApplicationPaths>(),
+            null)
+        {
+            Parent = new MediaBrowser.Controller.Entities.Folder(),
+            FileInfo = new FileSystemMetadata
+            {
+                FullName = "/movies/Upcoming Movie",
+                IsDirectory = true
+            },
+            FileSystemChildren = [
+                new FileSystemMetadata { Name = "movie.nfo", FullName = "/movies/Upcoming Movie/movie.nfo" },
+                new FileSystemMetadata { Name = "poster.jpg", FullName = "/movies/Upcoming Movie/poster.jpg" }
+            ]
+        };
+
+        var result = movieResolver.Resolve(itemResolveArgs);
+        Assert.NotNull(result);
+        Assert.True(result.IsVirtualItem);
+        Assert.True(result.IsPlaceHolder);
+    }
 }
