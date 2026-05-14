@@ -482,18 +482,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             {
                 return GetMultiDiscMovie<T>(multiDiscFolders, directoryService);
             }
-            else if (result.Items.Count == 0 && (collectionType == CollectionType.movies || collectionType is null))
+            else if (
+                result.Items.Count == 0 &&
+                (collectionType == CollectionType.movies || collectionType is null) &&
+                fileSystemEntries.Any(i => string.Equals(i.Name, "movie.nfo", StringComparison.OrdinalIgnoreCase)))
             {
-                if (fileSystemEntries.Any(i => string.Equals(i.Name, "movie.nfo", StringComparison.OrdinalIgnoreCase)))
+                return new T
                 {
-                    return new T
-                    {
-                        Path = path,
-                        Name = Path.GetFileName(path),
-                        IsVirtualItem = true,
-                        IsPlaceHolder = true
-                    };
-                }
+                    Path = path,
+                    Name = Path.GetFileName(path),
+                    IsVirtualItem = true,
+                    IsPlaceHolder = true
+                };
             }
 
             return null;
