@@ -2010,6 +2010,18 @@ public class ImageController : BaseJellyfinApiController
         Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
         Response.Headers.Append(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
 
+        // CVE-2024-43801 / GHSA-vcmh-9wx9-rfqh: an SVG profile picture rendered
+        // inline by the browser can execute JavaScript in the Jellyfin origin and
+        // exfiltrate the viewer's access token from localStorage. Keep forcing
+        // anything that is not a known-safe raster image to be downloaded rather
+        // than displayed inline. Raster formats cannot execute scripts, so we
+        // allow them to load inline — this also lets browsers cache them
+        // effectively for <img> consumers.
+        if (!IsInlineSafeImageContentType(imageContentType))
+        {
+            Response.Headers.ContentDisposition = "attachment";
+        }
+
         if (disableCaching)
         {
             Response.Headers.Append(HeaderNames.CacheControl, "no-cache, no-store, must-revalidate");
@@ -2077,5 +2089,40 @@ public class ImageController : BaseJellyfinApiController
         }
 
         return false;
+    }
+
+    // Allow-list of raster image content types that cannot execute scripts and
+    // are therefore safe to load inline in an <img> tag. Anything outside this
+    // list (most notably image/svg+xml — see CVE-2024-43801) must be served
+    // with Content-Disposition: attachment so the browser downloads rather
+    // than renders it.
+    private static readonly HashSet<string> _inlineSafeImageContentTypes
+        = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/avif",
+            "image/bmp",
+            "image/tiff",
+            "image/x-icon",
+            "image/vnd.microsoft.icon"
+        };
+
+    private static bool IsInlineSafeImageContentType(string? contentType)
+    {
+        if (string.IsNullOrEmpty(contentType))
+        {
+            return false;
+        }
+
+        if (!MediaTypeHeaderValue.TryParse(contentType, out var parsed)
+            || !parsed.MediaType.HasValue)
+        {
+            return false;
+        }
+
+        return _inlineSafeImageContentTypes.Contains(parsed.MediaType.Value);
     }
 }
