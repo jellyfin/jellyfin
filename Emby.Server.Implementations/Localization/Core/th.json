@@ -130,8 +130,6 @@
     "TaskDownloadMissingLyricsDescription": "ดาวน์โหลดเนื้อเพลงสำหรับเพลง",
     "TaskAudioNormalization": "ปรับระดับเสียงให้สม่ำเสมอ",
     "TaskAudioNormalizationDescription": "สแกนไฟล์เพื่อค้นหาข้อมูลการปรับระดับเสียงให้สม่ำเสมอ",
-    "TaskCleanCollectionsAndPlaylists": "จัดระเบียบคอลเลกชันและเพลย์ลิสต์",
-    "TaskCleanCollectionsAndPlaylistsDescription": "ลบรายการออกจากคอลเลกชันและเพลย์ลิสต์ที่ไม่มีแล้ว",
     "TaskExtractMediaSegments": "การสแกนส่วนของสื่อมีเดีย",
     "TaskMoveTrickplayImagesDescription": "ย้ายไฟล์ Trickplay ตามการตั้งค่าของไลบรารี",
     "TaskExtractMediaSegmentsDescription": "แยกหรือดึงส่วนของสื่อจากปลั๊กอินที่เปิดใช้งาน MediaSegment",

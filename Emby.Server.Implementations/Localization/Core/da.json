@@ -126,8 +126,6 @@
     "HearingImpaired": "Hørehæmmet",
     "TaskRefreshTrickplayImages": "Generer trickplay-billeder",
     "TaskRefreshTrickplayImagesDescription": "Laver trickplay-billeder for videoer i aktiverede biblioteker.",
-    "TaskCleanCollectionsAndPlaylists": "Ryd op i samlinger og afspilningslister",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Fjerner elementer fra samlinger og afspilningslister der ikke eksisterer længere.",
     "TaskAudioNormalizationDescription": "Skanner filer for data vedrørende lydnormalisering.",
     "TaskAudioNormalization": "Lydnormalisering",
     "TaskDownloadMissingLyricsDescription": "Søger på internettet efter manglende sangtekster baseret på metadata-konfigurationen",

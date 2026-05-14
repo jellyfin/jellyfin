@@ -28,7 +28,7 @@ jobs:
           timeoutSeconds: 3600
 
       - name: Setup YQ
-        uses: chrisdickinson/setup-yq@latest
+        uses: chrisdickinson/setup-yq@fa3192edd79d6eb0e4e12de8dde3a0c26f2b853b # latest
         with:
           yq-version: v4.9.8
 

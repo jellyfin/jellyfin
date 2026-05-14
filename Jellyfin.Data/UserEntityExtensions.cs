@@ -185,7 +185,7 @@ public static class UserEntityExtensions
         entity.Permissions.Add(new Permission(PermissionKind.EnableSyncTranscoding, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableAudioPlaybackTranscoding, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableLiveTvAccess, true));
-        entity.Permissions.Add(new Permission(PermissionKind.EnableLiveTvManagement, true));
+        entity.Permissions.Add(new Permission(PermissionKind.EnableLiveTvManagement, false));
         entity.Permissions.Add(new Permission(PermissionKind.EnableSharedDeviceControl, true));
         entity.Permissions.Add(new Permission(PermissionKind.EnableVideoPlaybackTranscoding, true));
         entity.Permissions.Add(new Permission(PermissionKind.ForceRemoteSourceTranscoding, false));

@@ -127,8 +127,6 @@
     "TaskRefreshTrickplayImages": "ট্রিকপ্লে ইমেজ তৈরি",
     "TaskRefreshTrickplayImagesDescription": "সক্ষম লাইব্রেরিতে ভিডিওর জন্য ট্রিকপ্লে প্রিভিউ তৈরি করে।",
     "TaskDownloadMissingLyricsDescription": "গানের জন্য লিরিকস ডাউনলোড করুন",
-    "TaskCleanCollectionsAndPlaylists": "কালেকশন এবং প্লেলিস্ট পরিষ্কার করুন",
-    "TaskCleanCollectionsAndPlaylistsDescription": "কালেকশন এবং প্লেলিস্ট থেকে আইটেমগুলি সরিয়ে দেয় যা আর বিদ্যমান নেই।",
     "TaskExtractMediaSegments": "মিডিয়া সেগমেন্ট স্ক্যান",
     "TaskExtractMediaSegmentsDescription": "মিডিয়া সেগমেন্ট সক্ষম প্লাগইনগুলি থেকে মিডিয়া সেগমেন্ট বের করে বা অর্জন করে।",
     "TaskDownloadMissingLyrics": "অনুপস্থিত গান ডাউনলোড করুন",

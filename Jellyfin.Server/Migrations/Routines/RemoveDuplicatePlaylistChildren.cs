@@ -45,10 +45,13 @@ internal class RemoveDuplicatePlaylistChildren : IMigrationRoutine
                 var linkedChildren = playlist.LinkedChildren;
                 if (linkedChildren.Length > 0)
                 {
-                    var nullItemChildren = linkedChildren.Where(c => c.ItemId is null);
-                    var deduplicatedChildren = linkedChildren.DistinctBy(c => c.ItemId);
-                    var newLinkedChildren = nullItemChildren.Concat(deduplicatedChildren);
-                    playlist.LinkedChildren = linkedChildren;
+                    var newLinkedChildren = linkedChildren
+                        .Where(c => c.ItemId is null || c.ItemId.Value.Equals(Guid.Empty))
+                        .Concat(linkedChildren
+                            .Where(c => c.ItemId.HasValue && !c.ItemId.Value.Equals(Guid.Empty))
+                            .DistinctBy(c => c.ItemId))
+                        .ToArray();
+                    playlist.LinkedChildren = newLinkedChildren;
                     playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                     _playlistManager.SavePlaylistFile(playlist);
                 }

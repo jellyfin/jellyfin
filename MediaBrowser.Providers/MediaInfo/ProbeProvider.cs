@@ -110,7 +110,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _lyricResolver,
                 lyricManager,
-                mediaStreamRepository);
+                mediaStreamRepository,
+                chapterManager);
         }
 
         /// <inheritdoc />
@@ -262,9 +263,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(BaseItem item)
         {
-            item.ShortcutPath = File.ReadAllLines(item.Path)
+            var shortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
+
+            if (string.IsNullOrWhiteSpace(shortcutPath))
+            {
+                return;
+            }
+
+            // Only allow remote URLs in .strm files to prevent local file access
+            if (Uri.TryCreate(shortcutPath, UriKind.Absolute, out var uri)
+                && (string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtsp", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(uri.Scheme, "rtp", StringComparison.OrdinalIgnoreCase)))
+            {
+                item.ShortcutPath = shortcutPath;
+            }
+            else
+            {
+                _logger.LogWarning("Ignoring invalid or non-remote .strm path in {File}: {Path}", item.Path, shortcutPath);
+            }
         }
 
         /// <summary>

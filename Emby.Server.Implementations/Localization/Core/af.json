@@ -128,8 +128,6 @@
     "TaskRefreshTrickplayImagesDescription": "Skep fopspeel voorskou vir videos in aangeskakelde media versameling.",
     "TaskAudioNormalizationDescription": "Skandeer lêers vir oudio-normaliseringsdata.",
     "TaskAudioNormalization": "Odio Normalisering",
-    "TaskCleanCollectionsAndPlaylists": "Maak versamelings en snitlyste skoon",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Verwyder items uit versamelings en snitlyste wat nie meer bestaan nie.",
     "TaskDownloadMissingLyrics": "Laai tekorte lirieke af",
     "TaskDownloadMissingLyricsDescription": "Laai lirieke af vir liedjies",
     "TaskExtractMediaSegments": "Media Segment Skandeer",

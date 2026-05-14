@@ -14,6 +14,7 @@ namespace Jellyfin.Api.Controllers;
 /// Authentication controller.
 /// </summary>
 [Route("Auth")]
+[Tags("Authentication")]
 public class ApiKeyController : BaseJellyfinApiController
 {
     private readonly IAuthenticationManager _authenticationManager;

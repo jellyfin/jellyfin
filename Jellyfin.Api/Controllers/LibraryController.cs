@@ -114,20 +114,6 @@ public class LibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets critic review for an item.
-    /// </summary>
-    /// <response code="200">Critic reviews returned.</response>
-    /// <returns>The list of critic reviews.</returns>
-    [HttpGet("Items/{itemId}/CriticReviews")]
-    [Authorize]
-    [Obsolete("This endpoint is obsolete.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews()
-    {
-        return new QueryResult<BaseItemDto>();
-    }
-
-    /// <summary>
     /// Get theme songs for an item.
     /// </summary>
     /// <param name="itemId">The item id.</param>
@@ -456,19 +442,18 @@ public class LibraryController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
 
-        var counts = new ItemCounts
+        var query = new InternalItemsQuery(user)
         {
-            AlbumCount = GetCount(BaseItemKind.MusicAlbum, user, isFavorite),
-            EpisodeCount = GetCount(BaseItemKind.Episode, user, isFavorite),
-            MovieCount = GetCount(BaseItemKind.Movie, user, isFavorite),
-            SeriesCount = GetCount(BaseItemKind.Series, user, isFavorite),
-            SongCount = GetCount(BaseItemKind.Audio, user, isFavorite),
-            MusicVideoCount = GetCount(BaseItemKind.MusicVideo, user, isFavorite),
-            BoxSetCount = GetCount(BaseItemKind.BoxSet, user, isFavorite),
-            BookCount = GetCount(BaseItemKind.Book, user, isFavorite)
+            Recursive = true,
+            IsVirtualItem = false,
+            IsFavorite = isFavorite,
+            DtoOptions = new DtoOptions(false)
+            {
+                EnableImages = false
+            }
         };
 
-        return counts;
+        return _libraryManager.GetItemCounts(query);
     }
 
     /// <summary>
@@ -937,24 +922,6 @@ public class LibraryController : BaseJellyfinApiController
         return result;
     }
 
-    private int GetCount(BaseItemKind itemKind, User? user, bool? isFavorite)
-    {
-        var query = new InternalItemsQuery(user)
-        {
-            IncludeItemTypes = new[] { itemKind },
-            Limit = 0,
-            Recursive = true,
-            IsVirtualItem = false,
-            IsFavorite = isFavorite,
-            DtoOptions = new DtoOptions(false)
-            {
-                EnableImages = false
-            }
-        };
-
-        return _libraryManager.GetItemsResult(query).TotalRecordCount;
-    }
-
     private BaseItem? TranslateParentItem(BaseItem item, User user)
     {
         return item.GetParent() is AggregateFolder
@@ -990,7 +957,7 @@ public class LibraryController : BaseJellyfinApiController
             CollectionType.playlists => new[] { "Playlist" },
             CollectionType.movies => new[] { "Movie" },
             CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
-            CollectionType.books => new[] { "Book" },
+            CollectionType.books => new[] { "Book", "AudioBook" },
             CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
             CollectionType.homevideos => new[] { "Video", "Photo" },
             CollectionType.photos => new[] { "Video", "Photo" },

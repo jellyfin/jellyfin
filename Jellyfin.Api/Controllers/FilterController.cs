@@ -60,61 +60,33 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? item = null;
         if (includeItemTypes.Length != 1
-            || !(includeItemTypes[0] == BaseItemKind.BoxSet
-                 || includeItemTypes[0] == BaseItemKind.Playlist
-                 || includeItemTypes[0] == BaseItemKind.Trailer
+            || !(includeItemTypes[0] == BaseItemKind.Trailer
                  || includeItemTypes[0] == BaseItemKind.Program))
         {
             item = _libraryManager.GetParentItem(parentId, user?.Id);
         }
-
-        var query = new InternalItemsQuery
-        {
-            User = user,
-            MediaTypes = mediaTypes,
-            IncludeItemTypes = includeItemTypes,
-            Recursive = true,
-            EnableTotalRecordCount = false,
-            DtoOptions = new DtoOptions
-            {
-                Fields = new[] { ItemFields.Genres, ItemFields.Tags },
-                EnableImages = false,
-                EnableUserData = false
-            }
-        };
 
         if (item is not Folder folder)
         {
             return new QueryFiltersLegacy();
         }
 
-        var itemList = folder.GetItemList(query);
-        return new QueryFiltersLegacy
+        var query = new InternalItemsQuery(user)
         {
-            Years = itemList.Select(i => i.ProductionYear ?? -1)
-                .Where(i => i > 0)
-                .Distinct()
-                .Order()
-                .ToArray(),
-
-            Genres = itemList.SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Order()
-                .ToArray(),
-
-            Tags = itemList
-                .SelectMany(i => i.Tags)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Order()
-                .ToArray(),
-
-            OfficialRatings = itemList
-                .Select(i => i.OfficialRating)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Order()
-                .ToArray()
+            MediaTypes = mediaTypes,
+            IncludeItemTypes = includeItemTypes,
+            Recursive = true,
+            EnableTotalRecordCount = false,
+            AncestorIds = [folder.Id],
+            DtoOptions = new DtoOptions
+            {
+                Fields = [],
+                EnableImages = false,
+                EnableUserData = false
+            }
         };
+
+        return _libraryManager.GetQueryFiltersLegacy(query);
     }
 
     /// <summary>
@@ -153,9 +125,7 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? parentItem = null;
         if (includeItemTypes.Length == 1
-            && (includeItemTypes[0] == BaseItemKind.BoxSet
-                || includeItemTypes[0] == BaseItemKind.Playlist
-                || includeItemTypes[0] == BaseItemKind.Trailer
+            && (includeItemTypes[0] == BaseItemKind.Trailer
                 || includeItemTypes[0] == BaseItemKind.Program))
         {
             parentItem = null;

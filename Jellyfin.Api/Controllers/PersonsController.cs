@@ -22,6 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// Persons controller.
 /// </summary>
 [Authorize]
+[Tags("Person")]
 public class PersonsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -47,8 +48,12 @@ public class PersonsController : BaseJellyfinApiController
     /// <summary>
     /// Gets all persons.
     /// </summary>
+    /// <param name="startIndex">Optional. All items with a lower index will be dropped from the response.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="searchTerm">The search term.</param>
+    /// <param name="nameStartsWith">Optional. Filter by items whose name starts with the given input string.</param>
+    /// <param name="nameLessThan">Optional. Filter by items whose name will appear before this value when sorted alphabetically.</param>
+    /// <param name="nameStartsWithOrGreater">Optional. Filter by items whose name will appear after this value when sorted alphabetically.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
     /// <param name="filters">Optional. Specify additional filters to apply.</param>
     /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not. userId is required.</param>
@@ -57,6 +62,7 @@ public class PersonsController : BaseJellyfinApiController
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <param name="excludePersonTypes">Optional. If specified results will be filtered to exclude those containing the specified PersonType. Allows multiple, comma-delimited.</param>
     /// <param name="personTypes">Optional. If specified results will be filtered to include only those containing the specified PersonType. Allows multiple, comma-delimited.</param>
+    /// <param name="parentId">Optional. Specify this to localize the search to a specific library. Omit to use the root.</param>
     /// <param name="appearsInItemId">Optional. If specified, person results will be filtered on items related to said persons.</param>
     /// <param name="userId">User id.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
@@ -65,8 +71,12 @@ public class PersonsController : BaseJellyfinApiController
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetPersons(
+        [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] string? searchTerm,
+        [FromQuery] string? nameStartsWith,
+        [FromQuery] string? nameLessThan,
+        [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
@@ -75,6 +85,7 @@ public class PersonsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ImageType[] enableImageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] excludePersonTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
+        [FromQuery] Guid? parentId,
         [FromQuery] Guid? appearsInItemId,
         [FromQuery] Guid? userId,
         [FromQuery] bool? enableImages = true)
@@ -93,16 +104,23 @@ public class PersonsController : BaseJellyfinApiController
             excludePersonTypes)
         {
             NameContains = searchTerm,
+            NameStartsWith = nameStartsWith,
+            NameLessThan = nameLessThan,
+            NameStartsWithOrGreater = nameStartsWithOrGreater,
             User = user,
             IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,
             AppearsInItemId = appearsInItemId ?? Guid.Empty,
+            ParentId = parentId,
+            StartIndex = startIndex,
             Limit = limit ?? 0
         });
 
         return new QueryResult<BaseItemDto>(
-            peopleItems
-            .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
-            .ToArray());
+            peopleItems.StartIndex,
+            peopleItems.TotalRecordCount,
+            peopleItems.Items
+                .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
+                .ToArray());
     }
 
     /// <summary>

@@ -54,7 +54,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool forceOverwrite, CancellationToken cancellationToken)
     {
         var providers = _segmentProviders
-            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i =>
                 {
                     var index = libraryOptions.MediaSegmentProviderOrder.IndexOf(i.Name);
@@ -182,6 +182,18 @@ public class MediaSegmentManager : IMediaSegmentManager
     /// <inheritdoc />
     public async Task DeleteSegmentsAsync(Guid itemId, CancellationToken cancellationToken)
     {
+        foreach (var provider in _segmentProviders)
+        {
+            try
+            {
+                await provider.CleanupExtractedData(itemId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Provider {ProviderName} failed to clean up extracted data for item {ItemId}", provider.Name, itemId);
+            }
+        }
+
         var db = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (db.ConfigureAwait(false))
         {
@@ -212,7 +224,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             if (filterByProvider)
             {
                 var providerIds = _segmentProviders
-                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
                     .Select(f => GetProviderId(f.Name))
                     .ToArray();
                 if (providerIds.Length == 0)

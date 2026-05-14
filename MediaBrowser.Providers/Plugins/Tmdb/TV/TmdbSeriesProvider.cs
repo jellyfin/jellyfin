@@ -331,6 +331,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
+            if (!string.IsNullOrEmpty(seriesResult.OriginalLanguage))
+            {
+                series.OriginalLanguage = seriesResult.OriginalLanguage;
+            }
+            
             WithDisplayOrder(seriesResult, series, search);
 
             return series;

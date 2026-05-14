@@ -217,6 +217,8 @@ namespace Emby.Naming.Video
             // The CleanStringParser should have removed common keywords etc.
             return testFilename.IsEmpty
                    || testFilename[0] == '-'
+                   || testFilename[0] == '_'
+                   || testFilename[0] == '.'
                    || CheckMultiVersionRegex().IsMatch(testFilename);
         }
     }

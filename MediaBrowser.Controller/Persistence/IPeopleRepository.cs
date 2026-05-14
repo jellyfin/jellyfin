@@ -1,13 +1,15 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence;
 
+/// <summary>
+/// Provides methods for accessing Peoples.
+/// </summary>
 public interface IPeopleRepository
 {
     /// <summary>
@@ -15,7 +17,7 @@ public interface IPeopleRepository
     /// </summary>
     /// <param name="filter">The query.</param>
     /// <returns>The list of people matching the filter.</returns>
-    IReadOnlyList<PersonInfo> GetPeople(InternalPeopleQuery filter);
+    QueryResult<PersonInfo> GetPeople(InternalPeopleQuery filter);
 
     /// <summary>
     /// Updates the people.

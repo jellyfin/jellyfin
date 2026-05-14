@@ -19,7 +19,7 @@
     "HeaderContinueWatching": "Weiterschauen",
     "HeaderFavoriteAlbums": "Lieblingsalben",
     "HeaderFavoriteArtists": "Lieblingsinterpreten",
-    "HeaderFavoriteEpisodes": "Lieblingsepisoden",
+    "HeaderFavoriteEpisodes": "Lieblingsfolgen",
     "HeaderFavoriteShows": "Lieblingsserien",
     "HeaderFavoriteSongs": "Lieblingssongs",
     "HeaderLiveTV": "Live TV",
@@ -126,8 +126,6 @@
     "HearingImpaired": "Hörgeschädigt",
     "TaskRefreshTrickplayImages": "Trickplay-Bilder generieren",
     "TaskRefreshTrickplayImagesDescription": "Erstellt ein Trickplay-Vorschauen für Videos in aktivierten Bibliotheken.",
-    "TaskCleanCollectionsAndPlaylists": "Sammlungen und Playlisten aufräumen",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Löscht nicht mehr vorhandene Einträge aus den Sammlungen und Playlisten.",
     "TaskAudioNormalization": "Audio Normalisierung",
     "TaskAudioNormalizationDescription": "Durchsucht Dateien nach Audionormalisierungsdaten.",
     "TaskDownloadMissingLyricsDescription": "Lädt Songtexte herunter",
@@ -137,5 +135,6 @@
     "TaskMoveTrickplayImages": "Verzeichnis für Trickplay-Bilder migrieren",
     "TaskMoveTrickplayImagesDescription": "Trickplay-Bilder werden entsprechend der Bibliothekseinstellungen verschoben.",
     "CleanupUserDataTask": "Aufgabe zur Bereinigung von Benutzerdaten",
-    "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind."
+    "CleanupUserDataTaskDescription": "Löscht alle Benutzerdaten (Abspielstatus, Favoritenstatus, usw.) von Medien, die seit mindestens 90 Tagen nicht mehr vorhanden sind.",
+    "Original": "Original"
 }

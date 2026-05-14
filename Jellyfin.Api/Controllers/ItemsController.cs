@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -11,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -29,6 +31,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[Tags("Library")]
 public class ItemsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -159,7 +162,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
     [HttpGet("Items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItems(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItems(
         [FromQuery] Guid? userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -270,14 +273,16 @@ public class ItemsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet)
-        {
-            parentId = null;
-        }
-
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
+
+        if (includeItemTypes.Length == 1
+            && includeItemTypes[0] == BaseItemKind.BoxSet
+            && item is not BoxSet)
+        {
+            parentId = null;
+            item = _libraryManager.GetUserRootFolder();
+        }
 
         if (item is not Folder folder)
         {
@@ -294,6 +299,21 @@ public class ItemsController : BaseJellyfinApiController
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };
+        }
+        else if (folder is ICollectionFolder)
+        {
+            // When the client doesn't specify recursive/includeItemTypes, force the query
+            // through the database path where all filters (IsHD, genres, etc.) are applied.
+            recursive ??= true;
+            if (includeItemTypes.Length == 0)
+            {
+                includeItemTypes = collectionType switch
+                {
+                    CollectionType.boxsets => [BaseItemKind.BoxSet],
+                    null => [BaseItemKind.Movie, BaseItemKind.Series],
+                    _ => []
+                };
+            }
         }
 
         if (item is not UserRootFolder
@@ -386,39 +406,7 @@ public class ItemsController : BaseJellyfinApiController
                 query.CollapseBoxSetItems = false;
             }
 
-            foreach (var filter in filters)
-            {
-                switch (filter)
-                {
-                    case ItemFilter.Dislikes:
-                        query.IsLiked = false;
-                        break;
-                    case ItemFilter.IsFavorite:
-                        query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsFavoriteOrLikes:
-                        query.IsFavoriteOrLiked = true;
-                        break;
-                    case ItemFilter.IsFolder:
-                        query.IsFolder = true;
-                        break;
-                    case ItemFilter.IsNotFolder:
-                        query.IsFolder = false;
-                        break;
-                    case ItemFilter.IsPlayed:
-                        query.IsPlayed = true;
-                        break;
-                    case ItemFilter.IsResumable:
-                        query.IsResumable = true;
-                        break;
-                    case ItemFilter.IsUnplayed:
-                        query.IsPlayed = false;
-                        break;
-                    case ItemFilter.Likes:
-                        query.IsLiked = true;
-                        break;
-                }
-            }
+            query.ApplyFilters(filters);
 
             // Filter by Series Status
             if (seriesStatus.Length != 0)
@@ -530,7 +518,7 @@ public class ItemsController : BaseJellyfinApiController
         return new QueryResult<BaseItemDto>(
             startIndex,
             result.TotalRecordCount,
-            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
+            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user, skipVisibilityCheck: true));
     }
 
     /// <summary>
@@ -626,7 +614,7 @@ public class ItemsController : BaseJellyfinApiController
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserIdLegacy(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItemsByUserIdLegacy(
         [FromRoute] Guid userId,
         [FromQuery] string? maxOfficialRating,
         [FromQuery] bool? hasThemeSong,
@@ -712,7 +700,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
-        => GetItems(
+        => await GetItems(
             userId,
             maxOfficialRating,
             hasThemeSong,
@@ -798,7 +786,7 @@ public class ItemsController : BaseJellyfinApiController
             studioIds,
             genreIds,
             enableTotalRecordCount,
-            enableImages);
+            enableImages).ConfigureAwait(false);
 
     /// <summary>
     /// Gets items based on a query.
@@ -967,6 +955,7 @@ public class ItemsController : BaseJellyfinApiController
     [HttpGet("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> GetItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
@@ -1022,6 +1011,7 @@ public class ItemsController : BaseJellyfinApiController
     [HttpPost("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> UpdateItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,

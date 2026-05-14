@@ -7,7 +7,6 @@ using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
@@ -50,7 +49,7 @@ internal class FixLibrarySubtitleDownloadLanguages : IAsyncMigrationRoutine
         foreach (var virtualFolder in virtualFolders)
         {
             var options = virtualFolder.LibraryOptions;
-            if (options.SubtitleDownloadLanguages is null || options.SubtitleDownloadLanguages.Length == 0)
+            if (options?.SubtitleDownloadLanguages is null || options.SubtitleDownloadLanguages.Length == 0)
             {
                 continue;
             }

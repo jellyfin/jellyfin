@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             });
             var countries = localizationManager.GetCountries().ToList();
 
-            Assert.Equal(139, countries.Count);
+            Assert.Equal(140, countries.Count);
 
             var germany = countries.FirstOrDefault(x => x.Name.Equals("DE", StringComparison.Ordinal));
             Assert.NotNull(germany);
@@ -41,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var cultures = localizationManager.GetCultures().ToList();
 
-            Assert.Equal(194, cultures.Count);
+            Assert.Equal(496, cultures.Count);
 
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);
@@ -97,6 +97,25 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
             Assert.Contains("ger", germany.ThreeLetterISOLanguageNames);
+        }
+
+        [Theory]
+        [InlineData("mul", "Multiple languages")]
+        [InlineData("und", "Undetermined")]
+        [InlineData("mis", "Uncoded languages")]
+        [InlineData("zxx", "No linguistic content; Not applicable")]
+        public async Task FindLanguageInfo_ISO6392Only_Success(string code, string expectedDisplayName)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var culture = localizationManager.FindLanguageInfo(code);
+            Assert.NotNull(culture);
+            Assert.Equal(expectedDisplayName, culture.DisplayName);
+            Assert.Equal(code, culture.ThreeLetterISOLanguageName);
         }
 
         [Fact]
@@ -217,6 +236,40 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             var score = localizationManager.GetRatingScore(rating);
 
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
+        [InlineData("US:INVALID", "US")] // Colon separator, known country code, unknown rating
+        [InlineData("us:INVALID", "US")] // Colon separator, lowercase country code
+        [InlineData("DE-INVALID", "US")] // Hyphen separator, known language prefix, unknown rating
+        [InlineData("ca:INVALID", "US")] // Colon separator, known country code (Canada)
+        public async Task GetRatingScore_UnknownRatingWithKnownCountry_ReturnsNull(string rating, string countryCode)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingScore(rating));
+        }
+
+        [Theory]
+        [InlineData("us:R", "DE", 17, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("US:PG-13", "DE", 13, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("ca:R", "US", 18, 1)] // Colon separator, Canada country code, valid CA rating
+        public async Task GetRatingScore_ValidRatingWithCountrySeparator_ReturnsScore(string rating, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(rating);
             Assert.NotNull(score);
             Assert.Equal(expectedScore, score.Score);
             Assert.Equal(expectedSubScore, score.SubScore);

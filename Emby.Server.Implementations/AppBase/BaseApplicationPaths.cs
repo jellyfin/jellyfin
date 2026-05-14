@@ -90,6 +90,7 @@ namespace Emby.Server.Implementations.AppBase
             CreateAndCheckMarker(ProgramDataPath, "data");
             CreateAndCheckMarker(CachePath, "cache");
             CreateAndCheckMarker(DataPath, "data");
+            CreateCacheDirTag(CachePath);
         }
 
         /// <inheritdoc />
@@ -98,6 +99,26 @@ namespace Emby.Server.Implementations.AppBase
             Directory.CreateDirectory(path);
 
             CheckOrCreateMarker(path, $".jellyfin-{markerName}", recursive);
+        }
+
+        /// <summary>
+        /// Creates a CACHEDIR.TAG file in the specified directory per the Cache Directory Tagging specification.
+        /// This signals to backup tools (e.g. Restic, Borg) that the directory contains cached data
+        /// and can be excluded from backups.
+        /// </summary>
+        /// <param name="path">The cache directory path.</param>
+        internal static void CreateCacheDirTag(string path)
+        {
+            var tagPath = Path.Combine(path, "CACHEDIR.TAG");
+            if (!File.Exists(tagPath))
+            {
+                File.WriteAllText(
+                    tagPath,
+                    "Signature: 8a477f597d28d172789f06886806bc55\n"
+                    + "# This file is a cache directory tag created by Jellyfin.\n"
+                    + "# For information about cache directory tags, see:\n"
+                    + "#\thttps://bford.info/cachedir/\n");
+            }
         }
 
         private IEnumerable<string> GetMarkers(string path, bool recursive = false)

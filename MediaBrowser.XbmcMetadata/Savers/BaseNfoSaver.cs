@@ -67,6 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "id",
             "credits",
             "originaltitle",
+            "originallanguage",
             "watched",
             "playcount",
             "lastplayed",
@@ -376,6 +377,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("default", stream.IsDefault.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString("forced", stream.IsForced.ToString(CultureInfo.InvariantCulture));
 
+                if (stream.IsOriginal)
+                {
+                    writer.WriteElementString("original", stream.IsOriginal.ToString(CultureInfo.InvariantCulture));
+                }
+
                 if (stream.Type == MediaStreamType.Video)
                 {
                     var runtimeTicks = item.RunTimeTicks;
@@ -484,6 +490,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("originaltitle", item.OriginalTitle);
             }
 
+            if (!string.IsNullOrWhiteSpace(item.OriginalLanguage))
+            {
+                writer.WriteElementString("originallanguage", item.OriginalLanguage);
+            }
+
             var people = libraryManager.GetPeople(item);
 
             var directors = people
@@ -547,7 +558,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("aspectratio", hasAspectRatio.AspectRatio);
             }
 
-            if (item.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbCollection))
+            if (item.TryGetProviderId(MetadataProvider.TmdbCollection, out var tmdbCollection))
             {
                 writer.WriteElementString("collectionnumber", tmdbCollection);
                 writtenProviderIds.Add(MetadataProvider.TmdbCollection.ToString());
@@ -781,26 +792,30 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddCollectionItems(Folder item, XmlWriter writer)
         {
-            var items = item.LinkedChildren
+            var linkedChildren = item.LinkedChildren
                 .Where(i => i.Type == LinkedChildType.Manual)
-                .OrderBy(i => i.Path?.Trim())
-                .ThenBy(i => i.LibraryItemId?.Trim())
                 .ToList();
 
-            foreach (var link in items)
+            // Resolve ItemIds to paths and sort
+            var itemsWithPaths = linkedChildren
+                .Select(link =>
+                {
+                    if (link.ItemId.HasValue && !link.ItemId.Value.Equals(Guid.Empty))
+                    {
+                        var linkedItem = LibraryManager.GetItemById(link.ItemId.Value);
+                        return linkedItem?.Path;
+                    }
+
+                    return null;
+                })
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .OrderBy(path => path?.Trim())
+                .ToList();
+
+            foreach (var path in itemsWithPaths)
             {
                 writer.WriteStartElement("collectionitem");
-
-                if (!string.IsNullOrWhiteSpace(link.Path))
-                {
-                    writer.WriteElementString("path", link.Path);
-                }
-
-                if (!string.IsNullOrWhiteSpace(link.LibraryItemId))
-                {
-                    writer.WriteElementString("ItemId", link.LibraryItemId);
-                }
-
+                writer.WriteElementString("path", path);
                 writer.WriteEndElement();
             }
         }

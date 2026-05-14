@@ -126,8 +126,6 @@
     "HearingImpaired": "Surdo",
     "TaskRefreshTrickplayImages": "Gerar imagens de trickplay",
     "TaskRefreshTrickplayImagesDescription": "Cria pré-visualizações de trickplay para vídeos nas bibliotecas ativadas.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Remove itens de coleções e listas de reprodução que já não existem.",
-    "TaskCleanCollectionsAndPlaylists": "Limpar coleções e listas de reprodução",
     "TaskAudioNormalizationDescription": "Analisa os ficheiros para obter dados de normalização de áudio.",
     "TaskAudioNormalization": "Normalização de áudio",
     "TaskExtractMediaSegments": "Analisar segmentos de multimédia",
@@ -137,5 +135,6 @@
     "TaskExtractMediaSegmentsDescription": "Extrai ou obtém segmentos de multimédia a partir de plugins com suporte para MediaSegment.",
     "TaskMoveTrickplayImagesDescription": "Move os ficheiros trickplay existentes de acordo com as definições da mediateca.",
     "CleanupUserDataTaskDescription": "Apaga todos os dados de utilizador (estados de reprodução, favoritos, etc) de arquivos média não presentes há 90 dias ou mais.",
-    "CleanupUserDataTask": "Limpeza de dados de utilizador"
+    "CleanupUserDataTask": "Limpeza de dados de utilizador",
+    "Original": "Original"
 }

@@ -35,6 +35,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The videos controller.
 /// </summary>
+[Tags("Video")]
 public class VideosController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -147,9 +148,9 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (item.LinkedAlternateVersions.Length == 0)
+        if (item.LinkedAlternateVersions.Length == 0 && item.PrimaryVersionId.HasValue)
         {
-            item = _libraryManager.GetItemById<Video>(Guid.Parse(item.PrimaryVersionId));
+            item = _libraryManager.GetItemById<Video>(item.PrimaryVersionId.Value);
         }
 
         if (item is null)
@@ -157,7 +158,7 @@ public class VideosController : BaseJellyfinApiController
             return NotFound();
         }
 
-        foreach (var link in item.GetLinkedAlternateVersions())
+        foreach (var link in _libraryManager.GetLinkedAlternateVersions(item))
         {
             link.SetPrimaryVersionId(null);
             link.LinkedAlternateVersions = Array.Empty<LinkedChild>();
@@ -197,7 +198,7 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest("Please supply at least two videos to merge.");
         }
 
-        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
+        var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && !i.PrimaryVersionId.HasValue);
         if (primaryVersion is null)
         {
             primaryVersion = items
@@ -218,22 +219,25 @@ public class VideosController : BaseJellyfinApiController
 
         foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
         {
-            item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
+            item.SetPrimaryVersionId(primaryVersion.Id);
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-            if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase)))
+            // Re-route any playlist/collection references from this item to the primary
+            await _libraryManager.RerouteLinkedChildReferencesAsync(item.Id, primaryVersion.Id).ConfigureAwait(false);
+
+            if (!alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(item.Id)))
             {
                 alternateVersionsOfPrimary.Add(new LinkedChild
                 {
-                    Path = item.Path,
-                    ItemId = item.Id
+                    ItemId = item.Id,
+                    Type = LinkedChildType.LinkedAlternateVersion
                 });
             }
 
             foreach (var linkedItem in item.LinkedAlternateVersions)
             {
-                if (!alternateVersionsOfPrimary.Any(i => string.Equals(i.Path, linkedItem.Path, StringComparison.OrdinalIgnoreCase)))
+                if (linkedItem.ItemId.HasValue && !alternateVersionsOfPrimary.Any(i => i.ItemId.HasValue && i.ItemId.Value.Equals(linkedItem.ItemId.Value)))
                 {
                     alternateVersionsOfPrimary.Add(linkedItem);
                 }
@@ -313,18 +317,18 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public async Task<ActionResult> GetVideoStream(
         [FromRoute, Required] Guid itemId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? container,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -334,7 +338,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -355,8 +359,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
@@ -551,18 +555,18 @@ public class VideosController : BaseJellyfinApiController
     [ProducesVideoFile]
     public Task<ActionResult> GetVideoStreamByContainer(
         [FromRoute, Required] Guid itemId,
-        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string container,
+        [FromRoute, Required] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container,
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
         [FromQuery] string? deviceProfileId,
         [FromQuery] string? playSessionId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? segmentContainer,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? segmentContainer,
         [FromQuery] int? segmentLength,
         [FromQuery] int? minSegments,
         [FromQuery] string? mediaSourceId,
         [FromQuery] string? deviceId,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? audioCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? audioCodec,
         [FromQuery] bool? enableAutoStreamCopy,
         [FromQuery] bool? allowVideoStreamCopy,
         [FromQuery] bool? allowAudioStreamCopy,
@@ -572,7 +576,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioChannels,
         [FromQuery] int? maxAudioChannels,
         [FromQuery] string? profile,
-        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegex)] string? level,
+        [FromQuery] [RegularExpression(EncodingHelper.LevelValidationRegexStr)] string? level,
         [FromQuery] float? framerate,
         [FromQuery] float? maxFramerate,
         [FromQuery] bool? copyTimestamps,
@@ -593,8 +597,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? cpuCoreLimit,
         [FromQuery] string? liveStreamId,
         [FromQuery] bool? enableMpegtsM2TsMode,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? videoCodec,
-        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegex)] string? subtitleCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? videoCodec,
+        [FromQuery] [RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string? subtitleCodec,
         [FromQuery] string? transcodeReasons,
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,

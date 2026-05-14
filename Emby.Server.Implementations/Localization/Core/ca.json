@@ -63,8 +63,8 @@
     "Photos": "Fotos",
     "Playlists": "Llistes de reproducció",
     "Plugin": "Complement",
-    "PluginInstalledWithName": "{0} ha estat instal·lat",
-    "PluginUninstalledWithName": "S'ha instal·lat {0}",
+    "PluginInstalledWithName": "S'ha instal·lat {0}",
+    "PluginUninstalledWithName": "S'ha desinstal·lat {0}",
     "PluginUpdatedWithName": "S'ha actualitzat {0}",
     "ProviderValue": "Proveïdor: {0}",
     "ScheduledTaskFailedWithName": "{0} ha fallat",
@@ -126,8 +126,6 @@
     "HearingImpaired": "Discapacitat auditiva",
     "TaskRefreshTrickplayImages": "Generació d'imatges de previsualització",
     "TaskRefreshTrickplayImagesDescription": "Creació d'imatges de previsualització per a vídeos en les mediateques habilitades.",
-    "TaskCleanCollectionsAndPlaylistsDescription": "Esborra elements de col·leccions i llistes de reproducció que ja no existeixen.",
-    "TaskCleanCollectionsAndPlaylists": "Neteja de les col·leccions i llistes de reproducció",
     "TaskAudioNormalization": "Estabilització de l'àudio",
     "TaskAudioNormalizationDescription": "Escaneja els fitxer per a obtenir dades de normalització de l'àudio.",
     "TaskDownloadMissingLyricsDescription": "Descàrrega de les lletres de les cançons",
@@ -137,5 +135,6 @@
     "TaskMoveTrickplayImages": "Migració de la ubicació de la imatge de previsualització",
     "TaskMoveTrickplayImagesDescription": "Mou els fitxers existents d'imatges de previsualització segons la configuració de la mediateca.",
     "CleanupUserDataTaskDescription": "Neteja totes les dades d'usuari (estat de la visualització, estat dels preferits, etc.) del contingut multimèdia que no ha estat present durant almenys 90 dies.",
-    "CleanupUserDataTask": "Tasca de neteja de dades d'usuari"
+    "CleanupUserDataTask": "Tasca de neteja de dades d'usuari",
+    "Original": "Original"
 }

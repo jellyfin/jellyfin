@@ -22,6 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// Studios controller.
 /// </summary>
 [Authorize]
+[Tags("Studio")]
 public class StudiosController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

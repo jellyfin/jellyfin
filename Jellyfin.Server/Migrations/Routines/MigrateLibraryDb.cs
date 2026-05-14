@@ -515,13 +515,35 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             PlayCount = dto.GetInt32(4),
             IsFavorite = dto.GetBoolean(5),
             PlaybackPositionTicks = dto.GetInt64(6),
-            LastPlayedDate = dto.IsDBNull(7) ? null : dto.GetDateTime(7),
+            LastPlayedDate = dto.IsDBNull(7) ? null : ReadDateTimeFromColumn(dto, 7),
             AudioStreamIndex = dto.IsDBNull(8) ? null : dto.GetInt32(8),
             SubtitleStreamIndex = dto.IsDBNull(9) ? null : dto.GetInt32(9),
             Likes = null,
             User = null!,
             Item = null!
         };
+    }
+
+    private static DateTime? ReadDateTimeFromColumn(SqliteDataReader reader, int index)
+    {
+        // Try reading as a formatted date string first (handles ISO-8601 dates).
+        if (reader.TryReadDateTime(index, out var dateTimeResult))
+        {
+            return dateTimeResult;
+        }
+
+        // Some databases have Unix epoch timestamps stored as integers.
+        // SqliteDataReader.GetDateTime interprets integers as Julian dates, which crashes
+        // for Unix epoch values. Handle them explicitly.
+        var rawValue = reader.GetValue(index);
+        if (rawValue is long unixTimestamp
+            && unixTimestamp > 0
+            && unixTimestamp <= DateTimeOffset.MaxValue.ToUnixTimeSeconds())
+        {
+            return DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
+        }
+
+        return null;
     }
 
     private AncestorId GetAncestorId(SqliteDataReader reader)
@@ -1084,9 +1106,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.OriginalTitle = originalTitle;
         }
 
-        if (reader.TryGetString(index++, out var primaryVersionId))
+        if (reader.TryGetString(index++, out var primaryVersionId) && Guid.TryParse(primaryVersionId, out var primaryVersionGuid))
         {
-            entity.PrimaryVersionId = primaryVersionId;
+            entity.PrimaryVersionId = primaryVersionGuid;
         }
 
         if (reader.TryReadDateTime(index++, out var dateLastMediaAdded))
@@ -1188,10 +1210,8 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ProductionLocations = productionLocations;
         }
 
-        if (reader.TryGetString(index++, out var extraIds))
-        {
-            entity.ExtraIds = extraIds;
-        }
+        // Skip ExtraIds column (removed - extras are now tracked via OwnerId relationship)
+        index++;
 
         if (reader.TryGetInt32(index++, out var totalBitrate))
         {
@@ -1228,9 +1248,9 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
             entity.ShowId = showId;
         }
 
-        if (reader.TryGetString(index++, out var ownerId))
+        if (reader.TryGetString(index++, out var ownerId) && Guid.TryParse(ownerId, out var ownerIdGuid))
         {
-            entity.OwnerId = ownerId;
+            entity.OwnerId = ownerIdGuid;
         }
 
         if (reader.TryGetString(index++, out var mediaType))

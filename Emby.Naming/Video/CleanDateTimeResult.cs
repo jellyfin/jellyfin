@@ -1,3 +1,5 @@
+#pragma warning disable CA1815
+
 namespace Emby.Naming.Video
 {
     /// <summary>

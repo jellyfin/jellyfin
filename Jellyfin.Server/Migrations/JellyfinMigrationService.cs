@@ -90,7 +90,7 @@ internal class JellyfinMigrationService
 
     private HashSet<MigrationStage> Migrations { get; set; }
 
-    public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths)
+    public async Task CheckFirstTimeRunOrMigration(IApplicationPaths appPaths, StartupOptions startupOptions)
     {
         var logger = _startupLogger.With(_loggerFactory.CreateLogger<JellyfinMigrationService>()).BeginGroup($"Migration Startup");
         logger.LogInformation("Initialise Migration service.");
@@ -98,9 +98,9 @@ internal class JellyfinMigrationService
         var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
             ? (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!
             : new ServerConfiguration();
-        if (!serverConfig.IsStartupWizardCompleted)
+        if (!serverConfig.IsStartupWizardCompleted || startupOptions.StartupMode is Configuration.StartupMode.SeedSystem)
         {
-            logger.LogInformation("System initialisation detected. Seed data.");
+            logger.LogInformation("System initialization detected. Seed data. Startup mode is: {StartupMode}", startupOptions.StartupMode ?? Configuration.StartupMode.MediaServer);
             var flatApplyMigrations = Migrations.SelectMany(e => e.Where(f => !f.Metadata.RunMigrationOnSetup)).ToArray();
 
             var dbContext = await _dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
