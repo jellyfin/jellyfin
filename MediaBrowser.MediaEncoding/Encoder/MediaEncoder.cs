@@ -72,6 +72,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
         private List<string> _filters = new List<string>();
+        private Dictionary<string, HashSet<string>> _vaapiRateControlModes = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         private IDictionary<FilterOptionType, bool> _filtersWithOption = new Dictionary<FilterOptionType, bool>();
         private IDictionary<BitStreamFilterOptionType, bool> _bitStreamFiltersWithOption = new Dictionary<BitStreamFilterOptionType, bool>();
 
@@ -98,6 +99,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "VK_EXT_external_memory_dma_buf",
             "VK_KHR_external_semaphore_fd",
             "VK_EXT_external_memory_host"
+        };
+
+        private static string[] _vaapiVideoEncoders =
+        {
+            "h264_vaapi",
+            "hevc_vaapi",
+            "av1_vaapi"
+        };
+
+        private static string[] _vaapiRateControlModesToProbe =
+        {
+            "VBR",
+            "CQP"
         };
 
         private Version _ffmpegVersion = null;
@@ -233,6 +247,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding", _ffmpegVersion);
                 _isLowPriorityHwDecodeSupported = validator.CheckSupportedHwaccelFlag("low_priority");
                 _proberSupportsFirstVideoFrame = validator.CheckSupportedProberOption("only_first_vframe", _ffprobePath);
+                _vaapiRateControlModes.Clear();
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -245,6 +260,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
                     _isVaapiDeviceSupportVulkanDrmModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanImageDrmFmtModifierExts);
                     _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
+                    SetAvailableVaapiRateControlModes(validator, options.VaapiDevice);
 
                     if (_isVaapiDeviceAmd)
                     {
@@ -363,6 +379,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
+        public bool SupportsVaapiRateControlMode(string encoder, string rateControlMode)
+        {
+            return _vaapiRateControlModes.TryGetValue(encoder, out var rateControlModes)
+                   && rateControlModes.Contains(rateControlMode);
+        }
+
+        /// <inheritdoc />
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
@@ -389,6 +412,32 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool SupportsBitStreamFilterWithOption(BitStreamFilterOptionType option)
         {
             return _bitStreamFiltersWithOption.TryGetValue(option, out var val) && val;
+        }
+
+        private void SetAvailableVaapiRateControlModes(EncoderValidator validator, string renderNodePath)
+        {
+            foreach (var encoder in _vaapiVideoEncoders)
+            {
+                if (!SupportsEncoder(encoder))
+                {
+                    continue;
+                }
+
+                var rateControlModes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var rateControlMode in _vaapiRateControlModesToProbe)
+                {
+                    if (validator.CheckVaapiEncoderRateControlMode(encoder, rateControlMode, renderNodePath))
+                    {
+                        rateControlModes.Add(rateControlMode);
+                    }
+                }
+
+                if (rateControlModes.Count > 0)
+                {
+                    _vaapiRateControlModes[encoder] = rateControlModes;
+                    _logger.LogInformation("VAAPI encoder {Encoder} supports rate control modes: {RateControlModes}", encoder, rateControlModes);
+                }
+            }
         }
 
         public bool CanEncodeToAudioCodec(string codec)

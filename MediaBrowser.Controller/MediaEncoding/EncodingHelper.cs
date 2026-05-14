@@ -1576,8 +1576,55 @@ namespace MediaBrowser.Controller.MediaEncoding
             return ".ts";
         }
 
-        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
+        private static bool IsVaapiVideoEncoder(string videoCodec)
         {
+            return string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "av1_vaapi", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static int GetVaapiQp(EncodingOptions encodingOptions, string videoCodec)
+        {
+            var defaultQp = string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase) ? 23 : 28;
+            var configuredQp = string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                ? encodingOptions.H264Crf
+                : encodingOptions.H265Crf;
+
+            return configuredQp is >= 0 and <= 51 ? configuredQp : defaultQp;
+        }
+
+        private string GetVaapiVideoBitrateParam(EncodingJobInfo state, string videoCodec, EncodingOptions encodingOptions)
+        {
+            if (state.OutputVideoBitrate is null)
+            {
+                return string.Empty;
+            }
+
+            var bitrate = state.OutputVideoBitrate.Value;
+            var bufsize = (int)Math.Min((long)bitrate * 2, int.MaxValue);
+
+            // VBR in i965 driver may result in pixelated output.
+            if (_mediaEncoder.IsVaapiDeviceInteli965)
+            {
+                return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+            }
+
+            if (!_mediaEncoder.SupportsVaapiRateControlMode(videoCodec, "VBR")
+                && _mediaEncoder.SupportsVaapiRateControlMode(videoCodec, "CQP"))
+            {
+                return FormattableString.Invariant($" -rc_mode CQP -qp {GetVaapiQp(encodingOptions, videoCodec)}");
+            }
+
+            return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+        }
+
+        private string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec, EncodingOptions encodingOptions)
+        {
+            if (IsVaapiVideoEncoder(videoCodec))
+            {
+                return GetVaapiVideoBitrateParam(state, videoCodec, encodingOptions);
+            }
+
             if (state.OutputVideoBitrate is null)
             {
                 return string.Empty;
@@ -1649,19 +1696,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // Override the too high default qmin 18 in transcoding preset in legacy h26x_amf
                 return FormattableString.Invariant($" -rc cbr -qmin 0 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
-            }
-
-            if (string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(videoCodec, "av1_vaapi", StringComparison.OrdinalIgnoreCase))
-            {
-                // VBR in i965 driver may result in pixelated output.
-                if (_mediaEncoder.IsVaapiDeviceInteli965)
-                {
-                    return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
-                }
-
-                return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
             if (string.Equals(videoCodec, "h264_videotoolbox", StringComparison.OrdinalIgnoreCase)
@@ -2116,7 +2150,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var encodingPreset = encodingOptions.EncoderPreset;
 
             param += GetEncoderParam(encodingPreset, defaultPreset, encodingOptions, videoEncoder, isLibX265);
-            param += GetVideoBitrateParam(state, videoEncoder);
+            param += GetVideoBitrateParam(state, videoEncoder, encodingOptions);
 
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)

@@ -89,6 +89,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SupportsEncoder(string encoder);
 
         /// <summary>
+        /// Whether the configured VAAPI device supports a rate control mode for the given encoder.
+        /// </summary>
+        /// <param name="encoder">The VAAPI encoder.</param>
+        /// <param name="rateControlMode">The rate control mode.</param>
+        /// <returns><c>true</c> if the mode is supported, <c>false</c> otherwise.</returns>
+        bool SupportsVaapiRateControlMode(string encoder, string rateControlMode);
+
+        /// <summary>
         /// Whether given decoder codec is supported.
         /// </summary>
         /// <param name="decoder">The decoder.</param>

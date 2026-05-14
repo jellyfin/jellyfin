@@ -456,6 +456,33 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool CheckVaapiEncoderRateControlMode(string encoder, string rateControlMode, string renderNodePath)
+        {
+            if (!OperatingSystem.IsLinux())
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(encoder)
+                || string.IsNullOrEmpty(rateControlMode)
+                || string.IsNullOrEmpty(renderNodePath))
+            {
+                return false;
+            }
+
+            var rateControlArgs = string.Equals(rateControlMode, "CQP", StringComparison.OrdinalIgnoreCase)
+                ? "-rc_mode CQP -qp 28"
+                : FormattableString.Invariant($"-rc_mode {rateControlMode} -b:v 1000000 -maxrate 1000000 -bufsize 2000000");
+            var command = string.Format(
+                CultureInfo.InvariantCulture,
+                "-loglevel quiet -hide_banner -init_hw_device vaapi=va:{0} -filter_hw_device va -f lavfi -i testsrc2=s=128x128:r=1:d=1 -vf format=nv12,hwupload -frames:v 1 -an -c:v {1} {2} -f null -",
+                renderNodePath,
+                encoder,
+                rateControlArgs);
+
+            return GetProcessExitCode(_encoderPath, command);
+        }
+
         [SupportedOSPlatform("macos")]
         public bool CheckIsVideoToolboxAv1DecodeAvailable()
         {
