@@ -335,7 +335,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 series.OriginalLanguage = seriesResult.OriginalLanguage;
             }
-            
+
             WithDisplayOrder(seriesResult, series, search);
 
             return series;
