@@ -271,9 +271,9 @@ namespace Emby.Server.Implementations.Session
                         user.LastActivityDate = activityDate;
                         await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
                     }
-                    catch (DbUpdateConcurrencyException e)
+                    catch (DbUpdateConcurrencyException)
                     {
-                        _logger.LogDebug(e, "Error updating user's last activity date.");
+                        _logger.LogDebug("Error updating user's last activity date due to concurrency conflict. This is an expected event.");
                     }
                 }
             }

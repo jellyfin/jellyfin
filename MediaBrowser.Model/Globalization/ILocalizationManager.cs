@@ -51,6 +51,15 @@ public interface ILocalizationManager
     string GetLocalizedString(string phrase);
 
     /// <summary>
+    /// Gets the localized string using the server's configured UICulture,
+    /// ignoring the current request's culture. Use this for data that is
+    /// persisted (e.g. activity log entries) rather than returned per-request.
+    /// </summary>
+    /// <param name="phrase">The phrase.</param>
+    /// <returns>System.String.</returns>
+    string GetServerLocalizedString(string phrase);
+
+    /// <summary>
     /// Gets the localization options.
     /// </summary>
     /// <returns><see cref="IEnumerable{LocalizationOption}" />.</returns>

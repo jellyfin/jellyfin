@@ -935,11 +935,11 @@ public class LibraryController : BaseJellyfinApiController
         try
         {
             await _activityManager.CreateAsync(new ActivityLog(
-                string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
+                string.Format(CultureInfo.InvariantCulture, _localization.GetServerLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                 "UserDownloadingContent",
                 User.GetUserId())
             {
-                ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
+                ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetServerLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
                 ItemId = item.Id.ToString("N", CultureInfo.InvariantCulture)
             }).ConfigureAwait(false);
         }
