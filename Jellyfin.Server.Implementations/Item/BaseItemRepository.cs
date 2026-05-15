@@ -33,6 +33,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +70,7 @@ public sealed class BaseItemRepository
     private readonly IItemTypeLookup _itemTypeLookup;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ILogger<BaseItemRepository> _logger;
+    private readonly ILocalizationManager _localizationManager;
 
     private static readonly IReadOnlyList<ItemValueType> _getAllArtistsValueTypes = [ItemValueType.Artist, ItemValueType.AlbumArtist];
     private static readonly IReadOnlyList<ItemValueType> _getArtistValueTypes = [ItemValueType.Artist];
@@ -85,18 +87,21 @@ public sealed class BaseItemRepository
     /// <param name="itemTypeLookup">The static type lookup.</param>
     /// <param name="serverConfigurationManager">The server Configuration manager.</param>
     /// <param name="logger">System logger.</param>
+    /// <param name="localizationManager">Localization manager.</param>
     public BaseItemRepository(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IServerApplicationHost appHost,
         IItemTypeLookup itemTypeLookup,
         IServerConfigurationManager serverConfigurationManager,
-        ILogger<BaseItemRepository> logger)
+        ILogger<BaseItemRepository> logger,
+        ILocalizationManager localizationManager)
     {
         _dbProvider = dbProvider;
         _appHost = appHost;
         _itemTypeLookup = itemTypeLookup;
         _serverConfigurationManager = serverConfigurationManager;
         _logger = logger;
+        _localizationManager = localizationManager;
     }
 
     /// <inheritdoc />
@@ -2297,26 +2302,42 @@ public sealed class BaseItemRepository
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoAudioTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && f.Language == filter.HasNoAudioTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoAudioTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoInternalSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && !f.IsExternal && f.Language == filter.HasNoInternalSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoInternalSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && !f.IsExternal && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoExternalSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.IsExternal && f.Language == filter.HasNoExternalSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoExternalSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.IsExternal && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(filter.HasNoSubtitleTrackWithLanguage))
         {
-            baseQuery = baseQuery
-                .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && f.Language == filter.HasNoSubtitleTrackWithLanguage));
+            var lang = _localizationManager.FindLanguageInfo(filter.HasNoSubtitleTrackWithLanguage);
+            if (lang is not null)
+            {
+                baseQuery = baseQuery
+                    .Where(e => !e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle && lang.ThreeLetterISOLanguageNames.Contains(f.Language)));
+            }
         }
 
         if (filter.HasSubtitles.HasValue)

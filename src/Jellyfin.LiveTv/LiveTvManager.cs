@@ -1204,7 +1204,7 @@ namespace Jellyfin.LiveTv
             {
                 Services = services,
                 IsEnabled = services.Length > 0,
-                EnabledUsers = _userManager.Users
+                EnabledUsers = _userManager.GetUsers()
                     .Where(IsLiveTvEnabled)
                     .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
                     .ToArray()
@@ -1220,7 +1220,7 @@ namespace Jellyfin.LiveTv
 
         public IEnumerable<User> GetEnabledUsers()
         {
-            return _userManager.Users
+            return _userManager.GetUsers()
                 .Where(IsLiveTvEnabled);
         }
 
