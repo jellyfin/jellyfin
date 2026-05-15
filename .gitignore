@@ -277,5 +277,3 @@ apiclient/generated
 
 # Omnisharp crash logs
 mono_crash.*.json
-tests/Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj.lscache
-tests/Jellyfin.XbmcMetadata.Tests/Jellyfin.XbmcMetadata.Tests.csproj.lscache
