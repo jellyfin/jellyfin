@@ -302,7 +302,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     ProductionYear = video.Year,
                     Name = parseName ? video.Name : firstVideo.Name,
                     AdditionalParts = additionalParts,
-                    LocalAlternateVersions = video.AlternateVersions.Select(i => i.Path).ToArray()
+                    LocalAlternateVersions = video.AlternateVersions.Count > 0
+                        ? video.AlternateVersions.Select(i => i.Path).ToArray()
+                        : Array.Empty<string>()
                 };
 
                 SetVideoType(videoItem, firstVideo);
