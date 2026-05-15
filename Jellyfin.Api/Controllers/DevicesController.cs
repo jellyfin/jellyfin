@@ -119,17 +119,17 @@ public class DevicesController : BaseJellyfinApiController
     /// </summary>
     /// <param name="id">Device Ids.</param>
     /// <response code="204">Device deleted.</response>
-    /// <response code="404">Device not found.</response>
-    /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if a device could not be found.</returns>
+    /// <response code="400">A requested device is invalid.</response>
+    /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="BadRequestResult"/> if a requested device is invalid.</returns>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> DeleteDevice([FromQuery] string[] id)
     {
         var devices = id.Select(_deviceManager.GetDevice).ToArray();
         if (devices.Any(f => f is null))
         {
-            return NotFound();
+            return BadRequest();
         }
 
         foreach (var device in devices)
