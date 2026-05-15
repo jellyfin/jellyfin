@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Item;
 /// <summary>
 /// Handles mapping between BaseItemEntity (database) and BaseItemDto (domain) objects.
 /// </summary>
-internal static class BaseItemMapper
+public static class BaseItemMapper
 {
     /// <summary>
     /// This holds all the types in the running assemblies
