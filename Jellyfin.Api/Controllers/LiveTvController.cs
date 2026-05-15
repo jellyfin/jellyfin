@@ -749,6 +749,7 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Programs/{programId}")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BaseItemDto>> GetProgram(
         [FromRoute, Required] string programId,
         [FromQuery] Guid? userId)
