@@ -1244,6 +1244,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
+                dto.IsoPlaybackTitle = video.IsoPlaybackTitle;
 
                 if (video.HasSubtitles)
                 {

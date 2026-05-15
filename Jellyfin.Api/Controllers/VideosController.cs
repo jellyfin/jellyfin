@@ -464,8 +464,10 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
         }
 
+        var isIsoDvdOrBluRay = (state.MediaSource.VideoType == VideoType.Iso && (state.MediaSource.IsoType == IsoType.Dvd || state.MediaSource.IsoType == IsoType.BluRay)) || (state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd);
+
         // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+        if (@static.HasValue && @static.Value && !isIsoDvdOrBluRay)
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
@@ -478,6 +480,17 @@ public class VideosController : BaseJellyfinApiController
             return FileStreamResponseHelpers.GetStaticFileResult(
                 state.MediaPath,
                 contentType);
+        }
+
+        if (@static.HasValue && @static.Value && isIsoDvdOrBluRay)
+        {
+            state.OutputAudioCodec = "copy";
+            state.OutputVideoCodec = "copy";
+            state.OutputAudioBitrate = null;
+            state.OutputAudioChannels = null;
+            state.OutputVideoBitrate = null;
+            state.OutputFilePath += ".mkv";
+            state.MapAll = true;
         }
 
         // Need to start ffmpeg (because media can't be returned directly)

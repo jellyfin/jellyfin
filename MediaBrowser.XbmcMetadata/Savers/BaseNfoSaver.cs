@@ -97,7 +97,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "isuserfavorite",
             "userrating",
 
-            "countrycode"
+            "countrycode",
+
+            "isoplaybacktitle",
         };
 
         protected BaseNfoSaver(
@@ -429,6 +431,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
                                     writer.WriteElementString("format3d", "MVC");
                                     break;
                             }
+                        }
+
+                        // Persist the selected disc playback title so it survives a library re-scan.
+                        // For ISO items only write when IsoType is known; Dvd and BluRay directories always qualify.
+                        if (video.IsoPlaybackTitle.HasValue
+                            && (video.VideoType is VideoType.Dvd or VideoType.BluRay
+                                || (video.VideoType == VideoType.Iso && video.IsoType.HasValue)))
+                        {
+                            writer.WriteElementString(
+                                "isoplaybacktitle",
+                                video.IsoPlaybackTitle.Value.ToString(CultureInfo.InvariantCulture));
                         }
                     }
                 }
