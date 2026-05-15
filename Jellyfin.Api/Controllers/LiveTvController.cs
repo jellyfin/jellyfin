@@ -756,8 +756,14 @@ public class LiveTvController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var result = await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
 
-        return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
     }
 
     /// <summary>
