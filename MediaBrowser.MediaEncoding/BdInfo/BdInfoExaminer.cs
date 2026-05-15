@@ -93,6 +93,38 @@ public class BdInfoExaminer : IBlurayExaminer
         return outputStream;
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<IsoTitleInfo> GetTitles(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
+
+        var bdrom = new BDROM(BdInfoDirectoryInfo.FromFileSystemPath(_fileSystem, path));
+        bdrom.Scan();
+
+        // Enumerate all valid playlists sorted by filename (alphabetical playlist order).
+        // Title numbers are sequential 1-based integers across valid playlists for user display.
+        // At encode time, the -bluray_video_title option expects a 0-based index, so subtract 1.
+        var titles = new List<IsoTitleInfo>();
+        int titleNumber = 1;
+        foreach (var playlist in bdrom.PlaylistFiles.Values.OrderBy(p => p.Name))
+        {
+            if (playlist.IsValid)
+            {
+                titles.Add(new IsoTitleInfo
+                {
+                    TitleNumber = titleNumber,
+                    DurationTicks = TimeSpan.FromSeconds(playlist.TotalLength).Ticks
+                });
+                titleNumber++;
+            }
+        }
+
+        return titles;
+    }
+
     /// <summary>
     /// Adds the video stream.
     /// </summary>
