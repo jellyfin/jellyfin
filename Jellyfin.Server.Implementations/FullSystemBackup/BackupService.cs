@@ -521,7 +521,11 @@ public class BackupService : IBackupService
     {
         try
         {
-            _manifestFileLock.EnterReadLock();
+            if (!_manifestFileLock.TryEnterReadLock(TimeSpan.FromSeconds(10)))
+            {
+                return null;
+            }
+
             var archiveStream = File.OpenRead(archivePath);
             await using (archiveStream.ConfigureAwait(false))
             {
