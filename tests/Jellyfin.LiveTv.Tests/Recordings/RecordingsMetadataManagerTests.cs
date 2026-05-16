@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Recordings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -26,7 +27,7 @@ public sealed class RecordingsMetadataManagerTests
     {
         Directory.CreateDirectory(_tempDir);
         var recordingPath = Path.Combine(_tempDir, "test-recording.ts");
-        await File.WriteAllTextAsync(recordingPath, string.Empty, TestContext.Current.CancellationToken);
+        FileHelper.CreateEmpty(recordingPath);
 
         var config = new Mock<IConfigurationManager>();
         config.Setup(c => c.GetConfiguration("livetv"))
