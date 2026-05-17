@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -27,6 +29,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<PeopleValidationTask> _logger;
+    private readonly IItemTypeLookup _itemTypeLookup;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
@@ -36,18 +39,21 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
+    /// <param name="itemTypeLookup">Instance of the <see cref="IItemTypeLookup"/> interface.</param>
     public PeopleValidationTask(
         ILibraryManager libraryManager,
         ILocalizationManager localization,
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
         IFileSystem fileSystem,
-        ILogger<PeopleValidationTask> logger)
+        ILogger<PeopleValidationTask> logger,
+        IItemTypeLookup itemTypeLookup)
     {
         _libraryManager = libraryManager;
         _localization = localization;
         _dbContextFactory = dbContextFactory;
         _fileSystem = fileSystem;
         _logger = logger;
+        _itemTypeLookup = itemTypeLookup;
     }
 
     /// <inheritdoc />
@@ -169,60 +175,50 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private async Task RefreshPeopleImagesAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-        var personTypeName = typeof(Person).FullName!;
+        var personTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
 
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            var people = await context.BaseItems
+            const int PartitionSize = 100;
+
+            var numPeople = await context.BaseItems
                 .AsNoTracking()
                 .Where(b => b.Type == personTypeName)
                 .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
                 .Where(b =>
                     !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
                     string.IsNullOrEmpty(b.Overview))
-                .Select(b => new
-                {
-                    b.Id,
-                    HasImage = b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary),
-                    HasOverview = !string.IsNullOrEmpty(b.Overview)
-                })
-                .ToListAsync(cancellationToken)
+                .CountAsync(cancellationToken)
                 .ConfigureAwait(false);
-
-            var numPeople = people.Count;
-            var numComplete = 0;
-            var numRefreshed = 0;
 
             _logger.LogDebug("Found {Count} people needing image/overview refresh", numPeople);
 
-            foreach (var entry in people)
+            if (numPeople == 0)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                progress.Report(100);
+                return;
+            }
 
-                try
+            var numComplete = 0;
+            var numRefreshed = 0;
+
+            await foreach (var entry in context.BaseItems
+                .AsNoTracking()
+                .Where(b => b.Type == personTypeName)
+                .Where(b => b.DateLastRefreshed == null || b.DateLastRefreshed < thirtyDaysAgo)
+                .Where(b =>
+                    !b.Images!.Any(i => i.ImageType == ImageInfoImageType.Primary) ||
+                    string.IsNullOrEmpty(b.Overview))
+                .OrderBy(b => b.Id)
+                .WithPartitionProgress(partition => _logger.LogDebug("Processing people partition {Partition}", partition))
+                .PartitionEagerAsync(PartitionSize, cancellationToken)
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false))
+            {
+                if (await RefreshPersonAsync(entry.Id, cancellationToken).ConfigureAwait(false))
                 {
-                    if (_libraryManager.GetItemById(entry.Id) is not Person item)
-                    {
-                        continue;
-                    }
-
-                    var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                    {
-                        ImageRefreshMode = entry.HasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
-                        MetadataRefreshMode = entry.HasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
-                    };
-
-                    await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
                     numRefreshed++;
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error refreshing images for person {PersonId}", entry.Id);
                 }
 
                 numComplete++;
@@ -230,6 +226,38 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             }
 
             _logger.LogInformation("Refreshed metadata for {Count} people missing images or overview", numRefreshed);
+        }
+    }
+
+    private async Task<bool> RefreshPersonAsync(Guid personId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_libraryManager.GetItemById(personId) is not Person item)
+            {
+                return false;
+            }
+
+            var hasImage = item.HasImage(MediaBrowser.Model.Entities.ImageType.Primary);
+            var hasOverview = !string.IsNullOrEmpty(item.Overview);
+
+            var options = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+            {
+                ImageRefreshMode = hasImage ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default,
+                MetadataRefreshMode = hasOverview ? MetadataRefreshMode.ValidationOnly : MetadataRefreshMode.Default
+            };
+
+            await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing images for person {PersonId}", personId);
+            return false;
         }
     }
 }
