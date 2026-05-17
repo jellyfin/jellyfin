@@ -97,7 +97,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets or sets a value indicating whether this plugin should automatically update.
         /// </summary>
         [JsonPropertyName("autoUpdate")]
-        public bool AutoUpdate { get; set; } = true; // DO NOT MOVE THIS INTO THE CONSTRUCTOR.
+        public bool AutoUpdate { get; set; } = false; // DO NOT MOVE THIS INTO THE CONSTRUCTOR.
 
         /// <summary>
         /// Gets or sets the ImagePath
