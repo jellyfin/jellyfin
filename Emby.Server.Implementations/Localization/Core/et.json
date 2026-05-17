@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImages": "Muuda trickplay piltide asukoht",
     "CleanupUserDataTask": "Puhasta kasutajaandmed",
     "CleanupUserDataTaskDescription": "Puhastab kõik kasutajaandmed (vaatamise olek, lemmikute olek jne) meediast, mida pole enam vähemalt 90 päeva saadaval olnud.",
-    "LyricDownloadFailureFromForItem": "Laulusõnade hankimine teenusest {0} loole {1} nurjus"
+    "LyricDownloadFailureFromForItem": "Laulusõnade hankimine teenusest {0} loole {1} nurjus",
+    "Original": "Algne"
 }
