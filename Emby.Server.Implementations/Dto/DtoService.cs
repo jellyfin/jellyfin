@@ -1054,7 +1054,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.RemoteTrailers = item.RemoteTrailers;
             }
 
-            dto.Name = item.Name;
+            dto.Name = GetDisplayName(item);
             dto.OfficialRating = item.OfficialRating;
 
             if (options.ContainsField(ItemFields.Overview))
@@ -1479,6 +1479,17 @@ namespace Emby.Server.Implementations.Dto
                     dto.ChannelName = channel.Name;
                 }
             }
+        }
+
+        private string GetDisplayName(BaseItem item)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            if (libraryOptions.PreferOriginalTitle && !string.IsNullOrEmpty(item.OriginalTitle))
+            {
+                return item.OriginalTitle;
+            }
+
+            return item.Name;
         }
 
         private BaseItem? GetImageDisplayParent(BaseItem currentItem, BaseItem originalItem)
