@@ -1280,10 +1280,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && _mediaEncoder.SupportsLibBluray)
             {
                 // Unpacked Blu-ray directory with an explicit title selection: use libbluray title selection.
-                // IsoPlaybackTitle is 1-based for display; libbluray expects 0-based.
+                // IsoPlaybackTitle is 1-based for display; libbluray expects the specific number of the .mpls file.
                 var titleNumber = state.MediaSource.IsoPlaybackTitle.Value;
-                arg.Append(" -bluray_video_title ")
-                    .Append(titleNumber - 1)
+                arg.Append(" -playlist ")
+                    .Append(titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0'))
                     .Append(" -i ")
                     .Append(_mediaEncoder.GetInputPathArgument(state));
             }
@@ -1313,13 +1313,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (_mediaEncoder.SupportsLibBluray)
                 {
-                    // Blu-ray ISO: pass -bluray_video_title N (0-based) before the input.
-                    // IsoPlaybackTitle is 1-based for display; libbluray expects 0-based.
+                    // Blu-ray ISO: pass -playlist N (BDMV/PLAYLIST/?????.mpls) before the input.
+                    // IsoPlaybackTitle is 1-based for display; libbluray expects the exact .mpls number.
                     // If no title is stored, resolve the longest title on demand.
                     var titleNumber = state.MediaSource.IsoPlaybackTitle
                         ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.BluRay);
-                    arg.Append(" -bluray_video_title ")
-                        .Append(titleNumber - 1)
+                    arg.Append(" -playlist ")
+                        .Append(titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0'))
                         .Append(" -i ")
                         .Append(_mediaEncoder.GetInputPathArgument(state));
                 }
@@ -7987,6 +7987,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             for (var i = 0; i < length; i++)
             {
                 var currentMediaStream = mediaStreams[i];
+
+                if (currentMediaStream.Codec == "dvd_nav_packet")
+                {
+                    continue;
+                }
+
                 if (currentMediaStream == streamToFind)
                 {
                     return index;

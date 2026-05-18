@@ -105,20 +105,22 @@ public class BdInfoExaminer : IBlurayExaminer
         bdrom.Scan();
 
         // Enumerate all valid playlists sorted by filename (alphabetical playlist order).
-        // Title numbers are sequential 1-based integers across valid playlists for user display.
-        // At encode time, the -bluray_video_title option expects a 0-based index, so subtract 1.
+        // Title numbers are the integer value of the .mpls file name without the extension.
         var titles = new List<IsoTitleInfo>();
-        int titleNumber = 1;
         foreach (var playlist in bdrom.PlaylistFiles.Values.OrderBy(p => p.Name))
         {
             if (playlist.IsValid)
             {
-                titles.Add(new IsoTitleInfo
+                var playlistIdString = playlist.Name.Split(".").FirstOrDefault();
+
+                if (playlistIdString != null && playlistIdString.Length > 0 && int.TryParse(playlistIdString, out var playlistId))
                 {
-                    TitleNumber = titleNumber,
-                    DurationTicks = TimeSpan.FromSeconds(playlist.TotalLength).Ticks
-                });
-                titleNumber++;
+                    titles.Add(new IsoTitleInfo
+                    {
+                        TitleNumber = playlistId,
+                        DurationTicks = TimeSpan.FromSeconds(playlist.TotalLength).Ticks
+                    });
+                }
             }
         }
 

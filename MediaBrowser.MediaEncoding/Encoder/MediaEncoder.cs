@@ -452,7 +452,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     && _supportsLibBluray)
                 {
                     // IsoPlaybackTitle is 1-based for display; libbluray expects 0-based.
-                    extraArgs += $" -bluray_video_title {mediaSource.IsoPlaybackTitle.Value - 1}";
+                    extraArgs += $" -playlist {mediaSource.IsoPlaybackTitle.Value.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0')}";
                     inputPath = GetInputPathArgument(mediaSource.Path, mediaSource);
                 }
             }
