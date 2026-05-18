@@ -693,11 +693,16 @@ namespace MediaBrowser.Model.Entities
         /// Gets a value indicating whether this instance is compatible with the device.
         /// </summary>
         /// <value><c>true</c> if this instance is compatible with the device; otherwise, <c>false</c>.</value>
-        public bool SupportsDirectPlay
+        public bool? SupportsDirectPlay
         {
             get
             {
-                return DirectPlayErrors == 0;
+                if (!DirectPlayErrors.HasValue)
+                {
+                    return null;
+                }
+
+                return DirectPlayErrors.Value == 0;
             }
         }
 
