@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MediaBrowser.MediaEncoding.Probing;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Tests.Probing;
@@ -157,7 +159,7 @@ public class DvdVideoProberTests
         WriteBE16(data, 2048 + 0, 1);
 
         using var dir = new TempVideoTsDirectory(data);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
 
         Assert.Single(disc.Titles);
         var t = disc.Titles[0];
@@ -189,7 +191,7 @@ public class DvdVideoProberTests
         }
 
         using var dir = new TempVideoTsDirectory(data);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
 
         Assert.Equal(titleCount, disc.Titles.Count);
         for (int i = 0; i < titleCount; i++)
@@ -202,7 +204,7 @@ public class DvdVideoProberTests
     public void ParseVideoTsDirectory_MissingVmgIfo_ReturnsEmptyDisc()
     {
         using var emptyDir = new TempVideoTsDirectory(null);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(emptyDir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(emptyDir.Path, Mock.Of<ILogger<DvdVideoProber>>());
         Assert.Empty(disc.Titles);
     }
 
@@ -212,7 +214,7 @@ public class DvdVideoProberTests
         var data = new byte[4096];
         "NOT-A-DVD-IFO"u8.CopyTo(data.AsSpan(0));
         using var dir = new TempVideoTsDirectory(data);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
         Assert.Empty(disc.Titles);
     }
 
@@ -292,7 +294,7 @@ public class DvdVideoProberTests
         });
 
         using var dir = new TempVideoTsDirectory(vmgData, vts01Data: vtsData);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
 
         Assert.Single(disc.Titles);
         var t = disc.Titles[0];
@@ -333,7 +335,7 @@ public class DvdVideoProberTests
         });
 
         using var dir = new TempVideoTsDirectory(vmgData, vts01Data: vtsData);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
 
         Assert.Equal(7, disc.Titles.Count);
         Assert.Equal(1, disc.Titles[0].TitleNumber);
@@ -412,7 +414,7 @@ public class DvdVideoProberTests
         var vtsData = BuildFullVtsIfoWithRawTime(dvdTime);
 
         using var dir = new TempVideoTsDirectory(vmgData, vts01Data: vtsData);
-        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path);
+        var disc = DvdVideoProber.ParseVideoTsDirectory(dir.Path, Mock.Of<ILogger<DvdVideoProber>>());
         return disc.Titles.Count == 1 ? disc.Titles[0].Duration : null;
     }
 

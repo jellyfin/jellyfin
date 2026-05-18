@@ -23,7 +23,7 @@ namespace MediaBrowser.MediaEncoding.Probing;
 /// Sector pointers in header fields are relative to the start of the IFO file.
 /// Table-internal offsets are relative to the start of the table (not the file).
 /// </remarks>
-internal static class DvdVideoProber
+internal class DvdVideoProber
 {
     private const string VmgIfoDirectoryName = "VIDEO_TS";
     private const string VmgIfoFileName = "VIDEO_TS.IFO";
@@ -38,10 +38,11 @@ internal static class DvdVideoProber
     /// by reading the Video Manager IFO embedded in the UDF image.
     /// </summary>
     /// <param name="isoPath">Path to the ISO image file.</param>
+    /// <param name="logger">The logger; warnings are emitted for missing/corrupt IFOs.</param>
     /// <returns>An ordered list of title numbers, or an empty list on failure.</returns>
-    internal static IReadOnlyList<int> GetIsoTitleNumbers(string isoPath)
+    internal static IReadOnlyList<int> GetIsoTitleNumbers(string isoPath, ILogger logger)
     {
-        var disc = ParseVideoTsIso(isoPath);
+        var disc = ParseVideoTsIso(isoPath, logger);
         return disc.Titles.Count > 0
             ? disc.Titles.Select(t => t.TitleNumber).ToList()
             : Array.Empty<int>();
@@ -55,10 +56,11 @@ internal static class DvdVideoProber
     /// Path to either the root directory (containing a VIDEO_TS sub-directory)
     /// or directly to the VIDEO_TS directory itself.
     /// </param>
+    /// <param name="logger">The logger; warnings are emitted for missing/corrupt IFOs.</param>
     /// <returns>An ordered list of title numbers, or an empty list on failure.</returns>
-    internal static IReadOnlyList<int> GetDirectoryTitleNumbers(string dvdPath)
+    internal static IReadOnlyList<int> GetDirectoryTitleNumbers(string dvdPath, ILogger logger)
     {
-        var disc = ParseVideoTsDirectory(dvdPath);
+        var disc = ParseVideoTsDirectory(dvdPath, logger);
         return disc.Titles.Count > 0
             ? disc.Titles.Select(t => t.TitleNumber).ToList()
             : Array.Empty<int>();
@@ -74,9 +76,9 @@ internal static class DvdVideoProber
     /// Root DVD directory (may contain a VIDEO_TS sub-directory) or the VIDEO_TS
     /// directory itself.
     /// </param>
-    /// <param name="logger">Optional logger; warnings are emitted for missing/corrupt IFOs.</param>
+    /// <param name="logger">The logger; warnings are emitted for missing/corrupt IFOs.</param>
     /// <returns>Parsed disc info; titles list may be empty on failure.</returns>
-    internal static DvdDiscInfo ParseVideoTsDirectory(string dvdPath, ILogger? logger = null)
+    internal static DvdDiscInfo ParseVideoTsDirectory(string dvdPath, ILogger logger)
     {
         var videoTsPath = ResolveVideoTsPath(dvdPath);
         if (videoTsPath is null)
@@ -87,7 +89,7 @@ internal static class DvdVideoProber
         var ifoPath = FindFileInsensitive(videoTsPath, VmgIfoFileName);
         if (ifoPath is null)
         {
-            logger?.LogWarning("VIDEO_TS.IFO not found in {VideoTsPath}", videoTsPath);
+            logger.LogWarning("VIDEO_TS.IFO not found in {VideoTsPath}", videoTsPath);
             return new DvdDiscInfo();
         }
 
@@ -98,7 +100,7 @@ internal static class DvdVideoProber
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Failed to read VIDEO_TS.IFO at {Path}", ifoPath);
+            logger.LogError(ex, "Failed to read VIDEO_TS.IFO at {Path}", ifoPath);
             return new DvdDiscInfo();
         }
 
@@ -120,7 +122,7 @@ internal static class DvdVideoProber
             var vtsIfoPath = FindFileInsensitive(videoTsPath, vtsIfoName);
             if (vtsIfoPath is null)
             {
-                logger?.LogWarning("VTS IFO {FileName} not found in {VideoTsPath}", vtsIfoName, videoTsPath);
+                logger.LogWarning("VTS IFO {FileName} not found in {VideoTsPath}", vtsIfoName, videoTsPath);
                 continue;
             }
 
@@ -131,7 +133,7 @@ internal static class DvdVideoProber
             }
             catch (Exception ex)
             {
-                logger?.LogError(ex, "Failed to read VTS IFO at {Path}", vtsIfoPath);
+                logger.LogError(ex, "Failed to read VTS IFO at {Path}", vtsIfoPath);
                 continue;
             }
 
@@ -145,9 +147,9 @@ internal static class DvdVideoProber
     /// Parses a DVD ISO image and returns full disc information including per-title durations.
     /// </summary>
     /// <param name="isoPath">Path to the ISO image file.</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="logger">The logger.</param>
     /// <returns>Parsed disc info; titles list may be empty on failure.</returns>
-    internal static DvdDiscInfo ParseVideoTsIso(string isoPath, ILogger? logger = null)
+    internal static DvdDiscInfo ParseVideoTsIso(string isoPath, ILogger logger)
     {
         try
         {
@@ -157,7 +159,7 @@ internal static class DvdVideoProber
             var vtsDirectory = udfReader.GetDirectoryInfo(VmgIfoDirectoryName);
             if (!vtsDirectory.Exists)
             {
-                logger?.LogWarning("VIDEO_TS directory not found in ISO {Path}", isoPath);
+                logger.LogWarning("VIDEO_TS directory not found in ISO {Path}", isoPath);
                 return new DvdDiscInfo();
             }
 
@@ -167,7 +169,7 @@ internal static class DvdVideoProber
                 f => string.Equals(f.Name, VmgIfoFileName, StringComparison.OrdinalIgnoreCase));
             if (vmgIfoFile is null)
             {
-                logger?.LogWarning("VIDEO_TS.IFO not found in ISO {Path}", isoPath);
+                logger.LogWarning("VIDEO_TS.IFO not found in ISO {Path}", isoPath);
                 return new DvdDiscInfo();
             }
 
@@ -196,7 +198,7 @@ internal static class DvdVideoProber
                     f => string.Equals(f.Name, vtsIfoName, StringComparison.OrdinalIgnoreCase));
                 if (vtsIfoFile is null)
                 {
-                    logger?.LogWarning("VTS IFO {FileName} not found in ISO {Path}", vtsIfoName, isoPath);
+                    logger.LogWarning("VTS IFO {FileName} not found in ISO {Path}", vtsIfoName, isoPath);
                     continue;
                 }
 
@@ -208,7 +210,7 @@ internal static class DvdVideoProber
                 }
                 catch (Exception ex)
                 {
-                    logger?.LogError(ex, "Failed to read VTS IFO {FileName} from ISO", vtsIfoName);
+                    logger.LogError(ex, "Failed to read VTS IFO {FileName} from ISO", vtsIfoName);
                     continue;
                 }
 
@@ -219,7 +221,7 @@ internal static class DvdVideoProber
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Failed to parse DVD ISO at {Path}", isoPath);
+            logger.LogError(ex, "Failed to parse DVD ISO at {Path}", isoPath);
             return new DvdDiscInfo();
         }
     }
@@ -431,18 +433,18 @@ internal static class DvdVideoProber
     /// Mutates <paramref name="titles"/> in-place, setting <see cref="DvdTitleInfo.ProgramChainNumber"/>,
     /// <see cref="DvdTitleInfo.ProgramNumber"/>, and <see cref="DvdTitleInfo.Duration"/> on each entry.
     /// </remarks>
-    private static void ParseVtsIfo(byte[] data, int vtsNumber, IEnumerable<DvdTitleInfo> titles, ILogger? logger)
+    private static void ParseVtsIfo(byte[] data, int vtsNumber, IEnumerable<DvdTitleInfo> titles, ILogger logger)
     {
         if (!HasMagic(data, MagicVts))
         {
-            logger?.LogWarning("VTS_{VtsNum:D2}_0.IFO has wrong magic bytes — skipping", vtsNumber);
+            logger.LogWarning("VTS_{VtsNum:D2}_0.IFO has wrong magic bytes — skipping", vtsNumber);
             return;
         }
 
         // vtsi_mat_t: vts_ptt_srpt at 0xC8, vts_pgcit at 0xCC
         if (data.Length < 0xD0)
         {
-            logger?.LogWarning("VTS_{VtsNum:D2}_0.IFO is too short to contain VTSI_MAT pointers", vtsNumber);
+            logger.LogWarning("VTS_{VtsNum:D2}_0.IFO is too short to contain VTSI_MAT pointers", vtsNumber);
             return;
         }
 
@@ -460,7 +462,7 @@ internal static class DvdVideoProber
             }
             else
             {
-                logger?.LogWarning(
+                logger.LogWarning(
                     "VTS_{VtsNum:D2}_0.IFO: VTS_PTT_SRPT sector {Sector} points outside file",
                     vtsNumber,
                     pttSrptSector);
@@ -478,7 +480,7 @@ internal static class DvdVideoProber
             }
             else
             {
-                logger?.LogWarning(
+                logger.LogWarning(
                     "VTS_{VtsNum:D2}_0.IFO: VTS_PGCITI sector {Sector} points outside file",
                     vtsNumber,
                     pgcitiSector);
