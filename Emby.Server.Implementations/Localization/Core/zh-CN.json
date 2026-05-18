@@ -106,5 +106,7 @@
     "TaskExtractMediaSegmentsDescription": "从支持 MediaSegment 的插件中提取或获取媒体分段。",
     "TaskMoveTrickplayImagesDescription": "根据媒体库设置移动现有的进度条预览图文件。",
     "CleanupUserDataTask": "用户数据清理任务",
-    "CleanupUserDataTaskDescription": "清理已被删除超过90天的媒体中的所有用户数据（观看状态、收藏夹状态等）。"
+    "CleanupUserDataTaskDescription": "清理已被删除超过90天的媒体中的所有用户数据（观看状态、收藏夹状态等）。",
+    "LyricDownloadFailureFromForItem": "无法从 {0} 下载 {1} 的歌词",
+    "Original": "原始"
 }
