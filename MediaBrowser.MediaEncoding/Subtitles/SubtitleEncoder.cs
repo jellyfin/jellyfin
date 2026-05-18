@@ -636,12 +636,64 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             List<MediaStream> subtitleStreams,
             CancellationToken cancellationToken)
         {
-            var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+            var inputPath = _mediaEncoder.GetInputPathArgument(mediaSource.Path, mediaSource);
+
             var outputPaths = new List<string>();
-            var args = string.Format(
-                CultureInfo.InvariantCulture,
-                "-i {0}",
-                inputPath);
+            var args = string.Empty;
+
+            if (mediaSource.VideoType == VideoType.Dvd
+                && mediaSource.IsoPlaybackTitle.HasValue
+                && _mediaEncoder.SupportsDvdVideo)
+            {
+                // Unpacked DVD directory with an explicit title selection: use dvdvideo demuxer.
+                // IsoPlaybackTitle is 1-based.
+                var titleNumber = mediaSource.IsoPlaybackTitle.Value;
+                args += " -f dvdvideo -title ";
+                args += titleNumber;
+                args += " -i ";
+                args += inputPath;
+            }
+            else if (mediaSource.VideoType == VideoType.BluRay
+                && mediaSource.IsoPlaybackTitle.HasValue
+                && _mediaEncoder.SupportsLibBluray)
+            {
+                // Unpacked Blu-ray directory with an explicit title selection: use libbluray title selection.
+                // IsoPlaybackTitle is 1-based for display; libbluray expects the specific number of the .mpls file.
+                var titleNumber = mediaSource.IsoPlaybackTitle.Value;
+                args += " -playlist ";
+                args += titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0');
+                args += " -i ";
+                args += inputPath;
+            }
+            else if (mediaSource.VideoType == VideoType.Iso
+                && mediaSource.IsoType == IsoType.Dvd)
+            {
+                if (_mediaEncoder.SupportsDvdVideo)
+                {
+                    // DVD ISO: use the dvdvideo demuxer which requires libdvdnav + libdvdread.
+                    // Use the stored playback title; if none is set, resolve the longest title on demand.
+                    var titleNumber = mediaSource.IsoPlaybackTitle
+                        ?? EncodingHelper.GetLongestIsoTitleNumber(inputPath, IsoType.Dvd, _mediaEncoder);
+                    args += " -f dvdvideo -title ";
+                    args += titleNumber;
+                    args += " -i ";
+                    args += inputPath;
+                }
+                else
+                {
+                    // dvdvideo demuxer unavailable: fall back to passing the ISO path directly.
+                    args += " -i ";
+                    args += inputPath;
+                }
+            }
+            else
+            {
+                inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+                args += string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-i {0}",
+                    inputPath);
+            }
 
             foreach (var subtitleStream in subtitleStreams)
             {

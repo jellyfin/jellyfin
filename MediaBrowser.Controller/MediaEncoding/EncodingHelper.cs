@@ -1295,7 +1295,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // DVD ISO: use the dvdvideo demuxer which requires libdvdnav + libdvdread.
                     // Use the stored playback title; if none is set, resolve the longest title on demand.
                     var titleNumber = state.MediaSource.IsoPlaybackTitle
-                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.Dvd);
+                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.Dvd, _mediaEncoder);
                     arg.Append(" -f dvdvideo -title ")
                         .Append(titleNumber)
                         .Append(" -i ")
@@ -1317,7 +1317,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // IsoPlaybackTitle is 1-based for display; libbluray expects the exact .mpls number.
                     // If no title is stored, resolve the longest title on demand.
                     var titleNumber = state.MediaSource.IsoPlaybackTitle
-                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.BluRay);
+                        ?? GetLongestIsoTitleNumber(state.MediaPath, IsoType.BluRay, _mediaEncoder);
                     arg.Append(" -playlist ")
                         .Append(titleNumber.ToString(CultureInfo.InvariantCulture).PadLeft(5, '0'))
                         .Append(" -i ")
@@ -8059,11 +8059,15 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Used as a fallback at encode time when <see cref="MediaSourceInfo.IsoPlaybackTitle"/> is not set.
         /// Falls back to title 1 if the title list is empty or enumeration fails.
         /// </summary>
-        private int GetLongestIsoTitleNumber(string path, IsoType isoType)
+        /// <param name="path">The path to the media.</param>
+        /// <param name="isoType">The type of iso if applicable.</param>
+        /// <param name="mediaEncoder">The media encoder instance.</param>
+        /// <returns>The number for the longest title.</returns>
+        public static int GetLongestIsoTitleNumber(string path, IsoType isoType, IMediaEncoder mediaEncoder)
         {
             try
             {
-                var titles = _mediaEncoder.GetIsoTitles(path, isoType);
+                var titles = mediaEncoder.GetIsoTitles(path, isoType);
                 if (titles.Count == 0)
                 {
                     return 1;

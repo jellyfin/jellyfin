@@ -1395,7 +1395,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     => GetDvdVideoInputArgument(path, mediaSource.Protocol),
                 VideoType.Dvd => GetInputArgument(GetPrimaryPlaylistVobFiles(path, null), mediaSource),
                 // When a specific title has been selected for an unpacked Blu-ray directory, use the
-                // bluray: URI scheme so FFmpeg's libbluray can apply -bluray_video_title selection.
+                // bluray: URI scheme so FFmpeg's libbluray can apply -playlist selection.
                 // Without a title selection (or when libbluray is unavailable), fall back to concat.
                 VideoType.BluRay when mediaSource.IsoPlaybackTitle.HasValue && _supportsLibBluray
                     => EncodingUtils.GetInputArgument("bluray", path, mediaSource.Protocol),
