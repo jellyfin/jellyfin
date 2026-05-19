@@ -19,15 +19,20 @@ namespace Jellyfin.Controller.Tests.MediaEncoding
 
         public EncodingHelperSeekTests()
         {
+            _helper = CreateHelper(new Version(7, 0, 1));
+        }
+
+        private static EncodingHelper CreateHelper(Version encoderVersion)
+        {
             var mediaEncoder = new Mock<IMediaEncoder>();
             mediaEncoder
                 .Setup(e => e.GetTimeParameter(It.IsAny<long>()))
                 .Returns((long ticks) => TimeSpan.FromTicks(ticks).ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture));
             mediaEncoder
                 .SetupGet(e => e.EncoderVersion)
-                .Returns(new Version(7, 0, 1));
+                .Returns(encoderVersion);
 
-            _helper = new EncodingHelper(
+            return new EncodingHelper(
                 Mock.Of<IApplicationPaths>(),
                 mediaEncoder.Object,
                 Mock.Of<ISubtitleEncoder>(),
@@ -94,6 +99,21 @@ namespace Jellyfin.Controller.Tests.MediaEncoding
             Assert.Contains(expectedSs, result, StringComparison.Ordinal);
             Assert.DoesNotContain("-bsf:a noise=drop=", result, StringComparison.Ordinal);
             Assert.DoesNotContain("-noaccurate_seek", result, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("6.1.1")]
+        [InlineData("6.0")]
+        public void HlsTranscodeVideoCopyAudio_PreThreadedCli_NoBsfDrop(string ffmpegVersion)
+        {
+            var helper = CreateHelper(Version.Parse(ffmpegVersion));
+            var seekTicks = TimeSpan.FromSeconds(63.063).Ticks;
+            var state = CreateState(TranscodingJobType.Hls, "libx264", "copy", seekTicks);
+
+            var result = helper.GetFastSeekCommandLineParameter(state, _encodingOptions, "ts");
+
+            Assert.Contains("-ss 00:01:03.063", result, StringComparison.Ordinal);
+            Assert.DoesNotContain("-bsf:a noise=drop=", result, StringComparison.Ordinal);
         }
 
         [Theory]
