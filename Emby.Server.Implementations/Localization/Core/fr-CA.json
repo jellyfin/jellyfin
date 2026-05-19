@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImages": "Changer l'emplacement des images Trickplay",
     "TaskExtractMediaSegmentsDescription": "Extrait ou obtient des segments de média à partir des plugins compatibles avec MediaSegment.",
     "CleanupUserDataTaskDescription": "Nettoie toutes les données utilisateur (état de la montre, statut favori, etc.) des supports qui ne sont plus présents depuis au moins 90 jours.",
-    "CleanupUserDataTask": "Tâche de nettoyage des données utilisateur"
+    "CleanupUserDataTask": "Tâche de nettoyage des données utilisateur",
+    "LyricDownloadFailureFromForItem": "Le téléchargement des paroles a échoué de {0} pour {1}",
+    "Original": "Original"
 }

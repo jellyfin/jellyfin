@@ -52,6 +52,12 @@
     <EmbeddedResource Include="Plugins\AudioDb\Configuration\config.html" />
     <None Remove="Plugins\Omdb\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\Omdb\Configuration\config.html" />
+    <None Remove="Plugins\ListenBrainz\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\config.html" />
+    <None Remove="Plugins\ListenBrainz\Configuration\ListenBrainz_logo.svg" />
+    <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\ListenBrainz_logo.svg" />
+    <None Remove="Plugins\ListenBrainz\Configuration\NOTICE.md" />
+    <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\NOTICE.md" />
     <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />
     <None Remove="Plugins\StudioImages\Configuration\config.html" />

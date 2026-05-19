@@ -8,7 +8,7 @@
     "FailedLoginAttemptWithUserName": "Mislukte aanmeldpoging van {0}",
     "Favorites": "Favorieten",
     "Folders": "Mappen",
-    "HeaderContinueWatching": "Verderkijken",
+    "HeaderContinueWatching": "Verder kijken",
     "HeaderFavoriteEpisodes": "Favoriete afleveringen",
     "HeaderFavoriteShows": "Favoriete series",
     "HeaderLiveTV": "Live-tv",
@@ -107,5 +107,6 @@
     "CleanupUserDataTaskDescription": "Wist alle gebruikersgegevens (kijkstatus, favorieten, etc.) van media die al minstens 90 dagen niet meer aanwezig zijn.",
     "CleanupUserDataTask": "Opruimtaak gebruikersdata",
     "Genres": "Genres",
-    "Original": "Oorspronkelijk"
+    "Original": "Oorspronkelijk",
+    "LyricDownloadFailureFromForItem": "Downloaden van liedteksten voor {1} van {0} mislukt"
 }

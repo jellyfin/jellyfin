@@ -106,5 +106,7 @@
     "TaskDownloadMissingLyrics": "Descarcă versurile lipsă",
     "TaskDownloadMissingLyricsDescription": "Descarcă versuri pentru melodii",
     "CleanupUserDataTask": "Sarcina de curatare a datelor utilizatorului",
-    "CleanupUserDataTaskDescription": "Sterge toate datele utilizatorului (starea vizionarii, starea favoritelor etc.) de pe suporturile media care nu mai sunt prezente timp de cel puțin 90 de zile."
+    "CleanupUserDataTaskDescription": "Sterge toate datele utilizatorului (starea vizionarii, starea favoritelor etc.) de pe suporturile media care nu mai sunt prezente timp de cel puțin 90 de zile.",
+    "LyricDownloadFailureFromForItem": "Versurile nu au putut fi descărcate din {0} pentru {1}",
+    "Original": "Original"
 }

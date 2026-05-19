@@ -111,7 +111,9 @@ public static class DescendantQueryHelper
     private static HashSet<Guid> GetMatchingMediaStreamItemIds(JellyfinDbContext context, HasMediaStreamType criteria)
     {
         var query = context.MediaStreamInfos
-            .Where(ms => ms.StreamType == criteria.StreamType && ms.Language == criteria.Language);
+            .Where(ms => ms.StreamType == criteria.StreamType
+                   && (criteria.Language.Contains(ms.Language)
+                       || (criteria.Language.Contains("und") && string.IsNullOrEmpty(ms.Language)))); // und = undetermined
 
         if (criteria.IsExternal.HasValue)
         {

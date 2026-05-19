@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using BitFaster.Caching.Lru;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
+using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
@@ -87,6 +88,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IPathManager _pathManager;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
+        private readonly IMediaStreamRepository _mediaStreamRepository;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -129,6 +131,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="peopleRepository">The people repository.</param>
         /// <param name="pathManager">The path manager.</param>
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
+        /// <param name="mediaStreamRepository">The media stream repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -151,7 +154,8 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService directoryService,
             IPeopleRepository peopleRepository,
             IPathManager pathManager,
-            DotIgnoreIgnoreRule dotIgnoreIgnoreRule)
+            DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
+            IMediaStreamRepository mediaStreamRepository)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -180,6 +184,8 @@ namespace Emby.Server.Implementations.Library
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+
+            _mediaStreamRepository = mediaStreamRepository;
 
             RecordConfigurationValues(_configurationManager.Configuration);
         }
@@ -786,6 +792,42 @@ namespace Emby.Server.Implementations.Library
             IDirectoryService? directoryService = null,
             CollectionType? collectionType = null)
             => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent, collectionType);
+
+        private void SetAdditionalPartsFromStack(Video altVideo, string path)
+        {
+            if (altVideo.AdditionalParts is { Length: > 0 })
+            {
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(directory))
+            {
+                return;
+            }
+
+            IEnumerable<FileSystemMetadata> siblings;
+            try
+            {
+                siblings = _fileSystem.GetFiles(directory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to enumerate siblings to detect stack for {Path}", path);
+                return;
+            }
+
+            var stacks = StackResolver.Resolve(siblings, _namingOptions);
+            foreach (var stack in stacks)
+            {
+                if (stack.Files.Count > 1
+                    && string.Equals(stack.Files[0], path, StringComparison.OrdinalIgnoreCase))
+                {
+                    altVideo.AdditionalParts = stack.Files.Skip(1).ToArray();
+                    return;
+                }
+            }
+        }
 
         /// <inheritdoc />
         public Video? ResolveAlternateVersion(string path, Type expectedVideoType, Folder? parent, CollectionType? collectionType)
@@ -2307,6 +2349,10 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                // ResolveAlternateVersion only sees the alternate's primary file.
+                                // If the alternate is itself a stack (e.g. 1080p part1 + part2),
+                                // detect its parts from sibling files so its AdditionalParts persist.
+                                SetAdditionalPartsFromStack(altVideo, path);
                                 allItems.Add(altVideo);
                             }
                         }
@@ -2510,6 +2556,10 @@ namespace Emby.Server.Implementations.Library
                             {
                                 altVideo.OwnerId = video.Id;
                                 altVideo.SetPrimaryVersionId(video.Id);
+                                // ResolveAlternateVersion only sees the alternate's primary file.
+                                // If the alternate is itself a stack (e.g. 1080p part1 + part2),
+                                // detect its parts from sibling files so its AdditionalParts persist.
+                                SetAdditionalPartsFromStack(altVideo, path);
                                 allItems.Add(altVideo);
                             }
                         }
@@ -3799,6 +3849,12 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
+        {
+            return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);
         }
     }
 }

@@ -744,10 +744,12 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="programId">Program id.</param>
     /// <param name="userId">Optional. Attach user data.</param>
     /// <response code="200">Program returned.</response>
+    /// <response code="404">Program not found.</response>
     /// <returns>An <see cref="OkResult"/> containing the livetv program.</returns>
     [HttpGet("Programs/{programId}")]
     [Authorize(Policy = Policies.LiveTvAccess)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BaseItemDto>> GetProgram(
         [FromRoute, Required] string programId,
         [FromQuery] Guid? userId)
@@ -756,8 +758,14 @@ public class LiveTvController : BaseJellyfinApiController
         var user = userId.IsNullOrEmpty()
             ? null
             : _userManager.GetUserById(userId.Value);
+        var result = await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
 
-        return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
     }
 
     /// <summary>

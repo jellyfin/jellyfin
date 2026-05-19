@@ -106,5 +106,7 @@
     "TaskDownloadMissingLyricsDescription": "Şarkı sözlerini indirir",
     "TaskExtractMediaSegmentsDescription": "MediaSegment özelliği etkin olan eklentilerden medya segmentlerini çıkarır veya alır.",
     "CleanupUserDataTask": "Kullanıcı verisi temizleme görevi",
-    "CleanupUserDataTaskDescription": "En az 90 gün boyunca artık mevcut olmayan medyadaki tüm kullanıcı verilerini (İzleme durumu, favori durumu vb.) temizler."
+    "CleanupUserDataTaskDescription": "En az 90 gün boyunca artık mevcut olmayan medyadaki tüm kullanıcı verilerini (İzleme durumu, favori durumu vb.) temizler.",
+    "LyricDownloadFailureFromForItem": "{1} şarkı sözleri {0} adresinden indirilemedi",
+    "Original": "Orijinal"
 }

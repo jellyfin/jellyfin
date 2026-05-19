@@ -107,5 +107,6 @@
     "TaskExtractMediaSegments": "Quét Phân Đoạn Phương Tiện",
     "CleanupUserDataTask": "Tác vụ dọn dẹp dữ liệu người dùng",
     "CleanupUserDataTaskDescription": "Làm sạch tất cả dữ liệu người dùng (trạng thái xem, trạng thái yêu thích, v.v.) từ phương tiện không còn có mặt trong ít nhất 90 ngày.",
-    "Original": "Gốc"
+    "Original": "Gốc",
+    "LyricDownloadFailureFromForItem": "Lời bài hát không tải xuống được từ {0} cho {1}"
 }

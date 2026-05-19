@@ -824,6 +824,26 @@ public sealed partial class BaseItemRepository
             }
         }
 
+        if (filter.SubtitleLanguages.Count > 0)
+        {
+            var foldersWithSubtitles = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Subtitle, filter.SubtitleLanguages));
+            baseQuery = baseQuery
+                .Where(e =>
+                    (!e.IsFolder && e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Subtitle
+                     && (filter.SubtitleLanguages.Contains(f.Language) || (filter.SubtitleLanguages.Contains("und") && string.IsNullOrEmpty(f.Language)))))
+                    || (e.IsFolder && foldersWithSubtitles.Contains(e.Id)));
+        }
+
+        if (filter.AudioLanguages.Count > 0)
+        {
+            var foldersWithAudio = DescendantQueryHelper.GetFolderIdsMatching(context, new HasMediaStreamType(MediaStreamTypeEntity.Audio, filter.AudioLanguages));
+            baseQuery = baseQuery
+                .Where(e =>
+                    (!e.IsFolder && e.MediaStreams!.Any(f => f.StreamType == MediaStreamTypeEntity.Audio
+                     && (filter.AudioLanguages.Contains(f.Language) || (filter.AudioLanguages.Contains("und") && string.IsNullOrEmpty(f.Language)))))
+                    || (e.IsFolder && foldersWithAudio.Contains(e.Id)));
+        }
+
         if (filter.HasChapterImages.HasValue)
         {
             var hasChapterImages = filter.HasChapterImages.Value;
@@ -953,6 +973,17 @@ public sealed partial class BaseItemRepository
             }
         }
 
+        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
+        {
+            var includeAny = filter.HasAnyProviderIds
+                .SelectMany(kvp => kvp.Value.Select(v => $"{kvp.Key}:{v}"))
+                .ToArray();
+            if (includeAny.Length > 0)
+            {
+                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeAny.Contains(f)));
+            }
+        }
+
         if (filter.HasImdbId.HasValue)
         {
             baseQuery = filter.HasImdbId.Value
@@ -1057,8 +1088,12 @@ public sealed partial class BaseItemRepository
 
         if (filter.VideoTypes.Length > 0)
         {
+            // Dvds and Blu-rays can either be stored in a folder structure or as an iso file
+            // => to find all matches we need to check both: VideoType and IsoType
+            // alternatively, we could provide specific IsoType filters
             var videoTypeBs = filter.VideoTypes.Select(vt => $"\"VideoType\":\"{vt}\"").ToArray();
-            Expression<Func<BaseItemEntity, bool>> hasVideoType = e => videoTypeBs.Any(f => e.Data!.Contains(f));
+            var isoTypeBs = filter.VideoTypes.Select(vt => $"\"IsoType\":\"{vt}\"").ToArray();
+            Expression<Func<BaseItemEntity, bool>> hasVideoType = e => videoTypeBs.Any(f => e.Data!.Contains(f)) || isoTypeBs.Any(f => e.Data!.Contains(f));
             baseQuery = baseQuery.WhereItemOrDescendantMatches(context, hasVideoType);
         }
 

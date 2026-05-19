@@ -157,6 +157,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
+    /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
+    /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
@@ -247,6 +249,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameLessThan,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
     {
@@ -399,11 +403,40 @@ public class ItemsController : BaseJellyfinApiController
                 MinDateLastSavedForUser = minDateLastSavedForUser?.ToUniversalTime(),
                 MinPremiereDate = minPremiereDate?.ToUniversalTime(),
                 MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
+                AudioLanguages = audioLanguages,
+                SubtitleLanguages = subtitleLanguages,
             };
 
             if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
             {
                 query.CollapseBoxSetItems = false;
+            }
+
+            if (query.SubtitleLanguages.Count > 0 && query.HasSubtitles.HasValue)
+            {
+                if (query.HasSubtitles.Value)
+                {
+                    // if we check for specific subtitles we don't need a separate check for subtitle existence
+                    query.HasSubtitles = null;
+                }
+                else
+                {
+                    // if we search for items without subtitles, we don't need to check for subtitles of a specific language
+                    query.SubtitleLanguages = [];
+                }
+            }
+
+            // for filter values that rely on media streams, we need to include alternative and linked versions
+            if (query.HasSubtitles.HasValue
+                || query.SubtitleLanguages.Count > 0
+                || query.AudioLanguages.Count > 0
+                || query.Is3D.HasValue
+                || query.IsHD.HasValue
+                || query.Is4K.HasValue
+                || query.VideoTypes.Length > 0
+            )
+            {
+                query.IncludeOwnedItems = true;
             }
 
             query.ApplyFilters(filters);
@@ -785,6 +818,8 @@ public class ItemsController : BaseJellyfinApiController
             nameLessThan,
             studioIds,
             genreIds,
+            [],
+            [],
             enableTotalRecordCount,
             enableImages).ConfigureAwait(false);
 

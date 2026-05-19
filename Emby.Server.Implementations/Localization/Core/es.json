@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImages": "Migrar la ubicación de la imagen de Trickplay",
     "CleanupUserDataTask": "Tarea de limpieza de datos del usuario",
     "CleanupUserDataTaskDescription": "Limpia todos los datos del usuario (estado de visualización, favoritos, etc.) de los medios que ya no están disponibles desde hace al menos 90 días.",
-    "Original": "Original"
+    "Original": "Original",
+    "LyricDownloadFailureFromForItem": "No se pudieron descargar las letras desde {0} para {1}."
 }
