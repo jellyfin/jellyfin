@@ -465,10 +465,11 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var isIso = state.MediaSource.VideoType == VideoType.Iso;
-        var isIsoDvdOrBluRay = (isIso && (state.MediaSource.IsoType == IsoType.Dvd || state.MediaSource.IsoType == IsoType.BluRay)) || (state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd);
+        var isUnpackedDvdBluray = state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd;
+        var isIsoDvdOrBluRay = isIso && (state.MediaSource.IsoType == IsoType.Dvd || state.MediaSource.IsoType == IsoType.BluRay);
 
         // Static stream
-        if (@static.HasValue && @static.Value && isIso && isIsoDvdOrBluRay)
+        if (@static.HasValue && @static.Value && !isUnpackedDvdBluray)
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
