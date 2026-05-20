@@ -280,10 +280,17 @@ public class ItemsController : BaseJellyfinApiController
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
 
+        Guid[] boxSetLinkedChildAncestorIds = [];
         if (includeItemTypes.Length == 1
             && includeItemTypes[0] == BaseItemKind.BoxSet
             && item is not BoxSet)
         {
+            var isBoxSetsLibrary = item is IHasCollectionType hct && hct.CollectionType == CollectionType.boxsets;
+            if (parentId.HasValue && item is not UserRootFolder && !isBoxSetsLibrary)
+            {
+                boxSetLinkedChildAncestorIds = [parentId.Value];
+            }
+
             parentId = null;
             item = _libraryManager.GetUserRootFolder();
         }
@@ -405,6 +412,7 @@ public class ItemsController : BaseJellyfinApiController
                 MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
                 AudioLanguages = audioLanguages,
                 SubtitleLanguages = subtitleLanguages,
+                LinkedChildAncestorIds = boxSetLinkedChildAncestorIds,
             };
 
             if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
