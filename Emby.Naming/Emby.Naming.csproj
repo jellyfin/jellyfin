@@ -34,6 +34,29 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <EpisodePathParserRustProject>$(MSBuildThisFileDirectory)rust/jellyfin_naming/Cargo.toml</EpisodePathParserRustProject>
+    <EpisodePathParserRustProfile>debug</EpisodePathParserRustProfile>
+    <EpisodePathParserRustProfile Condition="'$(Configuration)' == 'Release'">release</EpisodePathParserRustProfile>
+    <EpisodePathParserRustCargoFlags Condition="'$(Configuration)' == 'Release'">--release</EpisodePathParserRustCargoFlags>
+    <EpisodePathParserRustTargetDir>$(MSBuildThisFileDirectory)rust/jellyfin_naming/target/$(EpisodePathParserRustProfile)</EpisodePathParserRustTargetDir>
+    <EpisodePathParserRustLibrary Condition="$([MSBuild]::IsOSPlatform('Windows'))">jellyfin_naming.dll</EpisodePathParserRustLibrary>
+    <EpisodePathParserRustLibrary Condition="$([MSBuild]::IsOSPlatform('OSX'))">libjellyfin_naming.dylib</EpisodePathParserRustLibrary>
+    <EpisodePathParserRustLibrary Condition="'$(EpisodePathParserRustLibrary)' == ''">libjellyfin_naming.so</EpisodePathParserRustLibrary>
+  </PropertyGroup>
+
+  <Target Name="BuildEpisodePathParserRustLeaf" BeforeTargets="Build">
+    <Exec Command="cargo build --manifest-path &quot;$(EpisodePathParserRustProject)&quot; $(EpisodePathParserRustCargoFlags)" />
+    <Copy
+      SourceFiles="$(EpisodePathParserRustTargetDir)/$(EpisodePathParserRustLibrary)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <Content Include="$(EpisodePathParserRustTargetDir)/$(EpisodePathParserRustLibrary)" Link="$(EpisodePathParserRustLibrary)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Naming</PackageId>
     <VersionPrefix>12.0.0</VersionPrefix>
