@@ -2,7 +2,7 @@
     "Genres": "ჟანრები",
     "TasksApplicationCategory": "აპლიკაცია",
     "AppDeviceValues": "აპლიკაცია: {0}, მოწყობილობა: {1}",
-    "Artists": "არტისტი",
+    "Artists": "შემსრულებლები",
     "AuthenticationSucceededWithUserName": "{0} -ის ავთენტიკაცია წარმატებულია",
     "Books": "წიგნები",
     "Forced": "იძულებითი",
@@ -33,7 +33,7 @@
     "TasksChannelsCategory": "ინტერნეტ-არხები",
     "TaskRefreshChannelsDescription": "ინტერნეტ-არხის ინფორმაციის განახლება.",
     "Collections": "კოლექციები",
-    "Default": "ნაგულისხმები",
+    "Default": "ნაგულისხმევი",
     "Favorites": "რჩეულები",
     "Folders": "საქაღალდეები",
     "HeaderFavoriteShows": "რჩეული სერიალები",
@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImages": "Trickplay სურათების მიგრაცია",
     "TaskMoveTrickplayImagesDescription": "გადააქვს trickplay ფაილები ბიბლიოთეკის პარამეტრებზე დაყრდნობით.",
     "CleanupUserDataTask": "მომხმარებლების მონაცემების გასუფთავება",
-    "CleanupUserDataTaskDescription": "ასუფთავებს მომხმარებლების მონაცემებს (ყურების სტატუსი, ფავორიტები ანდ ა.შ) მედია ელემენტებისთვის რომლების 90 დღეზე მეტია აღარ არსებობენ."
+    "CleanupUserDataTaskDescription": "ასუფთავებს მომხმარებლების მონაცემებს (ყურების სტატუსი, ფავორიტები ანდ ა.შ) მედია ელემენტებისთვის რომლების 90 დღეზე მეტია აღარ არსებობენ.",
+    "LyricDownloadFailureFromForItem": "{1}-ისთვის {0}-დან ლირიკის გადმოწერა ჩავარდა",
+    "Original": "ორიგინალი"
 }
