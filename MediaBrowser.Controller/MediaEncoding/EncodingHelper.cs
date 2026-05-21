@@ -86,6 +86,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegQsvVppScaleModeOption = new Version(6, 0);
         private readonly Version _minFFmpegRkmppHevcDecDoviRpu = new Version(7, 1, 1);
         private readonly Version _minFFmpegReadrateCatchupOption = new Version(8, 0);
+        private readonly Version _minFFmpegNoiseBsfDrop = new Version(5, 0);
 
         private static readonly string[] _videoProfilesH264 =
         [
@@ -1576,7 +1577,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         // bypasses the decoder, so it starts from the nearest keyframe — potentially
         // seconds before the target. Use the noise bsf to drop copied audio packets
         // before the seek target, achieving the same trim precision without
-        // re-encoding.
+        // re-encoding. The noise bsf's drop= parameter requires ffmpeg >= 5.0.
         // Important: make sure not to use it with wtv because it breaks seeking
         private string GetCopiedAudioTrimBsf(EncodingJobInfo state)
         {
@@ -1584,7 +1585,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || !state.IsVideoRequest
                 || IsCopyCodec(state.OutputVideoCodec)
                 || !IsCopyCodec(state.OutputAudioCodec)
-                || string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
+                || _mediaEncoder.EncoderVersion < _minFFmpegNoiseBsfDrop)
             {
                 return null;
             }
