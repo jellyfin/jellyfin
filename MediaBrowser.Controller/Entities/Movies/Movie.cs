@@ -4,13 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -28,9 +30,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the name of the TMDb collection.

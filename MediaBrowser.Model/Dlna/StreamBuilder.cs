@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Dlna
         internal const TranscodeReason ContainerReasons = TranscodeReason.ContainerNotSupported | TranscodeReason.ContainerBitrateExceedsLimit;
         internal const TranscodeReason AudioCodecReasons = TranscodeReason.AudioBitrateNotSupported | TranscodeReason.AudioChannelsNotSupported | TranscodeReason.AudioProfileNotSupported | TranscodeReason.AudioSampleRateNotSupported | TranscodeReason.SecondaryAudioNotSupported | TranscodeReason.AudioBitDepthNotSupported | TranscodeReason.AudioIsExternal;
         internal const TranscodeReason AudioReasons = TranscodeReason.AudioCodecNotSupported | AudioCodecReasons;
-        internal const TranscodeReason VideoCodecReasons = TranscodeReason.VideoResolutionNotSupported | TranscodeReason.AnamorphicVideoNotSupported | TranscodeReason.InterlacedVideoNotSupported | TranscodeReason.VideoBitDepthNotSupported | TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoFramerateNotSupported | TranscodeReason.VideoLevelNotSupported | TranscodeReason.RefFramesNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.VideoProfileNotSupported;
+        internal const TranscodeReason VideoCodecReasons = TranscodeReason.VideoResolutionNotSupported | TranscodeReason.AnamorphicVideoNotSupported | TranscodeReason.InterlacedVideoNotSupported | TranscodeReason.VideoBitDepthNotSupported | TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoFramerateNotSupported | TranscodeReason.VideoLevelNotSupported | TranscodeReason.RefFramesNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.VideoProfileNotSupported | TranscodeReason.VideoRotationNotSupported;
         internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | VideoCodecReasons;
         internal const TranscodeReason DirectStreamReasons = AudioReasons | TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported;
 
@@ -379,6 +379,9 @@ namespace MediaBrowser.Model.Dlna
 
                 case ProfileConditionValue.VideoRangeType:
                     return TranscodeReason.VideoRangeTypeNotSupported;
+
+                case ProfileConditionValue.VideoRotation:
+                    return TranscodeReason.VideoRotationNotSupported;
 
                 case ProfileConditionValue.VideoTimestamp:
                     // TODO
@@ -1040,6 +1043,7 @@ namespace MediaBrowser.Model.Dlna
             bool? isInterlaced = videoStream?.IsInterlaced;
             string? videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
+            int? videoRotation = videoStream?.Rotation;
 
             TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
             int? packetLength = videoStream?.PacketLength;
@@ -1054,7 +1058,7 @@ namespace MediaBrowser.Model.Dlna
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
                     i.ContainsAnyCodec(playlistItem.VideoCodecs, container, useSubContainer) &&
-                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)))
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, videoRotation)))
                 // Reverse codec profiles for backward compatibility - first codec profile has higher priority
                 .Reverse();
             foreach (var condition in appliedVideoConditions)
@@ -1447,7 +1451,7 @@ namespace MediaBrowser.Model.Dlna
             string? outputContainer,
             MediaStreamProtocol? transcodingSubProtocol)
         {
-            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || transcodingSubProtocol != MediaStreamProtocol.hls))
+            if (CanConsiderEmbedSubtitle(subtitleStream, playMethod, transcodingSubProtocol, outputContainer))
             {
                 // Look for supported embedded subs of the same format
                 foreach (var profile in subtitleProfiles)
@@ -1534,6 +1538,19 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return false;
+        }
+
+        private static bool CanConsiderEmbedSubtitle(MediaStream subtitleStream, PlayMethod playMethod, MediaStreamProtocol? transcodingSubProtocol, string? outputContainer)
+        {
+            if (subtitleStream.IsExternal)
+            {
+                return playMethod == PlayMethod.Transcode
+                    && transcodingSubProtocol != MediaStreamProtocol.hls
+                    && IsSubtitleEmbedSupported(outputContainer);
+            }
+
+            return playMethod != PlayMethod.Transcode
+                || transcodingSubProtocol != MediaStreamProtocol.hls;
         }
 
         private static SubtitleProfile? GetExternalSubtitleProfile(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, ITranscoderSupport transcoderSupport, bool allowConversion)
@@ -2059,6 +2076,38 @@ namespace MediaBrowser.Model.Dlna
                             break;
                         }
 
+                    case ProfileConditionValue.VideoRotation:
+                        {
+                            if (string.IsNullOrEmpty(qualifier))
+                            {
+                                continue;
+                            }
+
+                            // change from split by | to comma
+                            // strip spaces to avoid having to encode
+                            var values = value
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            if (condition.Condition == ProfileConditionType.Equals)
+                            {
+                                item.SetOption(qualifier, "rotation", string.Join(',', values));
+                            }
+                            else if (condition.Condition == ProfileConditionType.EqualsAny)
+                            {
+                                var currentValue = item.GetOption(qualifier, "rotation");
+                                if (!string.IsNullOrEmpty(currentValue) && values.Any(v => string.Equals(v, currentValue, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    item.SetOption(qualifier, "rotation", currentValue);
+                                }
+                                else
+                                {
+                                    item.SetOption(qualifier, "rotation", string.Join(',', values));
+                                }
+                            }
+
+                            break;
+                        }
+
                     case ProfileConditionValue.Height:
                         {
                             if (!enableNonQualifiedConditions)
@@ -2281,6 +2330,7 @@ namespace MediaBrowser.Model.Dlna
             bool? isInterlaced = videoStream?.IsInterlaced;
             string? videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
+            int? videoRotation = videoStream?.Rotation;
 
             TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
             int? packetLength = videoStream?.PacketLength;
@@ -2290,7 +2340,7 @@ namespace MediaBrowser.Model.Dlna
             int? numAudioStreams = mediaSource.GetStreamCount(MediaStreamType.Audio);
             int? numVideoStreams = mediaSource.GetStreamCount(MediaStreamType.Video);
 
-            return conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
+            return conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numStreams, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, videoRotation));
         }
 
         /// <summary>

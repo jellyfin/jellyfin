@@ -12,10 +12,10 @@ namespace Emby.Naming.TV
     {
         private static readonly Regex CleanNameRegex = new(@"[ ._\-\[\]]", RegexOptions.Compiled);
 
-        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^\s*((?<seasonnumber>(?>\d+))(?:st|nd|rd|th|\.)*(?!\s*[Ee]\d+))\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul|érie|éria|erie|eria)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPre();
 
-        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"^\s*(?:[[시즌]*|[シーズン]*|[sS](?:eason|æson|aison|taffel|eries|tagione|äsong|eizoen|easong|ezon|ezona|ezóna|ezonul|érie|éria|erie|eria)*|[tT](?:emporada)*|[kK](?:ausi)*|[Сс](?:езон)*)\s*(?<seasonnumber>\d+?)(?=\d{3,4}p|[^\d]|$)(?!\s*[Ee]\d)(?<rightpart>.*)$", RegexOptions.IgnoreCase)]
         private static partial Regex ProcessPost();
 
         [GeneratedRegex(@"[sS](\d{1,4})(?!\d|[eE]\d)(?=\.|_|-|\[|\]|\s|$)", RegexOptions.None)]

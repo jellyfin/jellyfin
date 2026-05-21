@@ -414,7 +414,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
-            var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
+            var extractChapters = request.ExtractChapters;
             var extraArgs = GetExtraArguments(request);
 
             return GetMediaInfoInternal(

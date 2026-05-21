@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -97,6 +98,33 @@ public class TunerHostManager : ITunerHostManager
         }
 
         return info;
+    }
+
+    /// <inheritdoc />
+    public void DeleteTunerHost(string? id)
+    {
+        var config = _config.GetLiveTvConfiguration();
+        config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+        _config.SaveConfiguration("livetv", config);
+
+        // Clean up the disk cache file for this tuner.
+        // Tuner IDs are generated as Guid.NewGuid().ToString("N")
+        // reject anything else so we never use untrusted input in a path or log entry
+        if (Guid.TryParseExact(id, "N", out var tunerGuid))
+        {
+            var safeId = tunerGuid.ToString("N", CultureInfo.InvariantCulture);
+            var channelCacheFile = Path.Combine(_config.CommonApplicationPaths.CachePath, safeId + "_channels");
+            try
+            {
+                File.Delete(channelCacheFile);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Error deleting channel cache file for tuner {TunerId}", safeId);
+            }
+        }
+
+        _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
     }
 
     /// <inheritdoc />

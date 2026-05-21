@@ -156,7 +156,7 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
     {
         if (keyframeData.KeyframeTicks.Count > 0 && keyframeData.TotalDuration < keyframeData.KeyframeTicks[^1])
         {
-            throw new ArgumentException("Invalid duration in keyframe data", nameof(keyframeData));
+            keyframeData = new KeyframeData(keyframeData.KeyframeTicks[^1], keyframeData.KeyframeTicks);
         }
 
         long lastKeyframe = 0;
@@ -176,7 +176,12 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
             }
         }
 
-        result.Add(TimeSpan.FromTicks(keyframeData.TotalDuration - lastKeyframe).TotalSeconds);
+        var remaining = keyframeData.TotalDuration - lastKeyframe;
+        if (remaining > 0)
+        {
+            result.Add(TimeSpan.FromTicks(remaining).TotalSeconds);
+        }
+
         return result;
     }
 

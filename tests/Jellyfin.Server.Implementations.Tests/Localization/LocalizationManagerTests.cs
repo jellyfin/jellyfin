@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BitFaster.Caching;
@@ -242,6 +243,40 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Theory]
+        [InlineData("US:INVALID", "US")] // Colon separator, known country code, unknown rating
+        [InlineData("us:INVALID", "US")] // Colon separator, lowercase country code
+        [InlineData("DE-INVALID", "US")] // Hyphen separator, known language prefix, unknown rating
+        [InlineData("ca:INVALID", "US")] // Colon separator, known country code (Canada)
+        public async Task GetRatingScore_UnknownRatingWithKnownCountry_ReturnsNull(string rating, string countryCode)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Null(localizationManager.GetRatingScore(rating));
+        }
+
+        [Theory]
+        [InlineData("us:R", "DE", 17, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("US:PG-13", "DE", 13, 0)] // Colon separator, explicit US country, valid US rating
+        [InlineData("ca:R", "US", 18, 1)] // Colon separator, Canada country code, valid CA rating
+        public async Task GetRatingScore_ValidRatingWithCountrySeparator_ReturnsScore(string rating, string countryCode, int expectedScore, int? expectedSubScore)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                MetadataCountryCode = countryCode
+            });
+            await localizationManager.LoadAll();
+
+            var score = localizationManager.GetRatingScore(rating);
+            Assert.NotNull(score);
+            Assert.Equal(expectedScore, score.Score);
+            Assert.Equal(expectedSubScore, score.SubScore);
+        }
+
+        [Theory]
         [InlineData("Default", "Default")]
         [InlineData("HeaderLiveTV", "Live TV")]
         public void GetLocalizedString_Valid_Success(string key, string expected)
@@ -269,6 +304,98 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var translated = localizationManager.GetLocalizedString(key);
             Assert.NotNull(translated);
             Assert.Equal(key, translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var translated = localizationManager.GetLocalizedString("Artists", "de");
+            Assert.Equal("Interpreten", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithCulture_FallsBackToEnUs()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // A culture with no translation file should fall back to en-US
+            var translated = localizationManager.GetLocalizedString("Artists", "zz");
+            Assert.Equal("Artists", translated);
+        }
+
+        [Fact]
+        public void GetLocalizedString_WithBcp47Normalization_ReturnsTranslation()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            // es-419 is stored as es_419 in Jellyfin
+            var translated = localizationManager.GetLocalizedString("Default", "es-419");
+            Assert.NotEqual("Default", translated);
+        }
+
+        [Fact]
+        public void GetServerLocalizedString_UsesServerCulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de"
+            });
+
+            // Even if CurrentUICulture is fr, GetServerLocalizedString should use the server's "de"
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+                var translated = localizationManager.GetServerLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Fact]
+        public void GetLocalizedString_UsesCurrentUICulture()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+
+            var previousCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de");
+                var translated = localizationManager.GetLocalizedString("Artists");
+                Assert.Equal("Interpreten", translated);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousCulture;
+            }
+        }
+
+        [Fact]
+        public void GetSupportedUICultures_IncludesCommonCultures()
+        {
+            var supported = LocalizationManager.GetSupportedUICultures();
+            Assert.Contains(supported, c => c.Name.Equals("de", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(supported, c => c.Name.Equals("en-US", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(supported, c => c.Name.Equals("fr", StringComparison.OrdinalIgnoreCase));
+            // Underscore variants get normalized to BCP-47 hyphen form for CultureInfo compatibility.
+            Assert.Contains(supported, c => c.Name.Equals("es-419", StringComparison.OrdinalIgnoreCase));
         }
 
         private LocalizationManager Setup(ServerConfiguration config)

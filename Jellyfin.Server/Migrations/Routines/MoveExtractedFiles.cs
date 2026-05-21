@@ -144,6 +144,11 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
                 }
 
                 var newSubtitleCachePath = _pathManager.GetSubtitlePath(itemIdString, mediaStreamIndex, extension);
+                if (newSubtitleCachePath is null)
+                {
+                    continue;
+                }
+
                 if (File.Exists(newSubtitleCachePath))
                 {
                     File.Delete(oldSubtitleCachePath);
@@ -182,6 +187,11 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
             }
 
             var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.Filename ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
+            if (newAttachmentPath is null)
+            {
+                continue;
+            }
+
             if (File.Exists(newAttachmentPath))
             {
                 File.Delete(oldAttachmentPath);

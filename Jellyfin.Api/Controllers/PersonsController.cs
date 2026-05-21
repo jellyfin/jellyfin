@@ -116,9 +116,11 @@ public class PersonsController : BaseJellyfinApiController
         });
 
         return new QueryResult<BaseItemDto>(
-            peopleItems
-            .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
-            .ToArray());
+            peopleItems.StartIndex,
+            peopleItems.TotalRecordCount,
+            peopleItems.Items
+                .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
+                .ToArray());
     }
 
     /// <summary>

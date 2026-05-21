@@ -316,7 +316,7 @@ public class NetworkManager : INetworkManager, IDisposable
             var subnets = config.LocalNetworkSubnets;
 
             // If no LAN addresses are specified, all private subnets and Loopback are deemed to be the LAN
-            if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false) || lanSubnets.Count == 0)
+            if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false, _logger) || lanSubnets.Count == 0)
             {
                 _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
 
@@ -343,7 +343,7 @@ public class NetworkManager : INetworkManager, IDisposable
                 _lanSubnets = lanSubnets.Select(x => x.Subnet).ToArray();
             }
 
-            _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
+            _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true, _logger)
                 ? excludedSubnets.Select(x => x.Subnet).ToArray()
                 : Array.Empty<IPNetwork>();
         }
