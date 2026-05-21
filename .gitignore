@@ -19,6 +19,7 @@ local.properties
 .classpath
 .settings/
 .loadpath
+*.lscache
 
 # External tool builders
 .externalToolBuilders/
