@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -280,15 +281,19 @@ public class ItemsController : BaseJellyfinApiController
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
 
-        Guid[] boxSetLinkedChildAncestorIds = [];
+        Guid[] linkedChildAncestorIds = [];
         if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet
-            && item is not BoxSet)
+            && (includeItemTypes[0] == BaseItemKind.BoxSet || includeItemTypes[0] == BaseItemKind.Playlist)
+            && item is not BoxSet
+            && item is not Playlist)
         {
-            var isBoxSetsLibrary = item is IHasCollectionType hct && hct.CollectionType == CollectionType.boxsets;
-            if (parentId.HasValue && item is not UserRootFolder && !isBoxSetsLibrary)
+            var itemCollectionType = item is IHasCollectionType hct ? hct.CollectionType : null;
+            var targetCollectionType = includeItemTypes[0] == BaseItemKind.BoxSet
+                ? CollectionType.boxsets
+                : CollectionType.playlists;
+            if (parentId.HasValue && item is not UserRootFolder && itemCollectionType != targetCollectionType)
             {
-                boxSetLinkedChildAncestorIds = [parentId.Value];
+                linkedChildAncestorIds = [parentId.Value];
             }
 
             parentId = null;
@@ -412,7 +417,7 @@ public class ItemsController : BaseJellyfinApiController
                 MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
                 AudioLanguages = audioLanguages,
                 SubtitleLanguages = subtitleLanguages,
-                LinkedChildAncestorIds = boxSetLinkedChildAncestorIds,
+                LinkedChildAncestorIds = linkedChildAncestorIds,
             };
 
             if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
