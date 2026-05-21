@@ -98,15 +98,16 @@ public class PragmaConnectionInterceptor : DbConnectionInterceptor
         sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA synchronous={_syncMode};");
         sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA temp_store={_tempStoreMode};");
 
-        // Microsoft.Data.Sqlite does not enable foreign key enforcement by default. Without this,
-        // ON DELETE CASCADE constraints declared on BaseItems silently never fire, leaving orphaned
-        // Season/Episode rows that resurrect deleted Series entries on the next library scan.
-        sb.AppendLine("PRAGMA foreign_keys=ON;");
-
         foreach (var item in _customPragma)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"PRAGMA {item.Key}={item.Value};");
         }
+
+        // Microsoft.Data.Sqlite does not enable foreign key enforcement by default. Without this,
+        // ON DELETE CASCADE constraints declared on BaseItems silently never fire, leaving orphaned
+        // Season/Episode rows that resurrect deleted Series entries on the next library scan.
+        // Emitted last so a user cannot disable it via the #PRAGMA: custom-pragma escape hatch.
+        sb.AppendLine("PRAGMA foreign_keys=ON;");
 
         return sb.ToString();
     }
