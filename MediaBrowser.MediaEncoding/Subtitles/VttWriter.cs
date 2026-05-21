@@ -15,17 +15,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         private static readonly Dictionary<string, string> _assTagToCuePosition = new()
         {
-            ["{\\an1}"] = "position:20% line:90%,end",
-            ["{\\an3}"] = "position:80% line:90%,end",
-            ["{\\an4}"] = "position:20% line:50%,center",
-            ["{\\an5}"] = "line:50%,center",
-            ["{\\an6}"] = "position:80% line:50%,center",
-            ["{\\an7}"] = "position:20% line:10%,start",
-            ["{\\an8}"] = "line:10%,start",
-            ["{\\an9}"] = "position:80% line:10%,start",
+            ["{\\an1}"] = "position:20% line:90%",
+            ["{\\an2}"] = "line:90%",
+            ["{\\an3}"] = "position:80% line:90%",
+            ["{\\an4}"] = "position:20% line:50%",
+            ["{\\an5}"] = "line:50%",
+            ["{\\an6}"] = "position:80% line:50%",
+            ["{\\an7}"] = "position:20% line:10%",
+            ["{\\an8}"] = "line:10%",
+            ["{\\an9}"] = "position:80% line:10%",
         };
 
-        [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
+        [GeneratedRegex(@"\\n")]
         private static partial Regex NewlineEscapeRegex();
 
         [GeneratedRegex(@"^\{\\an\d\}")]
@@ -56,8 +57,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 foreach (var trackEvent in info.TrackEvents)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
                     var startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks);
                     var endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks);
+
                     // make sure the start and end times are different and sequential
                     if (endTime.TotalMilliseconds <= startTime.TotalMilliseconds)
                     {
@@ -65,10 +68,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
 
                     var text = trackEvent.Text;
+
                     // TODO: Not sure how to handle these
                     text = NewlineEscapeRegex().Replace(text, " ");
+
                     var cuePosition = GetCuePositionFromAssTag(text);
                     text = AssAlignTagRegex().Replace(text, string.Empty);
+
                     writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff} {2}", startTime, endTime, cuePosition);
                     writer.WriteLine(text);
                     writer.WriteLine();
