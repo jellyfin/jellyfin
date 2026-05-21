@@ -288,4 +288,9 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets a value indicating whether old authorization methods are allowed.
     /// </summary>
     public bool EnableLegacyAuthorization { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to require file size change in addition to modification time when detecting media file changes.
+    /// </summary>
+    public bool FileChangeRequireSizeChange { get; set; } = false;
 }
