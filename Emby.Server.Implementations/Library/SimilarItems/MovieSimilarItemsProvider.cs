@@ -266,10 +266,11 @@ public sealed class MovieSimilarItemsProvider : ILocalSimilarItemsProvider<Movie
 
         if (personSourceRows.Count > 0)
         {
-            var allPersonIds = personSourceRows.Select(r => r.PeopleId).Distinct().ToList();
-
             var personCandidateRows = await context.PeopleBaseItemMap.AsNoTracking()
-                .Where(m => allPersonIds.Contains(m.PeopleId))
+                .Where(m => context.PeopleBaseItemMap
+                    .Where(s => sourceIds.Contains(s.ItemId) && _scoredPersonTypes.Contains(s.People.PersonType))
+                    .Select(s => s.PeopleId)
+                    .Contains(m.PeopleId))
                 .Select(m => new { m.ItemId, m.PeopleId })
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
