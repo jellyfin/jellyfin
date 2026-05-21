@@ -98,5 +98,10 @@
     "TaskAudioNormalization": "സാധാരണ ശബ്ദ നിലയിലെത്തിലെത്തിക്കുക",
     "TaskAudioNormalizationDescription": "സാധാരണ ശബ്ദ നിലയിലെത്തിലെത്തിക്കുന്ന ഡാറ്റയ്ക്കായി ഫയലുകൾ സ്കാൻ ചെയ്യുക.",
     "TaskRefreshTrickplayImages": "ട്രിക്ക് പ്ലേ ചിത്രങ്ങൾ സൃഷ്ടിക്കുക",
-    "TaskRefreshTrickplayImagesDescription": "പ്രവർത്തനക്ഷമമാക്കിയ ലൈബ്രറികളിൽ വീഡിയോകൾക്കായി ട്രിക്ക്പ്ലേ പ്രിവ്യൂകൾ സൃഷ്ടിക്കുന്നു."
+    "TaskRefreshTrickplayImagesDescription": "പ്രവർത്തനക്ഷമമാക്കിയ ലൈബ്രറികളിൽ വീഡിയോകൾക്കായി ട്രിക്ക്പ്ലേ പ്രിവ്യൂകൾ സൃഷ്ടിക്കുന്നു.",
+    "Original": "ഓറിജിനൽ",
+    "TaskDownloadMissingLyrics": "ഇല്ലാത്ത വരികൾ ഡൗൺലോഡ് ചെയ്യുക",
+    "TaskDownloadMissingLyricsDescription": "പാട്ടുകളുടെ വരികൾ ഡൗൺലോഡ് ചെയ്യുന്നു",
+    "TaskExtractMediaSegments": "മീഡിയ സെഗ്‌മെന്റ് സ്‌കാൻ",
+    "TaskExtractMediaSegmentsDescription": "മീഡിയസെഗ്മെന്റ് പ്രാപ്തമാക്കിയ പ്ലഗിനുകളിൽ നിന്ന് മീഡിയ സെഗ്‌മെന്റുകൾ എക്‌സ്‌ട്രാക്റ്റുചെയ്യുന്നു അല്ലെങ്കിൽ നേടുന്നു."
 }
