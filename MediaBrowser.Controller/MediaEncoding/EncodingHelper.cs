@@ -1305,7 +1305,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     arg.Append(canvasArgs);
                 }
 
-                arg.Append(" -i file:\"").Append(subtitlePath).Append('\"');
+                arg.Append(" -i file:\"").Append(subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal)).Append('\"');
             }
 
             if (state.AudioStream is not null && state.AudioStream.IsExternal)
@@ -1317,7 +1317,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     arg.Append(' ').Append(seekAudioParam);
                 }
 
-                arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
+                arg.Append(" -i \"").Append(state.AudioStream.Path.Replace("\"", "\\\"", StringComparison.Ordinal)).Append('"');
             }
 
             // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
