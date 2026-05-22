@@ -82,5 +82,6 @@
     "TaskRefreshChapterImages": "Sahnadan tasvirini chiqarish",
     "TaskRefreshChapterImagesDescription": "Sahnalarni o'z ichiga olgan videolar uchun eskizlarni yaratadi.",
     "TaskRefreshLibrary": "Media kutubxonangizni skanerlash",
-    "TaskCleanLogsDescription": "{0} kundan eski log fayllarni o'chiradi."
+    "TaskCleanLogsDescription": "{0} kundan eski log fayllarni o'chiradi.",
+    "Original": "Original"
 }
