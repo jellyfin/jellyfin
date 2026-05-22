@@ -15,8 +15,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "Users",
                 type: "TEXT",
                 maxLength: 255,
-                nullable: false,
-                defaultValueSql: "(UPPER([Username]))");
+                nullable: true);
+            migrationBuilder.Sql("""
+                UPDATE "Users" SET "NormalizedUsername" = UPPER("Username")
+            """);
+            migrationBuilder.AlterColumn<string>(
+                name: "NormalizedUsername",
+                table: "Users",
+                type: "TEXT",
+                maxLength: 255,
+                nullable: false);
         }
 
         /// <inheritdoc />
