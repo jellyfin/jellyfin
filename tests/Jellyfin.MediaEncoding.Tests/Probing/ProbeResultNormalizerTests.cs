@@ -424,5 +424,58 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Contains("Dance", res.Genres);
             Assert.Contains("Jazz", res.Genres);
         }
+
+        [Theory]
+        [InlineData(null, null, null, null)]
+        [InlineData("0:1", null, null, "0:1")]
+        [InlineData(null, 1920, 1080, "16:9")]
+        [InlineData("16:9", null, null, "16:9")]
+        public void GetAspectRatio_HandlesMissingDimensions(
+            string? displayAspectRatio,
+            int? width,
+            int? height,
+            string? expected)
+        {
+            var info = new MediaStreamInfo
+            {
+                DisplayAspectRatio = displayAspectRatio,
+                Width = width,
+                Height = height,
+            };
+
+            Assert.Equal(expected, ProbeResultNormalizer.GetAspectRatio(info));
+        }
+
+        [Fact]
+        public void GetMediaInfo_VideoWithoutDimensions_Succeeds()
+        {
+            var result = new InternalMediaInfoResult
+            {
+                Streams = new[]
+                {
+                    new MediaStreamInfo
+                    {
+                        Index = 0,
+                        CodecName = "h264",
+                        CodecType = CodecType.Video,
+                    },
+                },
+                Format = new MediaFormatInfo
+                {
+                    FormatName = "mpegts",
+                },
+            };
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(
+                result,
+                null,
+                false,
+                "http://test/stream.ts",
+                MediaProtocol.Http);
+
+            Assert.Single(res.MediaStreams);
+            Assert.NotNull(res.VideoStream);
+            Assert.Null(res.VideoStream.AspectRatio);
+        }
     }
 }
