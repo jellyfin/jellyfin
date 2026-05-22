@@ -198,14 +198,22 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
+                await SaveToFileAsync(memoryStream, path, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task SaveToFileAsync(Stream stream, string path)
+        private async Task SaveToFileAsync(Stream stream, string path, CancellationToken cancellationToken)
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
+
+            // Compare byte-for-byte before proceeding.
+            if (File.Exists(path) && await IsFileIdenticalAsync(stream, path, cancellationToken).ConfigureAwait(false))
+            {
+                return; // Don't save since .nfo is unchanged.
+            }
+
+            stream.Position = 0;
 
             // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
@@ -222,12 +230,74 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var filestream = new FileStream(path, fileStreamOptions);
             await using (filestream.ConfigureAwait(false))
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await stream.CopyToAsync(filestream, cancellationToken).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)
             {
                 SetHidden(path, true);
+            }
+        }
+
+        private static async Task<bool> IsFileIdenticalAsync(Stream stream, string path, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+            ArgumentException.ThrowIfNullOrEmpty(path);
+
+            if (!stream.CanSeek)
+            {
+                return false;
+            }
+
+            const int BufferSize = 81920;
+            var originalPosition = stream.Position;
+
+            try
+            {
+                stream.Position = 0;
+
+                using var existingFileStream = new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: BufferSize,
+                    FileOptions.Asynchronous);
+
+                if (existingFileStream.Length != stream.Length)
+                {
+                    return false;
+                }
+
+                var streamBuffer = new byte[BufferSize];
+                var existingBuffer = new byte[BufferSize];
+
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var streamBytesRead = await stream.ReadAsync(streamBuffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    var existingBytesRead = await existingFileStream.ReadAsync(existingBuffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+
+                    if (streamBytesRead != existingBytesRead)
+                    {
+                        return false;
+                    }
+
+                    if (streamBytesRead == 0)
+                    {
+                        return true;
+                    }
+
+                    if (!streamBuffer.AsSpan(0, streamBytesRead).SequenceEqual(existingBuffer.AsSpan(0, existingBytesRead)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            finally
+            {
+                stream.Position = originalPosition;
             }
         }
 
