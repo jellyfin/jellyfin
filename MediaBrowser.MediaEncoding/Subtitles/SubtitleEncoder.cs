@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -453,7 +454,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 encodingParam = " -sub_charenc " + encodingParam;
             }
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath);
+            var args = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, EncodingUtils.NormalizePath(inputPath), EncodingUtils.NormalizePath(outputPath));
 
             await ExtractSubtitlesForFile(
                 inputPath,
@@ -631,7 +632,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         streamIndex,
                         outputCodec,
                         outputFormatOption,
-                        outputPath);
+                        EncodingUtils.NormalizePath(outputPath));
                 }
 
                 await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
@@ -689,7 +690,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     streamIndex,
                     outputCodec,
                     outputFormatOption,
-                    outputPath);
+                    EncodingUtils.NormalizePath(outputPath));
             }
 
             if (outputPaths.Count > 0)
