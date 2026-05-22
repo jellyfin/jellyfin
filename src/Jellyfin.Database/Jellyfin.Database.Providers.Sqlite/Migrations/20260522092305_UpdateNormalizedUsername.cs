@@ -1,30 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Jellyfin.Database.Implementations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNormalizedUsername : Migration
+    [DbContext(typeof(JellyfinDbContext))]
+    [Migration("20260522092305_UpdateNormalizedUsername")]
+    public partial class UpdateNormalizedUsername : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // this is the first part of the migration. Add the column.
-            migrationBuilder.AddColumn<string>(
+            // this is the 3rd part of the NormalizedUsername migration.
+            migrationBuilder.AlterColumn<string>(
                 name: "NormalizedUsername",
                 table: "Users",
                 type: "TEXT",
                 maxLength: 255,
-                nullable: true);
+                nullable: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "NormalizedUsername",
-                table: "Users");
         }
     }
 }
