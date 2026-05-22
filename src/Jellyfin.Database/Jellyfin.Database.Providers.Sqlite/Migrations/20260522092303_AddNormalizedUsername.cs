@@ -16,7 +16,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "Users",
                 type: "TEXT",
                 maxLength: 255,
-                nullable: true);
+                nullable: false,
+                defaultValue: string.Empty);
         }
 
         /// <inheritdoc />
