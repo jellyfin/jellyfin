@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
 
@@ -14,18 +16,22 @@ namespace Emby.Server.Implementations.Library;
 /// </summary>
 public class PathManager : IPathManager
 {
+    private readonly ILogger<PathManager> _logger;
     private readonly IServerConfigurationManager _config;
     private readonly IApplicationPaths _appPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PathManager"/> class.
     /// </summary>
+    /// <param name="logger">The logger.</param>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="appPaths">The application paths.</param>
     public PathManager(
+        ILogger<PathManager> logger,
         IServerConfigurationManager config,
         IApplicationPaths appPaths)
     {
+        _logger = logger;
         _config = config;
         _appPaths = appPaths;
     }
@@ -35,9 +41,16 @@ public class PathManager : IPathManager
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public string GetAttachmentPath(string mediaSourceId, string fileName)
+    public string? GetAttachmentPath(string mediaSourceId, string fileName)
     {
-        return Path.Combine(GetAttachmentFolderPath(mediaSourceId), fileName);
+        var safeName = PathHelper.GetSafeLeafFileName(fileName);
+        if (safeName is null)
+        {
+            _logger.LogWarning("Rejecting attachment filename '{FileName}' for MediaSource {MediaSourceId}: not a valid leaf name.", fileName, mediaSourceId);
+            return null;
+        }
+
+        return Path.Combine(GetAttachmentFolderPath(mediaSourceId), safeName);
     }
 
     /// <inheritdoc />

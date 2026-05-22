@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -98,9 +99,21 @@ namespace MediaBrowser.MediaEncoding.Attachments
             MediaSourceInfo mediaSource,
             CancellationToken cancellationToken)
         {
-            var shouldExtractOneByOne = mediaSource.MediaAttachments.Any(a => !string.IsNullOrEmpty(a.FileName)
-                                                                              && (a.FileName.Contains('/', StringComparison.OrdinalIgnoreCase) || a.FileName.Contains('\\', StringComparison.OrdinalIgnoreCase)));
-            if (shouldExtractOneByOne && !inputFile.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+            var hasUnsafeFileName = mediaSource.MediaAttachments.Any(a => !IsSafeBulkAttachmentFileName(a.FileName));
+            var isMatroskaSubtitles = inputFile.EndsWith(".mks", StringComparison.OrdinalIgnoreCase);
+            if (hasUnsafeFileName && isMatroskaSubtitles)
+            {
+                _logger.LogError(
+                    "Refusing attachment extraction for .mks input {InputFile}: an attachment FileName tag is not a safe leaf name.",
+                    inputFile);
+                throw new InvalidOperationException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Refusing attachment extraction for .mks input {0}: unsafe attachment FileName tag.",
+                        inputFile));
+            }
+
+            if (hasUnsafeFileName)
             {
                 foreach (var attachment in mediaSource.MediaAttachments)
                 {
@@ -241,7 +254,9 @@ namespace MediaBrowser.MediaEncoding.Attachments
             var attachmentFolderPath = _pathManager.GetAttachmentFolderPath(mediaSource.Id);
             using (await _semaphoreLocks.LockAsync(attachmentFolderPath, cancellationToken).ConfigureAwait(false))
             {
-                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? mediaAttachment.Index.ToString(CultureInfo.InvariantCulture));
+                var indexName = mediaAttachment.Index.ToString(CultureInfo.InvariantCulture);
+                var attachmentPath = _pathManager.GetAttachmentPath(mediaSource.Id, mediaAttachment.FileName ?? indexName)
+                                     ?? _pathManager.GetAttachmentPath(mediaSource.Id, indexName)!;
                 if (!File.Exists(attachmentPath))
                 {
                     await ExtractAttachmentInternal(
@@ -339,6 +354,27 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
 
             _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
+        }
+
+        /// <summary>
+        /// Decides whether an attachment FILENAME tag is safe to feed into ffmpeg's
+        /// bulk <c>-dump_attachment:t ""</c> mode, which writes each attachment using
+        /// its filename tag verbatim relative to the working directory. Anything that
+        /// could escape the working directory - path separators, "..", or empty
+        /// leaves - is rerouted to the one-by-one path where the filename is
+        /// sanitised via <see cref="IPathManager.GetAttachmentPath"/>.
+        /// </summary>
+        private static bool IsSafeBulkAttachmentFileName(string? fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return true;
+            }
+
+            // PathHelper.GetSafeLeafFileName collapses to the leaf component;
+            // the bulk path is only safe when the supplied name already _was_
+            // that leaf (no separators, no "."/"..").
+            return PathHelper.GetSafeLeafFileName(fileName) == fileName;
         }
 
         /// <inheritdoc />

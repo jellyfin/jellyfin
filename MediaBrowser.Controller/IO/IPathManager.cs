@@ -37,8 +37,8 @@ public interface IPathManager
     /// </summary>
     /// <param name="mediaSourceId">The media source id.</param>
     /// <param name="fileName">The attachmentFileName index.</param>
-    /// <returns>The absolute path.</returns>
-    public string GetAttachmentPath(string mediaSourceId, string fileName);
+    /// <returns>The absolute path, or <c>null</c> if <paramref name="fileName"/> cannot be reduced to a safe leaf name.</returns>
+    public string? GetAttachmentPath(string mediaSourceId, string fileName);
 
     /// <summary>
     /// Gets the path to the attachment folder.
