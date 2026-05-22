@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 type: "TEXT",
                 maxLength: 255,
                 nullable: false,
-                defaultValue: "(UPPER([Username]))");
+                defaultValueSql: "(UPPER([Username]))");
         }
 
         /// <inheritdoc />
