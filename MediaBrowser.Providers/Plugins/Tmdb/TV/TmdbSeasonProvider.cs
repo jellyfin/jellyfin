@@ -85,7 +85,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             result.Item.TrySetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds?.TvdbId);
 
-            if (groupResult is not null)
+            if (groupResult is not null && !string.IsNullOrWhiteSpace(groupResult.Id))
             {
                 result.Item.TrySetProviderId(TmdbEpisodeGroupId.ProviderKey, groupResult.Id);
             }
