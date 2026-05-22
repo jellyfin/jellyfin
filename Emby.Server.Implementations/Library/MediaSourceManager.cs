@@ -393,6 +393,9 @@ namespace Emby.Server.Implementations.Library
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
+            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
+            var subtitleMode = GetEffectiveSubtitleMode(source, user, preferredSubs);
+
             if (userData is not null
                 && userData.SubtitleStreamIndex.HasValue
                 && user.RememberSubtitleSelections
@@ -400,15 +403,20 @@ namespace Emby.Server.Implementations.Library
                 && allowRememberingSelection)
             {
                 var index = userData.SubtitleStreamIndex.Value;
+
+                // Remembered "Off" must not override Always (or live TV language preference).
+                var rememberedOffBlocksPreference = index == -1
+                    && subtitleMode == SubtitlePlaybackMode.Always
+                    && preferredSubs.Count > 0;
+
                 // Make sure the saved index is still valid
-                if (index == -1 || source.MediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.Index == index))
+                if (!rememberedOffBlocksPreference
+                    && (index == -1 || source.MediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.Index == index)))
                 {
                     source.DefaultSubtitleStreamIndex = index;
                     return;
                 }
             }
-
-            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLanguage = defaultAudioIndex is null
@@ -418,10 +426,30 @@ namespace Emby.Server.Implementations.Library
             source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(
                 source.MediaStreams,
                 preferredSubs,
-                user.SubtitleMode,
+                subtitleMode,
                 audioLanguage);
 
-            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLanguage);
+            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, subtitleMode, audioLanguage);
+        }
+
+        /// <summary>
+        /// Live broadcast subtitles (e.g. DVBSUB) are rarely flagged default/forced in the stream.
+        /// When a preferred subtitle language is configured, treat live TV like "Always" so the
+        /// preference applies without changing the user's global VOD subtitle mode.
+        /// </summary>
+        private static SubtitlePlaybackMode GetEffectiveSubtitleMode(
+            MediaSourceInfo source,
+            User user,
+            IReadOnlyList<string> preferredSubs)
+        {
+            if (user.SubtitleMode == SubtitlePlaybackMode.Default
+                && source.IsInfiniteStream
+                && preferredSubs.Count > 0)
+            {
+                return SubtitlePlaybackMode.Always;
+            }
+
+            return user.SubtitleMode;
         }
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection, string originalLanguage)
@@ -592,19 +620,19 @@ namespace Emby.Server.Implementations.Library
                 AddMediaInfo(mediaSource);
             }
 
-            // TODO: @bond Fix
-            var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
-            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
-
             if (!request.UserId.IsEmpty())
             {
                 var user = _userManager.GetUserById(request.UserId);
                 var item = request.ItemId.IsEmpty()
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
-                SetDefaultAudioAndSubtitleStreamIndices(item, clone, user);
+                SetDefaultAudioAndSubtitleStreamIndices(item, mediaSource, user);
             }
+
+            // TODO: @bond Fix
+            var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
+            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
+            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
