@@ -210,6 +210,7 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(userId));
 
                     user.Username = newName;
+                    user.NormalizedUsername = newName.ToUpperInvariant();
                     await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
                 }
             }
