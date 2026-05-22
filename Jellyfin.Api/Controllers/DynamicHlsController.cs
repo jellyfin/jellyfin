@@ -1871,16 +1871,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             args = negativeMapArgs + args + videoProcessParam;
 
-            // -start_at_zero is necessary to use with -ss when seeking,
-            // otherwise the target position cannot be determined.
-            if (state.SubtitleStream is not null)
-            {
-                // Disable start_at_zero for external graphical subs
-                if (!(state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
-                {
-                    args += " -start_at_zero";
-                }
-            }
+            args += EncodingHelper.GetHlsSubtitleStartAtZeroArg(state);
         }
 
         // TODO why was this not enabled for VOD?
