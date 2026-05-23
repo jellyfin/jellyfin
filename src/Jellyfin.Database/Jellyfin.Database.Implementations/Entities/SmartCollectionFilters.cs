@@ -10,6 +10,11 @@ namespace Jellyfin.Database.Implementations.Entities
     public class SmartCollectionFilters
     {
         /// <summary>
+        /// Gets or Sets for the last update time.
+        /// </summary>
+        public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
         /// Gets or sets the item type.
         /// </summary>
         public string? Type { get; set; }
@@ -35,18 +40,18 @@ namespace Jellyfin.Database.Implementations.Entities
         public float? MinCommunityRating { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum official/critic rating (0–10).
+        /// Gets or sets the minimum critic rating (0–10).
         /// </summary>
-        public float? MinOfficialRating { get; set; }
-
-        /// <summary>
-        /// Gets the sort order.
-        /// </summary>
-        public Collection<string> Languages { get; } = new Collection<string>();
+        public float? MinCriticRating { get; set; }
 
         /// <summary>
         /// Gets the sort order.
         /// </summary>
         public Collection<string> Tags { get; } = new Collection<string>();
+
+        /// <summary>
+        /// Gets the official (PG or similar) ratings.
+        /// </summary>
+        public Collection<string> OfficialRatings { get; } = new Collection<string>();
     }
 }
