@@ -144,10 +144,12 @@ public class StartupController : BaseJellyfinApiController
 
         await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
-        if (startupUserDto.Name is not null)
+#pragma warning disable CA1309 // Use ordinal string comparison
+        if (startupUserDto.Name is not null && !startupUserDto.Name.Equals(user.Username, StringComparison.InvariantCultureIgnoreCase))
         {
             await _userManager.RenameUser(user.Id, user.Username, startupUserDto.Name).ConfigureAwait(false);
         }
+#pragma warning restore CA1309 // Use ordinal string comparison
 
         if (!string.IsNullOrEmpty(startupUserDto.Password))
         {
