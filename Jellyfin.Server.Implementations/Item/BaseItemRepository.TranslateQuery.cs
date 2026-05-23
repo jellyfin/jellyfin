@@ -1027,6 +1027,15 @@ public sealed partial class BaseItemRepository
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
         }
 
+        if (filter.LinkedChildAncestorIds.Length > 0)
+        {
+            // Keep folder-like items (BoxSets, Playlists) whose linked children descend from any of the requested ancestor ids.
+            var linkedChildAncestorIds = filter.LinkedChildAncestorIds;
+            baseQuery = baseQuery.Where(e => context.LinkedChildren.Any(lc =>
+                lc.ParentId == e.Id
+                && lc.Child!.Parents!.Any(a => linkedChildAncestorIds.Contains(a.ParentItemId))));
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))
         {
             baseQuery = baseQuery
