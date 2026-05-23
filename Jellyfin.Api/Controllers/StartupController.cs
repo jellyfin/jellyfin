@@ -142,12 +142,12 @@ public class StartupController : BaseJellyfinApiController
             return BadRequest("Password must not be empty");
         }
 
+        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
         if (startupUserDto.Name is not null)
         {
             await _userManager.RenameUser(user.Id, user.Username, startupUserDto.Name).ConfigureAwait(false);
         }
-
-        await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(startupUserDto.Password))
         {
