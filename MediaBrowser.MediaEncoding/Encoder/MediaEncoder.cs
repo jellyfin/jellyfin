@@ -85,6 +85,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceSupportVulkanDrmModifier = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
 
+        private bool _canSetProcessPriority = true;
+
         private bool _isVideoToolboxAv1DecodeAvailable = false;
 
         private static string[] _vulkanImageDrmFmtModifierExts =
@@ -1123,13 +1125,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             process.Process.Start();
 
-            try
+            if (_canSetProcessPriority)
             {
-                process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}", process.Process.StartInfo.FileName);
+                try
+                {
+                    process.Process.PriorityClass = ProcessPriorityClass.BelowNormal;
+                }
+                catch (Exception ex)
+                {
+                    _canSetProcessPriority = false;
+                    _logger.LogWarning(ex, "Unable to set process priority to BelowNormal for {ProcessFileName}. Further attempts will be skipped.", process.Process.StartInfo.FileName);
+                }
             }
 
             lock (_runningProcessesLock)
