@@ -178,6 +178,19 @@ namespace MediaBrowser.Controller.Library
         Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false);
 
         /// <summary>
+        /// Re-resolves the top-level library folder structure: refreshes the root and user-root
+        /// folders so newly-created virtual folders are picked up, and removes
+        /// <see cref="MediaBrowser.Controller.Entities.CollectionFolder"/> entries whose backing
+        /// directories no longer exist. Unlike <see cref="ValidateTopLibraryFolders"/>, this does
+        /// not run metadata providers on existing collection folders — use it from
+        /// add/remove/rename paths that just need the structure refreshed.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="removeRoot">Is remove the library itself allowed.</param>
+        /// <returns>Task.</returns>
+        Task ValidateTopLibraryFoldersStructure(CancellationToken cancellationToken, bool removeRoot = false);
+
+        /// <summary>
         /// Clears the cached ignore rule directory lookups.
         /// Call this before triggering a library scan or item refresh to ensure
         /// any changes to .ignore files are picked up.

@@ -1366,28 +1366,43 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
+        /// <inheritdoc />
+        public Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
+            => ValidateTopLibraryFoldersInternal(cancellationToken, removeRoot, refreshExistingChildren: true);
+
+        /// <inheritdoc />
+        public Task ValidateTopLibraryFoldersStructure(CancellationToken cancellationToken, bool removeRoot = false)
+            => ValidateTopLibraryFoldersInternal(cancellationToken, removeRoot, refreshExistingChildren: false);
+
+        private async Task ValidateTopLibraryFoldersInternal(CancellationToken cancellationToken, bool removeRoot, bool refreshExistingChildren)
         {
             ClearIgnoreRuleCache();
-            RootFolder.Children = null;
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem));
 
-            // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(
-                new Progress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false,
-                allowRemoveRoot: removeRoot,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            // Refresh the AggregateFolder root only on the full path (boot / scheduled scans).
+            // Adding, removing, or renaming a virtual folder doesn't change RootFolder's direct children (default/, playlists/, plugin folders), only UserRootFolder.Children does.
+            if (refreshExistingChildren)
+            {
+                RootFolder.Children = null;
+                await RootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                // Start by just validating the children of the root, but go no further
+                await RootFolder.ValidateChildren(
+                    new Progress<double>(),
+                    refreshOptions,
+                    recursive: false,
+                    allowRemoveRoot: removeRoot,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
 
             var rootFolder = GetUserRootFolder();
             rootFolder.Children = null;
 
-            await rootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await rootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             await rootFolder.ValidateChildren(
                 new Progress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
+                refreshOptions,
                 recursive: false,
                 allowRemoveRoot: removeRoot,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -3452,7 +3467,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException("Unable to convert any images to local");
         }
 
-        public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
+        public Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -3508,19 +3523,35 @@ namespace Emby.Server.Implementations.Library
             }
             finally
             {
-                await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+                // The on-disk side (directory + .collection marker + library options + shortcuts) is now complete.
+                // Reconciling the in-memory tree and the database scales with the number of already-configured libraries.
+                // Fire it off the request thread so the caller returns immediately.
+                var shouldRefreshLibrary = refreshLibrary;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ValidateTopLibraryFoldersStructure(CancellationToken.None).ConfigureAwait(false);
 
-                if (refreshLibrary)
-                {
-                    StartScanInBackground();
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    LibraryMonitor.Start();
-                }
+                        if (shouldRefreshLibrary)
+                        {
+                            StartScanInBackground();
+                        }
+                        else
+                        {
+                            // Need to add a delay here or directory watchers may still pick up the changes
+                            await Task.Delay(1000).ConfigureAwait(false);
+                            LibraryMonitor.Start();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Background reconciliation after adding virtual folder {Name} failed.", name);
+                    }
+                });
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
@@ -3708,7 +3739,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+                    await ValidateTopLibraryFoldersStructure(CancellationToken.None, true).ConfigureAwait(false);
 
                     StartScanInBackground();
                 }

@@ -185,7 +185,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                 // No need to start if scanning the library because it will handle it
                 if (refreshLibrary)
                 {
-                    await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
+                    await _libraryManager.ValidateTopLibraryFoldersStructure(CancellationToken.None, true).ConfigureAwait(false);
                     var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
                     if (newLib is CollectionFolder folder)
                     {
