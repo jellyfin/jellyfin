@@ -9,10 +9,11 @@
             <div class="content-primary">
                 <h1>Studio Images</h1>
                 <form class="configForm">
-                    <div class="inputContainer">
-                        <input is="emby-input" type="text" id="repository" label="Repository" />
-                        <div class="fieldDescription">This can be any Jellyfin-compatible artwork repository. Leave blank to use default repository.</div>
-                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="replaceAllImagesOnNextRun" />
+                        <span>Replace all studio images on next task run</span>
+                    </label>
+                    <div class="fieldDescription">When enabled, the next execution of the "Refresh studio artwork" scheduled task will re-apply every studio image from the local artwork bundle, even if the bundle is already up to date. The flag is cleared automatically after the refresh is queued.</div>
                     <br />
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
@@ -29,12 +30,7 @@
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                        var repository = document.querySelector('#repository');
-                        repository.value = config.RepositoryUrl;
-                        repository.dispatchEvent(new Event('change', {
-                            bubbles: true,
-                            cancelable: false
-                        }));
+                        document.querySelector('#replaceAllImagesOnNextRun').checked = !!config.ReplaceAllImagesOnNextRun;
 
                         Dashboard.hideLoadingMsg();
                     });
@@ -45,7 +41,7 @@
                     Dashboard.showLoadingMsg();
 
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                        config.RepositoryUrl = document.querySelector('#repository').value;
+                        config.ReplaceAllImagesOnNextRun = document.querySelector('#replaceAllImagesOnNextRun').checked;
 
                         ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
