@@ -1,4 +1,3 @@
-#pragma warning disable CA1307
 #pragma warning disable RS0030 // Do not use banned APIs
 
 using System;
@@ -162,12 +161,8 @@ namespace Jellyfin.Server.Implementations.Users
 
             using var dbContext = _dbProvider.CreateDbContext();
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
-#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
-#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
             return UserQuery(dbContext)
-                .FirstOrDefault(u => u.Username.ToUpper() == name.ToUpper());
-#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
-#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
+                .FirstOrDefault(u => u.NormalizedUsername == name.ToUpperInvariant());
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
         }
 
@@ -188,10 +183,8 @@ namespace Jellyfin.Server.Implementations.Users
                 await using (dbContext.ConfigureAwait(false))
                 {
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
-#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
-#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
                     if (await dbContext.Users
-                            .AnyAsync(u => u.Username.ToUpper() == newName.ToUpper() && u.Id != userId)
+                            .AnyAsync(u => u.NormalizedUsername == newName.ToUpperInvariant() && u.Id != userId)
                             .ConfigureAwait(false))
                     {
                         throw new ArgumentException(string.Format(
@@ -199,8 +192,6 @@ namespace Jellyfin.Server.Implementations.Users
                             "A user with the name '{0}' already exists.",
                             newName));
                     }
-#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
-#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                     user = await UserQuery(dbContext)
@@ -210,6 +201,7 @@ namespace Jellyfin.Server.Implementations.Users
                         ?? throw new ResourceNotFoundException(nameof(userId));
 
                     user.Username = newName;
+                    user.NormalizedUsername = newName.ToUpperInvariant();
                     await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
                 }
             }
@@ -259,10 +251,8 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
-#pragma warning disable CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
-#pragma warning disable CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
                 if (await dbContext.Users
-                        .AnyAsync(u => u.Username.ToUpper() == name.ToUpper())
+                        .AnyAsync(u => u.NormalizedUsername == name.ToUpperInvariant())
                         .ConfigureAwait(false))
                 {
                     throw new ArgumentException(string.Format(
@@ -270,8 +260,6 @@ namespace Jellyfin.Server.Implementations.Users
                         "A user with the name '{0}' already exists.",
                         name));
                 }
-#pragma warning restore CA1304 // The behavior of 'string.ToUpper()' could vary based on the current user's locale settings
-#pragma warning restore CA1311 // Specify a culture or use an invariant version to avoid implicit dependency on current culture
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                 newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
