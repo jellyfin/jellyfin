@@ -34,10 +34,97 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private static readonly Regex _assBlockRegex = new Regex(@"\{([^}]*)\}", RegexOptions.Compiled);
 
         /// <summary>
-        /// Regex to match ASS newline escapes (\n or \N). Case-insensitive to catch both.
+        /// Regex to match ASS newline escapes (\n or \N).
         /// </summary>
         [GeneratedRegex(@"\\[nN]")]
         private static partial Regex NewlineEscapeRegex();
+
+        /// <summary>
+        /// Returns the opening or closing HTML tag string for a given ASS formatting character.
+        /// Supported characters: i (italic), b (bold), u (underline).
+        /// </summary>
+        /// <param name="tag">The formatting character: 'i', 'b', or 'u'.</param>
+        /// <param name="closing">True to return a closing tag, false for an opening tag.</param>
+        /// <returns>The HTML tag string, e.g. "&lt;i&gt;" or "&lt;/b&gt;".</returns>
+        private static string GetHtmlTag(char tag, bool closing)
+        {
+            if (closing)
+            {
+                return tag switch
+                {
+                    'i' => "</i>",
+                    'b' => "</b>",
+                    _ => "</u>",
+                };
+            }
+
+            return tag switch
+            {
+                'i' => "<i>",
+                'b' => "<b>",
+                _ => "<u>",
+            };
+        }
+
+        /// <summary>
+        /// Processes a single ASS block's inner content (the text between braces).
+        /// Extracts \anN to update the cue position and converts \i1/\i0, \b1/\b0, \u1/\u0
+        /// to HTML tags. Unrecognized tags are stripped silently.
+        /// </summary>
+        /// <param name="inner">The content inside the ASS block braces.</param>
+        /// <param name="capturedPosition">Updated with the cue position if an \anN tag is found.</param>
+        /// <returns>The HTML output for this block (may be empty if only alignment was present).</returns>
+        private static string ProcessAssBlock(string inner, ref string capturedPosition)
+        {
+            var output = new StringBuilder();
+            int i = 0;
+            while (i < inner.Length)
+            {
+                if (inner[i] != '\\')
+                {
+                    i++;
+                    continue;
+                }
+
+                if (i + 1 >= inner.Length)
+                {
+                    i++;
+                    continue;
+                }
+
+                char tag = inner[i + 1];
+
+                // \anN — alignment tag
+                if (tag == 'a' && i + 3 < inner.Length && inner[i + 2] == 'n' && char.IsDigit(inner[i + 3]))
+                {
+                    var key = $"{{\\an{inner[i + 3]}}}";
+                    if (_assTagToCuePosition.TryGetValue(key, out var pos))
+                    {
+                        capturedPosition = pos;
+                    }
+
+                    i += 4;
+                    continue;
+                }
+
+                // \i1, \i0, \b1, \b0, \u1, \u0
+                if ((tag == 'i' || tag == 'b' || tag == 'u') && i + 2 < inner.Length)
+                {
+                    char val = inner[i + 2];
+                    if (val == '1' || val == '0')
+                    {
+                        output.Append(GetHtmlTag(tag, val == '0'));
+                        i += 3;
+                        continue;
+                    }
+                }
+
+                // Unknown tag — skip backslash and keep going
+                i++;
+            }
+
+            return output.ToString();
+        }
 
         /// <summary>
         /// Processes all ASS {...} blocks in the text, extracting alignment and
@@ -58,67 +145,47 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string capturedPosition = "line:90%,end";
 
             var result = _assBlockRegex.Replace(text, match =>
-            {
-                var inner = match.Groups[1].Value;
-                var output = new StringBuilder();
-
-                int i = 0;
-                while (i < inner.Length)
-                {
-                    if (inner[i] != '\\')
-                    {
-                        i++;
-                        continue;
-                    }
-
-                    if (i + 1 >= inner.Length)
-                    {
-                        i++;
-                        continue;
-                    }
-
-                    char tag = inner[i + 1];
-
-                    // \anN — alignment tag
-                    if (tag == 'a' && i + 3 < inner.Length && inner[i + 2] == 'n' && char.IsDigit(inner[i + 3]))
-                    {
-                        var key = $"{{\\an{inner[i + 3]}}}";
-                        if (_assTagToCuePosition.TryGetValue(key, out var pos))
-                        {
-                            capturedPosition = pos;
-                        }
-
-                        i += 4;
-                        continue;
-                    }
-
-                    // \i1, \i0, \b1, \b0, \u1, \u0
-                    if ((tag == 'i' || tag == 'b' || tag == 'u') && i + 2 < inner.Length)
-                    {
-                        char val = inner[i + 2];
-                        if (val == '1')
-                        {
-                            output.Append(tag == 'i' ? "<i>" : tag == 'b' ? "<b>" : "<u>");
-                            i += 3;
-                            continue;
-                        }
-                        else if (val == '0')
-                        {
-                            output.Append(tag == 'i' ? "</i>" : tag == 'b' ? "</b>" : "</u>");
-                            i += 3;
-                            continue;
-                        }
-                    }
-
-                    // Unknown tag — skip backslash and keep going
-                    i++;
-                }
-
-                return output.ToString();
-            });
+                ProcessAssBlock(match.Groups[1].Value, ref capturedPosition));
 
             cuePosition = capturedPosition;
             return result;
+        }
+
+        /// <summary>
+        /// Tries to parse a simple HTML formatting tag (&lt;i&gt;, &lt;b&gt;, &lt;u&gt; or their closing forms)
+        /// at the given position in the text.
+        /// </summary>
+        /// <param name="text">The text to inspect.</param>
+        /// <param name="i">The index of the '&lt;' character.</param>
+        /// <param name="isClosing">True if the tag is a closing tag.</param>
+        /// <param name="tag">The formatting character: 'i', 'b', or 'u'.</param>
+        /// <param name="nextIndex">The index after the closing '&gt;'.</param>
+        /// <returns>True if a valid formatting tag was found.</returns>
+        private static bool TryParseHtmlTag(string text, int i, out bool isClosing, out char tag, out int nextIndex)
+        {
+            isClosing = false;
+            tag = '\0';
+            nextIndex = i;
+
+            if (i + 2 >= text.Length || text[i] != '<')
+            {
+                return false;
+            }
+
+            isClosing = text[i + 1] == '/';
+            int tagStart = isClosing ? i + 2 : i + 1;
+
+            if (tagStart >= text.Length
+                || (text[tagStart] != 'i' && text[tagStart] != 'b' && text[tagStart] != 'u')
+                || tagStart + 1 >= text.Length
+                || text[tagStart + 1] != '>')
+            {
+                return false;
+            }
+
+            tag = text[tagStart];
+            nextIndex = tagStart + 2;
+            return true;
         }
 
         /// <summary>
@@ -131,28 +198,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int i = 0;
             while (i < text.Length)
             {
-                if (text[i] == '<' && i + 2 < text.Length)
+                if (TryParseHtmlTag(text, i, out bool isClosing, out char tag, out int nextIndex))
                 {
-                    bool isClosing = text[i + 1] == '/';
-                    int tagStart = isClosing ? i + 2 : i + 1;
-                    if (tagStart < text.Length
-                        && (text[tagStart] == 'i' || text[tagStart] == 'b' || text[tagStart] == 'u')
-                        && tagStart + 1 < text.Length && text[tagStart + 1] == '>')
+                    if (!isClosing)
                     {
-                        char tag = text[tagStart];
-                        if (!isClosing)
-                        {
-                            stack.Push(tag);
-                            i = tagStart + 2;
-                            continue;
-                        }
-                        else if (stack.Count > 0 && stack.Peek() == tag)
-                        {
-                            stack.Pop();
-                            i = tagStart + 2;
-                            continue;
-                        }
+                        stack.Push(tag);
                     }
+                    else if (stack.Count > 0 && stack.Peek() == tag)
+                    {
+                        stack.Pop();
+                    }
+
+                    i = nextIndex;
+                    continue;
                 }
 
                 i++;
