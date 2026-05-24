@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260522092303_AddNormalizedUsername")]
-    partial class AddNormalizedUsername
+    [Migration("20260524120336_AddUniqueNormalizedUsernameIndex")]
+    partial class AddUniqueNormalizedUsernameIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1352,6 +1352,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("NormalizedUsername")
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();

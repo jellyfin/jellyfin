@@ -5,26 +5,23 @@
 namespace Jellyfin.Server.Implementations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNormalizedUsername : Migration
+    public partial class AddUniqueNormalizedUsernameIndex : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // this is the first part of the migration. Add the column.
-            migrationBuilder.AddColumn<string>(
-                name: "NormalizedUsername",
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_NormalizedUsername",
                 table: "Users",
-                type: "TEXT",
-                maxLength: 255,
-                nullable: false,
-                defaultValue: string.Empty);
+                column: "NormalizedUsername",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "NormalizedUsername",
+            migrationBuilder.DropIndex(
+                name: "IX_Users_NormalizedUsername",
                 table: "Users");
         }
     }
