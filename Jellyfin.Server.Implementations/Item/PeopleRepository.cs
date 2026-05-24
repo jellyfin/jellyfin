@@ -165,6 +165,64 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         transaction.Commit();
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItem(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+    {
+        if (itemIds.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<string>>();
+        }
+
+        using var context = _dbProvider.CreateDbContext();
+        var query = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Where(m => itemIds.Contains(m.ItemId));
+
+        if (personTypes.Count > 0)
+        {
+            query = query.Where(m => personTypes.Contains(m.People.PersonType));
+        }
+
+        // One round-trip: pull (ItemId, ListOrder, Name) sorted by ItemId+ListOrder, group in memory.
+        var rows = query
+            .OrderBy(m => m.ItemId)
+            .ThenBy(m => m.ListOrder)
+            .Select(m => new { m.ItemId, m.People.Name })
+            .ToArray();
+
+        var result = new Dictionary<Guid, IReadOnlyList<string>>();
+        List<string>? current = null;
+        var currentId = Guid.Empty;
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var row in rows)
+        {
+            if (row.ItemId != currentId)
+            {
+                if (current is { Count: > 0 })
+                {
+                    result[currentId] = current;
+                }
+
+                currentId = row.ItemId;
+                current = new List<string>();
+                seen.Clear();
+            }
+
+            if (!string.IsNullOrWhiteSpace(row.Name) && seen.Add(row.Name))
+            {
+                current!.Add(row.Name);
+            }
+        }
+
+        if (current is { Count: > 0 })
+        {
+            result[currentId] = current;
+        }
+
+        return result;
+    }
+
     private PersonInfo Map(People people)
     {
         var mapping = people.BaseItems?.FirstOrDefault();
