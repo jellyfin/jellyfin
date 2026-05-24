@@ -705,7 +705,7 @@ namespace Jellyfin.LiveTv.Listings
                 SetImageLimitHit();
                 SetMetadataLimitHit();
             }
-            else if (sdCode is SdErrorCode.MaxImageDownloads or SdErrorCode.MaxImageDownloads2)
+            else if (sdCode is SdErrorCode.MaxImageDownloads or SdErrorCode.MaxImageDownloadsTrial)
             {
                 // Max image downloads — stop image requests until SD resets at 00:00 UTC.
                 _logger.LogError("Schedules Direct image download limit hit (code {SdCode}). Disabling image acquisition until SD reset.", sdCode);

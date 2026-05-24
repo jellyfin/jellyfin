@@ -85,7 +85,7 @@ public enum SdErrorCode
     /// <summary>
     /// Trial specific maximum image downloads reached for the day.
     /// </summary>
-    MaxImageDownloads2 = 5003,
+    MaxImageDownloadsTrial = 5003,
 
     /// <summary>
     /// Maximum schedule/metadata requests reached for the day.
