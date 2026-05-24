@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,9 +19,9 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class UploadHelper
 {
-    private readonly FrozenSet<Definition> _videoDefinitions;
-    private readonly FrozenSet<Definition> _audioDefinitions;
-    private readonly FrozenSet<Definition> _imageDefinitions;
+    private readonly List<Definition> _videoDefinitions;
+    private readonly List<Definition> _audioDefinitions;
+    private readonly List<Definition> _imageDefinitions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadHelper"/> class.
@@ -35,19 +35,19 @@ public class UploadHelper
                 UsageType = UsageType.PersonalNonCommercial
             }.Build();
 
-        var extensions = namingOptions.AudioFileExtensions.Select(x => x.Replace(".", string.Empty, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var extensions = namingOptions.AudioFileExtensions.Select(x => x.Replace(".", string.Empty, StringComparison.Ordinal)).ToArray();
         _audioDefinitions = allDefinitions
             .ScopeExtensions(extensions)
             .TrimMeta()
             .TrimDescription()
-            .ToFrozenSet();
+            .ToList();
 
-        extensions = namingOptions.VideoFileExtensions.Select(x => x.Replace(".", string.Empty, StringComparison.OrdinalIgnoreCase)).ToArray();
+        extensions = namingOptions.VideoFileExtensions.Select(x => x.Replace(".", string.Empty, StringComparison.Ordinal)).ToArray();
         _videoDefinitions = allDefinitions
             .ScopeExtensions(extensions)
             .TrimMeta()
             .TrimDescription()
-            .ToFrozenSet();
+            .ToList();
 
         extensions =
             [
@@ -61,7 +61,7 @@ public class UploadHelper
             .ScopeExtensions(extensions)
             .TrimMeta()
             .TrimDescription()
-            .ToFrozenSet();
+            .ToList();
     }
 
     /// <summary>
@@ -76,21 +76,20 @@ public class UploadHelper
         ArgumentNullException.ThrowIfNull(contentType);
 
         var definitions = GetDefinitionsForType(contentType.Split('/')[0]);
+        if (definitions is null)
+        {
+            return null;
+        }
+
         var inspector = new ContentInspectorBuilder()
         {
-            Definitions = definitions.ToList(),
+            Definitions = definitions,
         }.Build();
 
-        var realMimeTypeMatchesContentType = inspector.Inspect(stream)
+        return inspector.Inspect(stream)
             .Where(r => string.Equals(r.Definition.File.MimeType, contentType, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(r => r.Points)
             .FirstOrDefault(r => r.Type == DefinitionMatchType.Complete);
-        if (realMimeTypeMatchesContentType is not null)
-        {
-            return realMimeTypeMatchesContentType;
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -99,7 +98,8 @@ public class UploadHelper
     /// <param name="stream">The data stream.</param>
     /// <param name="filePath">The file path to write the data to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public static async void WriteStreamToFile(Stream stream, string filePath, CancellationToken cancellationToken)
+    /// <returns>A task representing the asynchronous write operation.</returns>
+    public static async Task WriteStreamToFile(Stream stream, string filePath, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(filePath);
@@ -111,14 +111,14 @@ public class UploadHelper
         }
     }
 
-    private FrozenSet<Definition> GetDefinitionsForType(string type)
+    private List<Definition>? GetDefinitionsForType(string type)
     {
         return type switch
         {
             "audio" => _audioDefinitions,
             "video" => _videoDefinitions,
             "image" => _imageDefinitions,
-            _ => FrozenSet<Definition>.Empty,
+            _ => null,
         };
     }
 }

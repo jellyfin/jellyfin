@@ -1731,7 +1731,7 @@ public class ImageController : BaseJellyfinApiController
             if (mimeInfo is not null)
             {
                 var filePathWithExtension = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + mimeInfo.Definition.File.Extensions.First());
-                UploadHelper.WriteStreamToFile(stream, filePathWithExtension, CancellationToken.None);
+                await UploadHelper.WriteStreamToFile(stream, filePathWithExtension, CancellationToken.None).ConfigureAwait(false);
                 var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
                 brandingOptions.SplashscreenLocation = filePathWithExtension;
                 _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
