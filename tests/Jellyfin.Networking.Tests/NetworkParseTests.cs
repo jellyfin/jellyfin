@@ -136,6 +136,65 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
+        /// Verifies that IPv4 entries whose '!' polarity doesn't match the requested pass are skipped silently,
+        /// not logged as invalid. Callers parse the same list twice (LAN and excluded) so the off-polarity
+        /// entries are expected, not erroneous.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_PolarityMismatchIPv4_DoesNotWarn()
+        {
+            var logger = new Mock<ILogger>();
+            var values = new[] { "127.0.0.0/8", "192.168.178.0/24", "!10.0.0.0/8" };
+
+            // Non-negated pass picks up the two non-'!' entries and ignores '!10.0.0.0/8' silently.
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var lanResult, false, logger.Object));
+            Assert.NotNull(lanResult);
+            Assert.Equal(2, lanResult.Count);
+
+            // Negated pass picks up the single '!' entry and ignores the others silently.
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var excludedResult, true, logger.Object));
+            Assert.NotNull(excludedResult);
+            Assert.Single(excludedResult);
+
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
+
+        /// <summary>
+        /// Same as the IPv4 case but for IPv6 entries — makes sure the polarity pre-check works
+        /// for IPv6 CIDR notation (with '::') as well.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_PolarityMismatchIPv6_DoesNotWarn()
+        {
+            var logger = new Mock<ILogger>();
+            var values = new[] { "fd00::/8", "fe80::/10", "!fd12:3456:789a::/48" };
+
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var lanResult, false, logger.Object));
+            Assert.NotNull(lanResult);
+            Assert.Equal(2, lanResult.Count);
+
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var excludedResult, true, logger.Object));
+            Assert.NotNull(excludedResult);
+            Assert.Single(excludedResult);
+
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
+
+        /// <summary>
         /// Checks if IPv4 address is within a defined subnet.
         /// </summary>
         /// <param name="netMask">Network mask.</param>

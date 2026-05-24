@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Plugins.ListenBrainz.Configuration;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Providers.Plugins.ListenBrainz;
 /// <summary>
 /// ListenBrainz plugin instance.
 /// </summary>
-public class ListenBrainzPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
+public class ListenBrainzPlugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasEmbeddedImage
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ListenBrainzPlugin"/> class.
@@ -42,6 +43,9 @@ public class ListenBrainzPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override string ConfigurationFileName => "Jellyfin.Plugin.ListenBrainz.xml";
 
     /// <inheritdoc />
+    public string ImageResourceName => GetType().Namespace + ".Configuration.ListenBrainz_logo.svg";
+
+    /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()
     {
         var resourcePrefix = GetType().Namespace + ".Configuration.";
@@ -49,11 +53,6 @@ public class ListenBrainzPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
         {
             Name = Name,
             EmbeddedResourcePath = resourcePrefix + "config.html"
-        };
-        yield return new PluginPageInfo
-        {
-            Name = Name + "Logo",
-            EmbeddedResourcePath = resourcePrefix + "ListenBrainz_logo.svg"
         };
         yield return new PluginPageInfo
         {

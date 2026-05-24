@@ -178,6 +178,11 @@ namespace Jellyfin.LiveTv
         {
             var program = _libraryManager.GetItemById(id);
 
+            if (program is null)
+            {
+                return null;
+            }
+
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
             var list = new List<(BaseItemDto ItemDto, string ExternalId, string ExternalSeriesId)>

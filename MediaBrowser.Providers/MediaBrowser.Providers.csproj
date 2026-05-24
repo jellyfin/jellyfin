@@ -47,22 +47,53 @@
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- AudioDb -->
   <ItemGroup>
     <None Remove="Plugins\AudioDb\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\AudioDb\Configuration\config.html" />
-    <None Remove="Plugins\Omdb\Configuration\config.html" />
-    <EmbeddedResource Include="Plugins\Omdb\Configuration\config.html" />
+    <None Remove="Plugins\AudioDb\jellyfin-plugin-tadb.svg" />
+    <EmbeddedResource Include="Plugins\AudioDb\jellyfin-plugin-tadb.svg" />
+  </ItemGroup>
+
+  <!-- ListenBrainz -->
+  <ItemGroup>
     <None Remove="Plugins\ListenBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\config.html" />
     <None Remove="Plugins\ListenBrainz\Configuration\ListenBrainz_logo.svg" />
     <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\ListenBrainz_logo.svg" />
     <None Remove="Plugins\ListenBrainz\Configuration\NOTICE.md" />
     <EmbeddedResource Include="Plugins\ListenBrainz\Configuration\NOTICE.md" />
+  </ItemGroup>
+
+  <!-- MusicBrainz -->
+  <ItemGroup>
     <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />
+    <None Remove="Plugins\MusicBrainz\jellyfin-plugin-musicbrainz.svg" />
+    <EmbeddedResource Include="Plugins\MusicBrainz\jellyfin-plugin-musicbrainz.svg" />
+  </ItemGroup>
+
+  <!-- Omdb -->
+  <ItemGroup>
+    <None Remove="Plugins\Omdb\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\Omdb\Configuration\config.html" />
+    <None Remove="Plugins\Omdb\jellyfin-plugin-omdb.png" />
+    <EmbeddedResource Include="Plugins\Omdb\jellyfin-plugin-omdb.png" />
+  </ItemGroup>
+
+  <!-- StudioImages -->
+  <ItemGroup>
     <None Remove="Plugins\StudioImages\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\StudioImages\Configuration\config.html" />
+    <None Remove="Plugins\StudioImages\jellyfin-plugin-studioimages.svg" />
+    <EmbeddedResource Include="Plugins\StudioImages\jellyfin-plugin-studioimages.svg" />
+  </ItemGroup>
+
+  <!-- Tmdb -->
+  <ItemGroup>
     <None Remove="Plugins\Tmdb\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\Tmdb\Configuration\config.html" />
+    <None Remove="Plugins\Tmdb\jellyfin-plugin-tmdb.svg" />
+    <EmbeddedResource Include="Plugins\Tmdb\jellyfin-plugin-tmdb.svg" />
   </ItemGroup>
 </Project>

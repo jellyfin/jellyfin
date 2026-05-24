@@ -1,5 +1,5 @@
 {
-    "AppDeviceValues": "Program: {0}, Eszköz: {1}",
+    "AppDeviceValues": "alkalmazás: {0}, eszköz: {1}",
     "Artists": "Előadók",
     "AuthenticationSucceededWithUserName": "{0} sikeresen hitelesítve",
     "Books": "Könyvek",
@@ -107,5 +107,6 @@
     "TaskExtractMediaSegmentsDescription": "Kinyeri vagy megszerzi a médiaszegmenseket a MediaSegment támogatással rendelkező bővítményekből.",
     "CleanupUserDataTaskDescription": "Legalább 90 napja nem elérhető médiákhoz kapcsolódó összes felhasználói adat (pl. megtekintési állapot, kedvencek) törlése.",
     "CleanupUserDataTask": "Felhasználói adatok tisztítása feladat",
-    "Original": "Eredeti"
+    "Original": "Eredeti",
+    "LyricDownloadFailureFromForItem": "Dalszöveg letöltése {0}-tól {1}-hez sikertelen"
 }

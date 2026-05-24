@@ -3,10 +3,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Plugins.ComicVine
+namespace MediaBrowser.Providers.Books.ComicVine
 {
     /// <inheritdoc />
-    public class ComicVinePersonExternalId : IExternalId
+    public class ComicVineExternalId : IExternalId
     {
         /// <inheritdoc />
         public string ProviderName => "Comic Vine";
@@ -15,9 +15,9 @@ namespace MediaBrowser.Providers.Plugins.ComicVine
         public string Key => "ComicVine";
 
         /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
+        public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Person;
+        public bool Supports(IHasProviderIds item) => item is Book;
     }
 }

@@ -1267,16 +1267,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     .Append(_mediaEncoder.GetInputPathArgument(state));
             }
 
-            // sub2video for external graphical subtitles
-            if (state.SubtitleStream is not null
-                && ShouldEncodeSubtitle(state)
-                && !state.SubtitleStream.IsTextSubtitleStream
-                && state.SubtitleStream.IsExternal)
+            if (NeedsExternalSubtitleMuxing(state))
             {
                 var subtitlePath = state.SubtitleStream.Path;
-                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
+                var isGraphicalBurnIn = ShouldEncodeSubtitle(state) && !state.SubtitleStream.IsTextSubtitleStream;
 
                 // dvdsub/vobsub graphical subtitles use .sub+.idx pairs
+                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
                 if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase))
                 {
                     var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
@@ -1307,7 +1304,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     arg.Append(' ').Append(seekSubParam);
                 }
 
-                if (!string.IsNullOrEmpty(canvasArgs))
+                if (isGraphicalBurnIn && !string.IsNullOrEmpty(canvasArgs))
                 {
                     arg.Append(canvasArgs);
                 }
@@ -1766,13 +1763,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -preset p7",
-                        EncoderPreset.slower => " -preset p6",
-                        EncoderPreset.slow => " -preset p5",
-                        EncoderPreset.medium => " -preset p4",
-                        EncoderPreset.fast => " -preset p3",
-                        EncoderPreset.faster => " -preset p2",
-                        _ => " -preset p1"
+                    EncoderPreset.veryslow => " -preset p7",
+                    EncoderPreset.slower => " -preset p6",
+                    EncoderPreset.slow => " -preset p5",
+                    EncoderPreset.medium => " -preset p4",
+                    EncoderPreset.fast => " -preset p3",
+                    EncoderPreset.faster => " -preset p2",
+                    _ => " -preset p1"
                 };
             }
             else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase) // h264 (h264_amf)
@@ -1782,11 +1779,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -quality quality",
-                        EncoderPreset.slower => " -quality quality",
-                        EncoderPreset.slow => " -quality quality",
-                        EncoderPreset.medium => " -quality balanced",
-                        _ => " -quality speed"
+                    EncoderPreset.veryslow => " -quality quality",
+                    EncoderPreset.slower => " -quality quality",
+                    EncoderPreset.slow => " -quality quality",
+                    EncoderPreset.medium => " -quality balanced",
+                    _ => " -quality speed"
                 };
 
                 if (string.Equals(videoEncoder, "hevc_amf", StringComparison.OrdinalIgnoreCase)
@@ -1806,11 +1803,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 param += encoderPreset switch
                 {
-                        EncoderPreset.veryslow => " -prio_speed 0",
-                        EncoderPreset.slower => " -prio_speed 0",
-                        EncoderPreset.slow => " -prio_speed 0",
-                        EncoderPreset.medium => " -prio_speed 0",
-                        _ => " -prio_speed 1"
+                    EncoderPreset.veryslow => " -prio_speed 0",
+                    EncoderPreset.slower => " -prio_speed 0",
+                    EncoderPreset.slow => " -prio_speed 0",
+                    EncoderPreset.medium => " -prio_speed 0",
+                    _ => " -prio_speed 1"
                 };
             }
 
@@ -2762,25 +2759,29 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
             {
+#pragma warning disable SA1008
                 return (inputChannels, outputChannels) switch
                 {
-                    (>= 6, >= 6 or 0) => Math.Min(640000, bitrate),
-                    (> 0, > 0) => Math.Min(outputChannels * 128000, bitrate),
-                    (> 0, _) => Math.Min(inputChannels * 128000, bitrate),
+                    ( >= 6, >= 6 or 0) => Math.Min(640000, bitrate),
+                    ( > 0, > 0) => Math.Min(outputChannels * 128000, bitrate),
+                    ( > 0, _) => Math.Min(inputChannels * 128000, bitrate),
                     (_, _) => Math.Min(384000, bitrate)
                 };
+#pragma warning restore SA1008
             }
 
             if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "dca", StringComparison.OrdinalIgnoreCase))
             {
+#pragma warning disable SA1008
                 return (inputChannels, outputChannels) switch
                 {
-                    (>= 6, >= 6 or 0) => Math.Min(768000, bitrate),
-                    (> 0, > 0) => Math.Min(outputChannels * 136000, bitrate),
-                    (> 0, _) => Math.Min(inputChannels * 136000, bitrate),
+                    ( >= 6, >= 6 or 0) => Math.Min(768000, bitrate),
+                    ( > 0, > 0) => Math.Min(outputChannels * 136000, bitrate),
+                    ( > 0, _) => Math.Min(inputChannels * 136000, bitrate),
                     (_, _) => Math.Min(672000, bitrate)
                 };
+#pragma warning restore SA1008
             }
 
             // Empty bitrate area is not allow on iOS
@@ -3072,11 +3073,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
                 {
-                    bool hasExternalGraphicsSubs = state.SubtitleStream is not null
-                        && ShouldEncodeSubtitle(state)
-                        && state.SubtitleStream.IsExternal
-                        && !state.SubtitleStream.IsTextSubtitleStream;
-                    int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
+                    bool hasExternalSubAsInput = NeedsExternalSubtitleMuxing(state);
+                    int externalAudioMapIndex = hasExternalSubAsInput ? 2 : 1;
 
                     args += string.Format(
                         CultureInfo.InvariantCulture,
@@ -3104,12 +3102,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (subtitleMethod == SubtitleDeliveryMethod.Embed)
             {
-                int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+                if (state.SubtitleStream.IsExternal)
+                {
+                    // External subtitle file is added as second FFmpeg input.
+                    // For single-stream files (SRT/ASS/VTT) the in-file index is always 0.
+                    // For multi-stream containers (MKS) we count how many streams from
+                    // the same file appear before the selected one.
+                    var inFileIndex = state.MediaSource.MediaStreams
+                        .Where(s => string.Equals(s.Path, state.SubtitleStream.Path, StringComparison.Ordinal))
+                        .TakeWhile(s => s.Index != state.SubtitleStream.Index)
+                        .Count();
 
-                args += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -map 0:{0}",
-                    subtitleStreamIndex);
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 1:{0}",
+                        inFileIndex);
+                }
+                else
+                {
+                    int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 0:{0}",
+                        subtitleStreamIndex);
+                }
             }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
@@ -7884,6 +7901,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             return state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                    || (state.BaseRequest.AlwaysBurnInSubtitleWhenTranscoding && !IsCopyCodec(state.OutputVideoCodec));
+        }
+
+        private static bool NeedsExternalSubtitleMuxing(EncodingJobInfo state)
+        {
+            return state.SubtitleStream is not null
+                && state.SubtitleStream.IsExternal
+                && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed
+                    || (ShouldEncodeSubtitle(state) && !state.SubtitleStream.IsTextSubtitleStream));
         }
 
         public static string GetVideoSyncOption(string videoSync, Version encoderVersion)

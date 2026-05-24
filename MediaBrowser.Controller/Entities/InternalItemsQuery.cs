@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities
             AlbumArtistIds = [];
             AlbumIds = [];
             AncestorIds = [];
+            LinkedChildAncestorIds = [];
             ArtistIds = [];
             BlockUnratedItems = [];
             BoxSetLibraryFolders = [];
@@ -264,6 +265,12 @@ namespace MediaBrowser.Controller.Entities
         public BaseItemKind? ParentType { get; set; }
 
         public Guid[] AncestorIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of ancestor ids that the item's linked children must descend from.
+        /// Useful for filtering BoxSets/Playlists to only those that contain items from a specific library.
+        /// </summary>
+        public Guid[] LinkedChildAncestorIds { get; set; }
 
         public Guid[] TopParentIds { get; set; }
 

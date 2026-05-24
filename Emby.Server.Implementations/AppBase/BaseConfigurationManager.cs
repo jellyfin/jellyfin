@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             else
             {
-                _configurationFactories = [.._configurationFactories, factory];
+                _configurationFactories = [.. _configurationFactories, factory];
             }
 
             _configurationStores = _configurationFactories

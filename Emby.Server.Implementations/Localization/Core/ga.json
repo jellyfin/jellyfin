@@ -107,5 +107,6 @@
     "TaskDownloadMissingSubtitles": "Íosluchtaigh fotheidil ar iarraidh",
     "CleanupUserDataTask": "Tasc glantacháin sonraí úsáideora",
     "CleanupUserDataTaskDescription": "Glanann sé gach sonraí úsáideora (stádas faire, stádas is fearr leat srl.) ó mheáin nach bhfuil i láthair a thuilleadh ar feadh 90 lá ar a laghad.",
-    "Original": "Bunaidh"
+    "Original": "Bunaidh",
+    "LyricDownloadFailureFromForItem": "Theip ar liricí a íoslódáil ó {0} do {1}"
 }

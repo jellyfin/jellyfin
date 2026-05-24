@@ -107,5 +107,6 @@
     "TaskMoveTrickplayImagesDescription": "Flyttar befintliga trickplay-filer enligt bibliotekets inställningar.",
     "CleanupUserDataTaskDescription": "Tar bort all användardata (såsom vad du sett, favoriter med mera) för media som inte funnits på enheten på minst 90 dagar.",
     "CleanupUserDataTask": "Uppgift för rensning av användardata",
-    "Original": "Original"
+    "Original": "Original",
+    "LyricDownloadFailureFromForItem": "Misslyckades att ladda ner låttexter från {0} för {1}"
 }

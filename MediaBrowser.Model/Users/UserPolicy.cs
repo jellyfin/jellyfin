@@ -187,7 +187,7 @@ namespace MediaBrowser.Model.Users
         [Required(AllowEmptyStrings = false)]
         public string AuthenticationProviderId { get; set; }
 
-        [Required(AllowEmptyStrings= false)]
+        [Required(AllowEmptyStrings = false)]
         public string PasswordResetProviderId { get; set; }
 
         /// <summary>

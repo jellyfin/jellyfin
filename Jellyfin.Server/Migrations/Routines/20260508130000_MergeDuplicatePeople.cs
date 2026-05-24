@@ -284,10 +284,16 @@ public class MergeDuplicatePeople : IAsyncMigrationRoutine
             return;
         }
 
-        await context.Peoples
-            .Where(p => idsToDelete.Contains(p.Id))
-            .ExecuteDeleteAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var idx = 0;
+        foreach (var item in idsToDelete.Chunk(200))
+        {
+            idx++; // humans count at one
+            _logger.LogInformation("Remove batch {BatchNo}/{MaxBatches} duplicate Peoples.", idx, idsToDelete.Count / 200);
+            await context.Peoples
+                .Where(p => item.Contains(p.Id))
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         _logger.LogInformation("Removed {Count} duplicate Peoples rows.", idsToDelete.Count);
     }

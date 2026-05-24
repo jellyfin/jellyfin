@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Providers.Plugins.ComicVine;
+namespace MediaBrowser.Providers.Books.ComicVine;
 
 /// <inheritdoc/>
 public class ComicVineExternalUrlProvider : IExternalUrlProvider
