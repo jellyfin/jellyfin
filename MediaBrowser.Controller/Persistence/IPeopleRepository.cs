@@ -32,4 +32,14 @@ public interface IPeopleRepository
     /// <param name="filter">The query.</param>
     /// <returns>The list of people names matching the filter.</returns>
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
+
+    /// <summary>
+    /// Gets the people names per item for a batch of item IDs, preserving per-item list order.
+    /// One database round-trip for the whole batch; grouped by item id in memory.
+    /// Items with no people are omitted from the returned dictionary.
+    /// </summary>
+    /// <param name="itemIds">The item IDs to get people for.</param>
+    /// <param name="personTypes">Optional person types to include (e.g. "Actor", "Director"). Empty for all.</param>
+    /// <returns>Dictionary keyed by item id; values are the per-item people names.</returns>
+    IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItem(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
 }
