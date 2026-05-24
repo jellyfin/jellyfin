@@ -3,7 +3,7 @@
 namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos;
 
 /// <summary>
-/// Schedules Direct API error codes. See: https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#error-response
+/// Schedules Direct API error codes. See https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#error-response for details.
 /// </summary>
 public enum SdErrorCode
 {
