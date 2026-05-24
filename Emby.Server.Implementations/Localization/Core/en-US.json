@@ -20,6 +20,7 @@
     "HearingImpaired": "Hearing Impaired",
     "HomeVideos": "Home Videos",
     "Inherit": "Inherit",
+    "ItemNotDvdBluray": "Item is not a DVD or Blu-ray.",
     "LabelIpAddressValue": "IP address: {0}",
     "LabelRunningTimeValue": "Running time: {0}",
     "Latest": "Latest",
