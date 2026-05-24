@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260524143220_AddUniqueNormalizedUsernameIndex")]
+    [Migration("20260524120336_AddUniqueNormalizedUsernameIndex")]
     partial class AddUniqueNormalizedUsernameIndex
     {
         /// <inheritdoc />
