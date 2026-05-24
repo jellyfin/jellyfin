@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.IO;
 using MimeDetective;
 using MimeDetective.Definitions;
@@ -19,6 +20,11 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public class UploadHelper
 {
+    /// <summary>
+    /// Maximum number of bytes to read from the start of an upload for MIME sniffing.
+    /// </summary>
+    public const int MaxSniffBytes = 8192;
+
     private readonly List<Definition> _videoDefinitions;
     private readonly List<Definition> _audioDefinitions;
     private readonly List<Definition> _imageDefinitions;
@@ -65,29 +71,36 @@ public class UploadHelper
     }
 
     /// <summary>
-    /// Checks if data MIME type matches content type and returns the MIME type information.
+    /// Checks if the declared content type matches the bytes of the upload prefix and returns the matching definition.
     /// </summary>
-    /// <param name="stream">The data stream.</param>
-    /// <param name="contentType">The content type.</param>
-    /// <returns>MIME type information.</returns>
-    public DefinitionMatch? GetMimeInfo(Stream? stream, string? contentType)
+    /// <param name="prefix">A prefix of the upload payload, typically the first <see cref="MaxSniffBytes"/> bytes.</param>
+    /// <param name="contentType">The declared content type, optionally followed by parameters (e.g. <c>image/png; charset=utf-8</c>).</param>
+    /// <returns>The matching definition, or <see langword="null"/> if the content type is unknown or does not match the bytes.</returns>
+    public DefinitionMatch? GetMimeInfo(ArraySegment<byte> prefix, string? contentType)
     {
-        ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(contentType);
 
-        var definitions = GetDefinitionsForType(contentType.Split('/')[0]);
+        var mediaType = contentType.AsSpan().LeftPart(';').Trim().ToString();
+        var slash = mediaType.IndexOf('/', StringComparison.Ordinal);
+        if (slash <= 0)
+        {
+            return null;
+        }
+
+        var definitions = GetDefinitionsForType(mediaType[..slash]);
         if (definitions is null)
         {
             return null;
         }
 
+        using var stream = new MemoryStream(prefix.Array ?? [], prefix.Offset, prefix.Count, writable: false);
         var inspector = new ContentInspectorBuilder()
         {
             Definitions = definitions,
         }.Build();
 
         return inspector.Inspect(stream)
-            .Where(r => string.Equals(r.Definition.File.MimeType, contentType, StringComparison.OrdinalIgnoreCase))
+            .Where(r => string.Equals(r.Definition.File.MimeType, mediaType, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(r => r.Points)
             .FirstOrDefault(r => r.Type == DefinitionMatchType.Complete);
     }
