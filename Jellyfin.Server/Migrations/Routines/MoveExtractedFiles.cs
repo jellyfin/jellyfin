@@ -181,7 +181,9 @@ public class MoveExtractedFiles : IAsyncMigrationRoutine
                 }
             }
 
-            var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.Filename ?? attachmentIndex.ToString(CultureInfo.InvariantCulture));
+            var attachmentIndexName = attachmentIndex.ToString(CultureInfo.InvariantCulture);
+            var newAttachmentPath = _pathManager.GetAttachmentPath(itemIdString, attachment.Filename ?? attachmentIndexName)
+                                     ?? _pathManager.GetAttachmentPath(itemIdString, attachmentIndexName)!;
             if (File.Exists(newAttachmentPath))
             {
                 File.Delete(oldAttachmentPath);
