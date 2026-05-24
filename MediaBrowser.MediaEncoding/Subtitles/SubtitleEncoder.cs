@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -372,7 +373,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = _mediaEncoder.EncoderPath,
-                    Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                    Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, EncodingUtils.NormalizePath(inputPath), EncodingUtils.NormalizePath(outputPath)),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 },
