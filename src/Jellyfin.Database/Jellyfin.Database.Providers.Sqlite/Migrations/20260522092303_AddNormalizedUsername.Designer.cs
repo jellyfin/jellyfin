@@ -1356,6 +1356,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
+                    b.HasIndex("NormalizedUsername")
+                        .IsUnique();
+
                     b.ToTable("Users");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);

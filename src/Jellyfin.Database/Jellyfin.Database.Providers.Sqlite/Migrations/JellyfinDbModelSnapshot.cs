@@ -1350,6 +1350,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("NormalizedUsername")
+                        .IsUnique();
+
                     b.HasIndex("Username")
                         .IsUnique();
 

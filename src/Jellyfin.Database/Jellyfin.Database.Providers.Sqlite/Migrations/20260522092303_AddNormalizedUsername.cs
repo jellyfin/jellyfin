@@ -18,6 +18,12 @@ namespace Jellyfin.Server.Implementations.Migrations
                 maxLength: 255,
                 nullable: false,
                 defaultValue: string.Empty);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_NormalizedUsername",
+                table: "Users",
+                column: "NormalizedUsername",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -25,6 +31,10 @@ namespace Jellyfin.Server.Implementations.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "NormalizedUsername",
+                table: "Users");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Users_NormalizedUsername",
                 table: "Users");
         }
     }
