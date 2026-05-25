@@ -78,7 +78,7 @@
     "UserOnlineFromDevice": "{0} ხაზზეა {1}-დან",
     "UserOfflineFromDevice": "{0} გაითიშა {1}-დან",
     "UserLockedOutWithName": "მომხმარებელი {0} დაბლოკილია",
-    "UserStartedPlayingItemWithValues": "{0} უყურებს {1}-ს {2}-ზე",
+    "UserStartedPlayingItemWithValues": "{0} უკრავს {1}-ს {2}-ზე",
     "UserPasswordChangedWithName": "მომხმარებელი {0}-სთვის პაროლი შეიცვალა",
     "UserStoppedPlayingItemWithValues": "{0}-მა დაასრულა {1}-ის ყურება {2}-ზე",
     "TaskRefreshChapterImagesDescription": "თავების მქონე ვიდეოებისთვის მინიატურების შექმნა.",
