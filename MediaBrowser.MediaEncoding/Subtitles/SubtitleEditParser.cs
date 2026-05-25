@@ -85,7 +85,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 trackEvents[i] = new SubtitleTrackEvent(p.Number.ToString(CultureInfo.InvariantCulture), p.Text)
                 {
                     StartPositionTicks = p.StartTime.TimeSpan.Ticks,
-                    EndPositionTicks = p.EndTime.TimeSpan.Ticks
+                    EndPositionTicks = p.EndTime.TimeSpan.Ticks,
+                    // Preserve VTT cue settings (e.g. "line:10% align:center") parsed by libse.
+                    // This allows VttWriter to write them back without re-parsing the text.
+                    VttCueSettings = p.Style
                 };
             }
 
