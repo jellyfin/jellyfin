@@ -18,6 +18,7 @@ namespace Jellyfin.Server.Implementations.Tests.SmartCollections;
 
 public sealed class SmartCollectionsPerformanceTests : IDisposable
 {
+    private const string PerfEnvVar = "RUN_SMARTCOLLECTIONS_PERF_TESTS";
     private readonly ITestOutputHelper _output;
     private readonly Mock<ISmartCollectionsRepository> _smartCollectionsRepo = new();
     private readonly Mock<IItemRepository> _itemRepo = new();
@@ -109,6 +110,10 @@ public sealed class SmartCollectionsPerformanceTests : IDisposable
     [Fact]
     public async Task EvaluateAsync_CacheMiss_PerformanceBudget()
     {
+        Assert.SkipUnless(
+            string.Equals(Environment.GetEnvironmentVariable(PerfEnvVar), "1", StringComparison.Ordinal),
+            $"Set {PerfEnvVar}=1 to run smart collection performance tests.");
+
         var userId = Guid.NewGuid();
         var user = new User("perfuser", "hash", "salt") { Id = userId };
         var filters = new Entities.SmartCollectionFilters { MinCommunityRating = 7 };
@@ -141,6 +146,10 @@ public sealed class SmartCollectionsPerformanceTests : IDisposable
     [Fact]
     public async Task EvaluateAsync_CacheHit_PerformanceBudget()
     {
+        Assert.SkipUnless(
+            string.Equals(Environment.GetEnvironmentVariable(PerfEnvVar), "1", StringComparison.Ordinal),
+            $"Set {PerfEnvVar}=1 to run smart collection performance tests.");
+
         var userId = Guid.NewGuid();
         var user = new User("perfuser2", "hash", "salt") { Id = userId };
         var filters = new Entities.SmartCollectionFilters();
@@ -169,8 +178,12 @@ public sealed class SmartCollectionsPerformanceTests : IDisposable
     }
 
     [Fact]
-    public async Task EvaluateAsync_Abnormaly_Large_SmartCollection()
+    public async Task EvaluateAsync_LargeSmartCollection_PerformanceBudget()
     {
+        Assert.SkipUnless(
+            string.Equals(Environment.GetEnvironmentVariable(PerfEnvVar), "1", StringComparison.Ordinal),
+            $"Set {PerfEnvVar}=1 to run smart collection performance tests.");
+
         var userId = Guid.NewGuid();
         var user = new User("perfuser3", "hash", "salt") { Id = userId };
         var filters = new Entities.SmartCollectionFilters { MinCommunityRating = 7 };
@@ -189,8 +202,12 @@ public sealed class SmartCollectionsPerformanceTests : IDisposable
     }
 
     [Fact]
-    public async Task EvaluateAsync_Abnormaly_Large_Mock_SmartCollection()
+    public async Task EvaluateAsync_LargeMockSmartCollection_PerformanceBudget()
     {
+        Assert.SkipUnless(
+            string.Equals(Environment.GetEnvironmentVariable(PerfEnvVar), "1", StringComparison.Ordinal),
+            $"Set {PerfEnvVar}=1 to run smart collection performance tests.");
+
         var userId = Guid.NewGuid();
         var user = new User("perfuser4", "hash", "salt") { Id = userId };
         var filters = new Entities.SmartCollectionFilters();

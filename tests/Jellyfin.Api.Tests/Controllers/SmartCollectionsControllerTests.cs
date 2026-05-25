@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Models.SmartCollectionDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.SmartCollections;
 using Microsoft.AspNetCore.Http;
@@ -96,6 +97,86 @@ public class SmartCollectionsControllerTests
         _smartCollectionsManager.Verify(
             manager => manager.CreateAsync(It.IsAny<SmartCollectionEntity>(), It.IsAny<string>()),
             Times.Never);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task CreateSmartCollection_InvalidLimit_ReturnsBadRequest(int limit)
+    {
+        var controller = CreateController(Guid.NewGuid());
+        var request = new CreateSmartCollectionDto
+        {
+            Name = "Invalid Limit",
+            Filters = JsonSerializer.SerializeToElement(new SmartCollectionFilters()),
+            Limit = limit
+        };
+
+        var response = await controller.CreateSmartCollection(request);
+
+        Assert.IsType<BadRequestObjectResult>(response.Result);
+        _smartCollectionsManager.Verify(
+            manager => manager.CreateAsync(It.IsAny<SmartCollectionEntity>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateSmartCollection_WithoutLimit_UsesDefaultLimit()
+    {
+        var userId = Guid.NewGuid();
+        var request = new CreateSmartCollectionDto
+        {
+            Name = "Default Limit",
+            Filters = JsonSerializer.SerializeToElement(new SmartCollectionFilters())
+        };
+
+        _smartCollectionsManager
+            .Setup(manager => manager.CreateAsync(It.IsAny<SmartCollectionEntity>(), userId.ToString()))
+            .ReturnsAsync((SmartCollectionEntity entity, string _) => entity);
+
+        var controller = CreateController(userId);
+
+        var response = await controller.CreateSmartCollection(request);
+
+        var dto = Assert.IsType<SmartCollectionDto>(response.Value);
+        Assert.Equal(50, dto.Limit);
+        _smartCollectionsManager.Verify(
+            manager => manager.CreateAsync(
+                It.Is<SmartCollectionEntity>(entity => entity.Limit == 50),
+                userId.ToString()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateSmartCollection_WithSortByAndSortOrder_PersistsSortOptions()
+    {
+        var userId = Guid.NewGuid();
+        var request = new CreateSmartCollectionDto
+        {
+            Name = "Sorted Collection",
+            Filters = JsonSerializer.SerializeToElement(new SmartCollectionFilters()),
+            SortBy = [ItemSortBy.SortName, ItemSortBy.ProductionYear],
+            SortOrder = [SortOrder.Descending, SortOrder.Ascending]
+        };
+
+        _smartCollectionsManager
+            .Setup(manager => manager.CreateAsync(It.IsAny<SmartCollectionEntity>(), userId.ToString()))
+            .ReturnsAsync((SmartCollectionEntity entity, string _) => entity);
+
+        var controller = CreateController(userId);
+
+        var response = await controller.CreateSmartCollection(request);
+
+        var dto = Assert.IsType<SmartCollectionDto>(response.Value);
+        Assert.Equal(new[] { ItemSortBy.SortName, ItemSortBy.ProductionYear }, dto.SortBy);
+        Assert.Equal(new[] { SortOrder.Descending }, dto.SortOrder);
+        _smartCollectionsManager.Verify(
+            manager => manager.CreateAsync(
+                It.Is<SmartCollectionEntity>(entity =>
+                    entity.SortBy == "SortName,ProductionYear"
+                    && entity.SortOrder == SortOrder.Descending),
+                userId.ToString()),
+            Times.Once);
     }
 
     [Fact]

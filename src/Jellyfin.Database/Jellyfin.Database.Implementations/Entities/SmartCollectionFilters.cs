@@ -1,6 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Jellyfin.Database.Implementations.Entities
 {
@@ -20,8 +20,9 @@ namespace Jellyfin.Database.Implementations.Entities
         public string? Type { get; set; }
 
         /// <summary>
-        /// Gets the sort field.
+        /// Gets the genres.
         /// </summary>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public Collection<string> Genres { get; } = new Collection<string>();
 
         /// <summary>
@@ -45,13 +46,15 @@ namespace Jellyfin.Database.Implementations.Entities
         public float? MinCriticRating { get; set; }
 
         /// <summary>
-        /// Gets the sort order.
+        /// Gets the tags.
         /// </summary>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public Collection<string> Tags { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets the official (PG or similar) ratings.
         /// </summary>
+        [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
         public Collection<string> OfficialRatings { get; } = new Collection<string>();
     }
 }
