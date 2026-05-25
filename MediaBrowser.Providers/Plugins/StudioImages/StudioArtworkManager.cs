@@ -111,7 +111,11 @@ public static class StudioArtworkManager
             return false;
         }
 
-        var studioDir = Path.Combine(StudiosDir, slug);
+        // The bundle shards studios by the first character of the slug, e.g.
+        // studios/a/abema/, studios/2/24-frames/. Slugify guarantees the first
+        // character is lowercase ASCII letter-or-digit, so it's directly usable
+        // as a shard key without further normalisation.
+        var studioDir = Path.Combine(StudiosDir, slug[..1], slug);
         if (!Directory.Exists(studioDir))
         {
             return false;
