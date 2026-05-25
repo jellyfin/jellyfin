@@ -3862,5 +3862,17 @@ namespace Emby.Server.Implementations.Library
         {
             return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType, InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetMediaStreamLanguages(query, mediaStreamType);
+        }
     }
 }
