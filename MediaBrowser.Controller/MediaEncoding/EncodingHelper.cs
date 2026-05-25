@@ -1610,6 +1610,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // TODO: probe QSV encoders' capabilities and enable more tuning options
                 // See also https://github.com/intel/media-delivery/blob/master/doc/quality.rst
 
+                // On some Intel Atom-class iGPUs (e.g. Jasper Lake N5105, Gen11), h264_qsv rejects
+                // all rate control modes (VBR/CBR/ICQ/AVBR) when a vpp_qsv filter is active in the
+                // pipeline for 10-bit → 8-bit conversion, causing FFmpeg to exit with code 218.
+                // Fall back to CQP (-q:v) which is always supported. See issue #16929.
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                    && GetVideoColorBitDepth(state) >= 10)
+                {
+                    return " -q:v 23";
+                }
+
                 // Enable MacroBlock level bitrate control for better subjective visual quality
                 var mbbrcOpt = string.Empty;
                 if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
