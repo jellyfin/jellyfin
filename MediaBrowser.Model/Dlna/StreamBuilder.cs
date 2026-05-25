@@ -859,6 +859,10 @@ namespace MediaBrowser.Model.Dlna
             var videoCodec = videoStream?.Codec;
             var audioCodec = audioStream?.Codec;
 
+            // When the video stream must be re-encoded (not just remuxed), skip the copy-preference
+            // ranking so that client profile ordering determines the target codec.
+            var videoMustReencode = (playlistItem.TranscodeReasons & (VideoReasons | TranscodeReason.ContainerBitrateExceedsLimit)) != 0;
+
             var analyzedProfiles = transcodingProfiles
                 .Select(transcodingProfile =>
                 {
@@ -868,6 +872,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (videoStream is not null
                         && options.AllowVideoStreamCopy
+                        && !videoMustReencode
                         && ContainerHelper.ContainsContainer(transcodingProfile.VideoCodec, videoCodec))
                     {
                         var failures = GetCompatibilityVideoCodec(options, mediaSource, container, videoStream);
