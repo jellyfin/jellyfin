@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.LiveTv.Configuration;
+using Jellyfin.LiveTv.Listings;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -496,6 +497,13 @@ public class GuideManager : IGuideManager
             };
 
             item.TrySetProviderId(EtagKey, info.Etag);
+        }
+        else if (XmlTvProgramEtag.MatchesStored(info.Etag, item.GetProviderId(EtagKey)))
+        {
+            // XMLTV ETags are generated from the final ProgramInfo fields Jellyfin consumes,
+            // so an exact match means nothing relevant changed. Other providers stay on the
+            // field-by-field update path.
+            return (item, false, false);
         }
 
         if (!string.Equals(info.ShowId, item.ShowId, StringComparison.OrdinalIgnoreCase))
