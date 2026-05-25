@@ -128,6 +128,18 @@ namespace Jellyfin.LiveTv.Listings
         private static void AppendValue(StringBuilder builder, string name, DateTime? value)
             => AppendValue(builder, name, value.HasValue ? FormatDateTime(value.Value) : null);
 
+        private static void AppendValue(StringBuilder builder, string name, bool value)
+            => AppendValue(builder, name, value ? "true" : "false");
+
+        private static void AppendValue(StringBuilder builder, string name, bool? value)
+            => AppendValue(builder, name, value switch { true => "true", false => "false", null => null });
+
+        private static void AppendValue(StringBuilder builder, string name, int? value)
+            => AppendValue(builder, name, value?.ToString(CultureInfo.InvariantCulture));
+
+        private static void AppendValue(StringBuilder builder, string name, float? value)
+            => AppendValue(builder, name, value?.ToString("R", CultureInfo.InvariantCulture));
+
         // Treat Unspecified as UTC so the etag does not vary with the server's local timezone.
         private static string FormatDateTime(DateTime value)
         {
@@ -140,18 +152,6 @@ namespace Jellyfin.LiveTv.Listings
 
             return utc.ToString("O", CultureInfo.InvariantCulture);
         }
-
-        private static void AppendValue(StringBuilder builder, string name, bool value)
-            => AppendValue(builder, name, value ? "true" : "false");
-
-        private static void AppendValue(StringBuilder builder, string name, bool? value)
-            => AppendValue(builder, name, value switch { true => "true", false => "false", null => null });
-
-        private static void AppendValue(StringBuilder builder, string name, int? value)
-            => AppendValue(builder, name, value?.ToString(CultureInfo.InvariantCulture));
-
-        private static void AppendValue(StringBuilder builder, string name, float? value)
-            => AppendValue(builder, name, value?.ToString("R", CultureInfo.InvariantCulture));
 
         private static void AppendList(StringBuilder builder, string name, IReadOnlyList<string> values)
         {
