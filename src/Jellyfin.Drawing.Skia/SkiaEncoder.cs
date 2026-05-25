@@ -621,11 +621,12 @@ public class SkiaEncoder : IImageEncoder
         // If all we're doing is resizing then we can stop now
         if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
         {
-            var outputDirectory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
-            Directory.CreateDirectory(outputDirectory);
-            using var outputStream = new SKFileWStream(outputPath);
-            using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
-            resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
+            EncodeAtomically(outputPath, tempPath =>
+            {
+                using var outputStream = new SKFileWStream(tempPath);
+                using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
+                resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
+            });
             return outputPath;
         }
 
@@ -662,15 +663,51 @@ public class SkiaEncoder : IImageEncoder
             DrawIndicator(canvas, width, height, options);
         }
 
-        var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
-        Directory.CreateDirectory(directory);
-        using (var outputStream = new SKFileWStream(outputPath))
+        EncodeAtomically(outputPath, tempPath =>
         {
+            using var outputStream = new SKFileWStream(tempPath);
             using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
             pixmap.Encode(outputStream, skiaOutputFormat, quality);
-        }
+        });
 
         return outputPath;
+    }
+
+    /// <summary>
+    /// Encodes to a sibling temp file and atomically renames it to <paramref name="outputPath"/>.
+    /// Without this, concurrent requests for the same cache file path can observe the file
+    /// while it's still being written: <c>SKFileWStream</c> creates the file at 0 bytes
+    /// before encoding pixels, and another request that reads the file's length at that
+    /// instant will pin Content-Length to 0, then fail when SendFile sees the now-complete
+    /// file.
+    /// </summary>
+    private static void EncodeAtomically(string outputPath, Action<string> encode)
+    {
+        var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+        Directory.CreateDirectory(directory);
+
+        // Suffix with a GUID so two concurrent encoders targeting the same output don't
+        // clobber each other's temp file mid-write; last rename wins and both temps are
+        // fully-formed.
+        var tempPath = outputPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            encode(tempPath);
+            File.Move(tempPath, outputPath, overwrite: true);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(tempPath);
+            }
+            catch (IOException)
+            {
+                // Best-effort cleanup; propagate the original failure.
+            }
+
+            throw;
+        }
     }
 
     /// <inheritdoc/>
