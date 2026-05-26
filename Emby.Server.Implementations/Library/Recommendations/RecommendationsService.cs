@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -108,8 +109,105 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
             return Array.Empty<RecommendationDto>();
         }
 
-        // Task 7 fills this in.
-        return Array.Empty<RecommendationDto>();
+        var user = _userManager.GetUserById(request.UserId);
+        if (user is null)
+        {
+            return Array.Empty<RecommendationDto>();
+        }
+
+        var parentIdGuid = request.ParentId ?? Guid.Empty;
+        var dtoOptions = request.DtoOptions;
+
+        var recentlyPlayed = _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { request.Kind },
+            IsPlayed = true,
+            OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
+            Limit = 6,
+            ParentId = parentIdGuid,
+            Recursive = true,
+            DtoOptions = dtoOptions
+        });
+
+        var favoriteSeeds = _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { request.Kind },
+            IsFavoriteOrLiked = true,
+            OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
+            Limit = 10,
+            ExcludeItemIds = recentlyPlayed.Select(i => i.Id).ToArray(),
+            ParentId = parentIdGuid,
+            Recursive = true,
+            DtoOptions = dtoOptions
+        });
+
+        var emittedIds = new HashSet<Guid>(recentlyPlayed.Select(i => i.Id));
+        foreach (var f in favoriteSeeds)
+        {
+            emittedIds.Add(f.Id);
+        }
+
+        var categories = new List<RecommendationDto>();
+
+        foreach (var seed in recentlyPlayed)
+        {
+            if (categories.Count >= request.CategoryLimit)
+            {
+                break;
+            }
+
+            var cat = BuildSeedCategory(user, seed, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToRecentlyPlayed, parentIdGuid);
+            if (cat is not null)
+            {
+                categories.Add(cat);
+            }
+        }
+
+        foreach (var seed in favoriteSeeds)
+        {
+            if (categories.Count >= request.CategoryLimit)
+            {
+                break;
+            }
+
+            var cat = BuildSeedCategory(user, seed, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToLikedItem, parentIdGuid);
+            if (cat is not null)
+            {
+                categories.Add(cat);
+            }
+        }
+
+        var directorNames = ExtractPeopleNames(recentlyPlayed, PersonKind.Director);
+        foreach (var name in directorNames)
+        {
+            if (categories.Count >= request.CategoryLimit)
+            {
+                break;
+            }
+
+            var cat = BuildPersonCategory(user, name, PersonKind.Director, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.HasDirectorFromRecentlyPlayed, parentIdGuid);
+            if (cat is not null)
+            {
+                categories.Add(cat);
+            }
+        }
+
+        var actorNames = ExtractPeopleNames(recentlyPlayed, PersonKind.Actor);
+        foreach (var name in actorNames)
+        {
+            if (categories.Count >= request.CategoryLimit)
+            {
+                break;
+            }
+
+            var cat = BuildPersonCategory(user, name, PersonKind.Actor, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.HasActorFromRecentlyPlayed, parentIdGuid);
+            if (cat is not null)
+            {
+                categories.Add(cat);
+            }
+        }
+
+        return categories.OrderBy(c => c.RecommendationType).ToList();
     }
 
     /// <inheritdoc/>
@@ -236,6 +334,159 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
                 _cache.TryRemove(key, out _);
             }
         }
+    }
+
+    private RecommendationDto? BuildSeedCategory(
+        User user,
+        BaseItem seed,
+        TasteProfile profile,
+        int itemLimit,
+        HashSet<Guid> emittedIds,
+        DtoOptions dtoOptions,
+        RecommendationType type,
+        Guid parentIdGuid)
+    {
+        var pool = _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { profile.Kind },
+            Genres = seed.Genres,
+            Tags = seed.Tags,
+            ExcludeItemIds = emittedIds.ToArray(),
+            ParentId = parentIdGuid,
+            Recursive = true,
+            EnableGroupByMetadataKey = true,
+            Limit = itemLimit * 4,
+            DtoOptions = dtoOptions
+        });
+
+        if (pool.Count == 0)
+        {
+            return null;
+        }
+
+        var peopleByCandidate = FetchPeopleByItem(pool);
+
+        var ranked = pool
+            .Select(c => (Item: c, Score: TasteProfileScorer.Score(
+                profile,
+                c,
+                seed,
+                peopleByCandidate.GetValueOrDefault(c.Id, Array.Empty<PersonInfo>()))))
+            .OrderByDescending(t => t.Score)
+            .Take(itemLimit)
+            .Select(t => t.Item)
+            .ToList();
+
+        if (ranked.Count < Math.Max(1, itemLimit / 2))
+        {
+            return null;
+        }
+
+        foreach (var r in ranked)
+        {
+            emittedIds.Add(r.Id);
+        }
+
+        return new RecommendationDto
+        {
+            BaselineItemName = seed.Name,
+            CategoryId = seed.Id,
+            RecommendationType = type,
+            Items = _dtoService.GetBaseItemDtos(ranked, dtoOptions, user)
+        };
+    }
+
+    private RecommendationDto? BuildPersonCategory(
+        User user,
+        string name,
+        PersonKind personKind,
+        TasteProfile profile,
+        int itemLimit,
+        HashSet<Guid> emittedIds,
+        DtoOptions dtoOptions,
+        RecommendationType type,
+        Guid parentIdGuid)
+    {
+        var pool = _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { profile.Kind },
+            Person = name,
+            PersonTypes = personKind == PersonKind.Director ? new[] { PersonType.Director } : Array.Empty<string>(),
+            ExcludeItemIds = emittedIds.ToArray(),
+            ParentId = parentIdGuid,
+            Recursive = true,
+            EnableGroupByMetadataKey = true,
+            Limit = itemLimit * 4,
+            DtoOptions = dtoOptions
+        });
+
+        if (pool.Count == 0)
+        {
+            return null;
+        }
+
+        var peopleByCandidate = FetchPeopleByItem(pool);
+
+        var ranked = pool
+            .Select(c => (Item: c, Score: TasteProfileScorer.Score(
+                profile,
+                c,
+                seedItem: null,
+                peopleByCandidate.GetValueOrDefault(c.Id, Array.Empty<PersonInfo>()))))
+            .OrderByDescending(t => t.Score)
+            .Take(itemLimit)
+            .Select(t => t.Item)
+            .ToList();
+
+        if (ranked.Count < Math.Max(1, itemLimit / 2))
+        {
+            return null;
+        }
+
+        foreach (var r in ranked)
+        {
+            emittedIds.Add(r.Id);
+        }
+
+        return new RecommendationDto
+        {
+            BaselineItemName = name,
+            CategoryId = name.GetMD5(),
+            RecommendationType = type,
+            Items = _dtoService.GetBaseItemDtos(ranked, dtoOptions, user)
+        };
+    }
+
+    private Dictionary<Guid, IReadOnlyList<PersonInfo>> FetchPeopleByItem(IReadOnlyList<BaseItem> items)
+    {
+        if (items.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<PersonInfo>>();
+        }
+
+        var ids = items.Select(i => i.Id).ToArray();
+        var result = _peopleRepository.GetPeople(new InternalPeopleQuery { ItemIds = ids });
+
+        return result.Items
+            .GroupBy(p => p.ItemId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<PersonInfo>)g.ToList());
+    }
+
+    private IReadOnlyList<string> ExtractPeopleNames(IReadOnlyList<BaseItem> seedItems, PersonKind kind)
+    {
+        if (seedItems.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var byItem = FetchPeopleByItem(seedItems);
+
+        return byItem.Values
+            .SelectMany(list => list.Where(p => p.Type == kind))
+            .Select(p => p.Name)
+            .Where(n => !string.IsNullOrEmpty(n))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     private readonly record struct ProfileKey(Guid UserId, BaseItemKind Kind, Guid ParentId);

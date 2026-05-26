@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Library.Recommendations;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -158,5 +159,89 @@ public sealed class RecommendationsServiceTests
         Assert.False(RecommendationsService.TryGetRecommendableKind(new[] { BaseItemKind.Movie, BaseItemKind.Series }, Array.Empty<MediaType>(), out _));
         Assert.False(RecommendationsService.TryGetRecommendableKind(new[] { BaseItemKind.Photo }, Array.Empty<MediaType>(), out _));
         Assert.False(RecommendationsService.TryGetRecommendableKind(Array.Empty<BaseItemKind>(), Array.Empty<MediaType>(), out _));
+    }
+
+    /// <summary>
+    /// When the user has recently played seeds, GetRecommendationsAsync should emit
+    /// a SimilarToRecentlyPlayed category with matching candidates.
+    /// </summary>
+    [Fact]
+    public async Task GetRecommendationsAsync_EmitsCategoryForRecentlyPlayedSeed()
+    {
+        var (svc, lib, userData, people, dto) = MakeService();
+        var user = new User("u", "default", "default");
+        var userId = user.Id;
+        var seedMovie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Name = "Inception",
+            Genres = new[] { "Sci-Fi" }
+        };
+        var candidate1 = new Movie { Id = Guid.NewGuid(), Name = "Interstellar", Genres = new[] { "Sci-Fi" } };
+        var candidate2 = new Movie { Id = Guid.NewGuid(), Name = "Memento", Genres = new[] { "Thriller" } };
+        var candidate3 = new Movie { Id = Guid.NewGuid(), Name = "Tenet", Genres = new[] { "Sci-Fi" } };
+        var candidate4 = new Movie { Id = Guid.NewGuid(), Name = "Prestige", Genres = new[] { "Sci-Fi" } };
+
+        // History fetch (IsPlayed = true, Limit = 500) returns the seed
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { seedMovie });
+        // Favorites fetch (IsFavoriteOrLiked = true) returns empty
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true)))
+           .Returns(new List<BaseItem>());
+        // Seed selection (the recent-6 query) — same as history but Limit = 6
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 6)))
+           .Returns(new List<BaseItem> { seedMovie });
+        // Candidate pool query (has Genres = seed.Genres)
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q =>
+                q.Genres != null && q.Genres.Count > 0 && q.Genres.Contains("Sci-Fi") && q.IsPlayed != true)))
+           .Returns(new List<BaseItem> { candidate1, candidate2, candidate3, candidate4 });
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", IsFavorite = false, Likes = false, Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns<IReadOnlyList<BaseItem>, DtoOptions, User, BaseItem, bool>((items, _, _, _, _) => items.Select(i => new BaseItemDto { Id = i.Id, Name = i.Name }).ToList());
+
+        var req = new RecommendationRequest(userId, BaseItemKind.Movie, ParentId: null, CategoryLimit: 5, ItemLimit: 4, new DtoOptions());
+
+        var result = await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        Assert.NotEmpty(result);
+        var firstCategory = result.First();
+        Assert.Equal(MediaBrowser.Model.Dto.RecommendationType.SimilarToRecentlyPlayed, firstCategory.RecommendationType);
+        Assert.Equal("Inception", firstCategory.BaselineItemName);
+        Assert.Contains(firstCategory.Items, i => i.Name == "Interstellar");
+        Assert.DoesNotContain(firstCategory.Items, i => i.Name == "Inception");
+    }
+
+    /// <summary>
+    /// When candidate pool is too small (fewer than itemLimit/2), the category is skipped
+    /// and GetRecommendationsAsync returns an empty list.
+    /// </summary>
+    [Fact]
+    public async Task GetRecommendationsAsync_SkipsCategoryWhenTooFewResults()
+    {
+        var (svc, lib, userData, people, dto) = MakeService();
+        var userId = Guid.NewGuid();
+        var seedMovie = new Movie { Id = Guid.NewGuid(), Name = "Solo", Genres = new[] { "Obscure" } };
+        var weakCandidate = new Movie { Id = Guid.NewGuid(), Name = "OnlyMatch", Genres = new[] { "Obscure" } };
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true)))
+           .Returns(new List<BaseItem>());
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 6)))
+           .Returns(new List<BaseItem> { seedMovie });
+        // Only one candidate matches — itemLimit/2 = 4, so 1 < 4 → category skipped
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.Genres != null && q.Genres.Count > 0 && q.IsPlayed != true)))
+           .Returns(new List<BaseItem> { weakCandidate });
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns(new List<BaseItemDto>());
+
+        var req = new RecommendationRequest(userId, BaseItemKind.Movie, ParentId: null, CategoryLimit: 5, ItemLimit: 8, new DtoOptions());
+
+        var result = await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        Assert.Empty(result);
     }
 }
