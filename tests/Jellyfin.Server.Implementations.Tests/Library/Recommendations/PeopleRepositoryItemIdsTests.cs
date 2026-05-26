@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Library.Recommendations;
 
-public class PeopleRepositoryItemIdsTests : IDisposable
+public sealed class PeopleRepositoryItemIdsTests : IDisposable
 {
     // Keep the connection alive for the lifetime of the test so that the in-memory SQLite DB
     // persists between factory calls (each CreateDbContext() reuses the same connection).
