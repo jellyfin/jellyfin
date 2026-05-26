@@ -340,8 +340,6 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
-            bool hasPreferredMetadataLanguage = !string.IsNullOrWhiteSpace(preferredMetadataLanguage);
-            bool hasPreferredImageLanguages = preferredImageLanguages.Length > 0;
             string? originalLanguage = item.GetInheritedOriginalLanguage();
 
             try
@@ -358,37 +356,7 @@ namespace MediaBrowser.Providers.Manager
                     return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
                 }
 
-                {
-                    if (hasPreferredImageLanguages)
-                    {
-                        var validLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var opt in preferredImageLanguages)
-                        {
-                            switch (opt.OptionType)
-                            {
-                                case ImageLanguageType.LanguageCode when !string.IsNullOrEmpty(opt.Language):
-                                    validLanguages.Add(opt.Language);
-                                    break;
-                                case ImageLanguageType.OriginalLanguage when !string.IsNullOrEmpty(originalLanguage):
-                                    validLanguages.Add(originalLanguage);
-                                    break;
-                            }
-                        }
-
-                        // Filter out languages that do not match the preferred image languages.
-                        result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                                   validLanguages.Contains(i.Language));
-                    }
-                    else if (hasPreferredMetadataLanguage)
-                    {
-                        // Fallback to metadata language if no image languages configured
-                        //
-                        // TODO: should exception case of "en" (English) eventually be removed?
-                        result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                                   string.Equals(preferredMetadataLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
-                                                   string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
-                    }
-                }
+                result = FilterImagesByLanguage(result, preferredImageLanguages, originalLanguage, preferredMetadataLanguage);
 
                 return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
             }
@@ -401,6 +369,46 @@ namespace MediaBrowser.Providers.Manager
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return Enumerable.Empty<RemoteImageInfo>();
             }
+        }
+
+        private static IEnumerable<RemoteImageInfo> FilterImagesByLanguage(
+            IEnumerable<RemoteImageInfo> images,
+            ImageLanguageOption[] preferredImageLanguages,
+            string? originalLanguage,
+            string preferredMetadataLanguage)
+        {
+            if (preferredImageLanguages.Length > 0)
+            {
+                var validLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var opt in preferredImageLanguages)
+                {
+                    switch (opt.OptionType)
+                    {
+                        case ImageLanguageType.LanguageCode when !string.IsNullOrEmpty(opt.Language):
+                            validLanguages.Add(opt.Language);
+                            break;
+                        case ImageLanguageType.OriginalLanguage when !string.IsNullOrEmpty(originalLanguage):
+                            validLanguages.Add(originalLanguage);
+                            break;
+                    }
+                }
+
+                // Filter out languages that do not match the preferred image languages.
+                return images.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                           validLanguages.Contains(i.Language));
+            }
+
+            if (!string.IsNullOrWhiteSpace(preferredMetadataLanguage))
+            {
+                // Fallback to metadata language if no image languages configured
+                //
+                // TODO: should exception case of "en" (English) eventually be removed?
+                return images.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                           string.Equals(preferredMetadataLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
+                                           string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return images;
         }
 
         /// <inheritdoc/>
