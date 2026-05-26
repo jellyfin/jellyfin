@@ -123,37 +123,84 @@ namespace Jellyfin.Extensions
                 return false;
             }
 
-            var bufferA = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
-            var bufferB = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
-            try
+            // If b is MemoryStream but a is not, swap them to use fast path B
+            if (b is MemoryStream && a is not MemoryStream)
             {
-                while (true)
+                (a, b) = (b, a);
+            }
+
+            if (a is MemoryStream ms_a)
+            {
+                var bufferA = ms_a.GetBuffer();
+
+                // Fast path A: if both streams are MemoryStreams, compare directly against each other
+                if (b is MemoryStream ms_b)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    return bufferA.AsSpan(0, (int)ms_a.Length).SequenceEqual(ms_b.GetBuffer().AsSpan(0, (int)ms_b.Length));
+                }
 
-                    var bytesReadA = await a.ReadAsync(bufferA.AsMemory(), cancellationToken).ConfigureAwait(false);
-                    var bytesReadB = await b.ReadAsync(bufferB.AsMemory(), cancellationToken).ConfigureAwait(false);
-
-                    if (bytesReadA != bytesReadB)
+                // Fast path B: only first stream is a MemoryStream, compare against second stream chunk-by-chunk
+                var bufferB = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
+                try
+                {
+                    var memoryB = bufferB.AsMemory();
+                    int offset = 0;
+                    int bytesRead;
+                    while ((bytesRead = await b.ReadAsync(memoryB, cancellationToken).ConfigureAwait(false)) > 0)
                     {
-                        return false;
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (!bufferA.AsSpan(offset, bytesRead).SequenceEqual(bufferB.AsSpan(0, bytesRead)))
+                        {
+                            return false;
+                        }
+
+                        offset += bytesRead;
                     }
 
-                    if (bytesReadA == 0)
-                    {
-                        return true;
-                    }
-
-                    if (!bufferA.AsSpan(0, bytesReadA).SequenceEqual(bufferB.AsSpan(0, bytesReadB)))
-                    {
-                        return false;
-                    }
+                    return offset == ms_a.Length;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(bufferB);
                 }
             }
-            finally
+            else
             {
-                ArrayPool<byte>.Shared.Return(bufferA);
-                ArrayPool<byte>.Shared.Return(bufferB);
+                var bufferA = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
+                var bufferB = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
+                try
+                {
+                    var memoryA = bufferA.AsMemory();
+                    var memoryB = bufferB.AsMemory();
+                    while (true)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var bytesReadA = await a.ReadAsync(memoryA, cancellationToken).ConfigureAwait(false);
+                        var bytesReadB = await b.ReadAsync(memoryB, cancellationToken).ConfigureAwait(false);
+
+                        if (bytesReadA != bytesReadB)
+                        {
+                            return false;
+                        }
+
+                        if (bytesReadA == 0)
+                        {
+                            return true;
+                        }
+
+                        if (!bufferA.AsSpan(0, bytesReadA).SequenceEqual(bufferB.AsSpan(0, bytesReadB)))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(bufferA);
+                    ArrayPool<byte>.Shared.Return(bufferB);
+                }
             }
         }
     }
