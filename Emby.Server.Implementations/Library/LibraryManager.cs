@@ -1367,33 +1367,21 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
-            => ValidateTopLibraryFoldersInternal(cancellationToken, removeRoot, refreshExistingChildren: true);
-
-        /// <inheritdoc />
-        public Task ValidateTopLibraryFoldersStructure(CancellationToken cancellationToken, bool removeRoot = false)
-            => ValidateTopLibraryFoldersInternal(cancellationToken, removeRoot, refreshExistingChildren: false);
-
-        private async Task ValidateTopLibraryFoldersInternal(CancellationToken cancellationToken, bool removeRoot, bool refreshExistingChildren)
+        public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken, bool removeRoot = false)
         {
             ClearIgnoreRuleCache();
             var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem));
 
-            // Refresh the AggregateFolder root only on the full path (boot / scheduled scans).
-            // Adding, removing, or renaming a virtual folder doesn't change RootFolder's direct children (default/, playlists/, plugin folders), only UserRootFolder.Children does.
-            if (refreshExistingChildren)
-            {
-                RootFolder.Children = null;
-                await RootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            RootFolder.Children = null;
+            await RootFolder.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
-                // Start by just validating the children of the root, but go no further
-                await RootFolder.ValidateChildren(
-                    new Progress<double>(),
-                    refreshOptions,
-                    recursive: false,
-                    allowRemoveRoot: removeRoot,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
+            // Start by just validating the children of the root, but go no further
+            await RootFolder.ValidateChildren(
+                new Progress<double>(),
+                refreshOptions,
+                recursive: false,
+                allowRemoveRoot: removeRoot,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var rootFolder = GetUserRootFolder();
             rootFolder.Children = null;
@@ -3531,7 +3519,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        await ValidateTopLibraryFoldersStructure(CancellationToken.None).ConfigureAwait(false);
+                        await ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
 
                         if (shouldRefreshLibrary)
                         {
@@ -3739,7 +3727,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (refreshLibrary)
                 {
-                    await ValidateTopLibraryFoldersStructure(CancellationToken.None, true).ConfigureAwait(false);
+                    await ValidateTopLibraryFolders(CancellationToken.None, true).ConfigureAwait(false);
 
                     StartScanInBackground();
                 }
