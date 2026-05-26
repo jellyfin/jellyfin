@@ -48,15 +48,15 @@ Emby.Server.Implementations/Library/Recommendations/
 - `RecommendationsService` is the only type controllers see. It owns the cache, fans work out to builder/scorer, and produces DTOs.
 - `TasteProfileBuilder` is a pure transformation. No I/O, no DI on managers. Unit-testable with in-memory fixtures.
 - `TasteProfileScorer` is a pure function. Unit-testable in isolation.
-- `TasteProfile` is an immutable record. One instance per `(user, BaseItemKind)`.
+- `TasteProfile` is an immutable record. One instance per `(user, BaseItemKind, parentId)`.
 
 **Wiring:**
 
-- `RecommendationsService` registered as a singleton in `CoreAppHost.cs` alongside `ISimilarItemsManager`.
+- `RecommendationsService` registered as a singleton in `Emby.Server.Implementations/ApplicationHost.cs` (around line 551, immediately after the existing `ISimilarItemsManager` registration).
 - `MoviesController` and `SuggestionsController` get `IRecommendationsService` via constructor injection.
 - `RecommendationsService` constructor subscribes to `IUserDataManager.UserDataSaved` for cache invalidation.
 
-**Scope boundary:** No changes to `SimilarItemsManager`, `MovieSimilarItemsProvider`, `SeriesSimilarItemsProvider`, `InternalItemsQuery`, or database schema. Only the two named controllers and the new files above.
+**Scope boundary:** No changes to `SimilarItemsManager`, `MovieSimilarItemsProvider`, `SeriesSimilarItemsProvider`, `InternalItemsQuery`, or database schema. The only existing-code touches beyond the two named controllers are: (a) one DI line in `ApplicationHost.cs`, and (b) a small additive extension to `InternalPeopleQuery` and `PeopleRepository` to add an `ItemIds` (plural) filter — justified below in §6 because without it the profile builder and scorer would do N+1 person fetches.
 
 ## 5. Data model
 
@@ -114,23 +114,28 @@ All weights are `internal const float` in `TasteProfileBuilder` — one file to 
 
 `TasteProfileBuilder.Build(user, kind, parentId, libraryManager, peopleRepository)`:
 
-1. Query `ILibraryManager.GetItemList` with:
+1. Run two queries against `ILibraryManager.GetItemList` (since `InternalItemsQuery.IsPlayed` and `IsFavoriteOrLiked` are independent `bool?` filters that AND when both set, not OR):
+
    ```
+   // Query A: most recent 500 played items
    InternalItemsQuery {
-     User = user,
-     IncludeItemTypes = [kind],
-     IsPlayed = true OR IsFavoriteOrLiked = true,  // composed at API; if not possible, two queries unioned
+     User = user, IncludeItemTypes = [kind], IsPlayed = true,
      ParentId = parentId, Recursive = true,
-     OrderBy = [(LastPlayedDate, Descending)],
-     Limit = 500
+     OrderBy = [(LastPlayedDate, Descending)], Limit = 500
+   }
+   // Query B: favorites/liked items (cap 250)
+   InternalItemsQuery {
+     User = user, IncludeItemTypes = [kind], IsFavoriteOrLiked = true,
+     ParentId = parentId, Recursive = true, Limit = 250
    }
    ```
-   Cap of 500 prevents unbounded profile cost on huge histories. The most recent 500 watch-or-favorite items dominate taste anyway.
+
+   Union the two by `Id` (favorites that are also played appear once and pick up both signal weights in step 2). Cap of 500+250 prevents unbounded profile cost on huge histories — the most recent watches and standing favorites dominate taste anyway.
 2. For each item compute `signalWeight = (Played ? 1.0 : 0) + (IsFavorite ? 2.0 : 0) + (Likes ? 1.5 : 0)`. Skip if zero (defensive — shouldn't happen given the query filter).
 3. For each `genre` in `item.Genres`: `Genres[genre] += signalWeight * 3.0`.
 4. For each `tag` in `item.Tags`: `Tags[tag] += signalWeight * 1.5`.
 5. For each `studio` in `item.Studios`: `Studios[studio] += signalWeight * 0.5`.
-6. Fetch people via `IPeopleRepository.GetPeople(new InternalPeopleQuery { ItemId = item.Id })`, take the first 5 by `SortOrder`, and for each: `People[person.Id] += signalWeight * 1.0`.
+6. Batch-fetch people for the unioned item set via `IPeopleRepository.GetPeople(new InternalPeopleQuery { ItemIds = [...] })` — one DB call, not one per item. **This requires adding an `ItemIds` (plural, `IReadOnlyList<Guid>`) field to `InternalPeopleQuery`** (today it only has `ItemId` singular at `MediaBrowser.Controller/Entities/InternalPeopleQuery.cs:31`) and supporting it in `PeopleRepository.GetPeople`. Without this, both profile build (up to 500 items) and per-request scoring (up to ~150 candidates) would do N+1 fetches — unacceptable. The change is purely additive: existing callers using `ItemId` keep working unchanged. Group the returned people by `ItemId`, take the first 5 by `SortOrder` per item, and: `People[person.Id] += signalWeight * 1.0`.
 7. Compute `TotalSignalMass` as the sum of every value across all four dictionaries.
 8. Return an immutable `TasteProfile`.
 
@@ -150,7 +155,7 @@ All weights are `internal const float` in `TasteProfileBuilder` — one file to 
 6. Normalize: `score / (profile.TotalSignalMass + 1.0)`. The `+1.0` epsilon avoids divide-by-zero for cold-start; the result is unbounded above but relative ordering is what matters.
 7. Return the float.
 
-Scoring is pure and synchronous. People for the candidate are fetched lazily — for performance, the caller may pass a pre-populated `Dictionary<Guid, IReadOnlyList<PersonInfo>>` lookup to avoid per-candidate DB calls.
+Scoring is pure and synchronous. `RecommendationsService` is responsible for batch-fetching the people for the entire candidate pool **before** scoring (one `IPeopleRepository.GetPeople` call with `ItemIds = candidateIds`) and passing the resulting `Dictionary<Guid, IReadOnlyList<PersonInfo>>` to each `Score` call. Per-candidate DB lookups during scoring are explicitly forbidden — they would make scoring a hundred candidates an N+1 query disaster.
 
 ## 8. Response building
 
@@ -221,7 +226,7 @@ public async Task<ActionResult<IEnumerable<RecommendationDto>>> GetMovieRecommen
 }
 ```
 
-Route, params, response DTO unchanged. `_userManager`, `_libraryManager`, `_dtoService` are no longer needed by this controller and can be removed unless used by other actions on the controller (verify on implementation).
+Route, params, response DTO unchanged. The controller has no other actions (the entire current file is `GetMovieRecommendations` + its five private helpers), so `_userManager`, `_libraryManager`, `_dtoService`, `_serverConfigurationManager` and their constructor parameters are all removed. The new constructor takes only `IRecommendationsService`.
 
 ### `SuggestionsController` (`Jellyfin.Api/Controllers/SuggestionsController.cs`)
 
@@ -239,11 +244,11 @@ if (RecommendationsService.TryGetRecommendableKind(type, mediaType, out var kind
 // else fall through to existing random behavior
 ```
 
-`TryGetRecommendableKind` is a static helper on the service: returns true only when the caller asks for a single recommendable kind (Movie or Series). Mixed types, photos, audio, etc. take the random fallback.
+`TryGetRecommendableKind` is a static helper on the service: returns true only when the caller asks for a single recommendable kind (`Movie` or `Series`). Mixed types, photos, audio, etc. take the random fallback. The obsolete `GetSuggestionsLegacy` route at lines 114-125 delegates to `GetSuggestions` and needs no separate change.
 
-### DI registration (`CoreAppHost.cs`)
+### DI registration (`Emby.Server.Implementations/ApplicationHost.cs`)
 
-One line added near where `ISimilarItemsManager` is registered:
+One line added immediately after the existing `ISimilarItemsManager` registration at line 551:
 
 ```csharp
 serviceCollection.AddSingleton<IRecommendationsService, RecommendationsService>();
@@ -317,10 +322,12 @@ New tests in existing test projects. No new test projects added.
 - `Emby.Server.Implementations/Library/Recommendations/TasteProfileBuilder.cs`
 - `Emby.Server.Implementations/Library/Recommendations/TasteProfileScorer.cs`
 
-**Modified files (3):**
-- `Jellyfin.Api/Controllers/MoviesController.cs` — delete ~260 lines, add ~15
-- `Jellyfin.Api/Controllers/SuggestionsController.cs` — small conditional delegation
-- `Emby.Server.Implementations/CoreAppHost.cs` (or wherever `ISimilarItemsManager` is registered) — one DI line
+**Modified files (5):**
+- `Jellyfin.Api/Controllers/MoviesController.cs` — delete ~260 lines, add ~15; constructor reduces from 4 dependencies to 1.
+- `Jellyfin.Api/Controllers/SuggestionsController.cs` — add one conditional delegation in `GetSuggestions`; constructor gains `IRecommendationsService`. The legacy `GetSuggestionsLegacy` route is unchanged (it already delegates).
+- `Emby.Server.Implementations/ApplicationHost.cs` — one DI line after line 551.
+- `MediaBrowser.Controller/Entities/InternalPeopleQuery.cs` — add `public IReadOnlyList<Guid> ItemIds { get; set; }` (additive, existing `ItemId` field unchanged).
+- `Jellyfin.Server.Implementations/Item/PeopleRepository.cs` — honor the new `ItemIds` filter in `GetPeople`. When set, the EF query uses `Where(p => itemIds.Contains(p.ItemId))` instead of `Where(p => p.ItemId == singleId)`. If both `ItemId` and `ItemIds` are set, `ItemId` takes precedence (back-compat).
 
 **New test files (5):**
 - `tests/Jellyfin.Server.Implementations.Tests/Library/Recommendations/TasteProfileBuilderTests.cs`
@@ -333,7 +340,7 @@ New tests in existing test projects. No new test projects added.
 - `SimilarItemsManager`, `MovieSimilarItemsProvider`, `SeriesSimilarItemsProvider`, all TMDB / ListenBrainz providers.
 - `LibraryController` and `/Items/{itemId}/Similar` route.
 - `InternalItemsQuery`, `UserDataManager` (only event subscription added externally).
-- `BaseItem`, `UserData` and any database schema.
+- `BaseItem`, `UserData` and any database schema. The `InternalPeopleQuery` change is a query-builder DTO addition only, not a schema change.
 - All client / frontend code.
 
 ## 14. Success criteria
