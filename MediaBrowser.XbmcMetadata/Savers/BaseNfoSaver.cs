@@ -208,7 +208,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             Directory.CreateDirectory(directory);
 
             // Compare byte-for-byte before proceeding.
-            if (File.Exists(path) && await IsFileIdenticalAsync(stream, path, cancellationToken).ConfigureAwait(false))
+            if (File.Exists(path) && await stream.IsFileIdenticalAsync(path, cancellationToken).ConfigureAwait(false))
             {
                 return; // Don't save since .nfo is unchanged.
             }
@@ -236,68 +236,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (ConfigurationManager.Configuration.SaveMetadataHidden)
             {
                 SetHidden(path, true);
-            }
-        }
-
-        private static async Task<bool> IsFileIdenticalAsync(Stream stream, string path, CancellationToken cancellationToken)
-        {
-            ArgumentNullException.ThrowIfNull(stream);
-            ArgumentException.ThrowIfNullOrEmpty(path);
-
-            if (!stream.CanSeek)
-            {
-                return false;
-            }
-
-            const int BufferSize = 81920;
-            var originalPosition = stream.Position;
-
-            try
-            {
-                stream.Position = 0;
-
-                using var existingFileStream = new FileStream(
-                    path,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    bufferSize: BufferSize,
-                    FileOptions.Asynchronous);
-
-                if (existingFileStream.Length != stream.Length)
-                {
-                    return false;
-                }
-
-                var streamBuffer = new byte[BufferSize];
-                var existingBuffer = new byte[BufferSize];
-
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var streamBytesRead = await stream.ReadAsync(streamBuffer.AsMemory(), cancellationToken).ConfigureAwait(false);
-                    var existingBytesRead = await existingFileStream.ReadAsync(existingBuffer.AsMemory(), cancellationToken).ConfigureAwait(false);
-
-                    if (streamBytesRead != existingBytesRead)
-                    {
-                        return false;
-                    }
-
-                    if (streamBytesRead == 0)
-                    {
-                        return true;
-                    }
-
-                    if (!streamBuffer.AsSpan(0, streamBytesRead).SequenceEqual(existingBuffer.AsSpan(0, existingBytesRead)))
-                    {
-                        return false;
-                    }
-                }
-            }
-            finally
-            {
-                stream.Position = originalPosition;
             }
         }
 
