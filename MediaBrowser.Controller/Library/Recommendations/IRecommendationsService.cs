@@ -48,17 +48,4 @@ public interface IRecommendationsService
         bool enableTotalRecordCount,
         DtoOptions dtoOptions,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// True when the requested types resolve to exactly one recommendable kind (Movie or Series).
-    /// Used by SuggestionsController to decide between profile-ranked and random output.
-    /// </summary>
-    /// <param name="requestedTypes">The requested item kinds.</param>
-    /// <param name="requestedMediaTypes">The requested media types.</param>
-    /// <param name="kind">When successful, the resolved recommendable kind.</param>
-    /// <returns>True if the requested types resolve to exactly one recommendable kind; otherwise, false.</returns>
-    static abstract bool TryGetRecommendableKind(
-        IReadOnlyList<BaseItemKind> requestedTypes,
-        IReadOnlyList<MediaType> requestedMediaTypes,
-        out BaseItemKind kind);
 }
