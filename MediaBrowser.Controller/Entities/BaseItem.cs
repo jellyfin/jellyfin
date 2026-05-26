@@ -2119,8 +2119,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // Compare on canonical full paths so symlinks / trailing separators / relative
-            // segments don't sneak a plugin file past the check.
+            // Compare on canonical full paths so symlinks / trailing separators / relative segments don't sneak a plugin file past the check.
             var fullPath = System.IO.Path.GetFullPath(path);
             var fullPluginsPath = System.IO.Path.GetFullPath(pluginsPath);
             if (!fullPluginsPath.EndsWith(System.IO.Path.DirectorySeparatorChar))

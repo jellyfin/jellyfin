@@ -1156,23 +1156,6 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                // Diagnostic: if an empty Guid ever escapes QueueRefresh validation, capture
-                // a fingerprint of the options so we can identify which caller produced it.
-                if (refreshItem.ItemId.IsEmpty())
-                {
-                    var opts = refreshItem.RefreshOptions;
-                    _logger.LogError(
-                        "Empty Guid dequeued from refresh queue. MetadataRefreshMode={MetaMode} ImageRefreshMode={ImageMode} ReplaceAllImages={ReplaceAllImages} ReplaceAllMetadata={ReplaceAllMetadata} ForceSave={ForceSave} ReplaceImages=[{ReplaceImages}] SearchResultProvider={SearchProvider}",
-                        opts.MetadataRefreshMode,
-                        opts.ImageRefreshMode,
-                        opts.ReplaceAllImages,
-                        opts.ReplaceAllMetadata,
-                        opts.ForceSave,
-                        string.Join(",", opts.ReplaceImages ?? (IReadOnlyList<ImageType>)Array.Empty<ImageType>()),
-                        opts.SearchResult?.ProviderIds is null ? "(none)" : string.Join(",", opts.SearchResult.ProviderIds.Keys));
-                    continue;
-                }
-
                 try
                 {
                     var item = libraryManager.GetItemById(refreshItem.ItemId);

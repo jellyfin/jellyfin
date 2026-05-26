@@ -48,10 +48,6 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             var hasLogo = StudioArtworkManager.TryGetStudioImagePath(slug, "logo", out var logoPath);
 
             // Last-resort: bundle-wide placeholders at <artworkRoot>/placeholder-<kind>.<ext>.
-            // These let clients render *something* for studios that aren't represented in the
-            // bundle, instead of leaving the slot empty. The bundle ships placeholder-primary
-            // and placeholder-thumb; there's no dedicated logo placeholder, so the logo slot
-            // falls back to placeholder-primary as the closest visual analog.
             if (!hasPrimary && StudioArtworkManager.TryGetPlaceholderImagePath("primary", out var placeholderPrimaryPath))
             {
                 hasPrimary = true;
