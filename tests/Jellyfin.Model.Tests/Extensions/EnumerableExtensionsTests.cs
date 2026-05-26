@@ -140,12 +140,12 @@ public class EnumerableExtensionsTests
     }
 
     [Fact]
-    public void OrderByLanguageDescending_WithOriginalLanguage_CaseInsensitiveMatch()
+    public void OrderByLanguageDescending_WithOriginalLanguage_PrefersOriginal()
     {
         var images = new[]
         {
             new RemoteImageInfo { Language = "de", CommunityRating = 8.0, VoteCount = 100 },
-            new RemoteImageInfo { Language = "en", CommunityRating = 8.0, VoteCount = 100 },
+            new RemoteImageInfo { Language = "en", CommunityRating = 9.0, VoteCount = 200 },
         };
 
         var preferredOptions = new[]
@@ -153,11 +153,33 @@ public class EnumerableExtensionsTests
             new ImageLanguageOption { OptionType = ImageLanguageType.OriginalLanguage }
         };
 
-        // Supplying uppercase "DE" to verify case-insensitive string matching introduced in refactoring
-        var result = images.OrderByLanguageDescending("fr", originalLanguage: "DE", preferredImageLanguages: preferredOptions).ToList();
+        var result = images.OrderByLanguageDescending("fr", originalLanguage: "de", preferredImageLanguages: preferredOptions).ToList();
 
+        // "de" is the original language and should be preferred, even with a lower rating.
         Assert.Equal("de", result[0].Language);
         Assert.Equal("en", result[1].Language);
+    }
+
+    [Fact]
+    public void OrderByLanguageDescending_WithOriginalLanguage_IgnoresNull()
+    {
+        var images = new[]
+        {
+            new RemoteImageInfo { Language = "en", CommunityRating = 9.0, VoteCount = 200 },
+            new RemoteImageInfo { Language = null, CommunityRating = 8.0, VoteCount = 100 },
+        };
+
+        var preferredOptions = new[]
+        {
+            new ImageLanguageOption { OptionType = ImageLanguageType.OriginalLanguage },
+            new ImageLanguageOption { OptionType = ImageLanguageType.LanguageCode, Language = "en" }
+        };
+
+        // A null originalLanguage should not match the image with no language.
+        var result = images.OrderByLanguageDescending("fr", originalLanguage: null, preferredImageLanguages: preferredOptions).ToList();
+
+        Assert.Equal("en", result[0].Language);
+        Assert.Null(result[1].Language);
     }
 
     [Fact]
