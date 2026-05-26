@@ -211,7 +211,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
     }
 
     /// <inheritdoc/>
-    public Task<QueryResult<BaseItemDto>?> GetRankedItemsAsync(
+    public async Task<QueryResult<BaseItemDto>?> GetRankedItemsAsync(
         Guid userId,
         BaseItemKind kind,
         Guid? parentId,
@@ -221,8 +221,53 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         DtoOptions dtoOptions,
         CancellationToken cancellationToken)
     {
-        // Task 8 fills this in.
-        return Task.FromResult<QueryResult<BaseItemDto>?>(null);
+        var profile = await GetOrBuildProfileAsync(userId, kind, parentId).ConfigureAwait(false);
+        if (profile.TotalSignalMass <= 0)
+        {
+            return null;
+        }
+
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return null;
+        }
+
+        var pool = _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { kind },
+            IsPlayed = false,
+            ParentId = parentId ?? Guid.Empty,
+            Recursive = true,
+            IsVirtualItem = false,
+            EnableGroupByMetadataKey = true,
+            DtoOptions = dtoOptions,
+            Limit = (limit ?? 50) * 6
+        });
+
+        if (pool.Count == 0)
+        {
+            return new QueryResult<BaseItemDto>(startIndex, 0, Array.Empty<BaseItemDto>());
+        }
+
+        var peopleByCandidate = FetchPeopleByItem(pool);
+
+        var ranked = pool
+            .Select(c => (Item: c, Score: TasteProfileScorer.Score(
+                profile,
+                c,
+                seedItem: null,
+                peopleByCandidate.GetValueOrDefault(c.Id, Array.Empty<PersonInfo>()))))
+            .OrderByDescending(t => t.Score)
+            .Skip(startIndex ?? 0)
+            .Take(limit ?? 50)
+            .Select(t => t.Item)
+            .ToList();
+
+        return new QueryResult<BaseItemDto>(
+            startIndex,
+            enableTotalRecordCount ? pool.Count : 0,
+            _dtoService.GetBaseItemDtos(ranked, dtoOptions, user));
     }
 
     private async Task<TasteProfile> GetOrBuildProfileAsync(Guid userId, BaseItemKind kind, Guid? parentId)

@@ -244,4 +244,67 @@ public sealed class RecommendationsServiceTests
 
         Assert.Empty(result);
     }
+
+    /// <summary>
+    /// A cold-start user (no watch history) should cause GetRankedItemsAsync to return null
+    /// so the caller can fall back to its existing behavior.
+    /// </summary>
+    [Fact]
+    public async Task GetRankedItemsAsync_ColdStart_ReturnsNullSoCallerCanFallBack()
+    {
+        var (svc, _, _, _, _) = MakeService();
+        var result = await svc.GetRankedItemsAsync(
+            Guid.NewGuid(),
+            BaseItemKind.Movie,
+            parentId: null,
+            startIndex: null,
+            limit: 10,
+            enableTotalRecordCount: false,
+            new DtoOptions(),
+            CancellationToken.None);
+        Assert.Null(result);
+    }
+
+    /// <summary>
+    /// When a taste profile exists, GetRankedItemsAsync should return items ordered
+    /// highest-scoring first based on genre affinity.
+    /// </summary>
+    [Fact]
+    public async Task GetRankedItemsAsync_WithProfile_ReturnsHighestScoredFirst()
+    {
+        var (svc, lib, userData, people, dto) = MakeService();
+        var userId = Guid.NewGuid();
+        var watched = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Genres = new[] { "Sci-Fi" }
+        };
+        var candidateHigh = new Movie { Id = Guid.NewGuid(), Name = "HighMatch", Genres = new[] { "Sci-Fi" } };
+        var candidateLow = new Movie { Id = Guid.NewGuid(), Name = "LowMatch", Genres = new[] { "Comedy" } };
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { watched });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true && q.Limit == 250)))
+           .Returns(new List<BaseItem>());
+        // Candidate pool query for the ranked-list path: IsPlayed = false, no Genres filter
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IncludeItemTypes != null && q.IncludeItemTypes.Length == 1 && q.IncludeItemTypes[0] == BaseItemKind.Movie && q.IsPlayed == false && q.Genres.Count == 0)))
+           .Returns(new List<BaseItem> { candidateLow, candidateHigh });
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns<IReadOnlyList<BaseItem>, DtoOptions, User, BaseItem, bool>((items, _, _, _, _) => items.Select(i => new BaseItemDto { Id = i.Id, Name = i.Name }).ToList());
+
+        var result = await svc.GetRankedItemsAsync(
+            userId,
+            BaseItemKind.Movie,
+            parentId: null,
+            startIndex: null,
+            limit: 10,
+            enableTotalRecordCount: false,
+            new DtoOptions(),
+            CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("HighMatch", result!.Items[0].Name);
+    }
 }
