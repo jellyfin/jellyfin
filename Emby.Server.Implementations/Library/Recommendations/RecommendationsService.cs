@@ -1,0 +1,242 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library.Recommendations;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Logging;
+
+namespace Emby.Server.Implementations.Library.Recommendations;
+
+/// <summary>
+/// Orchestrates the taste-profile-based recommendation engine.
+/// </summary>
+public sealed class RecommendationsService : IRecommendationsService, IDisposable
+{
+    private const int HistoryWatchedCap = 500;
+    private const int HistoryFavoriteCap = 250;
+
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(6);
+
+    private readonly ILibraryManager _libraryManager;
+    private readonly IUserDataManager _userDataManager;
+    private readonly IPeopleRepository _peopleRepository;
+    private readonly IDtoService _dtoService;
+    private readonly IUserManager _userManager;
+    private readonly ILogger<RecommendationsService> _logger;
+
+    private readonly ConcurrentDictionary<ProfileKey, Lazy<Task<TasteProfile>>> _cache = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RecommendationsService"/> class.
+    /// </summary>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="userDataManager">The user data manager.</param>
+    /// <param name="peopleRepository">The people repository.</param>
+    /// <param name="dtoService">The DTO service.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="logger">The logger.</param>
+    public RecommendationsService(
+        ILibraryManager libraryManager,
+        IUserDataManager userDataManager,
+        IPeopleRepository peopleRepository,
+        IDtoService dtoService,
+        IUserManager userManager,
+        ILogger<RecommendationsService> logger)
+    {
+        _libraryManager = libraryManager;
+        _userDataManager = userDataManager;
+        _peopleRepository = peopleRepository;
+        _dtoService = dtoService;
+        _userManager = userManager;
+        _logger = logger;
+
+        _userDataManager.UserDataSaved += OnUserDataSaved;
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _userDataManager.UserDataSaved -= OnUserDataSaved;
+    }
+
+    /// <summary>
+    /// Returns true when the requested types resolve to exactly one recommendable kind (Movie or Series).
+    /// </summary>
+    /// <param name="requestedTypes">The requested item kinds.</param>
+    /// <param name="requestedMediaTypes">The requested media types.</param>
+    /// <param name="kind">When successful, the resolved recommendable kind.</param>
+    /// <returns>True if the requested types resolve to exactly one recommendable kind; otherwise, false.</returns>
+    public static bool TryGetRecommendableKind(
+        IReadOnlyList<BaseItemKind> requestedTypes,
+        IReadOnlyList<MediaType> requestedMediaTypes,
+        out BaseItemKind kind)
+    {
+        if (requestedTypes is { Count: 1 })
+        {
+            var only = requestedTypes[0];
+            if (only is BaseItemKind.Movie or BaseItemKind.Series)
+            {
+                kind = only;
+                return true;
+            }
+        }
+
+        kind = default;
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<RecommendationDto>> GetRecommendationsAsync(
+        RecommendationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var profile = await GetOrBuildProfileAsync(request.UserId, request.Kind, request.ParentId).ConfigureAwait(false);
+        if (profile.TotalSignalMass <= 0)
+        {
+            return Array.Empty<RecommendationDto>();
+        }
+
+        // Task 7 fills this in.
+        return Array.Empty<RecommendationDto>();
+    }
+
+    /// <inheritdoc/>
+    public Task<QueryResult<BaseItemDto>?> GetRankedItemsAsync(
+        Guid userId,
+        BaseItemKind kind,
+        Guid? parentId,
+        int? startIndex,
+        int? limit,
+        bool enableTotalRecordCount,
+        DtoOptions dtoOptions,
+        CancellationToken cancellationToken)
+    {
+        // Task 8 fills this in.
+        return Task.FromResult<QueryResult<BaseItemDto>?>(null);
+    }
+
+    private async Task<TasteProfile> GetOrBuildProfileAsync(Guid userId, BaseItemKind kind, Guid? parentId)
+    {
+        var key = new ProfileKey(userId, kind, parentId ?? Guid.Empty);
+        var lazy = _cache.GetOrAdd(key, k => new Lazy<Task<TasteProfile>>(
+            () => BuildProfileAsync(k),
+            LazyThreadSafetyMode.ExecutionAndPublication));
+        var profile = await lazy.Value.ConfigureAwait(false);
+
+        if (DateTime.UtcNow - profile.ComputedAt > CacheTtl)
+        {
+            _cache.TryRemove(new KeyValuePair<ProfileKey, Lazy<Task<TasteProfile>>>(key, lazy));
+        }
+
+        return profile;
+    }
+
+    private Task<TasteProfile> BuildProfileAsync(ProfileKey key)
+    {
+        try
+        {
+            var user = _userManager.GetUserById(key.UserId);
+            if (user is null)
+            {
+                return Task.FromResult(TasteProfile.Empty(key.Kind));
+            }
+
+            var parentIdGuid = key.ParentId.Equals(Guid.Empty) ? (Guid?)null : key.ParentId;
+
+            var watched = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { key.Kind },
+                IsPlayed = true,
+                ParentId = parentIdGuid ?? Guid.Empty,
+                Recursive = true,
+                OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
+                Limit = HistoryWatchedCap
+            });
+
+            var favorites = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { key.Kind },
+                IsFavoriteOrLiked = true,
+                ParentId = parentIdGuid ?? Guid.Empty,
+                Recursive = true,
+                Limit = HistoryFavoriteCap
+            });
+
+            var union = watched.Concat(favorites).GroupBy(i => i.Id).Select(g => g.First()).ToList();
+
+            if (union.Count == 0)
+            {
+                return Task.FromResult(TasteProfile.Empty(key.Kind));
+            }
+
+            var peopleQuery = new InternalPeopleQuery
+            {
+                ItemIds = union.Select(i => i.Id).ToArray()
+            };
+            var peopleResult = _peopleRepository.GetPeople(peopleQuery);
+            var peopleByItem = peopleResult.Items
+                .GroupBy(p => p.ItemId)
+                .ToDictionary(g => g.Key, g => (IReadOnlyList<PersonInfo>)g.ToList());
+
+            var watchedSet = new HashSet<Guid>(watched.Select(i => i.Id));
+            var favoriteSet = new HashSet<Guid>(favorites.Select(i => i.Id));
+
+            var profile = TasteProfileBuilder.Build(
+                key.Kind,
+                union,
+                isPlayed: i => watchedSet.Contains(i.Id),
+                isFavorite: i => favoriteSet.Contains(i.Id) && _userDataManager.GetUserData(user, i)?.IsFavorite == true,
+                isLiked: i => favoriteSet.Contains(i.Id) && (_userDataManager.GetUserData(user, i)?.Likes ?? false),
+                peopleByItem: peopleByItem);
+
+            return Task.FromResult(profile);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to build taste profile for user {UserId} kind {Kind}", key.UserId, key.Kind);
+
+            return Task.FromResult(TasteProfile.Empty(key.Kind));
+        }
+    }
+
+    private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
+    {
+        if (e.SaveReason is not (
+            UserDataSaveReason.TogglePlayed
+            or UserDataSaveReason.PlaybackFinished
+            or UserDataSaveReason.UpdateUserRating
+            or UserDataSaveReason.UpdateUserData
+            or UserDataSaveReason.Import))
+        {
+            return;
+        }
+
+        if (e.Item is null)
+        {
+            return;
+        }
+
+        var kind = e.Item.GetBaseItemKind();
+        foreach (var key in _cache.Keys)
+        {
+            if (key.UserId.Equals(e.UserId) && key.Kind == kind)
+            {
+                _cache.TryRemove(key, out _);
+            }
+        }
+    }
+
+    private readonly record struct ProfileKey(Guid UserId, BaseItemKind Kind, Guid ParentId);
+}
