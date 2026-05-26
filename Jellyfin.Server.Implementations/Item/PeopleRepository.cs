@@ -34,30 +34,69 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = TranslateQuery(context.Peoples.AsNoTracking(), context, filter);
 
-        // Include PeopleBaseItemMap
+        // Branch 1: singular ItemId (existing behavior unchanged)
         if (!filter.ItemId.IsEmpty())
         {
             dbQuery = dbQuery.Include(p => p.BaseItems!.Where(m => m.ItemId == filter.ItemId))
                 .OrderBy(e => e.BaseItems!.First(e => e.ItemId == filter.ItemId).ListOrder)
                 .ThenBy(e => e.PersonType)
                 .ThenBy(e => e.Name);
-        }
-        else
-        {
-            // The Peoples table has one row per (Name, PersonType), so the same person can
-            // appear multiple times (e.g. as Actor and GuestStar). Collapse to one row per
-            // name so /Persons doesn't return the same BaseItem id repeatedly. Lowercase the
-            // grouping key so case-only duplicates collapse together.
-            var representativeIds = dbQuery
-                .GroupBy(e => e.Name.ToLower())
-                .Select(g => g.Min(e => e.Id));
-            dbQuery = context.Peoples.AsNoTracking()
-                .Where(p => representativeIds.Contains(p.Id))
-                .OrderBy(e => e.Name);
+
+            var singleCount = dbQuery.Count();
+            if (filter.StartIndex is > 0)
+            {
+                dbQuery = dbQuery.Skip(filter.StartIndex.Value);
+            }
+
+            if (filter.Limit > 0)
+            {
+                dbQuery = dbQuery.Take(filter.Limit);
+            }
+
+            return new QueryResult<PersonInfo>
+            {
+                StartIndex = filter.StartIndex ?? 0,
+                TotalRecordCount = singleCount,
+                Items = dbQuery.AsEnumerable().Select(Map).ToArray(),
+            };
         }
 
+        // Branch 2: plural ItemIds (new — one PersonInfo per (person, matching item) mapping)
+        if (filter.ItemIds is { Count: > 0 })
+        {
+            var itemIds = filter.ItemIds;
+            dbQuery = dbQuery
+                .Where(p => p.BaseItems!.Any(w => itemIds.Contains(w.ItemId)))
+                .Include(p => p.BaseItems!.Where(m => itemIds.Contains(m.ItemId)));
+
+            var rows = dbQuery.AsEnumerable()
+                .SelectMany(p => (p.BaseItems ?? Array.Empty<PeopleBaseItemMap>())
+                    .Where(m => itemIds.Contains(m.ItemId))
+                    .Select(m => MapPerMapping(p, m)))
+                .ToArray();
+
+            return new QueryResult<PersonInfo>
+            {
+                StartIndex = 0,
+                TotalRecordCount = rows.Length,
+                Items = rows,
+            };
+        }
+
+        // Branch 3: no item filter (existing behavior — collapse to one row per name)
+        // The Peoples table has one row per (Name, PersonType), so the same person can
+        // appear multiple times (e.g. as Actor and GuestStar). Collapse to one row per
+        // name so /Persons doesn't return the same BaseItem id repeatedly. Lowercase the
+        // grouping key so case-only duplicates collapse together.
+        var representativeIds = dbQuery
+            .GroupBy(e => e.Name.ToLower())
+            .Select(g => g.Min(e => e.Id));
+        dbQuery = context.Peoples.AsNoTracking()
+            .Where(p => representativeIds.Contains(p.Id))
+            .OrderBy(e => e.Name);
+
         var count = dbQuery.Count();
-        if (filter.StartIndex.HasValue && filter.StartIndex > 0)
+        if (filter.StartIndex is > 0)
         {
             dbQuery = dbQuery.Skip(filter.StartIndex.Value);
         }
@@ -163,6 +202,25 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    private static PersonInfo MapPerMapping(People people, PeopleBaseItemMap mapping)
+    {
+        var info = new PersonInfo
+        {
+            Id = people.Id,
+            Name = people.Name,
+            Role = mapping.Role,
+            SortOrder = mapping.SortOrder,
+            ItemId = mapping.ItemId,
+        };
+
+        if (Enum.TryParse<PersonKind>(people.PersonType, out var kind))
+        {
+            info.Type = kind;
+        }
+
+        return info;
     }
 
     private PersonInfo Map(People people)
