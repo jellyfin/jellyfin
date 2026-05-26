@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Jellyfin.Api.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -10,6 +11,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library.Recommendations;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -29,6 +31,7 @@ public class SuggestionsController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly IRecommendationsService _recommendationsService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SuggestionsController"/> class.
@@ -36,14 +39,17 @@ public class SuggestionsController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="recommendationsService">Instance of the <see cref="IRecommendationsService"/> interface.</param>
     public SuggestionsController(
         IDtoService dtoService,
         IUserManager userManager,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IRecommendationsService recommendationsService)
     {
         _dtoService = dtoService;
         _userManager = userManager;
         _libraryManager = libraryManager;
+        _recommendationsService = recommendationsService;
     }
 
     /// <summary>
@@ -59,7 +65,7 @@ public class SuggestionsController : BaseJellyfinApiController
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the suggestions.</returns>
     [HttpGet("Items/Suggestions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetSuggestions(
         [FromQuery] Guid? userId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] type,
@@ -67,6 +73,29 @@ public class SuggestionsController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery] bool enableTotalRecordCount = false)
     {
+        var dtoOptions = new DtoOptions();
+
+        // Try profile-ranked path when userId is present and types resolve to a single recommendable kind.
+        if (!userId.IsNullOrEmpty()
+            && RecommendableKindResolver.TryGetRecommendableKind(
+                type ?? Array.Empty<BaseItemKind>(),
+                mediaType ?? Array.Empty<MediaType>(),
+                out var kind))
+        {
+            var resolvedUserId = RequestHelpers.GetUserId(User, userId);
+            if (!resolvedUserId.IsEmpty())
+            {
+                var ranked = await _recommendationsService
+                    .GetRankedItemsAsync(resolvedUserId, kind, parentId: null, startIndex, limit, enableTotalRecordCount, dtoOptions, CancellationToken.None)
+                    .ConfigureAwait(false);
+                if (ranked is not null)
+                {
+                    return ranked;
+                }
+            }
+        }
+
+        // Fallback: existing random behavior.
         User? user;
         if (userId.IsNullOrEmpty())
         {
@@ -78,12 +107,11 @@ public class SuggestionsController : BaseJellyfinApiController
             user = _userManager.GetUserById(requestUserId);
         }
 
-        var dtoOptions = new DtoOptions();
         var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
             OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
-            MediaTypes = mediaType,
-            IncludeItemTypes = type,
+            MediaTypes = mediaType ?? Array.Empty<MediaType>(),
+            IncludeItemTypes = type ?? Array.Empty<BaseItemKind>(),
             IsVirtualItem = false,
             StartIndex = startIndex,
             Limit = limit,
@@ -92,16 +120,14 @@ public class SuggestionsController : BaseJellyfinApiController
             Recursive = true
         });
 
-        var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
-
         return new QueryResult<BaseItemDto>(
             startIndex,
             result.TotalRecordCount,
-            dtoList);
+            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
     }
 
     /// <summary>
-    /// Gets suggestions.
+    /// Gets suggestions (legacy route).
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="mediaType">The media types.</param>
@@ -115,7 +141,7 @@ public class SuggestionsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    public ActionResult<QueryResult<BaseItemDto>> GetSuggestionsLegacy(
+    public Task<ActionResult<QueryResult<BaseItemDto>>> GetSuggestionsLegacy(
         [FromRoute, Required] Guid userId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] MediaType[] mediaType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] BaseItemKind[] type,

@@ -83,20 +83,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         IReadOnlyList<BaseItemKind> requestedTypes,
         IReadOnlyList<MediaType> requestedMediaTypes,
         out BaseItemKind kind)
-    {
-        if (requestedTypes is { Count: 1 })
-        {
-            var only = requestedTypes[0];
-            if (only is BaseItemKind.Movie or BaseItemKind.Series)
-            {
-                kind = only;
-                return true;
-            }
-        }
-
-        kind = default;
-        return false;
-    }
+        => RecommendableKindResolver.TryGetRecommendableKind(requestedTypes, requestedMediaTypes, out kind);
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<RecommendationDto>> GetRecommendationsAsync(
