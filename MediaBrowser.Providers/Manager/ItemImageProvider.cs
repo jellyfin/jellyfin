@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.Manager
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
-            List<string> preferredImageLanguages,
+            List<ImageLanguageOption> preferredImageLanguages,
             int backdropLimit,
             List<ImageType> downloadedImages,
             RefreshResult result,

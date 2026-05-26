@@ -28,6 +28,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -1605,10 +1606,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the preferred image languages as an array (e.g., ["en", "de", "fr", "nolang"]).
+        /// Gets the preferred image languages.
         /// </summary>
         /// <returns>Array of preferred image languages.</returns>
-        public string[] GetPreferredImageLanguages()
+        public ImageLanguageOption[] GetPreferredImageLanguages()
         {
             var libraryOptions = LibraryManager.GetLibraryOptions(this);
             return libraryOptions.PreferredImageLanguages;

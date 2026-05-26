@@ -1,4 +1,5 @@
 using System.Linq;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 using Xunit;
@@ -70,7 +71,7 @@ public class EnumerableExtensionsTests
 
         var result = images.OrderByLanguageDescending(null!).ToList();
 
-        // With null requested language, English becomes the preferred language (score 4)
+        // With null requested language, English becomes the preferred language (score 2)
         Assert.Equal("en", result[0].Language);
         Assert.Equal("fr", result[1].Language);
     }
@@ -78,8 +79,8 @@ public class EnumerableExtensionsTests
     [Fact]
     public void OrderByLanguageDescending_EnglishRequested_NoDoubleBoost()
     {
-        // When requested language IS English, "en" gets score 4 (requested match),
-        // no-language gets score 2, others get score 0
+        // When requested language IS English, "en" gets score 2 (requested match),
+        // no-language gets score 1, others get score 0
         var images = new[]
         {
             new RemoteImageInfo { Language = null, CommunityRating = 9.0, VoteCount = 500 },
@@ -112,5 +113,71 @@ public class EnumerableExtensionsTests
         Assert.Equal("en", result[1].Language);
         Assert.Null(result[2].Language);
         Assert.Equal("fr", result[3].Language);
+    }
+
+    [Fact]
+    public void OrderByLanguageDescending_WithPreferredImageLanguages_RespectsCustomOrder()
+    {
+        var images = new[]
+        {
+            new RemoteImageInfo { Language = "fr", CommunityRating = 8.0, VoteCount = 100 },
+            new RemoteImageInfo { Language = "de", CommunityRating = 8.0, VoteCount = 100 },
+            new RemoteImageInfo { Language = "es", CommunityRating = 8.0, VoteCount = 100 },
+        };
+
+        var preferredOptions = new[]
+        {
+            new ImageLanguageOption { OptionType = ImageLanguageType.LanguageCode, Language = "es" },
+            new ImageLanguageOption { OptionType = ImageLanguageType.LanguageCode, Language = "de" }
+        };
+
+        var result = images.OrderByLanguageDescending("en", preferredImageLanguages: preferredOptions).ToList();
+
+        // Should completely ignore the "en" requested fallback and prioritize "es" then "de"
+        Assert.Equal("es", result[0].Language);
+        Assert.Equal("de", result[1].Language);
+        Assert.Equal("fr", result[2].Language);
+    }
+
+    [Fact]
+    public void OrderByLanguageDescending_WithOriginalLanguage_CaseInsensitiveMatch()
+    {
+        var images = new[]
+        {
+            new RemoteImageInfo { Language = "de", CommunityRating = 8.0, VoteCount = 100 },
+            new RemoteImageInfo { Language = "en", CommunityRating = 8.0, VoteCount = 100 },
+        };
+
+        var preferredOptions = new[]
+        {
+            new ImageLanguageOption { OptionType = ImageLanguageType.OriginalLanguage }
+        };
+
+        // Supplying uppercase "DE" to verify case-insensitive string matching introduced in refactoring
+        var result = images.OrderByLanguageDescending("fr", originalLanguage: "DE", preferredImageLanguages: preferredOptions).ToList();
+
+        Assert.Equal("de", result[0].Language);
+        Assert.Equal("en", result[1].Language);
+    }
+
+    [Fact]
+    public void OrderByLanguageDescending_WithNoLanguageOption_PrioritizesImagesWithoutLanguage()
+    {
+        var images = new[]
+        {
+            new RemoteImageInfo { Language = "en", CommunityRating = 8.0, VoteCount = 100 },
+            new RemoteImageInfo { Language = null, CommunityRating = 8.0, VoteCount = 100 },
+        };
+
+        var preferredOptions = new[]
+        {
+            new ImageLanguageOption { OptionType = ImageLanguageType.NoLanguage }
+        };
+
+        var result = images.OrderByLanguageDescending("en", preferredImageLanguages: preferredOptions).ToList();
+
+        // No language should come first based on explicit configuration
+        Assert.Null(result[0].Language);
+        Assert.Equal("en", result[1].Language);
     }
 }

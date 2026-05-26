@@ -335,13 +335,14 @@ namespace MediaBrowser.Providers.Manager
             BaseItem item,
             IRemoteImageProvider provider,
             string preferredMetadataLanguage,
-            string[] preferredImageLanguages,
+            ImageLanguageOption[] preferredImageLanguages,
             bool includeAllLanguages,
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
             bool hasPreferredMetadataLanguage = !string.IsNullOrWhiteSpace(preferredMetadataLanguage);
-            bool hasPreferredImageLanguages = preferredImageLanguages?.Length > 0;
+            bool hasPreferredImageLanguages = preferredImageLanguages.Length > 0;
+            string? originalLanguage = item.GetInheritedOriginalLanguage();
 
             try
             {
@@ -352,13 +353,31 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (!includeAllLanguages)
+                if (includeAllLanguages)
+                {
+                    return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
+                }
+
                 {
                     if (hasPreferredImageLanguages)
                     {
+                        var validLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var opt in preferredImageLanguages)
+                        {
+                            switch (opt.OptionType)
+                            {
+                                case ImageLanguageType.LanguageCode when !string.IsNullOrEmpty(opt.Language):
+                                    validLanguages.Add(opt.Language);
+                                    break;
+                                case ImageLanguageType.OriginalLanguage when !string.IsNullOrEmpty(originalLanguage):
+                                    validLanguages.Add(originalLanguage);
+                                    break;
+                            }
+                        }
+
                         // Filter out languages that do not match the preferred image languages.
                         result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
-                                                   preferredImageLanguages!.Contains(i.Language, StringComparer.OrdinalIgnoreCase));
+                                                   validLanguages.Contains(i.Language));
                     }
                     else if (hasPreferredMetadataLanguage)
                     {
@@ -371,7 +390,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages);
+                return result.OrderByLanguageDescending(preferredMetadataLanguage, preferredImageLanguages, originalLanguage);
             }
             catch (OperationCanceledException)
             {

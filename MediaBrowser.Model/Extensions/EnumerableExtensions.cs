@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Extensions
@@ -15,12 +16,14 @@ namespace MediaBrowser.Model.Extensions
         /// </summary>
         /// <param name="remoteImageInfos">The remote image infos.</param>
         /// <param name="requestedMetadataLanguage">The requested metadata language for fallback if no preferred languages are specified.</param>
-        /// <param name="preferredImageLanguages">Array of preferred image languages (e.g., ["en", "de", "fr", "nolang"]). If null or empty, uses requestedLanguage.</param>
+        /// <param name="preferredImageLanguages">Array of preferred image languages. If null or empty, uses requestedMetadataLanguage.</param>
+        /// <param name="originalLanguage">The original language of the media, used for OriginalLanguage option type.</param>
         /// <returns>The ordered remote image infos.</returns>
         public static IEnumerable<RemoteImageInfo> OrderByLanguageDescending(
             this IEnumerable<RemoteImageInfo> remoteImageInfos,
             string requestedMetadataLanguage,
-            string[]? preferredImageLanguages)
+            ImageLanguageOption[]? preferredImageLanguages = null,
+            string? originalLanguage = null)
         {
             if (string.IsNullOrWhiteSpace(requestedMetadataLanguage))
             {
@@ -28,31 +31,54 @@ namespace MediaBrowser.Model.Extensions
                 requestedMetadataLanguage = "en";
             }
 
-            string[] languages = preferredImageLanguages?.Length > 0
-                ? preferredImageLanguages
-                : [requestedMetadataLanguage, "en"];
-
-            return remoteImageInfos.OrderByDescending(i =>
+            if (preferredImageLanguages is null or { Length: 0 })
+            {
+                var languageOptions = new List<ImageLanguageOption>
                 {
-                    // Image priority ordering:
-                    //  - Images that match preferred image languages (in order of preference)
-                    //  - Images with no language if nolang is not in preferred image languages
-                    //  - Images that don't match the requested language
+                    new() { OptionType = ImageLanguageType.LanguageCode, Language = requestedMetadataLanguage }
+                };
 
-                    for (int index = 0; index < languages.Length; index++)
-                    {
-                        if (string.Equals(languages[index], i.Language, StringComparison.OrdinalIgnoreCase) ||
-                            (string.Equals(languages[index], "nolang", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(i.Language)))
-                        {
-                            // Return a high priority value, with earlier languages getting higher values
-                            return 1 + (languages.Length - index);
-                        }
-                    }
+                if (!string.Equals(requestedMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase))
+                {
+                    languageOptions.Add(new() { OptionType = ImageLanguageType.LanguageCode, Language = "en" });
+                }
 
-                    return string.IsNullOrEmpty(i.Language) ? 1 : 0;
-                })
+                preferredImageLanguages = languageOptions.ToArray();
+            }
+
+            return remoteImageInfos
+                .OrderByDescending(i => GetLanguagePriority(i.Language, preferredImageLanguages, originalLanguage))
                 .ThenByDescending(i => Math.Round(i.CommunityRating ?? 0, 1))
                 .ThenByDescending(i => i.VoteCount ?? 0);
+        }
+
+        private static int GetLanguagePriority(string? imageLanguage, ImageLanguageOption[] preferredImageLanguages, string? originalLanguage)
+        {
+            // Image priority ordering:
+            //  - Images that match preferred image languages (in order of preference)
+            //  - Images with no language if option type NoLanguage is not in preferred image languages
+            //  - Images that don't match the requested language
+
+            for (int index = 0; index < preferredImageLanguages.Length; index++)
+            {
+                var option = preferredImageLanguages[index];
+
+                bool isMatch = option.OptionType switch
+                {
+                    ImageLanguageType.LanguageCode => !string.IsNullOrEmpty(option.Language) && string.Equals(option.Language, imageLanguage, StringComparison.OrdinalIgnoreCase),
+                    ImageLanguageType.NoLanguage => string.IsNullOrEmpty(imageLanguage),
+                    ImageLanguageType.OriginalLanguage => !string.IsNullOrEmpty(originalLanguage) && string.Equals(originalLanguage, imageLanguage, StringComparison.OrdinalIgnoreCase),
+                    _ => false
+                };
+
+                if (isMatch)
+                {
+                    // Return a high priority value, with earlier languages getting higher values
+                    return 1 + (preferredImageLanguages.Length - index);
+                }
+            }
+
+            return string.IsNullOrEmpty(imageLanguage) ? 1 : 0;
         }
     }
 }
