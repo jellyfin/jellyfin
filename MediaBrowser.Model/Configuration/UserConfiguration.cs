@@ -48,6 +48,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DisplayMissingEpisodes { get; set; }
 
+        public bool HideEmptyShows { get; set; }
+
         public Guid[] GroupedFolders { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }

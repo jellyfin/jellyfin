@@ -45,6 +45,7 @@ namespace Jellyfin.Database.Implementations.Entities
             EnableUserPreferenceAccess = true;
             MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
+            HideEmptyShows = false;
             DisplayCollectionsView = false;
             HidePlayedInLatest = true;
             RememberAudioSelections = true;
@@ -193,6 +194,14 @@ namespace Jellyfin.Database.Implementations.Entities
         /// Required.
         /// </remarks>
         public bool DisplayMissingEpisodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether shows with no playable episodes should be hidden.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public bool HideEmptyShows { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to display the collections view.

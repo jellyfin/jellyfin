@@ -906,12 +906,20 @@ public sealed partial class BaseItemRepository
                 .Where(e => e.IsVirtualItem == isVirtualItem.Value);
         }
 
-        if (filter.HasNonVirtualChildren.HasValue)
+        var hasNonVirtualChildren = filter.HasNonVirtualChildren;
+        if (!hasNonVirtualChildren.HasValue
+            && filter.User is not null
+            && filter.User.HideEmptyShows
+            && filter.IncludeItemTypes.Contains(BaseItemKind.Series))
         {
-            var hasNonVirtualChildren = filter.HasNonVirtualChildren.Value;
+            hasNonVirtualChildren = true;
+        }
+
+        if (hasNonVirtualChildren.HasValue)
+        {
             baseQuery = baseQuery.Where(e =>
                 !e.IsFolder
-                || e.Children!.Any(c => !c.Item.IsVirtualItem && !c.Item.IsFolder) == hasNonVirtualChildren);
+                || e.Children!.Any(c => !c.Item.IsVirtualItem && !c.Item.IsFolder) == hasNonVirtualChildren.Value);
         }
 
         if (filter.IsSpecialSeason.HasValue)
