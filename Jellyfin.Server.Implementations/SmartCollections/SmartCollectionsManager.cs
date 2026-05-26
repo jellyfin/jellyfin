@@ -175,7 +175,8 @@ namespace Jellyfin.Server.Implementations.SmartCollections
 
         /// <summary>
         /// Evaluates the specified filters and returns a list of item identifiers that match the criteria.
-        /// </summary> <param name="filters">The smart collection filters to evaluate.</param>
+        /// </summary>
+        /// <param name="filters">The smart collection filters to evaluate.</param>
         /// <param name="userId">The identifier of the user owning the collection.</param>
         /// <param name="limit">The maximum number of item identifiers to return.</param>
         /// <returns>A list of item identifiers that match the filter criteria.</returns>

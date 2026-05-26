@@ -232,6 +232,8 @@
  - [MSalman5230](https://github.com/MSalman5230)
  - [dwandw](https://github.com/dwandw)
  - [Lampan-git](https://github.com/Lampan-git)
+ - [beateixeira04](https://github.com/beateixeira04)
+ - [TiagoMateus05](https://github.com/TiagoMateus05)
 
 # Emby Contributors
 
