@@ -260,6 +260,8 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsVirtualItem { get; set; }
 
+        public bool? HasNonVirtualChildren { get; set; }
+
         public Guid ParentId { get; set; }
 
         public BaseItemKind? ParentType { get; set; }

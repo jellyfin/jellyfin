@@ -906,6 +906,14 @@ public sealed partial class BaseItemRepository
                 .Where(e => e.IsVirtualItem == isVirtualItem.Value);
         }
 
+        if (filter.HasNonVirtualChildren.HasValue)
+        {
+            var hasNonVirtualChildren = filter.HasNonVirtualChildren.Value;
+            baseQuery = baseQuery.Where(e =>
+                !e.IsFolder
+                || e.Children!.Any(c => !c.Item.IsVirtualItem && !c.Item.IsFolder) == hasNonVirtualChildren);
+        }
+
         if (filter.IsSpecialSeason.HasValue)
         {
             if (filter.IsSpecialSeason.Value)

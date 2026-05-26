@@ -230,6 +230,7 @@ public class TrailersController : BaseJellyfinApiController
                 locationTypes,
                 excludeLocationTypes,
                 isMissing,
+                null,
                 isUnaired,
                 minCommunityRating,
                 minCriticRating,

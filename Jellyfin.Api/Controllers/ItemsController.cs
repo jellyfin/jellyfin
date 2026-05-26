@@ -90,6 +90,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="locationTypes">Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimited.</param>
     /// <param name="excludeLocationTypes">Optional. If specified, results will be filtered based on the LocationType. This allows multiple, comma delimited.</param>
     /// <param name="isMissing">Optional filter by items that are missing episodes or not.</param>
+    /// <param name="hasNonVirtualChildren">Optional filter by series that have at least one non-virtual episode.</param>
     /// <param name="isUnaired">Optional filter by items that are unaired episodes or not.</param>
     /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
     /// <param name="minCriticRating">Optional filter by minimum critic rating.</param>
@@ -182,6 +183,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] locationTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] excludeLocationTypes,
         [FromQuery] bool? isMissing,
+        [FromQuery] bool? hasNonVirtualChildren,
         [FromQuery] bool? isUnaired,
         [FromQuery] double? minCommunityRating,
         [FromQuery] double? minCriticRating,
@@ -356,6 +358,7 @@ public class ItemsController : BaseJellyfinApiController
                 Limit = limit,
                 StartIndex = startIndex,
                 IsMissing = isMissing,
+                HasNonVirtualChildren = hasNonVirtualChildren,
                 IsUnaired = isUnaired,
                 CollapseBoxSetItems = collapseBoxSetItems,
                 NameLessThan = nameLessThan,
@@ -585,6 +588,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="locationTypes">Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimited.</param>
     /// <param name="excludeLocationTypes">Optional. If specified, results will be filtered based on the LocationType. This allows multiple, comma delimited.</param>
     /// <param name="isMissing">Optional filter by items that are missing episodes or not.</param>
+    /// <param name="hasNonVirtualChildren">Optional filter by series that have at least one non-virtual episode.</param>
     /// <param name="isUnaired">Optional filter by items that are unaired episodes or not.</param>
     /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
     /// <param name="minCriticRating">Optional filter by minimum critic rating.</param>
@@ -676,6 +680,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] locationTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] LocationType[] excludeLocationTypes,
         [FromQuery] bool? isMissing,
+        [FromQuery] bool? hasNonVirtualChildren,
         [FromQuery] bool? isUnaired,
         [FromQuery] double? minCommunityRating,
         [FromQuery] double? minCriticRating,
@@ -763,6 +768,7 @@ public class ItemsController : BaseJellyfinApiController
             locationTypes,
             excludeLocationTypes,
             isMissing,
+            hasNonVirtualChildren,
             isUnaired,
             minCommunityRating,
             minCriticRating,
