@@ -541,7 +541,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
     {
-        if (EnableThrottling(state)
+        if (ShouldStartThrottler(state)
             && (_mediaEncoder.IsPkeyPauseSupported
                 || _mediaEncoder.EncoderVersion <= _maxFFmpegCkeyPauseSupported))
         {
@@ -550,28 +550,33 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    private static bool EnableThrottling(StreamState state)
-        => state.InputProtocol == MediaProtocol.File
-           && state.RunTimeTicks.HasValue
-           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks
-           && state.IsInputVideo
-           && state.VideoType == VideoType.VideoFile;
+    internal static bool ShouldStartThrottler(StreamState state)
+        => (state.InputProtocol == MediaProtocol.File
+            && state.RunTimeTicks.HasValue
+            && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks
+            && state.IsInputVideo
+            && state.VideoType == VideoType.VideoFile)
+           || (state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
+               && state.IsInputVideo
+               && state.TranscodingType == TranscodingJobType.Hls
+               && state.MediaSource.IsInfiniteStream);
 
     private void StartSegmentCleaner(StreamState state, TranscodingJob transcodingJob)
     {
-        if (EnableSegmentCleaning(state))
+        if (ShouldStartSegmentCleaner(state))
         {
             transcodingJob.TranscodingSegmentCleaner = new TranscodingSegmentCleaner(transcodingJob, _loggerFactory.CreateLogger<TranscodingSegmentCleaner>(), _serverConfigurationManager, _fileSystem, _mediaEncoder, state.SegmentLength);
             transcodingJob.TranscodingSegmentCleaner.Start();
         }
     }
 
-    private static bool EnableSegmentCleaning(StreamState state)
+    internal static bool ShouldStartSegmentCleaner(StreamState state)
         => state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
            && state.IsInputVideo
            && state.TranscodingType == TranscodingJobType.Hls
-           && state.RunTimeTicks.HasValue
-           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks;
+           && (state.MediaSource.IsInfiniteStream
+               || (state.RunTimeTicks.HasValue
+                   && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks));
 
     private TranscodingJob OnTranscodeBeginning(
         string path,
