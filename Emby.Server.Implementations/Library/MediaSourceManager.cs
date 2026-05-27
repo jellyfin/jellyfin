@@ -440,10 +440,6 @@ namespace Emby.Server.Implementations.Library
 
             if (string.Equals(user.AudioLanguagePreference, "OriginalLanguage", StringComparison.OrdinalIgnoreCase))
             {
-                originalLanguage = !string.IsNullOrWhiteSpace(originalLanguage)
-                    ? originalLanguage.Split(',').FirstOrDefault()
-                    : null;
-
                 if (user.PlayDefaultAudioTrack)
                 {
                     source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
@@ -498,17 +494,7 @@ namespace Emby.Server.Implementations.Library
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
-                var originalLanguage = item?.OriginalLanguage ?? item switch
-                {
-                    Episode episode => episode.Series.OriginalLanguage,
-                    Video video => video.GetOwner() switch
-                    {
-                        Episode ownerEpisode => ownerEpisode.OriginalLanguage ?? ownerEpisode.Series.OriginalLanguage,
-                        BaseItem owner => owner.OriginalLanguage,
-                        null => null
-                    },
-                    _ => null
-                };
+                var originalLanguage = item?.GetInheritedOriginalLanguage();
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection, originalLanguage);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);

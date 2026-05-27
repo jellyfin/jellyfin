@@ -1708,6 +1708,13 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return;
             }
 
+            // Skip timestamp extration for remote resource (http, rtsp, etc.)
+            // as they cannot be opened with FileStream
+            if (video.Protocol != MediaProtocol.File)
+            {
+                return;
+            }
+
             if (!string.Equals(video.Container, "mpeg2ts", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(video.Container, "m2ts", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase))

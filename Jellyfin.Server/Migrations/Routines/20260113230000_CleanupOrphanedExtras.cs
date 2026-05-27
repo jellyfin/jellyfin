@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Channels;
@@ -23,7 +24,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// Removes orphaned extras (items with OwnerId pointing to non-existent items).
 /// Must run before EF migrations that add FK constraints on OwnerId.
 /// </summary>
-[JellyfinMigration("2026-01-13T23:00:00", nameof(CleanupOrphanedExtras), Stage = JellyfinMigrationStageTypes.CoreInitialisation)]
+[JellyfinMigration("2026-01-13T23:00:00", nameof(CleanupOrphanedExtras), Stage = JellyfinMigrationStageTypes.AppInitialisation)]
 [JellyfinMigrationBackup(JellyfinDb = true)]
 public class CleanupOrphanedExtras : IAsyncMigrationRoutine
 {
@@ -37,39 +38,14 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
     /// <param name="logger">The startup logger.</param>
     /// <param name="dbContextFactory">The database context factory.</param>
     /// <param name="libraryManager">The library manager.</param>
-    /// <param name="itemRepository">The item repository.</param>
-    /// <param name="itemCountService">The item count service.</param>
-    /// <param name="channelManager">The channel manager.</param>
-    /// <param name="recordingsManager">The recordings manager.</param>
-    /// <param name="mediaSourceManager">The media source manager.</param>
-    /// <param name="mediaSegmentManager">The media segments manager.</param>
-    /// <param name="configurationManager">The configuration manager.</param>
-    /// <param name="fileSystem">The file system.</param>
     public CleanupOrphanedExtras(
         IStartupLogger<CleanupOrphanedExtras> logger,
         IDbContextFactory<JellyfinDbContext> dbContextFactory,
-        ILibraryManager libraryManager,
-        IItemRepository itemRepository,
-        IItemCountService itemCountService,
-        IChannelManager channelManager,
-        IRecordingsManager recordingsManager,
-        IMediaSourceManager mediaSourceManager,
-        IMediaSegmentManager mediaSegmentManager,
-        IServerConfigurationManager configurationManager,
-        IFileSystem fileSystem)
+        ILibraryManager libraryManager)
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
         _libraryManager = libraryManager;
-        BaseItem.LibraryManager ??= libraryManager;
-        BaseItem.ItemRepository ??= itemRepository;
-        BaseItem.ItemCountService ??= itemCountService;
-        BaseItem.ChannelManager ??= channelManager;
-        BaseItem.MediaSourceManager ??= mediaSourceManager;
-        BaseItem.MediaSegmentManager ??= mediaSegmentManager;
-        BaseItem.ConfigurationManager ??= configurationManager;
-        BaseItem.FileSystem ??= fileSystem;
-        Video.RecordingsManager ??= recordingsManager;
     }
 
     /// <inheritdoc/>
@@ -78,12 +54,19 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
+            var placeholderOwner = Guid.Parse("00000000-0000-0000-0000-000000000001");
+#pragma warning disable RS0030 // Do not use banned APIs
             var orphanedItemIds = await context.BaseItems
-                .Where(b => b.OwnerId.HasValue && !b.OwnerId.Value.Equals(Guid.Empty))
-                .Where(b => !context.BaseItems.Any(parent => parent.Id.Equals(b.OwnerId!.Value)))
-                .Select(b => b.Id)
+                .Where(b => b.OwnerId.HasValue && b.OwnerId == placeholderOwner)
+                .Select(b => new
+                {
+                    b.Id,
+                    b.Path,
+                    b.Type
+                })
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
+#pragma warning restore RS0030 // Do not use banned APIs
 
             if (orphanedItemIds.Count == 0)
             {
@@ -97,11 +80,16 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
             var itemsToDelete = new List<BaseItem>();
             foreach (var itemId in orphanedItemIds)
             {
-                var item = _libraryManager.GetItemById(itemId);
-                if (item is not null)
-                {
-                    itemsToDelete.Add(item);
-                }
+                itemsToDelete.Add(BaseItemMapper.DeserializeBaseItem(
+                    new Database.Implementations.Entities.BaseItemEntity()
+                    {
+                        Id = itemId.Id,
+                        Path = itemId.Path,
+                        Type = itemId.Type
+                    },
+                    _logger,
+                    null,
+                    true)!);
             }
 
             _libraryManager.DeleteItemsUnsafeFast(itemsToDelete);

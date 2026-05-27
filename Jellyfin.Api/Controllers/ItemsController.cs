@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -31,7 +32,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
-[Tags("Item")]
+[Tags("Library")]
 public class ItemsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -157,6 +158,8 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
     /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
     /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
+    /// <param name="audioLanguages">Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values.</param>
+    /// <param name="subtitleLanguages">Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values.</param>
     /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
@@ -247,6 +250,8 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? nameLessThan,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] studioIds,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] genreIds,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] audioLanguages,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] subtitleLanguages,
         [FromQuery] bool enableTotalRecordCount = true,
         [FromQuery] bool? enableImages = true)
     {
@@ -267,7 +272,7 @@ public class ItemsController : BaseJellyfinApiController
             && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
             && !fields.Contains(ItemFields.Tags))
         {
-            fields = [..fields, ItemFields.Tags];
+            fields = [.. fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -276,10 +281,21 @@ public class ItemsController : BaseJellyfinApiController
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
 
+        Guid[] linkedChildAncestorIds = [];
         if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet
-            && item is not BoxSet)
+            && (includeItemTypes[0] == BaseItemKind.BoxSet || includeItemTypes[0] == BaseItemKind.Playlist)
+            && item is not BoxSet
+            && item is not Playlist)
         {
+            var itemCollectionType = item is IHasCollectionType hct ? hct.CollectionType : null;
+            var targetCollectionType = includeItemTypes[0] == BaseItemKind.BoxSet
+                ? CollectionType.boxsets
+                : CollectionType.playlists;
+            if (parentId.HasValue && item is not UserRootFolder && itemCollectionType != targetCollectionType)
+            {
+                linkedChildAncestorIds = [parentId.Value];
+            }
+
             parentId = null;
             item = _libraryManager.GetUserRootFolder();
         }
@@ -399,11 +415,41 @@ public class ItemsController : BaseJellyfinApiController
                 MinDateLastSavedForUser = minDateLastSavedForUser?.ToUniversalTime(),
                 MinPremiereDate = minPremiereDate?.ToUniversalTime(),
                 MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
+                AudioLanguages = audioLanguages,
+                SubtitleLanguages = subtitleLanguages,
+                LinkedChildAncestorIds = linkedChildAncestorIds,
             };
 
             if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
             {
                 query.CollapseBoxSetItems = false;
+            }
+
+            if (query.SubtitleLanguages.Count > 0 && query.HasSubtitles.HasValue)
+            {
+                if (query.HasSubtitles.Value)
+                {
+                    // if we check for specific subtitles we don't need a separate check for subtitle existence
+                    query.HasSubtitles = null;
+                }
+                else
+                {
+                    // if we search for items without subtitles, we don't need to check for subtitles of a specific language
+                    query.SubtitleLanguages = [];
+                }
+            }
+
+            // for filter values that rely on media streams, we need to include alternative and linked versions
+            if (query.HasSubtitles.HasValue
+                || query.SubtitleLanguages.Count > 0
+                || query.AudioLanguages.Count > 0
+                || query.Is3D.HasValue
+                || query.IsHD.HasValue
+                || query.Is4K.HasValue
+                || query.VideoTypes.Length > 0
+            )
+            {
+                query.IncludeOwnedItems = true;
             }
 
             query.ApplyFilters(filters);
@@ -785,6 +831,8 @@ public class ItemsController : BaseJellyfinApiController
             nameLessThan,
             studioIds,
             genreIds,
+            [],
+            [],
             enableTotalRecordCount,
             enableImages).ConfigureAwait(false);
 
@@ -955,6 +1003,7 @@ public class ItemsController : BaseJellyfinApiController
     [HttpGet("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> GetItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
@@ -1010,6 +1059,7 @@ public class ItemsController : BaseJellyfinApiController
     [HttpPost("UserItems/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> UpdateItemUserData(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,

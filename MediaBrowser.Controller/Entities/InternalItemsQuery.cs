@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Entities
             AlbumArtistIds = [];
             AlbumIds = [];
             AncestorIds = [];
+            LinkedChildAncestorIds = [];
             ArtistIds = [];
             BlockUnratedItems = [];
             BoxSetLibraryFolders = [];
@@ -58,6 +59,8 @@ namespace MediaBrowser.Controller.Entities
             VideoTypes = [];
             Years = [];
             SkipDeserialization = false;
+            AudioLanguages = [];
+            SubtitleLanguages = [];
         }
 
         public InternalItemsQuery(User? user)
@@ -263,6 +266,12 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] AncestorIds { get; set; }
 
+        /// <summary>
+        /// Gets or sets a list of ancestor ids that the item's linked children must descend from.
+        /// Useful for filtering BoxSets/Playlists to only those that contain items from a specific library.
+        /// </summary>
+        public Guid[] LinkedChildAncestorIds { get; set; }
+
         public Guid[] TopParentIds { get; set; }
 
         public CollectionType?[] PresetViews { get; set; }
@@ -351,6 +360,8 @@ namespace MediaBrowser.Controller.Entities
 
         public Dictionary<string, string>? HasAnyProviderId { get; set; }
 
+        public Dictionary<string, string[]>? HasAnyProviderIds { get; set; }
+
         public Guid[] AlbumArtistIds { get; set; }
 
         public Guid[] BoxSetLibraryFolders { get; set; }
@@ -384,6 +395,10 @@ namespace MediaBrowser.Controller.Entities
         public bool SkipDeserialization { get; set; }
 
         public bool IncludeExtras { get; set; }
+
+        public IReadOnlyList<string> AudioLanguages { get; set; }
+
+        public IReadOnlyList<string> SubtitleLanguages { get; set; }
 
         public void SetUser(User user)
         {

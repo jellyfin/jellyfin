@@ -77,5 +77,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Gets or sets a value indicating the still image size to fetch.
         /// </summary>
         public string? StillSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cache duration in days for similar item results. A value of 0 disables caching.
+        /// </summary>
+        public int SimilarItemsCacheDays { get; set; } = 7;
     }
 }

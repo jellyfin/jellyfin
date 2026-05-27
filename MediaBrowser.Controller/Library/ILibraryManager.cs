@@ -598,6 +598,15 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
+        /// Gets distinct people names for multiple items.
+        /// </summary>
+        /// <param name="itemIds">The item IDs.</param>
+        /// <param name="personTypes">The person types to include.</param>
+        /// <param name="limit">Maximum number of names.</param>
+        /// <returns>The distinct people names.</returns>
+        IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit);
+
+        /// <summary>
         /// Queries the items.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -784,5 +793,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query filter.</param>
         /// <returns>Aggregated filter values.</returns>
         QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets a list of all language codes of the provided stream type.
+        /// </summary>
+        /// <param name="mediaStreamType">The stream type.</param>
+        /// <returns>List of language codes.</returns>
+        IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType);
     }
 }

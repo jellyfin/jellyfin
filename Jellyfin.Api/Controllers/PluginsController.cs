@@ -226,16 +226,32 @@ public class PluginsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath ?? string.Empty);
-        if (plugin.Manifest.ImagePath is null || !System.IO.File.Exists(imagePath))
+        if (!string.IsNullOrEmpty(plugin.Manifest.ImagePath))
         {
-            return NotFound();
+            var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath);
+            if (!System.IO.File.Exists(imagePath))
+            {
+                return NotFound();
+            }
+
+            Response.Headers.ContentDisposition = "attachment";
+            return PhysicalFile(imagePath, MimeTypes.GetMimeType(imagePath));
         }
 
-        Response.Headers.ContentDisposition = "attachment";
+        var resourceName = plugin.Manifest.ImageResourceName;
+        if (!string.IsNullOrEmpty(resourceName) && plugin.Instance is not null)
+        {
+            var stream = plugin.Instance.GetType().Assembly.GetManifestResourceStream(resourceName);
+            if (stream is null)
+            {
+                return NotFound();
+            }
 
-        imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath);
-        return PhysicalFile(imagePath, MimeTypes.GetMimeType(imagePath));
+            Response.Headers.ContentDisposition = "attachment";
+            return File(stream, MimeTypes.GetMimeType(resourceName));
+        }
+
+        return NotFound();
     }
 
     /// <summary>
