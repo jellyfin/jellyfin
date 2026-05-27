@@ -460,12 +460,14 @@ public partial class UserManager : IUserManager, IDisposable
         var user = GetUserByName(username);
         using (await _userLock.LockAsync(user?.Id ?? Guid.Empty).ConfigureAwait(false))
         {
+            using var dbContext = _dbProvider.CreateDbContext();
+
             // Reload the user now that we hold the lock so the RowVersion is current.
             // GetUserByName uses AsNoTracking and the snapshot may be stale if another
             // write (e.g. a concurrent login) incremented RowVersion after our initial load.
             if (user is not null)
             {
-                user = GetUserById(user.Id) ?? user;
+                user = await UserQuery(dbContext).FirstOrDefaultAsync(e => e.Id == user.Id).ConfigureAwait(false) ?? user;
             }
 
             var authResult = await AuthenticateLocalUser(username, password, user)
@@ -486,11 +488,16 @@ public partial class UserManager : IUserManager, IDisposable
 
                     // Search the database for the user again
                     // the authentication provider might have created it
-                    user = GetUserByName(username);
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+                    user = await UserQuery(dbContext)
+                        .FirstOrDefaultAsync(e => e.NormalizedUsername == username.ToUpperInvariant()).ConfigureAwait(false);
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
                     {
                         await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
+                        user = await UserQuery(dbContext)
+                            .FirstOrDefaultAsync(e => e.NormalizedUsername == username.ToUpperInvariant()).ConfigureAwait(false);
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
                     }
                 }
             }
@@ -501,8 +508,10 @@ public partial class UserManager : IUserManager, IDisposable
 
                 if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
-                    user.AuthenticationProviderId = providerId;
-                    await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                    await dbContext.Users
+                        .Where(e => e.Id == user.Id)
+                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.AuthenticationProviderId, providerId))
+                        .ConfigureAwait(false);
                 }
             }
 
@@ -549,16 +558,42 @@ public partial class UserManager : IUserManager, IDisposable
             {
                 if (isUserSession)
                 {
-                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                    var date = DateTime.UtcNow;
+                    await dbContext.Users
+                        .Where(e => e.Id == user.Id)
+                        .ExecuteUpdateAsync(e => e
+                            .SetProperty(f => f.LastActivityDate, date)
+                            .SetProperty(f => f.LastLoginDate, date))
+                        .ConfigureAwait(false);
                 }
 
-                user.InvalidLoginAttemptCount = 0;
-                await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                await dbContext.Users
+                    .Where(e => e.Id == user.Id)
+                    .ExecuteUpdateAsync(e => e.SetProperty(f => f.InvalidLoginAttemptCount, 0))
+                    .ConfigureAwait(false);
                 _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
             }
             else
             {
-                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
+                user.InvalidLoginAttemptCount++;
+                int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
+                if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
+                {
+                    user.SetPermission(PermissionKind.IsDisabled, true);
+                    await dbContext.SaveChangesAsync()
+                        .ConfigureAwait(false);
+                    await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
+                    _logger.LogWarning(
+                        "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
+                        user.Username,
+                        user.InvalidLoginAttemptCount);
+                }
+
+                await dbContext.Users
+                    .Where(e => e.Id == user.Id)
+                    .ExecuteUpdateAsync(e => e.SetProperty(f => f.InvalidLoginAttemptCount, f => f.InvalidLoginAttemptCount + 1))
+                    .ConfigureAwait(false);
+
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
                     user.Username,
@@ -931,23 +966,6 @@ public partial class UserManager : IUserManager, IDisposable
 
             return (username, false);
         }
-    }
-
-    private async Task IncrementInvalidLoginAttemptCount(User user)
-    {
-        user.InvalidLoginAttemptCount++;
-        int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
-        if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
-        {
-            user.SetPermission(PermissionKind.IsDisabled, true);
-            await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
-            _logger.LogWarning(
-                "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
-                user.Username,
-                user.InvalidLoginAttemptCount);
-        }
-
-        await UpdateUserInternalAsync(user).ConfigureAwait(false);
     }
 
     private async Task UpdateUserInternalAsync(User user)
