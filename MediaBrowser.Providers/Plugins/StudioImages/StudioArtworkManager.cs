@@ -275,10 +275,11 @@ public static class StudioArtworkManager
             return;
         }
 
+        var fullTargetRoot = Path.GetFullPath(targetRoot) + Path.DirectorySeparatorChar;
         var destPath = Path.GetFullPath(Path.Combine(targetRoot, entry.FullName));
-        if (!PathHelper.IsContainedIn(targetRoot, destPath))
+        if (!destPath.StartsWith(fullTargetRoot, StringComparison.Ordinal))
         {
-            return; // zip-slip guard
+            return; // zip-slip guard: entry resolves outside the target directory
         }
 
         if (string.IsNullOrEmpty(entry.Name))
@@ -293,10 +294,7 @@ public static class StudioArtworkManager
             Directory.CreateDirectory(destDir);
         }
 
-#pragma warning disable CA5389 // Do not add archive item's path to the target file system path
-        // Sanitization is performed above via PathHelper.IsContainedIn, which the analyzer can't trace across the helper boundary.
         entry.ExtractToFile(destPath, overwrite: true);
-#pragma warning restore CA5389
     }
 
     private static void PromoteStaging()
