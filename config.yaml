@@ -1,11 +1,17 @@
 ---
 name: "Jellyfin Media Server"
-description: "Jellyfin is a free software media system that puts you in control of managing and streaming your media."
+description: "Jellyfin is a free software media system with full hardware acceleration support."
 logo: "https://raw.githubusercontent.com/jellyfin/jellyfin/main/docs/logo.png"
 auth: false
 boot: true
 
 options:
+  # Hardware Acceleration Configuration
+  hardware_acceleration: true
+  use_vaapi: true  # VA-API per Intel/AMD
+  use_vulkan: true  # Vulkan for advanced GPU decoding
+  gpu_service: "mesa"  # Default GPU provider
+  
   # Network Configuration
   host: "0.0.0.0"
   port: 8096
@@ -22,7 +28,12 @@ options:
   enable_transcoding: true
   ffmpeg_path: "/usr/bin/ffmpeg"
 
-# Home Assistant Integration
+# Home Assistant Configuration
+# Mappatura dispositivi GPU
+volumes:
+  - /dev/dri:/dev/dri
+  - /dev/vulkan:/dev/vulkan
+
 homeassistant:
   use_internal_api: true
   discovery: true

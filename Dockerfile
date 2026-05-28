@@ -1,17 +1,23 @@
-# Jellyfin Add-on for Home Assistant OS
-# Based on linuxserver/jellyfin image with additional tools
+# Jellyfin for HAOS with FFmpeg and Vulkan support
+# Base image: linuxserver/jellyfin (highly optimized)
 
 FROM linuxserver/jellyfin:latest
 
-# Install additional tools for Home Assistant integration
+# Install additional tools and hardware acceleration drivers
+# mesa-vulkan-drivers: Support for Vulkan
+# libva-drm2 & vainfo: Support for VA-API (Intel/AMD hardware transcoding)
+# ffmpeg: Already included in linuxserver image, but we ensure dependencies are met
 RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     curl \
     gnupg2 \
+    mesa-vulkan-drivers \
+    libva-drm2 \
+    vainfo \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy custom configuration if needed
-COPY config.yaml /config/jellyfin/config.yaml
+# Ensure the jellyfin user has permissions for GPU access
+# (In HAOS/Docker, this is often handled by passing the device)
 
 # Expose Jellyfin port
 EXPOSE 8096
