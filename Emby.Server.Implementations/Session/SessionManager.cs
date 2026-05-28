@@ -459,11 +459,6 @@ namespace Emby.Server.Implementations.Session
             if (nowPlayingQueue?.Length > 0 && !nowPlayingQueue.SequenceEqual(session.NowPlayingQueue))
             {
                 session.NowPlayingQueue = nowPlayingQueue;
-
-                var itemIds = Array.ConvertAll(nowPlayingQueue, queue => queue.Id);
-                session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(
-                    _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds }),
-                    new DtoOptions(true));
             }
         }
 
