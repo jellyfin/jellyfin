@@ -1,0 +1,28 @@
+---
+name: "Jellyfin Media Server"
+description: "Jellyfin is a free software media system that puts you in control of managing and streaming your media."
+logo: "https://raw.githubusercontent.com/jellyfin/jellyfin/main/docs/logo.png"
+auth: false
+boot: true
+
+options:
+  # Network Configuration
+  host: "0.0.0.0"
+  port: 8096
+  
+  # Media Folders
+  media_dirs:
+    movies: "/media/movies"
+    tvshows: "/media/tv"
+  
+  # Database Path
+  data_dir: "/config/jellyfin"
+  
+  # Transcoding
+  enable_transcoding: true
+  ffmpeg_path: "/usr/bin/ffmpeg"
+
+# Home Assistant Integration
+homeassistant:
+  use_internal_api: true
+  discovery: true

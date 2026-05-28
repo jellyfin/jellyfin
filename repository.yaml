@@ -1,0 +1,29 @@
+
+addons:
+  - name: haos-jellyfin
+    slug: haos-jellyfin
+    version: "1.0.0"
+    description: "Jellyfin Media Server for Home Assistant OS"
+    url: "https://github.com/thcuba/haos-jellyfin"
+    image: "linuxserver/jellyfin"
+    ports:
+      - 8096:8096
+    arch:
+      - amd64
+      - aarch64
+    homeassistant:
+      privileged: false
+    init: false
+    options: {}
+    schema:
+      host:
+        description: "IP address to bind"
+        type: "string"
+        default: "0.0.0.0"
+      port:
+        description: "Port for Jellyfin"
+        type: "port"
+        default: 8096
+    # Cleanup on uninstall
+    uninstall:
+      - rm -rf /config/jellyfin
