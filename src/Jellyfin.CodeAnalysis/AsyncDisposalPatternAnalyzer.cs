@@ -27,7 +27,7 @@ public class AsyncDisposalPatternAnalyzer : DiagnosticAnalyzer
         description: "Objects that implement IAsyncDisposable and are created using 'await' should be disposed using 'await using' to prevent resource leaks.");
 
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [AsyncDisposableSyncDisposal];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AsyncDisposableSyncDisposal);
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)

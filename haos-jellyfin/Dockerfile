@@ -22,8 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Expose Jellyfin port
 EXPOSE 8096
 
-# Volume for media and config
-VOLUME ["/media", "/config/jellyfin"]
 
 # Run jellyfin with proper settings
 CMD ["/init"]
