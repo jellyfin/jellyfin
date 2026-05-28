@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Jellyfin.Extensions
 {
     /// <summary>
-    /// Class BaseExtensions.
+    /// Extension methods for the <see cref="Stream"/> class.
     /// </summary>
     public static class StreamExtensions
     {
@@ -74,7 +74,11 @@ namespace Jellyfin.Extensions
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>True if the stream and file are identical; otherwise false.</returns>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support seeking.</exception>
-        public static async Task<bool> IsFileIdenticalAsync(this Stream stream, string path, CancellationToken cancellationToken)
+        /// <remarks>
+        /// The entire stream is compared against the file from the beginning (the position is reset to 0 on entry)
+        /// and restored to its original value after the call.
+        /// </remarks>
+        public static async Task<bool> IsFileIdenticalAsync(this Stream stream, string path, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(stream);
             ArgumentException.ThrowIfNullOrEmpty(path);
@@ -114,10 +118,30 @@ namespace Jellyfin.Extensions
         /// <param name="b">The second stream to compare.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>True if the streams are identical; otherwise false.</returns>
-        public static async Task<bool> IsStreamIdenticalAsync(this Stream a, Stream b, CancellationToken cancellationToken)
+        /// <remarks>
+        /// Seekable streams are compared from the beginning (their position is reset to 0 on entry).
+        /// Non-seekable streams are compared from their current read position. Stream positions are not
+        /// restored after the call.
+        /// </remarks>
+        public static async Task<bool> IsStreamIdenticalAsync(this Stream a, Stream b, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(a);
             ArgumentNullException.ThrowIfNull(b);
+
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            if (a.CanSeek)
+            {
+                a.Position = 0;
+            }
+
+            if (b.CanSeek)
+            {
+                b.Position = 0;
+            }
 
             if (a.CanSeek && b.CanSeek && b.Length != a.Length)
             {
@@ -145,9 +169,9 @@ namespace Jellyfin.Extensions
                     var memoryB = bufferB.AsMemory();
                     int offset = 0;
                     int bytesRead;
-                    while ((bytesRead = await b.ReadAsync(memoryB, cancellationToken).ConfigureAwait(false)) > 0)
+                    while ((bytesRead = await b.ReadAtLeastAsync(memoryB, memoryB.Length, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false)) > 0)
                     {
-                        if (!segmentA.AsSpan(offset, bytesRead).SequenceEqual(memoryB.Span[..bytesRead]))
+                        if (offset + bytesRead > segmentA.Count || !segmentA.AsSpan(offset, bytesRead).SequenceEqual(memoryB.Span[..bytesRead]))
                         {
                             return false;
                         }
@@ -174,8 +198,8 @@ namespace Jellyfin.Extensions
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        var bytesReadA = await a.ReadAsync(memoryA, cancellationToken).ConfigureAwait(false);
-                        var bytesReadB = await b.ReadAsync(memoryB, cancellationToken).ConfigureAwait(false);
+                        var bytesReadA = await a.ReadAtLeastAsync(memoryA, memoryA.Length, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+                        var bytesReadB = await b.ReadAtLeastAsync(memoryB, memoryB.Length, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
 
                         if (bytesReadA != bytesReadB)
                         {
