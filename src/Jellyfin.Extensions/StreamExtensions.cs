@@ -15,7 +15,7 @@ namespace Jellyfin.Extensions
     /// </summary>
     public static class StreamExtensions
     {
-        private const int StreamComparisonBufferSize = 65536;
+        private const int StreamComparisonBufferSize = 81920;
 
         /// <summary>
         /// Reads all lines in the <see cref="Stream" />.
@@ -114,23 +114,12 @@ namespace Jellyfin.Extensions
         /// <param name="b">The second stream to compare.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>True if the streams are identical; otherwise false.</returns>
-        /// <exception cref="ArgumentException"><paramref name="a"/> or <paramref name="b"/> does not support seeking.</exception>
         public static async Task<bool> IsStreamIdenticalAsync(this Stream a, Stream b, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(a);
             ArgumentNullException.ThrowIfNull(b);
 
-            if (!a.CanSeek)
-            {
-                throw new ArgumentException("Stream must support seeking.", nameof(a));
-            }
-
-            if (!b.CanSeek)
-            {
-                throw new ArgumentException("Stream must support seeking.", nameof(b));
-            }
-
-            if (b.Length != a.Length)
+            if (a.CanSeek && b.CanSeek && b.Length != a.Length)
             {
                 return false;
             }
