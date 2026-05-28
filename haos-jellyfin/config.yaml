@@ -1,0 +1,24 @@
+name: "Jellyfin Media Server"
+version: "1.0.0"
+slug: "haos-jellyfin"
+description: "Jellyfin is a free software media system with full hardware acceleration support."
+url: "https://github.com/thcuba/haos-jellyfin"
+arch:
+  - amd64
+  - aarch64
+boot: auto
+startup: application
+map:
+  - config:rw
+  - media:rw
+devices:
+  - /dev/dri:/dev/dri
+webui: "http://[HOST]:[PORT:8096]"
+ports:
+  8096/tcp: 8096
+options:
+  host: "0.0.0.0"
+  port: 8096
+schema:
+  host: str
+  port: port
