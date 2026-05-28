@@ -180,25 +180,11 @@ namespace Emby.Server.Implementations.Updates
                 return Array.Empty<PackageInfo>();
             }
 
-            var fetchTasks = enabledRepos.Select(async repo =>
+            var fetchTasks = new List<Task<PackageInfo[]>>(enabledRepos.Length);
+            foreach (var repo in enabledRepos)
             {
-                using var repoCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                repoCts.CancelAfter(TimeSpan.FromSeconds(20));
-
-                try
-                {
-                    return await GetPackages(
-                        repo.Name ?? "Unnamed Repo",
-                        repo.Url!,
-                        true,
-                        repoCts.Token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (repoCts.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-                {
-                    _logger.LogWarning("Timeout fetching plugin manifest for {Repo}", repo.Url);
-                    return Array.Empty<PackageInfo>();
-                }
-            }).ToArray();
+                fetchTasks.Add(FetchRepositoryPackagesAsync(repo, cancellationToken));
+            }
 
             var repoResults = await Task.WhenAll(fetchTasks).ConfigureAwait(false);
 
@@ -250,6 +236,26 @@ namespace Emby.Server.Implementations.Updates
             }
 
             return result;
+        }
+
+        private async Task<PackageInfo[]> FetchRepositoryPackagesAsync(RepositoryInfo repo, CancellationToken cancellationToken)
+        {
+            using var repoCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            repoCts.CancelAfter(TimeSpan.FromSeconds(20));
+
+            try
+            {
+                return await GetPackages(
+                    repo.Name ?? "Unnamed Repo",
+                    repo.Url!,
+                    true,
+                    repoCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (repoCts.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogWarning(ex, "Timeout fetching plugin manifest for {Repo}", repo.Url);
+                return Array.Empty<PackageInfo>();
+            }
         }
 
         /// <inheritdoc />
