@@ -9,10 +9,9 @@ arch:
 boot: auto
 startup: application
 map:
-  - config:rw
   - media:rw
 devices:
-  - /dev/dri:/dev/dri
+  - /dev/dri
 webui: "http://[HOST]:[PORT:8096]"
 ports:
   8096/tcp: 8096

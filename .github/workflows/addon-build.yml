@@ -2,16 +2,20 @@ name: Add-on Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, aarch64]
+        include:
+          - arch: amd64
+            platform: linux/amd64
+          - arch: aarch64
+            platform: linux/arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,5 +30,5 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./haos-jellyfin
-          platforms: linux/${{ matrix.arch }}
+          platforms: ${{ matrix.platform }}
           push: false
