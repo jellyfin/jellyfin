@@ -6,8 +6,6 @@ url: "https://github.com/thcuba/haos-jellyfin"
 arch:
   - amd64
   - aarch64
-boot: auto
-startup: application
 map:
   - media:rw
 devices:
