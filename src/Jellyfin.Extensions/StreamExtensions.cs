@@ -73,6 +73,7 @@ namespace Jellyfin.Extensions
         /// <param name="path">The file path to compare against.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>True if the stream and file are identical; otherwise false.</returns>
+        /// <exception cref="ArgumentException"><paramref name="stream"/> does not support seeking.</exception>
         public static async Task<bool> IsFileIdenticalAsync(this Stream stream, string path, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(stream);
@@ -80,7 +81,7 @@ namespace Jellyfin.Extensions
 
             if (!stream.CanSeek)
             {
-                return false;
+                throw new ArgumentException("Stream must support seeking.", nameof(stream));
             }
 
             var originalPosition = stream.Position;
@@ -113,30 +114,39 @@ namespace Jellyfin.Extensions
         /// <param name="b">The second stream to compare.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>True if the streams are identical; otherwise false.</returns>
+        /// <exception cref="ArgumentException"><paramref name="a"/> or <paramref name="b"/> does not support seeking.</exception>
         public static async Task<bool> IsStreamIdenticalAsync(this Stream a, Stream b, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(a);
             ArgumentNullException.ThrowIfNull(b);
+
+            if (!a.CanSeek)
+            {
+                throw new ArgumentException("Stream must support seeking.", nameof(a));
+            }
+
+            if (!b.CanSeek)
+            {
+                throw new ArgumentException("Stream must support seeking.", nameof(b));
+            }
 
             if (b.Length != a.Length)
             {
                 return false;
             }
 
-            // If b is MemoryStream but a is not, swap them to use fast path B
+            // If b is MemoryStream but a is not, swap them to enable fast path B
             if (b is MemoryStream && a is not MemoryStream)
             {
                 (a, b) = (b, a);
             }
 
-            if (a is MemoryStream ms_a)
+            if (a is MemoryStream streamA && streamA.TryGetBuffer(out var segmentA))
             {
-                var bufferA = ms_a.GetBuffer();
-
                 // Fast path A: if both streams are MemoryStreams, compare directly against each other
-                if (b is MemoryStream ms_b)
+                if (b is MemoryStream streamB && streamB.TryGetBuffer(out var segmentB))
                 {
-                    return bufferA.AsSpan(0, (int)ms_a.Length).SequenceEqual(ms_b.GetBuffer().AsSpan(0, (int)ms_b.Length));
+                    return segmentA.AsSpan().SequenceEqual(segmentB.AsSpan());
                 }
 
                 // Fast path B: only first stream is a MemoryStream, compare against second stream chunk-by-chunk
@@ -148,9 +158,7 @@ namespace Jellyfin.Extensions
                     int bytesRead;
                     while ((bytesRead = await b.ReadAsync(memoryB, cancellationToken).ConfigureAwait(false)) > 0)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (!bufferA.AsSpan(offset, bytesRead).SequenceEqual(bufferB.AsSpan(0, bytesRead)))
+                        if (!segmentA.AsSpan(offset, bytesRead).SequenceEqual(memoryB.Span[..bytesRead]))
                         {
                             return false;
                         }
@@ -158,7 +166,7 @@ namespace Jellyfin.Extensions
                         offset += bytesRead;
                     }
 
-                    return offset == ms_a.Length;
+                    return offset == segmentA.Count;
                 }
                 finally
                 {
@@ -190,7 +198,7 @@ namespace Jellyfin.Extensions
                             return true;
                         }
 
-                        if (!bufferA.AsSpan(0, bytesReadA).SequenceEqual(bufferB.AsSpan(0, bytesReadB)))
+                        if (!memoryA.Span[..bytesReadA].SequenceEqual(memoryB.Span[..bytesReadB]))
                         {
                             return false;
                         }
