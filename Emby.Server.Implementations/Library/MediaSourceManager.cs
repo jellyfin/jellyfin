@@ -336,12 +336,8 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var source in sources)
             {
-                if (source.Protocol != MediaProtocol.File || string.IsNullOrEmpty(source.Path))
-                {
-                    continue;
-                }
-
-                if (FileSystemHelper.ResolveLinkTarget(source.Path, returnFinalTarget: true) is { Exists: true } target)
+                if (source.Protocol == MediaProtocol.File
+                    && FileSystemHelper.ResolveLinkTarget(source.Path, returnFinalTarget: true) is { Exists: true } target)
                 {
                     source.Path = target.FullName;
                 }
