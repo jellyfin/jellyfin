@@ -28,6 +28,11 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
     private const int HistoryWatchedCap = 500;
     private const int HistoryFavoriteCap = 250;
 
+    private const int MaxCategoryLimit = 20;
+    private const int MaxItemLimit = 100;
+    private const int DefaultRankedLimit = 50;
+    private const int MaxRankedLimit = 200;
+
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(6);
 
     private readonly ILibraryManager _libraryManager;
@@ -104,6 +109,8 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
 
         var parentIdGuid = request.ParentId ?? Guid.Empty;
         var dtoOptions = request.DtoOptions;
+        var categoryLimit = Math.Clamp(request.CategoryLimit, 0, MaxCategoryLimit);
+        var itemLimit = Math.Clamp(request.ItemLimit, 1, MaxItemLimit);
 
         var recentlyPlayed = _libraryManager.GetItemList(new InternalItemsQuery(user)
         {
@@ -138,12 +145,12 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
 
         foreach (var seed in recentlyPlayed)
         {
-            if (categories.Count >= request.CategoryLimit)
+            if (categories.Count >= categoryLimit)
             {
                 break;
             }
 
-            var cat = BuildSeedCategory(user, seed, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToRecentlyPlayed, parentIdGuid);
+            var cat = BuildSeedCategory(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToRecentlyPlayed, parentIdGuid);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -152,12 +159,12 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
 
         foreach (var seed in favoriteSeeds)
         {
-            if (categories.Count >= request.CategoryLimit)
+            if (categories.Count >= categoryLimit)
             {
                 break;
             }
 
-            var cat = BuildSeedCategory(user, seed, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToLikedItem, parentIdGuid);
+            var cat = BuildSeedCategory(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToLikedItem, parentIdGuid);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -167,12 +174,12 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         var directorNames = ExtractPeopleNames(recentlyPlayed, PersonKind.Director);
         foreach (var name in directorNames)
         {
-            if (categories.Count >= request.CategoryLimit)
+            if (categories.Count >= categoryLimit)
             {
                 break;
             }
 
-            var cat = BuildPersonCategory(user, name, PersonKind.Director, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.HasDirectorFromRecentlyPlayed, parentIdGuid);
+            var cat = BuildPersonCategory(user, name, PersonKind.Director, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.HasDirectorFromRecentlyPlayed, parentIdGuid);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -182,12 +189,12 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         var actorNames = ExtractPeopleNames(recentlyPlayed, PersonKind.Actor);
         foreach (var name in actorNames)
         {
-            if (categories.Count >= request.CategoryLimit)
+            if (categories.Count >= categoryLimit)
             {
                 break;
             }
 
-            var cat = BuildPersonCategory(user, name, PersonKind.Actor, profile, request.ItemLimit, emittedIds, dtoOptions, RecommendationType.HasActorFromRecentlyPlayed, parentIdGuid);
+            var cat = BuildPersonCategory(user, name, PersonKind.Actor, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.HasActorFromRecentlyPlayed, parentIdGuid);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -220,6 +227,9 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
             return null;
         }
 
+        var safeLimit = Math.Clamp(limit ?? DefaultRankedLimit, 1, MaxRankedLimit);
+        var safeStartIndex = Math.Max(0, startIndex ?? 0);
+
         var pool = _libraryManager.GetItemList(new InternalItemsQuery(user)
         {
             IncludeItemTypes = new[] { kind },
@@ -229,12 +239,12 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
             IsVirtualItem = false,
             EnableGroupByMetadataKey = true,
             DtoOptions = dtoOptions,
-            Limit = (limit ?? 50) * 6
+            Limit = safeLimit * 6
         });
 
         if (pool.Count == 0)
         {
-            return new QueryResult<BaseItemDto>(startIndex, 0, Array.Empty<BaseItemDto>());
+            return new QueryResult<BaseItemDto>(safeStartIndex, 0, Array.Empty<BaseItemDto>());
         }
 
         var peopleByCandidate = FetchPeopleByItem(pool);
@@ -246,13 +256,13 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
                 seedItem: null,
                 peopleByCandidate.GetValueOrDefault(c.Id, Array.Empty<PersonInfo>()))))
             .OrderByDescending(t => t.Score)
-            .Skip(startIndex ?? 0)
-            .Take(limit ?? 50)
+            .Skip(safeStartIndex)
+            .Take(safeLimit)
             .Select(t => t.Item)
             .ToList();
 
         return new QueryResult<BaseItemDto>(
-            startIndex,
+            safeStartIndex,
             enableTotalRecordCount ? pool.Count : 0,
             _dtoService.GetBaseItemDtos(ranked, dtoOptions, user));
     }
@@ -358,13 +368,45 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
             return;
         }
 
-        var kind = e.Item.GetBaseItemKind();
+        // Episodes and seasons roll up to the Series profile; a Movie maps to the Movie profile.
+        // Without this mapping, playing an episode would never invalidate the Series profile.
+        if (!TryGetProfileKind(e.Item.GetBaseItemKind(), out var affectedKind))
+        {
+            return;
+        }
+
         foreach (var key in _cache.Keys)
         {
-            if (key.UserId.Equals(e.UserId) && key.Kind == kind)
+            if (key.UserId.Equals(e.UserId) && key.Kind == affectedKind)
             {
                 _cache.TryRemove(key, out _);
             }
+        }
+    }
+
+    /// <summary>
+    /// Maps an item's kind to the recommendable profile kind it contributes to, so that
+    /// activity on a child item (e.g. an Episode or Season) invalidates the owning Series
+    /// profile rather than a non-existent per-episode profile.
+    /// </summary>
+    /// <param name="itemKind">The kind of the item that changed.</param>
+    /// <param name="profileKind">When successful, the recommendable profile kind affected.</param>
+    /// <returns>True if the item kind maps to a recommendable profile kind; otherwise, false.</returns>
+    private static bool TryGetProfileKind(BaseItemKind itemKind, out BaseItemKind profileKind)
+    {
+        switch (itemKind)
+        {
+            case BaseItemKind.Movie:
+                profileKind = BaseItemKind.Movie;
+                return true;
+            case BaseItemKind.Series:
+            case BaseItemKind.Season:
+            case BaseItemKind.Episode:
+                profileKind = BaseItemKind.Series;
+                return true;
+            default:
+                profileKind = default;
+                return false;
         }
     }
 

@@ -9,6 +9,7 @@ using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Library.Recommendations;
 using MediaBrowser.Controller.Persistence;
@@ -306,5 +307,141 @@ public sealed class RecommendationsServiceTests
 
         Assert.NotNull(result);
         Assert.Equal("HighMatch", result!.Items[0].Name);
+    }
+
+    /// <summary>
+    /// Playing a TV episode must invalidate the cached Series profile (episodes/seasons roll up
+    /// to the Series recommendable kind), so the next call rebuilds it.
+    /// </summary>
+    [Fact]
+    public async Task UserDataSaved_EpisodePlayed_InvalidatesSeriesProfile()
+    {
+        var (svc, lib, userData, _, _) = MakeService();
+        var userId = Guid.NewGuid();
+        var req = new RecommendationRequest(userId, BaseItemKind.Series, ParentId: null, CategoryLimit: 5, ItemLimit: 8, new DtoOptions());
+
+        await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        userData.Raise(u => u.UserDataSaved += null, new UserDataSaveEventArgs
+        {
+            UserId = userId,
+            Item = new Episode { Id = Guid.NewGuid() },
+            UserData = new UserItemData { Key = "k" },
+            SaveReason = UserDataSaveReason.PlaybackFinished
+        });
+
+        await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        var historyQueryCount = lib.Invocations
+            .Where(i => i.Method.Name == nameof(ILibraryManager.GetItemList))
+            .Select(i => (InternalItemsQuery)i.Arguments[0])
+            .Count(q => q.IsPlayed == true && q.Limit == 500);
+        Assert.Equal(2, historyQueryCount);
+    }
+
+    /// <summary>
+    /// Playing a Movie must NOT invalidate a cached Series profile — the two kinds are independent.
+    /// </summary>
+    [Fact]
+    public async Task UserDataSaved_MoviePlayed_DoesNotInvalidateSeriesProfile()
+    {
+        var (svc, lib, userData, _, _) = MakeService();
+        var userId = Guid.NewGuid();
+        var req = new RecommendationRequest(userId, BaseItemKind.Series, ParentId: null, CategoryLimit: 5, ItemLimit: 8, new DtoOptions());
+
+        await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        userData.Raise(u => u.UserDataSaved += null, new UserDataSaveEventArgs
+        {
+            UserId = userId,
+            Item = new Movie { Id = Guid.NewGuid() },
+            UserData = new UserItemData { Key = "k" },
+            SaveReason = UserDataSaveReason.TogglePlayed
+        });
+
+        await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        var historyQueryCount = lib.Invocations
+            .Where(i => i.Method.Name == nameof(ILibraryManager.GetItemList))
+            .Select(i => (InternalItemsQuery)i.Arguments[0])
+            .Count(q => q.IsPlayed == true && q.Limit == 500);
+        Assert.Equal(1, historyQueryCount);
+    }
+
+    /// <summary>
+    /// A pathologically large itemLimit must be clamped before the *4 candidate-pool multiplication
+    /// so it never overflows int into a negative DB Limit.
+    /// </summary>
+    [Fact]
+    public async Task GetRecommendationsAsync_HugeItemLimit_DoesNotProduceNegativeQueryLimit()
+    {
+        var (svc, lib, userData, _, dto) = MakeService();
+        var userId = Guid.NewGuid();
+        var seedMovie = new Movie { Id = Guid.NewGuid(), Name = "Inception", Genres = new[] { "Sci-Fi" } };
+        var candidate = new Movie { Id = Guid.NewGuid(), Name = "Interstellar", Genres = new[] { "Sci-Fi" } };
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true)))
+           .Returns(new List<BaseItem>());
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 6)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q =>
+                q.Genres != null && q.Genres.Count > 0 && q.IsPlayed != true)))
+           .Returns(new List<BaseItem> { candidate });
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns<IReadOnlyList<BaseItem>, DtoOptions, User, BaseItem, bool>((items, _, _, _, _) => items.Select(i => new BaseItemDto { Id = i.Id, Name = i.Name }).ToList());
+
+        var req = new RecommendationRequest(userId, BaseItemKind.Movie, ParentId: null, CategoryLimit: int.MaxValue, ItemLimit: int.MaxValue, new DtoOptions());
+
+        await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        var limits = lib.Invocations
+            .Where(i => i.Method.Name == nameof(ILibraryManager.GetItemList))
+            .Select(i => ((InternalItemsQuery)i.Arguments[0]).Limit)
+            .ToList();
+        Assert.All(limits, l => Assert.True(l is null or >= 0, $"Query Limit was negative: {l}"));
+    }
+
+    /// <summary>
+    /// A pathologically large ranked-list limit must be clamped before the *6 candidate-pool
+    /// multiplication so it never overflows int into a negative DB Limit.
+    /// </summary>
+    [Fact]
+    public async Task GetRankedItemsAsync_HugeLimit_DoesNotProduceNegativeQueryLimit()
+    {
+        var (svc, lib, userData, _, dto) = MakeService();
+        var userId = Guid.NewGuid();
+        var watched = new Movie { Id = Guid.NewGuid(), Genres = new[] { "Sci-Fi" } };
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { watched });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true && q.Limit == 250)))
+           .Returns(new List<BaseItem>());
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == false)))
+           .Returns(new List<BaseItem>());
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns(Array.Empty<BaseItemDto>());
+
+        await svc.GetRankedItemsAsync(
+            userId,
+            BaseItemKind.Movie,
+            parentId: null,
+            startIndex: null,
+            limit: int.MaxValue,
+            enableTotalRecordCount: false,
+            new DtoOptions(),
+            CancellationToken.None);
+
+        var poolLimit = lib.Invocations
+            .Where(i => i.Method.Name == nameof(ILibraryManager.GetItemList))
+            .Select(i => (InternalItemsQuery)i.Arguments[0])
+            .Where(q => q.IsPlayed == false)
+            .Select(q => q.Limit)
+            .First();
+        Assert.NotNull(poolLimit);
+        Assert.True(poolLimit >= 0, $"Ranked candidate-pool Limit was negative: {poolLimit}");
     }
 }
