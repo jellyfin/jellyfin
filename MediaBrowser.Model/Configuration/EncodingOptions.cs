@@ -61,7 +61,7 @@ public class EncodingOptions
         SubtitleExtractionTimeoutMinutes = 30;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"];
         HardwareDecodingCodecs = ["h264", "vc1"];
-        HlsAudioSeekStrategy = HlsAudioSeekStrategy.DisableAccurateSeek;
+        HlsAudioSeekStrategy = HlsAudioSeekStrategy.TrimCopiedAudio;
     }
 
     /// <summary>
@@ -307,6 +307,6 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the method used for audio seeking in HLS.
     /// </summary>
-    [DefaultValue(HlsAudioSeekStrategy.DisableAccurateSeek)]
+    [DefaultValue(HlsAudioSeekStrategy.TrimCopiedAudio)]
     public HlsAudioSeekStrategy HlsAudioSeekStrategy { get; set; }
 }

@@ -166,13 +166,8 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItem(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+    public IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit)
     {
-        if (itemIds.Count == 0)
-        {
-            return new Dictionary<Guid, IReadOnlyList<string>>();
-        }
-
         using var context = _dbProvider.CreateDbContext();
         var query = context.PeopleBaseItemMap
             .AsNoTracking()
@@ -183,44 +178,16 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             query = query.Where(m => personTypes.Contains(m.People.PersonType));
         }
 
-        // One round-trip: pull (ItemId, ListOrder, Name) sorted by ItemId+ListOrder, group in memory.
-        var rows = query
-            .OrderBy(m => m.ItemId)
-            .ThenBy(m => m.ListOrder)
-            .Select(m => new { m.ItemId, m.People.Name })
-            .ToArray();
+        var names = query
+            .Select(m => m.People.Name)
+            .Distinct();
 
-        var result = new Dictionary<Guid, IReadOnlyList<string>>();
-        List<string>? current = null;
-        var currentId = Guid.Empty;
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var row in rows)
+        if (limit > 0)
         {
-            if (row.ItemId != currentId)
-            {
-                if (current is { Count: > 0 })
-                {
-                    result[currentId] = current;
-                }
-
-                currentId = row.ItemId;
-                current = new List<string>();
-                seen.Clear();
-            }
-
-            if (!string.IsNullOrWhiteSpace(row.Name) && seen.Add(row.Name))
-            {
-                current!.Add(row.Name);
-            }
+            names = names.Take(limit);
         }
 
-        if (current is { Count: > 0 })
-        {
-            result[currentId] = current;
-        }
-
-        return result;
+        return names.ToArray();
     }
 
     private PersonInfo Map(People people)
@@ -297,7 +264,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Where(w => w.ItemId == filter.ItemId).OrderBy(w => w.ListOrder).First().ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId == filter.ItemId && w.ListOrder <= filter.MaxListOrder.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))

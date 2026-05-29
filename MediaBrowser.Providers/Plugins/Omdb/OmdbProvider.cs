@@ -413,7 +413,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             item.Overview = result.Plot;
-            item.OriginalLanguage = result.Language;
+            item.OriginalLanguage = result.Language?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
 
             if (!Plugin.Instance.Configuration.CastAndCrew)
             {
