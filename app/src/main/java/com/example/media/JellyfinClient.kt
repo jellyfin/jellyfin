@@ -1,2 +1,2 @@
-// Esempio di correzione usando l'operatore Elvis
-val serverAddress: String = serverAddressNullable ?: ""
+// Esempio di correzione applicando l'operatore Elvis
+val serverAddress: String = api.getSavedAddress() ?: ""
