@@ -133,36 +133,40 @@ namespace Jellyfin.Extensions
                 return true;
             }
 
-            if (a.CanSeek)
+            if (a.CanSeek is var aCanSeek && aCanSeek)
             {
                 a.Position = 0;
             }
 
-            if (b.CanSeek)
+            if (b.CanSeek is var bCanSeek && bCanSeek)
             {
                 b.Position = 0;
             }
 
-            if (a.CanSeek && b.CanSeek && b.Length != a.Length)
+            if (aCanSeek && bCanSeek && b.Length != a.Length)
             {
                 return false;
             }
 
-            // If b is MemoryStream but a is not, swap them to enable fast path B
-            if (b is MemoryStream && a is not MemoryStream)
+            // MemoryStreams only unlock a fast path if their underlying buffer is exposed via TryGetBuffer.
+            var segmentA = a is MemoryStream streamA && streamA.TryGetBuffer(out var bufA) ? bufA : default;
+            var segmentB = b is MemoryStream streamB && streamB.TryGetBuffer(out var bufB) ? bufB : default;
+
+            // Fast path A: both streams expose buffers, compare segments directly
+            if (segmentA.Array is not null && segmentB.Array is not null)
             {
-                (a, b) = (b, a);
+                return segmentA.AsSpan().SequenceEqual(segmentB.AsSpan());
             }
 
-            if (a is MemoryStream streamA && streamA.TryGetBuffer(out var segmentA))
+            if (segmentB.Array is not null) // && segmentA.Array is null guaranteed by previous check
             {
-                // Fast path A: if both streams are MemoryStreams, compare directly against each other
-                if (b is MemoryStream streamB && streamB.TryGetBuffer(out var segmentB))
-                {
-                    return segmentA.AsSpan().SequenceEqual(segmentB.AsSpan());
-                }
+                // swap so that segmentA is the non-null one, compared to b we need only one fast path B
+                (segmentA, b) = (segmentB, a);
+            }
 
-                // Fast path B: only first stream is a MemoryStream, compare against second stream chunk-by-chunk
+            if (segmentA.Array is not null) // either a was non-null, or b was non-null and was swapped there
+            {
+                // Fast path B: only one stream exposed a buffer, compare against the other chunk-by-chunk
                 var bufferB = ArrayPool<byte>.Shared.Rent(StreamComparisonBufferSize);
                 try
                 {
@@ -198,8 +202,12 @@ namespace Jellyfin.Extensions
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        var bytesReadA = await a.ReadAtLeastAsync(memoryA, memoryA.Length, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
-                        var bytesReadB = await b.ReadAtLeastAsync(memoryB, memoryB.Length, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+                        var taskA = a.ReadAtLeastAsync(memoryA, memoryA.Length, throwOnEndOfStream: false, cancellationToken).AsTask();
+                        var taskB = b.ReadAtLeastAsync(memoryB, memoryB.Length, throwOnEndOfStream: false, cancellationToken).AsTask();
+                        await Task.WhenAll(taskA, taskB).ConfigureAwait(false);
+
+                        var bytesReadA = await taskA.ConfigureAwait(false);
+                        var bytesReadB = await taskB.ConfigureAwait(false);
 
                         if (bytesReadA != bytesReadB)
                         {
