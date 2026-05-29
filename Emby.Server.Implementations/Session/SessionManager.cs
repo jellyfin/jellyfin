@@ -11,6 +11,7 @@ using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Entities.Security;
 using Jellyfin.Database.Implementations.Enums;
@@ -39,6 +40,7 @@ using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Nikse.SubtitleEdit.Core.Common;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -48,6 +50,7 @@ namespace Emby.Server.Implementations.Session
     /// </summary>
     public sealed class SessionManager : ISessionManager, IAsyncDisposable
     {
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<SessionManager> _logger;
@@ -89,6 +92,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
+        /// <param name="dbProvider">Instance of <see cref="IDbContextFactory{JellyfinDbContext}"/> interface.</param>
         public SessionManager(
             ILogger<SessionManager> logger,
             IEventManager eventManager,
@@ -102,7 +106,8 @@ namespace Emby.Server.Implementations.Session
             IServerApplicationHost appHost,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
-            IHostApplicationLifetime hostApplicationLifetime)
+            IHostApplicationLifetime hostApplicationLifetime,
+            IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -119,6 +124,7 @@ namespace Emby.Server.Implementations.Session
             _shutdownCallback = hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
+            _dbProvider = dbProvider;
         }
 
         /// <summary>
@@ -1098,6 +1104,30 @@ namespace Emby.Server.Implementations.Session
                 foreach (var user in users)
                 {
                     playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
+                }
+
+                if (info.PositionTicks.HasValue && info.PositionTicks.Value > 0)
+                {
+                    using var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+
+                    foreach (var user in users)
+                    {
+                        var genre = libraryItem.Genres?.FirstOrDefault() ?? "Unknown";
+
+                        dbContext.PlaybackActivity.Add(new PlaybackActivity
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = user.Id,
+                            ItemId = info.ItemId,
+                            ItemName = libraryItem.Name ?? string.Empty,
+                            MediaType = libraryItem.GetType().Name,
+                            PlayedTicks = info.PositionTicks.Value,
+                            DatePlayed = DateTime.UtcNow,
+                            ItemSubGroup = genre // For drill-down reporting analytics
+                        });
+                    }
+
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
 
