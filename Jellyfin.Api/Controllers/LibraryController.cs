@@ -114,7 +114,18 @@ public class LibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), true);
+        var filePath = item.Path;
+        if (item.IsFileProtocol)
+        {
+            // PhysicalFile does not work well with symlinks at the moment.
+            var resolved = FileSystemHelper.ResolveLinkTarget(filePath, returnFinalTarget: true);
+            if (resolved is not null && resolved.Exists)
+            {
+                filePath = resolved.FullName;
+            }
+        }
+
+        return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), true);
     }
 
     /// <summary>
