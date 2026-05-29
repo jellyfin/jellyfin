@@ -54,7 +54,7 @@ public class MediaSegmentManager : IMediaSegmentManager
     public async Task RunSegmentPluginProviders(BaseItem baseItem, LibraryOptions libraryOptions, bool forceOverwrite, CancellationToken cancellationToken)
     {
         var providers = _segmentProviders
-            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+            .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
             .OrderBy(i =>
                 {
                     var index = libraryOptions.MediaSegmentProviderOrder.IndexOf(i.Name);
@@ -81,6 +81,8 @@ public class MediaSegmentManager : IMediaSegmentManager
 
             foreach (var provider in providers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (!await provider.Supports(baseItem).ConfigureAwait(false))
                 {
                     _logger.LogDebug("Media Segment provider {ProviderName} does not support item with path {MediaPath}", provider.Name, baseItem.Path);
@@ -145,6 +147,15 @@ public class MediaSegmentManager : IMediaSegmentManager
                         segment.ItemId = baseItem.Id;
                         await CreateSegmentAsync(segment, providerId).ConfigureAwait(false);
                     }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex) when (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogDebug(ex, "Provider {ProviderName} aborted segment extraction for {MediaPath} due to shutdown", provider.Name, baseItem.Path);
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -224,7 +235,7 @@ public class MediaSegmentManager : IMediaSegmentManager
             if (filterByProvider)
             {
                 var providerIds = _segmentProviders
-                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(GetProviderId(e.Name)))
+                    .Where(e => !libraryOptions.DisabledMediaSegmentProviders.Contains(e.Name, StringComparer.OrdinalIgnoreCase))
                     .Select(f => GetProviderId(f.Name))
                     .ToArray();
                 if (providerIds.Length == 0)

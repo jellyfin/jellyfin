@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Plugins.GoogleBooks
+namespace MediaBrowser.Providers.Books.GoogleBooks
 {
     /// <inheritdoc />
     public class GoogleBooksExternalId : IExternalId

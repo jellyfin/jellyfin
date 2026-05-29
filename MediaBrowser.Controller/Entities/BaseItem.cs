@@ -94,6 +94,8 @@ namespace MediaBrowser.Controller.Entities
 
         private string _name;
 
+        private string _originalLanguage;
+
         public const char SlugChar = '-';
 
         protected BaseItem()
@@ -217,7 +219,11 @@ namespace MediaBrowser.Controller.Entities
         public string OriginalTitle { get; set; }
 
         [JsonIgnore]
-        public string OriginalLanguage { get; set; }
+        public string OriginalLanguage
+        {
+            get => _originalLanguage;
+            set => _originalLanguage = LocalizationManager?.FindLanguageInfo(value)?.TwoLetterISOLanguageName ?? value;
+        }
 
         /// <summary>
         /// Gets or sets the id.
@@ -1564,7 +1570,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the preferred metadata language.
+        /// Gets the preferred metadata country code.
         /// </summary>
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataCountryCode()
@@ -1596,6 +1602,15 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return lang;
+        }
+
+        /// <summary>
+        /// Gets the original language of the item, inheriting from parent items if necessary.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public virtual string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage;
         }
 
         public virtual bool IsSaveLocalMetadataEnabled()
