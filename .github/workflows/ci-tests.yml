@@ -37,3 +37,9 @@ jobs:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"
           reporttypes: "Cobertura"
+
+      - name: Upload code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-results-${{ matrix.os }}
+          path: merged/
