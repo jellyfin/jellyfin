@@ -3488,6 +3488,7 @@ namespace Emby.Server.Implementations.Library
 
             LibraryMonitor.Stop();
 
+            Task reconciliationTask = Task.CompletedTask;
             try
             {
                 Directory.CreateDirectory(virtualFolderPath);
@@ -3512,10 +3513,12 @@ namespace Emby.Server.Implementations.Library
             finally
             {
                 // The on-disk side (directory + .collection marker + library options + shortcuts) is now complete.
-                // Reconciling the in-memory tree and the database scales with the number of already-configured libraries.
-                // Fire it off the request thread so the caller returns immediately.
+                // Reconciling the in-memory tree and the database scales with the number of already-configured libraries,
+                // so it runs off the request thread. The task is returned (rather than fire-and-forget) so callers that
+                // need the new folder to be resolvable once this completes - e.g. collection creation - can await it,
+                // while callers that only need a fast response (the HTTP API) can choose not to.
                 var shouldRefreshLibrary = refreshLibrary;
-                _ = Task.Run(async () =>
+                reconciliationTask = Task.Run(async () =>
                 {
                     try
                     {
@@ -3539,7 +3542,7 @@ namespace Emby.Server.Implementations.Library
                 });
             }
 
-            return Task.CompletedTask;
+            return reconciliationTask;
         }
 
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
