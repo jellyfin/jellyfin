@@ -76,6 +76,18 @@ namespace MediaBrowser.Controller.Entities
         public bool Played { get; set; }
 
         /// <summary>
+        /// Gets or sets the skip count.
+        /// </summary>
+        /// <value>The skip count.</value>
+        public int SkipCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last skipped date.
+        /// </summary>
+        /// <value>The last skipped date.</value>
+        public DateTime? LastSkippedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>
         /// <value>The index of the audio stream.</value>
