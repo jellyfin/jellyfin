@@ -79,34 +79,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputFormat,
             long startTimeTicks,
             long endTimeTicks,
-            bool preserveOriginalTimestamps,
-            CancellationToken cancellationToken)
+            bool preserveOriginalTimestamps)
         {
-            var ms = new MemoryStream();
+            var subtitle = Subtitle.Parse(stream, Path.GetExtension(inputInfo.Path));
 
-            try
-            {
-                var subtitle = Subtitle.Parse(stream, Path.GetExtension(inputInfo.Path));
+            FilterEvents(subtitle, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
-                FilterEvents(subtitle, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
+            var formatter = GetWriter(outputFormat);
 
-                var formatter = GetWriter(outputFormat);
+            var text = formatter.ToText(subtitle, "untitled");
+            var bytes = Encoding.UTF8.GetBytes(text);
 
-                var text = formatter.ToText(subtitle, "untitled");
-                using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
-                {
-                    writer.Write(text);
-                }
-
-                ms.Position = 0;
-            }
-            catch
-            {
-                ms.Dispose();
-                throw;
-            }
-
-            return ms;
+            return new MemoryStream(bytes, 0, bytes.Length, false, true);
         }
 
         internal void FilterEvents(Subtitle track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
@@ -163,7 +147,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             using (stream)
             {
-                return ConvertSubtitles(stream, info, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
+                return ConvertSubtitles(stream, info, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
             }
         }
 
