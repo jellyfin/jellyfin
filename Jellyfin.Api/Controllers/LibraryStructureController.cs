@@ -115,10 +115,10 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(name));
         }
 
-        var rootFolderPath = _appPaths.DefaultUserViewsPath;
-        var currentPath = Path.Combine(rootFolderPath, name);
+        var virtualFolders = _libraryManager.GetVirtualFolders(true);
 
-        if (!Directory.Exists(currentPath))
+        if (!virtualFolders.Any(folder =>
+                    string.Equals(folder.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             return NotFound("The media library does not exist.");
         }
