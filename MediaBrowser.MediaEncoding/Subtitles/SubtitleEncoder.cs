@@ -269,10 +269,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotImplementedException();
+                value = new JsonWriter();
+                return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
             {
                 value = new SubRip();
                 return true;
@@ -284,7 +286,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
             {
                 value = new WebVTT();
                 return true;
