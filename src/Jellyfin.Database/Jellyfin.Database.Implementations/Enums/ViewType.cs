@@ -108,50 +108,5 @@ public enum ViewType
     /// <summary>
     /// Shows upcoming.
     /// </summary>
-    Upcoming = 20,
-
-    /// <summary>
-    /// Shows authors.
-    /// </summary>
-    Authors = 21,
-
-    /// <summary>
-    /// Shows books.
-    /// </summary>
-    Books = 22,
-
-    /// <summary>
-    /// Shows folders.
-    /// </summary>
-    Folders = 23,
-
-    /// <summary>
-    /// Shows mixed media.
-    /// </summary>
-    Mixed = 24,
-
-    /// <summary>
-    /// Shows photos.
-    /// </summary>
-    Photos = 25,
-
-    /// <summary>
-    /// Shows photo albums.
-    /// </summary>
-    PhotoAlbums = 26,
-
-    /// <summary>
-    /// Shows series timers.
-    /// </summary>
-    SeriesTimers = 27,
-
-    /// <summary>
-    /// Shows studios.
-    /// </summary>
-    Studios = 28,
-
-    /// <summary>
-    /// Shows videos.
-    /// </summary>
-    Videos = 29
+    Upcoming = 20
 }

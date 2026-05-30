@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 
@@ -30,9 +29,8 @@ public interface ILinkedChildrenService
     /// Gets parent IDs that reference the specified child with LinkedChildType.Manual.
     /// </summary>
     /// <param name="childId">The child item ID.</param>
-    /// <param name="parentType">Optional parent item type filter.</param>
     /// <returns>List of parent IDs that reference the child.</returns>
-    IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId, BaseItemKind? parentType = null);
+    IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId);
 
     /// <summary>
     /// Updates LinkedChildren references from one child to another.

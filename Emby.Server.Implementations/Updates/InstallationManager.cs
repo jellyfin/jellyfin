@@ -527,44 +527,42 @@ namespace Emby.Server.Implementations.Updates
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
-            {
-                // CA5351: Do Not Use Broken Cryptographic Algorithms
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
-                if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogError(
-                        "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.Name,
-                        package.Checksum,
-                        hash);
-                    throw new InvalidDataException("The checksum of the received data doesn't match.");
-                }
-
-                // Version folder as they cannot be overwritten in Windows.
-                targetDir += "_" + package.Version;
-
-                if (Directory.Exists(targetDir))
-                {
-                    try
-                    {
-                        Directory.Delete(targetDir, true);
-                    }
-#pragma warning disable CA1031 // Do not catch general exception types
-                    catch
-#pragma warning restore CA1031 // Do not catch general exception types
-                    {
-                        // Ignore any exceptions.
-                    }
-                }
-
-                stream.Position = 0;
-                await ZipFile.ExtractToDirectoryAsync(stream, targetDir, true, cancellationToken).ConfigureAwait(false);
+            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
+            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogError(
+                    "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
+                    package.Name,
+                    package.Checksum,
+                    hash);
+                throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
+
+            // Version folder as they cannot be overwritten in Windows.
+            targetDir += "_" + package.Version;
+
+            if (Directory.Exists(targetDir))
+            {
+                try
+                {
+                    Directory.Delete(targetDir, true);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    // Ignore any exceptions.
+                }
+            }
+
+            stream.Position = 0;
+            await ZipFile.ExtractToDirectoryAsync(stream, targetDir, true, cancellationToken);
 
             // Ensure we create one or populate existing ones with missing data.
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
