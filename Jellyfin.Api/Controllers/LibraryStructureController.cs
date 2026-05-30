@@ -115,15 +115,15 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(name));
         }
 
-        var virtualFolders = _libraryManager.GetVirtualFolders(true);
+        var virtualFolder = _libraryManager.GetVirtualFolders(true)
+            .FirstOrDefault(folder => string.Equals(folder.Name, name, StringComparison.Ordinal));
 
-        if (!virtualFolders.Any(folder =>
-                    string.Equals(folder.Name, name, StringComparison.OrdinalIgnoreCase)))
+        if (virtualFolder is null)
         {
             return NotFound("The media library does not exist.");
         }
 
-        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        await _libraryManager.RemoveVirtualFolder(virtualFolder.Name, refreshLibrary).ConfigureAwait(false);
 
         return NoContent();
     }
