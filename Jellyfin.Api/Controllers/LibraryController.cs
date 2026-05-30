@@ -17,6 +17,7 @@ using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -50,6 +51,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ISimilarItemsManager _similarItemsManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
+    private readonly ICollectionManager _collectionManager;
     private readonly IDtoService _dtoService;
     private readonly IActivityManager _activityManager;
     private readonly ILocalizationManager _localization;
@@ -64,6 +66,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="similarItemsManager">Instance of the <see cref="ISimilarItemsManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="collectionManager">Instance of the <see cref="ICollectionManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
@@ -75,6 +78,7 @@ public class LibraryController : BaseJellyfinApiController
         ISimilarItemsManager similarItemsManager,
         ILibraryManager libraryManager,
         IUserManager userManager,
+        ICollectionManager collectionManager,
         IDtoService dtoService,
         IActivityManager activityManager,
         ILocalizationManager localization,
@@ -86,6 +90,7 @@ public class LibraryController : BaseJellyfinApiController
         _similarItemsManager = similarItemsManager;
         _libraryManager = libraryManager;
         _userManager = userManager;
+        _collectionManager = collectionManager;
         _dtoService = dtoService;
         _activityManager = activityManager;
         _localization = localization;
@@ -702,6 +707,72 @@ public class LibraryController : BaseJellyfinApiController
         }
 
         return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
+    }
+
+    /// <summary>
+    /// Gets the collections that include the specified item.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
+    /// <param name="startIndex">Optional. The index of the first record in the output.</param>
+    /// <param name="limit">Optional. The maximum number of records to return.</param>
+    /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
+    /// <response code="200">Collections returned.</response>
+    /// <response code="401">User context missing.</response>
+    /// <response code="404">Item not found.</response>
+    /// <returns>The collections that contain the requested item.</returns>
+    [HttpGet("Items/{itemId}/Collections")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<QueryResult<BaseItemDto>> GetItemCollections(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery] Guid? userId,
+        [FromQuery] int? startIndex,
+        [FromQuery] int? limit,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.IsNullOrEmpty()
+            ? null
+            : _userManager.GetUserById(userId.Value);
+
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var dtoOptions = new DtoOptions { Fields = fields };
+
+        var visibleCollections = _collectionManager
+            .GetCollectionsContainingItem(user, item.Id)
+            .OrderBy(i => i.SortName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        IEnumerable<BaseItem> pagedCollections = visibleCollections;
+        if (startIndex.HasValue)
+        {
+            pagedCollections = pagedCollections.Skip(startIndex.Value);
+        }
+
+        if (limit.HasValue)
+        {
+            pagedCollections = pagedCollections.Take(limit.Value);
+        }
+
+        var dtos = _dtoService.GetBaseItemDtos(pagedCollections.ToList(), dtoOptions, user);
+
+        return new QueryResult<BaseItemDto>(
+            startIndex,
+            visibleCollections.Count,
+            dtos);
     }
 
     /// <summary>

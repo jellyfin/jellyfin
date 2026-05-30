@@ -3395,9 +3395,9 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc/>
-        public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItem(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+        public IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit)
         {
-            return _peopleRepository.GetPeopleNamesByItem(itemIds, personTypes);
+            return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes, limit);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
