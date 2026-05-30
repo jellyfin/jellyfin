@@ -40,6 +40,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Audio = MediaBrowser.Controller.Entities.Audio.Audio;
+using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -827,7 +828,7 @@ namespace Emby.Server.Implementations.Session
             var data = _userDataManager.GetUserData(user, item);
 
             // We won't manage Audio here but on OnPlaybackStopped
-            if (item is not Audio)
+            if (item is not Audio || item is AudioBook)
             {
                 data.PlayCount++;
                 data.LastPlayedDate = DateTime.UtcNow;
@@ -1154,7 +1155,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             // For Audio: PlayCount/Date and SkipCount/Date are managed here at stop time rather than at start time.
-            if (item is Audio && positionTicks.HasValue)
+            if (item is Audio and not AudioBook && positionTicks.HasValue)
             {
                 var runtimeTicks = item.GetRunTimeTicksForPlayState();
                 if (playedToCompletion)
