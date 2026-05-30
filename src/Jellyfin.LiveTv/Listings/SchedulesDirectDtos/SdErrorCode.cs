@@ -10,12 +10,12 @@ public enum SdErrorCode
     /// <summary>
     /// Schedules Direct unavailable/out of service.
     /// </summary>
-    SvcUnavailable = 3001,
+    SvcUnavailable = 3000,
 
     /// <summary>
     /// Schedules Direct busy.
     /// </summary>
-    SvcBusy = 3002,
+    SvcBusy = 3001,
 
     /// <summary>
     /// Account expired.
