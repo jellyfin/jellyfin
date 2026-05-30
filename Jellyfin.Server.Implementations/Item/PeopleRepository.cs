@@ -165,6 +165,31 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         transaction.Commit();
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        var query = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Where(m => itemIds.Contains(m.ItemId));
+
+        if (personTypes.Count > 0)
+        {
+            query = query.Where(m => personTypes.Contains(m.People.PersonType));
+        }
+
+        var names = query
+            .Select(m => m.People.Name)
+            .Distinct();
+
+        if (limit > 0)
+        {
+            names = names.Take(limit);
+        }
+
+        return names.ToArray();
+    }
+
     private PersonInfo Map(People people)
     {
         var mapping = people.BaseItems?.FirstOrDefault();
@@ -239,7 +264,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Where(w => w.ItemId == filter.ItemId).OrderBy(w => w.ListOrder).First().ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId == filter.ItemId && w.ListOrder <= filter.MaxListOrder.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
