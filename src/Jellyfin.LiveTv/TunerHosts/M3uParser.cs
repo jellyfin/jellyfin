@@ -36,6 +36,45 @@ namespace Jellyfin.LiveTv.TunerHosts
         [GeneratedRegex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase, "en-US")]
         private static partial Regex KeyValueRegex();
 
+        private static void ValidateLocalFilePath(string path)
+        {
+            // Reject paths with path traversal patterns
+            if (path.Contains("..", StringComparison.Ordinal) ||
+                path.Contains("~", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Path traversal patterns are not allowed in M3U file paths.", nameof(path));
+            }
+
+            // Ensure the path is absolute to prevent relative path attacks
+            if (!Path.IsPathRooted(path))
+            {
+                throw new ArgumentException("M3U file path must be an absolute path.", nameof(path));
+            }
+
+            // Get the full normalized path
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(path);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Invalid file path: {ex.Message}", nameof(path), ex);
+            }
+
+            // Verify the normalized path matches the input (prevents traversal via normalization)
+            if (!string.Equals(fullPath, Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Path normalization detected potential traversal attempt.", nameof(path));
+            }
+
+            // Verify file exists and is accessible
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException("M3U file not found.", fullPath);
+            }
+        }
+
         public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
@@ -51,6 +90,8 @@ namespace Jellyfin.LiveTv.TunerHosts
 
             if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
+                // Validate local file path to prevent path traversal
+                ValidateLocalFilePath(info.Url);
                 return AsyncFile.OpenRead(info.Url);
             }
 
