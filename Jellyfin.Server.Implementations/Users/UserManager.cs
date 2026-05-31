@@ -526,6 +526,13 @@ namespace Jellyfin.Server.Implementations.Users
                 var authenticationProvider = authResult.AuthenticationProvider;
                 success = authResult.Success;
 
+                if (success && user is not null)
+                {
+                    // refresh the user if the auth provider might have updated it in the auth method.
+                    // this is a hack, this needs removal once the LDAP plugin uses the correct interface to get the user we hand in here and update that one instead.
+                    user = await UserQuery(dbContext).FirstOrDefaultAsync(e => e.Id == user.Id).ConfigureAwait(false);
+                }
+
                 if (user is null)
                 {
                     string updatedUsername = authResult.Username;
