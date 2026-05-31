@@ -171,6 +171,7 @@ namespace Emby.Server.Implementations.Library
         public async Task<IReadOnlyList<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+            var preservedExternalSubtitles = GetExternalSubtitleStreamsBySource(mediaSources);
 
             // If file is strm or main media stream is missing, force a metadata refresh with remote probing
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
@@ -187,6 +188,7 @@ namespace Emby.Server.Implementations.Library
                     cancellationToken).ConfigureAwait(false);
 
                 mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+                RestoreExternalSubtitleStreams(mediaSources, preservedExternalSubtitles);
             }
 
             var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken).ConfigureAwait(false);
@@ -222,6 +224,64 @@ namespace Emby.Server.Implementations.Library
             }
 
             return SortMediaSources(list).ToArray();
+        }
+
+        private IReadOnlyDictionary<string, IReadOnlyList<MediaStream>> GetExternalSubtitleStreamsBySource(IReadOnlyList<MediaSourceInfo> mediaSources)
+        {
+            return mediaSources
+                .Select(i => new
+                {
+                    i.Id,
+                    Streams = i.MediaStreams
+                        .Where(s => s.Type == MediaStreamType.Subtitle && s.IsExternal && !string.IsNullOrEmpty(s.Path))
+                        .Select(CloneMediaStream)
+                        .ToArray()
+                })
+                .Where(i => i.Streams.Length > 0)
+                .ToDictionary(i => i.Id, i => (IReadOnlyList<MediaStream>)i.Streams, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private MediaStream CloneMediaStream(MediaStream stream)
+        {
+            return JsonSerializer.Deserialize<MediaStream>(JsonSerializer.SerializeToUtf8Bytes(stream, _jsonOptions), _jsonOptions);
+        }
+
+        private void RestoreExternalSubtitleStreams(IReadOnlyList<MediaSourceInfo> mediaSources, IReadOnlyDictionary<string, IReadOnlyList<MediaStream>> preservedExternalSubtitles)
+        {
+            if (preservedExternalSubtitles.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var source in mediaSources)
+            {
+                if (!preservedExternalSubtitles.TryGetValue(source.Id, out var subtitles))
+                {
+                    continue;
+                }
+
+                var streams = source.MediaStreams.ToList();
+                var existingSubtitlePaths = streams
+                    .Where(i => i.Type == MediaStreamType.Subtitle && i.IsExternal && !string.IsNullOrEmpty(i.Path))
+                    .Select(i => i.Path)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var subtitle in subtitles)
+                {
+                    if (existingSubtitlePaths.Contains(subtitle.Path))
+                    {
+                        continue;
+                    }
+
+                    subtitle.DeliveryMethod = null;
+                    subtitle.DeliveryUrl = null;
+                    subtitle.IsExternalUrl = null;
+                    streams.Add(subtitle);
+                    existingSubtitlePaths.Add(subtitle.Path);
+                }
+
+                source.MediaStreams = streams;
+            }
         }
 
         /// <inheritdoc />>
