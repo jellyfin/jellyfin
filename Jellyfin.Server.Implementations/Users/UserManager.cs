@@ -216,7 +216,58 @@ namespace Jellyfin.Server.Implementations.Users
         {
             using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
-                await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    // TODO: this is a bit of a hack. Because the user entity can be created in another context, it is maybe tracked elsewhere and navigation properties do not easily move between context. Solution is to use proper DTOs instead.
+                    var dbUser = await UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefaultAsync(u => u.Id == user.Id)
+                        .ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException(nameof(user.Id));
+
+                    dbContext.Entry(dbUser).CurrentValues.SetValues(user);
+                    dbUser.Permissions.Clear();
+                    foreach (var permission in user.Permissions)
+                    {
+                        dbUser.Permissions.Add(new Permission(permission.Kind, permission.Value));
+                    }
+
+                    dbUser.Preferences.Clear();
+                    foreach (var preference in user.Preferences)
+                    {
+                        dbUser.Preferences.Add(new Preference(preference.Kind, preference.Value));
+                    }
+
+                    dbUser.AccessSchedules.Clear();
+                    foreach (var accessSchedule in user.AccessSchedules)
+                    {
+                        dbUser.AccessSchedules.Add(new AccessSchedule(accessSchedule.DayOfWeek, accessSchedule.StartHour, accessSchedule.EndHour, dbUser.Id));
+                    }
+
+                    if (user.ProfileImage is null)
+                    {
+                        if (dbUser.ProfileImage is not null)
+                        {
+                            dbContext.Remove(dbUser.ProfileImage);
+                            dbUser.ProfileImage = null;
+                        }
+                    }
+                    else if (dbUser.ProfileImage is null)
+                    {
+                        dbUser.ProfileImage = new Jellyfin.Database.Implementations.Entities.ImageInfo(user.ProfileImage.Path)
+                        {
+                            LastModified = user.ProfileImage.LastModified
+                        };
+                    }
+                    else
+                    {
+                        dbUser.ProfileImage.Path = user.ProfileImage.Path;
+                        dbUser.ProfileImage.LastModified = user.ProfileImage.LastModified;
+                    }
+
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
         }
 
@@ -965,15 +1016,6 @@ namespace Jellyfin.Server.Implementations.Users
                 _logger.LogDebug(ex, "Error authenticating with provider {Provider}", provider.Name);
 
                 return (username, false);
-            }
-        }
-
-        private async Task UpdateUserInternalAsync(User user)
-        {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
         }
 
