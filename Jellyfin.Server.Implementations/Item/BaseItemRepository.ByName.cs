@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -133,15 +132,21 @@ public sealed partial class BaseItemRepository
             IsSeries = filter.IsSeries
         });
 
-        // Use a correlated EXISTS rather than `IN (SELECT DISTINCT CleanValue ...)`. The
-        // IN-form would force materialization of the full set of artist CleanValues across the
-        // entire library before filtering.
+        // Keep this as an IQueryable sub-select. Materializing to a list would inline one
+        // bound parameter per CleanValue and hit SQLite's variable cap on libraries with
+        // high-cardinality value types (e.g. tens of thousands of artists).
+        var matchingCleanValues = context.ItemValuesMap
+            .Where(ivm => itemValueTypes.Contains(ivm.ItemValue.Type))
+            .Join(
+                innerQueryFilter,
+                ivm => ivm.ItemId,
+                g => g.Id,
+                (ivm, g) => ivm.ItemValue.CleanValue)
+            .Distinct();
+
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
-            .Where(e => context.ItemValuesMap.Any(ivm =>
-                itemValueTypes.Contains(ivm.ItemValue.Type)
-                && ivm.ItemValue.CleanValue == e.CleanName
-                && innerQueryFilter.Any(g => g.Id == ivm.ItemId)));
+            .Where(e => matchingCleanValues.Contains(e.CleanName!));
 
         var outerQueryFilter = new InternalItemsQuery(filter.User)
         {
@@ -164,34 +169,45 @@ public sealed partial class BaseItemRepository
             ExcludeItemIds = filter.ExcludeItemIds
         };
 
-        // Build the master query and collapse rows that share a PresentationUniqueKey
-        // (e.g. alternate versions) by picking the lowest Id per group.
+        // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) by picking
+        // the lowest Id per group. For MusicArtist, prefer the entity from a library the user
+        // can actually access,since the same artist can have a folder in multiple libraries.
+        // Keep as an IQueryable sub-select so paging is applied AFTER
+        // ApplyOrder runs the caller's actual sort.
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter);
-        var orderedMasterQuery = BuildOrderedMasterQuery(masterQuery, filter.SearchTerm);
+        var isMusicArtist = returnType == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
+        var representativeIds = isMusicArtist
+            ? masterQuery
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g
+                    .OrderBy(e => filter.TopParentIds.Contains(e.TopParentId ?? Guid.Empty) ? 0 : 1)
+                    .ThenBy(e => e.Id)
+                    .First().Id)
+            : masterQuery
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g.Min(e => e.Id));
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)
         {
-            result.TotalRecordCount = orderedMasterQuery.Count();
+            result.TotalRecordCount = representativeIds.Count();
         }
+
+        var query = ApplyNavigations(
+                context.BaseItems.AsNoTracking().AsSingleQuery().Where(e => representativeIds.Contains(e.Id)),
+                filter);
+
+        query = ApplyOrder(query, filter, context);
 
         if (filter.StartIndex.HasValue && filter.StartIndex.Value > 0)
         {
-            orderedMasterQuery = orderedMasterQuery.Skip(filter.StartIndex.Value);
+            query = query.Skip(filter.StartIndex.Value);
         }
 
         if (filter.Limit.HasValue)
         {
-            orderedMasterQuery = orderedMasterQuery.Take(filter.Limit.Value);
+            query = query.Take(filter.Limit.Value);
         }
-
-        var masterIds = orderedMasterQuery.ToList();
-
-        var query = ApplyNavigations(
-                context.BaseItems.AsNoTracking().AsSingleQuery().Where(e => masterIds.Contains(e.Id)),
-                filter);
-
-        query = ApplyOrder(query, filter, context);
 
         result.StartIndex = filter.StartIndex ?? 0;
         if (filter.IncludeItemTypes.Length > 0)
@@ -226,43 +242,6 @@ public sealed partial class BaseItemRepository
         }
 
         return result;
-    }
-
-    private static IQueryable<Guid> BuildOrderedMasterQuery(IQueryable<BaseItemEntity> masterQuery, string? searchTerm)
-    {
-        if (string.IsNullOrEmpty(searchTerm))
-        {
-            return masterQuery
-                .GroupBy(e => e.PresentationUniqueKey)
-                .Select(g => new { Id = g.Min(e => e.Id), SortName = g.Min(e => e.SortName) })
-                .OrderBy(x => x.SortName)
-                .Select(x => x.Id);
-        }
-
-        var cleanSearchTerm = searchTerm.GetCleanValue();
-        var cleanSearchPrefix = cleanSearchTerm + " ";
-
-        return masterQuery
-            .Select(e => new
-            {
-                e.Id,
-                e.PresentationUniqueKey,
-                e.SortName,
-                Score = (e.CleanName == cleanSearchTerm) ? 0
-                    : e.CleanName!.StartsWith(cleanSearchTerm) ? 1
-                    : e.CleanName!.Contains(cleanSearchPrefix) ? 2
-                    : 3
-            })
-            .GroupBy(x => x.PresentationUniqueKey)
-            .Select(g => new
-            {
-                Id = g.Min(x => x.Id),
-                Score = g.Min(x => x.Score),
-                SortName = g.Min(x => x.SortName)
-            })
-            .OrderBy(x => x.Score)
-            .ThenBy(x => x.SortName)
-            .Select(x => x.Id);
     }
 
     private Dictionary<string, ItemCounts> BuildItemCountsByCleanName(
