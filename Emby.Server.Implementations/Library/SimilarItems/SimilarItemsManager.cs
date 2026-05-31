@@ -125,6 +125,7 @@ public class SimilarItemsManager : ISimilarItemsManager
 
         var allResults = new List<(BaseItem Item, float Score)>();
         var excludeIds = new HashSet<Guid> { item.Id };
+        var excludeKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { item.GetPresentationUniqueKey() };
         foreach (var (providerOrder, provider) in orderedProviders.Index())
         {
             if (allResults.Count >= requestedLimit || cancellationToken.IsCancellationRequested)
@@ -149,7 +150,9 @@ public class SimilarItemsManager : ISimilarItemsManager
 
                     foreach (var (position, resultItem) in items.Index())
                     {
-                        if (excludeIds.Add(resultItem.Id))
+                        var isNewId = excludeIds.Add(resultItem.Id);
+                        var isNewKey = excludeKeys.Add(resultItem.GetPresentationUniqueKey());
+                        if (isNewId && isNewKey)
                         {
                             var score = CalculateScore(null, providerOrder, position);
                             allResults.Add((resultItem, score));
@@ -163,7 +166,7 @@ public class SimilarItemsManager : ISimilarItemsManager
                     var cachedReferences = await TryReadSimilarItemsCacheAsync(cachePath, cancellationToken).ConfigureAwait(false);
                     if (cachedReferences is not null)
                     {
-                        var resolvedItems = ResolveRemoteReferences(cachedReferences, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                        var resolvedItems = ResolveRemoteReferences(cachedReferences, providerOrder, user, dtoOptions, itemKind, excludeIds, excludeKeys);
                         allResults.AddRange(resolvedItems);
                         continue;
                     }
@@ -191,7 +194,7 @@ public class SimilarItemsManager : ISimilarItemsManager
 
                         if (pendingBatch.Count >= BatchSize)
                         {
-                            var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                            var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds, excludeKeys);
                             allResults.AddRange(resolvedItems);
                             remaining -= resolvedItems.Count;
                             pendingBatch.Clear();
@@ -206,7 +209,7 @@ public class SimilarItemsManager : ISimilarItemsManager
                     // Resolve any remaining references in the last partial batch
                     if (pendingBatch.Count > 0)
                     {
-                        var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds);
+                        var resolvedItems = ResolveRemoteReferences(pendingBatch, providerOrder, user, dtoOptions, itemKind, excludeIds, excludeKeys);
                         allResults.AddRange(resolvedItems);
                     }
 
@@ -435,7 +438,11 @@ public class SimilarItemsManager : ISimilarItemsManager
     private IReadOnlyList<string> GetPeopleNames(IReadOnlyList<BaseItem> items, IReadOnlyList<string> personTypes)
     {
         var itemIds = items.Select(i => i.Id).ToArray();
-        return _libraryManager.GetPeopleNamesByItems(itemIds, personTypes, limit: 0);
+        return _libraryManager.GetPeopleNamesByItems(itemIds, personTypes)
+            .Values
+            .SelectMany(names => names)
+            .Distinct()
+            .ToArray();
     }
 
     private List<(BaseItem Item, float Score)> ResolveRemoteReferences(
@@ -444,14 +451,15 @@ public class SimilarItemsManager : ISimilarItemsManager
         User? user,
         DtoOptions dtoOptions,
         BaseItemKind itemKind,
-        HashSet<Guid> excludeIds)
+        HashSet<Guid> excludeIds,
+        HashSet<string> excludeKeys)
     {
         if (references.Count == 0)
         {
             return [];
         }
 
-        var resolvedById = new Dictionary<Guid, (BaseItem Item, float Score)>();
+        var resolvedByKey = new Dictionary<string, (BaseItem Item, float Score)>(StringComparer.OrdinalIgnoreCase);
         var providerLookup = new Dictionary<(string ProviderName, string ProviderId), (float? Score, int Position)>(StringTupleComparer.Instance);
 
         foreach (var (position, match) in references.Index())
@@ -482,7 +490,13 @@ public class SimilarItemsManager : ISimilarItemsManager
 
         foreach (var item in items)
         {
-            if (excludeIds.Contains(item.Id) || resolvedById.ContainsKey(item.Id))
+            if (excludeIds.Contains(item.Id))
+            {
+                continue;
+            }
+
+            var presentationKey = item.GetPresentationUniqueKey();
+            if (excludeKeys.Contains(presentationKey))
             {
                 continue;
             }
@@ -492,10 +506,9 @@ public class SimilarItemsManager : ISimilarItemsManager
                 if (item.TryGetProviderId(providerName, out var itemProviderId) && providerLookup.TryGetValue((providerName, itemProviderId), out var matchInfo))
                 {
                     var score = CalculateScore(matchInfo.Score, providerOrder, matchInfo.Position);
-                    if (!resolvedById.TryGetValue(item.Id, out var existing) || existing.Score < score)
+                    if (!resolvedByKey.TryGetValue(presentationKey, out var existing) || existing.Score < score)
                     {
-                        excludeIds.Add(item.Id);
-                        resolvedById[item.Id] = (item, score);
+                        resolvedByKey[presentationKey] = (item, score);
                     }
 
                     break;
@@ -503,7 +516,13 @@ public class SimilarItemsManager : ISimilarItemsManager
             }
         }
 
-        return [.. resolvedById.Values];
+        foreach (var (key, entry) in resolvedByKey)
+        {
+            excludeIds.Add(entry.Item.Id);
+            excludeKeys.Add(key);
+        }
+
+        return [.. resolvedByKey.Values];
     }
 
     private static float CalculateScore(float? matchScore, int providerOrder, int position)

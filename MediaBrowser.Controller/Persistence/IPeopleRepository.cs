@@ -34,11 +34,10 @@ public interface IPeopleRepository
     IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery filter);
 
     /// <summary>
-    /// Gets distinct people names for multiple items efficiently by querying from the mapping table.
+    /// Gets the distinct people names per item for multiple items efficiently by querying from the mapping table.
     /// </summary>
     /// <param name="itemIds">The item IDs to get people for.</param>
     /// <param name="personTypes">The person types to include (e.g. "Actor", "Director").</param>
-    /// <param name="limit">Maximum number of names to return.</param>
-    /// <returns>The distinct people names.</returns>
-    IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit);
+    /// <returns>A dictionary mapping each item ID to its distinct people names, ordered by cast list order. Items with no matching people are omitted.</returns>
+    IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
 }

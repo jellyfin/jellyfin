@@ -166,7 +166,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit)
+    public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
     {
         using var context = _dbProvider.CreateDbContext();
         var query = context.PeopleBaseItemMap
@@ -178,16 +178,27 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             query = query.Where(m => personTypes.Contains(m.People.PersonType));
         }
 
-        var names = query
-            .Select(m => m.People.Name)
-            .Distinct();
+        var rows = query
+            .OrderBy(m => m.ListOrder)
+            .Select(m => new { m.ItemId, m.People.Name })
+            .ToList();
 
-        if (limit > 0)
+        var result = new Dictionary<Guid, IReadOnlyList<string>>();
+        foreach (var group in rows.GroupBy(r => r.ItemId))
         {
-            names = names.Take(limit);
+            var names = group
+                .Select(r => r.Name)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct()
+                .ToArray();
+
+            if (names.Length > 0)
+            {
+                result[group.Key] = names;
+            }
         }
 
-        return names.ToArray();
+        return result;
     }
 
     private PersonInfo Map(People people)

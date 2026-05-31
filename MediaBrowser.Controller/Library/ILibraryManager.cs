@@ -598,13 +598,12 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
-        /// Gets distinct people names for multiple items.
+        /// Gets the distinct people names per item for multiple items.
         /// </summary>
         /// <param name="itemIds">The item IDs.</param>
         /// <param name="personTypes">The person types to include.</param>
-        /// <param name="limit">Maximum number of names.</param>
-        /// <returns>The distinct people names.</returns>
-        IReadOnlyList<string> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes, int limit);
+        /// <returns>A dictionary mapping each item ID to its distinct people names. Items with no matching people are omitted.</returns>
+        IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes);
 
         /// <summary>
         /// Queries the items.
