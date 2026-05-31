@@ -54,5 +54,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The size.</value>
         public long Size { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order.
+        /// </summary>
+        /// <value>The sort order.</value>
+        public int SortOrder { get; set; }
     }
 }

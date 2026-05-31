@@ -498,10 +498,9 @@ public class ImageController : BaseJellyfinApiController
         {
             var index = 0;
 
-            // Prevent implicitly captured closure
             var currentImageType = imageType;
 
-            foreach (var image in itemImages.Where(i => i.Type == currentImageType))
+            foreach (var image in item.GetImages(currentImageType))
             {
                 var info = GetImageInfo(item, image, index);
 
@@ -1807,7 +1806,8 @@ public class ImageController : BaseJellyfinApiController
                 Size = length,
                 BlurHash = blurhash,
                 Width = width,
-                Height = height
+                Height = height,
+                SortOrder = info.SortOrder
             };
         }
         catch (Exception ex)

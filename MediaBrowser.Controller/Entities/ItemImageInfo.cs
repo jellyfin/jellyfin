@@ -36,6 +36,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The blurhash.</value>
         public string? BlurHash { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sort order for the image.
+        /// </summary>
+        /// <value>The sort order.</value>
+        public int SortOrder { get; set; }
+
         [JsonIgnore]
         public bool IsLocalFile => !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
