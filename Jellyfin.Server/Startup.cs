@@ -72,6 +72,7 @@ namespace Jellyfin.Server
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext(_serverApplicationHost.ConfigurationManager, _configuration);
             services.AddJellyfinApiSwagger();
+            services.AddJellyfinOpenTelemetry(_serverConfigurationManager.Configuration.OpenTelemetry);
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
