@@ -691,7 +691,7 @@ namespace Jellyfin.LiveTv.Listings
                 _tokens.Clear();
                 _accountError = true;
             }
-            else if (sdCode is SdErrorCode.SvcOffline or SdErrorCode.SvcBusy or SdErrorCode.AccountTempLock)
+            else if (sdCode is SdErrorCode.ServiceOffline or SdErrorCode.ServiceBusy or SdErrorCode.AccountTempLock)
             {
                 // Transient login errors — back off for 30 minutes, then allow retry.
                 _logger.LogError("Schedules Direct transient error (code {SdCode}). Backing off for 30 minutes.", sdCode);
