@@ -438,7 +438,11 @@ public class SimilarItemsManager : ISimilarItemsManager
     private IReadOnlyList<string> GetPeopleNames(IReadOnlyList<BaseItem> items, IReadOnlyList<string> personTypes)
     {
         var itemIds = items.Select(i => i.Id).ToArray();
-        return _libraryManager.GetPeopleNamesByItems(itemIds, personTypes, limit: 0);
+        return _libraryManager.GetPeopleNamesByItems(itemIds, personTypes)
+            .Values
+            .SelectMany(names => names)
+            .Distinct()
+            .ToArray();
     }
 
     private List<(BaseItem Item, float Score)> ResolveRemoteReferences(
