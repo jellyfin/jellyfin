@@ -170,12 +170,22 @@ public sealed partial class BaseItemRepository
         };
 
         // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) by picking
-        // the lowest Id per group. Keep as an IQueryable sub-select so paging is applied AFTER
+        // the lowest Id per group. For MusicArtist, prefer the entity from a library the user
+        // can actually access,since the same artist can have a folder in multiple libraries.
+        // Keep as an IQueryable sub-select so paging is applied AFTER
         // ApplyOrder runs the caller's actual sort.
         var masterQuery = TranslateQuery(innerQuery, context, outerQueryFilter);
-        var representativeIds = masterQuery
-            .GroupBy(e => e.PresentationUniqueKey)
-            .Select(g => g.Min(e => e.Id));
+        var isMusicArtist = returnType == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist];
+        var representativeIds = isMusicArtist
+            ? masterQuery
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g
+                    .OrderBy(e => filter.TopParentIds.Contains(e.TopParentId ?? Guid.Empty) ? 0 : 1)
+                    .ThenBy(e => e.Id)
+                    .First().Id)
+            : masterQuery
+                .GroupBy(e => e.PresentationUniqueKey)
+                .Select(g => g.Min(e => e.Id));
 
         var result = new QueryResult<(BaseItemDto, ItemCounts?)>();
         if (filter.EnableTotalRecordCount)

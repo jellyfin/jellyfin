@@ -3394,6 +3394,12 @@ namespace Emby.Server.Implementations.Library
             return _peopleRepository.GetPeopleNames(query);
         }
 
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+        {
+            return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
+        }
+
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
             UpdatePeopleAsync(item, people, CancellationToken.None).GetAwaiter().GetResult();

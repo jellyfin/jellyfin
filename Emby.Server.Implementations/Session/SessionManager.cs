@@ -453,18 +453,6 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.RepeatMode = info.RepeatMode;
             session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
-
-            var nowPlayingQueue = info.NowPlayingQueue;
-
-            if (nowPlayingQueue?.Length > 0 && !nowPlayingQueue.SequenceEqual(session.NowPlayingQueue))
-            {
-                session.NowPlayingQueue = nowPlayingQueue;
-
-                var itemIds = Array.ConvertAll(nowPlayingQueue, queue => queue.Id);
-                session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(
-                    _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds }),
-                    new DtoOptions(true));
-            }
         }
 
         /// <summary>
@@ -1217,7 +1205,6 @@ namespace Emby.Server.Implementations.Session
                 SupportsMediaControl = sessionInfo.SupportsMediaControl,
                 SupportsRemoteControl = sessionInfo.SupportsRemoteControl,
                 NowPlayingQueue = sessionInfo.NowPlayingQueue,
-                NowPlayingQueueFullItems = sessionInfo.NowPlayingQueueFullItems,
                 HasCustomDeviceName = sessionInfo.HasCustomDeviceName,
                 PlaylistItemId = sessionInfo.PlaylistItemId,
                 ServerId = sessionInfo.ServerId,
