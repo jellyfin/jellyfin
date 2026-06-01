@@ -26,7 +26,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using UtfUnknown;
+using SubtitleFormat = MediaBrowser.Model.MediaInfo.SubtitleFormat;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -72,55 +75,42 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private MemoryStream ConvertSubtitles(
             Stream stream,
-            string inputFormat,
+            SubtitleInfo inputInfo,
             string outputFormat,
             long startTimeTicks,
             long endTimeTicks,
-            bool preserveOriginalTimestamps,
-            CancellationToken cancellationToken)
+            bool preserveOriginalTimestamps)
         {
-            var ms = new MemoryStream();
+            var subtitle = Subtitle.Parse(stream, Path.GetExtension(inputInfo.Path));
 
-            try
-            {
-                var trackInfo = _subtitleParser.Parse(stream, inputFormat);
+            FilterEvents(subtitle, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
-                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
+            var formatter = GetWriter(outputFormat);
 
-                var writer = GetWriter(outputFormat);
+            var text = formatter.ToText(subtitle, "untitled");
+            var bytes = Encoding.UTF8.GetBytes(text);
 
-                writer.Write(trackInfo, ms, cancellationToken);
-                ms.Position = 0;
-            }
-            catch
-            {
-                ms.Dispose();
-                throw;
-            }
-
-            return ms;
+            return new MemoryStream(bytes, 0, bytes.Length, false, true);
         }
 
-        internal void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
+        internal void FilterEvents(Subtitle track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
             // Drop subs that have fully elapsed before the requested start position
-            track.TrackEvents = track.TrackEvents
-                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 && (i.EndPositionTicks - startPositionTicks) < 0)
-                .ToArray();
+            track.Paragraphs
+                .RemoveAll(i => (i.StartTime.TimeSpan.Ticks - startPositionTicks) < 0 && (i.EndTime.TimeSpan.Ticks - startPositionTicks) < 0);
 
             if (endTimeTicks > 0)
             {
-                track.TrackEvents = track.TrackEvents
-                    .TakeWhile(i => i.StartPositionTicks <= endTimeTicks)
-                    .ToArray();
+                track.Paragraphs
+                    .RemoveAll(i => i.StartTime.TimeSpan.Ticks > endTimeTicks);
             }
 
             if (!preserveTimestamps)
             {
-                foreach (var trackEvent in track.TrackEvents)
+                foreach (var trackEvent in track.Paragraphs)
                 {
-                    trackEvent.EndPositionTicks = Math.Max(0, trackEvent.EndPositionTicks - startPositionTicks);
-                    trackEvent.StartPositionTicks = Math.Max(0, trackEvent.StartPositionTicks - startPositionTicks);
+                    trackEvent.StartTime = new TimeCode(TimeSpan.FromTicks(Math.Max(0, trackEvent.StartTime.TimeSpan.Ticks - startPositionTicks)));
+                    trackEvent.EndTime = new TimeCode(TimeSpan.FromTicks(Math.Max(0, trackEvent.EndTime.TimeSpan.Ticks - startPositionTicks)));
                 }
             }
         }
@@ -142,14 +132,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitleStream = mediaSource.MediaStreams
                .First(i => i.Type == MediaStreamType.Subtitle && i.Index == subtitleStreamIndex);
 
-            var (stream, inputFormat) = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
+            var (stream, info) = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             // ASS is a superset of SSA, skipping the conversion and preserving the styles
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase)
-                || (string.Equals(inputFormat, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase)
+            if (string.Equals(info.Format, outputFormat, StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(info.Format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase)
                     && string.Equals(outputFormat, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase)))
             {
                 return stream;
@@ -157,11 +147,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             using (stream)
             {
-                return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
+                return ConvertSubtitles(stream, info, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
             }
         }
 
-        private async Task<(Stream Stream, string Format)> GetSubtitleStream(
+        private async Task<(Stream Stream, SubtitleInfo Info)> GetSubtitleStream(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
@@ -170,7 +160,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var stream = await GetSubtitleStream(fileInfo, cancellationToken).ConfigureAwait(false);
 
-            return (stream, fileInfo.Format);
+            return (stream, fileInfo);
         }
 
         private async Task<Stream> GetSubtitleStream(SubtitleInfo fileInfo, CancellationToken cancellationToken)
@@ -266,13 +256,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             };
         }
 
-        private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
+        private bool TryGetWriter(string format, [NotNullWhen(true)] out Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(format);
 
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
-                value = new AssWriter();
+                value = new AdvancedSubStationAlpha();
                 return true;
             }
 
@@ -282,27 +272,29 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
             {
-                value = new SrtWriter();
+                value = new SubRip();
                 return true;
             }
 
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
-                value = new SsaWriter();
+                value = new SubStationAlpha();
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
             {
-                value = new VttWriter();
+                value = new WebVTT();
                 return true;
             }
 
             if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
             {
-                value = new TtmlWriter();
+                value = new TimedText10();
                 return true;
             }
 
@@ -310,7 +302,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return false;
         }
 
-        private ISubtitleWriter GetWriter(string format)
+        private Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat GetWriter(string format)
         {
             if (TryGetWriter(format, out var writer))
             {
