@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -1134,15 +1133,7 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
-
-            // Resolve the item path so everywhere we use the media source it will always point to
-            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
-            // path will return null, so it's safe to check for all paths.
             var itemPath = item.Path;
-            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
-            {
-                itemPath = linkInfo.FullName;
-            }
 
             var info = new MediaSourceInfo
             {
