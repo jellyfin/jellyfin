@@ -29,6 +29,7 @@ jellyfin_subprojects=(
   src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
 )
 issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
+haos_config_file="./haos-jellyfin/config.yaml"
 
 new_version="$1"
 new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
@@ -59,6 +60,12 @@ done
 
 # Set the version in the GitHub issue template file
 sed -i "s|${old_version}|${new_version_sed}|g" "${issue_template_file}"
+
+# Set the version in the HAOS config file
+if [[ -f ${haos_config_file} ]]; then
+    old_haos_version=$(grep "^version: " "${haos_config_file}" | cut -d '"' -f 2)
+    sed -i "s|version: \"${old_haos_version}\"|version: \"${new_version_sed}\"|g" "${haos_config_file}"
+fi
 
 # Stage the changed files for commit
 git add .
