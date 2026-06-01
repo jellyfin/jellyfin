@@ -36,6 +36,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(6);
 
     private readonly ILibraryManager _libraryManager;
+    private readonly ISimilarItemsManager _similarItemsManager;
     private readonly IUserDataManager _userDataManager;
     private readonly IPeopleRepository _peopleRepository;
     private readonly IDtoService _dtoService;
@@ -48,6 +49,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
     /// Initializes a new instance of the <see cref="RecommendationsService"/> class.
     /// </summary>
     /// <param name="libraryManager">The library manager.</param>
+    /// <param name="similarItemsManager">The similar items manager used to generate similar-to-seed candidates.</param>
     /// <param name="userDataManager">The user data manager.</param>
     /// <param name="peopleRepository">The people repository.</param>
     /// <param name="dtoService">The DTO service.</param>
@@ -55,6 +57,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
     /// <param name="logger">The logger.</param>
     public RecommendationsService(
         ILibraryManager libraryManager,
+        ISimilarItemsManager similarItemsManager,
         IUserDataManager userDataManager,
         IPeopleRepository peopleRepository,
         IDtoService dtoService,
@@ -62,6 +65,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         ILogger<RecommendationsService> logger)
     {
         _libraryManager = libraryManager;
+        _similarItemsManager = similarItemsManager;
         _userDataManager = userDataManager;
         _peopleRepository = peopleRepository;
         _dtoService = dtoService;
@@ -150,7 +154,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
                 break;
             }
 
-            var cat = BuildSeedCategory(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToRecentlyPlayed, parentIdGuid);
+            var cat = await BuildSeedCategoryAsync(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToRecentlyPlayed, parentIdGuid, cancellationToken).ConfigureAwait(false);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -164,7 +168,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
                 break;
             }
 
-            var cat = BuildSeedCategory(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToLikedItem, parentIdGuid);
+            var cat = await BuildSeedCategoryAsync(user, seed, profile, itemLimit, emittedIds, dtoOptions, RecommendationType.SimilarToLikedItem, parentIdGuid, cancellationToken).ConfigureAwait(false);
             if (cat is not null)
             {
                 categories.Add(cat);
@@ -410,7 +414,7 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         }
     }
 
-    private RecommendationDto? BuildSeedCategory(
+    private async Task<RecommendationDto?> BuildSeedCategoryAsync(
         User user,
         BaseItem seed,
         TasteProfile profile,
@@ -418,29 +422,29 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
         HashSet<Guid> emittedIds,
         DtoOptions dtoOptions,
         RecommendationType type,
-        Guid parentIdGuid)
+        Guid parentIdGuid,
+        CancellationToken cancellationToken)
     {
-        var pool = _libraryManager.GetItemList(new InternalItemsQuery(user)
-        {
-            IncludeItemTypes = new[] { profile.Kind },
-            Genres = seed.Genres,
-            Tags = seed.Tags,
-            ExcludeItemIds = emittedIds.ToArray(),
-            ParentId = parentIdGuid,
-            Recursive = true,
-            EnableGroupByMetadataKey = true,
-            Limit = itemLimit * 4,
-            DtoOptions = dtoOptions
-        });
+        // Primary candidate source: the similar-items providers merged from upstream
+        // jellyfin/jellyfin (PR #16856). The taste profile re-ranks the result below, so the
+        // category blends upstream's similarity with this fork's personalized scoring.
+        var candidates = await GetSimilarSeedCandidatesAsync(user, seed, itemLimit, emittedIds, dtoOptions, cancellationToken).ConfigureAwait(false);
 
-        if (pool.Count == 0)
+        // Fallback: if the providers return too few candidates, use the genre/tag overlap
+        // pool so category coverage never regresses below the pre-merge behavior.
+        if (candidates.Count < Math.Max(1, itemLimit / 2))
+        {
+            candidates = GetGenreSeedCandidates(user, seed, profile, itemLimit, emittedIds, dtoOptions, parentIdGuid);
+        }
+
+        if (candidates.Count == 0)
         {
             return null;
         }
 
-        var peopleByCandidate = FetchPeopleByItem(pool);
+        var peopleByCandidate = FetchPeopleByItem(candidates);
 
-        var ranked = pool
+        var ranked = candidates
             .Select(c => (Item: c, Score: TasteProfileScorer.Score(
                 profile,
                 c,
@@ -468,6 +472,57 @@ public sealed class RecommendationsService : IRecommendationsService, IDisposabl
             RecommendationType = type,
             Items = _dtoService.GetBaseItemDtos(ranked, dtoOptions, user)
         };
+    }
+
+    private async Task<List<BaseItem>> GetSimilarSeedCandidatesAsync(
+        User user,
+        BaseItem seed,
+        int itemLimit,
+        HashSet<Guid> emittedIds,
+        DtoOptions dtoOptions,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var similar = await _similarItemsManager.GetSimilarItemsAsync(
+                seed,
+                Array.Empty<Guid>(),
+                user,
+                dtoOptions,
+                itemLimit * 4,
+                libraryOptions: null,
+                cancellationToken).ConfigureAwait(false);
+
+            return similar.Where(c => !emittedIds.Contains(c.Id)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Similar items lookup failed for seed {SeedId}; falling back to genre/tag pool", seed.Id);
+            return new List<BaseItem>();
+        }
+    }
+
+    private List<BaseItem> GetGenreSeedCandidates(
+        User user,
+        BaseItem seed,
+        TasteProfile profile,
+        int itemLimit,
+        HashSet<Guid> emittedIds,
+        DtoOptions dtoOptions,
+        Guid parentIdGuid)
+    {
+        return _libraryManager.GetItemList(new InternalItemsQuery(user)
+        {
+            IncludeItemTypes = new[] { profile.Kind },
+            Genres = seed.Genres,
+            Tags = seed.Tags,
+            ExcludeItemIds = emittedIds.ToArray(),
+            ParentId = parentIdGuid,
+            Recursive = true,
+            EnableGroupByMetadataKey = true,
+            Limit = itemLimit * 4,
+            DtoOptions = dtoOptions
+        }).ToList();
     }
 
     private RecommendationDto? BuildPersonCategory(

@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Library.Recommendations;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public sealed class RecommendationsServiceTests
                     Mock<ILibraryManager> Lib,
                     Mock<IUserDataManager> UserData,
                     Mock<IPeopleRepository> People,
-                    Mock<IDtoService> Dto) MakeService()
+                    Mock<IDtoService> Dto) MakeService(Mock<ISimilarItemsManager>? similar = null)
     {
         var lib = new Mock<ILibraryManager>();
         var userData = new Mock<IUserDataManager>();
@@ -39,6 +40,22 @@ public sealed class RecommendationsServiceTests
         var userMgr = new Mock<IUserManager>();
         var logger = Mock.Of<ILogger<RecommendationsService>>();
 
+        var similarMgr = similar ?? new Mock<ISimilarItemsManager>();
+        if (similar is null)
+        {
+            // Default: the similarity providers find nothing, so seed categories fall back
+            // to the genre/tag candidate pool (the pre-merge behavior the older tests assert).
+            similarMgr.Setup(s => s.GetSimilarItemsAsync(
+                    It.IsAny<BaseItem>(),
+                    It.IsAny<IReadOnlyList<Guid>>(),
+                    It.IsAny<User?>(),
+                    It.IsAny<DtoOptions>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<LibraryOptions?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<BaseItem>());
+        }
+
         lib.Setup(l => l.GetItemList(It.IsAny<InternalItemsQuery>())).Returns(new List<BaseItem>());
         people.Setup(p => p.GetPeople(It.IsAny<InternalPeopleQuery>()))
               .Returns(new MediaBrowser.Model.Querying.QueryResult<PersonInfo> { Items = Array.Empty<PersonInfo>() });
@@ -46,6 +63,7 @@ public sealed class RecommendationsServiceTests
 
         var svc = new RecommendationsService(
             lib.Object,
+            similarMgr.Object,
             userData.Object,
             people.Object,
             dto.Object,
@@ -211,6 +229,117 @@ public sealed class RecommendationsServiceTests
         Assert.Equal("Inception", firstCategory.BaselineItemName);
         Assert.Contains(firstCategory.Items, i => i.Name == "Interstellar");
         Assert.DoesNotContain(firstCategory.Items, i => i.Name == "Inception");
+    }
+
+    /// <summary>
+    /// Seed categories should draw their candidates from the merged-in
+    /// <see cref="ISimilarItemsManager"/> similarity providers (then re-ranked by the taste
+    /// profile), in preference to the genre/tag fallback pool, whenever the providers return
+    /// enough candidates.
+    /// </summary>
+    [Fact]
+    public async Task GetRecommendationsAsync_SeedCategory_PrefersSimilarItemsManagerCandidates()
+    {
+        var seedMovie = new Movie { Id = Guid.NewGuid(), Name = "Inception", Genres = new[] { "Sci-Fi" } };
+        var managerPicks = Enumerable.Range(1, 4)
+            .Select(n => (BaseItem)new Movie { Id = Guid.NewGuid(), Name = $"ManagerPick{n}", Genres = new[] { "Sci-Fi" } })
+            .ToList();
+        var genrePicks = Enumerable.Range(1, 4)
+            .Select(n => (BaseItem)new Movie { Id = Guid.NewGuid(), Name = $"GenreFallbackPick{n}", Genres = new[] { "Sci-Fi" } })
+            .ToList();
+
+        var similar = new Mock<ISimilarItemsManager>();
+        similar.Setup(s => s.GetSimilarItemsAsync(
+                It.Is<BaseItem>(b => b.Id.Equals(seedMovie.Id)),
+                It.IsAny<IReadOnlyList<Guid>>(),
+                It.IsAny<User?>(),
+                It.IsAny<DtoOptions>(),
+                It.IsAny<int?>(),
+                It.IsAny<LibraryOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(managerPicks);
+        similar.Setup(s => s.GetSimilarItemsAsync(
+                It.Is<BaseItem>(b => !b.Id.Equals(seedMovie.Id)),
+                It.IsAny<IReadOnlyList<Guid>>(),
+                It.IsAny<User?>(),
+                It.IsAny<DtoOptions>(),
+                It.IsAny<int?>(),
+                It.IsAny<LibraryOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<BaseItem>());
+
+        var (svc, lib, userData, _, dto) = MakeService(similar);
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true)))
+           .Returns(new List<BaseItem>());
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 6)))
+           .Returns(new List<BaseItem> { seedMovie });
+        // The genre/tag fallback pool returns DIFFERENT items — they must NOT appear, proving
+        // the similarity manager (not the fallback) supplied this category's candidates.
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q =>
+                q.Genres != null && q.Genres.Count > 0 && q.IsPlayed != true)))
+           .Returns(genrePicks);
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns<IReadOnlyList<BaseItem>, DtoOptions, User, BaseItem, bool>((items, _, _, _, _) => items.Select(i => new BaseItemDto { Id = i.Id, Name = i.Name }).ToList());
+
+        var req = new RecommendationRequest(Guid.NewGuid(), BaseItemKind.Movie, ParentId: null, CategoryLimit: 5, ItemLimit: 4, new DtoOptions());
+
+        var result = await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        var seedCategory = Assert.Single(result, c => c.RecommendationType == MediaBrowser.Model.Dto.RecommendationType.SimilarToRecentlyPlayed);
+        Assert.Contains(seedCategory.Items, i => i.Name == "ManagerPick1");
+        Assert.DoesNotContain(seedCategory.Items, i => i.Name!.StartsWith("GenreFallbackPick", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// If a similarity provider throws, the seed category must degrade gracefully to the
+    /// genre/tag fallback pool rather than failing the whole recommendations request.
+    /// </summary>
+    [Fact]
+    public async Task GetRecommendationsAsync_SeedCategory_FallsBackToGenrePool_WhenSimilarItemsManagerThrows()
+    {
+        var seedMovie = new Movie { Id = Guid.NewGuid(), Name = "Inception", Genres = new[] { "Sci-Fi" } };
+        var genrePicks = Enumerable.Range(1, 4)
+            .Select(n => (BaseItem)new Movie { Id = Guid.NewGuid(), Name = $"GenrePick{n}", Genres = new[] { "Sci-Fi" } })
+            .ToList();
+
+        var similar = new Mock<ISimilarItemsManager>();
+        similar.Setup(s => s.GetSimilarItemsAsync(
+                It.IsAny<BaseItem>(),
+                It.IsAny<IReadOnlyList<Guid>>(),
+                It.IsAny<User?>(),
+                It.IsAny<DtoOptions>(),
+                It.IsAny<int?>(),
+                It.IsAny<LibraryOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("provider boom"));
+
+        var (svc, lib, userData, _, dto) = MakeService(similar);
+
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 500)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsFavoriteOrLiked == true)))
+           .Returns(new List<BaseItem>());
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q => q.IsPlayed == true && q.Limit == 6)))
+           .Returns(new List<BaseItem> { seedMovie });
+        lib.Setup(l => l.GetItemList(It.Is<InternalItemsQuery>(q =>
+                q.Genres != null && q.Genres.Count > 0 && q.IsPlayed != true)))
+           .Returns(genrePicks);
+        userData.Setup(u => u.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "k", Played = true });
+        dto.Setup(d => d.GetBaseItemDtos(It.IsAny<IReadOnlyList<BaseItem>>(), It.IsAny<DtoOptions>(), It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<bool>()))
+           .Returns<IReadOnlyList<BaseItem>, DtoOptions, User, BaseItem, bool>((items, _, _, _, _) => items.Select(i => new BaseItemDto { Id = i.Id, Name = i.Name }).ToList());
+
+        var req = new RecommendationRequest(Guid.NewGuid(), BaseItemKind.Movie, ParentId: null, CategoryLimit: 5, ItemLimit: 4, new DtoOptions());
+
+        var result = await svc.GetRecommendationsAsync(req, CancellationToken.None);
+
+        var seedCategory = Assert.Single(result, c => c.RecommendationType == MediaBrowser.Model.Dto.RecommendationType.SimilarToRecentlyPlayed);
+        Assert.Contains(seedCategory.Items, i => i.Name == "GenrePick1");
     }
 
     /// <summary>
