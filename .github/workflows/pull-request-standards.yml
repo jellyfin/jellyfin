@@ -1,0 +1,36 @@
+name: Standards Check
+on:
+  pull_request:
+    paths:
+      - '**/CLAUDE.md'
+      - '**/AGENTS.md'
+      - 'docs/superpowers/**'
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'This PR does not follow our contributing guidelines. https://jellyfin.org/docs/general/contributing/'
+            });
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['invalid']
+            });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: 'closed'
+            });
+
