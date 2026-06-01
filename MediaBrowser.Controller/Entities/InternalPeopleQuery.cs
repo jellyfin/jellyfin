@@ -30,6 +30,13 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ItemId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the set of item ids to filter people by. When non-empty,
+        /// returns one row per (person, matching item) mapping with ItemId and
+        /// SortOrder set per-mapping. Ignored if ItemId (singular) is set.
+        /// </summary>
+        public IReadOnlyList<Guid> ItemIds { get; set; } = Array.Empty<Guid>();
+
         public Guid? ParentId { get; set; }
 
         public IReadOnlyList<string> PersonTypes { get; }

@@ -26,6 +26,7 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Library.Recommendations;
 using Emby.Server.Implementations.Library.SimilarItems;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
@@ -64,6 +65,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Library.Recommendations;
 using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
@@ -549,6 +551,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<DotIgnoreIgnoreRule>();
 
             serviceCollection.AddSingleton<ISimilarItemsManager, SimilarItemsManager>();
+            serviceCollection.AddSingleton<IRecommendationsService, RecommendationsService>();
 
             serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
