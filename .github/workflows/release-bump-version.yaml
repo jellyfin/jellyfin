@@ -27,19 +27,14 @@ jobs:
           intervalSeconds: 60
           timeoutSeconds: 3600
 
-      - name: Setup YQ
-        uses: chrisdickinson/setup-yq@fa3192edd79d6eb0e4e12de8dde3a0c26f2b853b # latest
-        with:
-          yq-version: v4.9.8
-
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.TAG_BRANCH }}
 
       - name: Setup EnvVars
         run: |-
-          CURRENT_VERSION=$(yq e '.version' build.yaml)
+          CURRENT_VERSION=$(yq e '.version' haos-jellyfin/config.yaml)
           CURRENT_MAJOR_MINOR=${CURRENT_VERSION%.*}
           CURRENT_PATCH=${CURRENT_VERSION##*.}
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
@@ -66,7 +61,7 @@ jobs:
       NEXT_VERSION: ${{ github.event.inputs.NEXT_VERSION }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.TAG_BRANCH }}
 
