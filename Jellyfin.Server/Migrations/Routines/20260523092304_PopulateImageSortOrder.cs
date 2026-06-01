@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Controller.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -76,31 +78,7 @@ public class PopulateImageSortOrder : IAsyncMigrationRoutine
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                var groups = images.GroupBy(i => new { i.ItemId, i.ImageType });
-
-                int updated = 0;
-                foreach (var group in groups)
-                {
-                    var mediaFileName = itemPaths.TryGetValue(group.Key.ItemId, out var p) && !string.IsNullOrEmpty(p)
-                        ? Path.GetFileNameWithoutExtension(p)
-                        : null;
-
-                    var sorted = group
-                        .Select(img => new { Image = img, Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, mediaFileName) })
-                        .OrderBy(x => x.Priority)
-                        .ThenBy(x => ImageOrderingUtilities.GetNumericImageIndex(x.Image.Path))
-                        .ThenBy(x => x.Image.Path, StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    for (int i = 0; i < sorted.Count; i++)
-                    {
-                        if (sorted[i].Image.SortOrder != i)
-                        {
-                            sorted[i].Image.SortOrder = i;
-                            updated++;
-                        }
-                    }
-                }
+                int updated = AssignSortOrderToGroups(images, itemPaths);
 
                 if (updated > 0)
                 {
@@ -123,5 +101,38 @@ public class PopulateImageSortOrder : IAsyncMigrationRoutine
                 totalUpdated,
                 itemIds.Count);
         }
+    }
+
+    private static int AssignSortOrderToGroups(
+        List<BaseItemImageInfo> images,
+        IReadOnlyDictionary<Guid, string?> itemPaths)
+    {
+        int updated = 0;
+        foreach (var group in images.GroupBy(i => new { i.ItemId, i.ImageType }))
+        {
+            string? mediaFileName = null;
+            if (itemPaths.TryGetValue(group.Key.ItemId, out var p) && !string.IsNullOrEmpty(p))
+            {
+                mediaFileName = Path.GetFileNameWithoutExtension(p);
+            }
+
+            var sorted = group
+                .Select(img => new { Image = img, Priority = ImageOrderingUtilities.GetImageOrderPriority(img.Path, mediaFileName) })
+                .OrderBy(x => x.Priority)
+                .ThenBy(x => ImageOrderingUtilities.GetNumericImageIndex(x.Image.Path))
+                .ThenBy(x => x.Image.Path, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                if (sorted[i].Image.SortOrder != i)
+                {
+                    sorted[i].Image.SortOrder = i;
+                    updated++;
+                }
+            }
+        }
+
+        return updated;
     }
 }

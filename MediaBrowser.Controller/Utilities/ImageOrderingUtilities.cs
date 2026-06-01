@@ -73,13 +73,9 @@ public static class ImageOrderingUtilities
         var normalizedPath = path.Replace('\\', '/');
         var fileName = System.IO.Path.GetFileNameWithoutExtension(normalizedPath);
 
-        if (!string.IsNullOrEmpty(mediaFileName))
+        if (IsMediaSpecificFanart(fileName, mediaFileName))
         {
-            var expectedName = $"{mediaFileName}-fanart";
-            if (fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase))
-            {
-                return 0;
-            }
+            return 0;
         }
 
         if (fileName.Equals("fanart", StringComparison.OrdinalIgnoreCase) &&
@@ -119,5 +115,16 @@ public static class ImageOrderingUtilities
         }
 
         return UnknownImagePriority;
+    }
+
+    private static bool IsMediaSpecificFanart(string fileName, string? mediaFileName)
+    {
+        if (string.IsNullOrEmpty(mediaFileName))
+        {
+            return false;
+        }
+
+        var expectedName = $"{mediaFileName}-fanart";
+        return fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase);
     }
 }
