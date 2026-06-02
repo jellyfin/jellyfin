@@ -16,7 +16,7 @@ on:
 jobs:
   auto_bump_version:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' && !contains(github.event.release.tag_name, 'rc') }}
+    if: ${{ github.event_name == 'release' && !contains(github.event.release.tag_name, 'rc') && contains(github.repository, 'haos-jellyfin') }}
     env:
       TAG_BRANCH: ${{ github.event.release.target_commitish }}
     steps:
@@ -55,7 +55,7 @@ jobs:
 
   manual_bump_version:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && contains(github.repository, 'haos-jellyfin') }}
     env:
       TAG_BRANCH: ${{ github.event.inputs.TAG_BRANCH }}
       NEXT_VERSION: ${{ github.event.inputs.NEXT_VERSION }}
