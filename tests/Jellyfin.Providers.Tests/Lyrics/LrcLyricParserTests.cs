@@ -15,10 +15,17 @@ public static class LrcLyricParserTests
         var parsed = parser.ParseLyrics(new LyricFile("Fleetwood Mac - Rumors.elrc", fileContents));
 
         Assert.NotNull(parsed);
+        Assert.Single(parsed.Tracks);
+        Assert.Equal(LyricTrackType.Main, parsed.Tracks[0].Type);
         Assert.Equal(31, parsed.Lyrics.Count);
 
         var line1 = parsed.Lyrics[0];
         Assert.Equal("Every night that goes between", line1.Text);
+        Assert.Equal(0, line1.ArtistIds.Count);
+        Assert.Equal(5, line1.Syllables.Count);
+        Assert.Equal("Every", line1.Syllables[0].Text.Trim());
+        Assert.Equal(68400000, line1.Syllables[0].Start);
+        Assert.Equal(72000000, line1.Syllables[0].End);
         Assert.NotNull(line1.Cues);
         Assert.Equal(5, line1.Cues.Count);
         Assert.Equal(68400000, line1.Cues[0].Start);

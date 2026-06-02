@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Lyrics;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -29,6 +30,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             Artists = Array.Empty<string>();
             AlbumArtists = Array.Empty<string>();
             LyricFiles = Array.Empty<string>();
+            LyricFileInfos = Array.Empty<LyricFileInfo>();
         }
 
         /// <inheritdoc />
@@ -76,6 +78,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets or sets the list of lyric paths.
         /// </summary>
         public IReadOnlyList<string> LyricFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lyric file information.
+        /// </summary>
+        public IReadOnlyList<LyricFileInfo> LyricFileInfos { get; set; }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {

@@ -114,9 +114,26 @@ public partial class LrcLyricParser : ILyricParser
             }
 
             long lyricStartTicks = TimeSpan.FromMilliseconds(lyric.StartTime).Ticks;
-            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues));
+            long? lyricEndTicks = lineIndex + 1 < sortedLyricData.Count
+                ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks
+                : null;
+
+            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues)
+            {
+                End = lyricEndTicks
+            });
         }
 
-        return new LyricDto { Lyrics = lyricList };
+        return new LyricDto
+        {
+            Tracks =
+            [
+                new LyricTrack
+                {
+                    Type = LyricTrackType.Main,
+                    Lines = lyricList
+                }
+            ]
+        };
     }
 }
