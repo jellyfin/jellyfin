@@ -2112,12 +2112,23 @@ namespace MediaBrowser.Controller.Entities
             // I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
             // then it probably is what we want to do...
+            ResetPlayedState(data);
+
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Clears the played state on the supplied user data.
+        /// </summary>
+        /// <param name="data">The user data to reset.</param>
+        protected static void ResetPlayedState(UserItemData data)
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
             data.PlayCount = 0;
             data.PlaybackPositionTicks = 0;
             data.LastPlayedDate = null;
             data.Played = false;
-
-            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -165,6 +166,41 @@ public class BaseItemTests
         {
             Assert.True(e.Dto.Played.GetValueOrDefault());
             Assert.Null(e.Dto.PlaybackPositionTicks);
+        });
+    }
+
+    [Fact]
+    public void PropagatePlayedState_Unwatched_ClearsAllWatchedStateOnVersions()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        // Each alternate starts out watched, with a play count, resume point and last-played date.
+        var existing = new Dictionary<Guid, UserItemData>
+        {
+            [alt1.Id] = new UserItemData { Key = "alt1", Played = true, PlayCount = 3, PlaybackPositionTicks = 1000, LastPlayedDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            [alt2.Id] = new UserItemData { Key = "alt2", Played = true, PlayCount = 1, PlaybackPositionTicks = 500, LastPlayedDate = new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc) },
+        };
+
+        var saved = new List<UserItemData>();
+        var userDataManager = new Mock<IUserDataManager>();
+        userDataManager.Setup(x => x.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+            .Returns((User _, BaseItem item) => existing.GetValueOrDefault(item.Id));
+        userDataManager
+            .Setup(x => x.SaveUserData(It.IsAny<User>(), It.IsAny<BaseItem>(), It.IsAny<UserItemData>(), It.IsAny<UserDataSaveReason>(), It.IsAny<CancellationToken>()))
+            .Callback<User, BaseItem, UserItemData, UserDataSaveReason, CancellationToken>((_, _, data, _, _) => saved.Add(data));
+        BaseItem.UserDataManager = userDataManager.Object;
+
+        primary.PropagatePlayedState(new User("test", "default", "default"), false);
+
+        // Every alternate is fully reset to an unwatched state, mirroring MarkUnplayed: the played flag,
+        // play count, resume point and last-played date are all cleared so no watched state lingers.
+        Assert.Equal(2, saved.Count);
+        Assert.All(saved, d =>
+        {
+            Assert.False(d.Played);
+            Assert.Equal(0, d.PlayCount);
+            Assert.Equal(0, d.PlaybackPositionTicks);
+            Assert.Null(d.LastPlayedDate);
         });
     }
 

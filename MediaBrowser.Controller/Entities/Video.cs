@@ -364,9 +364,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="played">The played status to apply to the alternate versions.</param>
-        /// <param name="resetPosition">When <c>true</c>, the playback position of each version is also
-        /// reset, keeping the versions consistent with a deliberate played/unplayed toggle. When
-        /// <c>false</c>, only the played flag changes and each version keeps its own resume point.</param>
+        /// <param name="resetPosition">When marking played, controls whether each version's resume point
+        /// is also reset (<c>true</c>) or left untouched (<c>false</c>). Ignored when marking unplayed,
+        /// which always fully resets every version.</param>
         public void PropagatePlayedState(User user, bool played, bool resetPosition = true)
         {
             ArgumentNullException.ThrowIfNull(user);
@@ -383,14 +383,28 @@ namespace MediaBrowser.Controller.Entities
                     continue;
                 }
 
-                var dto = new UpdateUserItemDataDto { Played = played };
-                if (resetPosition)
+                if (played)
                 {
-                    dto.PlaybackPositionTicks = 0;
-                }
+                    var dto = new UpdateUserItemDataDto { Played = true };
+                    if (resetPosition)
+                    {
+                        dto.PlaybackPositionTicks = 0;
+                    }
 
-                // SaveUserData only writes the fields set on the DTO, so play count and other state are preserved.
-                UserDataManager.SaveUserData(user, item, dto, UserDataSaveReason.TogglePlayed);
+                    // SaveUserData only writes the fields set on the DTO, so play count and other state are preserved.
+                    UserDataManager.SaveUserData(user, item, dto, UserDataSaveReason.TogglePlayed);
+                }
+                else
+                {
+                    var data = UserDataManager.GetUserData(user, item);
+                    if (data is null)
+                    {
+                        continue;
+                    }
+
+                    ResetPlayedState(data);
+                    UserDataManager.SaveUserData(user, item, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+                }
             }
         }
 
