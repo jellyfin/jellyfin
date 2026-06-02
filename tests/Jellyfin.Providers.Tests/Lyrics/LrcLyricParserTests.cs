@@ -21,7 +21,7 @@ public static class LrcLyricParserTests
 
         var line1 = parsed.Lyrics[0];
         Assert.Equal("Every night that goes between", line1.Text);
-        Assert.Equal(0, line1.ArtistIds.Count);
+        Assert.Empty(line1.ArtistIds);
         Assert.Equal(5, line1.Syllables.Count);
         Assert.Equal("Every", line1.Syllables[0].Text.Trim());
         Assert.Equal(68400000, line1.Syllables[0].Start);
