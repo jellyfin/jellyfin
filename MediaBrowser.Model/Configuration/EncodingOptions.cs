@@ -43,6 +43,7 @@ public class EncodingOptions
         VppTonemappingContrast = 1;
         H264Crf = 23;
         H265Crf = 28;
+        EncoderPreset = EncoderPreset.auto;
         DeinterlaceDoubleRate = false;
         DeinterlaceMethod = DeinterlaceMethod.yadif;
         EnableDecodingColorDepth10Hevc = true;
@@ -217,7 +218,7 @@ public class EncodingOptions
     /// <summary>
     /// Gets or sets the encoder preset.
     /// </summary>
-    public EncoderPreset? EncoderPreset { get; set; }
+    public EncoderPreset EncoderPreset { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the framerate is doubled when deinterlacing.
