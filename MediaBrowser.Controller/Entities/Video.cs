@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -33,11 +34,11 @@ namespace MediaBrowser.Controller.Entities
     {
         public Video()
         {
-            AdditionalParts = Array.Empty<string>();
-            LocalAlternateVersions = Array.Empty<string>();
-            SubtitleFiles = Array.Empty<string>();
-            AudioFiles = Array.Empty<string>();
-            LinkedAlternateVersions = Array.Empty<LinkedChild>();
+            AdditionalParts = [];
+            LocalAlternateVersions = [];
+            SubtitleFiles = [];
+            AudioFiles = [];
+            LinkedAlternateVersions = [];
         }
 
         [JsonIgnore]
@@ -332,6 +333,78 @@ namespace MediaBrowser.Controller.Entities
         {
             PrimaryVersionId = id;
             PresentationUniqueKey = CreatePresentationUniqueKey();
+        }
+
+        /// <summary>
+        /// Marks the played status of this video and propagates it to its alternate versions.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="datePlayed">The date played.</param>
+        /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
+        public override void MarkPlayed(User user, DateTime? datePlayed, bool resetPosition)
+        {
+            base.MarkPlayed(user, datePlayed, resetPosition);
+            PropagatePlayedState(user, true, resetPosition);
+        }
+
+        /// <summary>
+        /// Marks this video unplayed and propagates the change to its alternate versions.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        public override void MarkUnplayed(User user)
+        {
+            base.MarkUnplayed(user);
+
+            // MarkUnplayed always clears the position on this video, so reset the versions too.
+            PropagatePlayedState(user, false, true);
+        }
+
+        /// <summary>
+        /// Propagates the played status to every alternate version of this video.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="played">The played status to apply to the alternate versions.</param>
+        /// <param name="resetPosition">When <c>true</c>, the playback position of each version is also
+        /// reset, keeping the versions consistent with a deliberate played/unplayed toggle. When
+        /// <c>false</c>, only the played flag changes and each version keeps its own resume point.</param>
+        public void PropagatePlayedState(User user, bool played, bool resetPosition = true)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            if (!PrimaryVersionId.HasValue && LinkedAlternateVersions.Length == 0 && !HasLocalAlternateVersions)
+            {
+                return;
+            }
+
+            foreach (var (item, _) in GetAllItemsForMediaSources())
+            {
+                if (item.Id.Equals(Id) || item is not Video)
+                {
+                    continue;
+                }
+
+                var dto = new UpdateUserItemDataDto { Played = played };
+                if (resetPosition)
+                {
+                    dto.PlaybackPositionTicks = 0;
+                }
+
+                // SaveUserData only writes the fields set on the DTO, so play count and other state are preserved.
+                UserDataManager.SaveUserData(user, item, dto, UserDataSaveReason.TogglePlayed);
+            }
+        }
+
+        /// <summary>
+        /// Gets the alternate version of this video that matches the supplied item id.
+        /// </summary>
+        /// <param name="itemId">The version item id (the playback media source id).</param>
+        /// <returns>The matching version, or <c>null</c> when the id is not a version of this video.</returns>
+        public Video GetAlternateVersion(Guid itemId)
+        {
+            return GetAllItemsForMediaSources()
+                .Select(i => i.Item)
+                .OfType<Video>()
+                .FirstOrDefault(i => i.Id.Equals(itemId));
         }
 
         public override string CreatePresentationUniqueKey()
@@ -643,37 +716,32 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
-            var list = new List<(BaseItem, MediaSourceType)>
-            {
-                (this, MediaSourceType.Default)
-            };
+            var primary = PrimaryVersionId.HasValue
+                ? LibraryManager.GetItemById(PrimaryVersionId.Value) as Video
+                : null;
 
-            list.AddRange(
-                LibraryManager.GetLinkedAlternateVersions(this)
-                    .Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
-
-            if (PrimaryVersionId.HasValue)
-            {
-                if (LibraryManager.GetItemById(PrimaryVersionId.Value) is Video primary)
-                {
-                    var existingIds = list.Select(i => i.Item1.Id).ToList();
-                    list.Add((primary, MediaSourceType.Grouping));
-                    list.AddRange(LibraryManager.GetLinkedAlternateVersions(primary).Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
-                }
-            }
-
-            var localAlternates = list
-                .SelectMany(i =>
-                {
-                    return i.Item1 is Video video ? LibraryManager.GetLocalAlternateVersionIds(video) : Enumerable.Empty<Guid>();
-                })
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i is not null)
+            // This video and its linked alternates, when this is itself an alternate, the primary and the primary's linked alternates.
+            var grouped = new[] { ((BaseItem)this, MediaSourceType.Default) }
+                .Concat(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)))
+                .Concat(primary is null
+                    ? []
+                    : LibraryManager.GetLinkedAlternateVersions(primary).Prepend(primary).Select(i => ((BaseItem)i, MediaSourceType.Grouping)))
                 .ToList();
 
-            list.AddRange(localAlternates.Select(i => (i, MediaSourceType.Default)));
+            // The local (file-based) alternate versions of every grouped item.
+            var localAlternates = grouped
+                .Select(i => i.Item1)
+                .OfType<Video>()
+                .SelectMany(LibraryManager.GetLocalAlternateVersionIds)
+                .Select(LibraryManager.GetItemById)
+                .Where(i => i is not null)
+                .Select(i => (i, MediaSourceType.Default));
 
-            return list;
+            // Deduplicate
+            return grouped
+                .Concat(localAlternates)
+                .DistinctBy(i => i.Item1.Id)
+                .ToList();
         }
     }
 }

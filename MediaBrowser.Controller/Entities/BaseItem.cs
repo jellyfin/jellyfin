@@ -1115,17 +1115,15 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return result.OrderBy(i =>
-            {
-                if (i.VideoType == VideoType.VideoFile)
-                {
-                    return 0;
-                }
+            // The source belonging to the item being queried sorts first so it is the default the client plays.
+            var selfId = Id.ToString("N", CultureInfo.InvariantCulture);
 
-                return 1;
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i => i, new MediaSourceWidthComparator())
-            .ToArray();
+            return result
+                .OrderByDescending(i => string.Equals(i.Id, selfId, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i => i.VideoType == VideoType.VideoFile ? 0 : 1)
+                .ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+                .ThenByDescending(i => i, new MediaSourceWidthComparator())
+                .ToArray();
         }
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()

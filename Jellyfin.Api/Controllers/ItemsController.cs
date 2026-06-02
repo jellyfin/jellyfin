@@ -919,6 +919,7 @@ public class ItemsController : BaseJellyfinApiController
             MediaTypes = mediaTypes,
             IsVirtualItem = false,
             CollapseBoxSetItems = false,
+            IncludeOwnedItems = true,
             EnableTotalRecordCount = enableTotalRecordCount,
             AncestorIds = ancestorIds,
             IncludeItemTypes = includeItemTypes,

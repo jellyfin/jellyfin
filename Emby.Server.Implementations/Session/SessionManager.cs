@@ -726,6 +726,31 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <summary>
+        /// Resolves the item whose user data (playback position, played status) should be updated
+        /// for a playback report. When an alternate version is played the client reports the displayed
+        /// item as <c>ItemId</c> and the played version as <c>MediaSourceId</c>.
+        /// </summary>
+        /// <param name="libraryItem">The now playing (displayed) item.</param>
+        /// <param name="mediaSourceId">The reported media source id.</param>
+        /// <returns>The item to track progress against.</returns>
+        private BaseItem GetProgressItem(BaseItem libraryItem, string mediaSourceId)
+        {
+            if (libraryItem is Video libraryVideo
+                && !string.IsNullOrEmpty(mediaSourceId)
+                && Guid.TryParse(mediaSourceId, out var mediaSourceItemId)
+                && !mediaSourceItemId.Equals(libraryVideo.Id))
+            {
+                var versionItem = libraryVideo.GetAlternateVersion(mediaSourceItemId);
+                if (versionItem is not null)
+                {
+                    return versionItem;
+                }
+            }
+
+            return libraryItem;
+        }
+
+        /// <summary>
         /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
@@ -756,9 +781,10 @@ namespace Emby.Server.Implementations.Session
 
             if (libraryItem is not null)
             {
+                var progressItem = GetProgressItem(libraryItem, info.MediaSourceId);
                 foreach (var user in users)
                 {
-                    OnPlaybackStart(user, libraryItem);
+                    OnPlaybackStart(user, progressItem);
                 }
             }
 
@@ -890,9 +916,10 @@ namespace Emby.Server.Implementations.Session
             // only update saved user data on actual check-ins, not automated ones
             if (libraryItem is not null && !isAutomated)
             {
+                var progressItem = GetProgressItem(libraryItem, info.MediaSourceId);
                 foreach (var user in users)
                 {
-                    OnPlaybackProgress(user, libraryItem, info);
+                    OnPlaybackProgress(user, progressItem, info);
                 }
             }
 
@@ -952,6 +979,17 @@ namespace Emby.Server.Implementations.Session
             if (changed)
             {
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
+
+                if (data.Played == true && item is Video playedVideo)
+                {
+                    playedVideo.PropagatePlayedState(user, true);
+                }
+            }
+
+            if ((!user.RememberAudioSelections && data.AudioStreamIndex.HasValue)
+                || (!user.RememberSubtitleSelections && data.SubtitleStreamIndex.HasValue))
+            {
+                _userDataManager.ResetPlaybackStreamSelections(user, item);
             }
         }
 
@@ -1083,9 +1121,10 @@ namespace Emby.Server.Implementations.Session
 
             if (libraryItem is not null)
             {
+                var progressItem = GetProgressItem(libraryItem, info.MediaSourceId);
                 foreach (var user in users)
                 {
-                    playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
+                    playedToCompletion = OnPlaybackStopped(user, progressItem, info.PositionTicks, info.Failed);
                 }
             }
 
@@ -1137,6 +1176,12 @@ namespace Emby.Server.Implementations.Session
             }
 
             _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
+
+            // A completed version marks all of its alternate versions played; positions stay per-version.
+            if (data.Played == true && item is Video playedVideo)
+            {
+                playedVideo.PropagatePlayedState(user, true);
+            }
 
             return playedToCompletion;
         }

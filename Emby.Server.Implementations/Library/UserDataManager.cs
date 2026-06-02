@@ -385,5 +385,41 @@ namespace Emby.Server.Implementations.Library
 
             return playedToCompletion;
         }
+
+        /// <inheritdoc />
+        public void ResetPlaybackStreamSelections(User user, BaseItem item)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(item);
+
+            using var dbContext = _repository.CreateDbContext();
+            var rows = dbContext.UserData
+                .Where(e => e.ItemId == item.Id && e.UserId == user.Id
+                            && (e.AudioStreamIndex != null || e.SubtitleStreamIndex != null))
+                .ToList();
+
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var row in rows)
+            {
+                row.AudioStreamIndex = null;
+                row.SubtitleStreamIndex = null;
+            }
+
+            dbContext.SaveChanges();
+
+            var cacheKey = GetCacheKey(user.InternalId, item.Id);
+            if (_cache.TryGet(cacheKey, out var cached))
+            {
+                cached.AudioStreamIndex = null;
+                cached.SubtitleStreamIndex = null;
+                _cache.AddOrUpdate(cacheKey, cached);
+            }
+
+            item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray();
+        }
     }
 }
