@@ -32,6 +32,8 @@ namespace Emby.Server.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
+        private static readonly char[] InvlidPackageNameChars = [.. Path.GetInvalidFileNameChars(), '/', '\\'];
+
         /// <summary>
         /// The logger.
         /// </summary>
@@ -602,12 +604,7 @@ namespace Emby.Server.Implementations.Updates
                 return false;
             }
 
-            if (name.Contains('/', StringComparison.Ordinal) || name.Contains('\\', StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            if (name.AsSpan().IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            if (name.AsSpan().IndexOfAny(InvlidPackageNameChars) >= 0)
             {
                 return false;
             }
