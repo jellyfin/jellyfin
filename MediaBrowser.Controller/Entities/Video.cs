@@ -409,16 +409,26 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets this video together with all of its alternate versions (local and linked and, when this
+        /// is itself an alternate, the primary and the primary's other versions), deduplicated.
+        /// </summary>
+        /// <returns>This video and every alternate version of it.</returns>
+        public IReadOnlyList<Video> GetAllVersions()
+        {
+            return GetAllItemsForMediaSources()
+                .Select(i => i.Item)
+                .OfType<Video>()
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the alternate version of this video that matches the supplied item id.
         /// </summary>
         /// <param name="itemId">The version item id (the playback media source id).</param>
         /// <returns>The matching version, or <c>null</c> when the id is not a version of this video.</returns>
         public Video GetAlternateVersion(Guid itemId)
         {
-            return GetAllItemsForMediaSources()
-                .Select(i => i.Item)
-                .OfType<Video>()
-                .FirstOrDefault(i => i.Id.Equals(itemId));
+            return GetAllVersions().FirstOrDefault(i => i.Id.Equals(itemId));
         }
 
         public override string CreatePresentationUniqueKey()

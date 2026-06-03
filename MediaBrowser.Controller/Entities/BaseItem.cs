@@ -87,9 +87,7 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Short
         };
 
-        // Separators the naming layer treats as version delimiters (Emby.Naming VideoFlagDelimiters),
-        // used when stripping the shared prefix from an alternate version's media source name.
-        private static readonly char[] VersionSeparators = [' ', '-', '_', '.'];
+        private static readonly char[] VersionDelimiters = ['-', '_', '.'];
 
         private string _sortName;
 
@@ -1235,13 +1233,13 @@ namespace MediaBrowser.Controller.Entities
                 // Prefer the suffix that differs from the other versions: strip the prefix shared by
                 // all sibling files. This works regardless of folder layout, so it also labels episode
                 // versions that share a season folder (e.g. "Greyscale" instead of the full
-                // "Show - S01E02 - Title - Greyscale"). The prefix is already retreated to a separator
+                // "Show - S01E02 - Title - Greyscale"). The prefix is already retreated to a delimiter
                 // boundary (see GetCommonVersionPrefix).
                 if (!string.IsNullOrEmpty(commonPrefix)
                     && displayName.Length > commonPrefix.Length
                     && displayName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    var name = displayName.AsSpan(commonPrefix.Length).TrimStart(VersionSeparators);
+                    var name = displayName.AsSpan(commonPrefix.Length).TrimStart([' ', .. VersionDelimiters]);
                     if (!name.IsWhiteSpace())
                     {
                         terms.Add(name.ToString());
@@ -1255,7 +1253,7 @@ namespace MediaBrowser.Controller.Entities
                     var containingFolderName = System.IO.Path.GetFileName(ContainingFolderPath);
                     if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
-                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart(VersionSeparators);
+                        var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', .. VersionDelimiters]);
                         if (!name.IsWhiteSpace())
                         {
                             terms.Add(name.ToString());
@@ -1341,11 +1339,14 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Computes the case-insensitive longest common prefix of the supplied version file names,
-        /// retreated to the last separator boundary. Retreating keeps the differing suffix intact:
+        /// retreated to the last delimiter boundary. Retreating keeps the differing suffix intact:
         /// it avoids slicing through a word every version shares (e.g. "Grey" in "Greyscale" and
         /// "Greyish") while still trimming the common part when every version is suffixed (e.g.
-        /// "- Greyscale" / "- Colorized"). The separators mirror the version delimiters recognised by
-        /// the naming layer (Emby.Naming VideoFlagDelimiters).
+        /// "- Greyscale" / "- Colorized"). It prefers a structural delimiter ('-', '_', '.') so a
+        /// token shared by the descriptors but separated only by spaces (e.g. a common "2160p ") is
+        /// kept in the label, falling back to a space only when no structural delimiter is shared. The
+        /// separators mirror the version delimiters recognised by the naming layer (Emby.Naming
+        /// VideoFlagDelimiters).
         /// </summary>
         /// <param name="fileNames">The version file names without extension; must contain at least one entry.</param>
         /// <returns>The shared prefix retreated to a separator boundary, or an empty string when none is shared.</returns>
@@ -1379,10 +1380,20 @@ namespace MediaBrowser.Controller.Entities
 
             if (!prefixIsWholeName)
             {
+                // Retreat to the last structural delimiter ('-', '_', '.').
                 var cut = prefix.Length;
-                while (cut > 0 && Array.IndexOf(VersionSeparators, prefix[cut - 1]) < 0)
+                while (cut > 0 && Array.IndexOf(VersionDelimiters, prefix[cut - 1]) < 0)
                 {
                     cut--;
+                }
+
+                if (cut == 0)
+                {
+                    cut = prefix.Length;
+                    while (cut > 0 && prefix[cut - 1] != ' ')
+                    {
+                        cut--;
+                    }
                 }
 
                 prefix = prefix[..cut];

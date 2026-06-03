@@ -82,6 +82,13 @@ public class BaseItemTests
     [InlineData("Movie (2020).UHD", "Movie (2020).1080p", "UHD", "1080p")]
     // Resolution variants that share leading digits must retreat to the separator, not yield "p"/"i".
     [InlineData("Movie - 1080p", "Movie - 1080i", "1080p", "1080i")]
+    // A token shared by the descriptors but separated only by spaces (the resolution) must stay in the
+    // label: retreat to the '-' delimiter, not the interior space, so the resolution is kept.
+    [InlineData(
+        "movie (2020) - 2160p Extended",
+        "movie (2020) - 2160p Original",
+        "2160p Extended",
+        "2160p Original")]
     // Bracketed version labels: the opening bracket is kept in the label.
     [InlineData(
         "Blade Runner (1982) [Final Cut] [1080p HEVC AAC]",
