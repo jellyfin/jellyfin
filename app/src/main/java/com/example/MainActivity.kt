@@ -1,0 +1,2 @@
+3. 💡 AZIONE CORRETTIVA DI JULES:
+Jules deve modificare il file del workflow YAML aggiungendo la riga `repo-token: ${{ secrets.GITHUB_TOKEN }}`. Inoltre, per evitare futuri problemi di sicurezza o restrizioni, deve verificare che il blocco `permissions` del workflow (o del job specifico) garantisca l'accesso in scrittura a issue e pull request, in questo modo:
