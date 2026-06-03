@@ -1000,6 +1000,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var subtitleCodec = subtitleStream.Codec;
             var path = subtitleStream.Path;
+            // WebVTT is always UTF-8 per spec (https://www.w3.org/TR/webvtt1/#file-structure),
+            // charset detection is unnecessary and may produce incorrect results on short files
+            // or files without BOM, causing ffmpeg to fail with an invalid iconv encoding.
+            if (string.Equals(subtitleCodec, "webvtt", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".vtt", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
 
             if (path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
