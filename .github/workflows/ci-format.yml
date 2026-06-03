@@ -11,6 +11,7 @@ env:
 jobs:
   format-check:
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     steps:
       - uses: actions/checkout@v4
 
