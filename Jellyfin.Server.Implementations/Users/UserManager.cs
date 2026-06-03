@@ -51,7 +51,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private readonly AsyncKeyedLocker<Guid> _userLock = new();
+        private readonly LockHelper _userLock = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -216,7 +216,58 @@ namespace Jellyfin.Server.Implementations.Users
         {
             using (await _userLock.LockAsync(user.Id).ConfigureAwait(false))
             {
-                await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+                await using (dbContext.ConfigureAwait(false))
+                {
+                    // TODO: this is a bit of a hack. Because the user entity can be created in another context, it is maybe tracked elsewhere and navigation properties do not easily move between context. Solution is to use proper DTOs instead.
+                    var dbUser = await UserQuery(dbContext)
+                        .AsTracking()
+                        .FirstOrDefaultAsync(u => u.Id == user.Id)
+                        .ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException(nameof(user.Id));
+
+                    dbContext.Entry(dbUser).CurrentValues.SetValues(user);
+                    dbUser.Permissions.Clear();
+                    foreach (var permission in user.Permissions)
+                    {
+                        dbUser.Permissions.Add(new Permission(permission.Kind, permission.Value));
+                    }
+
+                    dbUser.Preferences.Clear();
+                    foreach (var preference in user.Preferences)
+                    {
+                        dbUser.Preferences.Add(new Preference(preference.Kind, preference.Value));
+                    }
+
+                    dbUser.AccessSchedules.Clear();
+                    foreach (var accessSchedule in user.AccessSchedules)
+                    {
+                        dbUser.AccessSchedules.Add(new AccessSchedule(accessSchedule.DayOfWeek, accessSchedule.StartHour, accessSchedule.EndHour, dbUser.Id));
+                    }
+
+                    if (user.ProfileImage is null)
+                    {
+                        if (dbUser.ProfileImage is not null)
+                        {
+                            dbContext.Remove(dbUser.ProfileImage);
+                            dbUser.ProfileImage = null;
+                        }
+                    }
+                    else if (dbUser.ProfileImage is null)
+                    {
+                        dbUser.ProfileImage = new Jellyfin.Database.Implementations.Entities.ImageInfo(user.ProfileImage.Path)
+                        {
+                            LastModified = user.ProfileImage.LastModified
+                        };
+                    }
+                    else
+                    {
+                        dbUser.ProfileImage.Path = user.ProfileImage.Path;
+                        dbUser.ProfileImage.LastModified = user.ProfileImage.LastModified;
+                    }
+
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
         }
 
@@ -460,18 +511,27 @@ namespace Jellyfin.Server.Implementations.Users
             var user = GetUserByName(username);
             using (await _userLock.LockAsync(user?.Id ?? Guid.Empty).ConfigureAwait(false))
             {
+                using var dbContext = _dbProvider.CreateDbContext();
+
                 // Reload the user now that we hold the lock so the RowVersion is current.
                 // GetUserByName uses AsNoTracking and the snapshot may be stale if another
                 // write (e.g. a concurrent login) incremented RowVersion after our initial load.
                 if (user is not null)
                 {
-                    user = GetUserById(user.Id) ?? user;
+                    user = await UserQuery(dbContext).FirstOrDefaultAsync(e => e.Id == user.Id).ConfigureAwait(false) ?? user;
                 }
 
                 var authResult = await AuthenticateLocalUser(username, password, user)
                                 .ConfigureAwait(false);
                 var authenticationProvider = authResult.AuthenticationProvider;
                 success = authResult.Success;
+
+                if (success && user is not null)
+                {
+                    // refresh the user if the auth provider might have updated it in the auth method.
+                    // this is a hack, this needs removal once the LDAP plugin uses the correct interface to get the user we hand in here and update that one instead.
+                    user = await UserQuery(dbContext).FirstOrDefaultAsync(e => e.Id == user.Id).ConfigureAwait(false);
+                }
 
                 if (user is null)
                 {
@@ -486,11 +546,16 @@ namespace Jellyfin.Server.Implementations.Users
 
                         // Search the database for the user again
                         // the authentication provider might have created it
-                        user = GetUserByName(username);
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+                        user = await UserQuery(dbContext)
+                            .FirstOrDefaultAsync(e => e.NormalizedUsername == username.ToUpperInvariant()).ConfigureAwait(false);
 
                         if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
                         {
                             await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
+                            user = await UserQuery(dbContext)
+                                .FirstOrDefaultAsync(e => e.NormalizedUsername == username.ToUpperInvariant()).ConfigureAwait(false);
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
                         }
                     }
                 }
@@ -501,8 +566,10 @@ namespace Jellyfin.Server.Implementations.Users
 
                     if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                     {
-                        user.AuthenticationProviderId = providerId;
-                        await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                        await dbContext.Users
+                            .Where(e => e.Id == user.Id)
+                            .ExecuteUpdateAsync(e => e.SetProperty(f => f.AuthenticationProviderId, providerId))
+                            .ConfigureAwait(false);
                     }
                 }
 
@@ -549,16 +616,42 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     if (isUserSession)
                     {
-                        user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                        var date = DateTime.UtcNow;
+                        await dbContext.Users
+                            .Where(e => e.Id == user.Id)
+                            .ExecuteUpdateAsync(e => e
+                                .SetProperty(f => f.LastActivityDate, date)
+                                .SetProperty(f => f.LastLoginDate, date))
+                            .ConfigureAwait(false);
                     }
 
-                    user.InvalidLoginAttemptCount = 0;
-                    await UpdateUserInternalAsync(user).ConfigureAwait(false);
+                    await dbContext.Users
+                        .Where(e => e.Id == user.Id)
+                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.InvalidLoginAttemptCount, 0))
+                        .ConfigureAwait(false);
                     _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
                 }
                 else
                 {
-                    await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
+                    user.InvalidLoginAttemptCount++;
+                    int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
+                    if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
+                    {
+                        user.SetPermission(PermissionKind.IsDisabled, true);
+                        await dbContext.SaveChangesAsync()
+                            .ConfigureAwait(false);
+                        await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
+                        _logger.LogWarning(
+                            "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
+                            user.Username,
+                            user.InvalidLoginAttemptCount);
+                    }
+
+                    await dbContext.Users
+                        .Where(e => e.Id == user.Id)
+                        .ExecuteUpdateAsync(e => e.SetProperty(f => f.InvalidLoginAttemptCount, f => f.InvalidLoginAttemptCount + 1))
+                        .ConfigureAwait(false);
+
                     _logger.LogInformation(
                         "Authentication request for {UserName} has been denied (IP: {IP}).",
                         user.Username,
@@ -933,32 +1026,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        private async Task IncrementInvalidLoginAttemptCount(User user)
-        {
-            user.InvalidLoginAttemptCount++;
-            int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
-            if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
-            {
-                user.SetPermission(PermissionKind.IsDisabled, true);
-                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
-                _logger.LogWarning(
-                    "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
-                    user.Username,
-                    user.InvalidLoginAttemptCount);
-            }
-
-            await UpdateUserInternalAsync(user).ConfigureAwait(false);
-        }
-
-        private async Task UpdateUserInternalAsync(User user)
-        {
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
-            }
-        }
-
         private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Attach(user);
@@ -982,6 +1049,71 @@ namespace Jellyfin.Server.Implementations.Users
             if (disposing)
             {
                 _userLock.Dispose();
+            }
+        }
+
+        internal sealed class LockHelper : IDisposable
+        {
+            private readonly AsyncKeyedLocker<Guid> _userLock = new();
+
+            private bool _disposed;
+
+            public static AsyncLocal<int> IsNestedLock { get; set; } = new();
+
+            public bool ShouldLock()
+            {
+                return IsNestedLock.Value == 0;
+            }
+
+            public ValueTask<IDisposable> LockAsync(Guid key)
+            {
+                ThrowIfDisposed();
+                var isNested = LockHelper.IsNestedLock.Value != 0;
+                LockHelper.IsNestedLock.Value = LockHelper.IsNestedLock.Value + 1;
+                if (isNested)
+                {
+                    return new ValueTask<IDisposable>(new LockHandle { Parent = null });
+                }
+
+                return AcquireLockAsync(key);
+            }
+
+            private async ValueTask<IDisposable> AcquireLockAsync(Guid key)
+            {
+                var lockHandle = await _userLock.LockAsync(key, true).ConfigureAwait(false);
+                return new LockHandle { Parent = lockHandle };
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+                _userLock.Dispose();
+            }
+
+            private void ThrowIfDisposed()
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+            }
+
+            private sealed class LockHandle : IDisposable
+            {
+                public required IDisposable? Parent { get; init; }
+
+                public void Dispose()
+                {
+                    Parent?.Dispose();
+                    LockHelper.IsNestedLock.Value = LockHelper.IsNestedLock.Value - 1;
+
+                    if (LockHelper.IsNestedLock.Value < 0)
+                    {
+                        throw new InvalidOperationException("Mismatched locking detected. Threads internal NestedLock is less then 0 which should not be possible.");
+                    }
+                }
             }
         }
     }
