@@ -521,8 +521,26 @@ namespace Emby.Server.Implementations.Updates
                 return;
             }
 
+            if (!IsValidPackageDirectoryName(package.Name))
+            {
+                _logger.LogError("Refusing to install package with invalid name {PackageName}.", package.Name);
+                throw new InvalidDataException($"Plugin package name '{package.Name}' is not a valid directory name.");
+            }
+
             // Always override the passed-in target (which is a file) and figure it out again
             string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
+
+            var pluginsRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_appPaths.PluginsPath));
+            var resolvedTarget = Path.GetFullPath(targetDir);
+            if (!resolvedTarget.StartsWith(pluginsRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogError(
+                    "Refusing to install package {PackageName}: resolved target {Resolved} is outside plugins directory {Root}.",
+                    package.Name,
+                    resolvedTarget,
+                    pluginsRoot);
+                throw new InvalidDataException($"Plugin package name '{package.Name}' resolves outside the plugins directory.");
+            }
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(new Uri(package.SourceUrl), cancellationToken).ConfigureAwait(false);
@@ -570,6 +588,31 @@ namespace Emby.Server.Implementations.Updates
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
 
             _pluginManager.ImportPluginFrom(targetDir);
+        }
+
+        private static bool IsValidPackageDirectoryName(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return false;
+            }
+
+            if (name.Equals(".", StringComparison.Ordinal) || name.Equals("..", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (name.Contains('/', StringComparison.Ordinal) || name.Contains('\\', StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (name.AsSpan().IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
