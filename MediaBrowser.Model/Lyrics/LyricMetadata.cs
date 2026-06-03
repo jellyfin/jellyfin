@@ -52,7 +52,7 @@ public class LyricMetadata
     public long? Duration { get; set; }
 
     /// <summary>
-    /// Gets or sets who the LRC file was created by.
+    /// Gets or sets who the lyrics file was created by.
     /// </summary>
     public string? By { get; set; }
 
@@ -62,7 +62,7 @@ public class LyricMetadata
     public long? Offset { get; set; }
 
     /// <summary>
-    /// Gets or sets the software used to create the LRC file.
+    /// Gets or sets the software used to create the lyrics file.
     /// </summary>
     public string? Creator { get; set; }
 
