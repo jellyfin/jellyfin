@@ -318,9 +318,6 @@ public class ItemsController : BaseJellyfinApiController
         }
         else if (folder is ICollectionFolder)
         {
-            // When the client doesn't specify recursive/includeItemTypes, force the query
-            // through the database path where all filters (IsHD, genres, etc.) are applied.
-            recursive ??= true;
             if (includeItemTypes.Length == 0)
             {
                 includeItemTypes = collectionType switch
@@ -329,6 +326,13 @@ public class ItemsController : BaseJellyfinApiController
                     null => [BaseItemKind.Movie, BaseItemKind.Series],
                     _ => []
                 };
+            }
+
+            // When the client doesn't specify recursive/includeItemTypes, force the query
+            // through the database path where all filters (IsHD, genres, etc.) are applied.
+            if (includeItemTypes.Length > 0)
+            {
+                recursive ??= true;
             }
         }
 
