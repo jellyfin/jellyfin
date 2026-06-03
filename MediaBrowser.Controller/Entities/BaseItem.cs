@@ -2718,7 +2718,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeSongs(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
         }
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user = null)
@@ -2728,16 +2728,17 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
         }
 
         /// <summary>
         /// Get all extras associated with this item, sorted by <see cref="SortName"/>.
         /// </summary>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the items.</returns>
-        public IEnumerable<BaseItem> GetExtras()
+        public IEnumerable<BaseItem> GetExtras(User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 OwnerIds = [Id],
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
@@ -2748,10 +2749,11 @@ namespace MediaBrowser.Controller.Entities
         /// Get all extras with specific types that are associated with this item.
         /// </summary>
         /// <param name="extraTypes">The types of extras to retrieve.</param>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes, User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 OwnerIds = [Id],
                 ExtraTypes = extraTypes.ToArray(),
