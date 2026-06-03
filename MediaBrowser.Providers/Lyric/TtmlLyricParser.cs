@@ -56,9 +56,9 @@ public partial class TtmlLyricParser : ILyricParser
 
         var mainLines = new List<LyricLine>();
         var translationLines = new List<LyricLine>();
-        var romanizationLines = new List<LyricLine>();
+        var phoneticLines = new List<LyricLine>();
         var translationLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var romanizationLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var phoneticLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var p in document.Descendants().Where(i => i.Name.LocalName == "p"))
         {
@@ -103,7 +103,7 @@ public partial class TtmlLyricParser : ILyricParser
                 });
             }
 
-            AddInlineTrackLine(p, "x-roman", romanizationLines, romanizationLanguages, start.Value, end.Value, artistIds);
+            AddInlineTrackLine(p, "x-roman", phoneticLines, phoneticLanguages, start.Value, end.Value, artistIds);
 
             foreach (var backgroundSpan in p.Elements().Where(i => HasRole(i, "x-bg")))
             {
@@ -144,7 +144,7 @@ public partial class TtmlLyricParser : ILyricParser
         };
 
         AddTrack(tracks, LyricTrackType.Translation, translationLines, translationLanguages);
-        AddTrack(tracks, LyricTrackType.Romanization, romanizationLines, romanizationLanguages);
+        AddTrack(tracks, LyricTrackType.Phonetic, phoneticLines, phoneticLanguages);
         return new LyricDto
         {
             Metadata = new LyricMetadata

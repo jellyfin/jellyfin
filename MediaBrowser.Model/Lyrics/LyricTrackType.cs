@@ -16,9 +16,9 @@ public enum LyricTrackType
     Translation,
 
     /// <summary>
-    /// Romanized or phonetic lyric content.
+    /// Phonetic lyric content.
     /// </summary>
-    Romanization,
+    Phonetic,
 
     /// <summary>
     /// Other lyric content.

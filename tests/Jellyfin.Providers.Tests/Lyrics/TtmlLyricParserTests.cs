@@ -46,7 +46,7 @@ public static class TtmlLyricParserTests
         Assert.Equal(LyricTrackType.Main, parsed.Tracks[0].Type);
         Assert.Equal(LyricTrackType.Translation, parsed.Tracks[1].Type);
         Assert.Equal("zh-CN", parsed.Tracks[1].Language);
-        Assert.Equal(LyricTrackType.Romanization, parsed.Tracks[2].Type);
+        Assert.Equal(LyricTrackType.Phonetic, parsed.Tracks[2].Type);
 
         Assert.Single(parsed.Metadata.Artists);
         Assert.Equal("v1", parsed.Metadata.Artists[0].Id);
