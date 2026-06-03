@@ -12,13 +12,10 @@ public class LyricLine
     /// </summary>
     /// <param name="text">The lyric text.</param>
     /// <param name="start">The lyric start time in ticks.</param>
-    /// <param name="cues">The time-aligned cues for the song's lyrics.</param>
-    public LyricLine(string text, long? start = null, IReadOnlyList<LyricLineCue>? cues = null)
+    public LyricLine(string text, long? start = null)
     {
         Text = text;
         Start = start;
-        Cues = cues;
-        Syllables = cues is null ? [] : LyricSyllable.FromCues(text, cues);
     }
 
     /// <summary>
@@ -50,9 +47,4 @@ public class LyricLine
     /// Gets or sets the syllable-level timing for this lyric line.
     /// </summary>
     public IReadOnlyList<LyricSyllable> Syllables { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the time-aligned cues for the song's lyrics.
-    /// </summary>
-    public IReadOnlyList<LyricLineCue>? Cues { get; set; }
 }

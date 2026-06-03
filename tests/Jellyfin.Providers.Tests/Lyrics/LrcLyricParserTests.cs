@@ -8,7 +8,7 @@ namespace Jellyfin.Providers.Tests.Lyrics;
 public static class LrcLyricParserTests
 {
     [Fact]
-    public static void ParseElrcCues()
+    public static void ParseElrcSyllables()
     {
         var parser = new LrcLyricParser();
         var fileContents = File.ReadAllText(Path.Combine("Test Data", "Lyrics", "Fleetwood Mac - Rumors.elrc"));
@@ -26,29 +26,20 @@ public static class LrcLyricParserTests
         Assert.Equal("Every", line1.Syllables[0].Text.Trim());
         Assert.Equal(68400000, line1.Syllables[0].Start);
         Assert.Equal(72000000, line1.Syllables[0].End);
-        Assert.NotNull(line1.Cues);
-        Assert.Equal(5, line1.Cues.Count);
-        Assert.Equal(68400000, line1.Cues[0].Start);
-        Assert.Equal(72000000, line1.Cues[0].End);
-        Assert.Equal(0, line1.Cues[0].Position);
-        Assert.Equal(5, line1.Cues[0].EndPosition);
-        Assert.Equal(6, line1.Cues[1].Position);
-        Assert.Equal(11, line1.Cues[1].EndPosition);
-        Assert.Equal(12, line1.Cues[2].Position);
+        Assert.Equal("night", line1.Syllables[1].Text.Trim());
+        Assert.Equal("that", line1.Syllables[2].Text.Trim());
 
         var line5 = parsed.Lyrics[4];
         Assert.Equal("Every night you do not come", line5.Text);
-        Assert.NotNull(line5.Cues);
-        Assert.Equal(6, line5.Cues.Count);
-        Assert.Equal(375200000, line5.Cues[2].Start);
-        Assert.Equal(377300000, line5.Cues[2].End);
+        Assert.Equal(6, line5.Syllables.Count);
+        Assert.Equal(375200000, line5.Syllables[2].Start);
+        Assert.Equal(377300000, line5.Syllables[2].End);
 
         var lastLine = parsed.Lyrics[^1];
         Assert.Equal("I have always been a storm", lastLine.Text);
-        Assert.NotNull(lastLine.Cues);
-        Assert.Equal(6, lastLine.Cues.Count);
-        Assert.Equal(2358000000, lastLine.Cues[^1].Start);
-        Assert.Equal(26, lastLine.Cues[^1].EndPosition);
-        Assert.Null(lastLine.Cues[^1].End);
+        Assert.Equal(6, lastLine.Syllables.Count);
+        Assert.Equal(2358000000, lastLine.Syllables[^1].Start);
+        Assert.Equal("storm", lastLine.Syllables[^1].Text.Trim());
+        Assert.Null(lastLine.Syllables[^1].End);
     }
 }

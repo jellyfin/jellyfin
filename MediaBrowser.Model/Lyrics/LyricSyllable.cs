@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace MediaBrowser.Model.Lyrics;
 
 /// <summary>
@@ -27,33 +24,4 @@ public class LyricSyllable
     /// Gets or sets the phonetic text.
     /// </summary>
     public string? Phonetic { get; set; }
-
-    internal static IReadOnlyList<LyricSyllable> FromCues(string text, IReadOnlyList<LyricLineCue> cues)
-    {
-        var syllables = new List<LyricSyllable>(cues.Count);
-        foreach (var cue in cues)
-        {
-            if (cue.Position < 0
-                || cue.EndPosition < cue.Position
-                || cue.Position >= text.Length)
-            {
-                continue;
-            }
-
-            var length = Math.Min(cue.EndPosition, text.Length) - cue.Position;
-            if (length <= 0)
-            {
-                continue;
-            }
-
-            syllables.Add(new LyricSyllable
-            {
-                Text = text.Substring(cue.Position, length),
-                Start = cue.Start,
-                End = cue.End
-            });
-        }
-
-        return syllables;
-    }
 }

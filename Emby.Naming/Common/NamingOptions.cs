@@ -177,6 +177,7 @@ namespace Emby.Naming.Common
             [
                 ".lrc",
                 ".elrc",
+                ".ttml",
                 ".txt"
             ];
 

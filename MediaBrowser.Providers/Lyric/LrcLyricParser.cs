@@ -71,8 +71,7 @@ public partial class LrcLyricParser : ILyricParser
         {
             var lyric = sortedLyricData[lineIndex];
 
-            // Extract cues from time tags
-            var cues = new List<LyricLineCue>();
+            var syllables = new List<LyricSyllable>();
             if (lyric.TimeTags.Count > 0)
             {
                 var keys = lyric.TimeTags.Keys.ToList();
@@ -89,11 +88,12 @@ public partial class LrcLyricParser : ILyricParser
                     var currentSliceTrimmed = currentSlice.Trim();
                     if (currentSliceTrimmed.Length > 0)
                     {
-                        cues.Add(new LyricLineCue(
-                            position: currentPos,
-                            endPosition: nextPos,
-                            start: TimeSpan.FromMilliseconds(currentMs).Ticks,
-                            end: TimeSpan.FromMilliseconds(nextMs).Ticks));
+                        syllables.Add(new LyricSyllable
+                        {
+                            Text = currentSlice,
+                            Start = TimeSpan.FromMilliseconds(currentMs).Ticks,
+                            End = TimeSpan.FromMilliseconds(nextMs).Ticks
+                        });
                     }
                 }
 
@@ -105,11 +105,12 @@ public partial class LrcLyricParser : ILyricParser
 
                 if (lastSliceTrimmed.Length > 0)
                 {
-                    cues.Add(new LyricLineCue(
-                        position: lastPos,
-                        endPosition: lyric.Text.Length,
-                        start: TimeSpan.FromMilliseconds(lastMs).Ticks,
-                        end: lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null));
+                    syllables.Add(new LyricSyllable
+                    {
+                        Text = lastSlice,
+                        Start = TimeSpan.FromMilliseconds(lastMs).Ticks,
+                        End = lineIndex + 1 < sortedLyricData.Count ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks : null
+                    });
                 }
             }
 
@@ -118,9 +119,10 @@ public partial class LrcLyricParser : ILyricParser
                 ? TimeSpan.FromMilliseconds(sortedLyricData[lineIndex + 1].StartTime).Ticks
                 : null;
 
-            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks, cues)
+            lyricList.Add(new LyricLine(lyric.Text, lyricStartTicks)
             {
-                End = lyricEndTicks
+                End = lyricEndTicks,
+                Syllables = syllables
             });
         }
 

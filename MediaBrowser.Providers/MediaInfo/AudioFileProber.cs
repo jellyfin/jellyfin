@@ -19,7 +19,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Lyrics;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
@@ -574,32 +573,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 currentStreams.Add(externalLyricFile);
             }
 
-            var lyricStreams = currentStreams
+            audio.LyricFiles = currentStreams
                 .Where(i => i.Type == MediaStreamType.Lyric && i.IsExternal)
-                .GroupBy(i => i.Path, StringComparer.Ordinal)
-                .Select(i => i.First())
+                .Select(i => i.Path)
+                .Distinct(StringComparer.Ordinal)
                 .ToArray();
-
-            audio.LyricFiles = lyricStreams.Select(i => i.Path).ToArray();
-            audio.LyricFileInfos = lyricStreams.Select(CreateLyricFileInfo).ToArray();
-        }
-
-        private static LyricFileInfo CreateLyricFileInfo(MediaStream stream)
-        {
-            var extension = System.IO.Path.GetExtension(stream.Path) ?? string.Empty;
-            var isSynced = extension.Equals(".lrc", StringComparison.OrdinalIgnoreCase)
-                || extension.Equals(".elrc", StringComparison.OrdinalIgnoreCase);
-
-            return new LyricFileInfo
-            {
-                Path = stream.Path,
-                Language = string.IsNullOrWhiteSpace(stream.Language) ? null : stream.Language,
-                IsExternal = stream.IsExternal,
-                IsEmbedded = !stream.IsExternal,
-                IsSynced = isSynced,
-                HasSyllableTiming = extension.Equals(".elrc", StringComparison.OrdinalIgnoreCase),
-                StreamIndex = stream.Index
-            };
         }
 
         private List<string> SplitWithCustomDelimiter(string val, char[] tagDelimiters, string[] whitelist)
