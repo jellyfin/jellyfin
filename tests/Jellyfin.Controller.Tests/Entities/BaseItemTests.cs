@@ -137,6 +137,22 @@ public class BaseItemTests
     }
 
     [Fact]
+    public void GetAllVersions_FromAnyVersion_ReturnsEveryVersionOnce()
+    {
+        var (primary, alt1, alt2) = SetupVersionGroup();
+
+        foreach (var source in new[] { primary, alt1, alt2 })
+        {
+            var versions = source.GetAllVersions();
+
+            Assert.Equal(3, versions.Count);
+            Assert.Contains(versions, v => v.Id.Equals(primary.Id));
+            Assert.Contains(versions, v => v.Id.Equals(alt1.Id));
+            Assert.Contains(versions, v => v.Id.Equals(alt2.Id));
+        }
+    }
+
+    [Fact]
     public void PropagatePlayedState_MarksAlternateVersions_AndResetsPositionByDefault()
     {
         var (primary, alt1, alt2) = SetupVersionGroup();
