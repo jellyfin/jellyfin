@@ -11,7 +11,7 @@ jobs:
   metadata:
     name: Generate Metadata
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && contains(github.repository, 'haos-jellyfin') }}
     outputs:
       pr_number: ${{ steps.pr_number.outputs.pr_number }}
     steps:
@@ -34,7 +34,7 @@ jobs:
   comment:
     name: Pull Request Comment
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && contains(github.repository, 'haos-jellyfin') }}
     needs:
     - metadata
     permissions:

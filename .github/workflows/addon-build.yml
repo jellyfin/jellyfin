@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     strategy:
       matrix:
         include:

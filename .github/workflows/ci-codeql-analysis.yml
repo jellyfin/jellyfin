@@ -16,6 +16,7 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
 
     strategy:
       fail-fast: false
@@ -29,7 +30,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '10.0.103'
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

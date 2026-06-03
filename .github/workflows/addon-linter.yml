@@ -9,6 +9,7 @@ on:
 jobs:
   linter:
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

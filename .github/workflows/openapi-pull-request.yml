@@ -6,6 +6,7 @@ jobs:
   ancestor:
     name: Common Ancestor
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     outputs:
       base_ref: ${{ steps.ancestor.outputs.base_ref }}
     steps:
@@ -29,6 +30,7 @@ jobs:
 
   head:
     name: Head Artifact
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     uses: ./.github/workflows/openapi-generate.yml
     with:
       ref: ${{ github.event.pull_request.head.sha }}
@@ -37,6 +39,7 @@ jobs:
 
   base:
     name: Base Artifact
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     uses: ./.github/workflows/openapi-generate.yml
     needs:
     - ancestor
@@ -48,6 +51,7 @@ jobs:
   diff:
     name: Generate Report
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     needs:
     - head
     - base
