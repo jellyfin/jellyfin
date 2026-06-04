@@ -13,7 +13,6 @@ namespace Jellyfin.Server.Implementations.Tests.Library;
 
 public class UserDataManagerTests
 {
-    // Short song, well under MinResumeDurationSeconds, to ensure the Audio branch is exercised
     private const long ThreeMinuteSongTicks = 3L * 60 * TimeSpan.TicksPerSecond;
 
     private static UserDataManager CreateManager(int minAudioResumePct = 10, int maxAudioResumePct = 90)
@@ -35,14 +34,14 @@ public class UserDataManagerTests
         => (long)(runtimeTicks * (pct / 100.0));
 
     [Theory]
-    [InlineData(0, false)] // 0% → not started
-    [InlineData(5, false)] // 5% < MinAudioResumePct(10%) → not played
-    [InlineData(9, false)] // 9% < MinAudioResumePct(10%) → not played
-    [InlineData(10, false)] // 10% == MinAudioResumePct → partially played, not completed
-    [InlineData(50, false)] // 50% → partially played, not completed
-    [InlineData(90, false)] // 90% == MaxAudioResumePct → partially played, not completed
-    [InlineData(91, true)] // 91% > MaxAudioResumePct → fully played
-    [InlineData(100, true)] // 100% → fully played
+    [InlineData(0, false)] // not started
+    [InlineData(5, false)] // not played
+    [InlineData(9, false)] // not played
+    [InlineData(10, false)] // partially played, not completed
+    [InlineData(50, false)] // partially played, not completed
+    [InlineData(90, false)] // partially played, not completed
+    [InlineData(91, true)] // fully played
+    [InlineData(100, true)] // fully played
     public void UpdatePlayState_Audio_ReturnsExpectedCompletion(int positionPct, bool expectedCompletion)
     {
         var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
@@ -71,8 +70,7 @@ public class UserDataManagerTests
     [Fact]
     public void UpdatePlayState_Audio_NeverSetsSkipCount()
     {
-        // SkipCount is managed by SessionManager at stop time, not by UpdatePlayState.
-        // Verify UpdatePlayState never touches SkipCount regardless of position.
+        // Verify UpdatePlayState never touches SkipCount regardless of position, should be managed by SessionManager at stop.
         var manager = CreateManager();
         var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
         var data = new UserItemData { Key = string.Empty, SkipCount = 3 };
@@ -85,7 +83,7 @@ public class UserDataManagerTests
     [Fact]
     public void UpdatePlayState_AudioBook_IsNotAffectedByAudioThresholds()
     {
-        // AudioBook : Audio — must use the AudioBook branch, not the Audio branch.
+        // AudioBook : Audio - must use the AudioBook branch, not the Audio branch.
         // MinAudioResumePct is set to 80% so that if an AudioBook were mistakenly routed
         // through the Audio branch, 30 min into a 60 min audiobook (= 50%) would fall
         // below the min and position would be reset to 0.
@@ -102,7 +100,7 @@ public class UserDataManagerTests
         var result = manager.UpdatePlayState(item, data, thirtyMinuteTicks);
 
         // AudioBook branch: 30 min in, 30 min remaining > MaxAudiobookResume (5 min default)
-        // → not completed, position saved (AudioBook.SupportsPositionTicksResume = true)
+        // - not completed, position saved (AudioBook.SupportsPositionTicksResume = true)
         Assert.False(result);
         Assert.False(data.Played);
         Assert.Equal(thirtyMinuteTicks, data.PlaybackPositionTicks);
