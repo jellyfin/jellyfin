@@ -8,6 +8,8 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,16 +26,19 @@ public class FilterController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
+    private readonly ILocalizationManager _localization;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    public FilterController(ILibraryManager libraryManager, IUserManager userManager)
+    /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+    public FilterController(ILibraryManager libraryManager, IUserManager userManager, ILocalizationManager localization)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
+        _localization = localization;
     }
 
     /// <summary>
@@ -60,61 +65,33 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? item = null;
         if (includeItemTypes.Length != 1
-            || !(includeItemTypes[0] == BaseItemKind.BoxSet
-                 || includeItemTypes[0] == BaseItemKind.Playlist
-                 || includeItemTypes[0] == BaseItemKind.Trailer
+            || !(includeItemTypes[0] == BaseItemKind.Trailer
                  || includeItemTypes[0] == BaseItemKind.Program))
         {
             item = _libraryManager.GetParentItem(parentId, user?.Id);
         }
-
-        var query = new InternalItemsQuery
-        {
-            User = user,
-            MediaTypes = mediaTypes,
-            IncludeItemTypes = includeItemTypes,
-            Recursive = true,
-            EnableTotalRecordCount = false,
-            DtoOptions = new DtoOptions
-            {
-                Fields = new[] { ItemFields.Genres, ItemFields.Tags },
-                EnableImages = false,
-                EnableUserData = false
-            }
-        };
 
         if (item is not Folder folder)
         {
             return new QueryFiltersLegacy();
         }
 
-        var itemList = folder.GetItemList(query);
-        return new QueryFiltersLegacy
+        var query = new InternalItemsQuery(user)
         {
-            Years = itemList.Select(i => i.ProductionYear ?? -1)
-                .Where(i => i > 0)
-                .Distinct()
-                .Order()
-                .ToArray(),
-
-            Genres = itemList.SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Order()
-                .ToArray(),
-
-            Tags = itemList
-                .SelectMany(i => i.Tags)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Order()
-                .ToArray(),
-
-            OfficialRatings = itemList
-                .Select(i => i.OfficialRating)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Order()
-                .ToArray()
+            MediaTypes = mediaTypes,
+            IncludeItemTypes = includeItemTypes,
+            Recursive = true,
+            EnableTotalRecordCount = false,
+            AncestorIds = [folder.Id],
+            DtoOptions = new DtoOptions
+            {
+                Fields = [],
+                EnableImages = false,
+                EnableUserData = false
+            }
         };
+
+        return _libraryManager.GetQueryFiltersLegacy(query);
     }
 
     /// <summary>
@@ -153,9 +130,7 @@ public class FilterController : BaseJellyfinApiController
 
         BaseItem? parentItem = null;
         if (includeItemTypes.Length == 1
-            && (includeItemTypes[0] == BaseItemKind.BoxSet
-                || includeItemTypes[0] == BaseItemKind.Playlist
-                || includeItemTypes[0] == BaseItemKind.Trailer
+            && (includeItemTypes[0] == BaseItemKind.Trailer
                 || includeItemTypes[0] == BaseItemKind.Program))
         {
             parentItem = null;
@@ -211,6 +186,36 @@ public class FilterController : BaseJellyfinApiController
                 Name = i.Item.Name,
                 Id = i.Item.Id
             }).ToArray();
+        }
+
+        if (includeItemTypes.Contains(BaseItemKind.Movie) || includeItemTypes.Contains(BaseItemKind.Series))
+        {
+            filters.AudioLanguages = _libraryManager
+                .GetMediaStreamLanguages(MediaStreamType.Audio)
+                .Select(language =>
+                {
+                    var culture = _localization.FindLanguageInfo(language);
+                    return new NameValuePair
+                    {
+                        Name = culture is null ? language : $"{culture.DisplayName} ({language})",
+                        Value = language
+                    };
+                })
+                .OrderBy(l => l.Name)
+                .ToArray();
+            filters.SubtitleLanguages = _libraryManager
+                .GetMediaStreamLanguages(MediaStreamType.Subtitle)
+                .Select(language =>
+                {
+                    var culture = _localization.FindLanguageInfo(language);
+                    return new NameValuePair
+                    {
+                        Name = culture is null ? language : $"{culture.DisplayName} ({language})",
+                        Value = language
+                    };
+                })
+                .OrderBy(l => l.Name)
+                .ToArray();
         }
 
         return filters;

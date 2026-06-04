@@ -70,7 +70,7 @@ namespace Emby.Naming.ExternalFiles
 
                     if (lastSeparator == -1)
                     {
-                          break;
+                        break;
                     }
 
                     string currentSlice = languageString[lastSeparator..];

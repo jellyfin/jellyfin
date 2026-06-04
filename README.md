@@ -76,7 +76,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
+Before the project can be built, you must first install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
@@ -195,7 +195,5 @@ Since this is a common scenario, there is also a separate launch profile defined
 This project is supported by:
 <br/>
 <br/>
-<a href="https://www.digitalocean.com"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="50px" alt="DigitalOcean"></a>
-    &nbsp;
 <a href="https://www.jetbrains.com"><img src="https://gist.githubusercontent.com/anthonylavado/e8b2403deee9581e0b4cb8cd675af7db/raw/199ae22980ef5da64882ec2de3e8e5c03fe535b8/jetbrains.svg" height="50px" alt="JetBrains logo"></a>
 </p>

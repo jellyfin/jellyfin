@@ -10,6 +10,12 @@ namespace Jellyfin.Naming.Tests.Video
     public class VideoListResolverTests
     {
         private readonly NamingOptions _namingOptions = new NamingOptions();
+        private readonly VideoListResolver _videoListResolver;
+
+        public VideoListResolverTests()
+        {
+            _videoListResolver = new VideoListResolver(_namingOptions);
+        }
 
         [Fact]
         public void TestStackAndExtras()
@@ -40,9 +46,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "WillyWonka-trailer.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(11, result.Count);
             var batman = result.FirstOrDefault(x => string.Equals(x.Name, "Batman", StringComparison.Ordinal));
@@ -74,9 +79,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "300.nfo"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Single(result);
         }
@@ -90,9 +94,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 - trailer.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -108,9 +111,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "X-Men Days of Future Past-trailer.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -127,9 +129,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "X-Men Days of Future Past-trailer2.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(3, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -147,9 +148,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "Looper.2012.bluray.720p.x264.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(3, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -166,9 +166,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/movies/Looper (2012)/Looper.bluray.720p.x264.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -188,9 +187,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "My video 5.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(5, result.Count);
         }
@@ -204,9 +202,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "M:/Movies (DVD)/Movies (Musical)/Sound of Music (1965)/Sound of Music Disc 2"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Single(result);
         }
@@ -221,9 +218,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "My movie #2.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
         }
@@ -239,9 +235,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "No (2012)-trailer.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(3, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -260,9 +255,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/Movies/trailer.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(4, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -282,9 +276,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/MCFAMILY-PC/Private3$/Heterosexual/Breast In Class 2 Counterfeit Racks (2011)/Breast In Class 2 Disc 2 cd2.avi"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
         }
@@ -297,9 +290,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/nas-markrobbo78/Videos/INDEX HTPC/Movies/Watched/3 - ACTION/Argo (2012)/movie.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Single(result);
         }
@@ -312,9 +304,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "The Colony.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Single(result);
         }
@@ -328,9 +319,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "Four Sisters and a Wedding - B.avi"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             // The result should contain two individual movies
             // Version grouping should not work here, because the files are not in a directory with the name 'Four Sisters and a Wedding'
@@ -346,9 +336,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "Four Rooms - A.mp4"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
         }
@@ -362,9 +351,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/Server/Despicable Me/trailer.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -380,9 +368,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/Server/Despicable Me/trailers/some title.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
@@ -398,9 +385,8 @@ namespace Jellyfin.Naming.Tests.Video
                 "/Movies/Despicable Me/trailers/trailer.mkv"
             };
 
-            var result = VideoListResolver.Resolve(
-                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
-                _namingOptions).ToList();
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);

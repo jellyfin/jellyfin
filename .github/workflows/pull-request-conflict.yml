@@ -4,19 +4,20 @@ on:
   push:
     branches:
       - master
-  pull_request:
-  issue_comment:
+  pull_request_target:
+    types: [synchronize]
 
 permissions: {}
 jobs:
-  label:
-    name: Labeling
+  main:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'jellyfin/jellyfin' && github.event.issue.pull_request }}
+    permissions:
+      contents: read
+      pull-requests: write
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
     steps:
       - name: Apply label
-        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
-        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request'}}
+        uses: eps1lon/actions-label-merge-conflict@0273be72a0bbd58fcd71d0d6c02c209b50d1e5e1 # v3.1.0
         with:
           dirtyLabel: 'merge conflict'
           commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'

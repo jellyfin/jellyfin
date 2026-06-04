@@ -210,16 +210,19 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             return true;
         }
 
-        // Not yet processed
-        if (episode.SeasonId.IsEmpty())
+        // Episode has been processed and linked to a season, only needs a virtual season
+        // if it isn't already linked to a known physical season by ID or path
+        if (!episode.SeasonId.IsEmpty())
         {
-            return false;
+            return !physicalSeasonIds.Contains(episode.SeasonId)
+                && !physicalSeasonPaths.Contains(System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty);
         }
 
-        // Episode has been processed, only needs a virtual season if it isn't
-        // already linked to a known physical season by ID or path
-        return !physicalSeasonIds.Contains(episode.SeasonId)
-            && !physicalSeasonPaths.Contains(System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty);
+        // Episode not yet linked, check if it's in a physical season folder
+        // If yes then skip it, processing not finished
+        // If no then include it, needs Season Unknown
+        var episodeDirectory = System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty;
+        return !physicalSeasonPaths.Contains(episodeDirectory);
     }
 
     /// <summary>

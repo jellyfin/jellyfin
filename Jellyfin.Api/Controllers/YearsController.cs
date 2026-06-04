@@ -26,6 +26,7 @@ namespace Jellyfin.Api.Controllers;
 /// Years controller.
 /// </summary>
 [Authorize]
+[Tags("Year")]
 public class YearsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

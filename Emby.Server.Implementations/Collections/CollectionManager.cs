@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -29,6 +32,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger<CollectionManager> _logger;
         private readonly IProviderManager _providerManager;
+        private readonly ILinkedChildrenService _linkedChildrenService;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
 
@@ -42,6 +46,7 @@ namespace Emby.Server.Implementations.Collections
         /// <param name="iLibraryMonitor">The library monitor.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="linkedChildrenService">The linked children service.</param>
         public CollectionManager(
             ILibraryManager libraryManager,
             IApplicationPaths appPaths,
@@ -49,13 +54,15 @@ namespace Emby.Server.Implementations.Collections
             IFileSystem fileSystem,
             ILibraryMonitor iLibraryMonitor,
             ILoggerFactory loggerFactory,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            ILinkedChildrenService linkedChildrenService)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = loggerFactory.CreateLogger<CollectionManager>();
             _providerManager = providerManager;
+            _linkedChildrenService = linkedChildrenService;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
         }
@@ -118,6 +125,22 @@ namespace Emby.Server.Implementations.Collections
         public Task<Folder?> GetCollectionsFolder(bool createIfNeeded)
         {
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BoxSet> GetCollectionsContainingItem(User user, Guid itemId)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            if (itemId.IsEmpty())
+            {
+                return Enumerable.Empty<BoxSet>();
+            }
+
+            return _linkedChildrenService
+                .GetManualLinkedParentIds(itemId, BaseItemKind.BoxSet)
+                .Select(parentId => _libraryManager.GetItemById<BoxSet>(parentId, user))
+                .OfType<BoxSet>();
         }
 
         private IEnumerable<BoxSet> GetCollections(User user)
@@ -272,7 +295,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var childItem = _libraryManager.GetItemById(guidId);
 
-                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem is not null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
+                var child = collection.LinkedChildren.FirstOrDefault(i => i.ItemId.HasValue && i.ItemId.Value.Equals(guidId));
 
                 if (child is null)
                 {
@@ -342,7 +365,7 @@ namespace Emby.Server.Implementations.Collections
                     // this is kind of a performance hack because only Video has alternate versions that should be in a box set?
                     if (item is Video video)
                     {
-                        foreach (var childId in video.GetLocalAlternateVersionIds())
+                        foreach (var childId in _libraryManager.GetLocalAlternateVersionIds(video))
                         {
                             if (!results.ContainsKey(childId))
                             {

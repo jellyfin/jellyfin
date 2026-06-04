@@ -821,7 +821,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                        Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
 
                         // If a local provider fails, consider that a failure
                         refreshResult.ErrorMessage = ex.Message;
@@ -902,7 +902,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
             }
         }
 
@@ -951,7 +951,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, logName);
                 }
             }
 
@@ -1162,6 +1162,12 @@ namespace MediaBrowser.Providers.Manager
                 && (replaceData || string.IsNullOrEmpty(target.OriginalTitle)))
             {
                 target.OriginalTitle = source.OriginalTitle;
+            }
+
+            if (!string.IsNullOrWhiteSpace(source.OriginalLanguage)
+                && (replaceData || string.IsNullOrEmpty(target.OriginalLanguage)))
+            {
+                target.OriginalLanguage = source.OriginalLanguage;
             }
 
             if (source.CommunityRating.HasValue && (replaceData || !target.CommunityRating.HasValue))

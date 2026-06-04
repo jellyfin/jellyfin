@@ -79,7 +79,7 @@ namespace Jellyfin.LiveTv.Recordings
 
         private async Task SendMessage(SessionMessageType name, TimerEventInfo info)
         {
-            var users = _userManager.Users
+            var users = _userManager.GetUsers()
                 .Where(i => i.HasPermission(PermissionKind.EnableLiveTvAccess))
                 .Select(i => i.Id)
                 .ToList();

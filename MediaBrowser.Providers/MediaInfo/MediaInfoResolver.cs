@@ -218,12 +218,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
-            var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
+            var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
-                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache, true));
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
             }
 
             if (files.Count == 0)
@@ -270,12 +270,12 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             string folder = audio.ContainingFolderPath;
-            var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
+            var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             files.Remove(audio.Path);
             var internalMetadataPath = audio.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
-                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache, true));
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
             }
 
             if (files.Count == 0)

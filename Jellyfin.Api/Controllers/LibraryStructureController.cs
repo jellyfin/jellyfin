@@ -75,7 +75,9 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AddVirtualFolder(
-        [FromQuery] string name,
+        [FromQuery]
+        [RegularExpression(@"^(?:\S(?:.*\S)?)$", ErrorMessage = "Library name cannot be empty or have leading/trailing spaces.")]
+        string name,
         [FromQuery] CollectionTypeOptions? collectionType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
@@ -187,6 +189,7 @@ public class LibraryStructureController : BaseJellyfinApiController
                     var newLib = _libraryManager.GetUserRootFolder().Children.FirstOrDefault(f => f.Path.Equals(newPath, StringComparison.OrdinalIgnoreCase));
                     if (newLib is CollectionFolder folder)
                     {
+                        _libraryManager.ClearIgnoreRuleCache();
                         foreach (var child in folder.GetPhysicalFolders())
                         {
                             await child.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
@@ -195,9 +198,12 @@ public class LibraryStructureController : BaseJellyfinApiController
                     }
                     else
                     {
+                        _libraryManager.ClearIgnoreRuleCache();
                         // We don't know if this one can be validated individually, trigger a new validation
                         await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
                     }
+
+                    _libraryManager.ClearIgnoreRuleCache();
                 }
                 else
                 {
