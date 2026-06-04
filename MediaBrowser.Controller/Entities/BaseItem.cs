@@ -2855,6 +2855,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the ids of the items whose owned extras belong to this item.
+        /// </summary>
+        /// <returns>An array containing the owner ids.</returns>
+        protected virtual Guid[] GetExtraOwnerIds()
+        {
+            return [Id];
+        }
+
+        /// <summary>
         /// Get all extras associated with this item, sorted by <see cref="SortName"/>.
         /// </summary>
         /// <returns>An enumerable containing the items.</returns>
@@ -2862,7 +2871,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return LibraryManager.GetItemList(new InternalItemsQuery()
             {
-                OwnerIds = [Id],
+                OwnerIds = GetExtraOwnerIds(),
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
             });
         }
@@ -2876,7 +2885,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return LibraryManager.GetItemList(new InternalItemsQuery()
             {
-                OwnerIds = [Id],
+                OwnerIds = GetExtraOwnerIds(),
                 ExtraTypes = extraTypes.ToArray(),
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
             });

@@ -738,6 +738,19 @@ namespace MediaBrowser.Controller.Entities
             }).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the ids of the items whose owned extras belong to this item.
+        /// Extras are linked to a single version but need tp be surfaced for all versions.
+        /// </summary>
+        /// <returns>An array containing the owner ids.</returns>
+        protected override Guid[] GetExtraOwnerIds()
+        {
+            return GetAllItemsForMediaSources()
+                .Select(i => i.Item.Id)
+                .Distinct()
+                .ToArray();
+        }
+
         protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
             var primary = PrimaryVersionId.HasValue
