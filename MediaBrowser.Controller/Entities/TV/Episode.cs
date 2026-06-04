@@ -28,9 +28,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         /// <inheritdoc />
         [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
-            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
-            .ToArray();
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras([Model.Entities.ExtraType.Trailer]).ToArray();
 
         /// <summary>
         /// Gets or sets the season in which it aired.
@@ -153,6 +151,12 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return 16.0 / 9;
+        }
+
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage ?? Series?.GetInheritedOriginalLanguage();
         }
 
         public override List<string> GetUserDataKeys()

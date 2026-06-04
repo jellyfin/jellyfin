@@ -14,11 +14,18 @@ namespace MediaBrowser.Controller.Chapters;
 public interface IChapterManager
 {
     /// <summary>
+    /// Gets a value indicating whether the specified item type is supported for chapter operations.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns><c>true</c> if the item type supports chapters; otherwise, <c>false</c>.</returns>
+    bool Supports(BaseItem item);
+
+    /// <summary>
     /// Saves the chapters.
     /// </summary>
-    /// <param name="video">The video.</param>
+    /// <param name="item">The item.</param>
     /// <param name="chapters">The set of chapters.</param>
-    void SaveChapters(Video video, IReadOnlyList<ChapterInfo> chapters);
+    void SaveChapters(BaseItem item, IReadOnlyList<ChapterInfo> chapters);
 
     /// <summary>
     /// Gets a single chapter of a BaseItem on a specific index.

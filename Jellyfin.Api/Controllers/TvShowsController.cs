@@ -27,6 +27,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("Shows")]
 [Authorize]
+[Tags("Show")]
 public class TvShowsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;

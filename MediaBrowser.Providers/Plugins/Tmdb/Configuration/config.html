@@ -44,6 +44,13 @@
                             <span>Hide crew members without profile images.</span>
                         </label>
                     </div>
+                    <div class="verticalSection">
+                        <h2>Similar Items</h2>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="number" id="similarItemsCacheDays" pattern="[0-9]*" required min="0" max="365" label="Cache duration (days)" />
+                            <div class="fieldDescription">Number of days to cache similar item results from TMDb. Set to 0 to disable caching.</div>
+                        </div>
+                    </div>
                     <div class="verticalSection verticalSection-extrabottompadding">
                         <h2>Image Scaling</h2>
                         <div class="selectContainer">
@@ -161,6 +168,13 @@
                             cancelable: false
                         }));
 
+                        var similarItemsCacheDays = document.querySelector('#similarItemsCacheDays');
+                        similarItemsCacheDays.value = config.SimilarItemsCacheDays;
+                        similarItemsCacheDays.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
                         pluginConfig = config;
                         configureImageScaling();
                     });
@@ -179,6 +193,7 @@
                         config.MaxCrewMembers = document.querySelector('#maxCrewMembers').value;
                         config.HideMissingCastMembers = document.querySelector('#hideMissingCastMembers').checked;
                         config.HideMissingCrewMembers = document.querySelector('#hideMissingCrewMembers').checked;
+                        config.SimilarItemsCacheDays = parseInt(document.querySelector('#similarItemsCacheDays').value, 10);
                         config.PosterSize = document.querySelector('#selectPosterSize').value;
                         config.BackdropSize = document.querySelector('#selectBackdropSize').value;
                         config.LogoSize = document.querySelector('#selectLogoSize').value;

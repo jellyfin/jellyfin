@@ -26,7 +26,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using UtfUnknown;
+using SubtitleFormat = MediaBrowser.Model.MediaInfo.SubtitleFormat;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -72,55 +75,42 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private MemoryStream ConvertSubtitles(
             Stream stream,
-            string inputFormat,
+            SubtitleInfo inputInfo,
             string outputFormat,
             long startTimeTicks,
             long endTimeTicks,
-            bool preserveOriginalTimestamps,
-            CancellationToken cancellationToken)
+            bool preserveOriginalTimestamps)
         {
-            var ms = new MemoryStream();
+            var subtitle = Subtitle.Parse(stream, Path.GetExtension(inputInfo.Path));
 
-            try
-            {
-                var trackInfo = _subtitleParser.Parse(stream, inputFormat);
+            FilterEvents(subtitle, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
-                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
+            var formatter = GetWriter(outputFormat);
 
-                var writer = GetWriter(outputFormat);
+            var text = formatter.ToText(subtitle, "untitled");
+            var bytes = Encoding.UTF8.GetBytes(text);
 
-                writer.Write(trackInfo, ms, cancellationToken);
-                ms.Position = 0;
-            }
-            catch
-            {
-                ms.Dispose();
-                throw;
-            }
-
-            return ms;
+            return new MemoryStream(bytes, 0, bytes.Length, false, true);
         }
 
-        internal void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
+        internal void FilterEvents(Subtitle track, long startPositionTicks, long endTimeTicks, bool preserveTimestamps)
         {
             // Drop subs that have fully elapsed before the requested start position
-            track.TrackEvents = track.TrackEvents
-                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 && (i.EndPositionTicks - startPositionTicks) < 0)
-                .ToArray();
+            track.Paragraphs
+                .RemoveAll(i => (i.StartTime.TimeSpan.Ticks - startPositionTicks) < 0 && (i.EndTime.TimeSpan.Ticks - startPositionTicks) < 0);
 
             if (endTimeTicks > 0)
             {
-                track.TrackEvents = track.TrackEvents
-                    .TakeWhile(i => i.StartPositionTicks <= endTimeTicks)
-                    .ToArray();
+                track.Paragraphs
+                    .RemoveAll(i => i.StartTime.TimeSpan.Ticks > endTimeTicks);
             }
 
             if (!preserveTimestamps)
             {
-                foreach (var trackEvent in track.TrackEvents)
+                foreach (var trackEvent in track.Paragraphs)
                 {
-                    trackEvent.EndPositionTicks = Math.Max(0, trackEvent.EndPositionTicks - startPositionTicks);
-                    trackEvent.StartPositionTicks = Math.Max(0, trackEvent.StartPositionTicks - startPositionTicks);
+                    trackEvent.StartTime = new TimeCode(TimeSpan.FromTicks(Math.Max(0, trackEvent.StartTime.TimeSpan.Ticks - startPositionTicks)));
+                    trackEvent.EndTime = new TimeCode(TimeSpan.FromTicks(Math.Max(0, trackEvent.EndTime.TimeSpan.Ticks - startPositionTicks)));
                 }
             }
         }
@@ -142,23 +132,26 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitleStream = mediaSource.MediaStreams
                .First(i => i.Type == MediaStreamType.Subtitle && i.Index == subtitleStreamIndex);
 
-            var (stream, inputFormat) = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
+            var (stream, info) = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
+            // ASS is a superset of SSA, skipping the conversion and preserving the styles
+            if (string.Equals(info.Format, outputFormat, StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(info.Format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(outputFormat, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase)))
             {
                 return stream;
             }
 
             using (stream)
             {
-                return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
+                return ConvertSubtitles(stream, info, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
             }
         }
 
-        private async Task<(Stream Stream, string Format)> GetSubtitleStream(
+        private async Task<(Stream Stream, SubtitleInfo Info)> GetSubtitleStream(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
@@ -167,7 +160,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var stream = await GetSubtitleStream(fileInfo, cancellationToken).ConfigureAwait(false);
 
-            return (stream, fileInfo.Format);
+            return (stream, fileInfo);
         }
 
         private async Task<Stream> GetSubtitleStream(SubtitleInfo fileInfo, CancellationToken cancellationToken)
@@ -187,10 +180,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     await using (stream.ConfigureAwait(false))
                     {
-                      using var reader = new StreamReader(stream, detected.Encoding);
-                      var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                        using var reader = new StreamReader(stream, detected.Encoding);
+                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                      return new MemoryStream(Encoding.UTF8.GetBytes(text));
+                        return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
             }
@@ -209,19 +202,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var outputFileExtension = GetExtractableSubtitleFileExtension(subtitleStream);
                 var outputFormat = GetExtractableSubtitleFormat(subtitleStream);
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension);
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFileExtension)
+                    ?? throw new ResourceNotFoundException($"MediaSource {mediaSource.Id} has no subtitle cache (non-GUID Id, e.g. Live TV stream).");
 
                 return new SubtitleInfo()
                 {
                     Path = outputPath,
                     Protocol = MediaProtocol.File,
                     Format = outputFormat,
-                    IsExternal = false
+                    IsExternal = MediaStream.IsVobSubFormat(outputFormat)
                 };
             }
 
-            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path)
-                .TrimStart('.');
+            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path).TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))
@@ -239,7 +232,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
             {
                 // Convert
-                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
+                var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt")
+                    ?? throw new ResourceNotFoundException($"MediaSource {mediaSource.Id} has no subtitle cache (non-GUID Id, e.g. Live TV stream).");
 
                 await ConvertTextSubtitleToSrt(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -262,13 +256,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             };
         }
 
-        private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
+        private bool TryGetWriter(string format, [NotNullWhen(true)] out Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(format);
 
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
-                value = new AssWriter();
+                value = new AdvancedSubStationAlpha();
                 return true;
             }
 
@@ -278,27 +272,29 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
             {
-                value = new SrtWriter();
+                value = new SubRip();
                 return true;
             }
 
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
-                value = new SsaWriter();
+                value = new SubStationAlpha();
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
             {
-                value = new VttWriter();
+                value = new WebVTT();
                 return true;
             }
 
             if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
             {
-                value = new TtmlWriter();
+                value = new TimedText10();
                 return true;
             }
 
@@ -306,7 +302,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return false;
         }
 
-        private ISubtitleWriter GetWriter(string format)
+        private Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat GetWriter(string format)
         {
             if (TryGetWriter(format, out var writer))
             {
@@ -470,6 +466,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return subtitleStream.Codec;
             }
+            else if (MediaStream.IsVobSubFormat(subtitleStream.Codec))
+            {
+                return "mks";
+            }
             else
             {
                 return "srt";
@@ -483,6 +483,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return "sup";
             }
+            else if (MediaStream.IsVobSubFormat(subtitleStream.Codec))
+            {
+                // FFmpeg cannot mux VobSub subtitle streams back into the .idx/.sub pair, so we use .mks container instead.
+                return "mks";
+            }
             else
             {
                 return GetExtractableSubtitleFormat(subtitleStream);
@@ -495,7 +500,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || string.Equals(codec, "ssa", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "srt", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "subrip", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(codec, "pgssub", StringComparison.OrdinalIgnoreCase)
+                || MediaStream.IsVobSubFormat(codec);
         }
 
         /// <inheritdoc />
@@ -511,12 +517,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    if (subtitleStream.IsExternal && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                    if (subtitleStream.IsExternal
+                        && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                    if (outputPath is null)
+                    {
+                        continue;
+                    }
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
@@ -588,7 +599,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
 
                     var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                    if (outputPath is null)
+                    {
+                        continue;
+                    }
+
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                    // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
+                    var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                     var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                     if (streamIndex == -1)
@@ -602,9 +620,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     outputPaths.Add(outputPath);
                     args += string.Format(
                         CultureInfo.InvariantCulture,
-                        " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
+                        " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
                         streamIndex,
                         outputCodec,
+                        outputFormatOption,
                         outputPath);
                 }
 
@@ -633,7 +652,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + GetExtractableSubtitleFileExtension(subtitleStream));
+                if (outputPath is null)
+                {
+                    continue;
+                }
+
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
+                // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
+                var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
                 var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
                 if (streamIndex == -1)
@@ -647,18 +673,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputPaths.Add(outputPath);
                 args += string.Format(
                     CultureInfo.InvariantCulture,
-                    " -map 0:{0} -an -vn -c:s {1} -flush_packets 1 \"{2}\"",
+                    " -map 0:{0} -an -vn -c:s {1}{2} -flush_packets 1 \"{3}\"",
                     streamIndex,
                     outputCodec,
+                    outputFormatOption,
                     outputPath);
             }
 
-            if (outputPaths.Count == 0)
+            if (outputPaths.Count > 0)
             {
-                return;
+                await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
             }
-
-            await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task ExtractSubtitlesForFile(
@@ -965,7 +990,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        private string GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
+        private string? GetSubtitleCachePath(MediaSourceInfo mediaSource, int subtitleStreamIndex, string outputSubtitleExtension)
         {
             return _pathManager.GetSubtitlePath(mediaSource.Id, subtitleStreamIndex, outputSubtitleExtension);
         }
@@ -978,9 +1003,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
-                path = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + subtitleCodec);
-                await ExtractTextSubtitle(mediaSource, subtitleStream, subtitleCodec, path, cancellationToken)
-                    .ConfigureAwait(false);
+                var cachePath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + subtitleCodec);
+                if (cachePath is not null)
+                {
+                    path = cachePath;
+                    await ExtractTextSubtitle(mediaSource, subtitleStream, subtitleCodec, path, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
 
             var result = await DetectCharset(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
@@ -1004,20 +1033,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                {
-                    using var stream = await _httpClientFactory
-                      .CreateClient(NamedClient.Default)
-                      .GetStreamAsync(new Uri(path), cancellationToken)
-                      .ConfigureAwait(false);
+                    {
+                        using var stream = await _httpClientFactory
+                          .CreateClient(NamedClient.Default)
+                          .GetStreamAsync(new Uri(path), cancellationToken)
+                          .ConfigureAwait(false);
 
-                    return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-                }
+                        return await CharsetDetector.DetectFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                    }
 
                 case MediaProtocol.File:
-                {
-                    return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
-                                          .ConfigureAwait(false);
-                }
+                    {
+                        return await CharsetDetector.DetectFromFileAsync(path, cancellationToken)
+                                              .ConfigureAwait(false);
+                    }
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol), protocol, "Unsupported protocol");

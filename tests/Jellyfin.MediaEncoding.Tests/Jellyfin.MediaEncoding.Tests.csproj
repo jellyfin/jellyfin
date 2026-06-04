@@ -3,6 +3,7 @@
   <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
   <PropertyGroup>
     <ProjectGuid>{28464062-0939-4AA7-9F7B-24DDDA61A7C0}</ProjectGuid>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,11 +15,11 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture" />
     <PackageReference Include="AutoFixture.AutoMoq" />
-    <PackageReference Include="AutoFixture.Xunit2" />
+    <PackageReference Include="AutoFixture.Xunit3" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

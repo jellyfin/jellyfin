@@ -74,7 +74,7 @@ public class CollectionPostScanTask : ILibraryPostScanTask
 
                 foreach (var m in movies)
                 {
-                    if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
+                    if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName) && !movie.PrimaryVersionId.HasValue)
                     {
                         if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
                         {
