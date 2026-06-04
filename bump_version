@@ -36,35 +36,40 @@ haos_config_file="./haos-jellyfin/config.yaml"
 new_version="$1"
 new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 
-# Update SharedVersion.cs
-old_version="$(
-    grep "AssemblyVersion" ${shared_version_file} \
-        | sed -E 's/.*AssemblyVersion\("([0-9\.]+)"\).*/\1/'
-)"
-echo old assembly version: $old_version
-sed -i "s|${old_version}|${new_version_sed}|g" ${shared_version_file}
+# Set the assembly version in SharedVersion.cs
+if [[ -f ${shared_version_file} ]]; then
+    old_version="$(
+        grep "AssemblyVersion" ${shared_version_file} \
+            | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
+    )"
+    echo old assembly version: $old_version
+    sed -i "s|${old_version}|${new_version_sed}|g" ${shared_version_file}
+fi
 
 # update nuget package version
 for subproject in ${jellyfin_subprojects[@]}; do
-    echo ${subproject}
-    # Parse the version from the *.csproj file
-    old_version="$(
-        grep "VersionPrefix" ${subproject} \
-            | awk '{$1=$1};1' \
-            | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
-    )"
-    echo old nuget version in ${subproject}: $old_version
+    if [[ -f ${subproject} ]]; then
+        echo ${subproject}
+        # Parse the version from the *.csproj file
+        old_version="$(
+            grep "VersionPrefix" ${subproject} \
+                | awk '{$1=$1};1' \
+                | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
+        )"
+        echo old nuget version: $old_version
 
-    # Set the nuget version to the specified new_version
-    sed -i "s|<VersionPrefix>${old_version}</VersionPrefix>|<VersionPrefix>${new_version_sed}</VersionPrefix>|g" ${subproject}
+        # Set the nuget version to the specified new_version
+        sed -i "s|${old_version}|${new_version_sed}|g" ${subproject}
+    fi
 done
 
 # Set the version in the GitHub issue template file
 if [[ -f ${issue_template_file} ]]; then
     # Extract the first version from the options list in the issue template
-    old_issue_version=$(grep -A 10 "id: version" "${issue_template_file}" | grep -m 1 "^        - " | sed 's/        - //')
-    echo old issue template version: $old_issue_version
-    sed -i "s|        - ${old_issue_version}|        - ${new_version_sed}|g" "${issue_template_file}"
+    old_issue_version=$(grep -m 1 "        - [0-9]" "${issue_template_file}" | awk '{print $2}')
+    if [[ -n ${old_issue_version} ]]; then
+        sed -i "s|        - ${old_issue_version}|        - ${new_version_sed}|g" "${issue_template_file}"
+    fi
 fi
 
 # Set the version in the HAOS config file
