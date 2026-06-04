@@ -9,7 +9,11 @@ on:
       - labeled
       - synchronize
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   rebase:
     name: Rebase

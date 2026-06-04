@@ -7,7 +7,9 @@ on:
   pull_request:
   issue_comment:
 
-permissions: {}
+permissions:
+  repository-projects: write
+
 jobs:
   project:
     name: Project board
@@ -22,7 +24,7 @@ jobs:
           project: Current Release
           action: delete
           column: In progress
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add to 'Release Next' project
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
@@ -31,7 +33,7 @@ jobs:
         with:
           project: Release Next
           column: In progress
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add to 'Current Release' project
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
@@ -40,7 +42,7 @@ jobs:
         with:
           project: Current Release
           column: In progress
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check number of comments from the team member
         if: github.event.issue.pull_request == '' && github.event.comment.author_association == 'MEMBER'
@@ -54,7 +56,7 @@ jobs:
         with:
           project: Issue Triage for Main Repo
           column: Needs triage
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add issue to triage project
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
@@ -63,4 +65,4 @@ jobs:
         with:
           project: Issue Triage for Main Repo
           column: Pending response
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

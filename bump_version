@@ -75,6 +75,7 @@ fi
 # Set the version in the HAOS config file
 if [[ -f ${haos_config_file} ]]; then
     old_haos_version=$(grep "^version: " "${haos_config_file}" | cut -d '"' -f 2)
+    echo old HAOS version: $old_haos_version
     sed -i "s|version: \"${old_haos_version}\"|version: \"${new_version_sed}\"|g" "${haos_config_file}"
 fi
 
