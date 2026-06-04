@@ -33,7 +33,7 @@ jobs:
       with:
         dotnet-version: '10.0.103'
 
-    - name: Generate OpenAPI Spec
+    - name: Create File
       run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter Jellyfin.Server.Integration.Tests.OpenApiSpecTests
 
     - name: Upload Artifact
