@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
 
@@ -26,7 +27,20 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
+            return _cache.GetOrAdd(
+                path,
+                static (p, fileSystem) =>
+                {
+                    try
+                    {
+                        return fileSystem.GetFileSystemEntries(p).ToArray();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return [];
+                    }
+                },
+                _fileSystem);
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -91,19 +105,27 @@ namespace MediaBrowser.Controller.Providers
         public IReadOnlyList<string> GetFilePaths(string path)
             => GetFilePaths(path, false);
 
-        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
         {
             if (clearCache)
             {
                 _filePathCache.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
-
-            if (sort)
-            {
-                filePaths.Sort();
-            }
+            var filePaths = _filePathCache.GetOrAdd(
+                path,
+                static (p, fileSystem) =>
+                {
+                    try
+                    {
+                        return fileSystem.GetFilePaths(p).OrderBy(x => x).ToList();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return [];
+                    }
+                },
+                _fileSystem);
 
             return filePaths;
         }

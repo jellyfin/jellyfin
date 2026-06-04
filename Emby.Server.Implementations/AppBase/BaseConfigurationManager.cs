@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             else
             {
-                _configurationFactories = [.._configurationFactories, factory];
+                _configurationFactories = [.. _configurationFactories, factory];
             }
 
             _configurationStores = _configurationFactories
@@ -228,6 +228,7 @@ namespace Emby.Server.Implementations.AppBase
             Logger.LogInformation("Setting cache path: {Path}", cachePath);
             ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
             CommonApplicationPaths.CreateAndCheckMarker(((BaseApplicationPaths)CommonApplicationPaths).CachePath, "cache");
+            BaseApplicationPaths.CreateCacheDirTag(cachePath);
         }
 
         /// <summary>

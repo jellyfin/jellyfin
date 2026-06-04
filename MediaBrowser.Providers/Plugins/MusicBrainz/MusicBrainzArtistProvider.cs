@@ -8,37 +8,19 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Music;
-using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
 /// <summary>
 /// MusicBrainz artist provider.
 /// </summary>
-public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IDisposable, IHasOrder
+public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
 {
-    private readonly ILogger<MusicBrainzArtistProvider> _logger;
-    private Query _musicBrainzQuery;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MusicBrainzArtistProvider"/> class.
-    /// </summary>
-    /// <param name="logger">The logger.</param>
-    public MusicBrainzArtistProvider(ILogger<MusicBrainzArtistProvider> logger)
-    {
-        _logger = logger;
-        _musicBrainzQuery = new Query();
-        ReloadConfig(null, MusicBrainz.Plugin.Instance!.Configuration);
-        MusicBrainz.Plugin.Instance!.ConfigurationChanged += ReloadConfig;
-    }
-
     /// <inheritdoc />
     public string Name => "MusicBrainz";
 
@@ -46,41 +28,19 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     /// Runs first to populate the MusicBrainz artist ID used by downstream providers.
     public int Order => 0;
 
-    private void ReloadConfig(object? sender, BasePluginConfiguration e)
-    {
-        var configuration = (PluginConfiguration)e;
-        if (Uri.TryCreate(configuration.Server, UriKind.Absolute, out var server))
-        {
-            Query.DefaultServer = server.DnsSafeHost;
-            Query.DefaultPort = server.Port;
-            Query.DefaultUrlScheme = server.Scheme;
-        }
-        else
-        {
-            // Fallback to official server
-            _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
-            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
-            Query.DefaultServer = defaultServer.Host;
-            Query.DefaultPort = defaultServer.Port;
-            Query.DefaultUrlScheme = defaultServer.Scheme;
-        }
-
-        Query.DelayBetweenRequests = configuration.RateLimit;
-        _musicBrainzQuery = new Query();
-    }
-
     /// <inheritdoc />
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
     {
+        var query = MusicBrainz.Plugin.Instance!.MusicBrainzQuery;
         var artistId = searchInfo.GetMusicBrainzArtistId();
 
         if (!string.IsNullOrWhiteSpace(artistId))
         {
-            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
+            var artistResult = await query.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
             return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
         }
 
-        var artistSearchResults = await _musicBrainzQuery.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+        var artistSearchResults = await query.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
             .ConfigureAwait(false);
         if (artistSearchResults.Results.Count > 0)
         {
@@ -90,7 +50,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         if (searchInfo.Name.HasDiacritics())
         {
             // Try again using the search with an accented characters query
-            var artistAccentsSearchResults = await _musicBrainzQuery.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+            var artistAccentsSearchResults = await query.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken)
                 .ConfigureAwait(false);
             if (artistAccentsSearchResults.Results.Count > 0)
             {
@@ -167,24 +127,5 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Dispose all resources.
-    /// </summary>
-    /// <param name="disposing">Whether to dispose.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _musicBrainzQuery.Dispose();
-        }
     }
 }

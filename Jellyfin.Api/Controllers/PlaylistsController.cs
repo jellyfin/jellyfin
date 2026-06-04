@@ -29,6 +29,7 @@ namespace Jellyfin.Api.Controllers;
 /// Playlists controller.
 /// </summary>
 [Authorize]
+[Tags("Playlist")]
 public class PlaylistsController : BaseJellyfinApiController
 {
     private readonly IPlaylistManager _playlistManager;

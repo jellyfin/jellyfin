@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// The genres controller.
 /// </summary>
 [Authorize]
+[Tags("Genre")]
 public class GenresController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;

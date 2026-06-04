@@ -114,7 +114,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _lyricResolver,
                 lyricManager,
-                mediaStreamRepository);
+                mediaStreamRepository,
+                chapterManager);
         }
 
         /// <inheritdoc />

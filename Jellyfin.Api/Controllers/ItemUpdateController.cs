@@ -242,6 +242,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.ForcedSortName = request.ForcedSortName;
 
         item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
+        item.OriginalLanguage = string.IsNullOrWhiteSpace(request.OriginalLanguage) ? null : request.OriginalLanguage;
 
         item.CriticRating = request.CriticRating;
 
@@ -287,7 +288,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.CustomRating = request.CustomRating;
 
         var currentTags = item.Tags;
-        var newTags = request.Tags.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var newTags = request.Tags.Select(t => t.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var removedTags = currentTags.Except(newTags).ToList();
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;

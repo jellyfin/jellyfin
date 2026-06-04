@@ -91,6 +91,13 @@ public sealed class SetupServer : IDisposable
         _startupUiRenderer = (await ParserOptionsBuilder.New()
             .WithTemplate(fileTemplate)
             .WithFormatter(
+            (Version version, int arg) =>
+            {
+                // version type does not for some stupid reason implement IFormattable which morestachio relies on for ToString support therefor we need to do it manually.
+                return version.ToString(arg);
+            },
+            "ToString")
+            .WithFormatter(
                 (StartupLogTopic logEntry, IEnumerable<StartupLogTopic> children) =>
                 {
                     if (children.Any())
@@ -237,6 +244,7 @@ public sealed class SetupServer : IDisposable
                                         });
                                     });
 
+                                    var version = typeof(Emby.Server.Implementations.ApplicationHost).Assembly.GetName().Version!;
                                     app.Run(async (context) =>
                                     {
                                         context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
@@ -250,7 +258,7 @@ public sealed class SetupServer : IDisposable
                                             {
                                                 { "isInReportingMode", _isUnhealthy },
                                                 { "retryValue", retryAfterValue },
-                                                { "version", typeof(Emby.Server.Implementations.ApplicationHost).Assembly.GetName().Version! },
+                                                { "version", version },
                                                 { "logs", startupLogEntries },
                                                 { "networkManagerReady", networkManager is not null },
                                                 { "localNetworkRequest", networkManager is not null && context.Connection.RemoteIpAddress is not null && networkManager.IsInLocalNetwork(context.Connection.RemoteIpAddress) }
