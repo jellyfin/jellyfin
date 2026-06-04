@@ -369,7 +369,7 @@ namespace Emby.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, options, artistsBatch);
+            AttachBasicFields(dto, item, owner, options, artistsBatch, user);
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
@@ -943,7 +943,8 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <param name="options">The options.</param>
         /// <param name="artistsBatch">Optional pre-fetched artist lookup shared across a batch of items.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+        /// <param name="user">The user, for per-user values such as the accessible media source count.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem? owner, DtoOptions options, IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null, User? user = null)
         {
             if (options.ContainsField(ItemFields.DateCreated))
             {
@@ -1257,7 +1258,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.MediaSourceCount))
                 {
-                    var mediaSourceCount = video.MediaSourceCount;
+                    // Match the per-user filtering of the media sources: versions the user cannot
+                    // access are not selectable, so they must not count towards the badge either.
+                    var mediaSourceCount = user is null
+                        ? video.MediaSourceCount
+                        : video.GetAllVersions().Count(v => v.Id.Equals(video.Id) || v.IsVisibleStandalone(user));
                     if (mediaSourceCount != 1)
                     {
                         dto.MediaSourceCount = mediaSourceCount;
