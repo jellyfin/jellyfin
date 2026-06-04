@@ -5,10 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +37,11 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
 
     public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        await CleanDeadItems(cancellationToken, progress).ConfigureAwait(false);
+        var deadItemsProgress = new Progress<double>(val => progress.Report(val * 0.8));
+        await CleanDeadItems(cancellationToken, deadItemsProgress).ConfigureAwait(false);
+
+        var playlistProgress = new Progress<double>(val => progress.Report(80 + (val * 0.2)));
+        await CleanOrphanedFilePlaylistsAsync(cancellationToken, playlistProgress).ConfigureAwait(false);
     }
 
     private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
@@ -112,6 +118,34 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 subProgress.Report(100);
             }
+        }
+
+        progress.Report(100);
+    }
+
+    private async Task CleanOrphanedFilePlaylistsAsync(CancellationToken cancellationToken, IProgress<double> progress)
+    {
+        var playlists = _libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Playlist],
+            Recursive = true
+        }).OfType<Playlist>().ToList();
+
+        var numComplete = 0;
+        var numItems = Math.Max(playlists.Count, 1);
+
+        foreach (var playlist in playlists)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (playlist.IsFile && !File.Exists(playlist.Path))
+            {
+                _logger.LogInformation("Removing file-based playlist {Name} because source file {Path} no longer exists", playlist.Name, playlist.Path);
+                _libraryManager.DeleteItem(playlist, new DeleteOptions { DeleteFileLocation = false });
+            }
+
+            numComplete++;
+            progress.Report((double)numComplete / numItems * 100);
         }
 
         progress.Report(100);

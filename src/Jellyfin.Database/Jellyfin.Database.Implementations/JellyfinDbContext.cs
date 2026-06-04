@@ -144,6 +144,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<PeopleBaseItemMap> PeopleBaseItemMap => Set<PeopleBaseItemMap>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing linked children relationships.
+    /// </summary>
+    public DbSet<LinkedChildEntity> LinkedChildren => Set<LinkedChildEntity>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the referenced Providers with ids.
     /// </summary>
     public DbSet<BaseItemProvider> BaseItemProviders => Set<BaseItemProvider>();
@@ -268,6 +273,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
             }).ConfigureAwait(false);
             return result;
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            // a concurrency exception is supposed to be always handled by the invoker of the method, logging it here is only causing log bloat.
+            throw;
+        }
         catch (Exception e)
         {
             logger.LogError(e, "Error trying to save changes.");
@@ -288,6 +298,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
                 result = base.SaveChanges(acceptAllChangesOnSuccess);
             });
             return result;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // a concurrency exception is supposed to be always handled by the invoker of the method, logging it here is only causing log bloat.
+            throw;
         }
         catch (Exception e)
         {

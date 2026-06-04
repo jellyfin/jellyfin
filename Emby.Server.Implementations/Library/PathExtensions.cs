@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library
                         '[' => ']',
                         '(' => ')',
                         '{' => '}',
-                         _ => '\0'
+                        _ => '\0'
                     };
                     if (attributeCloser != '\0' && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
                     {
@@ -68,6 +68,16 @@ namespace Emby.Server.Implementations.Library
             {
                 var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
                 return match ? imdbId.ToString() : null;
+            }
+
+            // Allow tmdb as an alias for tmdbid
+            if (attribute.Equals("tmdbid", StringComparison.OrdinalIgnoreCase))
+            {
+                var tmdbValue = str.GetAttributeValue("tmdb");
+                if (tmdbValue is not null)
+                {
+                    return tmdbValue;
+                }
             }
 
             return null;

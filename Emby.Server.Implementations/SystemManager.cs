@@ -89,11 +89,11 @@ public class SystemManager : ISystemManager
             .GetVirtualFolders()
             .Where(e => !string.IsNullOrWhiteSpace(e.ItemId)) // this should not be null but for some users it is.
             .Select(e => new LibraryStorageInfo()
-        {
-            Id = Guid.Parse(e.ItemId),
-            Name = e.Name,
-            Folders = e.Locations.Select(f => StorageHelper.GetFreeSpaceOf(f)).ToArray()
-        });
+            {
+                Id = Guid.Parse(e.ItemId),
+                Name = e.Name,
+                Folders = e.Locations.Select(f => StorageHelper.GetFreeSpaceOf(f)).ToArray()
+            });
 
         return new SystemStorageInfo()
         {

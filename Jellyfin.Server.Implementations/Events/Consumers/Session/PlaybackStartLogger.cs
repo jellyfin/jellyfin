@@ -61,7 +61,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),
+                    _localizationManager.GetServerLocalizedString("UserStartedPlayingItemWithValues"),
                     user.Username,
                     GetItemName(eventArgs.MediaInfo),
                     eventArgs.DeviceName),

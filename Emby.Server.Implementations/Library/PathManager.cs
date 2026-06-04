@@ -6,6 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library;
 
@@ -14,18 +15,22 @@ namespace Emby.Server.Implementations.Library;
 /// </summary>
 public class PathManager : IPathManager
 {
+    private readonly ILogger<PathManager> _logger;
     private readonly IServerConfigurationManager _config;
     private readonly IApplicationPaths _appPaths;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PathManager"/> class.
     /// </summary>
+    /// <param name="logger">The logger.</param>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="appPaths">The application paths.</param>
     public PathManager(
+        ILogger<PathManager> logger,
         IServerConfigurationManager config,
         IApplicationPaths appPaths)
     {
+        _logger = logger;
         _config = config;
         _appPaths = appPaths;
     }
@@ -35,31 +40,43 @@ public class PathManager : IPathManager
     private string AttachmentCachePath => Path.Combine(_appPaths.DataPath, "attachments");
 
     /// <inheritdoc />
-    public string GetAttachmentPath(string mediaSourceId, string fileName)
+    public string? GetAttachmentPath(string mediaSourceId, string fileName)
     {
-        return Path.Combine(GetAttachmentFolderPath(mediaSourceId), fileName);
+        var folder = GetAttachmentFolderPath(mediaSourceId);
+        return folder is null ? null : Path.Combine(folder, fileName);
     }
 
     /// <inheritdoc />
-    public string GetAttachmentFolderPath(string mediaSourceId)
+    public string? GetAttachmentFolderPath(string mediaSourceId)
     {
-        var id = Guid.Parse(mediaSourceId).ToString("D", CultureInfo.InvariantCulture).AsSpan();
+        if (!Guid.TryParse(mediaSourceId, out var parsed))
+        {
+            _logger.LogDebug("MediaSource Id '{MediaSourceId}' is not a GUID; no on-disk attachment folder.", mediaSourceId);
+            return null;
+        }
 
+        var id = parsed.ToString("D", CultureInfo.InvariantCulture).AsSpan();
         return Path.Join(AttachmentCachePath, id[..2], id);
     }
 
     /// <inheritdoc />
-    public string GetSubtitleFolderPath(string mediaSourceId)
+    public string? GetSubtitleFolderPath(string mediaSourceId)
     {
-        var id = Guid.Parse(mediaSourceId).ToString("D", CultureInfo.InvariantCulture).AsSpan();
+        if (!Guid.TryParse(mediaSourceId, out var parsed))
+        {
+            _logger.LogDebug("MediaSource Id '{MediaSourceId}' is not a GUID; no on-disk subtitle folder.", mediaSourceId);
+            return null;
+        }
 
+        var id = parsed.ToString("D", CultureInfo.InvariantCulture).AsSpan();
         return Path.Join(SubtitleCachePath, id[..2], id);
     }
 
     /// <inheritdoc />
-    public string GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
+    public string? GetSubtitlePath(string mediaSourceId, int streamIndex, string extension)
     {
-        return Path.Combine(GetSubtitleFolderPath(mediaSourceId), streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
+        var folder = GetSubtitleFolderPath(mediaSourceId);
+        return folder is null ? null : Path.Combine(folder, streamIndex.ToString(CultureInfo.InvariantCulture) + extension);
     }
 
     /// <inheritdoc />
@@ -90,12 +107,23 @@ public class PathManager : IPathManager
     public IReadOnlyList<string> GetExtractedDataPaths(BaseItem item)
     {
         var mediaSourceId = item.Id.ToString("N", CultureInfo.InvariantCulture);
-        return [
-            GetAttachmentFolderPath(mediaSourceId),
-            GetSubtitleFolderPath(mediaSourceId),
-            GetTrickplayDirectory(item, false),
-            GetTrickplayDirectory(item, true),
-            GetChapterImageFolderPath(item)
-        ];
+        List<string> paths = [];
+        var attachmentFolder = GetAttachmentFolderPath(mediaSourceId);
+        if (attachmentFolder is not null)
+        {
+            paths.Add(attachmentFolder);
+        }
+
+        var subtitleFolder = GetSubtitleFolderPath(mediaSourceId);
+        if (subtitleFolder is not null)
+        {
+            paths.Add(subtitleFolder);
+        }
+
+        paths.Add(GetTrickplayDirectory(item, false));
+        paths.Add(GetTrickplayDirectory(item, true));
+        paths.Add(GetChapterImageFolderPath(item));
+
+        return paths;
     }
 }

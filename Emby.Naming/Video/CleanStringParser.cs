@@ -44,7 +44,7 @@ namespace Emby.Naming.Video
             var match = expression.Match(name);
             if (match.Success && match.Groups.TryGetValue("cleaned", out var cleaned))
             {
-                newName = cleaned.Value;
+                newName = cleaned.Value.Trim();
                 return true;
             }
 

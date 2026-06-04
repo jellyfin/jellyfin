@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -62,42 +60,56 @@ namespace Jellyfin.LiveTv.Listings
             _logger.LogInformation("xmltv path: {Path}", info.Path);
 
             string cacheFilename = info.Id + ".xml";
-            string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
+            string cacheDir = Path.Join(_config.ApplicationPaths.CachePath, "xmltv");
+            string cacheFile = Path.Join(cacheDir, cacheFilename);
 
-            if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
-            {
-                return cacheFile;
-            }
-
-            // Must check if file exists as parent directory may not exist.
             if (File.Exists(cacheFile))
             {
+                if (File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
+                {
+                    return cacheFile;
+                }
+
                 File.Delete(cacheFile);
             }
             else
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
+                Directory.CreateDirectory(cacheDir);
             }
 
-            if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
-
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
-                var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                await using (stream.ConfigureAwait(false))
+                if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
+
+                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
+                    var redirectedUrl = response.RequestMessage?.RequestUri?.ToString() ?? info.Path;
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        return await UnzipIfNeededAndCopy(redirectedUrl, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    var stream = AsyncFile.OpenRead(info.Path);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                var stream = AsyncFile.OpenRead(info.Path);
-                await using (stream.ConfigureAwait(false))
+                _logger.LogError(ex, "Error downloading or processing XMLTV file from {Path}", info.Path);
+
+                if (File.Exists(cacheFile))
                 {
-                    return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+                    File.Delete(cacheFile);
                 }
+
+                throw;
             }
         }
 
@@ -130,9 +142,20 @@ namespace Jellyfin.LiveTv.Listings
                 {
                     await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
-
-                return file;
             }
+
+            var fileInfo = new FileInfo(file);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                if (fileInfo.Exists)
+                {
+                    File.Delete(file);
+                }
+
+                throw new InvalidOperationException("Downloaded XMLTV file is empty: " + originalUrl);
+            }
+
+            return file;
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -154,33 +177,37 @@ namespace Jellyfin.LiveTv.Listings
 
         private static ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
         {
-            string episodeTitle = program.Episode.Title;
+            string? episodeTitle = program.Episode?.Title;
             var programCategories = program.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+            var imageUrl = program.Icons.FirstOrDefault()?.Source;
+            var rating = program.Ratings.FirstOrDefault()?.Value;
+            var starRating = program.StarRatings?.FirstOrDefault()?.StarRating;
 
             var programInfo = new ProgramInfo
             {
                 ChannelId = program.ChannelId,
                 EndDate = program.EndDate.UtcDateTime,
-                EpisodeNumber = program.Episode.Episode,
+                EpisodeNumber = program.Episode?.Episode,
                 EpisodeTitle = episodeTitle,
                 Genres = programCategories,
                 StartDate = program.StartDate.UtcDateTime,
                 Name = program.Title,
                 Overview = program.Description,
                 ProductionYear = program.CopyrightDate?.Year,
-                SeasonNumber = program.Episode.Series,
-                IsSeries = program.Episode.Episode is not null,
+                SeasonNumber = program.Episode?.Series,
+                IsSeries = program.Episode?.Episode is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
                 IsPremiere = program.Premiere is not null,
+                IsLive = program.IsLive,
                 IsKids = programCategories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsMovie = programCategories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = programCategories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsSports = programCategories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                ImageUrl = string.IsNullOrEmpty(program.Icon?.Source) ? null : program.Icon.Source,
-                HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
-                OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
-                CommunityRating = program.StarRating,
-                SeriesId = program.Episode.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                ImageUrl = string.IsNullOrEmpty(imageUrl) ? null : imageUrl,
+                HasImage = !string.IsNullOrEmpty(imageUrl),
+                OfficialRating = string.IsNullOrEmpty(rating) ? null : rating,
+                CommunityRating = starRating is null ? null : (float)starRating.Value,
+                SeriesId = program.Episode?.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
@@ -261,7 +288,7 @@ namespace Jellyfin.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = string.IsNullOrEmpty(c.Icon?.Source) ? null : c.Icon.Source,
+                ImageUrl = string.IsNullOrEmpty(c.Icons.FirstOrDefault()?.Source) ? null : c.Icons.FirstOrDefault()!.Source,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
             }).ToList();
         }

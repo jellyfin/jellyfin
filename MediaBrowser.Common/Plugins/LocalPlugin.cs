@@ -109,7 +109,7 @@ namespace MediaBrowser.Common.Plugins
         {
             var inst = Instance?.GetPluginInfo() ?? new PluginInfo(Manifest.Name, Version, Manifest.Description, Manifest.Id, true);
             inst.Status = Manifest.Status;
-            inst.HasImage = !string.IsNullOrEmpty(Manifest.ImagePath);
+            inst.HasImage = !string.IsNullOrEmpty(Manifest.ImagePath) || !string.IsNullOrEmpty(Manifest.ImageResourceName);
             return inst;
         }
 

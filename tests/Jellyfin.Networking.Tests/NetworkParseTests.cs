@@ -7,6 +7,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -94,8 +95,104 @@ namespace Jellyfin.Networking.Tests
         [InlineData("256.128.0.0.0.1")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
+        [InlineData("fd23:184f:2029:0100/56")]
         public static void TryParseInvalidIPStringsFalse(string address)
             => Assert.False(NetworkUtils.TryParseToSubnet(address, out _));
+
+        /// <summary>
+        /// Verifies that <see cref="NetworkUtils.TryParseToSubnets"/> emits a targeted warning
+        /// for IPv6 prefix-only notation and a generic warning for other malformed entries.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_InvalidEntries_LogsWarnings()
+        {
+            var logger = new Mock<ILogger>();
+
+            var values = new[] { "10.0.0.0/8", "fd23:184f:2029:0100/56", "not-an-address" };
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var result, false, logger.Object));
+            Assert.NotNull(result);
+            Assert.Single(result);
+
+            // IPv6 prefix-only notation should produce a specific, actionable warning.
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("IPv6 prefix-only", StringComparison.Ordinal)
+                        && state.ToString()!.Contains("fd23:184f:2029:0100/56", StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+
+            // Other malformed entries should still produce a generic warning.
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("not-an-address", StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
+        /// <summary>
+        /// Verifies that IPv4 entries whose '!' polarity doesn't match the requested pass are skipped silently,
+        /// not logged as invalid. Callers parse the same list twice (LAN and excluded) so the off-polarity
+        /// entries are expected, not erroneous.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_PolarityMismatchIPv4_DoesNotWarn()
+        {
+            var logger = new Mock<ILogger>();
+            var values = new[] { "127.0.0.0/8", "192.168.178.0/24", "!10.0.0.0/8" };
+
+            // Non-negated pass picks up the two non-'!' entries and ignores '!10.0.0.0/8' silently.
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var lanResult, false, logger.Object));
+            Assert.NotNull(lanResult);
+            Assert.Equal(2, lanResult.Count);
+
+            // Negated pass picks up the single '!' entry and ignores the others silently.
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var excludedResult, true, logger.Object));
+            Assert.NotNull(excludedResult);
+            Assert.Single(excludedResult);
+
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
+
+        /// <summary>
+        /// Same as the IPv4 case but for IPv6 entries — makes sure the polarity pre-check works
+        /// for IPv6 CIDR notation (with '::') as well.
+        /// </summary>
+        [Fact]
+        public static void TryParseToSubnets_PolarityMismatchIPv6_DoesNotWarn()
+        {
+            var logger = new Mock<ILogger>();
+            var values = new[] { "fd00::/8", "fe80::/10", "!fd12:3456:789a::/48" };
+
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var lanResult, false, logger.Object));
+            Assert.NotNull(lanResult);
+            Assert.Equal(2, lanResult.Count);
+
+            Assert.True(NetworkUtils.TryParseToSubnets(values, out var excludedResult, true, logger.Object));
+            Assert.NotNull(excludedResult);
+            Assert.Single(excludedResult);
+
+            logger.Verify(
+                l => l.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Never);
+        }
 
         /// <summary>
         /// Checks if IPv4 address is within a defined subnet.
@@ -377,6 +474,8 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "192.168.1.209", "10.0.0.1")] // LAN not bound, so return external.
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "8.8.8.8", "10.0.0.1")] // return external bind address
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "192.168.1.210", "192.168.1.208")] // return LAN bind address
+        // Cross-subnet IPv4 request should return IPv4, not IPv6 (Issue #15898)
+        [InlineData("192.168.1.208/24,-16,eth16|fd00::1/64,10,eth7", "192.168.1.0/24", "", "192.168.2.100", "192.168.1.208")]
         public void GetBindInterface_ValidSourceGiven_Success(string interfaces, string lan, string bind, string source, string result)
         {
             var conf = new NetworkConfiguration

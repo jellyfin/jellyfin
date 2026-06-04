@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -25,7 +24,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -73,7 +71,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _audioResolver = audioResolver;
             _subtitleResolver = subtitleResolver;
             _mediaAttachmentRepository = mediaAttachmentRepository;
-            _mediaStreamRepository = mediaStreamRepository;
             _mediaStreamRepository = mediaStreamRepository;
         }
 
@@ -197,20 +194,11 @@ namespace MediaBrowser.Providers.MediaInfo
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
 
-            // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
 
             if (mediaInfo is not null)
             {
-                foreach (var mediaStream in mediaInfo.MediaStreams)
-                {
-                    mediaStream.Index = startIndex++;
-                    mediaStreams.Add(mediaStream);
-                }
+                mediaStreams.AddRange(mediaInfo.MediaStreams);
 
                 mediaAttachments = mediaInfo.MediaAttachments;
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -234,13 +222,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     if (!mediaStream.IsExternal)
                     {
-                        mediaStream.Index = startIndex++;
                         mediaStreams.Add(mediaStream);
                     }
                 }
 
                 mediaAttachments = [];
                 chapters = [];
+            }
+
+            // Download and insert external streams before the streams from the file to preserve stream IDs on remote videos
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            for (var i = 0; i < mediaStreams.Count; i++)
+            {
+                mediaStreams[i].Index = i;
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
@@ -281,7 +276,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh
                 || options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length <= 1 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     chapters = CreateDummyChapters(video);
                 }
@@ -366,6 +361,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.ColorSpace = ffmpegVideoStream.ColorSpace;
                 blurayVideoStream.ColorTransfer = ffmpegVideoStream.ColorTransfer;
                 blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
+                blurayVideoStream.BitDepth = ffmpegVideoStream.BitDepth;
+                blurayVideoStream.PixelFormat = ffmpegVideoStream.PixelFormat;
             }
         }
 
@@ -543,53 +540,24 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
+            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, 0, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            var subtitleOptions = _config.GetConfiguration<SubtitleOptions>("subtitles");
-
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
-            string[] subtitleDownloadLanguages;
-            bool skipIfEmbeddedSubtitlesPresent;
-            bool skipIfAudioTrackMatches;
-            bool requirePerfectMatch;
-            bool enabled;
-
-            if (libraryOptions.SubtitleDownloadLanguages is null)
-            {
-                subtitleDownloadLanguages = subtitleOptions.DownloadLanguages;
-                skipIfEmbeddedSubtitlesPresent = subtitleOptions.SkipIfEmbeddedSubtitlesPresent;
-                skipIfAudioTrackMatches = subtitleOptions.SkipIfAudioTrackMatches;
-                requirePerfectMatch = subtitleOptions.RequirePerfectMatch;
-                enabled = (subtitleOptions.DownloadEpisodeSubtitles &&
-                video is Episode) ||
-                (subtitleOptions.DownloadMovieSubtitles &&
-                video is Movie);
-            }
-            else
-            {
-                subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
-                skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
-                skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
-                enabled = true;
-            }
-
-            if (enableSubtitleDownloading && enabled)
+            if (enableSubtitleDownloading && libraryOptions.SubtitleDownloadLanguages is not null)
             {
                 var downloadedLanguages = await new SubtitleDownloader(
                     _logger,
                     _subtitleManager).DownloadSubtitles(
                         video,
                         currentStreams.Concat(externalSubtitleStreams).ToList(),
-                        skipIfEmbeddedSubtitlesPresent,
-                        skipIfAudioTrackMatches,
-                        requirePerfectMatch,
-                        subtitleDownloadLanguages,
+                        libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent,
+                        libraryOptions.SkipSubtitlesIfAudioTrackMatches,
+                        libraryOptions.RequirePerfectSubtitleMatch,
+                        libraryOptions.SubtitleDownloadLanguages,
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
                         true,
@@ -598,13 +566,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken).ConfigureAwait(false);
+                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, 0, options.DirectoryService, true, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).Distinct().ToArray();
 
-            currentStreams.AddRange(externalSubtitleStreams);
+            currentStreams.InsertRange(0, externalSubtitleStreams);
         }
 
         /// <summary>
@@ -620,8 +588,7 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
+            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, 0, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
             video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 
@@ -649,12 +616,13 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
-            if (runtime <= dummyChapterDuration)
+
+            if (runtime <= 0)
             {
                 return [];
             }
 
-            int chapterCount = (int)(runtime / dummyChapterDuration);
+            int chapterCount = Math.Max(1, (int)(runtime / dummyChapterDuration));
             var chapters = new ChapterInfo[chapterCount];
 
             long currentChapterTicks = 0;
