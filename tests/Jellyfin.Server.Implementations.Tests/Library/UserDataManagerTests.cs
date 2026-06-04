@@ -42,6 +42,47 @@ public class UserDataManagerTests
     [InlineData(90, false)] // partially played, not completed
     [InlineData(91, true)] // fully played
     [InlineData(100, true)] // fully played
+    public void UpdatePlayState_Audio_SetsPartiallyPlayedCorrectly(int positionPct, bool expectedPartiallyPlayed)
+    {
+        var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, positionPct));
+
+        Assert.Equal(expectedPartiallyPlayed, data.PartiallyPlayed);
+    }
+
+    [Fact]
+    public void UpdatePlayState_Audio_FullyPlayed_ClearsPartiallyPlayed()
+    {
+        // Una canción que antes estaba parcialmente escuchada queda limpia al completarse
+        var manager = CreateManager();
+        var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
+        var data = new UserItemData { Key = string.Empty, PartiallyPlayed = true };
+
+        manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, 95));
+
+        Assert.False(data.PartiallyPlayed);
+        Assert.True(data.Played);
+    }
+
+    [Fact]
+    public void UpdatePlayState_AudioBook_PartiallyPlayedIsNeverSet()
+    {
+        // AudioBook : Audio — no debe verse afectado por la lógica de PartiallyPlayed
+        var manager = CreateManager(minAudioResumePct: 80, maxAudioResumePct: 95);
+
+        const long sixtyMinuteTicks = 60L * 60 * TimeSpan.TicksPerSecond;
+        var thirtyMinuteTicks = 30L * 60 * TimeSpan.TicksPerSecond;
+
+        var item = new AudioBook { RunTimeTicks = sixtyMinuteTicks };
+        var data = new UserItemData { Key = string.Empty };
+
+        manager.UpdatePlayState(item, data, thirtyMinuteTicks);
+
+        Assert.False(data.PartiallyPlayed);
+    }
     public void UpdatePlayState_Audio_ReturnsExpectedCompletion(int positionPct, bool expectedCompletion)
     {
         var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
