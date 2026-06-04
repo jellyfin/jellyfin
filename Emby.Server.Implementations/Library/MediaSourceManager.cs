@@ -386,6 +386,12 @@ namespace Emby.Server.Implementations.Library
 
             if (user is not null)
             {
+                sources = sources
+                    .Where(source => !Guid.TryParse(source.Id, out var sourceId)
+                        || sourceId.Equals(item.Id)
+                        || _libraryManager.GetItemById<BaseItem>(sourceId, user) is not null)
+                    .ToArray();
+
                 foreach (var source in sources)
                 {
                     SetDefaultAudioAndSubtitleStreamIndices(item, source, user);
