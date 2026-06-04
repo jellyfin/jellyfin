@@ -389,7 +389,7 @@ namespace Emby.Server.Implementations.Library
                     // Stopped too early to count as partially played; don't save the position.
                     // Skip Count/Last is handled in SessionManager at stop time, since UpdatePlayState is also called during progress events.
                     positionTicks = 0;
-                    data.PartiallyPlayed = false; //Skip
+                    data.PartiallyPlayed = false; // Skip
                 }
                 else if (pctIn > _config.Configuration.MaxAudioResumePct || positionTicks >= (runtimeTicks - TimeSpan.TicksPerSecond))
                 {

@@ -1432,6 +1432,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool?>("Likes")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("PartiallyPlayed")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PlayCount")
                         .HasColumnType("INTEGER");
 
