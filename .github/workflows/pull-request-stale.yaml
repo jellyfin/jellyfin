@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/stale@v9
         with:
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           ascending: true
           operations-per-run: 150
           # The merge conflict action will remove the label when updated

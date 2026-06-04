@@ -7,7 +7,10 @@ on:
   pull_request_target:
   issue_comment:
 
-permissions: {}
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   label:
     name: Labeling
@@ -20,4 +23,4 @@ jobs:
         with:
           dirtyLabel: 'merge conflict'
           commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
-          repoToken: ${{ secrets.JF_BOT_TOKEN }}
+          repoToken: ${{ secrets.GITHUB_TOKEN }}

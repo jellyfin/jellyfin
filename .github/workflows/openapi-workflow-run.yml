@@ -53,7 +53,7 @@ jobs:
     - name: Push Comment
       uses: thollander/actions-comment-pull-request@v3
       with:
-        github-token: ${{ secrets.JF_BOT_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         file-path: ${{ steps.download_report.outputs.download-path }}/openapi-report.md
         pr-number: ${{ needs.metadata.outputs.pr_number }}
         comment-tag: openapi-report

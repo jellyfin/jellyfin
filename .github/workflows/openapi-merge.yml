@@ -9,6 +9,7 @@ on:
 jobs:
   publish-openapi:
     name: OpenAPI - Publish Artifact
+    if: ${{ contains(github.repository, 'haos-jellyfin') }}
     uses: ./.github/workflows/openapi-generate.yml
     permissions:
       contents: read
