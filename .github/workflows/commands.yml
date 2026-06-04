@@ -9,7 +9,11 @@ on:
       - labeled
       - synchronize
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   rebase:
     name: Rebase
@@ -19,20 +23,20 @@ jobs:
       - name: Notify as seen
         uses: peter-evans/create-or-update-comment@v5
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: '+1'
 
       - name: Checkout the latest code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Automatic Rebase
         uses: cirrus-actions/rebase@b87d48154a87a85666003575337e27b8cd65f691 # 1.8
         env:
-          GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   rename:
     name: Rename
@@ -57,7 +61,7 @@ jobs:
         run: python3 rename.py
         working-directory: ./rename
         env:
-          GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
           COMMENT_ID: ${{ github.event.comment.id }}

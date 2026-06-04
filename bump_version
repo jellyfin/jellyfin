@@ -27,6 +27,8 @@ jellyfin_subprojects=(
   MediaBrowser.Model/MediaBrowser.Model.csproj
   Emby.Naming/Emby.Naming.csproj
   src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
+  src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj
+  src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj
 )
 issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
 haos_config_file="./haos-jellyfin/config.yaml"
@@ -34,13 +36,12 @@ haos_config_file="./haos-jellyfin/config.yaml"
 new_version="$1"
 new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 
+# Update SharedVersion.cs
 old_version="$(
     grep "AssemblyVersion" ${shared_version_file} \
-        | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
+        | sed -E 's/.*AssemblyVersion\("([0-9\.]+)"\).*/\1/'
 )"
 echo old assembly version: $old_version
-
-# Set the assembly version to the specified new_version
 sed -i "s|${old_version}|${new_version_sed}|g" ${shared_version_file}
 
 # update nuget package version
@@ -52,18 +53,24 @@ for subproject in ${jellyfin_subprojects[@]}; do
             | awk '{$1=$1};1' \
             | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
     )"
-    echo old nuget version: $old_version
+    echo old nuget version in ${subproject}: $old_version
 
     # Set the nuget version to the specified new_version
-    sed -i "s|${old_version}|${new_version_sed}|g" ${subproject}
+    sed -i "s|<VersionPrefix>${old_version}</VersionPrefix>|<VersionPrefix>${new_version_sed}</VersionPrefix>|g" ${subproject}
 done
 
 # Set the version in the GitHub issue template file
-sed -i "s|${old_version}|${new_version_sed}|g" "${issue_template_file}"
+if [[ -f ${issue_template_file} ]]; then
+    # Extract the first version from the options list in the issue template
+    old_issue_version=$(grep -A 10 "id: version" "${issue_template_file}" | grep -m 1 "^        - " | sed 's/        - //')
+    echo old issue template version: $old_issue_version
+    sed -i "s|        - ${old_issue_version}|        - ${new_version_sed}|g" "${issue_template_file}"
+fi
 
 # Set the version in the HAOS config file
 if [[ -f ${haos_config_file} ]]; then
     old_haos_version=$(grep "^version: " "${haos_config_file}" | cut -d '"' -f 2)
+    echo old HAOS version: $old_haos_version
     sed -i "s|version: \"${old_haos_version}\"|version: \"${new_version_sed}\"|g" "${haos_config_file}"
 fi
 
