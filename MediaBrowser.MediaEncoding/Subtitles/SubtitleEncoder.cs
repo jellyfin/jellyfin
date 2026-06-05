@@ -214,7 +214,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 };
             }
 
-            var currentFormat = subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path).TrimStart('.');
+            var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec).TrimStart('.');
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))
