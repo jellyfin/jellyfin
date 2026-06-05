@@ -215,7 +215,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             // Normalize ffmpeg codec names to the file extensions the parser is keyed on
-            var currentFormat = NormalizeCodecToParserExtension(subtitleStream.Codec ?? Path.GetExtension(subtitleStream.Path).TrimStart('.'));
+            var currentFormat = NormalizeCodecToParserExtension((Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec).TrimStart('.'));
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))

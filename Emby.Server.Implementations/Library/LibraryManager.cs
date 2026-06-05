@@ -1987,7 +1987,8 @@ namespace Emby.Server.Implementations.Library
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&
-                query.ItemIds.Length == 0)
+                query.ItemIds.Length == 0 &&
+                query.OwnerIds.Length == 0)
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
