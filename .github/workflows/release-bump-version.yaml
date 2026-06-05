@@ -13,6 +13,9 @@ on:
         required: true
         description: x.y.z
 
+permissions:
+  contents: write
+
 jobs:
   auto_bump_version:
     runs-on: ubuntu-latest
@@ -34,7 +37,7 @@ jobs:
 
       - name: Setup EnvVars
         run: |-
-          CURRENT_VERSION=$(yq e '.version' haos-jellyfin/config.yaml)
+          CURRENT_VERSION=$(yq e '.version' haos-jellyfin/config.yaml | tr -d '"')
           CURRENT_MAJOR_MINOR=${CURRENT_VERSION%.*}
           CURRENT_PATCH=${CURRENT_VERSION##*.}
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
