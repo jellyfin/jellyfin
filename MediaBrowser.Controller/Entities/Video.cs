@@ -254,7 +254,7 @@ namespace MediaBrowser.Controller.Entities
 
         private int GetMediaSourceCount(HashSet<Guid> callstack = null)
         {
-            callstack ??= new();
+            callstack ??= [];
             if (PrimaryVersionId.HasValue)
             {
                 var item = LibraryManager.GetItemById(PrimaryVersionId.Value);
@@ -757,12 +757,23 @@ namespace MediaBrowser.Controller.Entities
                 ? LibraryManager.GetItemById(PrimaryVersionId.Value) as Video
                 : null;
 
+            var primaryLinked = primary is null
+                ? []
+                : LibraryManager.GetLinkedAlternateVersions(primary).ToList();
+
+            // Grouping marks user-merged (splittable) sources. The primary is only such a source when
+            // this video is linked onto it; for local (file-based) alternates the primary is just
+            // another default source.
+            var primaryType = primaryLinked.Any(i => i.Id.Equals(Id))
+                ? MediaSourceType.Grouping
+                : MediaSourceType.Default;
+
             // This video and its linked alternates, when this is itself an alternate, the primary and the primary's linked alternates.
             var grouped = new[] { ((BaseItem)this, MediaSourceType.Default) }
                 .Concat(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)))
                 .Concat(primary is null
                     ? []
-                    : LibraryManager.GetLinkedAlternateVersions(primary).Prepend(primary).Select(i => ((BaseItem)i, MediaSourceType.Grouping)))
+                    : primaryLinked.Select(i => ((BaseItem)i, MediaSourceType.Grouping)).Prepend(((BaseItem)primary, primaryType)))
                 .ToList();
 
             // The local (file-based) alternate versions of every grouped item.
