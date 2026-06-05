@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -93,6 +92,8 @@ namespace MediaBrowser.Controller.Entities
         private string _forcedSortName;
 
         private string _name;
+
+        private string _originalLanguage;
 
         public const char SlugChar = '-';
 
@@ -215,6 +216,13 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public string OriginalTitle { get; set; }
+
+        [JsonIgnore]
+        public string OriginalLanguage
+        {
+            get => _originalLanguage;
+            set => _originalLanguage = LocalizationManager?.FindLanguageInfo(value)?.TwoLetterISOLanguageName ?? value;
+        }
 
         /// <summary>
         /// Gets or sets the id.
@@ -1125,15 +1133,7 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
-
-            // Resolve the item path so everywhere we use the media source it will always point to
-            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
-            // path will return null, so it's safe to check for all paths.
             var itemPath = item.Path;
-            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
-            {
-                itemPath = linkInfo.FullName;
-            }
 
             var info = new MediaSourceInfo
             {
@@ -1561,7 +1561,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the preferred metadata language.
+        /// Gets the preferred metadata country code.
         /// </summary>
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataCountryCode()
@@ -1593,6 +1593,15 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return lang;
+        }
+
+        /// <summary>
+        /// Gets the original language of the item, inheriting from parent items if necessary.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public virtual string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage;
         }
 
         public virtual bool IsSaveLocalMetadataEnabled()

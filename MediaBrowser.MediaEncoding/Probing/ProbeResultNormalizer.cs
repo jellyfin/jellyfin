@@ -729,6 +729,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Type = MediaStreamType.Audio;
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedOriginal = _localization.GetLocalizedString("Original");
                 stream.LocalizedLanguage = string.IsNullOrEmpty(stream.Language)
                     ? null
                     : _localization.FindLanguageInfo(stream.Language)?.DisplayName;
@@ -1030,6 +1031,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("hearing_impaired") == 1)
                 {
                     stream.IsHearingImpaired = true;
+                }
+
+                if (disposition.GetValueOrDefault("original") == 1)
+                {
+                    stream.IsOriginal = true;
                 }
             }
 
@@ -1698,6 +1704,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void ExtractTimestamp(MediaInfo video)
         {
             if (video.VideoType != VideoType.VideoFile)
+            {
+                return;
+            }
+
+            // Skip timestamp extration for remote resource (http, rtsp, etc.)
+            // as they cannot be opened with FileStream
+            if (video.Protocol != MediaProtocol.File)
             {
                 return;
             }

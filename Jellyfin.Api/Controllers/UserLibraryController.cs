@@ -31,6 +31,7 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 [Route("")]
 [Authorize]
+[Tags("Library")]
 public class UserLibraryController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -212,6 +213,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto> MarkFavoriteItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
@@ -259,6 +261,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("UserFavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto> UnmarkFavoriteItem(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
@@ -306,6 +309,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> DeleteUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId)
@@ -354,6 +358,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("UserItems/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("UserData")]
     public ActionResult<UserItemDataDto?> UpdateUserItemRating(
         [FromQuery] Guid? userId,
         [FromRoute, Required] Guid itemId,
@@ -552,6 +557,8 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        dtoOptions.PreferEpisodeParentPoster = true;
+
         var list = _userViewManager.GetLatestItems(
             new LatestItemsQuery
             {
@@ -572,7 +579,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = tuple.Item2[0];
             var childCount = 0;
 
-            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum || tuple.Item1 is Series))
+            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum))
             {
                 item = tuple.Item1;
                 childCount = tuple.Item2.Count;

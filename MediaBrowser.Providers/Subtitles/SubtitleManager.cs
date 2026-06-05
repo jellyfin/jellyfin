@@ -228,10 +228,11 @@ namespace MediaBrowser.Providers.Subtitles
                     var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
                     savePaths.Add(mediaFolderPath);
                 }
-
-                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-
-                savePaths.Add(internalPath);
+                else
+                {
+                    var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+                    savePaths.Add(internalPath);
+                }
 
                 await TrySaveToFiles(memoryStream, savePaths, video, response.Format.ToLowerInvariant()).ConfigureAwait(false);
             }

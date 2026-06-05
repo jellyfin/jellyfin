@@ -208,6 +208,7 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateByName")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("Authentication")]
     public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
     {
         var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
@@ -243,6 +244,7 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
     [HttpPost("AuthenticateWithQuickConnect")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("Authentication")]
     public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
     {
         try
@@ -288,7 +290,7 @@ public class UserController : BaseJellyfinApiController
 
         if (request.ResetPassword)
         {
-            await _userManager.ResetPassword(user).ConfigureAwait(false);
+            await _userManager.ResetPassword(user.Id).ConfigureAwait(false);
         }
         else
         {
@@ -306,7 +308,7 @@ public class UserController : BaseJellyfinApiController
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
+            await _userManager.ChangePassword(user.Id, request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
 
@@ -369,7 +371,7 @@ public class UserController : BaseJellyfinApiController
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
-            await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
+            await _userManager.RenameUser(user.Id, user.Username, updateUser.Name).ConfigureAwait(false);
         }
 
         await _userManager.UpdateConfigurationAsync(requestUserId, updateUser.Configuration).ConfigureAwait(false);
@@ -425,7 +427,7 @@ public class UserController : BaseJellyfinApiController
         // If removing admin access
         if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
         {
-            if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
+            if (_userManager.GetUsers().Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one user in the system with administrative access.");
             }
@@ -440,7 +442,7 @@ public class UserController : BaseJellyfinApiController
         // If disabling
         if (newPolicy.IsDisabled && !user.HasPermission(PermissionKind.IsDisabled))
         {
-            if (_userManager.Users.Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
+            if (_userManager.GetUsers().Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
             }
@@ -522,7 +524,7 @@ public class UserController : BaseJellyfinApiController
         // no need to authenticate password for new user
         if (request.Password is not null)
         {
-            await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
+            await _userManager.ChangePassword(newUser.Id, request.Password).ConfigureAwait(false);
         }
 
         var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIP().ToString());
@@ -538,6 +540,7 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing a <see cref="ForgotPasswordResult"/>.</returns>
     [HttpPost("ForgotPassword")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("Authentication")]
     public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody, Required] ForgotPasswordDto forgotPasswordRequest)
     {
         var ip = HttpContext.GetNormalizedRemoteIP();
@@ -562,6 +565,7 @@ public class UserController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
     [HttpPost("ForgotPassword/Pin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Tags("Authentication")]
     public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody, Required] ForgotPasswordPinDto forgotPasswordPinRequest)
     {
         var result = await _userManager.RedeemPasswordResetPin(forgotPasswordPinRequest.Pin).ConfigureAwait(false);
@@ -597,7 +601,7 @@ public class UserController : BaseJellyfinApiController
 
     private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
     {
-        var users = _userManager.Users;
+        var users = _userManager.GetUsers();
 
         if (isDisabled.HasValue)
         {

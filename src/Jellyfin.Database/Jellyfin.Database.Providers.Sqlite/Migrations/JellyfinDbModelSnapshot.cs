@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -262,6 +262,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("REAL");
 
                     b.Property<string>("OfficialRating")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalLanguage")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OriginalTitle")
@@ -955,6 +958,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool?>("IsInterlaced")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsOriginal")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("KeyFrames")
                         .HasColumnType("TEXT");
 
@@ -1342,6 +1348,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("MustUpdatePassword")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("NormalizedUsername")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Password")
                         .HasMaxLength(65535)
                         .HasColumnType("TEXT");
@@ -1383,6 +1394,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("NormalizedUsername")
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();

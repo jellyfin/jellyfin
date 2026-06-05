@@ -127,15 +127,21 @@ public class NextUpService : INextUpService
                 .AsNoTracking()
                 .Where(e => e.Type == episodeTypeName)
                 .Where(e => e.SeriesPresentationUniqueKey != null && seriesKeys.Contains(e.SeriesPresentationUniqueKey))
-                .Where(e => e.ParentIndexNumber != 0)
-                .Where(e => e.UserData!.Any(ud => ud.UserId == userId && ud.Played));
+                .Where(e => e.ParentIndexNumber != 0);
             lastWatchedByDateBase = _queryHelpers.ApplyAccessFiltering(context, lastWatchedByDateBase, filter);
 
-            // Use lightweight projection + client-side grouping instead of
-            // SelectMany+GroupBy+OrderByDescending+FirstOrDefault (correlated subquery).
+            // Use an explicit Join (INNER JOIN) instead of SelectMany on a collection navigation.
+            // SelectMany on UserData with a correlated Where would translate to APPLY,
+            // which SQLite does not support.
             var playedWithDates = lastWatchedByDateBase
-                .SelectMany(e => e.UserData!.Where(ud => ud.UserId == userId && ud.Played)
-                    .Select(ud => new { EpisodeId = e.Id, e.SeriesPresentationUniqueKey, ud.LastPlayedDate }))
+                .Join(
+                    context.UserData
+                        .AsNoTracking()
+                        .Where(ud => ud.ItemId != EF.Constant(BaseItemRepository.PlaceholderId))
+                        .Where(ud => ud.Played),
+                    e => new { UserId = userId, ItemId = e.Id },
+                    ud => new { ud.UserId, ud.ItemId },
+                    (e, ud) => new { EpisodeId = e.Id, e.SeriesPresentationUniqueKey, ud.LastPlayedDate })
                 .ToList();
 
             foreach (var group in playedWithDates.GroupBy(x => x.SeriesPresentationUniqueKey))

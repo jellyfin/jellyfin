@@ -67,6 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             "id",
             "credits",
             "originaltitle",
+            "originallanguage",
             "watched",
             "playcount",
             "lastplayed",
@@ -197,14 +198,22 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
+                await SaveToFileAsync(memoryStream, path, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task SaveToFileAsync(Stream stream, string path)
+        private async Task SaveToFileAsync(Stream stream, string path, CancellationToken cancellationToken)
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
+
+            // Compare byte-for-byte before proceeding.
+            if (File.Exists(path) && await stream.IsFileIdenticalAsync(path, cancellationToken).ConfigureAwait(false))
+            {
+                return; // Don't save since .nfo is unchanged.
+            }
+
+            stream.Position = 0;
 
             // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
@@ -221,7 +230,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var filestream = new FileStream(path, fileStreamOptions);
             await using (filestream.ConfigureAwait(false))
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await stream.CopyToAsync(filestream, cancellationToken).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)
@@ -376,6 +385,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("default", stream.IsDefault.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString("forced", stream.IsForced.ToString(CultureInfo.InvariantCulture));
 
+                if (stream.IsOriginal)
+                {
+                    writer.WriteElementString("original", stream.IsOriginal.ToString(CultureInfo.InvariantCulture));
+                }
+
                 if (stream.Type == MediaStreamType.Video)
                 {
                     var runtimeTicks = item.RunTimeTicks;
@@ -482,6 +496,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
             {
                 writer.WriteElementString("originaltitle", item.OriginalTitle);
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.OriginalLanguage))
+            {
+                writer.WriteElementString("originallanguage", item.OriginalLanguage);
             }
 
             var people = libraryManager.GetPeople(item);

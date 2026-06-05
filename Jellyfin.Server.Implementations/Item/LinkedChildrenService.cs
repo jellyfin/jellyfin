@@ -1,4 +1,6 @@
 #pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable CA1304 // Specify CultureInfo
+#pragma warning disable CA1311 // Specify a culture or use an invariant version
 
 using System;
 using System.Collections.Generic;
@@ -62,17 +64,19 @@ public class LinkedChildrenService : ILinkedChildrenService
     {
         using var dbContext = _dbProvider.CreateDbContext();
 
+        var lowerNames = artistNames.Select(n => n.ToLowerInvariant()).ToArray();
         var artists = dbContext.BaseItems
             .AsNoTracking()
             .Where(e => e.Type == _itemTypeLookup.BaseItemKindNames[BaseItemKind.MusicArtist]!)
-            .Where(e => artistNames.Contains(e.Name))
+            .Where(e => lowerNames.Contains(e.Name!.ToLower()))
             .ToArray();
 
         var lookup = artists
-            .GroupBy(e => e.Name!)
+            .GroupBy(e => e.Name!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(f => _queryHelpers.DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray());
+                g => g.Select(f => _queryHelpers.DeserializeBaseItem(f)).Where(dto => dto is not null).Cast<MusicArtist>().ToArray(),
+                StringComparer.OrdinalIgnoreCase);
 
         var result = new Dictionary<string, MusicArtist[]>(artistNames.Count);
         foreach (var name in artistNames)
@@ -87,14 +91,25 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId)
+    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId, BaseItemKind? parentType = null)
     {
         using var context = _dbProvider.CreateDbContext();
-        return context.LinkedChildren
-            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual)
-            .Select(lc => lc.ParentId)
-            .Distinct()
-            .ToList();
+
+        var query = context.LinkedChildren
+            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual);
+
+        if (parentType.HasValue)
+        {
+            var parentTypeName = _itemTypeLookup.BaseItemKindNames[parentType.Value];
+            query = query.Join(
+                context.BaseItems
+                    .Where(item => item.Type == parentTypeName),
+                lc => lc.ParentId,
+                item => item.Id,
+                (lc, _) => lc);
+        }
+
+        return query.Select(lc => lc.ParentId).Distinct().ToList();
     }
 
     /// <inheritdoc/>

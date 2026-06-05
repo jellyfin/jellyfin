@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
@@ -69,6 +70,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public IPAddress? RemoteEndPoint { get; }
 
+        /// <summary>
+        /// Gets or initializes the UI culture captured from the upgrade request.
+        /// </summary>
+        public CultureInfo? RequestUICulture { get; init; }
+
         /// <inheritdoc />
         public Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
@@ -80,6 +86,17 @@ namespace Emby.Server.Implementations.HttpServer
 
         /// <inheritdoc />
         public WebSocketState State => _socket.State;
+
+        /// <inheritdoc />
+        public void ApplyRequestCulture()
+        {
+            if (RequestUICulture is null)
+            {
+                return;
+            }
+
+            CultureInfo.CurrentUICulture = RequestUICulture;
+        }
 
         /// <inheritdoc />
         public async Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)

@@ -178,6 +178,11 @@ namespace Jellyfin.LiveTv
         {
             var program = _libraryManager.GetItemById(id);
 
+            if (program is null)
+            {
+                return null;
+            }
+
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
             var list = new List<(BaseItemDto ItemDto, string ExternalId, string ExternalSeriesId)>
@@ -1204,7 +1209,7 @@ namespace Jellyfin.LiveTv
             {
                 Services = services,
                 IsEnabled = services.Length > 0,
-                EnabledUsers = _userManager.Users
+                EnabledUsers = _userManager.GetUsers()
                     .Where(IsLiveTvEnabled)
                     .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
                     .ToArray()
@@ -1220,7 +1225,7 @@ namespace Jellyfin.LiveTv
 
         public IEnumerable<User> GetEnabledUsers()
         {
-            return _userManager.Users
+            return _userManager.GetUsers()
                 .Where(IsLiveTvEnabled);
         }
 
