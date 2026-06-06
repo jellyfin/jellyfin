@@ -39,27 +39,28 @@ new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
 # Set the assembly version in SharedVersion.cs
 if [[ -f ${shared_version_file} ]]; then
     old_version="$(
-        grep "AssemblyVersion" ${shared_version_file} \
+        grep -E -m 1 "^\[assembly: ?AssemblyVersion" ${shared_version_file} \
             | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
     )"
-    echo old assembly version: $old_version
-    sed -i "s|${old_version}|${new_version_sed}|g" ${shared_version_file}
+    echo "old assembly version: ${old_version}"
+    # Replace the versions in both AssemblyVersion and AssemblyFileVersion attributes
+    sed -i -E "s/(\[assembly: ?Assembly(File)?Version\(\")${old_version}(\"\)\])/\1${new_version_sed}\3/g" "${shared_version_file}"
 fi
 
 # update nuget package version
 for subproject in ${jellyfin_subprojects[@]}; do
     if [[ -f ${subproject} ]]; then
-        echo ${subproject}
+        echo "${subproject}"
         # Parse the version from the *.csproj file
         old_version="$(
-            grep "VersionPrefix" ${subproject} \
+            grep -m 1 "<VersionPrefix>" "${subproject}" \
                 | awk '{$1=$1};1' \
                 | sed -E 's/<VersionPrefix>([0-9\.]+[-a-z0-9]*)<\/VersionPrefix>/\1/'
         )"
-        echo old nuget version: $old_version
+        echo "old nuget version: ${old_version}"
 
         # Set the nuget version to the specified new_version
-        sed -i "s|${old_version}|${new_version_sed}|g" ${subproject}
+        sed -i "s|<VersionPrefix>${old_version}</VersionPrefix>|<VersionPrefix>${new_version_sed}</VersionPrefix>|g" "${subproject}"
     fi
 done
 
