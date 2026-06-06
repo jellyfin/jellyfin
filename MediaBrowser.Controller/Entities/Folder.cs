@@ -906,7 +906,10 @@ namespace MediaBrowser.Controller.Entities
                 query.Parent = this;
             }
 
-            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
+            // BoxSets and Playlists can have per-user visibility (shares/open access) that is stored in the
+            // serialized item data and cannot be evaluated by the database query, so filter them in memory.
+            if (query.IncludeItemTypes.Length > 0
+                && query.IncludeItemTypes.All(t => t == BaseItemKind.BoxSet || t == BaseItemKind.Playlist))
             {
                 return QueryWithPostFiltering(query);
             }
@@ -927,7 +930,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (user is not null)
             {
-                // needed for boxsets
+                // needed for boxsets and playlists
                 itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
             }
 
