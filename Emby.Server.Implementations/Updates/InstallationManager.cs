@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +33,7 @@ namespace Emby.Server.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
-        private static readonly char[] InvlidPackageNameChars = [.. Path.GetInvalidFileNameChars(), '/', '\\'];
+        private static readonly SearchValues<char> InvalidPackageNameChars = SearchValues.Create([.. Path.GetInvalidFileNameChars(), '/', '\\']);
 
         /// <summary>
         /// The logger.
@@ -604,7 +605,7 @@ namespace Emby.Server.Implementations.Updates
                 return false;
             }
 
-            if (name.AsSpan().IndexOfAny(InvlidPackageNameChars) >= 0)
+            if (name.IndexOfAny(InvalidPackageNameChars) >= 0)
             {
                 return false;
             }
