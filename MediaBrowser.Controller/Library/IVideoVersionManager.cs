@@ -45,6 +45,18 @@ public interface IVideoVersionManager
     Task RemoveVersionLinkAsync(Video primary, Guid alternateId, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Re-points every alternate version of <paramref name="oldPrimary"/> (local and linked) at
+    /// <paramref name="newPrimary"/> and re-routes playlist/collection references from the old
+    /// primary to the new one. The old primary itself is left untouched; disposing of it
+    /// (deletion or demotion) is up to the caller.
+    /// </summary>
+    /// <param name="oldPrimary">The primary version whose alternates are re-assigned.</param>
+    /// <param name="newPrimary">The new primary version.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the re-assignment operation.</returns>
+    Task ReassignAlternatesAsync(Video oldPrimary, Video newPrimary, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Splits a version group apart: clears the primary version reference and the alternate
     /// version links of every member. When the supplied video is an alternate, the group of its
     /// primary version is split.

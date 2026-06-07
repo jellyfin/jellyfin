@@ -151,6 +151,37 @@ public class VideoVersionManager : IVideoVersionManager
     }
 
     /// <inheritdoc />
+    public async Task ReassignAlternatesAsync(Video oldPrimary, Video newPrimary, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(oldPrimary);
+        ArgumentNullException.ThrowIfNull(newPrimary);
+
+        var localAlternateIds = _libraryManager.GetLocalAlternateVersionIds(oldPrimary).ToHashSet();
+        var allAlternateIds = localAlternateIds
+            .Concat(_libraryManager.GetLinkedAlternateVersions(oldPrimary).Select(v => v.Id))
+            .Distinct()
+            .ToList();
+
+        foreach (var alternateId in allAlternateIds)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_libraryManager.GetItemById(alternateId) is Video alternate && !alternate.Id.Equals(newPrimary.Id))
+            {
+                alternate.SetPrimaryVersionId(newPrimary.Id);
+
+                // Only local (file-based) alternates are owned by their primary; linked alternates
+                // remain independent items.
+                alternate.OwnerId = localAlternateIds.Contains(alternate.Id) ? newPrimary.Id : Guid.Empty;
+                await alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        // Re-route playlist/collection references from the old primary to the new one.
+        await _libraryManager.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<bool> SplitVersionsAsync(Video video, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(video);
