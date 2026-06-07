@@ -40,22 +40,26 @@ namespace Jellyfin.Server.Implementations.Tests.Users
             var releaseFirst = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var secondEntered = false;
 
-            var firstTask = Task.Run(async () =>
-            {
-                using var firstHandle = await helper.LockAsync(key);
-                firstAcquired.SetResult(true);
-                await releaseFirst.Task;
-            });
+            var firstTask = Task.Run(
+                async () =>
+                {
+                    using var firstHandle = await helper.LockAsync(key);
+                    firstAcquired.SetResult(true);
+                    await releaseFirst.Task;
+                },
+                TestContext.Current.CancellationToken);
 
             await firstAcquired.Task;
 
-            var secondTask = Task.Run(async () =>
-            {
-                using var secondHandle = await helper.LockAsync(key);
-                secondEntered = true;
-            });
+            var secondTask = Task.Run(
+                async () =>
+                {
+                    using var secondHandle = await helper.LockAsync(key);
+                    secondEntered = true;
+                },
+                TestContext.Current.CancellationToken);
 
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.Current.CancellationToken);
             Assert.False(secondEntered);
 
             releaseFirst.SetResult(true);
