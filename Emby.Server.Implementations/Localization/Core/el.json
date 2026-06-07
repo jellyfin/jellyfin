@@ -50,7 +50,7 @@
     "ScheduledTaskFailedWithName": "{0} αποτυχία",
     "Shows": "Σειρές",
     "StartupEmbyServerIsLoading": "Ο διακομιστής Jellyfin φορτώνει. Περιμένετε λίγο και δοκιμάστε ξανά.",
-    "SubtitleDownloadFailureFromForItem": "Αποτυχίες μεταφόρτωσης υποτίτλων από {0} για {1}",
+    "SubtitleDownloadFailureFromForItem": "Αποτυχία λήψης υποτίτλων από {0} για {1}",
     "TvShows": "Τηλεοπτικές Σειρές",
     "UserCreatedWithName": "Ο χρήστης {0} δημιουργήθηκε",
     "UserDeletedWithName": "Ο χρήστης {0} έχει διαγραφεί",
@@ -106,5 +106,6 @@
     "TaskExtractMediaSegments": "Σάρωση τμημάτων πολυμέσων",
     "TaskExtractMediaSegmentsDescription": "Εξάγει ή βρίσκει τμήματα πολυμέσων από επεκτάσεις που χρησιμοποιούν το MediaSegment.",
     "CleanupUserDataTaskDescription": "Καθαρίζει όλα τα δεδομένα χρήστη (κατάσταση παρακολούθησης, κατάσταση αγαπημένων κ.λπ.) από πολυμέσα που δεν υπάρχουν πλέον για τουλάχιστον 90 ημέρες.",
-    "CleanupUserDataTask": "Εργασία εκκαθάρισης δεδομένων χρήστη"
+    "CleanupUserDataTask": "Εργασία εκκαθάρισης δεδομένων χρήστη",
+    "LyricDownloadFailureFromForItem": "Αποτυχία λήψης στίχων από {0} για {1}"
 }
