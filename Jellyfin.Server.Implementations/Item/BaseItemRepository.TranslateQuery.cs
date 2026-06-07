@@ -513,12 +513,17 @@ public sealed partial class BaseItemRepository
         if (filter.IsResumable.HasValue)
         {
             var hasSeries = filter.IncludeItemTypes.Contains(BaseItemKind.Series);
+            var userId = filter.User!.Id;
+            var isResumable = filter.IsResumable.Value;
+
+            // In-progress user data rows; alternate versions track their own progress.
+            var inProgress = context.UserData
+                .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+            var resumableItemIds = inProgress.Select(ud => ud.ItemId);
 
             if (hasSeries)
             {
-                var userId = filter.User!.Id;
                 var seriesTypeName = _itemTypeLookup.BaseItemKindNames[BaseItemKind.Series];
-                var isResumable = filter.IsResumable.Value;
 
                 // Aggregate per series in a single GROUP BY pass, instead of three full scans.
                 var seriesEpisodeStats = context.BaseItems
@@ -539,22 +544,23 @@ public sealed partial class BaseItemRepository
                     .Where(s => s.HasInProgress || (s.HasPlayed && s.HasUnplayed))
                     .Select(s => s.SeriesId);
 
-                // Non-series items: resumable if PlaybackPositionTicks > 0
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
-
                 baseQuery = baseQuery.Where(e =>
                     (e.Type == seriesTypeName && resumableSeriesIds.Contains(e.Id) == isResumable)
                     || (e.Type != seriesTypeName && resumableItemIds.Contains(e.Id) == isResumable));
             }
             else
             {
-                var resumableItemIds = context.UserData
-                    .Where(ud => ud.UserId == filter.User!.Id && ud.PlaybackPositionTicks > 0)
-                    .Select(ud => ud.ItemId);
-                var isResumable = filter.IsResumable.Value;
                 baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+            }
+
+            if (isResumable)
+            {
+                // Multi-version items surface as the version that was actually played.
+                // When several versions of the same item are in progress, keep only the most recently played one.
+                baseQuery = baseQuery.Where(e => !context.BaseItems
+                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Any(s => inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                        > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)));
             }
         }
 
