@@ -214,7 +214,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 };
             }
 
-            var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec).TrimStart('.');
+            // Normalize ffmpeg codec names to the file extensions the parser is keyed on
+            var currentFormat = NormalizeCodecToParserExtension((Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec).TrimStart('.'));
 
             // Handle PGS subtitles as raw streams for the client to render
             if (MediaStream.IsPgsFormat(currentFormat))
@@ -324,10 +325,88 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             using (await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
-                if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
+                if (!IsCachedSubtitleFresh(outputPath, subtitleStream.Path))
                 {
                     await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
+            }
+        }
+
+        // ffmpeg codec names don't always match the file extensions the subtitle parser is keyed on.
+        private static string NormalizeCodecToParserExtension(string codecOrExtension)
+        {
+            return codecOrExtension switch
+            {
+                "subrip" => "srt",
+                "webvtt" => "vtt",
+                _ => codecOrExtension
+            };
+        }
+
+        // Records "this cache was built from this exact source revision" in a sidecar file next to the cache: "<sizeBytes>:<mtimeTicks>"
+        private static string GetCacheMetaPath(string cachePath) => cachePath + ".meta";
+
+        private static string FormatCacheMeta(long length, DateTime lastWriteUtc)
+            => string.Create(CultureInfo.InvariantCulture, $"{length}:{lastWriteUtc.Ticks}");
+
+        private bool IsCachedSubtitleFresh(string cachePath, string? sourcePath)
+        {
+            if (!File.Exists(cachePath))
+            {
+                return false;
+            }
+
+            var cacheInfo = _fileSystem.GetFileInfo(cachePath);
+            if (cacheInfo.Length == 0)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(sourcePath) || !File.Exists(sourcePath))
+            {
+                return true;
+            }
+
+            var metaPath = GetCacheMetaPath(cachePath);
+            if (!File.Exists(metaPath))
+            {
+                // Pre-existing cache from before metadata tracking - regenerate so we can record the source state.
+                return false;
+            }
+
+            try
+            {
+                var sourceInfo = _fileSystem.GetFileInfo(sourcePath);
+                var expected = FormatCacheMeta(sourceInfo.Length, sourceInfo.LastWriteTimeUtc);
+                var actual = File.ReadAllText(metaPath);
+                return string.Equals(expected, actual, StringComparison.Ordinal);
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+        }
+
+        private void WriteCacheMeta(string cachePath, string? sourcePath)
+        {
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                return;
+            }
+
+            try
+            {
+                var sourceInfo = _fileSystem.GetFileInfo(sourcePath);
+                if (!sourceInfo.Exists)
+                {
+                    return;
+                }
+
+                File.WriteAllText(GetCacheMetaPath(cachePath), FormatCacheMeta(sourceInfo.Length, sourceInfo.LastWriteTimeUtc));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to record subtitle cache metadata for {CachePath}", cachePath);
             }
         }
 
@@ -375,7 +454,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = _mediaEncoder.EncoderPath,
-                    Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                    Arguments = string.Format(CultureInfo.InvariantCulture, "-y {0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 },
@@ -455,6 +534,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             await SetAssFont(outputPath, cancellationToken).ConfigureAwait(false);
 
+            WriteCacheMeta(outputPath, inputPath);
+
             _logger.LogInformation("ffmpeg subtitle conversion succeeded for {Path}", inputPath);
         }
 
@@ -531,7 +612,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var releaser = await _semaphoreLocks.LockAsync(outputPath, cancellationToken).ConfigureAwait(false);
 
-                    if (File.Exists(outputPath) && _fileSystem.GetFileInfo(outputPath).Length > 0)
+                    var sourcePath = string.IsNullOrEmpty(subtitleStream.Path) ? mediaSource.Path : subtitleStream.Path;
+                    if (IsCachedSubtitleFresh(outputPath, sourcePath))
                     {
                         releaser.Dispose();
                         continue;
@@ -588,7 +670,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var outputPaths = new List<string>();
                 var args = string.Format(
                     CultureInfo.InvariantCulture,
-                    "-i {0}",
+                    "-y -i {0}",
                     inputPath);
 
                 foreach (var subtitleStream in subtitleStreams)
@@ -628,6 +710,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+
+                foreach (var outputPath in outputPaths)
+                {
+                    WriteCacheMeta(outputPath, mksFile);
+                }
             }
         }
 
@@ -683,6 +770,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (outputPaths.Count > 0)
             {
                 await ExtractSubtitlesForFile(inputPath, args, outputPaths, cancellationToken).ConfigureAwait(false);
+
+                foreach (var outputPath in outputPaths)
+                {
+                    WriteCacheMeta(outputPath, mediaSource.Path);
+                }
             }
         }
 
