@@ -595,7 +595,10 @@ public class ItemPersistenceService : IItemPersistenceService
                     {
                         if (linkedChild.ItemId.HasValue && !linkedChild.ItemId.Value.IsEmpty())
                         {
-                            newLinkedChildren.Add((linkedChild.ItemId.Value, LinkedChildType.LinkedAlternateVersion));
+                            var linkType = linkedChild.Type == LinkedChildType.AutoLinkedAlternateVersion
+                                ? LinkedChildType.AutoLinkedAlternateVersion
+                                : LinkedChildType.LinkedAlternateVersion;
+                            newLinkedChildren.Add((linkedChild.ItemId.Value, linkType));
                         }
                     }
                 }

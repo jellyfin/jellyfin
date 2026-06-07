@@ -20,6 +20,13 @@ public interface ILinkedChildrenService
     IReadOnlyList<Guid> GetLinkedChildrenIds(Guid parentId, int? childType = null);
 
     /// <summary>
+    /// Gets the distinct parent IDs that have linked children of the specified type.
+    /// </summary>
+    /// <param name="childType">The child type to filter by.</param>
+    /// <returns>List of distinct parent item IDs.</returns>
+    IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType);
+
+    /// <summary>
     /// Gets all artist matches from the database.
     /// </summary>
     /// <param name="artistNames">The names of the artists.</param>
