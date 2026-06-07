@@ -216,9 +216,17 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
+        var localAlternateIds = _libraryManager.GetLocalAlternateVersionIds(primaryVersion).ToHashSet();
 
         foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
         {
+            if (localAlternateIds.Contains(item.Id))
+            {
+                // Already a local (file-based) alternate of the primary; linking it would
+                // wrongly mark the group as user-merged (splittable).
+                continue;
+            }
+
             item.SetPrimaryVersionId(primaryVersion.Id);
 
             await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
