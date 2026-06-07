@@ -121,7 +121,11 @@ public class PathManager : IPathManager
         }
 
         paths.Add(GetTrickplayDirectory(item, false));
-        paths.Add(GetTrickplayDirectory(item, true));
+        if (!string.IsNullOrEmpty(item.Path))
+        {
+            paths.Add(GetTrickplayDirectory(item, true));
+        }
+
         paths.Add(GetChapterImageFolderPath(item));
 
         return paths;
