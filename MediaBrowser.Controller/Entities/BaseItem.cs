@@ -1103,7 +1103,8 @@ namespace MediaBrowser.Controller.Entities
 
             var list = GetAllItemsForMediaSources().ToList();
             var commonPrefix = GetCommonNamePrefix(list);
-            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType, commonPrefix)).ToList();
+            var commonFolderPrefix = GetCommonFolderPrefix(list);
+            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType, commonPrefix, commonFolderPrefix)).ToList();
 
             if (IsActiveRecording())
             {
@@ -1129,7 +1130,7 @@ namespace MediaBrowser.Controller.Entities
             return Enumerable.Empty<(BaseItem, MediaSourceType)>();
         }
 
-        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type, string commonPrefix = null)
+        private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type, string commonPrefix = null, string commonFolderPrefix = null)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -1142,7 +1143,7 @@ namespace MediaBrowser.Controller.Entities
                 Protocol = protocol ?? MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(item.Id),
                 MediaAttachments = MediaSourceManager.GetMediaAttachments(item.Id),
-                Name = GetMediaSourceName(item, commonPrefix),
+                Name = GetMediaSourceName(item, commonPrefix, commonFolderPrefix),
                 Path = enablePathSubstitution ? GetMappedPath(item, itemPath, protocol) : itemPath,
                 RunTimeTicks = item.RunTimeTicks,
                 Container = item.Container,
@@ -1221,7 +1222,7 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        internal string GetMediaSourceName(BaseItem item, string commonPrefix = null)
+        internal string GetMediaSourceName(BaseItem item, string commonPrefix = null, string commonFolderPrefix = null)
         {
             var terms = new List<string>();
 
@@ -1254,6 +1255,27 @@ namespace MediaBrowser.Controller.Entities
                     if (displayName.Length > containingFolderName.Length && displayName.StartsWith(containingFolderName, StringComparison.OrdinalIgnoreCase))
                     {
                         var name = displayName.AsSpan(containingFolderName.Length).TrimStart([' ', .. VersionDelimiters]);
+                        if (!name.IsWhiteSpace())
+                        {
+                            terms.Add(name.ToString());
+                        }
+                    }
+                }
+
+                // When the versions live in different folders with indistinguishable file names
+                if (terms.Count == 0 && !string.IsNullOrEmpty(commonFolderPrefix))
+                {
+                    var folderName = System.IO.Path.GetFileName(item.ContainingFolderPath);
+                    if (folderName.Length > commonFolderPrefix.Length && folderName.StartsWith(commonFolderPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var name = folderName.AsSpan(commonFolderPrefix.Length).TrimStart([' ', .. VersionDelimiters]).TrimEnd();
+
+                        // Unwrap a fully parenthesized suffix: "(BW)" -> "BW".
+                        if (name.Length > 1 && name[0] == '(' && name[^1] == ')')
+                        {
+                            name = name[1..^1].Trim();
+                        }
+
                         if (!name.IsWhiteSpace())
                         {
                             terms.Add(name.ToString());
@@ -1334,6 +1356,36 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var prefix = GetCommonVersionPrefix(fileNames);
+            return string.IsNullOrEmpty(prefix) ? null : prefix;
+        }
+
+        /// <summary>
+        /// Derives the prefix shared by the supplied media source items' containing folder names, used to
+        /// label versions whose file names are indistinguishable but which live in differently named folders.
+        /// </summary>
+        /// <param name="items">The media source items.</param>
+        /// <returns>The shared folder name prefix, or null when no useful prefix exists.</returns>
+        private static string GetCommonFolderPrefix(IReadOnlyList<(BaseItem Item, MediaSourceType MediaSourceType)> items)
+        {
+            var folderNames = new List<string>();
+            foreach (var (item, _) in items)
+            {
+                if (item.IsFileProtocol && !string.IsNullOrEmpty(item.Path))
+                {
+                    var folderName = System.IO.Path.GetFileName(item.ContainingFolderPath);
+                    if (!string.IsNullOrEmpty(folderName))
+                    {
+                        folderNames.Add(folderName);
+                    }
+                }
+            }
+
+            if (folderNames.Count < 2 || folderNames.Distinct(StringComparer.OrdinalIgnoreCase).Count() < 2)
+            {
+                return null;
+            }
+
+            var prefix = GetCommonVersionPrefix(folderNames);
             return string.IsNullOrEmpty(prefix) ? null : prefix;
         }
 

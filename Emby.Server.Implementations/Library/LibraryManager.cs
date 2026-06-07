@@ -2216,10 +2216,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(video);
 
-            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion);
+            var linkedIds = _linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.LinkedAlternateVersion)
+                .Concat(_linkedChildrenService.GetLinkedChildrenIds(video.Id, (int)MediaBrowser.Controller.Entities.LinkedChildType.AutoLinkedAlternateVersion))
+                .ToList();
             if (linkedIds.Count > 0)
             {
                 return linkedIds
+                    .Distinct()
                     .Select(id => GetItemById(id))
                     .Where(i => i is not null)
                     .OfType<Video>()

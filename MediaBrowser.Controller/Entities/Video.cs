@@ -762,18 +762,18 @@ namespace MediaBrowser.Controller.Entities
                 : LibraryManager.GetLinkedAlternateVersions(primary).ToList();
 
             // Grouping marks user-merged (splittable) sources. The primary is only such a source when
-            // this video is linked onto it; for local (file-based) alternates the primary is just
-            // another default source.
+            // this video is manually linked onto it; for local (file-based) alternates and scan-managed
+            // (auto-linked) versions the primary is just another default source.
             var primaryType = primaryLinked.Any(i => i.Id.Equals(Id))
-                ? MediaSourceType.Grouping
+                ? GetLinkedVersionSourceType(primary, Id)
                 : MediaSourceType.Default;
 
             // This video and its linked alternates, when this is itself an alternate, the primary and the primary's linked alternates.
             var grouped = new[] { ((BaseItem)this, MediaSourceType.Default) }
-                .Concat(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, MediaSourceType.Grouping)))
+                .Concat(LibraryManager.GetLinkedAlternateVersions(this).Select(i => ((BaseItem)i, GetLinkedVersionSourceType(this, i.Id))))
                 .Concat(primary is null
                     ? []
-                    : primaryLinked.Select(i => ((BaseItem)i, MediaSourceType.Grouping)).Prepend(((BaseItem)primary, primaryType)))
+                    : primaryLinked.Select(i => ((BaseItem)i, GetLinkedVersionSourceType(primary, i.Id))).Prepend(((BaseItem)primary, primaryType)))
                 .ToList();
 
             // The local (file-based) alternate versions of every grouped item.
@@ -790,6 +790,22 @@ namespace MediaBrowser.Controller.Entities
                 .Concat(localAlternates)
                 .DistinctBy(i => i.Item1.Id)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the media source type of a version linked onto <paramref name="owner"/>: scan-managed
+        /// (auto-linked) versions are plain default sources, user-merged ones are splittable groupings.
+        /// </summary>
+        /// <param name="owner">The primary version owning the link.</param>
+        /// <param name="itemId">The id of the linked version.</param>
+        /// <returns>The media source type of the linked version.</returns>
+        private static MediaSourceType GetLinkedVersionSourceType(Video owner, Guid itemId)
+        {
+            var link = Array.Find(owner.LinkedAlternateVersions, l => l.ItemId.HasValue && l.ItemId.Value.Equals(itemId));
+
+            return link?.Type == LinkedChildType.AutoLinkedAlternateVersion
+                ? MediaSourceType.Default
+                : MediaSourceType.Grouping;
         }
     }
 }

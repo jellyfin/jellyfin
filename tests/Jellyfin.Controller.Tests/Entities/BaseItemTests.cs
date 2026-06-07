@@ -13,6 +13,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Moq;
 using Xunit;
+using LinkedChildType = MediaBrowser.Controller.Entities.LinkedChildType;
 
 namespace Jellyfin.Controller.Tests.Entities;
 
@@ -123,6 +124,116 @@ public class BaseItemTests
 
         Assert.Equal(expectedPrimary, video.GetMediaSourceName(video, commonPrefix));
         Assert.Equal(expectedAlt, videoAlt.GetMediaSourceName(videoAlt, commonPrefix));
+    }
+
+    [Theory]
+    // Identical file names in version-suffixed folders: the folder suffix is the only difference,
+    // and a fully parenthesized suffix is unwrapped.
+    [InlineData(
+        "/Shows/Spider Noir S01 (BW)/S01E01.mkv",
+        "/Shows/Spider Noir S01 (Color)/S01E01.mkv",
+        "BW",
+        "Color")]
+    // Dash-separated folder suffixes.
+    [InlineData(
+        "/Shows/Demo/Season 01 - Greyscale/Demo S01E01.mkv",
+        "/Shows/Demo/Season 01 - Colorized/Demo S01E01.mkv",
+        "Greyscale",
+        "Colorized")]
+    public void GetMediaSourceName_CrossFolderVersions_LabelsByFolderSuffix(string primaryPath, string altPath, string expectedPrimary, string expectedAlt)
+    {
+        var video = new Video()
+        {
+            Path = primaryPath
+        };
+
+        var videoAlt = new Video()
+        {
+            Path = altPath,
+        };
+
+        var fileNames = new[] { System.IO.Path.GetFileNameWithoutExtension(primaryPath), System.IO.Path.GetFileNameWithoutExtension(altPath) };
+        var folderNames = new[] { System.IO.Path.GetFileName(video.ContainingFolderPath), System.IO.Path.GetFileName(videoAlt.ContainingFolderPath) };
+        var commonPrefix = BaseItem.GetCommonVersionPrefix(fileNames);
+        var commonFolderPrefix = BaseItem.GetCommonVersionPrefix(folderNames);
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>()))
+                .Returns((string x) => MediaProtocol.File);
+        var libraryManager = new Mock<ILibraryManager>();
+        // No local alternate versions: cross-folder versions are linked (separate items).
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>()))
+                .Returns(Array.Empty<Guid>());
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        Assert.Equal(expectedPrimary, video.GetMediaSourceName(video, commonPrefix, commonFolderPrefix));
+        Assert.Equal(expectedAlt, videoAlt.GetMediaSourceName(videoAlt, commonPrefix, commonFolderPrefix));
+    }
+
+    [Fact]
+    public void GetMediaSources_CrossFolderVersions_HaveDistinctNames()
+    {
+        var (primary, alt) = SetupLinkedVersionPair(LinkedChildType.AutoLinkedAlternateVersion);
+
+        var sources = primary.GetMediaSources(false);
+
+        Assert.Equal(2, sources.Count);
+        Assert.Equal("BW", sources.First(s => s.Id == primary.Id.ToString("N")).Name);
+        Assert.Equal("Color", sources.First(s => s.Id == alt.Id.ToString("N")).Name);
+    }
+
+    [Theory]
+    // Scan-managed (auto-linked) versions are not user-splittable, so they surface as plain
+    // default sources; user-merged versions keep the splittable grouping marker.
+    [InlineData(LinkedChildType.AutoLinkedAlternateVersion, MediaSourceType.Default)]
+    [InlineData(LinkedChildType.LinkedAlternateVersion, MediaSourceType.Grouping)]
+    public void GetAllItemsForMediaSources_LinkedVersionType_MapsToSourceType(LinkedChildType linkType, MediaSourceType expectedType)
+    {
+        var (primary, alt) = SetupLinkedVersionPair(linkType);
+
+        var method = typeof(Video).GetMethod("GetAllItemsForMediaSources", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        // From the primary's view the alternate carries the link's source type.
+        var fromPrimary = ((IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)>)method!.Invoke(primary, null)!).ToList();
+        Assert.Equal(expectedType, fromPrimary.Single(i => i.Item.Id.Equals(alt.Id)).MediaSourceType);
+
+        // From the alternate's view the primary carries it as well.
+        var fromAlt = ((IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)>)method.Invoke(alt, null)!).ToList();
+        Assert.Equal(expectedType, fromAlt.Single(i => i.Item.Id.Equals(primary.Id)).MediaSourceType);
+    }
+
+    private static (Video Primary, Video Alt) SetupLinkedVersionPair(LinkedChildType linkType)
+    {
+        var primary = new Video { Id = Guid.NewGuid(), Path = "/Shows/Spider Noir S01 (BW)/S01E01.mkv" };
+        var alt = new Video { Id = Guid.NewGuid(), Path = "/Shows/Spider Noir S01 (Color)/S01E01.mkv", PrimaryVersionId = primary.Id };
+        primary.LinkedAlternateVersions = [new LinkedChild { ItemId = alt.Id, Type = linkType }];
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
+        mediaSourceManager.Setup(x => x.GetMediaStreams(It.IsAny<Guid>())).Returns(new List<MediaStream>());
+        mediaSourceManager.Setup(x => x.GetMediaAttachments(It.IsAny<Guid>())).Returns(new List<MediaAttachment>());
+
+        var segmentManager = new Mock<IMediaSegmentManager>();
+        segmentManager.Setup(x => x.IsTypeSupported(It.IsAny<BaseItem>())).Returns(false);
+        BaseItem.MediaSegmentManager = segmentManager.Object;
+
+        var libraryManager = new Mock<ILibraryManager>();
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(primary)).Returns(new[] { alt });
+        libraryManager.Setup(x => x.GetLinkedAlternateVersions(alt)).Returns(Array.Empty<Video>());
+        libraryManager.Setup(x => x.GetLocalAlternateVersionIds(It.IsAny<Video>())).Returns(Array.Empty<Guid>());
+        libraryManager.Setup(x => x.GetItemById(primary.Id)).Returns(primary);
+        libraryManager.Setup(x => x.GetItemById(alt.Id)).Returns(alt);
+
+        var recordingsManager = new Mock<IRecordingsManager>();
+        recordingsManager.Setup(x => x.GetActiveRecordingInfo(It.IsAny<string>())).Returns((ActiveRecordingInfo?)null);
+        Video.RecordingsManager = recordingsManager.Object;
+
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+        BaseItem.LibraryManager = libraryManager.Object;
+
+        return (primary, alt);
     }
 
     [Fact]

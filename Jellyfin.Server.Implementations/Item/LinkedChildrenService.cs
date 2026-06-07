@@ -60,6 +60,18 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
+    public IReadOnlyList<Guid> GetParentIdsWithChildType(LinkedChildType childType)
+    {
+        using var dbContext = _dbProvider.CreateDbContext();
+
+        return dbContext.LinkedChildren
+            .Where(lc => lc.ChildType == (DbLinkedChildType)childType)
+            .Select(lc => lc.ParentId)
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, MusicArtist[]> FindArtists(IReadOnlyList<string> artistNames)
     {
         using var dbContext = _dbProvider.CreateDbContext();
