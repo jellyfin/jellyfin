@@ -90,6 +90,7 @@ namespace Emby.Server.Implementations.Library
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly Lazy<IExternalDataManager> _externalDataManagerFactory;
+        private readonly Lazy<IVideoVersionManager> _videoVersionManagerFactory;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -134,6 +135,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         /// <param name="mediaStreamRepository">The media stream repository.</param>
         /// <param name="externalDataManagerFactory">The external data manager (lazy, to break the DI cycle through ChapterManager).</param>
+        /// <param name="videoVersionManagerFactory">The video version manager (lazy, to break the DI cycle through LibraryManager).</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -158,7 +160,8 @@ namespace Emby.Server.Implementations.Library
             IPathManager pathManager,
             DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
             IMediaStreamRepository mediaStreamRepository,
-            Lazy<IExternalDataManager> externalDataManagerFactory)
+            Lazy<IExternalDataManager> externalDataManagerFactory,
+            Lazy<IVideoVersionManager> videoVersionManagerFactory)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -190,6 +193,7 @@ namespace Emby.Server.Implementations.Library
 
             _mediaStreamRepository = mediaStreamRepository;
             _externalDataManagerFactory = externalDataManagerFactory;
+            _videoVersionManagerFactory = videoVersionManagerFactory;
 
             RecordConfigurationValues(_configurationManager.Configuration);
         }
@@ -514,17 +518,9 @@ namespace Emby.Server.Implementations.Library
 
                     newPrimary.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
 
-                    // Re-route playlist/collection references from deleted primary to new primary
-                    RerouteLinkedChildReferencesAsync(video.Id, newPrimary.Id).GetAwaiter().GetResult();
-
-                    // Update remaining alternates to point to new primary
-                    foreach (var alternate in alternateVersions.Skip(1))
-                    {
-                        alternate.SetPrimaryVersionId(newPrimary.Id);
-                        // Only set OwnerId for local alternates; linked alternates are independent items
-                        alternate.OwnerId = localAlternateIds.Contains(alternate.Id) ? newPrimary.Id : Guid.Empty;
-                        alternate.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
-                    }
+                    // Re-point the remaining alternates at the new primary and re-route
+                    // playlist/collection references from the deleted primary.
+                    _videoVersionManagerFactory.Value.ReassignAlternatesAsync(video, newPrimary, CancellationToken.None).GetAwaiter().GetResult();
                 }
             }
             else if (item is Video alternateVideo && alternateVideo.PrimaryVersionId.HasValue)

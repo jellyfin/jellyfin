@@ -149,6 +149,38 @@ public class VideoVersionManagerTests
     }
 
     [Fact]
+    public async Task ReassignAlternatesAsync_RepointsAlternatesAndReroutesReferences()
+    {
+        var oldPrimary = CreateVideo("/Movies/Movie/Movie.mkv");
+        var newPrimary = CreateVideo("/Movies/Movie/Movie - 4K.mkv");
+        var localAlternate = CreateVideo("/Movies/Movie/Movie - 1080p.mkv");
+        var linkedAlternate = CreateVideo("/Movies/Movie (Extended)/Movie.mkv");
+        newPrimary.PrimaryVersionId = oldPrimary.Id;
+        localAlternate.PrimaryVersionId = oldPrimary.Id;
+        localAlternate.OwnerId = oldPrimary.Id;
+        linkedAlternate.PrimaryVersionId = oldPrimary.Id;
+
+        _libraryManager.Setup(x => x.GetLocalAlternateVersionIds(oldPrimary)).Returns([newPrimary.Id, localAlternate.Id]);
+        _libraryManager.Setup(x => x.GetLinkedAlternateVersions(oldPrimary)).Returns([linkedAlternate]);
+        _libraryManager.Setup(x => x.GetItemById(newPrimary.Id)).Returns(newPrimary);
+        _libraryManager.Setup(x => x.GetItemById(localAlternate.Id)).Returns(localAlternate);
+        _libraryManager.Setup(x => x.GetItemById(linkedAlternate.Id)).Returns(linkedAlternate);
+
+        await _manager.ReassignAlternatesAsync(oldPrimary, newPrimary, CancellationToken.None);
+
+        // Local (file-based) alternates become owned by the new primary; linked ones stay independent.
+        Assert.Equal(newPrimary.Id, localAlternate.PrimaryVersionId);
+        Assert.Equal(newPrimary.Id, localAlternate.OwnerId);
+        Assert.Equal(newPrimary.Id, linkedAlternate.PrimaryVersionId);
+        Assert.Equal(Guid.Empty, linkedAlternate.OwnerId);
+
+        // The new primary itself is left untouched; disposing of the old primary is up to the caller.
+        Assert.Equal(oldPrimary.Id, newPrimary.PrimaryVersionId);
+
+        _libraryManager.Verify(x => x.RerouteLinkedChildReferencesAsync(oldPrimary.Id, newPrimary.Id), Times.Once);
+    }
+
+    [Fact]
     public async Task SplitVersionsAsync_FromPrimary_ClearsTheWholeGroup()
     {
         var primary = CreateVideo("/Shows/Demo S01 (BW)/S01E01.mkv");

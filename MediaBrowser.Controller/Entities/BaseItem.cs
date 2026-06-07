@@ -512,6 +512,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static IMediaSegmentManager MediaSegmentManager { get; set; }
 
+        public static IVideoVersionManager VideoVersionManager { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
