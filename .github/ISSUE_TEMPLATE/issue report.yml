@@ -87,6 +87,7 @@ body:
       label: Jellyfin Server version
       description: What version of Jellyfin are you using?
       options:
+        - 10.11.11
         - 10.11.10
         - 10.11.9
         - 10.11.8
