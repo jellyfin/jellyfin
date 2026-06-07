@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -103,8 +102,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             ArgumentNullException.ThrowIfNull(path);
 
-            var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
-            if (!imageProcessor.SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            var extension = Path.GetExtension(path).TrimStart('.');
+            if (!imageProcessor.SupportedInputFormats.Contains(extension))
             {
                 return false;
             }

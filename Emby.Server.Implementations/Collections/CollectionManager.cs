@@ -235,7 +235,7 @@ namespace Emby.Server.Implementations.Collections
             List<BaseItem>? itemList = null;
 
             var linkedChildrenList = collection.GetLinkedChildren();
-            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
+            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToHashSet();
 
             foreach (var id in ids)
             {

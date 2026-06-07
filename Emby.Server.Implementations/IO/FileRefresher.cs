@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.IO
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
 
-        private readonly List<string> _affectedPaths = new();
+        private readonly HashSet<string> _affectedPaths = new(StringComparer.Ordinal);
         private readonly Lock _timerLock = new();
         private Timer? _timer;
         private bool _disposed;
@@ -41,11 +41,7 @@ namespace Emby.Server.Implementations.IO
         private void AddAffectedPath(string path)
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
-
-            if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
-            {
-                _affectedPaths.Add(path);
-            }
+            _affectedPaths.Add(path);
         }
 
         public void AddPath(string path)
@@ -130,7 +126,6 @@ namespace Emby.Server.Implementations.IO
         private void ProcessPathChanges(List<string> paths)
         {
             IEnumerable<BaseItem> itemsToRefresh = paths
-                .Distinct()
                 .Select(GetAffectedBaseItem)
                 .Where(item => item is not null)
                 .DistinctBy(x => x!.Id)!;  // Removed null values in the previous .Where()

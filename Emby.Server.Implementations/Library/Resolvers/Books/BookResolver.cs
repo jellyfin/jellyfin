@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
     public class BookResolver : ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
+        private readonly string[] _validExtensions = [".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf"];
 
         protected override Book Resolve(ItemResolveArgs args)
         {
@@ -34,7 +34,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             }
 
             var extension = Path.GetExtension(args.Path.AsSpan());
-
             if (!_validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
@@ -62,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
                 return _validExtensions.Contains(
                     fileExtension,
                     StringComparison.OrdinalIgnoreCase);
-            }).ToList();
+            }).Take(2).ToList();
 
             // directory is only considered a book when it contains exactly one supported file
             // other library structures with multiple books to a directory will get picked up as individual files

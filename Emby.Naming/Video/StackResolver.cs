@@ -50,13 +50,13 @@ namespace Emby.Naming.Video
                 {
                     foreach (var file in directory)
                     {
-                        var stack = new FileStack(Path.GetFileNameWithoutExtension(file.Path), false, new[] { file.Path });
+                        var stack = new FileStack(Path.GetFileNameWithoutExtension(file.Path), false, new[] { file.Path }.ToHashSet(StringComparer.OrdinalIgnoreCase));
                         yield return stack;
                     }
                 }
                 else
                 {
-                    var stack = new FileStack(Path.GetFileName(directory.Key), false, directory.Select(f => f.Path).ToArray());
+                    var stack = new FileStack(Path.GetFileName(directory.Key), false, directory.Select(f => f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase));
                     yield return stack;
                 }
             }
@@ -128,7 +128,7 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                yield return new FileStack(fileName, stack.IsDirectory, stack.Parts.Select(kv => kv.Value.FullName).ToArray());
+                yield return new FileStack(fileName, stack.IsDirectory, stack.Parts.Select(kv => kv.Value.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase));
             }
         }
 
