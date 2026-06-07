@@ -80,5 +80,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reportedPositionTicks">New playstate.</param>
         /// <returns>True if playstate was updated.</returns>
         bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks);
+
+        /// <summary>
+        /// Clears any stored audio and subtitle stream selections for the given user/item pair.
+        /// Used when the user has opted out of remembering selections.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The item.</param>
+        void ResetPlaybackStreamSelections(User user, BaseItem item);
     }
 }
