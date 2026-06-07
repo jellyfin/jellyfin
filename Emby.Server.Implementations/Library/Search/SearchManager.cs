@@ -185,7 +185,7 @@ public class SearchManager : ISearchManager
         }
 
         var candidateScores = BuildScoreLookup(candidates);
-        var user = !query.UserId.IsEmpty() ? _userManager.GetUserById(query.UserId) : null;
+        var user = query.UserId.IsEmpty() ? null : _userManager.GetUserById(query.UserId);
 
         var excludeItemTypes = BuildExcludeItemTypes(query);
         var includeItemTypes = BuildIncludeItemTypes(query);
