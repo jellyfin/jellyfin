@@ -1,8 +1,9 @@
 using System.Reflection;
 using System.Resources;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Jellyfin.Drawing")]
+[assembly: AssemblyTitle("Jellyfin.MediaEncoding.Keyframes")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jellyfin Project")]
@@ -12,3 +13,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: ComVisible(false)]
+[assembly: InternalsVisibleTo("Jellyfin.MediaEncoding.Keyframes.Tests")]

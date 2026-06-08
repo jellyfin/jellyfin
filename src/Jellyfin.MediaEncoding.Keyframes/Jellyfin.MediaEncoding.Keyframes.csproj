@@ -2,13 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\SharedVersion.cs" />
+  </ItemGroup>
 
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.MediaEncoding.Keyframes</PackageId>
-    <VersionPrefix>12.0.1</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
@@ -20,12 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="NEbml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Jellyfin.MediaEncoding.Keyframes.Tests</_Parameter1>
-    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

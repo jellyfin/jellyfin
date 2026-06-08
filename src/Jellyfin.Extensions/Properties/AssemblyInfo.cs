@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Jellyfin.Drawing")]
+[assembly: AssemblyTitle("Jellyfin.Extensions")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jellyfin Project")]
