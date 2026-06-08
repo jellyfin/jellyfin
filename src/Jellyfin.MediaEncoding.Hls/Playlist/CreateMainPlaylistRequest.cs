@@ -69,4 +69,9 @@ public class CreateMainPlaylistRequest
     /// Gets a value indicating whether the video is being remuxed.
     /// </summary>
     public bool IsRemuxingVideo { get; }
+
+    /// <summary>
+    /// Gets the audio playback rate (1.0 = normal speed).
+    /// </summary>
+    public double PlaybackRate { get; init; } = 1.0;
 }

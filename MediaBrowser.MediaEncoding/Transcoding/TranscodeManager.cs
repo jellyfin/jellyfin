@@ -554,8 +554,9 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         => state.InputProtocol == MediaProtocol.File
            && state.RunTimeTicks.HasValue
            && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks
-           && state.IsInputVideo
-           && state.VideoType == VideoType.VideoFile;
+           && (state.IsInputVideo
+               ? state.VideoType == VideoType.VideoFile
+               : state.AudioStream is not null);
 
     private void StartSegmentCleaner(StreamState state, TranscodingJob transcodingJob)
     {
@@ -568,7 +569,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
     private static bool EnableSegmentCleaning(StreamState state)
         => state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
-           && state.IsInputVideo
+           && (state.IsInputVideo || state.AudioStream is not null)
            && state.TranscodingType == TranscodingJobType.Hls
            && state.RunTimeTicks.HasValue
            && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks;

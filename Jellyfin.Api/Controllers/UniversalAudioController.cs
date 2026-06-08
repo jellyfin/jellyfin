@@ -84,6 +84,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
     /// <param name="enableRemoteMedia">Optional. Whether to enable remote media.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <param name="enableRedirection">Whether to enable redirection. Defaults to true.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <response code="302">Redirected to remote audio stream.</response>
@@ -114,6 +115,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] int? maxAudioBitDepth,
         [FromQuery] bool? enableRemoteMedia,
         [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] double? audioPlaybackRate = null,
         [FromQuery] bool enableRedirection = true)
     {
         userId = RequestHelpers.GetUserId(User, userId);
@@ -179,6 +181,13 @@ public class UniversalAudioController : BaseJellyfinApiController
         // This one is currently very misleading as the SupportsDirectStream actually means "can direct play"
         // The definition of DirectStream also seems changed during development
         var isStatic = mediaSource.SupportsDirectStream;
+
+        // Force transcoding when a playback rate is requested so the atempo filter can be applied
+        if (audioPlaybackRate.HasValue && Math.Abs(audioPlaybackRate.Value - 1.0) > 0.001)
+        {
+            isStatic = false;
+        }
+
         if (!isStatic && mediaSource.TranscodingSubProtocol == MediaStreamProtocol.hls)
         {
             // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
@@ -221,7 +230,8 @@ public class UniversalAudioController : BaseJellyfinApiController
                 Context = EncodingContext.Static,
                 StreamOptions = new Dictionary<string, string>(),
                 EnableAdaptiveBitrateStreaming = false,
-                EnableAudioVbrEncoding = enableAudioVbrEncoding
+                EnableAudioVbrEncoding = enableAudioVbrEncoding,
+                AudioPlaybackRate = audioPlaybackRate
             };
 
             return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)
@@ -249,7 +259,8 @@ public class UniversalAudioController : BaseJellyfinApiController
             StartTimeTicks = startTimeTicks,
             SubtitleMethod = SubtitleDeliveryMethod.Embed,
             TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
-            Context = EncodingContext.Static
+            Context = EncodingContext.Static,
+            AudioPlaybackRate = audioPlaybackRate
         };
 
         return await _audioHelper.GetAudioStream(TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);

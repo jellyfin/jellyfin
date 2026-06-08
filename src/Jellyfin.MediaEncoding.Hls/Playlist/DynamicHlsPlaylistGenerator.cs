@@ -80,13 +80,14 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
                 .AppendLine();
         }
 
+        var playbackRate = request.PlaybackRate > 0 ? request.PlaybackRate : 1;
         long currentRuntimeInSeconds = 0;
         foreach (var length in segments)
         {
             // Manually convert to ticks to avoid precision loss when converting double
             var lengthTicks = Convert.ToInt64(length * TimeSpan.TicksPerSecond);
             builder.Append("#EXTINF:")
-                .Append(length.ToString("0.000000", CultureInfo.InvariantCulture))
+                .Append((length / playbackRate).ToString("0.000000", CultureInfo.InvariantCulture))
                 .AppendLine(", nodesc")
                 .Append(request.EndpointPrefix)
                 .Append(index++)

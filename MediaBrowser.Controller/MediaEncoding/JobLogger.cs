@@ -107,7 +107,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (TimeSpan.TryParse(time, CultureInfo.InvariantCulture, out var val))
                     {
-                        var currentMs = startMs + val.TotalMilliseconds;
+                        var playbackRate = state.BaseRequest.AudioPlaybackRate ?? 1.0;
+                        var currentMs = startMs + (val.TotalMilliseconds * playbackRate);
 
                         percent = 100.0 * currentMs / totalMs;
 

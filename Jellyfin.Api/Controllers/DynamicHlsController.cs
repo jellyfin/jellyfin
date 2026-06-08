@@ -910,6 +910,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/main.m3u8")]
@@ -964,7 +965,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] double? audioPlaybackRate = null)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var streamingRequest = new StreamingRequestDto
@@ -1016,7 +1018,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = false
+            AlwaysBurnInSubtitleWhenTranscoding = false,
+            AudioPlaybackRate = audioPlaybackRate
         };
 
         return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
@@ -1264,6 +1267,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1324,7 +1328,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] double? audioPlaybackRate = null)
     {
         var streamingRequest = new StreamingRequestDto
         {
@@ -1378,7 +1383,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = false
+            AlwaysBurnInSubtitleWhenTranscoding = false,
+            AudioPlaybackRate = audioPlaybackRate
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1419,7 +1425,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
             Request.QueryString.ToString(),
-            EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
+            EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            PlaybackRate = state.BaseRequest.AudioPlaybackRate ?? 1.0
+        };
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -1427,11 +1436,6 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
     {
-        if ((streamingRequest.StartTimeTicks ?? 0) > 0)
-        {
-            throw new ArgumentException("StartTimeTicks is not allowed.");
-        }
-
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
@@ -1632,6 +1636,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        var hlsTime = GetHlsTime(state);
+
         return string.Format(
             CultureInfo.InvariantCulture,
             "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
@@ -1642,13 +1648,21 @@ public class DynamicHlsController : BaseJellyfinApiController
             GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
             GetAudioArguments(state),
             maxMuxingQueueSize,
-            state.SegmentLength.ToString(CultureInfo.InvariantCulture),
+            hlsTime,
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
             EncodingUtils.NormalizePath(outputTsArg),
             hlsArguments,
             EncodingUtils.NormalizePath(outputPath)).Trim();
+    }
+
+    private static string GetHlsTime(StreamState state)
+    {
+        // Atempo output is shorter than content by the rate, so segment duration = content length / rate.
+        return state.BaseRequest.AudioPlaybackRate is double playbackRate && Math.Abs(playbackRate - 1.0) > 0.001
+            ? (state.SegmentLength / playbackRate).ToString(CultureInfo.InvariantCulture)
+            : state.SegmentLength.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -1717,6 +1731,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
+
+            audioTranscodeParams += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return audioTranscodeParams;
         }
