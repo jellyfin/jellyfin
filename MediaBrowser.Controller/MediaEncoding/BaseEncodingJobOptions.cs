@@ -197,6 +197,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool EnableAudioVbrEncoding { get; set; }
 
+        /// <summary>
+        /// Gets or sets the audio playback speed multiplier applied via the atempo filter.
+        /// </summary>
+        /// <value>The playback rate (1.0 = normal speed).</value>
+        public double? AudioPlaybackRate { get; set; }
+
         public bool AlwaysBurnInSubtitleWhenTranscoding { get; set; }
 
         public string GetOption(string qualifier, string name)
