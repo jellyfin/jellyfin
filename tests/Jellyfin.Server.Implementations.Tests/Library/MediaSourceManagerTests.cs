@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Castle.Components.DictionaryAdapter;
@@ -7,11 +10,15 @@ using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaSegments;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -22,6 +29,9 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         private readonly MediaSourceManager _mediaSourceManager;
         private readonly Mock<IUserDataManager> _mockUserDataManager;
         private readonly Mock<ILocalizationManager> _mockLocalizationManager;
+        private readonly Mock<IMediaStreamRepository> _mockMediaStreamRepository;
+        private readonly Mock<IMediaAttachmentRepository> _mockMediaAttachmentRepository;
+        private readonly Mock<IProviderManager> _mockProviderManager;
         private Video _item;
         private User _user;
 
@@ -36,12 +46,26 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             _mockLocalizationManager = fixture.Create<Mock<ILocalizationManager>>();
             _mockLocalizationManager.Setup(m => m.FindLanguageInfo(It.IsAny<string>())).Returns((string s) => string.IsNullOrEmpty(s) ? null : new CultureDto(s, s, s, new EditableList<string> { s }));
             fixture.Inject(_mockLocalizationManager.Object);
+            _mockMediaStreamRepository = fixture.Freeze<Mock<IMediaStreamRepository>>();
+            _mockMediaAttachmentRepository = fixture.Freeze<Mock<IMediaAttachmentRepository>>();
+            _mockProviderManager = new Mock<IProviderManager>(MockBehavior.Strict);
 
             _mediaSourceManager = fixture.Create<MediaSourceManager>();
+            _mediaSourceManager.AddParts(Array.Empty<IMediaSourceProvider>());
 
             _item = new Video { Id = Guid.NewGuid(), OwnerId = Guid.Empty, ParentId = Guid.Empty };
 
             _user = fixture.Create<User>();
+
+            var mediaSegmentManager = new Mock<IMediaSegmentManager>();
+            mediaSegmentManager.Setup(m => m.IsTypeSupported(It.IsAny<BaseItem>())).Returns(false);
+
+            BaseItem.MediaSourceManager = _mediaSourceManager;
+            BaseItem.MediaSegmentManager = mediaSegmentManager.Object;
+            BaseItem.ProviderManager = _mockProviderManager.Object;
+            BaseItem.Logger = NullLogger<BaseItem>.Instance;
+
+            _mockMediaAttachmentRepository.Setup(m => m.GetMediaAttachments(It.IsAny<MediaAttachmentQuery>())).Returns(Array.Empty<MediaAttachment>());
         }
 
         [Theory]
@@ -144,5 +168,76 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
             Assert.Equal(expectedIndex, mediaInfo.DefaultAudioStreamIndex);
         }
+
+        [Fact]
+        public async Task GetPlaybackMediaSources_StrmWithPersistedVideoStreamMetadata_DoesNotRefreshMetadata()
+        {
+            var item = CreateShortcutVideo();
+            var persistedStreams = new List<MediaStream>
+            {
+                new()
+                {
+                    Index = 0,
+                    Type = MediaStreamType.Video,
+                    Codec = "h264"
+                }
+            };
+
+            _mockMediaStreamRepository.Setup(m => m.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id))))
+                .Returns(persistedStreams);
+
+            var result = await _mediaSourceManager.GetPlaybackMediaSources(item, _user, true, false, CancellationToken.None);
+
+            Assert.Single(result);
+            Assert.Single(result[0].MediaStreams);
+            Assert.Equal("h264", result[0].MediaStreams[0].Codec);
+            _mockProviderManager.Verify(
+                m => m.RefreshSingleItem(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task GetPlaybackMediaSources_StrmWithoutPersistedPrimaryStreamMetadata_RefreshesMetadata()
+        {
+            var item = CreateShortcutVideo();
+            var persistedStreams = new List<MediaStream>
+            {
+                new()
+                {
+                    Index = 0,
+                    Type = MediaStreamType.Subtitle,
+                    Codec = "srt"
+                }
+            };
+
+            _mockMediaStreamRepository.Setup(m => m.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id))))
+                .Returns(persistedStreams);
+            _mockProviderManager.Setup(m => m.RefreshSingleItem(
+                    It.Is<BaseItem>(i => ReferenceEquals(i, item)),
+                    It.Is<MetadataRefreshOptions>(o => o.EnableRemoteContentProbe && o.MetadataRefreshMode == MetadataRefreshMode.FullRefresh),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ItemUpdateType.MetadataImport);
+
+            await _mediaSourceManager.GetPlaybackMediaSources(item, _user, true, false, CancellationToken.None);
+
+            _mockProviderManager.Verify(
+                m => m.RefreshSingleItem(
+                    It.Is<BaseItem>(i => ReferenceEquals(i, item)),
+                    It.Is<MetadataRefreshOptions>(o => o.EnableRemoteContentProbe && o.MetadataRefreshMode == MetadataRefreshMode.FullRefresh),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        private static Video CreateShortcutVideo()
+            => new()
+            {
+                Id = Guid.NewGuid(),
+                OwnerId = Guid.Empty,
+                ParentId = Guid.Empty,
+                Path = "/media/strm/movie.strm",
+                IsShortcut = true,
+                ShortcutPath = "https://example.com/movie.mp4",
+                VideoType = VideoType.VideoFile
+            };
     }
 }
