@@ -84,6 +84,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream", Name = "GetAudioStream")]
@@ -140,6 +141,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string>? streamOptions,
+        [FromQuery] double? audioPlaybackRate,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         StreamingRequestDto streamingRequest = new StreamingRequestDto
@@ -192,6 +194,7 @@ public class AudioController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Static,
             StreamOptions = streamOptions,
+            AudioPlaybackRate = audioPlaybackRate,
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
@@ -251,6 +254,7 @@ public class AudioController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <response code="200">Audio stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}", Name = "GetAudioStreamByContainer")]
@@ -307,6 +311,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string>? streamOptions,
+        [FromQuery] double? audioPlaybackRate,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
         StreamingRequestDto streamingRequest = new StreamingRequestDto
@@ -359,6 +364,7 @@ public class AudioController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Static,
             StreamOptions = streamOptions,
+            AudioPlaybackRate = audioPlaybackRate,
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
