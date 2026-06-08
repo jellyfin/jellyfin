@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\SharedVersion.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
@@ -12,11 +17,5 @@
     <ProjectReference Include="../Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Jellyfin.MediaEncoding.Hls.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
 
 </Project>
