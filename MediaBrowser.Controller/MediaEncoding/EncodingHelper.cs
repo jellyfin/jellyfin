@@ -2922,6 +2922,24 @@ namespace MediaBrowser.Controller.MediaEncoding
                         Math.Round(seconds)));
             }
 
+            if (state.BaseRequest.AudioPlaybackRate is double audioRate && Math.Abs(audioRate - 1.0) > 0.001)
+            {
+                var tempRate = audioRate;
+                while (tempRate > 2.0)
+                {
+                    filters.Add("atempo=2.0");
+                    tempRate /= 2.0;
+                }
+
+                while (tempRate < 0.5)
+                {
+                    filters.Add("atempo=0.5");
+                    tempRate *= 2.0;
+                }
+
+                filters.Add($"atempo={tempRate.ToString(CultureInfo.InvariantCulture)}");
+            }
+
             if (filters.Count > 0)
             {
                 return " -af \"" + string.Join(',', filters) + "\"";

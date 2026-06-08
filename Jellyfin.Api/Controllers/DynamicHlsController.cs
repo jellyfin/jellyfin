@@ -1264,6 +1264,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
+    /// <param name="audioPlaybackRate">Optional. The audio playback rate for server-side atempo adjustment.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
@@ -1324,7 +1325,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAudioVbrEncoding = true)
+        [FromQuery] bool enableAudioVbrEncoding = true,
+        [FromQuery] double? audioPlaybackRate = null)
     {
         var streamingRequest = new StreamingRequestDto
         {
@@ -1378,7 +1380,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
-            AlwaysBurnInSubtitleWhenTranscoding = false
+            AlwaysBurnInSubtitleWhenTranscoding = false,
+            AudioPlaybackRate = audioPlaybackRate
         };
 
         return await GetDynamicSegment(streamingRequest, segmentId)
@@ -1427,11 +1430,6 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
     {
-        if ((streamingRequest.StartTimeTicks ?? 0) > 0)
-        {
-            throw new ArgumentException("StartTimeTicks is not allowed.");
-        }
-
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
@@ -1717,6 +1715,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
+
+            audioTranscodeParams += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return audioTranscodeParams;
         }
