@@ -1,0 +1,25 @@
+name: Merge Conflict Labeler
+
+on:
+  push:
+    branches:
+      - master
+  pull_request_target:
+  issue_comment:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    name: Labeling
+    runs-on: ubuntu-latest
+    if: contains(github.repository, 'haos-jellyfin')
+    steps:
+      - name: Apply label
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
+        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request'}}
+        with:
+          dirtyLabel: 'merge conflict'
+          commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
