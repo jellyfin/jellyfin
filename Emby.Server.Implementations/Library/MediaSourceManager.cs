@@ -229,7 +229,11 @@ namespace Emby.Server.Implementations.Library
                 list.Add(source);
             }
 
-            return SortMediaSources(list).ToArray();
+            var preferredId = mediaSources.Count > 0 && Guid.TryParse(mediaSources[0].Id, out var topSourceId)
+                ? topSourceId
+                : item.Id;
+
+            return SortMediaSources(list, preferredId).ToArray();
         }
 
         /// <inheritdoc />>
@@ -400,6 +404,72 @@ namespace Emby.Server.Implementations.Library
                         source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
                     }
                 }
+
+                sources = SetAlternateVersionResumeStates(item, sources, user);
+            }
+
+            return sources;
+        }
+
+        /// <summary>
+        /// Populates each source's own playback position for the user and, when the queried item is a
+        /// primary, moves the most recently played version to the front so that resuming without an
+        /// explicit source selection plays the version that was last watched. A directly queried
+        /// alternate version keeps its own source first.
+        /// </summary>
+        /// <param name="item">The queried item.</param>
+        /// <param name="sources">The item's media sources.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>The media sources, reordered when a version drives resume.</returns>
+        private IReadOnlyList<MediaSourceInfo> SetAlternateVersionResumeStates(BaseItem item, IReadOnlyList<MediaSourceInfo> sources, User user)
+        {
+            // For a video, multiple sources means alternate versions.
+            if (item is not Video video || sources.Count < 2)
+            {
+                return sources;
+            }
+
+            var versions = video.GetAllVersions();
+            if (versions.Count < 2)
+            {
+                return sources;
+            }
+
+            var userDataByVersion = _userDataManager.GetUserDataBatch(versions, user);
+            var dataBySourceId = new Dictionary<string, UserItemData>(versions.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var version in versions)
+            {
+                if (userDataByVersion.TryGetValue(version.Id, out var data))
+                {
+                    dataBySourceId[version.Id.ToString("N", CultureInfo.InvariantCulture)] = data;
+                }
+            }
+
+            MediaSourceInfo resumeSource = null;
+            UserItemData resumeData = null;
+            foreach (var source in sources)
+            {
+                if (source.Id is null
+                    || !dataBySourceId.TryGetValue(source.Id, out var data)
+                    || data.PlaybackPositionTicks <= 0)
+                {
+                    continue;
+                }
+
+                source.PlaybackPositionTicks = data.PlaybackPositionTicks;
+
+                if (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue))
+                {
+                    resumeSource = source;
+                    resumeData = data;
+                }
+            }
+
+            if (resumeSource is not null && !video.PrimaryVersionId.HasValue && !ReferenceEquals(sources[0], resumeSource))
+            {
+                var reordered = new List<MediaSourceInfo>(sources.Count) { resumeSource };
+                reordered.AddRange(sources.Where(s => !ReferenceEquals(s, resumeSource)));
+                return reordered;
             }
 
             return sources;

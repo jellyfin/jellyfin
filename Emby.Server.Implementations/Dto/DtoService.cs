@@ -167,9 +167,13 @@ namespace Emby.Server.Implementations.Dto
 
             // Batch-fetch user data for all items
             Dictionary<Guid, UserItemData>? userDataBatch = null;
+            IReadOnlyDictionary<Guid, VersionResumeData>? resumeDataBatch = null;
             if (user is not null && options.EnableUserData)
             {
                 userDataBatch = _userDataRepository.GetUserDataBatch(accessibleItems, user);
+
+                // For items with alternate versions, the most recently played version drives resume.
+                resumeDataBatch = _userDataRepository.GetResumeUserDataBatch(accessibleItems, user);
             }
 
             // Pre-compute collection folders once to avoid N+1 queries in CanDelete
@@ -248,7 +252,8 @@ namespace Emby.Server.Implementations.Dto
                     allCollectionFolders,
                     childCountBatch,
                     playedCountBatch,
-                    artistsBatch);
+                    artistsBatch,
+                    resumeDataBatch?.GetValueOrDefault(item.Id));
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -309,7 +314,8 @@ namespace Emby.Server.Implementations.Dto
             List<Folder>? allCollectionFolders = null,
             Dictionary<Guid, int>? childCountBatch = null,
             Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
-            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null)
+            IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
+            VersionResumeData? resumeData = null)
         {
             var dto = new BaseItemDto
             {
@@ -353,7 +359,8 @@ namespace Emby.Server.Implementations.Dto
                     options,
                     userData,
                     childCountBatch,
-                    playedCountBatch);
+                    playedCountBatch,
+                    resumeData);
             }
 
             if (item is IHasMediaSources
@@ -538,7 +545,8 @@ namespace Emby.Server.Implementations.Dto
             DtoOptions options,
             UserItemData? userData = null,
             Dictionary<Guid, int>? childCountBatch = null,
-            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null)
+            Dictionary<Guid, (int Played, int Total)>? playedCountBatch = null,
+            VersionResumeData? resumeData = null)
         {
             if (item.IsFolder)
             {
@@ -600,6 +608,9 @@ namespace Emby.Server.Implementations.Dto
                         // Use pre-fetched user data
                         dto.UserData = GetUserItemDataDto(userData, item.Id);
                         item.FillUserDataDtoValues(dto.UserData, userData, dto, user, options);
+
+                        // For items with alternate versions, the most recently played version drives resume.
+                        resumeData?.ApplyTo(dto.UserData);
                     }
                     else
                     {

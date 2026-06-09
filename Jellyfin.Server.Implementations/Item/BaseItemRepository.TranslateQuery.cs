@@ -519,7 +519,6 @@ public sealed partial class BaseItemRepository
             // In-progress user data rows; alternate versions track their own progress.
             var inProgress = context.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
-            var resumableItemIds = inProgress.Select(ud => ud.ItemId);
 
             if (hasSeries)
             {
@@ -544,13 +543,26 @@ public sealed partial class BaseItemRepository
                     .Where(s => s.HasInProgress || (s.HasPlayed && s.HasUnplayed))
                     .Select(s => s.SeriesId);
 
+                // Non-series items: resumable if the item or any of its alternate versions has
+                // PlaybackPositionTicks > 0. Alternate versions (PrimaryVersionId set) are excluded
+                // from the base query, so coalesce their progress onto the primary's id.
+                var resumableMovieIds = context.BaseItems
+                    .Where(bi => bi.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
+                    .Select(bi => bi.PrimaryVersionId ?? bi.Id);
+
                 baseQuery = baseQuery.Where(e =>
                     (e.Type == seriesTypeName && resumableSeriesIds.Contains(e.Id) == isResumable)
-                    || (e.Type != seriesTypeName && resumableItemIds.Contains(e.Id) == isResumable));
+                    || (e.Type != seriesTypeName && resumableMovieIds.Contains(e.Id) == isResumable));
             }
             else
             {
-                baseQuery = baseQuery.Where(e => resumableItemIds.Contains(e.Id) == isResumable);
+                // Resumable if the item or any of its alternate versions has PlaybackPositionTicks > 0.
+                // Alternate versions (PrimaryVersionId set) are excluded from the base query, so
+                // coalesce their progress onto the primary's id.
+                var resumableMovieIds = context.BaseItems
+                    .Where(bi => bi.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
+                    .Select(bi => bi.PrimaryVersionId ?? bi.Id);
+                baseQuery = baseQuery.Where(e => resumableMovieIds.Contains(e.Id) == isResumable);
             }
 
             if (isResumable)

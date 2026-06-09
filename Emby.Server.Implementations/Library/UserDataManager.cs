@@ -247,6 +247,72 @@ namespace Emby.Server.Implementations.Library
             return result;
         }
 
+        /// <inheritdoc />
+        public VersionResumeData? GetResumeUserData(User user, BaseItem item)
+        {
+            return GetResumeUserDataBatch([item], user).GetValueOrDefault(item.Id);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, VersionResumeData> GetResumeUserDataBatch(IReadOnlyList<BaseItem> items, User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            var result = new Dictionary<Guid, VersionResumeData>();
+            List<(Guid PrimaryId, IReadOnlyList<Video> Versions)>? versionGroups = null;
+            List<BaseItem>? allVersions = null;
+
+            foreach (var item in items)
+            {
+                // Only primary items aggregate over their versions; a directly queried version keeps its own data.
+                if (item is not Video video
+                    || video.PrimaryVersionId.HasValue
+                    || (video.LinkedAlternateVersions.Length == 0 && !video.HasLocalAlternateVersions))
+                {
+                    continue;
+                }
+
+                var versions = video.GetAllVersions();
+                if (versions.Count < 2)
+                {
+                    continue;
+                }
+
+                (versionGroups ??= []).Add((item.Id, versions));
+                (allVersions ??= []).AddRange(versions);
+            }
+
+            if (versionGroups is null)
+            {
+                return result;
+            }
+
+            var userDataByVersion = GetUserDataBatch(allVersions!.DistinctBy(i => i.Id).ToList(), user);
+
+            foreach (var (primaryId, versions) in versionGroups)
+            {
+                Video? resumeVersion = null;
+                UserItemData? resumeData = null;
+                foreach (var version in versions)
+                {
+                    if (userDataByVersion.TryGetValue(version.Id, out var data)
+                        && data.PlaybackPositionTicks > 0
+                        && (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue)))
+                    {
+                        resumeVersion = version;
+                        resumeData = data;
+                    }
+                }
+
+                if (resumeData is not null)
+                {
+                    result[primaryId] = new VersionResumeData(resumeData, resumeVersion!.RunTimeTicks);
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the internal key.
         /// </summary>
@@ -281,6 +347,10 @@ namespace Emby.Server.Implementations.Library
             var dto = GetUserItemDataDto(userData, item.Id);
 
             item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
+
+            // For an item with alternate versions, surface the most recently played version's resume point.
+            GetResumeUserData(user, item)?.ApplyTo(dto);
+
             return dto;
         }
 
