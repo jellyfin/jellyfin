@@ -444,6 +444,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                        || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
+        private static bool IsDeinterlaceAvailable(EncodingJobInfo state)
+        {
+            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
+            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
+            return doDeintH264 || doDeintHevc;
+        }
+
         private bool IsVideoStreamHevcRext(EncodingJobInfo state)
         {
             var videoStream = state.VideoStream;
@@ -3850,9 +3857,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiEncoder = vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
             var isV4l2Encoder = vidEncoder.Contains("h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doToneMap = IsSwTonemapAvailable(state, options);
             var requireDoviReshaping = doToneMap && state.VideoStream.VideoRangeType == VideoRangeType.DOVI;
 
@@ -4004,9 +4009,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isCuInCuOut = isNvDecoder && isNvencEncoder;
 
             var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.ReferenceFrameRate ?? 60) <= 30;
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doCuTonemap = IsHwTonemapAvailable(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
@@ -4215,9 +4218,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isDxInDxOut = isD3d11vaDecoder && isAmfEncoder;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doOclTonemap = IsHwTonemapAvailable(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
@@ -4463,9 +4464,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isQsvInQsvOut = isHwDecoder && isQsvEncoder;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doVppTonemap = IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVppTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVppTonemap || doOclTonemap;
@@ -4757,12 +4756,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isQsvInQsvOut = isHwDecoder && isQsvEncoder;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doVaVppTonemap = IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -5088,12 +5085,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
             var isVaInVaOut = isVaapiDecoder && isVaapiEncoder;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doVaVppTonemap = isVaapiDecoder && IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -5325,10 +5320,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwEncoder = !isVaapiEncoder;
             var isMjpegEncoder = vidEncoder.Contains("mjpeg", StringComparison.OrdinalIgnoreCase);
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
             var doVkTonemap = IsVulkanHwTonemapAvailable(state, options);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -5565,9 +5558,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isi965Driver = _mediaEncoder.IsVaapiDeviceInteli965;
             var isAmdDriver = _mediaEncoder.IsVaapiDeviceAmd;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doOclTonemap = IsHwTonemapAvailable(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
@@ -5798,9 +5789,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var reqMaxH = state.BaseRequest.MaxHeight;
             var threeDFormat = state.MediaSource.Video3DFormat;
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doVtTonemap = IsVideoToolboxTonemapAvailable(state, options);
             var doMetalTonemap = !doVtTonemap && IsHwTonemapAvailable(state, options);
             var usingHwSurface = isVtDecoder && (_mediaEncoder.EncoderVersion >= _minFFmpegWorkingVtHwSurface);
@@ -5999,9 +5988,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && (vidEncoder.Contains("h264", StringComparison.OrdinalIgnoreCase)
                     || vidEncoder.Contains("hevc", StringComparison.OrdinalIgnoreCase));
 
-            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
-            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
-            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doOclTonemap = IsHwTonemapAvailable(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
@@ -6265,12 +6252,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             overlayFilters?.RemoveAll(string.IsNullOrEmpty);
 
             var framerate = GetFramerateParam(state);
-            if (framerate.HasValue)
+            if (mainFilters is not null && framerate.HasValue)
             {
-                mainFilters.Insert(0, string.Format(
-                    CultureInfo.InvariantCulture,
-                    "fps={0}",
-                    framerate.Value));
+                var doDeintH2645 = IsDeinterlaceAvailable(state);
+                var fpsFilter = string.Format(CultureInfo.InvariantCulture, "fps={0}", framerate.Value);
+
+                // For filter chain containing the deinterlace filter,
+                // place the fps filter at the end to preserve temporal info.
+                if (doDeintH2645)
+                {
+                    mainFilters.Add(fpsFilter);
+                }
+                else
+                {
+                    mainFilters.Insert(0, fpsFilter);
+                }
             }
 
             var mainStr = string.Empty;
