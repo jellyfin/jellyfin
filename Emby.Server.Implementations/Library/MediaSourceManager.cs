@@ -390,6 +390,12 @@ namespace Emby.Server.Implementations.Library
 
             if (user is not null)
             {
+                sources = sources
+                    .Where(source => !Guid.TryParse(source.Id, out var sourceId)
+                        || sourceId.Equals(item.Id)
+                        || _libraryManager.GetItemById<BaseItem>(sourceId, user) is not null)
+                    .ToArray();
+
                 foreach (var source in sources)
                 {
                     SetDefaultAudioAndSubtitleStreamIndices(item, source, user);
@@ -610,24 +616,32 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources, Guid preferredItemId = default)
         {
-            return sources.OrderBy(i =>
-            {
-                if (i.VideoType.HasValue && i.VideoType.Value == VideoType.VideoFile)
+            // The source belonging to the queried item sorts first so it stays the default that gets played.
+            var preferredId = preferredItemId.IsEmpty()
+                ? null
+                : preferredItemId.ToString("N", CultureInfo.InvariantCulture);
+
+            return sources
+                .OrderByDescending(i => preferredId is not null && string.Equals(i.Id, preferredId, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i =>
                 {
-                    return 0;
-                }
+                    if (i.VideoType.HasValue && i.VideoType.Value == VideoType.VideoFile)
+                    {
+                        return 0;
+                    }
 
-                return 1;
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.VideoStream;
+                    return 1;
+                })
+                .ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+                .ThenByDescending(i =>
+                {
+                    var stream = i.VideoStream;
 
-                return stream?.Width ?? 0;
-            })
-            .Where(i => i.Type != MediaSourceType.Placeholder);
+                    return stream?.Width ?? 0;
+                })
+                .Where(i => i.Type != MediaSourceType.Placeholder);
         }
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
