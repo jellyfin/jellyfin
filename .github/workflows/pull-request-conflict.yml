@@ -5,6 +5,7 @@ on:
     branches:
       - master
   pull_request_target:
+    types: [opened, synchronize, reopened]
   issue_comment:
 
 permissions:
@@ -18,7 +19,7 @@ jobs:
     steps:
       - name: Apply label
         uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
-        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request'}}
+        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
         with:
           dirtyLabel: 'merge conflict'
           commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
