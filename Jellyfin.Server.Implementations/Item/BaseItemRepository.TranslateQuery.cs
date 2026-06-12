@@ -586,8 +586,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.AlbumIds.Length > 0)
         {
-            var subQuery = context.BaseItems.WhereOneOrMany(filter.AlbumIds, f => f.Id);
-            baseQuery = baseQuery.Where(e => subQuery.Any(f => f.Name == e.Album));
+            baseQuery = baseQuery.Where(e => filter.AlbumIds.Contains((Guid)e.ParentId!));
         }
 
         if (filter.ExcludeArtistIds.Length > 0)
