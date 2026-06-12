@@ -50,9 +50,10 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
         {
             // Mirrors the resumable filter in BaseItemRepository.TranslateQuery: progress on any
             // version coalesces onto the primary's id.
-            var resumableMovieIds = ctx.BaseItems
-                .Where(bi => bi.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
-                .Select(bi => bi.PrimaryVersionId ?? bi.Id);
+            var inProgress = ctx.UserData
+                .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
+            var resumableMovieIds = inProgress
+                .Join(ctx.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
 
             // Scope to the seeded items; EnsureCreated also seeds a placeholder row.
             var seededIds = new[] { primaryId, otherId };

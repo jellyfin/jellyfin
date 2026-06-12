@@ -259,15 +259,53 @@ namespace Emby.Server.Implementations.Library
             ArgumentNullException.ThrowIfNull(user);
 
             var result = new Dictionary<Guid, VersionResumeData>();
+
+            // Candidate primaries: a directly queried version (PrimaryVersionId set) keeps its own data.
+            // Linked alternates are already known in memory; only the local-alternate existence check
+            // would otherwise hit the database (one query per item via Video.HasLocalAlternateVersions),
+            // so collect those ids and resolve them all in a single query below.
+            List<Video>? candidates = null;
+            List<Guid>? localProbeIds = null;
+            foreach (var item in items)
+            {
+                if (item is not Video video || video.PrimaryVersionId.HasValue)
+                {
+                    continue;
+                }
+
+                (candidates ??= []).Add(video);
+
+                if (video.LinkedAlternateVersions.Length == 0)
+                {
+                    (localProbeIds ??= []).Add(video.Id);
+                }
+            }
+
+            if (candidates is null)
+            {
+                return result;
+            }
+
+            HashSet<Guid>? withLocalAlternates = null;
+            if (localProbeIds is not null)
+            {
+                using var dbContext = _repository.CreateDbContext();
+                withLocalAlternates = dbContext.LinkedChildren
+                    .Where(lc => lc.ChildType == Jellyfin.Database.Implementations.Entities.LinkedChildType.LocalAlternateVersion
+                        && localProbeIds.Contains(lc.ParentId))
+                    .Select(lc => lc.ParentId)
+                    .Distinct()
+                    .ToHashSet();
+            }
+
             List<(Guid PrimaryId, IReadOnlyList<Video> Versions)>? versionGroups = null;
             List<BaseItem>? allVersions = null;
 
-            foreach (var item in items)
+            foreach (var video in candidates)
             {
-                // Only primary items aggregate over their versions; a directly queried version keeps its own data.
-                if (item is not Video video
-                    || video.PrimaryVersionId.HasValue
-                    || (video.LinkedAlternateVersions.Length == 0 && !video.HasLocalAlternateVersions))
+                // Only items that actually have alternate versions aggregate over them.
+                if (video.LinkedAlternateVersions.Length == 0
+                    && (withLocalAlternates is null || !withLocalAlternates.Contains(video.Id)))
                 {
                     continue;
                 }
@@ -278,7 +316,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                (versionGroups ??= []).Add((item.Id, versions));
+                (versionGroups ??= []).Add((video.Id, versions));
                 (allVersions ??= []).AddRange(versions);
             }
 

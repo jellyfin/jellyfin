@@ -546,9 +546,8 @@ public sealed partial class BaseItemRepository
                 // Non-series items: resumable if the item or any of its alternate versions has
                 // PlaybackPositionTicks > 0. Alternate versions (PrimaryVersionId set) are excluded
                 // from the base query, so coalesce their progress onto the primary's id.
-                var resumableMovieIds = context.BaseItems
-                    .Where(bi => bi.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
-                    .Select(bi => bi.PrimaryVersionId ?? bi.Id);
+                var resumableMovieIds = inProgress
+                    .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
 
                 baseQuery = baseQuery.Where(e =>
                     (e.Type == seriesTypeName && resumableSeriesIds.Contains(e.Id) == isResumable)
@@ -559,9 +558,8 @@ public sealed partial class BaseItemRepository
                 // Resumable if the item or any of its alternate versions has PlaybackPositionTicks > 0.
                 // Alternate versions (PrimaryVersionId set) are excluded from the base query, so
                 // coalesce their progress onto the primary's id.
-                var resumableMovieIds = context.BaseItems
-                    .Where(bi => bi.UserData!.Any(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0))
-                    .Select(bi => bi.PrimaryVersionId ?? bi.Id);
+                var resumableMovieIds = inProgress
+                    .Join(context.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
                 baseQuery = baseQuery.Where(e => resumableMovieIds.Contains(e.Id) == isResumable);
             }
 
