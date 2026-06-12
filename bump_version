@@ -32,6 +32,7 @@ jellyfin_subprojects=(
 )
 issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
 haos_config_file="./haos-jellyfin/config.yaml"
+haos_changelog_file="./haos-jellyfin/CHANGELOG.md"
 
 new_version="$1"
 new_version_sed="$( cut -f1 -d'-' <<<"${new_version}" )"
@@ -78,6 +79,13 @@ if [[ -f ${haos_config_file} ]]; then
     old_haos_version=$(grep "^version: " "${haos_config_file}" | cut -d '"' -f 2)
     echo old HAOS version: $old_haos_version
     sed -i "s|version: \"${old_haos_version}\"|version: \"${new_version_sed}\"|g" "${haos_config_file}"
+fi
+
+# Update HAOS changelog
+if [[ -f ${haos_changelog_file} ]]; then
+    if ! grep -q "## ${new_version_sed}" "${haos_changelog_file}"; then
+        sed -i "s/# Changelog/# Changelog\n\n## ${new_version_sed}\n- Automated version bump to ${new_version_sed}./" "${haos_changelog_file}"
+    fi
 fi
 
 # Stage the changed files for commit
