@@ -25,7 +25,7 @@ jobs:
 
       - name: Build
         run: |
-          dotnet build Jellyfin.Server -o ./out
+          dotnet build Jellyfin.Server -c Release -o ./out
 
       - name: Upload Head
         uses: actions/upload-artifact@v4
@@ -56,14 +56,14 @@ jobs:
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }}
+          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }} || true
           git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
           ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/$HEAD_REF)
           git checkout --progress --force $ANCESTOR_REF
 
       - name: Build
         run: |
-          dotnet build Jellyfin.Server -o ./out
+          dotnet build Jellyfin.Server -c Release -o ./out
 
       - name: Upload Base
         uses: actions/upload-artifact@v4
@@ -99,7 +99,8 @@ jobs:
 
       - name: Setup ApiCompat
         run: |
-          dotnet tool install --global Microsoft.DotNet.ApiCompat.Tool
+          dotnet tool install --global Microsoft.DotNet.ApiCompat.Tool || true
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Run ApiCompat
         id: diff
