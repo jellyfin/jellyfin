@@ -78,9 +78,71 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
+        // Note that this only updates the children's SeriesPresentationUniqueKey and SeasonId, not the ParentIndexNumber
+        if (LibraryManager.GetLibraryOptions(item).EnableAutomaticSeriesGrouping)
+        {
+            await UpdateSeriesChildrenInfoAsync(item, cancellationToken).ConfigureAwait(false);
+        }
+
         RemoveObsoleteEpisodes(item);
         RemoveObsoleteSeasons(item);
         await CreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Reconciles seasons and episodes with the series' finalized state.
+    /// </summary>
+    /// <remarks>
+    /// The series' presentation unique key can change during a refresh once provider ids become
+    /// available - notably with <c>EnableAutomaticSeriesGrouping</c>, where the key is derived from
+    /// the provider id and the owning libraries instead of the (immutable) item id. Seasons and
+    /// episodes cache this value in <see cref="IHasSeries.SeriesPresentationUniqueKey"/> and are
+    /// matched to (and displayed under) the series by it, so any child left with a stale key - or an
+    /// episode not yet linked to a freshly created season - stays hidden until a later scan. Syncing
+    /// them against the series here lets everything appear within a single scan.
+    /// </remarks>
+    /// <param name="series">The series.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The async task.</returns>
+    private async Task UpdateSeriesChildrenInfoAsync(Series series, CancellationToken cancellationToken)
+    {
+        // Reload children so episode numbers / seasons persisted earlier in the refresh are seen.
+        series.Children = null;
+        var seriesKey = series.GetPresentationUniqueKey();
+        var children = series.GetRecursiveChildren(i => i is Season || i is Episode);
+        var seasons = children.OfType<Season>().ToList();
+
+        foreach (var child in children)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (child is IHasSeries hasSeries
+                && !string.Equals(hasSeries.SeriesPresentationUniqueKey, seriesKey, StringComparison.Ordinal))
+            {
+                hasSeries.SeriesPresentationUniqueKey = seriesKey;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
+
+            if (child is Episode episode)
+            {
+                var seasonId = episode.FindSeasonId();
+                if (seasonId.IsEmpty() && episode.ParentIndexNumber.HasValue)
+                {
+                    seasonId = seasons.Find(s => s.IndexNumber == episode.ParentIndexNumber)?.Id ?? Guid.Empty;
+                }
+
+                if (!seasonId.IsEmpty() && !episode.SeasonId.Equals(seasonId))
+                {
+                    episode.SeasonId = seasonId;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+            }
+
+            if (updateType > ItemUpdateType.None)
+            {
+                await child.UpdateToRepositoryAsync(updateType, cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -235,6 +297,28 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     private async Task CreateSeasonsAsync(Series series, CancellationToken cancellationToken)
     {
         var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
+
+        // CreateSeasonsAsync can run before the episodes themselves have been refreshed during an
+        // initial scan, so their ParentIndexNumber may still be unset. Resolve the season number
+        // from the path first to avoid creating a premature "Season Unknown" instead of the real
+        // season for episodes that live directly in a flat series folder.
+        foreach (var episode in seriesChildren.OfType<Episode>())
+        {
+            if (episode.ParentIndexNumber.HasValue)
+            {
+                continue;
+            }
+
+            try
+            {
+                LibraryManager.FillMissingEpisodeNumbersFromPath(episode, false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error resolving season number from path for {Path}", episode.Path);
+            }
+        }
+
         var seasons = seriesChildren.OfType<Season>().ToList();
 
         var physicalSeasonIds = seasons
