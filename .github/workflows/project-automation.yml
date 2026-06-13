@@ -58,7 +58,8 @@ jobs:
           github.event.issue && github.event.issue.pull_request == null &&
           github.event.comment && github.event.comment.author_association == 'MEMBER'
         id: member_comments
-        run: echo "number=$(curl -s -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' ${{ github.event.issue.comments_url }} | jq '.[] | select(.author_association == "MEMBER") | .author_association' | wc -l)" >> $GITHUB_OUTPUT
+        run: |
+          echo "number=$(curl -s -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' ${{ github.event.issue.comments_url }} | jq '.[] | select(.author_association == "MEMBER") | .author_association' | wc -l)" >> $GITHUB_OUTPUT
 
       - name: Move issue to needs triage
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
