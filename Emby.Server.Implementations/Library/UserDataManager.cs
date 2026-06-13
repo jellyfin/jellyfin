@@ -55,7 +55,10 @@ namespace Emby.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var keys = item.GetUserDataKeys();
+            // De-duplicate the keys: an item can produce the same user-data key more than
+            // once (e.g. a video whose IMDb and TMDB provider ids are identical), which would
+            // otherwise make EF Core track two UserData entities with the same primary key.
+            var keys = item.GetUserDataKeys().Distinct().ToList();
 
             using var dbContext = _repository.CreateDbContext();
             using var transaction = dbContext.Database.BeginTransaction();
