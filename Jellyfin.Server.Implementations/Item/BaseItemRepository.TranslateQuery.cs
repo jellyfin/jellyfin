@@ -586,7 +586,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.AlbumIds.Length > 0)
         {
-            baseQuery = baseQuery.Where(e => filter.AlbumIds.Contains((Guid)e.ParentId!));
+            baseQuery = baseQuery.Where(e => e.ParentId.HasValue && filter.AlbumIds.Contains(e.ParentId.Value));
         }
 
         if (filter.ExcludeArtistIds.Length > 0)
