@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -12,7 +13,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Books.ComicBookInfo.Models;
 using Microsoft.Extensions.Logging;
-using SharpCompress.Archives.Zip;
 
 namespace MediaBrowser.Providers.Books.ComicBookInfo;
 
@@ -48,28 +48,18 @@ public class ComicBookInfoProvider : IComicProvider
 
         try
         {
-            Stream stream = File.OpenRead(path);
+            Stream stream = AsyncFile.OpenRead(path);
 
-            // not yet async: https://github.com/adamhathcock/sharpcompress/pull/565
             await using (stream.ConfigureAwait(false))
-            using (var archive = ZipArchive.Open(stream))
+            await using (var archive = await ZipArchive.CreateAsync(stream, ZipArchiveMode.Read, false, null, cancellationToken).ConfigureAwait(false))
             {
-                if (!archive.IsComplete)
-                {
-                    _logger.LogError("incomplete comic archive: {Path}", info.Path);
-                    return new MetadataResult<Book> { HasMetadata = false };
-                }
-
-                var volume = archive.Volumes.First();
-
-                if (volume.Comment is null)
+                if (archive.Comment is null)
                 {
                     _logger.LogInformation("missing ComicBookInfo in archive comment: {Path}", info.Path);
                     return new MetadataResult<Book> { HasMetadata = false };
                 }
 
-                var comicBookMetadata = JsonSerializer.Deserialize<ComicBookInfoFormat>(volume.Comment, JsonDefaults.Options);
-
+                var comicBookMetadata = JsonSerializer.Deserialize<ComicBookInfoFormat>(archive.Comment, JsonDefaults.Options);
                 if (comicBookMetadata is null)
                 {
                     _logger.LogError("ComicBookInfo deserialization failure: {Path}", info.Path);

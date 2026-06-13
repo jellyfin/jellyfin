@@ -7,7 +7,6 @@ using System.Xml.XPath;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using SharpCompress;
 
 namespace MediaBrowser.Providers.Books.ComicInfo;
 
@@ -41,7 +40,13 @@ public static class ComicInfoReader
         hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/Summary", summary => book.Overview = summary);
         hasFoundMetadata |= ReadIntInto(xml, "ComicInfo/Year", year => book.ProductionYear = year);
         hasFoundMetadata |= ReadThreePartDateInto(xml, "ComicInfo/Year", "ComicInfo/Month", "ComicInfo/Day", dateTime => book.PremiereDate = dateTime);
-        hasFoundMetadata |= ReadCommaSeparatedStringsInto(xml, "ComicInfo/Genre", genres => genres.ForEach(genre => book.AddGenre(genre)));
+        hasFoundMetadata |= ReadCommaSeparatedStringsInto(xml, "ComicInfo/Genre", genres =>
+        {
+            foreach (var genre in genres)
+            {
+                book.AddGenre(genre);
+            }
+        });
         hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/Publisher", publisher => book.SetStudios([publisher]));
 
         hasFoundMetadata |= ReadStringInto(xml, "ComicInfo/AlternateSeries", title =>
@@ -71,32 +76,50 @@ public static class ComicInfoReader
     {
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Writer", authors =>
         {
-            authors.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Author }));
+            foreach (var p in authors)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Author });
+            }
         });
 
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Penciller", pencillers =>
         {
-            pencillers.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Penciller }));
+            foreach (var p in pencillers)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Penciller });
+            }
         });
 
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Inker", inkers =>
         {
-            inkers.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Inker }));
+            foreach (var p in inkers)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Inker });
+            }
         });
 
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Letterer", letterers =>
         {
-            letterers.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Letterer }));
+            foreach (var p in letterers)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Letterer });
+            }
         });
 
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/CoverArtist", artists =>
         {
-            artists.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.CoverArtist }));
+            foreach (var p in artists)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.CoverArtist });
+            }
         });
 
         ReadCommaSeparatedStringsInto(xml, "ComicInfo/Colourist", colorists =>
         {
-            colorists.ForEach(p => metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Colorist }));
+            foreach (var p in colorists)
+            {
+                metadataResult.AddPerson(new PersonInfo { Name = p, Type = PersonKind.Colorist });
+            }
         });
     }
 
