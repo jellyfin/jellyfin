@@ -3624,6 +3624,29 @@ namespace Emby.Server.Implementations.Library
                     personEntity.DateLastSaved = DateTime.UtcNow;
 
                     CreateItems([personEntity], null, CancellationToken.None);
+
+                    // Download person image stubs to ensure images are available during initial scan
+                    if (itemUpdateType == ItemUpdateType.ImageUpdate && personEntity.HasImage(ImageType.Primary))
+                    {
+                        var primaryImage = personEntity.GetImageInfo(ImageType.Primary, 0);
+                        if (primaryImage != null && !string.IsNullOrWhiteSpace(primaryImage.Path)
+                            && primaryImage.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                await ConvertImageToLocal(personEntity, primaryImage, 0, removeOnFailure: false).ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogDebug(ex, "Failed to download person image for {Name}, will use lazy loading", personEntity.Name);
+                            }
+                        }
+                    }
                 }
             }
         }
