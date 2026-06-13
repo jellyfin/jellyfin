@@ -11,6 +11,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using Moq;
 using Xunit;
 
@@ -201,6 +202,50 @@ public class EncodingHelperTests
         {
             tempDir.Delete(true);
         }
+    }
+
+    [Theory]
+    [InlineData("aac", 44100, 44100)] // non-opus: requested rate must be preserved (issue #17026)
+    [InlineData("aac", 48000, 48000)]
+    [InlineData("mp3", 22050, 22050)]
+    [InlineData("flac", 96000, 96000)]
+    [InlineData("opus", 44100, 48000)] // opus: must snap to a libopus-supported rate
+    [InlineData("opus", 22050, 24000)]
+    [InlineData("opus", 8000, 8000)]
+    public void GetProgressiveAudioFullCommandLine_SampleRate_OnlyClampedForOpus(
+        string audioCodec,
+        int requestedSampleRate,
+        int expectedSampleRate)
+    {
+        var state = BuildAudioState(audioCodec, requestedSampleRate);
+        var args = CreateHelper().GetProgressiveAudioFullCommandLine(state, new EncodingOptions(), "/tmp/out");
+
+        Assert.Contains("-ar " + expectedSampleRate, args, StringComparison.Ordinal);
+    }
+
+    private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate)
+    {
+        var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
+
+        return new EncodingJobInfo(TranscodingJobType.Progressive)
+        {
+            MediaSource = new MediaSourceInfo
+            {
+                Container = "flac",
+                MediaStreams = new List<MediaStream> { audio },
+                Path = "/media/track.flac",
+                Protocol = MediaProtocol.File,
+            },
+            AudioStream = audio,
+            OutputAudioCodec = audioCodec,
+            BaseRequest = new VideoRequestDto
+            {
+                AudioCodec = audioCodec,
+                AudioSampleRate = requestedSampleRate,
+            },
+            IsVideoRequest = false,
+            IsInputVideo = false,
+        };
     }
 
     private static EncodingJobInfo BuildState(

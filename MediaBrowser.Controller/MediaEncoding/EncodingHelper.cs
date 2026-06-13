@@ -7870,13 +7870,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
             }
 
-            if (!string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            var sampleRate = state.OutputAudioSampleRate;
+            if (sampleRate.HasValue)
             {
-                // opus only supports specific sampling rates
-                var sampleRate = state.OutputAudioSampleRate;
-                if (sampleRate.HasValue)
+                var sampleRateValue = sampleRate.Value;
+                if (string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))
                 {
-                    var sampleRateValue = sampleRate.Value switch
+                    // opus only supports specific sampling rates
+                    sampleRateValue = sampleRate.Value switch
                     {
                         <= 8000 => 8000,
                         <= 12000 => 12000,
@@ -7884,9 +7885,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                         <= 24000 => 24000,
                         _ => 48000
                     };
-
-                    audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
                 }
+
+                audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
             }
 
             // Copy the movflags from GetProgressiveVideoFullCommandLine
