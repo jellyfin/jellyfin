@@ -44,8 +44,8 @@ if [[ -f ${shared_version_file} ]]; then
             | sed -E 's/\[assembly: ?AssemblyVersion\("([0-9\.]+)"\)\]/\1/'
     )"
     echo "old assembly version: ${old_version}"
-    # Replace the versions in both AssemblyVersion and AssemblyFileVersion attributes
-    sed -i -E "s/(\[assembly: ?Assembly(File)?Version\(\")${old_version}(\"\)\])/\1${new_version_sed}\3/g" "${shared_version_file}"
+    # Replace the versions in AssemblyVersion, AssemblyFileVersion, and AssemblyInformationalVersion attributes
+    sed -i -E "s/(\[assembly: ?Assembly(File|Informational)?Version\(\")${old_version}(\"\)\])/\1${new_version_sed}\3/g" "${shared_version_file}"
 fi
 
 # update nuget package version
