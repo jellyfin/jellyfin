@@ -1,9 +1,11 @@
 #pragma warning disable CA1031
 
 using System;
+using System.Buffers;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder;
@@ -12,41 +14,36 @@ namespace MediaBrowser.MediaEncoding.Encoder;
 /// Helper class for Apple platform specific operations.
 /// </summary>
 [SupportedOSPlatform("macos")]
-public static class ApplePlatformHelper
+public static partial class ApplePlatformHelper
 {
     private static readonly string[] _av1DecodeBlacklistedCpuClass = ["M1", "M2"];
 
-    private static string GetSysctlValue(ReadOnlySpan<byte> name)
+    private static string GetSysctlValue(string name)
     {
         IntPtr length = IntPtr.Zero;
         // Get length of the value
-        int osStatus = SysctlByName(name, IntPtr.Zero, ref length, IntPtr.Zero, 0);
-
-        if (osStatus != 0)
+        int osStatus = sysctlbyname(name, Span<byte>.Empty, ref length, IntPtr.Zero, 0);
+        if (osStatus != 0 || length == 0)
         {
-            throw new NotSupportedException($"Failed to get sysctl value for {System.Text.Encoding.UTF8.GetString(name)} with error {osStatus}");
+            throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
         }
 
-        IntPtr buffer = Marshal.AllocHGlobal(length.ToInt32());
+        byte[] buffer = ArrayPool<byte>.Shared.Rent((int)length);
         try
         {
-            osStatus = SysctlByName(name, buffer, ref length, IntPtr.Zero, 0);
+            osStatus = sysctlbyname(name, buffer.AsSpan().Slice(0, (int)length), ref length, IntPtr.Zero, 0);
             if (osStatus != 0)
             {
-                throw new NotSupportedException($"Failed to get sysctl value for {System.Text.Encoding.UTF8.GetString(name)} with error {osStatus}");
+                throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
             }
 
-            return Marshal.PtrToStringAnsi(buffer) ?? string.Empty;
+            ReadOnlySpan<byte> data = buffer.AsSpan().Slice(0, (int)length);
+            return Encoding.UTF8.GetString(data);
         }
         finally
         {
-            Marshal.FreeHGlobal(buffer);
+            ArrayPool<byte>.Shared.Return(buffer);
         }
-    }
-
-    private static int SysctlByName(ReadOnlySpan<byte> name, IntPtr oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen)
-    {
-        return NativeMethods.SysctlByName(name.ToArray(), oldp, ref oldlenp, newp, newlen);
     }
 
     /// <summary>
@@ -63,7 +60,7 @@ public static class ApplePlatformHelper
 
         try
         {
-            string cpuBrandString = GetSysctlValue("machdep.cpu.brand_string"u8);
+            string cpuBrandString = GetSysctlValue("machdep.cpu.brand_string");
             return !_av1DecodeBlacklistedCpuClass.Any(blacklistedCpuClass => cpuBrandString.Contains(blacklistedCpuClass, StringComparison.OrdinalIgnoreCase));
         }
         catch (NotSupportedException e)
@@ -78,10 +75,7 @@ public static class ApplePlatformHelper
         return false;
     }
 
-    private static class NativeMethods
-    {
-        [DllImport("libc", EntryPoint = "sysctlbyname", SetLastError = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
-        internal static extern int SysctlByName(byte[] name, IntPtr oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen);
-    }
+    [LibraryImport("libc", EntryPoint = "sysctlbyname", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
+    internal static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, Span<byte> oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen);
 }
