@@ -194,6 +194,29 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(_localImageFileMetadata.Name, result.Images[0].FileInfo.Name);
         }
 
+        [Fact]
+        public void Fetch_WatchedItem_ResetsResumePosition()
+        {
+            // Simulate a leftover resume position in the database (e.g. the item was partially
+            // watched before). Importing a watched=true NFO must clear it, otherwise the item
+            // stays in "Continue Watching" because the resume query only checks for a non-zero
+            // PlaybackPositionTicks. See https://github.com/jellyfin/jellyfin/issues/12054.
+            var item = new Movie();
+            var userData = _userDataManager.GetUserData(_testUser, item)!;
+            userData.PlaybackPositionTicks = TimeSpan.FromMinutes(30).Ticks;
+
+            var result = new MetadataResult<Video>()
+            {
+                Item = item
+            };
+
+            // Justice League.nfo contains <watched>true</watched>.
+            _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
+
+            Assert.True(userData.Played);
+            Assert.Equal(0, userData.PlaybackPositionTicks);
+        }
+
         [Theory]
         [InlineData("Test Data/Tmdb.nfo", "Tmdb", "30287")]
         [InlineData("Test Data/Imdb.nfo", "Imdb", "tt0944947")]

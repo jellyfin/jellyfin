@@ -317,6 +317,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 userData.Played = played;
 
+                                // A fully watched item has no resume position. Clearing it keeps the
+                                // item out of "Continue Watching", whose resume query treats any
+                                // PlaybackPositionTicks > 0 as resumable regardless of the played state.
+                                if (played)
+                                {
+                                    userData.PlaybackPositionTicks = 0;
+                                }
+
                                 if (!item.Id.IsEmpty())
                                 {
                                     _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
