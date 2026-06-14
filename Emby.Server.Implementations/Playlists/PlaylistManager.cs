@@ -335,26 +335,35 @@ namespace Emby.Server.Implementations.Playlists
             var children = playlist.GetManageableItems().ToList();
             var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
 
-            var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
-            var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+            bool MatchesEntry(LinkedChild child)
+                => string.Equals(entryId, child.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
+
+            var oldIndexAccessible = accessibleChildren.FindIndex(i => MatchesEntry(i.Item1));
+
+            // The requested entry isn't among the user's accessible playlist items (this also
+            // covers an empty playlist), so there is nothing to move. Returning here also
+            // guarantees accessibleChildren is non-empty for the index access below.
+            if (oldIndexAccessible < 0)
+            {
+                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", entryId, playlistId);
+
+                return;
+            }
 
             if (oldIndexAccessible == newIndex)
             {
                 return;
             }
 
-            var newPriorItemIndex = Math.Max(newIndex - 1, 0);
+            // Clamp the target index so an out-of-range value (e.g. beyond the playlist length)
+            // moves the item to the end instead of throwing an IndexOutOfRangeException. See #17066.
+            var newPriorItemIndex = Math.Clamp(newIndex - 1, 0, accessibleChildren.Length - 1);
             var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
             var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
             var adjustedNewIndex = DetermineAdjustedIndex(newPriorItemIndexOnAllChildren, newIndex);
 
-            var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
-            if (item is null)
-            {
-                _logger.LogWarning("Modified item not found in playlist. ItemId: {ItemId}, PlaylistId: {PlaylistId}", entryId, playlistId);
-
-                return;
-            }
+            // The entry was found in accessibleChildren above, so it is guaranteed to be present here.
+            var item = playlist.LinkedChildren.First(MatchesEntry);
 
             var newList = playlist.LinkedChildren.ToList();
             newList.Remove(item);
