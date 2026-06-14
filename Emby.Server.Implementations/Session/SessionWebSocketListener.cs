@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Session
             {
                 await SendForceKeepAlive(webSocket).ConfigureAwait(false);
             }
-            catch (WebSocketException exception)
+            catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException)
             {
                 _logger.LogWarning(exception, "Cannot send ForceKeepAlive message to WebSocket {0}.", webSocket);
             }
@@ -232,8 +232,10 @@ namespace Emby.Server.Implementations.Session
                 {
                     await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
-                catch (WebSocketException exception)
+                catch (Exception exception) when (exception is WebSocketException or ObjectDisposedException)
                 {
+                    // A disposed socket (e.g. an abruptly disconnected client) throws ObjectDisposedException.
+                    // This runs in an async void timer handler, so an unhandled exception would crash the server.
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Add(webSocket);
                 }
