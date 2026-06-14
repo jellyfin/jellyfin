@@ -46,7 +46,10 @@ public static class ApplePlatformHelper
 
     private static int SysctlByName(ReadOnlySpan<byte> name, IntPtr oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen)
     {
-        return NativeMethods.SysctlByName(name.ToArray(), oldp, ref oldlenp, newp, newlen);
+        // sysctlbyname expects a null-terminated C string.
+        var nameBytes = new byte[name.Length + 1];
+        name.CopyTo(nameBytes);
+        return NativeMethods.SysctlByName(nameBytes, oldp, ref oldlenp, newp, newlen);
     }
 
     /// <summary>
