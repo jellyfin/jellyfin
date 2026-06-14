@@ -483,14 +483,14 @@ namespace MediaBrowser.Providers.Manager
             return _savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, false));
         }
 
-        private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata, string libraryPath)
+        private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata, string libraryPath, bool ignoreItemLock = false)
             where T : BaseItem
         {
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
 
             var orderedProviders = GetOrCreateOrderedProviders<T>(item.GetType().Name, libraryOptions, globalMetadataOptions, includeDisabled, forceEnableInternetMetadata, libraryPath);
 
-            return orderedProviders.Where(i => CanRefreshMetadata(i, item, typeOptions, includeDisabled, forceEnableInternetMetadata));
+            return orderedProviders.Where(i => CanRefreshMetadata(i, item, typeOptions, includeDisabled, forceEnableInternetMetadata, ignoreItemLock));
         }
 
         private IMetadataProvider<T>[] GetOrCreateOrderedProviders<T>(
@@ -561,7 +561,8 @@ namespace MediaBrowser.Providers.Manager
             BaseItem item,
             TypeOptions? libraryTypeOptions,
             bool includeDisabled,
-            bool forceEnableInternetMetadata)
+            bool forceEnableInternetMetadata,
+            bool ignoreItemLock = false)
         {
             if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
             {
@@ -573,8 +574,8 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            // If locked only allow local providers
-            if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
+            // If locked only allow local providers, unless the lock is being ignored (e.g. for an explicit, manual remote search/identify).
+            if (item.IsLocked && !ignoreItemLock && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
             {
                 return false;
             }
@@ -938,7 +939,8 @@ namespace MediaBrowser.Providers.Manager
 
             var options = GetMetadataOptions(referenceItem);
             var libraryPath = GetLibraryPathForItem(referenceItem);
-            var providers = GetMetadataProvidersInternal<TItemType>(referenceItem, libraryOptions, options, searchInfo.IncludeDisabledProviders, false, libraryPath)
+            // A remote search is an explicit, manual user action, so the item being locked must not hide the available remote providers.
+            var providers = GetMetadataProvidersInternal<TItemType>(referenceItem, libraryOptions, options, searchInfo.IncludeDisabledProviders, false, libraryPath, ignoreItemLock: true)
                 .OfType<IRemoteSearchProvider<TLookupType>>();
 
             if (!string.IsNullOrEmpty(searchInfo.SearchProviderName))
