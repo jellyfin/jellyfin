@@ -187,7 +187,14 @@ namespace Jellyfin.Server
                  * Initialize the transcode path marker so we avoid starting Jellyfin in a broken state.
                  * This should really be a part of IApplicationPaths but this path is configured differently.
                  */
-                _ = appHost.ConfigurationManager.GetTranscodePath();
+                var configuredTranscodePath = appHost.ConfigurationManager.GetEncodingOptions().TranscodingTempPath;
+                var transcodePath = appHost.ConfigurationManager.GetTranscodePath();
+                if (!string.IsNullOrEmpty(configuredTranscodePath) && !string.Equals(configuredTranscodePath, transcodePath, StringComparison.Ordinal))
+                {
+                    _logger.LogError(
+                        "Configured transcode path \"{Path}\" is not writable; using the default instead. Fix its permissions or set a writable path in the dashboard",
+                        configuredTranscodePath);
+                }
 
                 // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = _jellyfinHost.Services;

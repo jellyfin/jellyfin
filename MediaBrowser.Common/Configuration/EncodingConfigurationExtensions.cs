@@ -18,24 +18,40 @@ namespace MediaBrowser.Common.Configuration
             => configurationManager.GetConfiguration<EncodingOptions>("encoding");
 
         /// <summary>
-        /// Retrieves the transcoding temp path from the encoding configuration, falling back to a default if no path
-        /// is specified in configuration. If the directory does not exist, it will be created.
+        /// Retrieves the transcoding temp path from the encoding configuration. Falls back to a default
+        /// when no path is configured, or when the configured path exists but cannot be used (for example
+        /// it is not writable), so a bad path does not stop the server or transcoding. The directory is
+        /// created if it does not exist.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <returns>The transcoding temp path.</returns>
-        /// <exception cref="UnauthorizedAccessException">If the directory does not exist, and the caller does not have the required permission to create it.</exception>
-        /// <exception cref="NotSupportedException">If there is a custom path transcoding path specified, but it is invalid.</exception>
-        /// <exception cref="IOException">If the directory does not exist, and it also could not be created.</exception>
+        /// <exception cref="NotSupportedException">If a configured transcoding path is invalid.</exception>
+        /// <exception cref="UnauthorizedAccessException">If the default path cannot be created due to missing permissions.</exception>
+        /// <exception cref="IOException">If the default path could not be created.</exception>
         public static string GetTranscodePath(this IConfigurationManager configurationManager)
         {
             // Get the configured path and fall back to a default
+            var defaultPath = Path.Combine(configurationManager.CommonApplicationPaths.CachePath, "transcodes");
             var transcodingTempPath = configurationManager.GetEncodingOptions().TranscodingTempPath;
             if (string.IsNullOrEmpty(transcodingTempPath))
             {
-                transcodingTempPath = Path.Combine(configurationManager.CommonApplicationPaths.CachePath, "transcodes");
+                transcodingTempPath = defaultPath;
             }
 
-            configurationManager.CommonApplicationPaths.CreateAndCheckMarker(transcodingTempPath, "transcode", true);
+            try
+            {
+                configurationManager.CommonApplicationPaths.CreateAndCheckMarker(transcodingTempPath, "transcode", true);
+            }
+            catch (Exception ex) when (transcodingTempPath != defaultPath && ex is IOException or UnauthorizedAccessException)
+            {
+                // The configured path is not usable (e.g. it exists but is not writable). Fall back to the
+                // default so the server still starts and transcoding keeps working. The configured value is
+                // left untouched so a transient cause (such as a not-yet-mounted drive) self-heals on the
+                // next start.
+                configurationManager.CommonApplicationPaths.CreateAndCheckMarker(defaultPath, "transcode", true);
+                return defaultPath;
+            }
+
             return transcodingTempPath;
         }
     }
