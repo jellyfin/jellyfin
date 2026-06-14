@@ -572,13 +572,30 @@ namespace Emby.Server.Implementations.Library
 
             if ((options.DeleteFileLocation && item.IsFileProtocol) || IsInternalItem(item))
             {
+                // Don't delete files that are still referenced by another library item
+                // (e.g. duplicate entries pointing at the same path, see #15754).
+                // Removing them would cause data loss for those items.
+                var deletingItemIds = children.Select(c => c.Id).Append(item.Id).ToHashSet();
+
                 // Assume only the first is required
                 // Add this flag to GetDeletePaths if required in the future
                 var isRequiredForDelete = true;
 
                 foreach (var fileSystemInfo in item.GetDeletePaths())
                 {
-                    DeleteItemPath(item, isRequiredForDelete, fileSystemInfo);
+                    if (IsPathReferencedByOtherItems(fileSystemInfo.FullName, deletingItemIds))
+                    {
+                        _logger.LogInformation(
+                            "Not deleting path because it is referenced by another item, Type: {Type}, Name: {Name}, Path: {Path}, Id: {Id}",
+                            item.GetType().Name,
+                            item.Name ?? "Unknown name",
+                            fileSystemInfo.FullName,
+                            item.Id);
+                    }
+                    else
+                    {
+                        DeleteItemPath(item, isRequiredForDelete, fileSystemInfo);
+                    }
 
                     isRequiredForDelete = false;
                 }
@@ -664,6 +681,31 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether a file system path is still referenced by a library item other than the
+        /// ones currently being deleted. Used to avoid deleting files shared by multiple items (see #15754).
+        /// </summary>
+        /// <param name="path">The path being considered for deletion.</param>
+        /// <param name="deletingItemIds">The ids of the items being deleted, which should be ignored.</param>
+        /// <returns><c>true</c> if another item references the path; otherwise <c>false</c>.</returns>
+        internal bool IsPathReferencedByOtherItems(string path, IReadOnlySet<Guid> deletingItemIds)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            var query = new InternalItemsQuery
+            {
+                Path = path,
+                // A virtual/missing item has no real file behind it and must never keep a real file alive.
+                IsVirtualItem = false,
+                DtoOptions = new DtoOptions(false)
+            };
+
+            return GetItemList(query).Any(i => !deletingItemIds.Contains(i.Id));
         }
 
         private bool IsInternalItem(BaseItem item)
