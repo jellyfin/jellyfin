@@ -192,7 +192,10 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var userData = item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault();
+                    var keys = item.GetUserDataKeys();
+                    var userData = item.UserData is null
+                        ? null
+                        : SelectCurrentUserData(item.UserData.Where(e => e.UserId.Equals(user.Id)), keys);
                     if (userData is not null)
                     {
                         result[item.Id] = userData;
@@ -200,7 +203,6 @@ namespace Emby.Server.Implementations.Library
                     }
                     else
                     {
-                        var keys = item.GetUserDataKeys();
                         itemsNeedingQuery.Add((item, keys));
                     }
                 }
@@ -230,8 +232,7 @@ namespace Emby.Server.Implementations.Library
                     UserItemData userData;
                     if (userDataByItem.TryGetValue(item.Id, out var itemUserData) && itemUserData.Length > 0)
                     {
-                        var directDataReference = itemUserData.FirstOrDefault(e => e.CustomDataKey == item.Id.ToString("N"));
-                        userData = directDataReference is not null ? Map(directDataReference) : Map(itemUserData.First());
+                        userData = SelectCurrentUserData(itemUserData, keys) ?? Map(itemUserData[0]);
                     }
                     else
                     {
@@ -259,10 +260,41 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public UserItemData? GetUserData(User user, BaseItem item)
         {
-            return item.UserData?.Where(e => e.UserId.Equals(user.Id)).Select(Map).FirstOrDefault() ?? new UserItemData()
+            var keys = item.GetUserDataKeys();
+            var userData = item.UserData is null
+                ? null
+                : SelectCurrentUserData(item.UserData.Where(e => e.UserId.Equals(user.Id)), keys);
+
+            return userData ?? new UserItemData()
             {
-                Key = item.GetUserDataKeys()[0],
+                Key = keys[0],
             };
+        }
+
+        /// <summary>
+        /// Selects the user data row stored under one of the item's current keys, falling back to the
+        /// first available row. This prevents stale rows left over from a previous match (for example
+        /// after an item was re-identified, see #15795) from shadowing the current state.
+        /// </summary>
+        /// <param name="userRowsForUser">The user data rows for the relevant user.</param>
+        /// <param name="keys">The item's current user data keys.</param>
+        /// <returns>The mapped user data, or <c>null</c> if there are no rows.</returns>
+        private static UserItemData? SelectCurrentUserData(IEnumerable<UserData> userRowsForUser, IReadOnlyList<string> keys)
+        {
+            UserData? match = null;
+            UserData? first = null;
+            foreach (var row in userRowsForUser)
+            {
+                first ??= row;
+                if (keys.Contains(row.CustomDataKey))
+                {
+                    match = row;
+                    break;
+                }
+            }
+
+            var selected = match ?? first;
+            return selected is null ? null : Map(selected);
         }
 
         /// <inheritdoc />
