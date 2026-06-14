@@ -90,6 +90,7 @@
  - [mark-monteiro](https://github.com/mark-monteiro)
  - [MarkCiliaVincenti](https://github.com/MarkCiliaVincenti)
  - [Martin Reuter](https://github.com/reuterma24)
+ - [Matt Teahan](https://github.com/matt-teahan)
  - [Matt07211](https://github.com/Matt07211)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Maxr1998](https://github.com/Maxr1998)
