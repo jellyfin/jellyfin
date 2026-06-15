@@ -20,7 +20,7 @@ public static partial class ApplePlatformHelper
 
     private static string GetSysctlValue(string name)
     {
-        IntPtr length = IntPtr.Zero;
+        nuint length = 0;
         // Get length of the value
         int osStatus = sysctlbyname(name, Span<byte>.Empty, ref length, IntPtr.Zero, 0);
         if (osStatus != 0 || length == 0)
@@ -31,13 +31,13 @@ public static partial class ApplePlatformHelper
         byte[] buffer = ArrayPool<byte>.Shared.Rent((int)length);
         try
         {
-            osStatus = sysctlbyname(name, buffer.AsSpan().Slice(0, (int)length), ref length, IntPtr.Zero, 0);
+            osStatus = sysctlbyname(name, buffer.AsSpan()[..(int)length], ref length, IntPtr.Zero, 0);
             if (osStatus != 0)
             {
                 throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
             }
 
-            ReadOnlySpan<byte> data = buffer.AsSpan().Slice(0, (int)length);
+            ReadOnlySpan<byte> data = buffer.AsSpan()[..(int)length];
             return Encoding.UTF8.GetString(data);
         }
         finally
@@ -77,5 +77,5 @@ public static partial class ApplePlatformHelper
 
     [LibraryImport("libc", EntryPoint = "sysctlbyname", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
-    internal static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, Span<byte> oldp, ref IntPtr oldlenp, IntPtr newp, uint newlen);
+    internal static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, Span<byte> oldp, ref nuint oldlenp, IntPtr newp, nuint newlen);
 }
