@@ -723,7 +723,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             List<MediaStream> subtitleStreams,
             CancellationToken cancellationToken)
         {
-            var inputPath = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+            var inputPath = _mediaEncoder.GetInputPathArgument(mediaSource.Path, mediaSource);
             var outputPaths = new List<string>();
             var args = string.Format(
                 CultureInfo.InvariantCulture,
@@ -912,7 +912,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
-                    var args = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+                    var args = _mediaEncoder.GetInputPathArgument(mediaSource.Path, mediaSource);
 
                     if (subtitleStream.IsExternal)
                     {
