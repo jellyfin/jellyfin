@@ -951,6 +951,10 @@ namespace MediaBrowser.Model.Dlna
             }
 
             playlistItem.VideoCodecs = videoCodecs;
+            if (videoStream is not null && !ContainerHelper.ContainsContainer(videoCodecs, false, videoStream.Codec))
+            {
+                playlistItem.TranscodeReasons |= TranscodeReason.VideoCodecNotSupported;
+            }
 
             // Copy video codec options as a starting point, this applies to transcode and direct-stream
             playlistItem.MaxFramerate = videoStream?.ReferenceFrameRate;
@@ -999,6 +1003,10 @@ namespace MediaBrowser.Model.Dlna
             var directAudioFailures = audioStreamWithSupportedCodec is null ? default : GetCompatibilityAudioCodec(options, item, container ?? string.Empty, audioStreamWithSupportedCodec, null, true, false);
 
             playlistItem.TranscodeReasons |= directAudioFailures;
+            if (audioStream is not null && audioStreamWithSupportedCodec is null)
+            {
+                playlistItem.TranscodeReasons |= TranscodeReason.AudioCodecNotSupported;
+            }
 
             var directAudioStreamSatisfied = audioStreamWithSupportedCodec is not null && !channelsExceedsLimit
                 && directAudioFailures == 0;
