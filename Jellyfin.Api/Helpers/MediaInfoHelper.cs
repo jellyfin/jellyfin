@@ -12,6 +12,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -245,6 +246,7 @@ public class MediaInfoHelper
         }
 
         options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
+        options.VideoTranscodeBitrateLimit = _serverConfigurationManager.GetEncodingOptions().TranscodeBitrateLimit;
 
         if (!options.ForceDirectStream)
         {
