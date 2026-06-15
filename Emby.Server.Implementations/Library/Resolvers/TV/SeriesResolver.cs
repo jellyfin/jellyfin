@@ -57,6 +57,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
+                if (args.Parent is not null && args.Parent.IsRoot)
+                {
+                    return null;
+                }
+
                 var seriesInfo = Naming.TV.SeriesResolver.Resolve(_namingOptions, args.Path);
 
                 var collectionType = args.GetCollectionType();
