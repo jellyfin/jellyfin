@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SharpCompress.Archives;
 
@@ -44,7 +45,7 @@ public class ComicImageProvider : IDynamicImageProvider
 
         if (_comicBookExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
-            return LoadCover(item);
+            return LoadCoverAsync(item, cancellationToken);
         }
 
         return Task.FromResult(new DynamicImageResponse { HasImage = false });
@@ -67,7 +68,8 @@ public class ComicImageProvider : IDynamicImageProvider
     /// with no image if nothing is found.
     /// </summary>
     /// <param name="item">Item to check for covers.</param>
-    private async Task<DynamicImageResponse> LoadCover(BaseItem item)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task<DynamicImageResponse> LoadCoverAsync(BaseItem item, CancellationToken cancellationToken)
     {
         var memoryStream = new MemoryStream();
 
@@ -75,14 +77,22 @@ public class ComicImageProvider : IDynamicImageProvider
         {
             ImageFormat imageFormat;
 
-            using (Stream stream = File.OpenRead(item.Path))
-            using (var archive = ArchiveFactory.Open(stream))
+            using (Stream stream = AsyncFile.OpenRead(item.Path))
             {
-                // throw exception to log results if no cover is found
-                (var cover, imageFormat) = FindCoverEntryInArchive(archive) ?? throw new InvalidOperationException("no supported cover found");
+                var archive = await ArchiveFactory.OpenAsyncArchive(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await using (archive.ConfigureAwait(false))
+                {
+                    // throw exception to log results if no cover is found
+                    (var cover, imageFormat) = await FindCoverEntryInArchiveAsync(archive).ConfigureAwait(false)
+                        ?? throw new InvalidOperationException("no supported cover found");
 
-                // copy the cover to memory stream
-                await cover.OpenEntryStream().CopyToAsync(memoryStream).ConfigureAwait(false);
+                    // copy the cover to memory stream
+                    var coverStream = await cover.OpenEntryStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (coverStream.ConfigureAwait(false))
+                    {
+                        await coverStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                    }
+                }
             }
 
             // reset stream position after copying
@@ -102,7 +112,7 @@ public class ComicImageProvider : IDynamicImageProvider
     /// </summary>
     /// <param name="archive">The archive to search.</param>
     /// <returns>The search result.</returns>
-    private (IArchiveEntry CoverEntry, ImageFormat ImageFormat)? FindCoverEntryInArchive(IArchive archive)
+    private async ValueTask<(IArchiveEntry CoverEntry, ImageFormat ImageFormat)?> FindCoverEntryInArchiveAsync(IAsyncArchive archive)
     {
         IArchiveEntry? cover;
 
@@ -110,7 +120,7 @@ public class ComicImageProvider : IDynamicImageProvider
         // in many cases the cover will simply be the first image in the archive
         foreach (var extension in _coverExtensions)
         {
-            cover = archive.Entries.FirstOrDefault(e => e.Key == "cover" + extension);
+            cover = await archive.EntriesAsync.FirstOrDefaultAsync(e => e.Key == "cover" + extension).ConfigureAwait(false);
 
             if (cover is not null)
             {
@@ -120,7 +130,9 @@ public class ComicImageProvider : IDynamicImageProvider
             }
         }
 
-        cover = archive.Entries.OrderBy(x => x.Key).FirstOrDefault(x => _coverExtensions.Contains(Path.GetExtension(x.Key), StringComparison.OrdinalIgnoreCase));
+        cover = await archive.EntriesAsync.OrderBy(x => x.Key)
+            .FirstOrDefaultAsync(x => _coverExtensions.Contains(Path.GetExtension(x.Key), StringComparison.OrdinalIgnoreCase))
+            .ConfigureAwait(false);
 
         if (cover is not null)
         {

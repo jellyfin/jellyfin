@@ -49,24 +49,26 @@ public class ComicBookInfoProvider : IComicProvider
         try
         {
             Stream stream = AsyncFile.OpenRead(path);
-
             await using (stream.ConfigureAwait(false))
-            await using (var archive = await ZipArchive.CreateAsync(stream, ZipArchiveMode.Read, false, null, cancellationToken).ConfigureAwait(false))
             {
-                if (archive.Comment is null)
+                var archive = await ZipArchive.CreateAsync(stream, ZipArchiveMode.Read, false, null, cancellationToken).ConfigureAwait(false);
+                await using (archive.ConfigureAwait(false))
                 {
-                    _logger.LogInformation("missing ComicBookInfo in archive comment: {Path}", info.Path);
-                    return new MetadataResult<Book> { HasMetadata = false };
-                }
+                    if (archive.Comment is null)
+                    {
+                        _logger.LogInformation("missing ComicBookInfo in archive comment: {Path}", info.Path);
+                        return new MetadataResult<Book> { HasMetadata = false };
+                    }
 
-                var comicBookMetadata = JsonSerializer.Deserialize<ComicBookInfoFormat>(archive.Comment, JsonDefaults.Options);
-                if (comicBookMetadata is null)
-                {
-                    _logger.LogError("ComicBookInfo deserialization failure: {Path}", info.Path);
-                    return new MetadataResult<Book> { HasMetadata = false };
-                }
+                    var comicBookMetadata = JsonSerializer.Deserialize<ComicBookInfoFormat>(archive.Comment, JsonDefaults.Options);
+                    if (comicBookMetadata is null)
+                    {
+                        _logger.LogError("ComicBookInfo deserialization failure: {Path}", info.Path);
+                        return new MetadataResult<Book> { HasMetadata = false };
+                    }
 
-                return SaveMetadata(comicBookMetadata);
+                    return SaveMetadata(comicBookMetadata);
+                }
             }
         }
         catch (Exception ex)
