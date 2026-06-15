@@ -39,16 +39,16 @@ public class ComicImageProvider : IDynamicImageProvider
     public string Name => "Comic Book Archive Cover Extractor";
 
     /// <inheritdoc />
-    public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
+    public async Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
     {
         var extension = Path.GetExtension(item.Path);
 
         if (_comicBookExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
-            return LoadCoverAsync(item, cancellationToken);
+            return await LoadCoverAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
-        return Task.FromResult(new DynamicImageResponse { HasImage = false });
+        return new DynamicImageResponse { HasImage = false };
     }
 
     /// <inheritdoc />
