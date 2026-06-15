@@ -2924,20 +2924,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.BaseRequest.AudioPlaybackRate is double audioRate && Math.Abs(audioRate - 1.0) > 0.001)
             {
-                var tempRate = audioRate;
-                while (tempRate > 2.0)
-                {
-                    filters.Add("atempo=2.0");
-                    tempRate /= 2.0;
-                }
-
-                while (tempRate < 0.5)
-                {
-                    filters.Add("atempo=0.5");
-                    tempRate *= 2.0;
-                }
-
-                filters.Add($"atempo={tempRate.ToString(CultureInfo.InvariantCulture)}");
+                filters.AddRange(GetAtempoFilters(audioRate));
             }
 
             if (filters.Count > 0)
@@ -2946,6 +2933,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return string.Empty;
+        }
+
+        private static IEnumerable<string> GetAtempoFilters(double audioRate)
+        {
+            var tempRate = audioRate;
+            while (tempRate > 2.0)
+            {
+                yield return "atempo=2.0";
+                tempRate /= 2.0;
+            }
+
+            while (tempRate < 0.5)
+            {
+                yield return "atempo=0.5";
+                tempRate *= 2.0;
+            }
+
+            yield return $"atempo={tempRate.ToString(CultureInfo.InvariantCulture)}";
         }
 
         /// <summary>
