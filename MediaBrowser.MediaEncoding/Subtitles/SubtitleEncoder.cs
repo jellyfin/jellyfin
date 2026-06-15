@@ -585,6 +585,28 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || MediaStream.IsVobSubFormat(codec);
         }
 
+        /// <summary>
+        /// Gets the ffmpeg input stream index to use for <c>-map 0:N</c> when extracting a subtitle.
+        /// </summary>
+        /// <remarks>
+        /// For an internal stream the container index obtained from probing (<see cref="MediaStream.Index"/>)
+        /// is authoritative: it is immune to streams that the probe normalizer drops from
+        /// <see cref="MediaSourceInfo.MediaStreams"/> (codec-less subtitles, data streams, attachments).
+        /// Using the position within the (possibly incomplete) <c>MediaStreams</c> list instead can point
+        /// <c>-map</c> at the wrong stream — e.g. a PGS image stream while writing a text <c>.srt</c> — which
+        /// fails the whole extraction (see #15880). For an external stream the input is that single file, so
+        /// the index within it is needed instead.
+        /// </remarks>
+        /// <param name="mediaSource">The media source.</param>
+        /// <param name="subtitleStream">The subtitle stream to extract.</param>
+        /// <returns>The ffmpeg input stream index.</returns>
+        internal static int GetSubtitleStreamMapIndex(MediaSourceInfo mediaSource, MediaStream subtitleStream)
+        {
+            return subtitleStream.IsExternal
+                ? EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream)
+                : subtitleStream.Index;
+        }
+
         /// <inheritdoc />
         public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
@@ -689,7 +711,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                     // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                     var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
-                    var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+                    var streamIndex = GetSubtitleStreamMapIndex(mediaSource, subtitleStream);
 
                     if (streamIndex == -1)
                     {
@@ -747,7 +769,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var outputCodec = IsCodecCopyable(subtitleStream.Codec) ? "copy" : "srt";
                 // FFmpeg does not provide an .idx/.sub muxer, so VobSub streams must be written as MKS files.
                 var outputFormatOption = MediaStream.IsVobSubFormat(subtitleStream.Codec) ? " -f matroska" : string.Empty;
-                var streamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+                var streamIndex = GetSubtitleStreamMapIndex(mediaSource, subtitleStream);
 
                 if (streamIndex == -1)
                 {
@@ -910,7 +932,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 if (!File.Exists(outputPath) || _fileSystem.GetFileInfo(outputPath).Length == 0)
                 {
-                    var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+                    var subtitleStreamIndex = GetSubtitleStreamMapIndex(mediaSource, subtitleStream);
 
                     var args = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
 
