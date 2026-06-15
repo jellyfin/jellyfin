@@ -18,7 +18,7 @@ public static partial class ApplePlatformHelper
 {
     private static readonly string[] _av1DecodeBlacklistedCpuClass = ["M1", "M2"];
 
-    private static string GetSysctlValue(string name)
+    internal static string GetSysctlValue(string name)
     {
         nuint length = 0;
         // Get length of the value
