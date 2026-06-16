@@ -463,7 +463,11 @@ public sealed partial class BaseItemRepository
             .Include(e => e.UserData)
             .Include(e => e.Images)
             .Include(e => e.LinkedChildEntities)
-            .AsSingleQuery();
+            // Split into one query per collection. Joining all of these in a single
+            // query multiplies the rows by their cartesian product and repeats the
+            // BaseItem row (including its Data blob) in each, which can exhaust memory
+            // on items with large collections (e.g. many UserData rows across users).
+            .AsSplitQuery();
 
         var item = dbQuery.FirstOrDefault(e => e.Id == id);
         if (item is null)
