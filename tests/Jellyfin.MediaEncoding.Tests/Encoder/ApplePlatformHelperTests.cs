@@ -13,6 +13,10 @@ public class ApplePlatformHelperTests
     {
         Assert.SkipUnless(OperatingSystem.IsMacOS(), "macOS-only test");
 
-        Assert.NotEmpty(ApplePlatformHelper.GetSysctlValue("machdep.cpu.brand_string"));
+        var value = ApplePlatformHelper.GetSysctlValue("machdep.cpu.brand_string");
+        Assert.NotEmpty(value);
+
+        // Make sure we don't include the null terminator
+        Assert.DoesNotContain("\0", value, StringComparison.Ordinal);
     }
 }
