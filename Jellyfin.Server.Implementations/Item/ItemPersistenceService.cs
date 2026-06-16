@@ -295,11 +295,13 @@ public class ItemPersistenceService : IItemPersistenceService
         var values = allListedItemValues.Select(e => e.Value).Distinct().ToArray();
         var allListedItemValuesSet = allListedItemValues.ToHashSet();
 
-        var existingValues = context.ItemValues
+        ItemValue[] StoredItemValues() => context.ItemValues
             .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
             .AsEnumerable()
             .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
             .ToArray();
+
+        var existingValues = StoredItemValues();
         var missingItemValues = allListedItemValues.Except(existingValues.Select(f => (MagicNumber: f.Type, f.Value))).Select(f => new ItemValue()
         {
             CleanValue = f.Value.GetCleanValue(),
@@ -307,9 +309,30 @@ public class ItemPersistenceService : IItemPersistenceService
             Type = f.MagicNumber,
             Value = f.Value
         }).ToArray();
-        context.ItemValues.AddRange(missingItemValues);
 
-        var itemValuesStore = existingValues.Concat(missingItemValues).ToArray();
+        var itemValuesStore = existingValues;
+        if (missingItemValues.Length > 0)
+        {
+            // ItemValues is a shared de-duplication table with a unique (Type, Value)
+            // index. The library scanner saves items in parallel, so two items that
+            // introduce the same new value (a shared genre, studio, tag, ...) can race to
+            // create it; a plain INSERT lets the loser violate the constraint and abort
+            // the transaction. Insert through a conflict-tolerant upsert (get-or-create)
+            // rather than the change tracker so concurrent creators converge. Backends
+            // that serialise writes never race, but the upsert is correct there too
+            // (SQLite has supported ON CONFLICT since 3.24).
+            foreach (var itemValue in missingItemValues)
+            {
+                context.Database.ExecuteSql(
+                    $"""INSERT INTO "ItemValues" ("ItemValueId", "Type", "Value", "CleanValue") VALUES ({itemValue.ItemValueId}, {(int)itemValue.Type}, {itemValue.Value}, {itemValue.CleanValue}) ON CONFLICT ("Type", "Value") DO NOTHING""");
+            }
+
+            // Re-read to resolve the canonical ids: a value we just upserted may have been
+            // created concurrently under a different ItemValueId, so the map must point at
+            // the row that actually exists rather than the id generated above.
+            itemValuesStore = StoredItemValues();
+        }
+
         var valueMap = itemValueMaps
             .Select(f => (f.Item, Values: f.Values.Select(e => itemValuesStore.First(g => g.Value == e.Value && g.Type == e.MagicNumber)).DistinctBy(e => e.ItemValueId).ToArray()))
             .ToArray();
