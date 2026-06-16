@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 
+namespace Jellyfin.Api.Helpers;
+
 // from https://stackoverflow.com/a/21513194/2919731
 public class PositionWrapperStream : Stream
 {

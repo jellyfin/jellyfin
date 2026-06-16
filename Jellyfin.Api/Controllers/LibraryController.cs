@@ -713,11 +713,9 @@ public class LibraryController : BaseJellyfinApiController
             var playlistFile = playlist.GetPlaylistAsFileBytes(user);
 
             List<(string, byte[])> filesVirtual = [("Playlist.m3u8", playlistFile)];
-            List<(string, string)> filesDisk = new List<(string, string)>();
-            foreach (var playlistItem in playlist.GetChildPaths(user))
-            {
-                filesDisk.Add((playlistItem.TrimStart('/'), playlistItem));
-            }
+            List<(string, string)> filesDisk = playlist.GetChildPaths(user)
+                .Select(path => (path.TrimStart('/'), path))
+                .ToList();
 
             await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
             return new EmptyResult();
@@ -729,11 +727,9 @@ public class LibraryController : BaseJellyfinApiController
             Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{fileName}.zip\"");
 
             List<(string, byte[])> filesVirtual = [];
-            List<(string, string)> filesDisk = new List<(string, string)>();
-            foreach (var track in album.Tracks)
-            {
-                filesDisk.Add((Path.GetFileName(track.Path), track.Path));
-            }
+            List<(string, string)> filesDisk = album.Tracks
+                .Select(track => (Path.GetFileName(track.Path), track.Path))
+                .ToList();
 
             await WriteZipAsStream(Response.Body, filesVirtual, filesDisk).ConfigureAwait(false);
             return new EmptyResult();
@@ -764,19 +760,21 @@ public class LibraryController : BaseJellyfinApiController
             foreach (var file in filesVirtual)
             {
                 var entry = archive.CreateEntry(file.FileName);
-                using (var entryStream = entry.Open())
+                var rawEntryStream = await entry.OpenAsync().ConfigureAwait(false);
+                await using (var entryStream = rawEntryStream.ConfigureAwait(false))
                 {
-                    await entryStream.WriteAsync(file.FileBytes).ConfigureAwait(false);
+                    await rawEntryStream.WriteAsync(file.FileBytes).ConfigureAwait(false);
                 }
             }
 
             foreach (var file in filesDisk)
             {
                 var entry = archive.CreateEntry(file.FileName, CompressionLevel.NoCompression);
-                using (var entryStream = entry.Open())
+                var rawEntryStream = await entry.OpenAsync().ConfigureAwait(false);
+                await using (var entryStream = rawEntryStream.ConfigureAwait(false))
                 using (var fileStream = System.IO.File.OpenRead(file.FilePath))
                 {
-                    await fileStream.CopyToAsync(entryStream).ConfigureAwait(false);
+                    await fileStream.CopyToAsync(rawEntryStream).ConfigureAwait(false);
                 }
             }
         }
