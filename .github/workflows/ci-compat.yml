@@ -107,7 +107,7 @@ jobs:
         run: |
           {
             echo 'body<<EOF'
-            for file in jellyfin.dll Jellyfin.Data.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll Emby.Naming.dll Jellyfin.Extensions.dll Jellyfin.MediaEncoding.Keyframes.dll Jellyfin.Database.Implementations.dll; do
+            for file in jellyfin.dll Jellyfin.Api.dll Jellyfin.Data.dll Jellyfin.Server.Implementations.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll MediaBrowser.MediaEncoding.dll Emby.Naming.dll Emby.Server.Implementations.dll Jellyfin.Extensions.dll Jellyfin.MediaEncoding.Keyframes.dll Jellyfin.MediaEncoding.Hls.dll Jellyfin.Database.Implementations.dll; do
               COMPAT_OUTPUT="$( { apicompat --left ./abi-base/${file} --right ./abi-head/${file}; } 2>&1 || true )"
               if [ "APICompat ran successfully without finding any breaking changes." != "${COMPAT_OUTPUT}" ]; then
                 printf "\n%s\n%s\n" "${file}" "${COMPAT_OUTPUT}"
