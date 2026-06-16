@@ -37,7 +37,12 @@ public static partial class ApplePlatformHelper
                 throw new NotSupportedException($"Failed to get sysctl value for {name} with error {osStatus}");
             }
 
-            ReadOnlySpan<byte> data = buffer.AsSpan()[..(int)length];
+            if (length < 1)
+            {
+                return string.Empty;
+            }
+
+            ReadOnlySpan<byte> data = buffer.AsSpan()[..(int)(length - 1)];
             return Encoding.UTF8.GetString(data);
         }
         finally
