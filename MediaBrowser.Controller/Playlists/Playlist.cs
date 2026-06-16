@@ -231,6 +231,42 @@ namespace MediaBrowser.Controller.Playlists
             return [item];
         }
 
+        public byte[] GetPlaylistAsFileBytes(User user)
+        {
+            var query = new InternalItemsQuery(user);
+            var playlistItems = GetChildren(user, true, query);
+
+            using (var ms = new MemoryStream())
+            {
+                using (var playlistWriter = new StreamWriter(ms))
+                {
+                    playlistWriter.WriteLine("#EXTM3U");
+                    foreach (var playlistItem in playlistItems)
+                    {
+                        var relativeFilePath = playlistItem.Path.TrimStart('/');
+                        playlistWriter.WriteLine(relativeFilePath);
+                    }
+
+                    playlistWriter.Flush();
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        public List<string> GetChildPaths(User user)
+        {
+            var query = new InternalItemsQuery(user);
+            var playlistItems = GetChildren(user, true, query);
+            List<string> paths = new List<string>();
+
+            foreach (var playlistItem in playlistItems)
+            {
+                paths.Add(playlistItem.Path);
+            }
+
+            return paths;
+        }
+
         public override bool IsVisible(User user, bool skipAllowedTagsCheck = false)
         {
             if (!IsSharedItem)
@@ -261,6 +297,11 @@ namespace MediaBrowser.Controller.Playlists
         public override bool CanDelete(User user)
         {
             return user.HasPermission(PermissionKind.IsAdministrator) || user.Id.Equals(OwnerUserId);
+        }
+
+        public override bool CanDownload()
+        {
+            return true;
         }
 
         public override bool IsVisibleStandalone(User user)
