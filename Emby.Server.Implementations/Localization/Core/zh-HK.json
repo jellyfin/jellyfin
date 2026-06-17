@@ -106,5 +106,7 @@
     "TaskMoveTrickplayImagesDescription": "根據媒體櫃設定，將現有嘅 Trickplay（快轉預覽）檔案搬去對應位置。",
     "TaskMoveTrickplayImages": "搬移快轉預覽圖嘅位置",
     "CleanupUserDataTask": "清理使用者資料嘅任務",
-    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體用家數據（包括觀看狀態、心水狀態等）。"
+    "CleanupUserDataTaskDescription": "清理已消失至少 90 日嘅媒體用家數據（包括觀看狀態、心水狀態等）。",
+    "LyricDownloadFailureFromForItem": "冇辦法從 {0} 下載 {1} 嘅歌詞",
+    "Original": "原始"
 }

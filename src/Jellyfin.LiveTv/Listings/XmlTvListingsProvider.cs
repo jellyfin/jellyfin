@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
+using Jellyfin.XmlTv.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -180,6 +181,8 @@ namespace Jellyfin.LiveTv.Listings
             string? episodeTitle = program.Episode?.Title;
             var programCategories = program.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
             var imageUrl = program.Icons.FirstOrDefault()?.Source;
+            var episodeImageUrl = program.Images?.FirstOrDefault(m => m.Type == ImageType.Still)?.Path;
+            var backgroundImageUrl = program.Images?.FirstOrDefault(m => m.Type == ImageType.Backdrop)?.Path;
             var rating = program.Ratings.FirstOrDefault()?.Value;
             var starRating = program.StarRatings?.FirstOrDefault()?.StarRating;
 
@@ -205,6 +208,8 @@ namespace Jellyfin.LiveTv.Listings
                 IsSports = programCategories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 ImageUrl = string.IsNullOrEmpty(imageUrl) ? null : imageUrl,
                 HasImage = !string.IsNullOrEmpty(imageUrl),
+                BackdropImageUrl = string.IsNullOrEmpty(backgroundImageUrl) ? null : backgroundImageUrl,
+                ThumbImageUrl = string.IsNullOrEmpty(episodeImageUrl) ? null : episodeImageUrl,
                 OfficialRating = string.IsNullOrEmpty(rating) ? null : rating,
                 CommunityRating = starRating is null ? null : (float)starRating.Value,
                 SeriesId = program.Episode?.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
