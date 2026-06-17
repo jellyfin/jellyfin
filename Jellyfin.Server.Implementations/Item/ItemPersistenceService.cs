@@ -557,9 +557,11 @@ public class ItemPersistenceService : IItemPersistenceService
                     }
                 }
 
+                // Deduplicate; local (file-based) relationships take priority over linked (user-merged)
+                // ones, matching the LinkedChildren migration.
                 newLinkedChildren = newLinkedChildren
                     .GroupBy(c => c.ChildId)
-                    .Select(g => g.Last())
+                    .Select(g => g.OrderBy(c => c.Type == LinkedChildType.LocalAlternateVersion ? 0 : 1).First())
                     .ToList();
 
                 var childIdsToCheck = newLinkedChildren.Select(c => c.ChildId).ToList();

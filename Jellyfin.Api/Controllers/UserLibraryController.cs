@@ -429,14 +429,8 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var dtoOptions = new DtoOptions();
-        if (item is IHasTrailers hasTrailers)
-        {
-            var trailers = hasTrailers.LocalTrailers;
-            return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item).AsEnumerable());
-        }
 
-        return Ok(item.GetExtras()
-            .Where(e => e.ExtraType == ExtraType.Trailer)
+        return Ok(item.GetExtras([ExtraType.Trailer], user)
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
 
@@ -487,7 +481,7 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions();
 
         return Ok(item
-            .GetExtras()
+            .GetExtras(user)
             .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
     }
@@ -557,6 +551,8 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
+        dtoOptions.PreferEpisodeParentPoster = true;
+
         var list = _userViewManager.GetLatestItems(
             new LatestItemsQuery
             {
@@ -577,7 +573,7 @@ public class UserLibraryController : BaseJellyfinApiController
             var item = tuple.Item2[0];
             var childCount = 0;
 
-            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum || tuple.Item1 is Series))
+            if (tuple.Item1 is not null && (tuple.Item2.Count > 1 || tuple.Item1 is MusicAlbum))
             {
                 item = tuple.Item1;
                 childCount = tuple.Item2.Count;

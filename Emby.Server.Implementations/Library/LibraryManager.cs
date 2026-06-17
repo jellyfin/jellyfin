@@ -89,6 +89,7 @@ namespace Emby.Server.Implementations.Library
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
+        private readonly Lazy<IExternalDataManager> _externalDataManagerFactory;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -132,6 +133,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="pathManager">The path manager.</param>
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         /// <param name="mediaStreamRepository">The media stream repository.</param>
+        /// <param name="externalDataManagerFactory">The external data manager (lazy, to break the DI cycle through ChapterManager).</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -155,7 +157,8 @@ namespace Emby.Server.Implementations.Library
             IPeopleRepository peopleRepository,
             IPathManager pathManager,
             DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
-            IMediaStreamRepository mediaStreamRepository)
+            IMediaStreamRepository mediaStreamRepository,
+            Lazy<IExternalDataManager> externalDataManagerFactory)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -186,6 +189,7 @@ namespace Emby.Server.Implementations.Library
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
             _mediaStreamRepository = mediaStreamRepository;
+            _externalDataManagerFactory = externalDataManagerFactory;
 
             RecordConfigurationValues(_configurationManager.Configuration);
         }
@@ -396,6 +400,12 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            var externalDataManager = _externalDataManagerFactory.Value;
+            foreach (var (item, _, _) in pathMaps)
+            {
+                externalDataManager.DeleteExternalItemFiles(item);
+            }
+
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
         }
 
@@ -575,6 +585,13 @@ namespace Emby.Server.Implementations.Library
             }
 
             item.SetParent(null);
+
+            var externalDataManager = _externalDataManagerFactory.Value;
+            externalDataManager.DeleteExternalItemFiles(item);
+            foreach (var child in children)
+            {
+                externalDataManager.DeleteExternalItemFiles(child);
+            }
 
             _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
@@ -1987,7 +2004,8 @@ namespace Emby.Server.Implementations.Library
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
                 string.IsNullOrEmpty(query.SeriesPresentationUniqueKey) &&
-                query.ItemIds.Length == 0)
+                query.ItemIds.Length == 0 &&
+                query.OwnerIds.Length == 0)
             {
                 var userViews = UserViewManager.GetUserViews(new UserViewQuery
                 {
@@ -2432,8 +2450,14 @@ namespace Emby.Server.Implementations.Library
             var outdated = forceUpdate
                 ? item.ImageInfos.Where(i => i.Path is not null).ToArray()
                 : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
-            // Skip image processing if current or live tv source
-            if (outdated.Length == 0 || item.SourceType != SourceType.Library)
+
+            var parentItem = item.GetParent();
+            var isLiveTvShow = item.SourceType != SourceType.Library &&
+                               parentItem is not null &&
+                               parentItem.SourceType != SourceType.Library; // not a channel
+
+            // Skip image processing if current or live tv show
+            if (outdated.Length == 0 || isLiveTvShow)
             {
                 RegisterItem(item);
                 return;
@@ -3392,6 +3416,12 @@ namespace Emby.Server.Implementations.Library
         public IReadOnlyList<string> GetPeopleNames(InternalPeopleQuery query)
         {
             return _peopleRepository.GetPeopleNames(query);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+        {
+            return _peopleRepository.GetPeopleNamesByItems(itemIds, personTypes);
         }
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)

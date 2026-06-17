@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -278,6 +279,17 @@ namespace MediaBrowser.Controller.Entities
             return linkedVersionCount + localVersionCount + 1;
         }
 
+        /// <inheritdoc />
+        public override string GetInheritedOriginalLanguage()
+        {
+            if (ExtraType.GetValueOrDefault() == Model.Entities.ExtraType.Trailer)
+            {
+                return GetOwner()?.GetInheritedOriginalLanguage();
+            }
+
+            return OriginalLanguage ?? GetOwner()?.GetInheritedOriginalLanguage();
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -379,13 +391,13 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets the additional parts.
         /// </summary>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>IEnumerable{Video}.</returns>
-        public IOrderedEnumerable<Video> GetAdditionalParts()
+        public IOrderedEnumerable<Video> GetAdditionalParts(User user = null)
         {
             return GetAdditionalPartIds()
-                .Select(i => LibraryManager.GetItemById(i))
+                .Select(i => LibraryManager.GetItemById<Video>(i, user))
                 .Where(i => i is not null)
-                .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,6 +43,7 @@ public class ItemsController : BaseJellyfinApiController
     private readonly ILogger<ItemsController> _logger;
     private readonly ISessionManager _sessionManager;
     private readonly IUserDataManager _userDataRepository;
+    private readonly ISearchManager _searchManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemsController"/> class.
@@ -53,6 +55,7 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
+    /// <param name="searchManager">Instance of the <see cref="ISearchManager"/> interface.</param>
     public ItemsController(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -60,7 +63,8 @@ public class ItemsController : BaseJellyfinApiController
         IDtoService dtoService,
         ILogger<ItemsController> logger,
         ISessionManager sessionManager,
-        IUserDataManager userDataRepository)
+        IUserDataManager userDataRepository,
+        ISearchManager searchManager)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -69,6 +73,7 @@ public class ItemsController : BaseJellyfinApiController
         _logger = logger;
         _sessionManager = sessionManager;
         _userDataRepository = userDataRepository;
+        _searchManager = searchManager;
     }
 
     /// <summary>
@@ -314,13 +319,10 @@ public class ItemsController : BaseJellyfinApiController
         if (collectionType == CollectionType.playlists)
         {
             recursive = true;
-            includeItemTypes = new[] { BaseItemKind.Playlist };
+            includeItemTypes = [BaseItemKind.Playlist];
         }
         else if (folder is ICollectionFolder)
         {
-            // When the client doesn't specify recursive/includeItemTypes, force the query
-            // through the database path where all filters (IsHD, genres, etc.) are applied.
-            recursive ??= true;
             if (includeItemTypes.Length == 0)
             {
                 includeItemTypes = collectionType switch
@@ -329,6 +331,13 @@ public class ItemsController : BaseJellyfinApiController
                     null => [BaseItemKind.Movie, BaseItemKind.Series],
                     _ => []
                 };
+            }
+
+            // When the client doesn't specify recursive/includeItemTypes, force the query
+            // through the database path where all filters (IsHD, genres, etc.) are applied.
+            if (includeItemTypes.Length > 0)
+            {
+                recursive ??= true;
             }
         }
 
@@ -344,6 +353,34 @@ public class ItemsController : BaseJellyfinApiController
 
         if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || item is not UserRootFolder)
         {
+            // Use search providers when searchTerm is provided. Providers return only IDs and scores;
+            // items are loaded server-side via folder.GetItems below, which applies user-access filtering.
+            Dictionary<Guid, float>? searchResultScores = null;
+            Guid[] itemIds = ids;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchProviderQuery = new SearchProviderQuery
+                {
+                    SearchTerm = searchTerm,
+                    UserId = userId,
+                    IncludeItemTypes = includeItemTypes,
+                    ExcludeItemTypes = excludeItemTypes,
+                    MediaTypes = mediaTypes,
+                    Limit = limit.HasValue ? limit.Value * 3 : null,
+                    ParentId = parentId
+                };
+
+                var searchResults = await _searchManager.GetSearchResultsAsync(searchProviderQuery, HttpContext.RequestAborted).ConfigureAwait(false);
+                if (searchResults.Count > 0)
+                {
+                    searchResultScores = searchResults.ToDictionary(r => r.ItemId, r => r.Score);
+                    itemIds = ids.Length > 0
+                        ? ids.Concat(searchResultScores.Keys).Distinct().ToArray()
+                        : searchResultScores.Keys.ToArray();
+                }
+            }
+
             var query = new InternalItemsQuery(user)
             {
                 IsPlayed = isPlayed,
@@ -353,8 +390,8 @@ public class ItemsController : BaseJellyfinApiController
                 Recursive = recursive ?? false,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                 IsFavorite = isFavorite,
-                Limit = limit,
-                StartIndex = startIndex,
+                Limit = searchResultScores is null ? limit : null,
+                StartIndex = searchResultScores is null ? startIndex : null,
                 IsMissing = isMissing,
                 IsUnaired = isUnaired,
                 CollapseBoxSetItems = collapseBoxSetItems,
@@ -401,7 +438,7 @@ public class ItemsController : BaseJellyfinApiController
                 ImageTypes = imageTypes,
                 VideoTypes = videoTypes,
                 AdjacentTo = adjacentTo,
-                ItemIds = ids,
+                ItemIds = itemIds,
                 MinCommunityRating = minCommunityRating,
                 MinCriticRating = minCriticRating,
                 ParentId = parentId ?? Guid.Empty,
@@ -410,7 +447,7 @@ public class ItemsController : BaseJellyfinApiController
                 EnableTotalRecordCount = enableTotalRecordCount,
                 ExcludeItemIds = excludeItemIds,
                 DtoOptions = dtoOptions,
-                SearchTerm = searchTerm,
+                SearchTerm = searchResultScores is null ? searchTerm : null,
                 MinDateLastSaved = minDateLastSaved?.ToUniversalTime(),
                 MinDateLastSavedForUser = minDateLastSavedForUser?.ToUniversalTime(),
                 MinPremiereDate = minPremiereDate?.ToUniversalTime(),
@@ -522,7 +559,7 @@ public class ItemsController : BaseJellyfinApiController
             {
                 query.AlbumIds = albums.SelectMany(i =>
                 {
-                    return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, Name = i, Limit = 1 });
+                    return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = [BaseItemKind.MusicAlbum], Name = i, Limit = 1 });
                 }).ToArray();
             }
 
@@ -548,12 +585,37 @@ public class ItemsController : BaseJellyfinApiController
                 // Albums by artist
                 if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                 {
-                    query.OrderBy = new[] { (ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending) };
+                    query.OrderBy = [(ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending)];
                 }
             }
 
             query.Parent = null;
+
+            // folder.GetItems applies user-access filtering via the InternalItemsQuery's User.
             result = folder.GetItems(query);
+            if (searchResultScores is not null && searchResultScores.Count > 0)
+            {
+                var orderedItems = result.Items
+                    .OrderByDescending(item => searchResultScores.GetValueOrDefault(item.Id, 0f))
+                    .ThenBy(item => item.SortName)
+                    .ToArray();
+
+                var totalCount = orderedItems.Length;
+                if (startIndex.HasValue && startIndex.Value > 0)
+                {
+                    orderedItems = orderedItems.Skip(startIndex.Value).ToArray();
+                }
+
+                if (limit.HasValue)
+                {
+                    orderedItems = orderedItems.Take(limit.Value).ToArray();
+                }
+
+                return new QueryResult<BaseItemDto>(
+                    startIndex,
+                    totalCount,
+                    _dtoService.GetBaseItemDtos(orderedItems, dtoOptions, user));
+            }
         }
         else
         {
@@ -909,7 +971,7 @@ public class ItemsController : BaseJellyfinApiController
 
         var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
         {
-            OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
+            OrderBy = [(ItemSortBy.DatePlayed, SortOrder.Descending)],
             IsResumable = true,
             StartIndex = startIndex,
             Limit = limit,
@@ -919,6 +981,7 @@ public class ItemsController : BaseJellyfinApiController
             MediaTypes = mediaTypes,
             IsVirtualItem = false,
             CollapseBoxSetItems = false,
+            IncludeOwnedItems = true,
             EnableTotalRecordCount = enableTotalRecordCount,
             AncestorIds = ancestorIds,
             IncludeItemTypes = includeItemTypes,

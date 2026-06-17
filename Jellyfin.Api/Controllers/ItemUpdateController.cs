@@ -288,7 +288,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.CustomRating = request.CustomRating;
 
         var currentTags = item.Tags;
-        var newTags = request.Tags.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var newTags = request.Tags.Select(t => t.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var removedTags = currentTags.Except(newTags).ToList();
         var addedTags = newTags.Except(currentTags).ToList();
         item.Tags = newTags;

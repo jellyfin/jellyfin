@@ -1366,6 +1366,41 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
+                if (options.PreferEpisodeParentPoster)
+                {
+                    var episodeSeason = episode.Season;
+                    var seasonPrimaryTag = episodeSeason is not null
+                        ? GetTagAndFillBlurhash(dto, episodeSeason, ImageType.Primary)
+                        : null;
+
+                    BaseItem? posterParent = null;
+                    if (seasonPrimaryTag is not null)
+                    {
+                        dto.ParentPrimaryImageItemId = episodeSeason!.Id;
+                        dto.ParentPrimaryImageTag = seasonPrimaryTag;
+                        posterParent = episodeSeason;
+                    }
+                    else if (episodeSeries is not null && dto.SeriesPrimaryImageTag is not null)
+                    {
+                        dto.ParentPrimaryImageItemId = episodeSeries.Id;
+                        dto.ParentPrimaryImageTag = dto.SeriesPrimaryImageTag;
+                        posterParent = episodeSeries;
+                    }
+
+                    if (posterParent is not null)
+                    {
+                        if (dto.ImageTags is not null && dto.ImageTags.Remove(ImageType.Primary, out var ownPrimaryTag))
+                        {
+                            // Only drop the episode's own primary blurhash; keep the poster parent's.
+                            dto.ImageBlurHashes?.GetValueOrDefault(ImageType.Primary)?.Remove(ownPrimaryTag);
+                        }
+
+                        dto.SeriesPrimaryImageTag = null;
+                        dto.PrimaryImageAspectRatio = null;
+                        AttachPrimaryImageAspectRatio(dto, posterParent);
+                    }
+                }
+
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
                     episodeSeries ??= episode.Series;
@@ -1504,6 +1539,21 @@ namespace Emby.Server.Implementations.Dto
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem? owner)
         {
+            if (item is UserView { ViewType: CollectionType.playlists } playlistsView
+                && options.GetImageLimit(ImageType.Primary) > 0
+                && !playlistsView.DisplayParentId.IsEmpty())
+            {
+                var displayParent = _libraryManager.GetItemById(playlistsView.DisplayParentId);
+                var displayParentPrimaryImage = displayParent?.GetImageInfo(ImageType.Primary, 0);
+
+                if (displayParentPrimaryImage is not null)
+                {
+                    dto.ImageTags?.Remove(ImageType.Primary);
+                    dto.ParentPrimaryImageItemId = displayParent!.Id;
+                    dto.ParentPrimaryImageTag = GetTagAndFillBlurhash(dto, displayParent, displayParentPrimaryImage);
+                }
+            }
+
             if (!item.SupportsInheritedParentImages)
             {
                 return;
