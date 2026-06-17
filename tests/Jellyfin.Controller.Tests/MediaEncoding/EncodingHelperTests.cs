@@ -339,6 +339,11 @@ public class EncodingHelperTests
     [Fact]
     public void GetVideoProcessingFilterParam_Videotoolbox_SkipsFpsFilterWhenFramerateRequested()
     {
+        if (!OperatingSystem.IsMacOS())
+        {
+            return;
+        }
+
         var sub = new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" };
         var state = BuildLiveDvbsubState(sub);
         state.BaseRequest.Framerate = 30;
@@ -364,8 +369,13 @@ public class EncodingHelperTests
 
         var sub = new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "rum" };
         var state = BuildLiveDvbsubState(sub);
+        state.VideoStream!.PixelFormat = "yuv420p";
         state.BaseRequest.Framerate = 30;
-        var options = new EncodingOptions { HardwareAccelerationType = HardwareAccelerationType.nvenc };
+        var options = new EncodingOptions
+        {
+            HardwareAccelerationType = HardwareAccelerationType.nvenc,
+            HardwareDecodingCodecs = ["h264"],
+        };
 
         var filterParam = CreateNvencHelper().GetVideoProcessingFilterParam(
             state,
@@ -1072,6 +1082,7 @@ public class EncodingHelperTests
     private static void SetupCudaSupport(Mock<IMediaEncoder> mediaEncoder)
     {
         mediaEncoder.Setup(m => m.SupportsHwaccel("cuda")).Returns(true);
+        mediaEncoder.Setup(m => m.SupportsDecoder(It.IsAny<string>())).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilterWithOption(FilterOptionType.ScaleCudaFormat)).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilter("yadif_cuda")).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilterWithOption(FilterOptionType.TonemapCudaName)).Returns(true);
@@ -1146,6 +1157,7 @@ public class EncodingHelperTests
     {
         var mediaEncoder = CreateBaseMediaEncoderMock();
         mediaEncoder.Setup(m => m.SupportsHwaccel("videotoolbox")).Returns(true);
+        mediaEncoder.Setup(m => m.SupportsDecoder(It.IsAny<string>())).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilter("alphasrc")).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilter("yadif_videotoolbox")).Returns(true);
         mediaEncoder.Setup(m => m.SupportsFilter("overlay_videotoolbox")).Returns(true);
