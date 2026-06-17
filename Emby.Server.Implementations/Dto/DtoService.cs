@@ -387,6 +387,13 @@ namespace Emby.Server.Implementations.Dto
                     : item.CanDownload(user);
             }
 
+            if (options.ContainsField(ItemFields.CanExport))
+            {
+                dto.CanExport = user is null
+                    ? item.CanExport()
+                    : item.CanExport(user);
+            }
+
             if (options.ContainsField(ItemFields.Etag))
             {
                 dto.Etag = item.GetEtag(user);

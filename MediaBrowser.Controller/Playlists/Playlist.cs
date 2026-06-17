@@ -299,7 +299,7 @@ namespace MediaBrowser.Controller.Playlists
             return user.HasPermission(PermissionKind.IsAdministrator) || user.Id.Equals(OwnerUserId);
         }
 
-        public override bool CanDownload()
+        public override bool CanExport()
         {
             return true;
         }

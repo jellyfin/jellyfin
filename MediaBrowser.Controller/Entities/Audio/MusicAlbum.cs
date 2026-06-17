@@ -224,7 +224,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public override bool CanDownload()
+        public override bool CanExport()
         {
             return true;
         }

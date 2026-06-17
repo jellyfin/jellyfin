@@ -705,6 +705,67 @@ public class LibraryController : BaseJellyfinApiController
             await LogDownloadAsync(item, user).ConfigureAwait(false);
         }
 
+        // Quotes are valid in linux. They'll possibly cause issues here.
+        var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+        var filePath = item.Path;
+        if (item.IsFileProtocol)
+        {
+            // PhysicalFile does not work well with symlinks at the moment.
+            var resolved = FileSystemHelper.ResolveLinkTarget(filePath, returnFinalTarget: true);
+            if (resolved is not null && resolved.Exists)
+            {
+                filePath = resolved.FullName;
+            }
+        }
+
+        return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
+    }
+
+    /// <summary>
+    /// Exports item media.
+    /// </summary>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">Media downloaded.</response>
+    /// <response code="404">Item not found.</response>
+    /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
+    /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
+    [HttpGet("Items/{itemId}/Export")]
+    [Authorize(Policy = Policies.Download)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesFile("video/*", "audio/*")]
+    public async Task<ActionResult> GetExport([FromRoute, Required] Guid itemId)
+    {
+        var userId = User.GetUserId();
+        var user = userId.IsEmpty()
+            ? null
+            : _userManager.GetUserById(userId);
+        var item = _libraryManager.GetItemById<BaseItem>(itemId, user);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (user is not null)
+        {
+            if (!item.CanExport(user))
+            {
+                throw new ArgumentException("Item does not support exporting");
+            }
+        }
+        else
+        {
+            if (!item.CanExport())
+            {
+                throw new ArgumentException("Item does not support exporting");
+            }
+        }
+
+        if (user is not null)
+        {
+            await LogDownloadAsync(item, user).ConfigureAwait(false);
+        }
+
         if (item.GetType() == typeof(Playlist))
         {
             Response.Headers.Append("Content-Disposition", "attachment; filename=\"Playlist.zip\"");
@@ -736,20 +797,7 @@ public class LibraryController : BaseJellyfinApiController
         }
         else
         {
-            // Quotes are valid in linux. They'll possibly cause issues here.
-            var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
-            var filePath = item.Path;
-            if (item.IsFileProtocol)
-            {
-                // PhysicalFile does not work well with symlinks at the moment.
-                var resolved = FileSystemHelper.ResolveLinkTarget(filePath, returnFinalTarget: true);
-                if (resolved is not null && resolved.Exists)
-                {
-                    filePath = resolved.FullName;
-                }
-            }
-
-            return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), filename, true);
+            throw new ArgumentException("Item does not support exporting");
         }
     }
 
