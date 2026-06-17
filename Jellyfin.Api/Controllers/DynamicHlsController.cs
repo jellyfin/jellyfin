@@ -1425,8 +1425,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
             Request.QueryString.ToString(),
-            EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
-            state.BaseRequest.AudioPlaybackRate ?? 1.0);
+            EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+        {
+            PlaybackRate = state.BaseRequest.AudioPlaybackRate ?? 1.0
+        };
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -1634,10 +1636,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
-        // Atempo output is shorter than content by the rate, so segment duration = content length / rate.
-        var hlsTime = state.BaseRequest.AudioPlaybackRate is double playbackRate && Math.Abs(playbackRate - 1.0) > 0.001
-            ? (state.SegmentLength / playbackRate).ToString(CultureInfo.InvariantCulture)
-            : state.SegmentLength.ToString(CultureInfo.InvariantCulture);
+        var hlsTime = GetHlsTime(state);
 
         return string.Format(
             CultureInfo.InvariantCulture,
@@ -1656,6 +1655,14 @@ public class DynamicHlsController : BaseJellyfinApiController
             EncodingUtils.NormalizePath(outputTsArg),
             hlsArguments,
             EncodingUtils.NormalizePath(outputPath)).Trim();
+    }
+
+    private static string GetHlsTime(StreamState state)
+    {
+        // Atempo output is shorter than content by the rate, so segment duration = content length / rate.
+        return state.BaseRequest.AudioPlaybackRate is double playbackRate && Math.Abs(playbackRate - 1.0) > 0.001
+            ? (state.SegmentLength / playbackRate).ToString(CultureInfo.InvariantCulture)
+            : state.SegmentLength.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>

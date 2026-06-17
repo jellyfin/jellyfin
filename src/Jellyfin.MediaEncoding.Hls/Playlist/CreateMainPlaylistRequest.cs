@@ -18,8 +18,7 @@ public class CreateMainPlaylistRequest
     /// <param name="endpointPrefix">The URI prefix for the relative URL in the playlist.</param>
     /// <param name="queryString">The desired query string to append (must start with ?).</param>
     /// <param name="isRemuxingVideo">Whether the video is being remuxed.</param>
-    /// <param name="playbackRate">The audio playback rate (1.0 = normal speed).</param>
-    public CreateMainPlaylistRequest(Guid? mediaSourceId, string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo, double playbackRate = 1.0)
+    public CreateMainPlaylistRequest(Guid? mediaSourceId, string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
     {
         MediaSourceId = mediaSourceId;
         FilePath = filePath;
@@ -29,7 +28,6 @@ public class CreateMainPlaylistRequest
         EndpointPrefix = endpointPrefix;
         QueryString = queryString;
         IsRemuxingVideo = isRemuxingVideo;
-        PlaybackRate = playbackRate;
     }
 
     /// <summary>
@@ -75,5 +73,5 @@ public class CreateMainPlaylistRequest
     /// <summary>
     /// Gets the audio playback rate (1.0 = normal speed).
     /// </summary>
-    public double PlaybackRate { get; }
+    public double PlaybackRate { get; init; } = 1.0;
 }
