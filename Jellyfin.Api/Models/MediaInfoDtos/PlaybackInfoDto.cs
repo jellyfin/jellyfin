@@ -24,6 +24,11 @@ public class PlaybackInfoDto
     public long? StartTimeTicks { get; set; }
 
     /// <summary>
+    /// Gets or sets the video stream index.
+    /// </summary>
+    public int? VideoStreamIndex { get; set; }
+
+    /// <summary>
     /// Gets or sets the audio stream index.
     /// </summary>
     public int? AudioStreamIndex { get; set; }
