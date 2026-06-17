@@ -151,6 +151,7 @@ public class UniversalAudioController : BaseJellyfinApiController
                 mediaSourceId ?? string.Empty,
                 null,
                 null,
+                null,
                 maxAudioChannels,
                 info.PlaySessionId!,
                 userId ?? Guid.Empty,

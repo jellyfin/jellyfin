@@ -155,6 +155,7 @@ public class MediaInfoHelper
     /// <param name="maxBitrate">Max bitrate.</param>
     /// <param name="startTimeTicks">Start time ticks.</param>
     /// <param name="mediaSourceId">Media source id.</param>
+    /// <param name="videoStreamIndex">Video stream index.</param>
     /// <param name="audioStreamIndex">Audio stream index.</param>
     /// <param name="subtitleStreamIndex">Subtitle stream index.</param>
     /// <param name="maxAudioChannels">Max audio channels.</param>
@@ -175,6 +176,7 @@ public class MediaInfoHelper
         int? maxBitrate,
         long startTimeTicks,
         string mediaSourceId,
+        int? videoStreamIndex,
         int? audioStreamIndex,
         int? subtitleStreamIndex,
         int? maxAudioChannels,
@@ -206,6 +208,7 @@ public class MediaInfoHelper
         if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
         {
             options.MediaSourceId = mediaSourceId;
+            options.VideoStreamIndex = videoStreamIndex;
             options.AudioStreamIndex = audioStreamIndex;
             options.SubtitleStreamIndex = subtitleStreamIndex;
         }
@@ -438,6 +441,7 @@ public class MediaInfoHelper
                 request.MaxStreamingBitrate,
                 request.StartTimeTicks ?? 0,
                 result.MediaSource.Id,
+                request.VideoStreamIndex,
                 request.AudioStreamIndex,
                 request.SubtitleStreamIndex,
                 request.MaxAudioChannels,
