@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Persistence;
@@ -93,6 +92,8 @@ namespace MediaBrowser.Controller.Entities
         private string _forcedSortName;
 
         private string _name;
+
+        private string _originalLanguage;
 
         public const char SlugChar = '-';
 
@@ -217,7 +218,11 @@ namespace MediaBrowser.Controller.Entities
         public string OriginalTitle { get; set; }
 
         [JsonIgnore]
-        public string OriginalLanguage { get; set; }
+        public string OriginalLanguage
+        {
+            get => _originalLanguage;
+            set => _originalLanguage = LocalizationManager?.FindLanguageInfo(value)?.TwoLetterISOLanguageName ?? value;
+        }
 
         /// <summary>
         /// Gets or sets the id.
@@ -1128,15 +1133,7 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
-
-            // Resolve the item path so everywhere we use the media source it will always point to
-            // the correct path even if symlinks are in use. Calling ResolveLinkTarget on a non-link
-            // path will return null, so it's safe to check for all paths.
             var itemPath = item.Path;
-            if (protocol is MediaProtocol.File && FileSystemHelper.ResolveLinkTarget(itemPath, returnFinalTarget: true) is { Exists: true } linkInfo)
-            {
-                itemPath = linkInfo.FullName;
-            }
 
             var info = new MediaSourceInfo
             {
@@ -1564,7 +1561,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the preferred metadata language.
+        /// Gets the preferred metadata country code.
         /// </summary>
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataCountryCode()
@@ -1596,6 +1593,15 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return lang;
+        }
+
+        /// <summary>
+        /// Gets the original language of the item, inheriting from parent items if necessary.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public virtual string GetInheritedOriginalLanguage()
+        {
+            return OriginalLanguage;
         }
 
         public virtual bool IsSaveLocalMetadataEnabled()
@@ -2712,7 +2718,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeSongs(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeSong), user, orderBy).ToArray();
         }
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user = null)
@@ -2722,16 +2728,17 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<BaseItem> GetThemeVideos(User user, IEnumerable<(ItemSortBy SortBy, SortOrder SortOrder)> orderBy)
         {
-            return LibraryManager.Sort(GetExtras().Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
+            return LibraryManager.Sort(GetExtras(user).Where(e => e.ExtraType == Model.Entities.ExtraType.ThemeVideo), user, orderBy).ToArray();
         }
 
         /// <summary>
         /// Get all extras associated with this item, sorted by <see cref="SortName"/>.
         /// </summary>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the items.</returns>
-        public IEnumerable<BaseItem> GetExtras()
+        public IEnumerable<BaseItem> GetExtras(User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 OwnerIds = [Id],
                 OrderBy = [(ItemSortBy.SortName, SortOrder.Ascending)]
@@ -2742,10 +2749,11 @@ namespace MediaBrowser.Controller.Entities
         /// Get all extras with specific types that are associated with this item.
         /// </summary>
         /// <param name="extraTypes">The types of extras to retrieve.</param>
+        /// <param name="user">The user to apply parental restrictions for, or <c>null</c> to skip restriction checks.</param>
         /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes, User user = null)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery()
+            return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 OwnerIds = [Id],
                 ExtraTypes = extraTypes.ToArray(),

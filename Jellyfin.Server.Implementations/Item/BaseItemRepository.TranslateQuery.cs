@@ -586,8 +586,7 @@ public sealed partial class BaseItemRepository
 
         if (filter.AlbumIds.Length > 0)
         {
-            var subQuery = context.BaseItems.WhereOneOrMany(filter.AlbumIds, f => f.Id);
-            baseQuery = baseQuery.Where(e => subQuery.Any(f => f.Name == e.Album));
+            baseQuery = baseQuery.Where(e => e.ParentId.HasValue && filter.AlbumIds.Contains(e.ParentId.Value));
         }
 
         if (filter.ExcludeArtistIds.Length > 0)
@@ -953,24 +952,17 @@ public sealed partial class BaseItemRepository
 
         if (filter.ExcludeProviderIds is not null && filter.ExcludeProviderIds.Count > 0)
         {
-            var exclude = filter.ExcludeProviderIds.Select(e => $"{e.Key}:{e.Value}").ToArray();
-            baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.All(f => !exclude.Contains(f)));
+            baseQuery = baseQuery.WhereExcludeProviderIds(filter.ExcludeProviderIds);
         }
 
         if (filter.HasAnyProviderId is not null && filter.HasAnyProviderId.Count > 0)
         {
-            // Allow setting a null or empty value to get all items that have the specified provider set.
-            var includeAny = filter.HasAnyProviderId.Where(e => string.IsNullOrEmpty(e.Value)).Select(e => e.Key).ToArray();
-            if (includeAny.Length > 0)
-            {
-                baseQuery = baseQuery.Where(e => e.Provider!.Any(f => includeAny.Contains(f.ProviderId)));
-            }
+            baseQuery = baseQuery.WhereHasAnyProviderId(filter.HasAnyProviderId);
+        }
 
-            var includeSelected = filter.HasAnyProviderId.Where(e => !string.IsNullOrEmpty(e.Value)).Select(e => $"{e.Key}:{e.Value}").ToArray();
-            if (includeSelected.Length > 0)
-            {
-                baseQuery = baseQuery.Where(e => e.Provider!.Select(f => f.ProviderId + ":" + f.ProviderValue)!.Any(f => includeSelected.Contains(f)));
-            }
+        if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
+        {
+            baseQuery = baseQuery.WhereHasAnyProviderIds(filter.HasAnyProviderIds);
         }
 
         if (filter.HasAnyProviderIds is not null && filter.HasAnyProviderIds.Count > 0)
@@ -1025,6 +1017,15 @@ public sealed partial class BaseItemRepository
         {
             var ancestorFilter = filter.AncestorIds.OneOrManyExpressionBuilder<AncestorId, Guid>(f => f.ParentItemId);
             baseQuery = baseQuery.Where(e => e.Parents!.AsQueryable().Any(ancestorFilter));
+        }
+
+        if (filter.LinkedChildAncestorIds.Length > 0)
+        {
+            // Keep folder-like items (BoxSets, Playlists) whose linked children descend from any of the requested ancestor ids.
+            var linkedChildAncestorIds = filter.LinkedChildAncestorIds;
+            baseQuery = baseQuery.Where(e => context.LinkedChildren.Any(lc =>
+                lc.ParentId == e.Id
+                && lc.Child!.Parents!.Any(a => linkedChildAncestorIds.Contains(a.ParentItemId))));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AncestorWithPresentationUniqueKey))

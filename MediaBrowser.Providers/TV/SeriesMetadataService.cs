@@ -210,16 +210,19 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             return true;
         }
 
-        // Not yet processed
-        if (episode.SeasonId.IsEmpty())
+        // Episode has been processed and linked to a season, only needs a virtual season
+        // if it isn't already linked to a known physical season by ID or path
+        if (!episode.SeasonId.IsEmpty())
         {
-            return false;
+            return !physicalSeasonIds.Contains(episode.SeasonId)
+                && !physicalSeasonPaths.Contains(System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty);
         }
 
-        // Episode has been processed, only needs a virtual season if it isn't
-        // already linked to a known physical season by ID or path
-        return !physicalSeasonIds.Contains(episode.SeasonId)
-            && !physicalSeasonPaths.Contains(System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty);
+        // Episode not yet linked, check if it's in a physical season folder
+        // If yes then skip it, processing not finished
+        // If no then include it, needs Season Unknown
+        var episodeDirectory = System.IO.Path.GetDirectoryName(episode.Path) ?? string.Empty;
+        return !physicalSeasonPaths.Contains(episodeDirectory);
     }
 
     /// <summary>
@@ -233,6 +236,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
         var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
         var seasons = seriesChildren.OfType<Season>().ToList();
+        var episodes = seriesChildren.OfType<Episode>().ToList();
 
         var physicalSeasonIds = seasons
             .Where(e => e.LocationType != LocationType.Virtual)
@@ -258,17 +262,33 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
             if (existingSeason is null)
             {
                 var seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
-                await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
+                var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
+                seasons.Add(season);
             }
             else if (existingSeason.IsVirtualItem)
             {
-                var episodeCount = seriesChildren.OfType<Episode>().Count(e => e.ParentIndexNumber == seasonNumber && !e.IsMissingEpisode);
+                var episodeCount = episodes.Count(e => e.ParentIndexNumber == seasonNumber && !e.IsMissingEpisode);
                 if (episodeCount > 0)
                 {
                     existingSeason.IsVirtualItem = false;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        // Loop through episodes
+        foreach (var episode in episodes)
+        {
+            var season = seasons.FirstOrDefault(i => i.IndexNumber == episode.ParentIndexNumber);
+            if (season is null || episode.SeasonId.Equals(season.Id))
+            {
+                continue;
+            }
+
+            // Assign the correct season id and name to episode.
+            episode.SeasonId = season.Id;
+            episode.SeasonName = season.Name;
+            await episode.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -280,7 +300,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     /// <param name="seasonNumber">The season number.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The newly created season.</returns>
-    private async Task CreateSeasonAsync(
+    private async Task<Season> CreateSeasonAsync(
         Series series,
         string? seasonName,
         int? seasonNumber,
@@ -303,6 +323,8 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
 
         series.AddChild(season);
         await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
+
+        return season;
     }
 
     private string GetValidSeasonNameForSeries(Series series, string? seasonName, int? seasonNumber)

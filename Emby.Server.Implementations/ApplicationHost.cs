@@ -26,6 +26,7 @@ using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Library.Search;
 using Emby.Server.Implementations.Library.SimilarItems;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
@@ -539,6 +540,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
+            serviceCollection.AddTransient(provider => new Lazy<IExternalDataManager>(provider.GetRequiredService<IExternalDataManager>));
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
             serviceCollection.AddSingleton<VideoListResolver>();
@@ -550,7 +552,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISimilarItemsManager, SimilarItemsManager>();
 
-            serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
+            serviceCollection.AddSingleton<ISearchManager, SearchManager>();
+            serviceCollection.AddSingleton<ISearchProvider, SqlSearchProvider>();
 
             serviceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
@@ -709,6 +712,7 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<ISimilarItemsManager>().AddParts(GetExports<ISimilarItemsProvider>());
+            Resolve<ISearchManager>().AddParts(GetExports<ISearchProvider>());
         }
 
         /// <summary>

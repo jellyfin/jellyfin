@@ -24,6 +24,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -127,6 +128,11 @@ namespace Emby.Server.Implementations.Library
                 return true;
             }
 
+            if (stream.IsVobSubSubtitleStream)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -171,6 +177,7 @@ namespace Emby.Server.Implementations.Library
         public async Task<IReadOnlyList<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+            ResolveSymlinkPaths(mediaSources, enablePathSubstitution);
 
             // If file is strm or main media stream is missing, force a metadata refresh with remote probing
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
@@ -187,6 +194,7 @@ namespace Emby.Server.Implementations.Library
                     cancellationToken).ConfigureAwait(false);
 
                 mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
+                ResolveSymlinkPaths(mediaSources, enablePathSubstitution);
             }
 
             var dynamicMediaSources = await GetDynamicMediaSources(item, cancellationToken).ConfigureAwait(false);
@@ -221,7 +229,7 @@ namespace Emby.Server.Implementations.Library
                 list.Add(source);
             }
 
-            return SortMediaSources(list).ToArray();
+            return SortMediaSources(list, item.Id).ToArray();
         }
 
         /// <inheritdoc />>
@@ -319,6 +327,28 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
+        /// <summary>
+        /// Resolves symlinked file paths on the supplied sources to the real on-disk target.
+        /// Skipped when <paramref name="enablePathSubstitution"/> is set because the path may
+        /// already have been rewritten to a UNC/URL meant for the client to consume directly.
+        /// </summary>
+        private static void ResolveSymlinkPaths(IReadOnlyList<MediaSourceInfo> sources, bool enablePathSubstitution)
+        {
+            if (enablePathSubstitution)
+            {
+                return;
+            }
+
+            foreach (var source in sources)
+            {
+                if (source.Protocol == MediaProtocol.File
+                    && FileSystemHelper.ResolveLinkTarget(source.Path, returnFinalTarget: true) is { Exists: true } target)
+                {
+                    source.Path = target.FullName;
+                }
+            }
+        }
+
         private static void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
             var prefix = provider.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + LiveStreamIdDelimiter;
@@ -356,6 +386,12 @@ namespace Emby.Server.Implementations.Library
 
             if (user is not null)
             {
+                sources = sources
+                    .Where(source => !Guid.TryParse(source.Id, out var sourceId)
+                        || sourceId.Equals(item.Id)
+                        || _libraryManager.GetItemById<BaseItem>(sourceId, user) is not null)
+                    .ToArray();
+
                 foreach (var source in sources)
                 {
                     SetDefaultAudioAndSubtitleStreamIndices(item, source, user);
@@ -468,10 +504,6 @@ namespace Emby.Server.Implementations.Library
 
             if (string.Equals(user.AudioLanguagePreference, "OriginalLanguage", StringComparison.OrdinalIgnoreCase))
             {
-                originalLanguage = !string.IsNullOrWhiteSpace(originalLanguage)
-                    ? originalLanguage.Split(',').FirstOrDefault()
-                    : null;
-
                 if (user.PlayDefaultAudioTrack)
                 {
                     source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(
@@ -526,17 +558,7 @@ namespace Emby.Server.Implementations.Library
 
                 var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
-                var originalLanguage = item?.OriginalLanguage ?? item switch
-                {
-                    Episode episode => episode.Series.OriginalLanguage,
-                    Video video => video.GetOwner() switch
-                    {
-                        Episode ownerEpisode => ownerEpisode.OriginalLanguage ?? ownerEpisode.Series.OriginalLanguage,
-                        BaseItem owner => owner.OriginalLanguage,
-                        null => null
-                    },
-                    _ => null
-                };
+                var originalLanguage = item?.GetInheritedOriginalLanguage();
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection, originalLanguage);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
@@ -552,24 +574,32 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources, Guid preferredItemId = default)
         {
-            return sources.OrderBy(i =>
-            {
-                if (i.VideoType.HasValue && i.VideoType.Value == VideoType.VideoFile)
+            // The source belonging to the queried item sorts first so it stays the default that gets played.
+            var preferredId = preferredItemId.IsEmpty()
+                ? null
+                : preferredItemId.ToString("N", CultureInfo.InvariantCulture);
+
+            return sources
+                .OrderByDescending(i => preferredId is not null && string.Equals(i.Id, preferredId, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i =>
                 {
-                    return 0;
-                }
+                    if (i.VideoType.HasValue && i.VideoType.Value == VideoType.VideoFile)
+                    {
+                        return 0;
+                    }
 
-                return 1;
-            }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
-            .ThenByDescending(i =>
-            {
-                var stream = i.VideoStream;
+                    return 1;
+                })
+                .ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
+                .ThenByDescending(i =>
+                {
+                    var stream = i.VideoStream;
 
-                return stream?.Width ?? 0;
-            })
-            .Where(i => i.Type != MediaSourceType.Placeholder);
+                    return stream?.Width ?? 0;
+                })
+                .Where(i => i.Type != MediaSourceType.Placeholder);
         }
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)

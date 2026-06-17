@@ -193,84 +193,89 @@ internal class JellyfinMigrationService
         {
             var historyRepository = dbContext.GetService<IHistoryRepository>();
             var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-            var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
-            var pendingCodeMigrations = migrationStage
-                .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
-                .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
-                .ToArray();
+            (string Key, IInternalMigration Migration)[] migrations = [];
 
-            (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
-            if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
-            {
-                pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
-                   .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
-                   .ToArray();
-            }
+            do
+            { // migrations may alter the migration state. Reevaluate the applicable migrations after every stage ran until there are no more to apply.
+                var appliedMigrations = await historyRepository.GetAppliedMigrationsAsync().ConfigureAwait(false);
+                var pendingCodeMigrations = migrationStage
+                    .Where(e => appliedMigrations.All(f => f.MigrationId != e.BuildCodeMigrationId()))
+                    .Select(e => (Key: e.BuildCodeMigrationId(), Migration: new InternalCodeMigration(e, serviceProvider, dbContext)))
+                    .ToArray();
 
-            (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
-            logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
-            var migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
-
-            foreach (var item in migrations)
-            {
-                var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
-                try
+                (string Key, InternalDatabaseMigration Migration)[] pendingDatabaseMigrations = [];
+                if (stage is JellyfinMigrationStageTypes.CoreInitialisation)
                 {
-                    migrationLogger.LogInformation("Perform migration {Name}", item.Key);
-                    await item.Migration.PerformAsync(migrationLogger).ConfigureAwait(false);
-                    migrationLogger.LogInformation("Migration {Name} was successfully applied", item.Key);
+                    pendingDatabaseMigrations = migrationsAssembly.Migrations.Where(f => appliedMigrations.All(e => e.MigrationId != f.Key))
+                       .Select(e => (Key: e.Key, Migration: new InternalDatabaseMigration(e, dbContext)))
+                       .ToArray();
                 }
-                catch (Exception ex)
-                {
-                    migrationLogger.LogCritical("Error: {Error}", ex.Message);
-                    migrationLogger.LogError(ex, "Migration {Name} failed", item.Key);
 
-                    if (_backupKey != default && _backupService is not null && _jellyfinDatabaseProvider is not null)
+                (string Key, IInternalMigration Migration)[] pendingMigrations = [.. pendingCodeMigrations, .. pendingDatabaseMigrations];
+                logger.LogInformation("There are {Pending} migrations for stage {Stage}.", pendingCodeMigrations.Length, stage);
+                migrations = pendingMigrations.OrderBy(e => e.Key).ToArray();
+
+                foreach (var item in migrations)
+                {
+                    var migrationLogger = logger.With(_loggerFactory.CreateLogger(item.Migration.GetType().Name)).BeginGroup($"{item.Key}");
+                    try
                     {
-                        if (_backupKey.LibraryDb is not null)
-                        {
-                            migrationLogger.LogInformation("Attempt to rollback librarydb.");
-                            try
-                            {
-                                var libraryDbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
-                                File.Move(_backupKey.LibraryDb, libraryDbPath, true);
-                            }
-                            catch (Exception inner)
-                            {
-                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
-                            }
-                        }
-
-                        if (_backupKey.JellyfinDb is not null)
-                        {
-                            migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
-                            try
-                            {
-                                await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
-                            }
-                            catch (Exception inner)
-                            {
-                                migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
-                            }
-                        }
-
-                        if (_backupKey.FullBackup is not null)
-                        {
-                            migrationLogger.LogInformation("Attempt to rollback from backup.");
-                            try
-                            {
-                                await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path).ConfigureAwait(false);
-                            }
-                            catch (Exception inner)
-                            {
-                                migrationLogger.LogCritical(inner, "Could not rollback from backup {Backup}. Manual intervention might be required to restore a operational state.", _backupKey.FullBackup.Path);
-                            }
-                        }
+                        migrationLogger.LogInformation("Perform migration {Name}", item.Key);
+                        await item.Migration.PerformAsync(migrationLogger).ConfigureAwait(false);
+                        migrationLogger.LogInformation("Migration {Name} was successfully applied", item.Key);
                     }
+                    catch (Exception ex)
+                    {
+                        migrationLogger.LogCritical("Error: {Error}", ex.Message);
+                        migrationLogger.LogError(ex, "Migration {Name} failed", item.Key);
 
-                    throw;
+                        if (_backupKey != default && _backupService is not null && _jellyfinDatabaseProvider is not null)
+                        {
+                            if (_backupKey.LibraryDb is not null)
+                            {
+                                migrationLogger.LogInformation("Attempt to rollback librarydb.");
+                                try
+                                {
+                                    var libraryDbPath = Path.Combine(_applicationPaths.DataPath, DbFilename);
+                                    File.Move(_backupKey.LibraryDb, libraryDbPath, true);
+                                }
+                                catch (Exception inner)
+                                {
+                                    migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.LibraryDb);
+                                }
+                            }
+
+                            if (_backupKey.JellyfinDb is not null)
+                            {
+                                migrationLogger.LogInformation("Attempt to rollback JellyfinDb.");
+                                try
+                                {
+                                    await _jellyfinDatabaseProvider.RestoreBackupFast(_backupKey.JellyfinDb, CancellationToken.None).ConfigureAwait(false);
+                                }
+                                catch (Exception inner)
+                                {
+                                    migrationLogger.LogCritical(inner, "Could not rollback {LibraryPath}. Manual intervention might be required to restore a operational state.", _backupKey.JellyfinDb);
+                                }
+                            }
+
+                            if (_backupKey.FullBackup is not null)
+                            {
+                                migrationLogger.LogInformation("Attempt to rollback from backup.");
+                                try
+                                {
+                                    await _backupService.RestoreBackupAsync(_backupKey.FullBackup.Path).ConfigureAwait(false);
+                                }
+                                catch (Exception inner)
+                                {
+                                    migrationLogger.LogCritical(inner, "Could not rollback from backup {Backup}. Manual intervention might be required to restore a operational state.", _backupKey.FullBackup.Path);
+                                }
+                            }
+                        }
+
+                        throw;
+                    }
                 }
-            }
+            } while (migrations.Length != 0);
         }
     }
 

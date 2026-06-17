@@ -142,7 +142,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (string.IsNullOrWhiteSpace(overview))
             {
-                overview = result.strDescriptionEN;
+                overview = string.IsNullOrWhiteSpace(result.strDescriptionEN)
+                    ? result.strDescription
+                    : result.strDescriptionEN;
             }
 
             item.Overview = (overview ?? string.Empty).StripHtml();
@@ -239,6 +241,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strAlbumThumb { get; set; }
 
             public string strAlbumCDart { get; set; }
+
+            public string strDescription { get; set; }
 
             public string strDescriptionEN { get; set; }
 

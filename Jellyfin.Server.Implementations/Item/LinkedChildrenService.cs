@@ -91,14 +91,25 @@ public class LinkedChildrenService : ILinkedChildrenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId)
+    public IReadOnlyList<Guid> GetManualLinkedParentIds(Guid childId, BaseItemKind? parentType = null)
     {
         using var context = _dbProvider.CreateDbContext();
-        return context.LinkedChildren
-            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual)
-            .Select(lc => lc.ParentId)
-            .Distinct()
-            .ToList();
+
+        var query = context.LinkedChildren
+            .Where(lc => lc.ChildId == childId && lc.ChildType == DbLinkedChildType.Manual);
+
+        if (parentType.HasValue)
+        {
+            var parentTypeName = _itemTypeLookup.BaseItemKindNames[parentType.Value];
+            query = query.Join(
+                context.BaseItems
+                    .Where(item => item.Type == parentTypeName),
+                lc => lc.ParentId,
+                item => item.Id,
+                (lc, _) => lc);
+        }
+
+        return query.Select(lc => lc.ParentId).Distinct().ToList();
     }
 
     /// <inheritdoc/>

@@ -110,10 +110,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
         var existingPersons = context.Peoples.Select(e => new
-            {
-                item = e,
-                SelectionKey = e.Name.ToLower() + "-" + e.PersonType
-            })
+        {
+            item = e,
+            SelectionKey = e.Name.ToLower() + "-" + e.PersonType
+        })
             .Where(p => personKeys.Contains(p.SelectionKey))
             .Select(f => f.item)
             .ToArray();
@@ -163,6 +163,42 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         context.SaveChanges();
         transaction.Commit();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<Guid, IReadOnlyList<string>> GetPeopleNamesByItems(IReadOnlyList<Guid> itemIds, IReadOnlyList<string> personTypes)
+    {
+        using var context = _dbProvider.CreateDbContext();
+        var query = context.PeopleBaseItemMap
+            .AsNoTracking()
+            .Where(m => itemIds.Contains(m.ItemId));
+
+        if (personTypes.Count > 0)
+        {
+            query = query.Where(m => personTypes.Contains(m.People.PersonType));
+        }
+
+        var rows = query
+            .OrderBy(m => m.ListOrder)
+            .Select(m => new { m.ItemId, m.People.Name })
+            .ToList();
+
+        var result = new Dictionary<Guid, IReadOnlyList<string>>();
+        foreach (var group in rows.GroupBy(r => r.ItemId))
+        {
+            var names = group
+                .Select(r => r.Name)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct()
+                .ToArray();
+
+            if (names.Length > 0)
+            {
+                result[group.Key] = names;
+            }
+        }
+
+        return result;
     }
 
     private PersonInfo Map(People people)
@@ -239,7 +275,7 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
 
         if (filter.MaxListOrder.HasValue && !filter.ItemId.IsEmpty())
         {
-            query = query.Where(e => e.BaseItems!.Where(w => w.ItemId == filter.ItemId).OrderBy(w => w.ListOrder).First().ListOrder <= filter.MaxListOrder.Value);
+            query = query.Where(e => e.BaseItems!.Any(w => w.ItemId == filter.ItemId && w.ListOrder <= filter.MaxListOrder.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.NameContains))
