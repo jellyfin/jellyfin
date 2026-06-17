@@ -567,11 +567,12 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     }
 
     private static bool EnableSegmentCleaning(StreamState state)
-        => state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
-           && state.IsInputVideo
+        => state.IsInputVideo
            && state.TranscodingType == TranscodingJobType.Hls
-           && state.RunTimeTicks.HasValue
-           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks;
+           && (state.IsSegmentedLiveStream
+               || (state.InputProtocol is MediaProtocol.File or MediaProtocol.Http
+                   && state.RunTimeTicks.HasValue
+                   && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks));
 
     private TranscodingJob OnTranscodeBeginning(
         string path,
