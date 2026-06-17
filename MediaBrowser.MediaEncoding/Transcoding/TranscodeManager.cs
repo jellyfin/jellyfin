@@ -566,7 +566,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    private static bool EnableSegmentCleaning(StreamState state)
+    internal static bool EnableSegmentCleaning(StreamState state)
         => state.IsInputVideo
            && state.TranscodingType == TranscodingJobType.Hls
            && (state.IsSegmentedLiveStream
