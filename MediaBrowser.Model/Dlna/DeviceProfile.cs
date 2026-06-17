@@ -45,6 +45,11 @@ public class DeviceProfile
     public int? MaxStaticMusicBitrate { get; set; } = 8000000;
 
     /// <summary>
+    /// Gets or sets the track selection policy when track switching is not supported.
+    /// </summary>
+    public SingleAudioPolicy? SingleAudioPolicy { get; set; }
+
+    /// <summary>
     /// Gets or sets the direct play profiles.
     /// </summary>
     public DirectPlayProfile[] DirectPlayProfiles { get; set; } = [];

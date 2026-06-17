@@ -13,6 +13,7 @@
     "RequiresPlainFolders": false,
     "EnableMSMediaReceiverRegistrar": false,
     "IgnoreTranscodeByteRangeRequests": false,
+    "SingleAudioPolicy": "FirstSupported",
     "DirectPlayProfiles": [
         {
             "AudioCodec": "vorbis,opus",
@@ -190,18 +191,6 @@
     ],
     "CodecProfiles": [
         {
-            "Codec": "aac",
-            "Conditions": [
-                {
-                    "Condition": "Equals",
-                    "IsRequired": false,
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false"
-                }
-            ],
-            "Type": "VideoAudio"
-        },
-        {
             "Conditions": [
                 {
                     "Condition": "LessThanEqual",
@@ -219,12 +208,6 @@
                     "IsRequired": false,
                     "Property": "AudioChannels",
                     "Value": "2"
-                },
-                {
-                    "Condition": "Equals",
-                    "IsRequired": false,
-                    "Property": "IsSecondaryAudio",
-                    "Value": "false"
                 }
             ],
             "Type": "VideoAudio"

@@ -198,6 +198,17 @@
     "ContainerProfiles": [],
     "CodecProfiles": [
         {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "Equals",
+                    "Property": "IsDefaultTrack",
+                    "Value": "true",
+                    "IsRequired": false
+                }
+            ]
+        },
+        {
             "Type": "Video",
             "Codec": "h264",
             "Conditions": [

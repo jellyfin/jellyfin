@@ -29,6 +29,7 @@ namespace MediaBrowser.Model.Dlna
         AudioBitDepth = 23,
         VideoRangeType = 24,
         NumStreams = 25,
-        VideoRotation = 26
+        VideoRotation = 26,
+        IsDefaultTrack = 27
     }
 }
