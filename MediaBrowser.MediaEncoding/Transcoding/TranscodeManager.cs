@@ -561,8 +561,25 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
     {
         if (EnableSegmentCleaning(state))
         {
+            _logger.LogDebug(
+                "Starting segment cleaner for {Path} (IsInputVideo={IsInputVideo}, TranscodingType={TranscodingType}, IsSegmentedLiveStream={IsSegmentedLiveStream}, RunTimeTicks={RunTimeTicks})",
+                transcodingJob.Path,
+                state.IsInputVideo,
+                state.TranscodingType,
+                state.IsSegmentedLiveStream,
+                state.RunTimeTicks);
             transcodingJob.TranscodingSegmentCleaner = new TranscodingSegmentCleaner(transcodingJob, _loggerFactory.CreateLogger<TranscodingSegmentCleaner>(), _serverConfigurationManager, _fileSystem, _mediaEncoder, state.SegmentLength);
             transcodingJob.TranscodingSegmentCleaner.Start();
+        }
+        else
+        {
+            _logger.LogDebug(
+                "Segment cleaning disabled for {Path} (IsInputVideo={IsInputVideo}, TranscodingType={TranscodingType}, IsSegmentedLiveStream={IsSegmentedLiveStream}, RunTimeTicks={RunTimeTicks})",
+                transcodingJob.Path,
+                state.IsInputVideo,
+                state.TranscodingType,
+                state.IsSegmentedLiveStream,
+                state.RunTimeTicks);
         }
     }
 
