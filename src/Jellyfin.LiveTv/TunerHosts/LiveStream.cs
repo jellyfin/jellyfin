@@ -148,12 +148,14 @@ namespace Jellyfin.LiveTv.TunerHosts
                 path = _singleFilePath;
             }
 
+            // Create the file before making the path visible to readers.
+            var stream = OpenWriteStream(path);
             lock (_chunkLock)
             {
                 _chunkPaths.Add(path);
             }
 
-            return OpenWriteStream(path);
+            return stream;
         }
 
         /// <summary>
@@ -186,12 +188,12 @@ namespace Jellyfin.LiveTv.TunerHosts
             lock (_chunkLock)
             {
                 newPath = GetChunkPath(_nextChunkIndex++);
-                _chunkPaths.Add(newPath);
 
                 var options = _configurationManager.GetEncodingOptions();
                 int maxChunks = ComputeMaxChunks(options);
 
-                if (_chunkPaths.Count > maxChunks)
+                // +1 because we are about to add newPath but want the file to exist first.
+                if (_chunkPaths.Count + 1 > maxChunks)
                 {
                     toDelete = _chunkPaths[0];
                     _chunkPaths.RemoveAt(0);
@@ -210,7 +212,14 @@ namespace Jellyfin.LiveTv.TunerHosts
                 }
             }
 
-            return (OpenWriteStream(newPath), DateTime.UtcNow);
+            // Create the file before making the path visible to readers.
+            var newStream = OpenWriteStream(newPath);
+            lock (_chunkLock)
+            {
+                _chunkPaths.Add(newPath);
+            }
+
+            return (newStream, DateTime.UtcNow);
         }
 
         /// <inheritdoc />
