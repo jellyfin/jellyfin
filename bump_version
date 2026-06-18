@@ -28,6 +28,7 @@ jellyfin_subprojects=(
   Emby.Naming/Emby.Naming.csproj
   src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
   src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj
+  src/Jellyfin.MediaEncoding.Hls/Jellyfin.MediaEncoding.Hls.csproj
   src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj
 )
 issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
