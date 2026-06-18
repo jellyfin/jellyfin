@@ -940,8 +940,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             EncodingOptions BuildSwDecodeHwEncodeOptions()
             {
                 var clone = JsonSerializer.Deserialize<EncodingOptions>(
-                    JsonSerializer.SerializeToUtf8Bytes(options, JsonDefaults.Options),
-                    JsonDefaults.Options)!;
+                    JsonSerializer.SerializeToUtf8Bytes(options, _jsonSerializerOptions),
+                    _jsonSerializerOptions)!;
                 clone.HardwareDecodingCodecs = []; // force software decode, keep the configured encoder
                 // Tonemapping is intentionally disabled on the fallback path: it keeps the filter graph simple
                 // and reliable (the whole point of falling back), and is a no-op for the SDR H.264 sources that
