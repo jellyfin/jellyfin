@@ -69,7 +69,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return new Series
                         {
                             Path = args.Path,
-                            Name = seriesInfo.Name
+                            Name = seriesInfo.Name,
+                            ProductionYear = seriesInfo.Year
                         };
                     }
                 }
