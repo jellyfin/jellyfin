@@ -195,7 +195,7 @@ namespace Jellyfin.LiveTv.TunerHosts.HdHomerun
             {
                 var chunkOpenedAt = DateTime.UtcNow;
 
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var res = await udpClient.ReceiveAsync(cancellationToken)
