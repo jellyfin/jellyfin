@@ -125,47 +125,67 @@ internal sealed class RollingChunkStream : Stream
     }
 
     /// <summary>
+    /// Returns the next chunk path after <paramref name="fromPath"/>, or <see langword="null"/>
+    /// if at the live edge or no chunks are available.
+    /// </summary>
+    private string? GetNextChunkPath(string fromPath)
+    {
+        lock (_lock)
+        {
+            int idx = _chunkPaths.IndexOf(fromPath);
+
+            if (idx < 0)
+            {
+                if (_chunkPaths.Count > 0)
+                {
+                    _logger.LogWarning("Live stream reader fell behind the rewind window; skipping to oldest available chunk");
+                    return _chunkPaths[0];
+                }
+
+                return null;
+            }
+
+            // idx == Count - 1: at the live edge — no sealed chunk to advance to yet.
+            return idx < _chunkPaths.Count - 1 ? _chunkPaths[idx + 1] : null;
+        }
+    }
+
+    /// <summary>
     /// Checks whether there is a sealed chunk after the current one and, if so, advances to it.
     /// Returns true when the stream was advanced and data may now be available.
     /// </summary>
     private bool TryAdvanceChunk()
     {
-        string? nextPath = null;
-
-        lock (_lock)
-        {
-            int idx = _chunkPaths.IndexOf(_currentPath);
-
-            if (idx < 0)
-            {
-                // Current chunk was deleted (client fell behind the rewind window).
-                // Skip to the oldest still-available chunk.
-                if (_chunkPaths.Count > 0)
-                {
-                    nextPath = _chunkPaths[0];
-                    _logger.LogWarning(
-                        "Live stream reader fell behind the rewind window; skipping to oldest available chunk {Path}",
-                        nextPath);
-                }
-            }
-            else if (idx < _chunkPaths.Count - 1)
-            {
-                // Current chunk is sealed; advance to the next one.
-                nextPath = _chunkPaths[idx + 1];
-            }
-
-            // else: idx == Count - 1 → at the live edge; return 0 so ProgressiveFileStream retries.
-        }
-
+        string? nextPath = GetNextChunkPath(_currentPath);
         if (nextPath is null)
         {
             return false;
         }
 
-        _currentStream.Dispose();
-        _currentPath = nextPath;
-        _currentStream = OpenChunkStream(nextPath);
-        return true;
+        // Open the replacement before disposing the current stream so we never end up
+        // with a disposed stream and no valid replacement. If the target chunk was evicted
+        // in the window between selecting it and opening it (TOCTOU race), step forward to
+        // the new oldest available chunk and retry.
+        while (nextPath is not null)
+        {
+            try
+            {
+                FileStream next = OpenChunkStream(nextPath);
+                _currentStream.Dispose();
+                _currentPath = nextPath;
+                _currentStream = next;
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                _logger.LogWarning(
+                    "Chunk {Path} was evicted before it could be opened; skipping to next available chunk",
+                    nextPath);
+                nextPath = GetNextChunkPath(nextPath);
+            }
+        }
+
+        return false;
     }
 
     private static FileStream OpenChunkStream(string path)
