@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
@@ -20,6 +21,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+    private readonly ILogger<PeopleValidationTask> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
@@ -27,11 +29,13 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
-    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory)
+    /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
+    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<PeopleValidationTask> logger)
     {
         _libraryManager = libraryManager;
         _localization = localization;
         _dbContextFactory = dbContextFactory;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -71,13 +75,13 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
+        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
         await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
 
-        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
+            subProgress = new Progress<double>((val) => progress.Report((val / 3) + 33));
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
@@ -124,6 +128,13 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             }
 
             subProgress.Report(100);
+            var peopleToDelete = await context.Peoples
+                .Where(p => !context.PeopleBaseItemMap.Any(m => m.PeopleId.Equals(p.Id)))
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+            _logger.LogInformation("Removed {Count} orphaned people.", peopleToDelete);
+
+            progress.Report(100);
         }
     }
 }
