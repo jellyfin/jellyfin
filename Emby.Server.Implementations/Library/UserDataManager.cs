@@ -329,22 +329,21 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var (primaryId, versions) in versionGroups)
             {
-                Video? resumeVersion = null;
                 UserItemData? resumeData = null;
                 foreach (var version in versions)
                 {
+                    // Consider both in-progress and completed versions so a finished alternate still marks the primary as played.
                     if (userDataByVersion.TryGetValue(version.Id, out var data)
-                        && data.PlaybackPositionTicks > 0
+                        && (data.PlaybackPositionTicks > 0 || data.Played)
                         && (resumeData is null || (data.LastPlayedDate ?? DateTime.MinValue) > (resumeData.LastPlayedDate ?? DateTime.MinValue)))
                     {
-                        resumeVersion = version;
                         resumeData = data;
                     }
                 }
 
                 if (resumeData is not null)
                 {
-                    result[primaryId] = new VersionResumeData(resumeData, resumeVersion!.RunTimeTicks);
+                    result[primaryId] = new VersionResumeData(resumeData);
                 }
             }
 

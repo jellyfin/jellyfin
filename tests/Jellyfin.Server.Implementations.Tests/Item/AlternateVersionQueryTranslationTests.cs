@@ -37,39 +37,43 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
     }
 
     [Fact]
-    public void ResumeFilter_VersionProgress_SurfacesPrimary()
+    public void ResumeFilter_VersionProgress_SurfacesPlayedVersion()
     {
-        Guid userId, primaryId, otherId;
+        Guid userId, primaryId, versionId, otherId;
 
         using (var ctx = CreateDbContext())
         {
-            (userId, primaryId, otherId) = Seed(ctx);
+            (userId, primaryId, versionId, otherId) = Seed(ctx);
         }
 
         using (var ctx = CreateDbContext())
         {
-            // Mirrors the resumable filter in BaseItemRepository.TranslateQuery: progress on any
-            // version coalesces onto the primary's id.
             var inProgress = ctx.UserData
                 .Where(ud => ud.UserId == userId && ud.PlaybackPositionTicks > 0);
-            var resumableMovieIds = inProgress
-                .Join(ctx.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
 
             // Scope to the seeded items; EnsureCreated also seeds a placeholder row.
-            var seededIds = new[] { primaryId, otherId };
+            var seededIds = new[] { primaryId, versionId, otherId };
 
+            // Mirrors the resumable=true filter in BaseItemRepository.TranslateQuery.
+            var inProgressIds = inProgress.Select(ud => ud.ItemId);
             var resumable = ctx.BaseItems
-                .Where(e => seededIds.Contains(e.Id) && e.PrimaryVersionId == null)
-                .Where(e => resumableMovieIds.Contains(e.Id))
+                .Where(e => seededIds.Contains(e.Id))
+                .Where(e => inProgressIds.Contains(e.Id))
+                .Where(e => !ctx.BaseItems
+                    .Where(s => s.Id != e.Id && (s.PrimaryVersionId ?? s.Id) == (e.PrimaryVersionId ?? e.Id))
+                    .Any(s => inProgress.Where(su => su.ItemId == s.Id).Max(su => su.LastPlayedDate)
+                        > inProgress.Where(eu => eu.ItemId == e.Id).Max(eu => eu.LastPlayedDate)))
                 .Select(e => e.Id)
                 .ToList();
 
-            Assert.Equal([primaryId], resumable);
+            Assert.Equal([versionId], resumable);
 
-            // The inverse (not-resumable) direction must exclude the primary as well.
+            // The not-resumable direction keeps primaries only.
+            var resumableMovieIds = inProgress
+                .Join(ctx.BaseItems, ud => ud.ItemId, bi => bi.Id, (ud, bi) => bi.PrimaryVersionId ?? bi.Id);
             var notResumable = ctx.BaseItems
                 .Where(e => seededIds.Contains(e.Id) && e.PrimaryVersionId == null)
-                .Where(e => resumableMovieIds.Contains(e.Id) == false)
+                .Where(e => !resumableMovieIds.Contains(e.Id))
                 .Select(e => e.Id)
                 .ToList();
 
@@ -84,7 +88,7 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
 
         using (var ctx = CreateDbContext())
         {
-            (userId, primaryId, otherId) = Seed(ctx);
+            (userId, primaryId, _, otherId) = Seed(ctx);
         }
 
         using (var ctx = CreateDbContext())
@@ -106,7 +110,7 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
         }
     }
 
-    private static (Guid UserId, Guid PrimaryId, Guid OtherId) Seed(JellyfinDbContext ctx)
+    private static (Guid UserId, Guid PrimaryId, Guid VersionId, Guid OtherId) Seed(JellyfinDbContext ctx)
     {
         var user = new User("test", "auth-provider", "reset-provider");
         ctx.Users.Add(user);
@@ -129,7 +133,7 @@ public sealed class AlternateVersionQueryTranslationTests : IDisposable
         });
 
         ctx.SaveChanges();
-        return (user.Id, primary.Id, other.Id);
+        return (user.Id, primary.Id, version.Id, other.Id);
     }
 
     private JellyfinDbContext CreateDbContext()

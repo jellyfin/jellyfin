@@ -9,36 +9,40 @@ namespace Jellyfin.Controller.Tests.Library;
 public class VersionResumeDataTests
 {
     [Fact]
-    public void ApplyTo_OverridesResumeFieldsAndPercentage()
+    public void ApplyTo_PropagatesCompletionButNotPosition()
     {
         var lastPlayed = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc);
         var resume = new VersionResumeData(
-            new UserItemData { Key = "version", PlaybackPositionTicks = 25, Played = true, LastPlayedDate = lastPlayed },
-            RunTimeTicks: 100);
+            new UserItemData { Key = "version", PlaybackPositionTicks = 25, Played = true, LastPlayedDate = lastPlayed });
 
         var dto = new UserItemDataDto { Key = "primary", PlaybackPositionTicks = 1, Played = false, PlayedPercentage = 1 };
 
         resume.ApplyTo(dto);
 
-        Assert.Equal(25, dto.PlaybackPositionTicks);
+        // Completion state propagates to the primary...
         Assert.True(dto.Played);
         Assert.Equal(lastPlayed, dto.LastPlayedDate);
 
-        // The percentage is based on the resume version's own runtime, not the primary's.
-        Assert.NotNull(dto.PlayedPercentage);
-        Assert.Equal(25.0, dto.PlayedPercentage.Value, 5);
+        // ...but the in-progress resume position stays on the version that owns it.
+        Assert.Equal(1, dto.PlaybackPositionTicks);
+        Assert.Equal(1.0, dto.PlayedPercentage);
     }
 
     [Fact]
-    public void ApplyTo_WithoutRuntime_LeavesPercentageUntouched()
+    public void ApplyTo_DoesNotUnsetExistingPlayedOrRegressLastPlayed()
     {
-        var resume = new VersionResumeData(new UserItemData { Key = "version", PlaybackPositionTicks = 25 }, null);
-        var dto = new UserItemDataDto { Key = "primary", PlayedPercentage = 42 };
+        var primaryLastPlayed = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
+        var versionLastPlayed = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc);
+        var resume = new VersionResumeData(
+            new UserItemData { Key = "version", Played = false, LastPlayedDate = versionLastPlayed });
+
+        var dto = new UserItemDataDto { Key = "primary", Played = true, LastPlayedDate = primaryLastPlayed };
 
         resume.ApplyTo(dto);
 
-        Assert.Equal(25, dto.PlaybackPositionTicks);
-        Assert.NotNull(dto.PlayedPercentage);
-        Assert.Equal(42.0, dto.PlayedPercentage.Value, 5);
+        // A not-yet-completed version must not clear the primary's own completion, and the more recent
+        // LastPlayedDate is kept.
+        Assert.True(dto.Played);
+        Assert.Equal(primaryLastPlayed, dto.LastPlayedDate);
     }
 }
