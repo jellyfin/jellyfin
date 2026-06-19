@@ -25,6 +25,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Configuration;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
@@ -2764,56 +2765,66 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
+            => CanStreamCopyAudio(state, audioStream, supportedAudioCodecs, out _);
+
+        /// <summary>
+        /// Determines whether the given audio stream can be stream-copied and, regardless of the outcome,
+        /// reports the codec/parameter incompatibilities that would force a re-encode via <paramref name="failureReasons"/>.
+        /// </summary>
+        /// <param name="state">The encoding job state.</param>
+        /// <param name="audioStream">The source audio stream.</param>
+        /// <param name="supportedAudioCodecs">The audio codecs the target supports.</param>
+        /// <param name="failureReasons">The codec/parameter incompatibilities preventing a copy, or <c>0</c> if the stream is copy-compatible.</param>
+        /// <returns><c>true</c> if the audio stream can be stream-copied; otherwise, <c>false</c>.</returns>
+        public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs, out TranscodeReason failureReasons)
         {
             var request = state.BaseRequest;
 
-            if (!request.AllowAudioStreamCopy)
-            {
-                return false;
-            }
+            // Policy-independent compatibility check, so the reasons are reported even when a policy gate is what ultimately prevents the copy.
+            failureReasons = GetAudioStreamCopyFailureReasons(state, audioStream, supportedAudioCodecs);
+
+            return request.AllowAudioStreamCopy
+                && request.EnableAutoStreamCopy
+                && failureReasons == 0;
+        }
+
+        private static TranscodeReason GetAudioStreamCopyFailureReasons(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
+        {
+            var request = state.BaseRequest;
+            TranscodeReason reasons = 0;
 
             var maxBitDepth = state.GetRequestedAudioBitDepth(audioStream.Codec);
             if (maxBitDepth.HasValue
                 && audioStream.BitDepth.HasValue
                 && audioStream.BitDepth.Value > maxBitDepth.Value)
             {
-                return false;
+                reasons |= TranscodeReason.AudioBitDepthNotSupported;
             }
 
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec)
                 || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                reasons |= TranscodeReason.AudioCodecNotSupported;
             }
 
             // Channels must fall within requested value
             var channels = state.GetRequestedAudioChannels(audioStream.Codec);
-            if (channels.HasValue)
+            if (channels.HasValue
+                && (!audioStream.Channels.HasValue
+                    || audioStream.Channels.Value <= 0
+                    || audioStream.Channels.Value > channels.Value))
             {
-                if (!audioStream.Channels.HasValue || audioStream.Channels.Value <= 0)
-                {
-                    return false;
-                }
-
-                if (audioStream.Channels.Value > channels.Value)
-                {
-                    return false;
-                }
+                reasons |= TranscodeReason.AudioChannelsNotSupported;
             }
 
             // Sample rate must fall within requested value
-            if (request.AudioSampleRate.HasValue)
+            if (request.AudioSampleRate.HasValue
+                && (!audioStream.SampleRate.HasValue
+                    || audioStream.SampleRate.Value <= 0
+                    || audioStream.SampleRate.Value > request.AudioSampleRate.Value))
             {
-                if (!audioStream.SampleRate.HasValue || audioStream.SampleRate.Value <= 0)
-                {
-                    return false;
-                }
-
-                if (audioStream.SampleRate.Value > request.AudioSampleRate.Value)
-                {
-                    return false;
-                }
+                reasons |= TranscodeReason.AudioSampleRateNotSupported;
             }
 
             // Audio bitrate must fall within requested value
@@ -2821,10 +2832,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && audioStream.BitRate.HasValue
                 && audioStream.BitRate.Value > request.AudioBitRate.Value)
             {
-                return false;
+                reasons |= TranscodeReason.AudioBitrateNotSupported;
             }
 
-            return request.EnableAutoStreamCopy;
+            return reasons;
         }
 
         public int GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
@@ -7401,20 +7412,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 state.OutputAudioCodec = "copy";
             }
-            else if (state.AudioStream is not null
-                && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs)
-                && !preventHlsAudioCopy)
-            {
-                state.OutputAudioCodec = "copy";
-            }
             else
             {
-                var user = state.User;
-
-                // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
-                if (user is not null && !user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                TranscodeReason audioCopyFailureReasons = 0;
+                if (state.AudioStream is not null
+                    && CanStreamCopyAudio(state, state.AudioStream, state.SupportedAudioCodecs, out audioCopyFailureReasons)
+                    && !preventHlsAudioCopy)
                 {
                     state.OutputAudioCodec = "copy";
+                }
+                else
+                {
+                    var user = state.User;
+
+                    // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
+                    if (user is not null && !user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                    {
+                        state.OutputAudioCodec = "copy";
+                    }
+                    else if (state.AudioStream is not null && !IsCopyCodec(state.OutputAudioCodec))
+                    {
+                        // Audio is actually being re-encoded although the playback determination may have considered the source copyable.
+                        // Only carry the primary "cannot be passed through" cause - the codec mismatch.
+                        // Bitrate/channels/sample-rate/bit-depth copy refusals are consequences of the chosen transcode target.
+                        state.AddTranscodeReason(audioCopyFailureReasons & TranscodeReason.AudioCodecNotSupported);
+                    }
                 }
             }
         }

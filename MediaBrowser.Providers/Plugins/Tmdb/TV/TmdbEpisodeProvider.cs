@@ -181,7 +181,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 ParentIndexNumber = seasonNumber,
                 IndexNumberEnd = info.IndexNumberEnd,
                 Name = episodeResult.Name,
-                PremiereDate = episodeResult.AirDate,
+                PremiereDate = episodeResult.AirDate.HasValue
+                    ? DateTime.SpecifyKind(episodeResult.AirDate.Value, DateTimeKind.Local).ToUniversalTime()
+                    : null,
                 ProductionYear = episodeResult.AirDate?.Year,
                 Overview = episodeResult.Overview,
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
