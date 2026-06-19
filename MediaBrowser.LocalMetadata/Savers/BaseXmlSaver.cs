@@ -513,18 +513,55 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             foreach (var link in linkedChildren)
             {
-                string? path = null;
-                if (pathById is not null && link.ItemId.HasValue && pathById.TryGetValue(link.ItemId.Value, out var resolvedPath))
-                {
-                    path = resolvedPath;
-                }
+                await WriteLinkedChild(writer, link, pathById, singularNodeName).ConfigureAwait(false);
+            }
 
-                if (!string.IsNullOrWhiteSpace(path))
-                {
-                    await writer.WriteStartElementAsync(null, singularNodeName, null).ConfigureAwait(false);
-                    await writer.WriteElementStringAsync(null, "Path", null, path).ConfigureAwait(false);
-                    await writer.WriteEndElementAsync().ConfigureAwait(false);
-                }
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Writes a single linked child, preserving the entry by its ItemId when the path cannot be resolved.
+        /// </summary>
+        /// <param name="writer">The xml writer.</param>
+        /// <param name="link">The linked child to write.</param>
+        /// <param name="pathById">The resolved item id to path lookup, or <c>null</c> if none were resolved.</param>
+        /// <param name="singularNodeName">The singular node name.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        private static async Task WriteLinkedChild(XmlWriter writer, LinkedChild link, IReadOnlyDictionary<Guid, string?>? pathById, string singularNodeName)
+        {
+            var hasItemId = !link.ItemId.GetValueOrDefault().Equals(Guid.Empty);
+
+            string? path = null;
+            if (pathById is not null && link.ItemId.HasValue && pathById.TryGetValue(link.ItemId.Value, out var resolvedPath))
+            {
+                path = resolvedPath;
+            }
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+#pragma warning disable CS0618 // Type or member is obsolete - legacy LinkedChild fallback
+                path = link.Path;
+#pragma warning restore CS0618
+            }
+
+            // When the path can't be resolved right now (e.g. the item is temporarily removed during a
+            // library scan), keep the entry by writing its ItemId so the scan doesn't silently empty the
+            // playlist/collection (#12008). Skip only when there is nothing left to reference.
+            if (string.IsNullOrWhiteSpace(path) && !hasItemId)
+            {
+                return;
+            }
+
+            await writer.WriteStartElementAsync(null, singularNodeName, null).ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                await writer.WriteElementStringAsync(null, "Path", null, path).ConfigureAwait(false);
+            }
+
+            if (hasItemId)
+            {
+                await writer.WriteElementStringAsync(null, "ItemId", null, link.ItemId.GetValueOrDefault().ToString("N", CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
             await writer.WriteEndElementAsync().ConfigureAwait(false);
