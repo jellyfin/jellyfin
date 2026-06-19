@@ -274,11 +274,15 @@ public class MoviesController : BaseJellyfinApiController
         {
             var similar = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
+                Genres = item.Genres,
+                Tags = item.Tags,
                 Limit = itemLimit,
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 EnableGroupByMetadataKey = true,
-                DtoOptions = dtoOptions
+                DtoOptions = dtoOptions,
+                ExcludeItemIds = [item.Id],
+                OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)]
             });
 
             if (similar.Count > 0)
