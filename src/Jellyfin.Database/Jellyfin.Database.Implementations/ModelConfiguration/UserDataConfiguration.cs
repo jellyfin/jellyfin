@@ -22,10 +22,6 @@ public class UserDataConfiguration : IEntityTypeConfiguration<UserData>
         builder.HasIndex(d => new { d.UserId, d.IsFavorite, d.ItemId });
         builder.HasIndex(d => new { d.ItemId, d.UserId, d.SkipCount });
         builder.HasIndex(d => new { d.UserId, d.SkipCount, d.ItemId });
-        builder.HasIndex(d => new { d.ItemId, d.UserId, d.LastSkippedDate });
-        builder.HasIndex(d => new { d.UserId, d.ItemId, d.LastSkippedDate });
-        builder.HasIndex(d => new { d.ItemId, d.UserId, d.PartiallyPlayed });
-        builder.HasIndex(d => new { d.UserId, d.PartiallyPlayed, d.ItemId });
         builder.HasOne(e => e.Item).WithMany(e => e.UserData);
     }
 }

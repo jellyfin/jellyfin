@@ -1462,8 +1462,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "LastPlayedDate");
 
-                    b.HasIndex("ItemId", "UserId", "LastSkippedDate");
-
                     b.HasIndex("ItemId", "UserId", "PlaybackPositionTicks");
 
                     b.HasIndex("ItemId", "UserId", "Played");
@@ -1473,8 +1471,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "IsFavorite", "ItemId");
 
                     b.HasIndex("UserId", "ItemId", "LastPlayedDate");
-
-                    b.HasIndex("UserId", "ItemId", "LastSkippedDate");
 
                     b.HasIndex("UserId", "Played", "ItemId");
 

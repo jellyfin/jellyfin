@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAudioSkipTracking : Migration
+    public partial class AddAudioSkipAndPartialPlayTracking : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,6 +17,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                 type: "TEXT",
                 nullable: true);
 
+            migrationBuilder.AddColumn<bool>(
+                name: "PartiallyPlayed",
+                table: "UserData",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: false);
+
             migrationBuilder.AddColumn<int>(
                 name: "SkipCount",
                 table: "UserData",
@@ -24,20 +31,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_ItemId_UserId_LastSkippedDate",
-                table: "UserData",
-                columns: new[] { "ItemId", "UserId", "LastSkippedDate" });
+            migrationBuilder.AddColumn<bool>(
+                name: "IsOriginal",
+                table: "MediaStreamInfos",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_ItemId_UserId_SkipCount",
                 table: "UserData",
                 columns: new[] { "ItemId", "UserId", "SkipCount" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserData_UserId_ItemId_LastSkippedDate",
-                table: "UserData",
-                columns: new[] { "UserId", "ItemId", "LastSkippedDate" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserData_UserId_SkipCount_ItemId",
@@ -49,15 +53,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_UserData_ItemId_UserId_LastSkippedDate",
-                table: "UserData");
-
-            migrationBuilder.DropIndex(
                 name: "IX_UserData_ItemId_UserId_SkipCount",
-                table: "UserData");
-
-            migrationBuilder.DropIndex(
-                name: "IX_UserData_UserId_ItemId_LastSkippedDate",
                 table: "UserData");
 
             migrationBuilder.DropIndex(
@@ -69,8 +65,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 table: "UserData");
 
             migrationBuilder.DropColumn(
+                name: "PartiallyPlayed",
+                table: "UserData");
+
+            migrationBuilder.DropColumn(
                 name: "SkipCount",
                 table: "UserData");
+
+            migrationBuilder.DropColumn(
+                name: "IsOriginal",
+                table: "MediaStreamInfos");
         }
     }
 }

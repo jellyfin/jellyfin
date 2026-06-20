@@ -83,14 +83,22 @@ public class UserDataManagerTests
 
         Assert.False(data.PartiallyPlayed);
     }
+
+    [Theory]
+    [InlineData(0, false)] // not started
+    [InlineData(5, false)] // not played
+    [InlineData(9, false)] // not played
+    [InlineData(10, false)] // partially played
+    [InlineData(50, false)] // partially played
+    [InlineData(90, false)] // partially played
+    [InlineData(91, true)] // fully played
+    [InlineData(100, true)] // fully played
     public void UpdatePlayState_Audio_ReturnsExpectedCompletion(int positionPct, bool expectedCompletion)
     {
         var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
         var item = new Audio { RunTimeTicks = ThreeMinuteSongTicks };
         var data = new UserItemData { Key = string.Empty };
-
         var result = manager.UpdatePlayState(item, data, PercentToTicks(ThreeMinuteSongTicks, positionPct));
-
         Assert.Equal(expectedCompletion, result);
         Assert.Equal(expectedCompletion, data.Played);
     }

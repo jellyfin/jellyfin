@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20260529024226_AddAudioSkipTracking")]
-    partial class AddAudioSkipTracking
+    [Migration("20260620112956_AddAudioSkipAndPartialPlayTracking")]
+    partial class AddAudioSkipAndPartialPlayTracking
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1435,6 +1435,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool?>("Likes")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("PartiallyPlayed")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PlayCount")
                         .HasColumnType("INTEGER");
 
@@ -1462,8 +1465,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("ItemId", "UserId", "LastPlayedDate");
 
-                    b.HasIndex("ItemId", "UserId", "LastSkippedDate");
-
                     b.HasIndex("ItemId", "UserId", "PlaybackPositionTicks");
 
                     b.HasIndex("ItemId", "UserId", "Played");
@@ -1473,8 +1474,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId", "IsFavorite", "ItemId");
 
                     b.HasIndex("UserId", "ItemId", "LastPlayedDate");
-
-                    b.HasIndex("UserId", "ItemId", "LastSkippedDate");
 
                     b.HasIndex("UserId", "Played", "ItemId");
 
