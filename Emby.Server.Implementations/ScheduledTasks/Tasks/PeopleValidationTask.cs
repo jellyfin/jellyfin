@@ -75,13 +75,10 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 3));
-        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
-
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
-            subProgress = new Progress<double>((val) => progress.Report((val / 3) + 33));
+            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
@@ -127,14 +124,18 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                 ArrayPool<Guid[]>.Shared.Return(buffer);
             }
 
-            subProgress.Report(100);
             var peopleToDelete = await context.Peoples
                 .Where(p => !context.PeopleBaseItemMap.Any(m => m.PeopleId.Equals(p.Id)))
                 .ExecuteDeleteAsync(cancellationToken)
                 .ConfigureAwait(false);
             _logger.LogInformation("Removed {Count} orphaned people.", peopleToDelete);
 
-            progress.Report(100);
+            subProgress.Report(100);
         }
+
+        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+        await _libraryManager.ValidatePeopleAsync(validateProgress, cancellationToken).ConfigureAwait(false);
+
+        progress.Report(100);
     }
 }
