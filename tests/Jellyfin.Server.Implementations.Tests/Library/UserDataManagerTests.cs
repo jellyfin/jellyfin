@@ -35,13 +35,13 @@ public class UserDataManagerTests
 
     [Theory]
     [InlineData(0, false)] // not started
-    [InlineData(5, false)] // not played
-    [InlineData(9, false)] // not played
-    [InlineData(10, false)] // partially played, not completed
-    [InlineData(50, false)] // partially played, not completed
-    [InlineData(90, false)] // partially played, not completed
-    [InlineData(91, true)] // fully played
-    [InlineData(100, true)] // fully played
+    [InlineData(5, false)] // skipped, not played
+    [InlineData(9, false)] // skipped, not played
+    [InlineData(10, true)] // partially played
+    [InlineData(50, true)] // partially played
+    [InlineData(90, true)] // partially played
+    [InlineData(91, false)] // fully played, flag cleared
+    [InlineData(100, false)] // fully played, flag cleared
     public void UpdatePlayState_Audio_SetsPartiallyPlayedCorrectly(int positionPct, bool expectedPartiallyPlayed)
     {
         var manager = CreateManager(minAudioResumePct: 10, maxAudioResumePct: 90);
