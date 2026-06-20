@@ -171,7 +171,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc/>
     public void RegisterProviderSpecificDbContextFactories(IServiceCollection services, DatabaseConfigurationOptions databaseConfiguration)
     {
-        // Register SQLite-specific DbContext factory for FTS operations
+        // Register a single pool for SqliteJellyfinDbContext (it already includes the FTS5 entities)
+        // and have it also back IDbContextFactory<JellyfinDbContext>, so the rest of the app - including
+        // migrations - gets a context whose model actually matches what was used to scaffold the FTS migration,
+        // instead of running a second, parallel pool against the same database just for FTS.
         services.AddPooledDbContextFactory<SqliteJellyfinDbContext>((serviceProvider, opt) =>
         {
             var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
@@ -179,6 +182,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
             lockingBehavior.Initialise(opt);
         });
+
+        services.AddSingleton<IDbContextFactory<JellyfinDbContext>>(serviceProvider =>
+            new DelegatingDbContextFactory<SqliteJellyfinDbContext>(serviceProvider.GetRequiredService<IDbContextFactory<SqliteJellyfinDbContext>>()));
     }
 
     /// <inheritdoc/>
