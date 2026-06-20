@@ -147,13 +147,19 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton<IJellyfinDatabaseProvider>(providerFactory!);
 
-        serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
+        // A provider may have already registered IDbContextFactory<JellyfinDbContext> itself in
+        // RegisterProviderSpecificDbContextFactories (e.g. backed by its own JellyfinDbContext subclass).
+        // Only fall back to the generic registration if it didn't.
+        if (!serviceCollection.Any(d => d.ServiceType == typeof(IDbContextFactory<JellyfinDbContext>)))
         {
-            var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
-            provider.Initialise(opt, efCoreConfiguration);
-            var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
-            lockingBehavior.Initialise(opt);
-        });
+            serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
+            {
+                var provider = serviceProvider.GetRequiredService<IJellyfinDatabaseProvider>();
+                provider.Initialise(opt, efCoreConfiguration);
+                var lockingBehavior = serviceProvider.GetRequiredService<IEntityFrameworkCoreLockingBehavior>();
+                lockingBehavior.Initialise(opt);
+            });
+        }
 
         return serviceCollection;
     }

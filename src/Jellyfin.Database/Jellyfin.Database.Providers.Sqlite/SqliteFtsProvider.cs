@@ -71,14 +71,14 @@ public class SqliteFtsProvider : IFullTextSearchProvider
 
         try
         {
-            var ftsIds = ftsQuery
-                .AsNoTracking()
-                .Where(fts => fts.Match == ftsMatchQuery)
-                .OrderBy(fts => fts.Rank)
-                .Select(fts => fts.Id)
-                .ToList(); // Materialize the FTS query results
-
-            return query.Where(item => ftsIds.Contains(((BaseItemEntity)(object)item).Id));
+            return query
+                .Join(
+                    ftsQuery.Where(fts => fts.Match == ftsMatchQuery),
+                    item => ((BaseItemEntity)(object)item).Id,
+                    fts => fts.Id,
+                    (item, fts) => new { item, fts.Rank })
+                .OrderBy(x => x.Rank)
+                .Select(x => x.item);
         }
         finally
         {
