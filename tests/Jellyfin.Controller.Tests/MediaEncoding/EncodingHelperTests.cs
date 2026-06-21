@@ -291,6 +291,30 @@ public class EncodingHelperTests
     }
 
     [Fact]
+    public void GetAmdDx11VidFiltersPrefered_LiveDvbsub_UsesOpenclOverlay()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var sub = new MediaStream { Index = 3, Type = MediaStreamType.Subtitle, Codec = "DVBSUB", Language = "dut" };
+        var state = BuildLiveDvbsubState(sub);
+        var options = new EncodingOptions { HardwareAccelerationType = HardwareAccelerationType.amf };
+
+        var (_, subFilters, overlayFilters) = CreateAmdHelper().GetAmdDx11VidFiltersPrefered(
+            state,
+            options,
+            " -hwaccel d3d11va -c:v h264",
+            "h264_amf");
+
+        Assert.NotEmpty(subFilters);
+        Assert.Contains(subFilters, f => f.Contains("format=yuva420p", StringComparison.Ordinal));
+        Assert.Contains(subFilters, f => f.Contains("hwupload=derive_device=opencl", StringComparison.Ordinal));
+        Assert.Contains(overlayFilters, f => f.Contains("overlay_opencl", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void GetHwaccelType_LiveDvbsubBurnIn_KeepsCudaHwSurface()
     {
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsWindows())
@@ -1157,6 +1181,11 @@ public class EncodingHelperTests
         mediaEncoder.Setup(m => m.SupportsFilter("overlay_rkrga")).Returns(true);
     }
 
+    private static void SetupD3d11Support(Mock<IMediaEncoder> mediaEncoder)
+    {
+        mediaEncoder.Setup(m => m.SupportsHwaccel("d3d11va")).Returns(true);
+    }
+
     private static EncodingHelper CreateNvencHelper()
     {
         var mediaEncoder = CreateBaseMediaEncoderMock();
@@ -1193,6 +1222,17 @@ public class EncodingHelperTests
         SetupRkmppSupport(mediaEncoder);
         SetupOpenclSupport(mediaEncoder);
         mediaEncoder.Setup(m => m.SupportsFilter("alphasrc")).Returns(true);
+        mediaEncoder.Setup(m => m.EncoderVersion).Returns(new Version(7, 1, 3));
+        return CreateEncodingHelper(mediaEncoder);
+    }
+
+    private static EncodingHelper CreateAmdHelper()
+    {
+        var mediaEncoder = CreateBaseMediaEncoderMock();
+        SetupD3d11Support(mediaEncoder);
+        SetupOpenclSupport(mediaEncoder);
+        mediaEncoder.Setup(m => m.SupportsFilter("alphasrc")).Returns(true);
+        mediaEncoder.Setup(m => m.SupportsFilterWithOption(FilterOptionType.OverlayOpenclAlphaFormat)).Returns(true);
         mediaEncoder.Setup(m => m.EncoderVersion).Returns(new Version(7, 1, 3));
         return CreateEncodingHelper(mediaEncoder);
     }
