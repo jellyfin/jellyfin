@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 
 namespace Jellyfin.Database.Providers.Sqlite.Extensions;
@@ -32,15 +33,8 @@ public static class Fts5QueryBuilder
         var result = new StringBuilder(searchTerm.Length * 2);
         var firstWord = true;
 
-        foreach (var word in words)
+        foreach (var cleanWord in words.Select(CleanWord).Where(w => !string.IsNullOrWhiteSpace(w)))
         {
-            var cleanWord = CleanWord(word);
-
-            if (string.IsNullOrWhiteSpace(cleanWord))
-            {
-                continue;
-            }
-
             if (!firstWord)
             {
                 result.Append(' ');
@@ -58,12 +52,9 @@ public static class Fts5QueryBuilder
     {
         var cleaned = new StringBuilder(word.Length);
 
-        foreach (var c in word)
+        foreach (var c in word.Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '\'' || c == '.'))
         {
-            if (char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '\'' || c == '.')
-            {
-                cleaned.Append(c);
-            }
+            cleaned.Append(c);
         }
 
         return cleaned.ToString();
