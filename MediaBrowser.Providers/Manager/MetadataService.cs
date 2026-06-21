@@ -831,8 +831,16 @@ namespace MediaBrowser.Providers.Manager
             var isLocalLocked = temp.Item.IsLocked;
             if (!isLocalLocked && (options.ReplaceAllMetadata || options.MetadataRefreshMode > MetadataRefreshMode.ValidationOnly))
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
-                    .ConfigureAwait(false);
+                var remoteProviders = providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>();
+
+                // When identifying, run the provider the user picked first so the correct IDs are used.
+                if (!string.IsNullOrEmpty(options.SearchResult?.SearchProviderName))
+                {
+                    remoteProviders = remoteProviders
+                        .OrderBy(i => string.Equals(i.Name, options.SearchResult.SearchProviderName, StringComparison.OrdinalIgnoreCase) ? 0 : 1);
+                }
+
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, false, id, remoteProviders, cancellationToken).ConfigureAwait(false);
 
                 refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
