@@ -19,7 +19,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
             return new SqliteJellyfinDbContext(
                 optionsBuilder.Options,
-                NullLogger<JellyfinDbContext>.Instance,
+                NullLogger<SqliteJellyfinDbContext>.Instance,
                 new SqliteDatabaseProvider(null!, NullLogger<SqliteDatabaseProvider>.Instance),
                 new NoLockBehavior(NullLogger<NoLockBehavior>.Instance));
         }

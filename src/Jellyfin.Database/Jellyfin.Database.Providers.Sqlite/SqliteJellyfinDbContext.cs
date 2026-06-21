@@ -16,7 +16,7 @@ namespace Jellyfin.Database.Providers.Sqlite;
 /// <param name="entityFrameworkCoreLocking">The locking behavior.</param>
 public class SqliteJellyfinDbContext(
     DbContextOptions options,
-    ILogger<JellyfinDbContext> logger,
+    ILogger<SqliteJellyfinDbContext> logger,
     IJellyfinDatabaseProvider jellyfinDatabaseProvider,
     IEntityFrameworkCoreLockingBehavior entityFrameworkCoreLocking)
     : JellyfinDbContext(options, logger, jellyfinDatabaseProvider, entityFrameworkCoreLocking)
