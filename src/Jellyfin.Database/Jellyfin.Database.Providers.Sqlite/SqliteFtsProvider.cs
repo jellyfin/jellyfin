@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Database.Implementations;
@@ -71,14 +72,11 @@ public class SqliteFtsProvider : IFullTextSearchProvider
 
         try
         {
-            return query
-                .Join(
-                    ftsQuery.Where(fts => fts.Match == ftsMatchQuery),
-                    item => ((BaseItemEntity)(object)item).Id,
-                    fts => fts.Id,
-                    (item, fts) => new { item, fts.Rank })
-                .OrderBy(x => x.Rank)
-                .Select(x => x.item);
+            var ftsIdsQuery = ftsQuery
+                .Where(fts => fts.Match == ftsMatchQuery)
+                .Select(fts => fts.Id);
+
+            return query.Where(item => ftsIdsQuery.Contains(((BaseItemEntity)(object)item).Id));
         }
         finally
         {
