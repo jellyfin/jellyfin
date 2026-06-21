@@ -25,6 +25,40 @@
                         <input is="emby-checkbox" type="checkbox" id="importSeasonName" />
                         <span>Import season name from metadata fetched for series.</span>
                     </label>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="importUnairedEpisodes" />
+                            <span>Create unaired (upcoming) episodes from metadata fetched for series.</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Adds virtual entries for episodes listed on TMDb that have not aired yet. This populates the "Upcoming" view. Specials are never added to the "Upcoming" view.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="importMissingEpisodes" />
+                            <span>Create missing episodes from metadata fetched for series.</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Adds virtual entries for episodes listed on TMDb that have already aired but are not present in your library. Missing episodes are only shown when enabled in the user display preferences. Both options increase scan times.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="importSpecials" />
+                            <span>Include specials when creating unaired and missing episodes.</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">When disabled, specials (season 0) are never added as virtual entries and any existing virtual specials are removed.</div>
+                    </div>
+                    <div class="inputContainer inputContainer-withDescription">
+                        <input is="emby-input" type="number" id="missingEpisodeRefreshIntervalDays" pattern="[0-9]*" required min="1" max="365" label="Episode refresh interval (days)" />
+                        <div class="fieldDescription">How often the scheduled task re-checks TMDb for newly announced unaired or missing episodes. Keeps the "Upcoming" view current for series whose local files have not changed.</div>
+                    </div>
+                    <div class="inputContainer inputContainer-withDescription">
+                        <input is="emby-input" type="number" id="upcomingEpisodeGracePeriodDays" pattern="[0-9]*" required min="0" max="365" label="Recently aired grace period (days)" />
+                        <div class="fieldDescription">When missing episodes are disabled, how many days a recently aired episode is kept in place before its placeholder is removed. This allows for the delay between an episode airing and its file being added to the library.</div>
+                    </div>
+                    <div class="verticalSection">
+                        <h2>Libraries</h2>
+                        <div class="fieldDescription" style="margin-bottom:1em;">Choose which TV libraries the unaired/missing episode options above apply to. The settings above are global; this only controls which libraries they run for. New libraries are enabled by default.</div>
+                        <div id="missingEpisodeLibraries"></div>
+                    </div>
                     <div class="verticalSection">
                         <h2>Cast & Crew Settings</h2>
                         <div class="inputContainer">
@@ -85,6 +119,29 @@
                     Dashboard.showLoadingMsg();
 
                     var clientConfig, pluginConfig;
+                    var populateMissingEpisodeLibraries = function (disabledLibraries) {
+                        var container = document.querySelector('#missingEpisodeLibraries');
+                        ApiClient.getVirtualFolders().then(function (folders) {
+                            // Series only live in TV libraries (and mixed-content libraries, which report
+                            // no collection type), so only those are worth listing here.
+                            var tvLibraries = folders.filter(function (folder) {
+                                return !folder.CollectionType || folder.CollectionType === 'tvshows';
+                            });
+
+                            if (tvLibraries.length === 0) {
+                                container.innerHTML = '<div class="fieldDescription">No TV libraries found.</div>';
+                                return;
+                            }
+
+                            container.innerHTML = tvLibraries.map(function (folder) {
+                                var checked = disabledLibraries.indexOf(folder.ItemId) === -1 ? ' checked' : '';
+                                return '<label class="checkboxContainer">'
+                                    + '<input is="emby-checkbox" type="checkbox" class="missingEpisodeLibrary" data-library-id="' + folder.ItemId + '"' + checked + ' />'
+                                    + '<span>' + folder.Name + '</span>'
+                                    + '</label>';
+                            }).join('');
+                        });
+                    }
                     var configureImageScaling = function() {
                         if (clientConfig === undefined || pluginConfig === undefined) {
                             return;
@@ -151,8 +208,15 @@
                         document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
                         document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
                         document.querySelector('#importSeasonName').checked = config.ImportSeasonName;
+                        document.querySelector('#importUnairedEpisodes').checked = config.ImportUnairedEpisodes;
+                        document.querySelector('#importMissingEpisodes').checked = config.ImportMissingEpisodes;
+                        document.querySelector('#importSpecials').checked = config.ImportSpecials;
+                        document.querySelector('#missingEpisodeRefreshIntervalDays').value = config.MissingEpisodeRefreshIntervalDays;
+                        document.querySelector('#upcomingEpisodeGracePeriodDays').value = config.UpcomingEpisodeGracePeriodDays;
                         document.querySelector('#hideMissingCastMembers').checked = config.HideMissingCastMembers;
                         document.querySelector('#hideMissingCrewMembers').checked = config.HideMissingCrewMembers;
+
+                        populateMissingEpisodeLibraries(config.DisabledMissingEpisodeLibraries || []);
 
                         var maxCastMembers = document.querySelector('#maxCastMembers');
                         maxCastMembers.value = config.MaxCastMembers;
@@ -189,6 +253,14 @@
                         config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
                         config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
                         config.ImportSeasonName = document.querySelector('#importSeasonName').checked;
+                        config.ImportUnairedEpisodes = document.querySelector('#importUnairedEpisodes').checked;
+                        config.ImportMissingEpisodes = document.querySelector('#importMissingEpisodes').checked;
+                        config.ImportSpecials = document.querySelector('#importSpecials').checked;
+                        config.MissingEpisodeRefreshIntervalDays = parseInt(document.querySelector('#missingEpisodeRefreshIntervalDays').value, 10);
+                        config.UpcomingEpisodeGracePeriodDays = parseInt(document.querySelector('#upcomingEpisodeGracePeriodDays').value, 10);
+                        config.DisabledMissingEpisodeLibraries = Array.prototype.map.call(
+                            document.querySelectorAll('.missingEpisodeLibrary:not(:checked)'),
+                            function (checkbox) { return checkbox.getAttribute('data-library-id'); });
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
                         config.MaxCrewMembers = document.querySelector('#maxCrewMembers').value;
                         config.HideMissingCastMembers = document.querySelector('#hideMissingCastMembers').checked;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.MatchCriteria;
 
@@ -12,6 +13,14 @@ namespace Jellyfin.Database.Implementations;
 /// </summary>
 public static class DescendantQueryHelper
 {
+    /// <summary>
+    /// Gets the predicate identifying items that count toward played/total aggregation:
+    /// real leaf media, i.e. neither folders nor virtual items (missing or unaired episodes).
+    /// Shared by the per-item and batched count paths so they cannot diverge.
+    /// </summary>
+    public static Expression<Func<BaseItemEntity, bool>> IsCountableLeaf { get; } =
+        b => !b.IsFolder && !b.IsVirtualItem;
+
     /// <summary>
     /// Gets a queryable of all descendant IDs for a parent item.
     /// Traverses AncestorIds and LinkedChildren to find all descendants.

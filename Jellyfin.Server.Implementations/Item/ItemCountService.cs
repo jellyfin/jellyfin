@@ -293,7 +293,8 @@ public class ItemCountService : IItemCountService
 
         var allDescendantIds = DescendantQueryHelper.GetAllDescendantIds(dbContext, parentId);
         var baseQuery = dbContext.BaseItems
-            .Where(b => allDescendantIds.Contains(b.Id) && !b.IsFolder && !b.IsVirtualItem);
+            .Where(b => allDescendantIds.Contains(b.Id))
+            .Where(DescendantQueryHelper.IsCountableLeaf);
         baseQuery = _queryHelpers.ApplyAccessFiltering(dbContext, baseQuery, filter);
 
         return GetPlayedAndTotalCountFromQuery(baseQuery, filter.User.Id);
@@ -354,7 +355,7 @@ public class ItemCountService : IItemCountService
         var userId = user.Id;
 
         var leafItems = dbContext.BaseItems
-            .Where(b => !b.IsFolder && !b.IsVirtualItem);
+            .Where(DescendantQueryHelper.IsCountableLeaf);
         leafItems = _queryHelpers.ApplyAccessFiltering(dbContext, leafItems, filter);
 
         var playedLeafItems = leafItems
