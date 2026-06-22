@@ -21,8 +21,8 @@ jobs:
       - name: Remove from 'Current Release' project
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
         if: >-
-          (github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'stable backport')) ||
-          (github.event.issue && github.event.issue.pull_request && !contains(github.event.issue.labels.*.name, 'stable backport'))
+          (github.event.pull_request && github.event.pull_request.labels && !contains(github.event.pull_request.labels.*.name, 'stable backport')) ||
+          (github.event.issue && github.event.issue.pull_request && github.event.issue.labels && !contains(github.event.issue.labels.*.name, 'stable backport'))
         continue-on-error: true
         with:
           project: Current Release
@@ -45,8 +45,8 @@ jobs:
       - name: Add to 'Current Release' project
         uses: alex-page/github-project-automation-plus@303f24a24c67ce7adf565a07e96720faf126fe36 # v0.9.0
         if: >-
-          (github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'stable backport')) ||
-          (github.event.issue && github.event.issue.pull_request && !contains(github.event.issue.labels.*.name, 'stable backport'))
+          (github.event.pull_request && github.event.pull_request.labels && !contains(github.event.pull_request.labels.*.name, 'stable backport')) ||
+          (github.event.issue && github.event.issue.pull_request && github.event.issue.labels && !contains(github.event.issue.labels.*.name, 'stable backport'))
         continue-on-error: true
         with:
           project: Current Release
