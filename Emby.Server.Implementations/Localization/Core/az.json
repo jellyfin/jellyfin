@@ -1,1 +1,19 @@
-{}
+{
+    "Books": "Kitablar",
+    "HomeVideos": "Ev Videoları",
+    "Latest": "Ən son",
+    "MixedContent": "Qarışıq məzmun",
+    "Movies": "Filmlər",
+    "Music": "Musiqi",
+    "MusicVideos": "Musiqi Videoları",
+    "NameSeasonUnknown": "Mövsüm Naməlum",
+    "NewVersionIsAvailable": "Jellyfin Serverin yeni versiyası yükləmək üçün əlçatandır.",
+    "NotificationOptionApplicationUpdateAvailable": "Tətbiq yeniləməsi mövcuddur",
+    "NotificationOptionApplicationUpdateInstalled": "Tətbiq yeniləməsi quraşdırılıb",
+    "NotificationOptionAudioPlayback": "Audio oxutma başladı",
+    "NotificationOptionAudioPlaybackStopped": "Audio oxutma dayandırıldı",
+    "NotificationOptionCameraImageUploaded": "Kamera şəkli yükləndi",
+    "NotificationOptionInstallationFailed": "Quraşdırma uğursuzluğu",
+    "NotificationOptionNewLibraryContent": "Yeni məzmun əlavə edildi",
+    "NotificationOptionPluginError": "Plugin uğursuzluğu"
+}
