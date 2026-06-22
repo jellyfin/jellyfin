@@ -19,7 +19,7 @@ jobs:
     if: >-
       contains(github.repository, 'haos-jellyfin') &&
       github.event.issue && github.event.issue.pull_request != null &&
-      github.event.comment && contains(github.event.comment.body, '@jellyfin-bot rebase') &&
+      github.event.comment && github.event.comment.body && contains(github.event.comment.body, '@jellyfin-bot rebase') &&
       github.event.comment.author_association == 'MEMBER'
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +45,7 @@ jobs:
     name: Rename
     if: >-
       contains(github.repository, 'haos-jellyfin') &&
-      github.event.comment && contains(github.event.comment.body, '@jellyfin-bot rename') &&
+      github.event.comment && github.event.comment.body && contains(github.event.comment.body, '@jellyfin-bot rename') &&
       github.event.comment.author_association == 'MEMBER'
     runs-on: ubuntu-latest
     steps:
