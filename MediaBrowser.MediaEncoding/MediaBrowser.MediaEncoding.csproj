@@ -14,7 +14,7 @@
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>MediaBrowser.MediaEncoding</PackageId>
-    <VersionPrefix>12.0.1</VersionPrefix>
+    <VersionPrefix>12.0.2</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>

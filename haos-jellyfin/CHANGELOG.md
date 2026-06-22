@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.2
+- Automated version bump to 12.0.2.
+
 ## 12.0.1
 - Standardized versioning across all components.
 - Updated project to .NET 10.
