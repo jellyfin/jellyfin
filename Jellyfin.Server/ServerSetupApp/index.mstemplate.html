@@ -316,12 +316,12 @@
             {{^IF isInReportingMode}}
             <div class="status-card">
                 <div class="spinner" aria-hidden="true"></div>
-                <p class="status-text">Jellyfin Server {{version.ToString(2)}} is still starting. Please wait&hellip; {{currentActivity}}</p>
+                <p class="status-text">Jellyfin is still starting. Please wait&hellip; {{currentActivity}}</p>
             </div>
             {{#ELSE}}
             <div class="status-card is-error">
                 <span class="error-mark" aria-hidden="true">❌</span>
-                <p class="status-text">Jellyfin Server {{version.ToString(2)}} has encountered an error and was not able to start.</p>
+                <p class="status-text">Jellyfin has encountered an error and was not able to start.</p>
             </div>
             {{/ELSE}}
             {{/IF}}
