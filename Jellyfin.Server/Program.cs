@@ -133,10 +133,12 @@ namespace Jellyfin.Server
                 }
             }
 
+            SetupServer.ReportActivity(StartupActivity.CheckingStorage);
             StorageHelper.TestCommonPathsForStorageCapacity(appPaths, StartupLogger.Logger.With(_loggerFactory.CreateLogger<Startup>()).BeginGroup($"Storage Check"));
 
             StartupHelpers.PerformStaticInitialization();
 
+            SetupServer.ReportActivity(StartupActivity.Initializing);
             await ApplyStartupMigrationAsync(appPaths, startupConfig, options).ConfigureAwait(false);
 
             do
@@ -195,6 +197,7 @@ namespace Jellyfin.Server
 
                 if (!string.IsNullOrWhiteSpace(_restoreFromBackup))
                 {
+                    SetupServer.ReportActivity(StartupActivity.RestoringBackup);
                     await appHost.ServiceProvider.GetService<IBackupService>()!.RestoreBackupAsync(_restoreFromBackup).ConfigureAwait(false);
                     _restoreFromBackup = null;
                     _restartOnShutdown = true;
@@ -202,9 +205,12 @@ namespace Jellyfin.Server
                 }
 
                 var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(appHost.ServiceProvider);
+                SetupServer.ReportActivity(StartupActivity.PreparingMigrations);
                 await jellyfinMigrationService.PrepareSystemForMigration(_logger).ConfigureAwait(false);
+                SetupServer.ReportActivity(StartupActivity.ApplyingMigrations);
                 await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
+                SetupServer.ReportActivity(StartupActivity.InitializingServices);
                 await appHost.InitializeServices(startupConfig).ConfigureAwait(false);
                 _appHost = appHost;
 
