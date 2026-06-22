@@ -41,7 +41,8 @@
             background-color: var(--jf-bg);
             background-image: radial-gradient(circle at 50% -10%, var(--jf-bg-accent), var(--jf-bg) 60%);
             color: var(--jf-text);
-            padding: 2.5rem 1rem 4rem;
+            /* Bottom padding doubles as the minimum gap the log viewport keeps from the window bottom. */
+            padding: 2.5rem 1rem 50px;
         }
 
         .flex-row {
@@ -160,6 +161,25 @@
 
         .logs-panel .download-logs:hover {
             text-decoration: underline;
+        }
+
+        /* Bounded, scrollable log viewport that scales with the window height. */
+        .logs-panel .logs-scroll {
+            max-height: 60vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding-right: 0.25rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--jf-border) transparent;
+        }
+
+        .logs-panel .logs-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .logs-panel .logs-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--jf-border);
+            border-radius: 4px;
         }
 
         ol.action-list * {
@@ -314,7 +334,7 @@
             <details open>
                 <summary>{{DateOfCreation}} - {{Content}}</summary>
                 <ul class="action-list">
-                    {{--| #EACH children.Reverse() |-}}
+                    {{--| #EACH children |-}}
                     {{#IMPORT 'LogEntry'}}
                     {{--| /EACH |-}}
                 </ul>
@@ -332,22 +352,106 @@
                 <h2>Startup log</h2>
                 <a class="download-logs" href='/startup/logger' target="_blank">Download full logs</a>
             </div>
-            <ol class="action-list">
-                {{#FOREACH log IN logs.Reverse()}}
-                {{#IMPORT 'LogEntry' #WITH log}}
-                {{/FOREACH}}
-            </ol>
+            <div class="logs-scroll" id="logs-scroll">
+                <ol class="action-list">
+                    {{#FOREACH log IN logs}}
+                    {{#IMPORT 'LogEntry' #WITH log}}
+                    {{/FOREACH}}
+                </ol>
+            </div>
         </div>
         {{/IF}}
     </div>
-</body>
+    <script>
+        (function () {
+            var reporting = false;
+            {{#IF isInReportingMode}}
+            reporting = true;
+            {{/IF}}
+            var intervalMs = {{ retryValue.TotalMilliseconds }};
 
-{{^IF isInReportingMode}}
-<script>
-    setTimeout(() => {
-        window.location.reload();
-    }, {{ retryValue.TotalMilliseconds }});
-</script>
-{{/IF}}
+            var box = document.getElementById('logs-scroll');
+            var panel = box ? box.closest('.logs-panel') : null;
+
+            function px(el, prop) {
+                return el ? (parseFloat(getComputedStyle(el)[prop]) || 0) : 0;
+            }
+
+            // Size the log viewport so the panel never runs past the bottom of the window
+            // (keeping the body's bottom padding as the margin). Recomputed on resize.
+            function fit() {
+                if (!box) {
+                    return;
+                }
+                var topFromDoc = box.getBoundingClientRect().top + window.scrollY;
+                var below = px(panel, 'paddingBottom') + px(document.body, 'paddingBottom');
+                box.style.maxHeight = Math.max(window.innerHeight - topFromDoc - below, 120) + 'px';
+            }
+
+            function nearBottom(el) {
+                return el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+            }
+
+            fit();
+            window.addEventListener('resize', fit);
+            window.addEventListener('load', fit);
+            if (box) {
+                box.scrollTop = box.scrollHeight; // start pinned to the newest entry
+            }
+
+            // In the terminal error state the page is static, so stop here.
+            if (reporting) {
+                return;
+            }
+
+            // Soft refresh: pull the page in the background and swap the log list + activity line in
+            // place, so polling never disturbs where the user has scrolled. Only follow to the bottom
+            // when the user is already there. A real reload happens only on the final transition.
+            function poll() {
+                fetch(window.location.href, { cache: 'no-store' }).then(function (resp) {
+                    if (resp.ok) {
+                        // The real server is now answering (HTTP 200) -> load the actual app.
+                        window.location.reload();
+                        return null;
+                    }
+                    return resp.text();
+                }).then(function (html) {
+                    if (!html) {
+                        return;
+                    }
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+
+                    // Startup failed and the page switched to the error view -> reload to render it.
+                    if (doc.querySelector('.status-card.is-error')) {
+                        window.location.reload();
+                        return;
+                    }
+
+                    var newStatus = doc.querySelector('.status-text');
+                    var curStatus = document.querySelector('.status-text');
+                    if (newStatus && curStatus) {
+                        curStatus.innerHTML = newStatus.innerHTML;
+                    }
+
+                    if (box) {
+                        var newList = doc.querySelector('#logs-scroll .action-list');
+                        var curList = box.querySelector('.action-list');
+                        if (newList && curList) {
+                            var stick = nearBottom(box);
+                            var prevTop = box.scrollTop;
+                            curList.replaceWith(document.importNode(newList, true));
+                            fit();
+                            box.scrollTop = stick ? box.scrollHeight : prevTop;
+                        }
+                    }
+                }).catch(function () {
+                    // Server is mid-transition (port rebinding); just try again on the next tick.
+                });
+            }
+
+            setInterval(poll, intervalMs);
+        })();
+    </script>
+</body>
 
 </html>
