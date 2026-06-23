@@ -282,3 +282,4 @@ mono_crash.*.json
 # Devcontainer temp files
 .devcontainer/devcontainer-lock.json
 dotnet/
+out/

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11222.15 d18.0
@@ -64,40 +64,40 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Model.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{68B0B823-A5AC-4E8B-82EA-965AAC7BF76E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{68B0B823-A5AC-4E8B-82EA-965AAC7BF76E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Providers.Tests", "tests\Jellyfin.Providers.Tests\Jellyfin.Providers.Tests.csproj", "{A964008C-2136-4716-B6CB-B3426C22320A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Providers.Tests", "tests\Jellyfin.Providers.Tests\Jellyfin.Providers.Tests.csproj", "{A964008C-2136-4716-B6CB-B3426C22320A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Extensions", "src\Jellyfin.Extensions\Jellyfin.Extensions.csproj", "{750B8757-BE3D-4F8C-941A-FBAD94904ADA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Extensions", "src\Jellyfin.Extensions\Jellyfin.Extensions.csproj", "{750B8757-BE3D-4F8C-941A-FBAD94904ADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Extensions.Tests", "tests\Jellyfin.Extensions.Tests\Jellyfin.Extensions.Tests.csproj", "{332A5C7A-F907-47CA-910E-BE6F7371B9E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Extensions.Tests", "tests\Jellyfin.Extensions.Tests\Jellyfin.Extensions.Tests.csproj", "{332A5C7A-F907-47CA-910E-BE6F7371B9E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Keyframes", "src\Jellyfin.MediaEncoding.Keyframes\Jellyfin.MediaEncoding.Keyframes.csproj", "{06535CA1-4097-4360-85EB-5FB875D53239}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.MediaEncoding.Keyframes", "src\Jellyfin.MediaEncoding.Keyframes\Jellyfin.MediaEncoding.Keyframes.csproj", "{06535CA1-4097-4360-85EB-5FB875D53239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Hls", "src\Jellyfin.MediaEncoding.Hls\Jellyfin.MediaEncoding.Hls.csproj", "{DA9FD356-4894-4830-B208-D6BCE3E65B11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.MediaEncoding.Hls", "src\Jellyfin.MediaEncoding.Hls\Jellyfin.MediaEncoding.Hls.csproj", "{DA9FD356-4894-4830-B208-D6BCE3E65B11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Hls.Tests", "tests\Jellyfin.MediaEncoding.Hls.Tests\Jellyfin.MediaEncoding.Hls.Tests.csproj", "{FE47334C-EFDE-4519-BD50-F24430FF360B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.MediaEncoding.Hls.Tests", "tests\Jellyfin.MediaEncoding.Hls.Tests\Jellyfin.MediaEncoding.Hls.Tests.csproj", "{FE47334C-EFDE-4519-BD50-F24430FF360B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Keyframes.Tests", "tests\Jellyfin.MediaEncoding.Keyframes.Tests\Jellyfin.MediaEncoding.Keyframes.Tests.csproj", "{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.MediaEncoding.Keyframes.Tests", "tests\Jellyfin.MediaEncoding.Keyframes.Tests\Jellyfin.MediaEncoding.Keyframes.Tests.csproj", "{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.LiveTv.Tests", "tests\Jellyfin.LiveTv.Tests\Jellyfin.LiveTv.Tests.csproj", "{C4F71272-C6BE-4C30-BE0D-4E6ED651D6D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.LiveTv.Tests", "tests\Jellyfin.LiveTv.Tests\Jellyfin.LiveTv.Tests.csproj", "{C4F71272-C6BE-4C30-BE0D-4E6ED651D6D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.LiveTv", "src\Jellyfin.LiveTv\Jellyfin.LiveTv.csproj", "{8C6B2B13-58A4-4506-9DAB-1F882A093FE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.LiveTv", "src\Jellyfin.LiveTv\Jellyfin.LiveTv.csproj", "{8C6B2B13-58A4-4506-9DAB-1F882A093FE0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jellyfin.Database", "Jellyfin.Database", "{4C54CE05-69C8-48FA-8785-39F7F6DB1CAD}"
 	ProjectSection(SolutionItems) = preProject
 		src\Jellyfin.Database\readme.md = src\Jellyfin.Database\readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Providers.Sqlite", "src\Jellyfin.Database\Jellyfin.Database.Providers.Sqlite\Jellyfin.Database.Providers.Sqlite.csproj", "{A5590358-33CC-4B39-BDE7-DC62FEB03C76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Database.Providers.Sqlite", "src\Jellyfin.Database\Jellyfin.Database.Providers.Sqlite\Jellyfin.Database.Providers.Sqlite.csproj", "{A5590358-33CC-4B39-BDE7-DC62FEB03C76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Database.Implementations", "src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj", "{8C9F9221-8415-496C-B1F5-E7756F03FA59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Database.Implementations", "src\Jellyfin.Database\Jellyfin.Database.Implementations\Jellyfin.Database.Implementations.csproj", "{8C9F9221-8415-496C-B1F5-E7756F03FA59}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.CodeAnalysis", "src\Jellyfin.CodeAnalysis\Jellyfin.CodeAnalysis.csproj", "{11643D0F-6761-4EF7-AB71-6F9F8DE00714}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.CodeAnalysis", "src\Jellyfin.CodeAnalysis\Jellyfin.CodeAnalysis.csproj", "{11643D0F-6761-4EF7-AB71-6F9F8DE00714}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
