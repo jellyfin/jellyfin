@@ -175,7 +175,7 @@ public class MediaStreamRepository : IMediaStreamRepository
                 var culture = _localization.FindLanguageInfo(dto.Language);
                 // Truncate at the first delimiter to avoid cluttered display names
                 dto.LocalizedLanguage = culture?.DisplayName is { } name
-                    ? name.Split(';', ',')[0].Trim()
+                    ? name.Split([';', ','])[0].Trim()
                     : null;
             }
 
