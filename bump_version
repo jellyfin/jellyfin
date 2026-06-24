@@ -38,6 +38,11 @@ jellyfin_subprojects=(
   src/Jellyfin.Drawing.Skia/Jellyfin.Drawing.Skia.csproj
   src/Jellyfin.LiveTv/Jellyfin.LiveTv.csproj
   src/Jellyfin.Networking/Jellyfin.Networking.csproj
+  Emby.Photos/Emby.Photos.csproj
+  MediaBrowser.LocalMetadata/MediaBrowser.LocalMetadata.csproj
+  MediaBrowser.Providers/MediaBrowser.Providers.csproj
+  MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj
+  src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj
 )
 issue_template_file="./.github/ISSUE_TEMPLATE/issue report.yml"
 haos_config_file="./haos-jellyfin/config.yaml"
