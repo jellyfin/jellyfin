@@ -9,6 +9,8 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -107,5 +109,69 @@ public class SessionManagerTests
         };
 
         return data;
+    }
+
+    [Fact]
+    public async Task OnPlaybackStopped_WithoutLiveStreamId_ClosesMappedLiveStream()
+    {
+        const string LiveStreamId = "live-stream-1";
+
+        var user = new User("test", "default", "default");
+
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager
+            .Setup(x => x.CloseLiveStream(It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var userManager = new Mock<IUserManager>();
+        userManager.Setup(x => x.GetUserById(user.Id)).Returns(user);
+
+        var configManager = new Mock<IServerConfigurationManager>();
+        configManager.Setup(x => x.Configuration).Returns(new ServerConfiguration());
+
+        await using var sessionManager = new Emby.Server.Implementations.Session.SessionManager(
+            NullLogger<Emby.Server.Implementations.Session.SessionManager>.Instance,
+            Mock.Of<IEventManager>(),
+            Mock.Of<IUserDataManager>(),
+            configManager.Object,
+            Mock.Of<ILibraryManager>(),
+            userManager.Object,
+            Mock.Of<IMusicManager>(),
+            Mock.Of<IDtoService>(),
+            Mock.Of<IImageProcessor>(),
+            Mock.Of<IServerApplicationHost>(),
+            Mock.Of<IDeviceManager>(),
+            mediaSourceManager.Object,
+            Mock.Of<IHostApplicationLifetime>());
+
+        var session = await sessionManager.LogSessionActivity(
+            "TestApp",
+            "1.0.0",
+            "device-1",
+            "Test Device",
+            "127.0.0.1",
+            user);
+
+        // Client reports the live stream id on playback start, populating the
+        // session -> live stream mapping.
+        await sessionManager.OnPlaybackStart(new PlaybackStartInfo
+        {
+            SessionId = session.Id,
+            ItemId = Guid.Empty,
+            LiveStreamId = LiveStreamId,
+            PlaySessionId = "play-session-1"
+        });
+
+        // Client stops playback WITHOUT echoing the live stream id (e.g. Roku,
+        // Android, Swiftfin). The live stream must still be released.
+        await sessionManager.OnPlaybackStopped(new PlaybackStopInfo
+        {
+            SessionId = session.Id,
+            ItemId = Guid.Empty,
+            PositionTicks = 0,
+            LiveStreamId = null
+        });
+
+        mediaSourceManager.Verify(x => x.CloseLiveStream(LiveStreamId), Times.Once);
     }
 }

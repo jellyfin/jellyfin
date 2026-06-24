@@ -317,6 +317,10 @@ namespace Emby.Server.Implementations.Session
                     await CloseLiveStreamIfNeededAsync(session.PlayState.LiveStreamId, session.Id).ConfigureAwait(false);
                 }
 
+                // Close any live streams that are still mapped to this session but were
+                // not reported via PlayState (e.g. the client never sent a clean stop).
+                await CloseLiveStreamsForSessionAsync(session.Id).ConfigureAwait(false);
+
                 await OnSessionEnded(session).ConfigureAwait(false);
             }
         }
@@ -354,6 +358,37 @@ namespace Emby.Server.Implementations.Session
                 {
                     _logger.LogError(ex, "Error closing live stream");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Closes any live streams still associated with the given session.
+        /// </summary>
+        /// <remarks>
+        /// Some clients report playback stopped without a LiveStreamId, and the transcode
+        /// kill path does not close the live stream on its own. Without this fallback the
+        /// underlying shared live stream is never closed, its consumer count never reaches
+        /// zero, and the tuner keeps copying to disk until the server is restarted.
+        /// </remarks>
+        /// <param name="sessionId">The session id.</param>
+        /// <returns>A task.</returns>
+        private async Task CloseLiveStreamsForSessionAsync(string sessionId)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return;
+            }
+
+            // Snapshot the matching live stream ids first to avoid mutating the
+            // dictionary while enumerating it.
+            var liveStreamIds = _activeLiveStreamSessions
+                .Where(kvp => kvp.Value.ContainsKey(sessionId))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var liveStreamId in liveStreamIds)
+            {
+                await CloseLiveStreamIfNeededAsync(liveStreamId, sessionId).ConfigureAwait(false);
             }
         }
 
@@ -1022,6 +1057,8 @@ namespace Emby.Server.Implementations.Session
                     await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
                 }
 
+                await CloseLiveStreamsForSessionAsync(session.Id).ConfigureAwait(false);
+
                 throw new ArgumentOutOfRangeException(nameof(info), "The PlaybackStopInfo's PositionTicks was negative.");
             }
 
@@ -1093,6 +1130,10 @@ namespace Emby.Server.Implementations.Session
             {
                 await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
             }
+
+            // Fallback: some clients (e.g. Swiftfin) report playback stopped without a
+            // LiveStreamId, which would otherwise leak the underlying shared live stream.
+            await CloseLiveStreamsForSessionAsync(session.Id).ConfigureAwait(false);
 
             var eventArgs = new PlaybackStopEventArgs
             {
