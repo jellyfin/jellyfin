@@ -5,6 +5,14 @@
     <ProjectGuid>{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}</ProjectGuid>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Authors>Jellyfin Contributors</Authors>
+    <PackageId>Jellyfin.LocalMetadata</PackageId>
+    <VersionPrefix>12.0.2</VersionPrefix>
+    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
