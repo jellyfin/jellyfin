@@ -30,6 +30,11 @@ jellyfin_subprojects=(
   src/Jellyfin.MediaEncoding.Keyframes/Jellyfin.MediaEncoding.Keyframes.csproj
   src/Jellyfin.MediaEncoding.Hls/Jellyfin.MediaEncoding.Hls.csproj
   src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj
+  src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj
+  Emby.Photos/Emby.Photos.csproj
+  MediaBrowser.LocalMetadata/MediaBrowser.LocalMetadata.csproj
+  MediaBrowser.Providers/MediaBrowser.Providers.csproj
+  MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj
   Jellyfin.Api/Jellyfin.Api.csproj
   Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj
   Emby.Server.Implementations/Emby.Server.Implementations.csproj
