@@ -106,15 +106,15 @@ jobs:
         id: diff
         run: |
           {
-            echo 'body<<EOF'
-            for file in jellyfin.dll Jellyfin.Api.dll Jellyfin.Data.dll Jellyfin.Server.Implementations.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll MediaBrowser.MediaEncoding.dll Emby.Naming.dll Emby.Server.Implementations.dll Jellyfin.Extensions.dll Jellyfin.MediaEncoding.Keyframes.dll Jellyfin.MediaEncoding.Hls.dll Jellyfin.Database.Implementations.dll Jellyfin.Networking.dll Jellyfin.Drawing.dll Jellyfin.Drawing.Skia.dll Jellyfin.LiveTv.dll Emby.Photos.dll Jellyfin.Database.Providers.Sqlite.dll MediaBrowser.LocalMetadata.dll MediaBrowser.Providers.dll MediaBrowser.XbmcMetadata.dll; do
+            echo 'body<<ABI_DIFF_EOF'
+            for file in jellyfin.dll Jellyfin.Api.dll Jellyfin.Data.dll Jellyfin.Server.Implementations.dll MediaBrowser.Common.dll MediaBrowser.Controller.dll MediaBrowser.Model.dll MediaBrowser.MediaEncoding.dll Emby.Naming.dll Emby.Server.Implementations.dll Jellyfin.Extensions.dll Jellyfin.MediaEncoding.Keyframes.dll Jellyfin.MediaEncoding.Hls.dll Jellyfin.Database.Implementations.dll Jellyfin.Networking.dll Jellyfin.Drawing.dll Jellyfin.Drawing.Skia.dll Jellyfin.LiveTv.dll; do
               RAW_OUTPUT="$( { apicompat --left ./abi-base/${file} --right ./abi-head/${file}; } 2>&1 || true )"
               TRIMMED_OUTPUT="$(echo "${RAW_OUTPUT}" | xargs || true)"
               if [ "APICompat ran successfully without finding any breaking changes." != "${TRIMMED_OUTPUT}" ]; then
                 printf "\n%s\n%s\n" "${file}" "${RAW_OUTPUT}"
               fi
             done
-            echo EOF
+            echo ABI_DIFF_EOF
           } >> $GITHUB_OUTPUT
 
       - name: Find difference comment
