@@ -71,6 +71,13 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        // People validation performs heavy database writes that contend with an active library scan.
+        // Defer it until the scan has finished; the task will run again on its next trigger.
+        if (_libraryManager.IsScanRunning)
+        {
+            return;
+        }
+
         IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
         await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
 
