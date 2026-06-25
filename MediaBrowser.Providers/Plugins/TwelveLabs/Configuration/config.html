@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TwelveLabs</title>
+</head>
+<body>
+    <div id="configPage" data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <h1>TwelveLabs</h1>
+                <p>
+                    Generate subtitles for movies and episodes using the TwelveLabs Pegasus video understanding model.
+                    Grab a free API key at <a is="emby-linkbutton" class="button-link" href="https://twelvelabs.io" target="_blank">twelvelabs.io</a>.
+                    Pegasus analyzes the video server-side, so your media must be reachable over HTTP; the path/URL mapping below
+                    tells TwelveLabs where to fetch each file. Leave the URL prefix empty to keep the provider disabled.
+                </p>
+                <form class="configForm">
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="apiKey">API key</label>
+                        <input is="emby-input" type="text" id="apiKey" name="apiKey" />
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="modelName">Model name</label>
+                        <input is="emby-input" type="text" id="modelName" name="modelName" />
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="prompt">Prompt</label>
+                        <input is="emby-input" type="text" id="prompt" name="prompt" />
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="mediaPathPrefix">Local media path prefix</label>
+                        <input is="emby-input" type="text" id="mediaPathPrefix" name="mediaPathPrefix" />
+                        <div class="fieldDescription">e.g. /media/movies</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="mediaUrlPrefix">Public media URL prefix</label>
+                        <input is="emby-input" type="text" id="mediaUrlPrefix" name="mediaUrlPrefix" />
+                        <div class="fieldDescription">e.g. https://media.example.com/movies</div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var PluginConfig = {
+                pluginId: "1a5bdfc5-0558-4744-81c4-7fb802e6be35"
+            };
+
+            document.querySelector('.configPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        document.querySelector('#apiKey').value = config.ApiKey || '';
+                        document.querySelector('#modelName').value = config.ModelName || '';
+                        document.querySelector('#prompt').value = config.Prompt || '';
+                        document.querySelector('#mediaPathPrefix').value = config.MediaPathPrefix || '';
+                        document.querySelector('#mediaUrlPrefix').value = config.MediaUrlPrefix || '';
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+
+            document.querySelector('.configForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        config.ApiKey = document.querySelector('#apiKey').value;
+                        config.ModelName = document.querySelector('#modelName').value;
+                        config.Prompt = document.querySelector('#prompt').value;
+                        config.MediaPathPrefix = document.querySelector('#mediaPathPrefix').value;
+                        config.MediaUrlPrefix = document.querySelector('#mediaUrlPrefix').value;
+                        ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>

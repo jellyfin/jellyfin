@@ -97,4 +97,10 @@
     <None Remove="Plugins\Tmdb\jellyfin-plugin-tmdb.svg" />
     <EmbeddedResource Include="Plugins\Tmdb\jellyfin-plugin-tmdb.svg" />
   </ItemGroup>
+
+  <!-- TwelveLabs -->
+  <ItemGroup>
+    <None Remove="Plugins\TwelveLabs\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\TwelveLabs\Configuration\config.html" />
+  </ItemGroup>
 </Project>

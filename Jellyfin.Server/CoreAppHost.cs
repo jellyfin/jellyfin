@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Providers.Lyric;
@@ -106,6 +107,11 @@ namespace Jellyfin.Server
             foreach (var type in GetExportTypes<ILyricParser>())
             {
                 serviceCollection.AddSingleton(typeof(ILyricParser), type);
+            }
+
+            foreach (var type in GetExportTypes<ISubtitleProvider>())
+            {
+                serviceCollection.AddSingleton(typeof(ISubtitleProvider), type);
             }
 
             base.RegisterServices(serviceCollection);
