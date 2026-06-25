@@ -188,12 +188,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             // Remove virtual seasons that are now empty (mirrors the cleanup an ordinary series refresh does).
-            // Seasons created by this provider carry a TVDB id (from TMDb's external ids), not a TMDb id,
-            // so they cannot be filtered by HasTmdbId; any virtual season left without episodes is obsolete.
             var virtualSeasons = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = [BaseItemKind.Season],
                 IsVirtualItem = true,
+                HasTmdbId = true,
                 Recursive = true
             });
 
