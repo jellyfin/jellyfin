@@ -462,6 +462,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool enableAudioVbrEncoding = true,
         [FromQuery] bool alwaysBurnInSubtitleWhenTranscoding = false)
     {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
+            {
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
+            }
+        }
+
         var streamingRequest = new HlsVideoRequestDto
         {
             Id = itemId,
@@ -517,16 +527,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
-
-        var item = _libraryManager.GetItemById<BaseItem>(itemId);
-        if (item?.SourceType == SourceType.External)
-        {
-            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
-            if (redirect is not null)
-            {
-                return new RedirectResult(redirect.RedirectUrl, permanent: false);
-            }
-        }
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }
@@ -642,6 +642,16 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool enableAdaptiveBitrateStreaming = false,
         [FromQuery] bool enableAudioVbrEncoding = true)
     {
+        var item = _libraryManager.GetItemById<BaseItem>(itemId);
+        if (item?.SourceType == SourceType.External)
+        {
+            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
+            if (redirect is not null)
+            {
+                return new RedirectResult(redirect.RedirectUrl, permanent: false);
+            }
+        }
+
         var streamingRequest = new HlsAudioRequestDto
         {
             Id = itemId,
@@ -694,16 +704,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding,
             AlwaysBurnInSubtitleWhenTranscoding = false
         };
-
-        var item = _libraryManager.GetItemById<BaseItem>(itemId);
-        if (item?.SourceType == SourceType.External)
-        {
-            var redirect = await _libraryManager.GetStreamRedirectAsync(item, HttpContext.RequestAborted).ConfigureAwait(false);
-            if (redirect is not null)
-            {
-                return new RedirectResult(redirect.RedirectUrl, permanent: false);
-            }
-        }
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
     }

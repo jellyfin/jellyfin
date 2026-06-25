@@ -52,11 +52,11 @@ using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
+using Genre = MediaBrowser.Controller.Entities.Genre;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using Person = MediaBrowser.Controller.Entities.Person;
 using Season = MediaBrowser.Controller.Entities.TV.Season;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
-using Genre = MediaBrowser.Controller.Entities.Genre;
-using Person = MediaBrowser.Controller.Entities.Person;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
 namespace Emby.Server.Implementations.Library
@@ -89,7 +89,6 @@ namespace Emby.Server.Implementations.Library
         private readonly IPeopleRepository _peopleRepository;
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
-        private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
@@ -138,7 +137,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="dotIgnoreIgnoreRule">The .ignore rule handler.</param>
         /// <param name="mediaStreamRepository">The media stream repository.</param>
         /// <param name="externalDataManagerFactory">The external data manager (lazy, to break the DI cycle through ChapterManager).</param>
-        /// <param name="mediaStreamRepository">The media stream repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -163,8 +161,7 @@ namespace Emby.Server.Implementations.Library
             IPathManager pathManager,
             DotIgnoreIgnoreRule dotIgnoreIgnoreRule,
             IMediaStreamRepository mediaStreamRepository,
-            Lazy<IExternalDataManager> externalDataManagerFactory,
-            IMediaStreamRepository mediaStreamRepository)
+            Lazy<IExternalDataManager> externalDataManagerFactory)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -190,7 +187,6 @@ namespace Emby.Server.Implementations.Library
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
-            _mediaStreamRepository = mediaStreamRepository;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -307,14 +303,14 @@ namespace Emby.Server.Implementations.Library
             IEnumerable<IExternalItemProvider> externalItemProviders,
             IEnumerable<IStreamRedirectProvider> streamRedirectProviders)
         {
-            EntityResolutionIgnoreRules = rules.ToArray();
-            EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
-            MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
-            IntroProviders = introProviders.ToArray();
-            Comparers = itemComparers.ToArray();
-            PostScanTasks = postScanTasks.ToArray();
-            ExternalItemProviders = externalItemProviders.ToArray();
-            StreamRedirectProviders = streamRedirectProviders.OrderBy(p => p.Order).ToArray();
+            EntityResolutionIgnoreRules = [.. rules];
+            EntityResolvers = [.. resolvers.OrderBy(i => i.Priority)];
+            MultiItemResolvers = [.. EntityResolvers.OfType<IMultiItemResolver>()];
+            IntroProviders = [.. introProviders];
+            Comparers = [.. itemComparers];
+            PostScanTasks = [.. postScanTasks];
+            ExternalItemProviders = [.. externalItemProviders];
+            StreamRedirectProviders = [.. streamRedirectProviders.OrderBy(p => p.Order)];
         }
 
         /// <summary>
@@ -358,7 +354,7 @@ namespace Emby.Server.Implementations.Library
             }
             else if (!item.IsFolder)
             {
-                if (item is not Video && item is not LiveTvChannel)
+                if (item is not Video and not LiveTvChannel)
                 {
                     return;
                 }
