@@ -126,6 +126,63 @@
             color: var(--jf-error);
         }
 
+        /* Buttons — matching the web client's emby-button styles. */
+        .jf-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.9em 1em;
+            border: 0;
+            border-radius: 0.2em;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: 600;
+            line-height: 1.35;
+            cursor: pointer;
+            outline: none;
+            text-decoration: none;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+
+        .jf-button-primary {
+            background: var(--jf-primary);
+            color: rgba(0, 0, 0, 0.87);
+        }
+
+        .jf-button-primary:hover,
+        .jf-button-primary:focus {
+            background: var(--jf-primary-dark);
+        }
+
+        .jf-button-secondary {
+            background: #424242;
+            color: var(--jf-text-secondary);
+        }
+
+        .jf-button-secondary:hover,
+        .jf-button-secondary:focus {
+            background: #616161;
+        }
+
+        /* Redirect countdown shown once the server is ready. */
+        .redirect-bar {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1em;
+            margin-bottom: 1.5em;
+            text-align: center;
+        }
+
+        .redirect-countdown {
+            color: var(--jf-text-secondary);
+        }
+
         /* Material (MDL) spinner — the same one the web client uses while loading. */
         .mdl-spinner {
             position: relative;
@@ -491,8 +548,8 @@
             function poll() {
                 fetch(window.location.href, { cache: 'no-store' }).then(function (resp) {
                     if (resp.ok) {
-                        // The real server is now answering (HTTP 200) -> load the actual app.
-                        window.location.reload();
+                        // The real server is now answering (HTTP 200) -> offer to continue to the app.
+                        onServerReady();
                         return null;
                     }
                     return resp.text();
@@ -530,7 +587,71 @@
                 });
             }
 
-            setInterval(poll, intervalMs);
+            // The server finished starting. Stop polling and present a cancelable countdown so the
+            // user can either ride the redirect into the app or stay to review the startup output.
+            function onServerReady() {
+                clearInterval(pollTimer);
+
+                var status = document.querySelector('.status');
+                var statusText = document.querySelector('.status-text');
+                var spinner = document.querySelector('.mdl-spinner');
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+                if (status) {
+                    status.classList.add('is-success');
+                }
+                if (statusText) {
+                    statusText.textContent = 'Jellyfin started successfully.';
+                }
+                if (!status) {
+                    window.location.reload();
+                    return;
+                }
+
+                var bar = document.createElement('div');
+                bar.className = 'redirect-bar';
+                var countdownText = document.createElement('span');
+                countdownText.className = 'redirect-countdown';
+                var cancelButton = document.createElement('button');
+                cancelButton.type = 'button';
+                cancelButton.className = 'jf-button jf-button-secondary';
+                cancelButton.textContent = 'Cancel';
+                bar.appendChild(countdownText);
+                bar.appendChild(cancelButton);
+                status.insertAdjacentElement('afterend', bar);
+
+                var remaining = 5;
+                function renderCountdown() {
+                    countdownText.textContent = 'Redirecting in ' + remaining + '…';
+                }
+                renderCountdown();
+                var countdown = setInterval(function () {
+                    remaining -= 1;
+                    if (remaining <= 0) {
+                        clearInterval(countdown);
+                        window.location.reload();
+                        return;
+                    }
+                    renderCountdown();
+                }, 1000);
+
+                // Cancel stops both the redirect and the refreshing, and offers a manual continue.
+                cancelButton.addEventListener('click', function () {
+                    clearInterval(countdown);
+                    bar.innerHTML = '';
+                    var continueButton = document.createElement('button');
+                    continueButton.type = 'button';
+                    continueButton.className = 'jf-button jf-button-primary';
+                    continueButton.textContent = 'Continue to Jellyfin';
+                    continueButton.addEventListener('click', function () {
+                        window.location.reload();
+                    });
+                    bar.appendChild(continueButton);
+                });
+            }
+
+            var pollTimer = setInterval(poll, intervalMs);
         })();
     </script>
 </body>

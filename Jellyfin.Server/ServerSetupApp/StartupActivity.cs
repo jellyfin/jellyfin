@@ -21,9 +21,6 @@ public static class StartupActivity
     /// <summary>Preparing the system for migrations (e.g. taking safety backups).</summary>
     public const string PreparingMigrations = "Preparing migrations";
 
-    /// <summary>Applying database/system migrations without a known count.</summary>
-    public const string ApplyingMigrations = "Applying migrations";
-
     /// <summary>Restoring from a backup.</summary>
     public const string RestoringBackup = "Restoring backup";
 

@@ -207,7 +207,8 @@ namespace Jellyfin.Server
                 var jellyfinMigrationService = ActivatorUtilities.CreateInstance<JellyfinMigrationService>(appHost.ServiceProvider);
                 SetupServer.ReportActivity(StartupActivity.PreparingMigrations);
                 await jellyfinMigrationService.PrepareSystemForMigration(_logger).ConfigureAwait(false);
-                SetupServer.ReportActivity(StartupActivity.ApplyingMigrations);
+                // "Preparing migrations" carries through the DB read; per-migration progress is reported
+                // as "Running migration X of Y" from inside the step once the pending set is known.
                 await jellyfinMigrationService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, appHost.ServiceProvider).ConfigureAwait(false);
 
                 SetupServer.ReportActivity(StartupActivity.InitializingServices);

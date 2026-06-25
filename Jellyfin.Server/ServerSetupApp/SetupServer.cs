@@ -262,7 +262,7 @@ public sealed class SetupServer : IDisposable
     /// Reports the current startup activity shown to all clients in the startup UI header.
     /// Only pass generic, non-identifying text from <see cref="StartupActivity"/>.
     /// </summary>
-    /// <param name="activity">A generic description such as <see cref="StartupActivity.ApplyingMigrations"/>.</param>
+    /// <param name="activity">A generic description such as <see cref="StartupActivity.PreparingMigrations"/>.</param>
     internal static void ReportActivity(string activity)
     {
         _currentActivity = activity;
