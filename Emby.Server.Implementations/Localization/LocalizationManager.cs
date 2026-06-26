@@ -566,11 +566,15 @@ namespace Emby.Server.Implementations.Localization
 
         private static string GetResourceFilename(string culture)
         {
-            var parts = culture.Split('-');
+            // Region codes may use a '-' (BCP-47, e.g. "pt-BR") or '_' (e.g. "es_419", "ar_SA") separator.
+            // Normalize the casing (lower-case language, upper-case region) while preserving the separator
+            // so the result matches the embedded resource file name, which is case-sensitive.
+            var separatorIndex = culture.IndexOfAny(['-', '_']);
 
-            if (parts.Length == 2)
+            if (separatorIndex > 0)
             {
-                culture = parts[0].ToLowerInvariant() + "-" + parts[1].ToUpperInvariant();
+                var separator = culture[separatorIndex];
+                culture = culture[..separatorIndex].ToLowerInvariant() + separator + culture[(separatorIndex + 1)..].ToUpperInvariant();
             }
             else
             {
