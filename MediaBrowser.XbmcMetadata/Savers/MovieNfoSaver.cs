@@ -52,7 +52,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 yield return Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo");
             }
 
-            // only allow movie object to read movie.nfo, not owned videos (which will be itemtype video, not movie)
+            // only allow movie object to read movie.nfo, not owned videos (which will be ItemType video, not movie)
             if (!item.IsInMixedFolder && item.ItemType == typeof(Movie))
             {
                 yield return Path.Combine(path, "movie.nfo");

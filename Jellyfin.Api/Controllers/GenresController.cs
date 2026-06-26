@@ -70,7 +70,7 @@ public class GenresController : BaseJellyfinApiController
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <param name="enableTotalRecordCount">Optional. Include total record count.</param>
     /// <response code="200">Genres returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the queryresult of genres.</returns>
+    /// <returns>An <see cref="OkResult"/> containing the query result of genres.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetGenres(

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// People configuration.
+/// MediaStreamInfo Configuration.
 /// </summary>
 public class MediaStreamInfoConfiguration : IEntityTypeConfiguration<MediaStreamInfo>
 {

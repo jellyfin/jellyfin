@@ -43,7 +43,7 @@ internal class MigrateLibraryDb : IDatabaseMigrationRoutine
     /// <summary>
     /// Initializes a new instance of the <see cref="MigrateLibraryDb"/> class.
     /// </summary>
-    /// <param name="startupLogger">The startup logger for Startup UI intigration.</param>
+    /// <param name="startupLogger">The startup logger for Startup UI integration.</param>
     /// <param name="provider">The database provider.</param>
     /// <param name="paths">The server application paths.</param>
     /// <param name="jellyfinDatabaseProvider">The database provider for special access.</param>

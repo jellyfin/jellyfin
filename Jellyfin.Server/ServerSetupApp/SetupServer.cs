@@ -52,7 +52,7 @@ public sealed class SetupServer : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="SetupServer"/> class.
     /// </summary>
-    /// <param name="networkManagerFactory">The networkmanager.</param>
+    /// <param name="networkManagerFactory">The network manager.</param>
     /// <param name="applicationPaths">The application paths.</param>
     /// <param name="serverApplicationHostFactory">The servers application host.</param>
     /// <param name="loggerFactory">The logger factory.</param>
@@ -82,7 +82,7 @@ public sealed class SetupServer : IDisposable
     public bool IsAlive { get; internal set; }
 
     /// <summary>
-    /// Starts the Bind-All Setup aspcore server to provide a reflection on the current core setup.
+    /// Starts the Bind-All Setup ASP.NET Core server to provide a reflection on the current core setup.
     /// </summary>
     /// <returns>A Task.</returns>
     public async Task RunAsync()
@@ -93,7 +93,7 @@ public sealed class SetupServer : IDisposable
             .WithFormatter(
             (Version version, int arg) =>
             {
-                // version type does not for some stupid reason implement IFormattable which morestachio relies on for ToString support therefor we need to do it manually.
+                // version type does not for some stupid reason implement IFormattable which morestachio relies on for ToString support therefore we need to do it manually.
                 return version.ToString(arg);
             },
             "ToString")
@@ -105,7 +105,7 @@ public sealed class SetupServer : IDisposable
                         var maxLevel = logEntry.LogLevel;
                         var stack = new Stack<StartupLogTopic>(children);
 
-                        while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) is not null) // error is the highest inherted error level.
+                        while (maxLevel != LogLevel.Error && stack.Count > 0 && (logEntry = stack.Pop()) is not null) // error is the highest inherited error level.
                         {
                             maxLevel = maxLevel < logEntry.LogLevel ? logEntry.LogLevel : maxLevel;
                             foreach (var child in logEntry.Children)
@@ -153,12 +153,12 @@ public sealed class SetupServer : IDisposable
         _startupServer = Host.CreateDefaultBuilder(["hostBuilder:reloadConfigOnChange=false"])
             .UseConsoleLifetime()
             .UseSerilog()
-            .ConfigureServices(serv =>
+            .ConfigureServices(server =>
             {
-                serv.AddSingleton(this);
-                serv.AddHealthChecks()
+                server.AddSingleton(this);
+                server.AddHealthChecks()
                     .AddCheck<SetupHealthcheck>("StartupCheck");
-                serv.Configure<ForwardedHeadersOptions>(options =>
+                server.Configure<ForwardedHeadersOptions>(options =>
                 {
                     ApiServiceCollectionExtensions.ConfigureForwardHeaders(config, options);
                 });

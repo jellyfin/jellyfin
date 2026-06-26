@@ -46,7 +46,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
-    private readonly Version _minFFmpegX265BframeInFmp4 = new Version(7, 0, 1);
+    private readonly Version _minFFmpegX265BFrameInFmp4 = new Version(7, 0, 1);
     private readonly Version _minFFmpegHlsSegmentOptions = new Version(5, 0);
 
     private readonly ILibraryManager _libraryManager;
@@ -1608,7 +1608,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             if (state.VideoStream is not null && state.IsOutputVideo)
             {
                 // fMP4 needs this flag to write the audio packet DTS/PTS including the initial delay into MOOF::TRAF::TFDT
-                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont";
+                hlsArguments += $" {(useLegacySegmentOption ? "-hls_ts_options" : "-hls_segment_options")} movflags=+frag_discont"; // cspell:disable-line
             }
 
             segmentFormat = "fmp4" + outputFmp4HeaderArg;
@@ -1859,7 +1859,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             // Currently b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
             if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase)
-                && _mediaEncoder.EncoderVersion < _minFFmpegX265BframeInFmp4)
+                && _mediaEncoder.EncoderVersion < _minFFmpegX265BFrameInFmp4)
             {
                 args += " -bf 0";
             }

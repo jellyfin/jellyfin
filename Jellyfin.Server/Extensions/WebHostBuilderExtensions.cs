@@ -56,7 +56,7 @@ public static class WebHostBuilderExtensions
     /// <summary>
     /// Configures a Kestrel type webServer to bind to the specific arguments.
     /// </summary>
-    /// <param name="addresses">The IP addresses that should be listend to.</param>
+    /// <param name="addresses">The IP addresses that should be listened to.</param>
     /// <param name="httpPort">The http port.</param>
     /// <param name="httpsPort">If set the https port. If set you must also set the certificate.</param>
     /// <param name="certificate">The certificate used for https port.</param>

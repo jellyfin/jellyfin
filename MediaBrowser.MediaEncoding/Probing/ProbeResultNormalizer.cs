@@ -52,6 +52,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             _localization = localization;
         }
 
+        // cspell: disable
         private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
         {
             "AC/DC",
@@ -85,6 +86,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "LSR/CITY",
             "Kairon; IRSE!",
         };
+        // cspell: enable
 
         /// <summary>
         /// Transforms a FFprobe response into its <see cref="MediaInfo"/> equivalent.
@@ -376,7 +378,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             xml = "<?xml version=\"1.0\"?>" + xml;
 
-            // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Janus Bager Kristensen</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Sacha Goedegebure</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
+            // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>John Doe</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Jane Doe</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
             using (var streamReader = new StreamReader(stream))
             {
@@ -805,7 +807,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 else if (string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 {
                     // How to differentiate between video and embedded image?
-                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) framerates
+                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) frame rates
                     if (!string.IsNullOrWhiteSpace(stream.CodecTag))
                     {
                         stream.Type = MediaStreamType.Video;
@@ -1645,7 +1647,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // The format is -> EPISODE/TOTAL_EPISODES_IN_SEASON. SUBTITLE: DESCRIPTION
             // OR -> COMMENT. SUBTITLE: DESCRIPTION
             // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
-            // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
+            // e.g. -> Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abbey and Teal's favorite objects are missing. [S]
             if (string.IsNullOrWhiteSpace(subTitle)
                 && !string.IsNullOrWhiteSpace(description)
                 && description.AsSpan()[..Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)].Contains(':')) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
@@ -1708,7 +1710,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return;
             }
 
-            // Skip timestamp extration for remote resource (http, rtsp, etc.)
+            // Skip timestamp extraction for remote resource (http, rtsp, etc.)
             // as they cannot be opened with FileStream
             if (video.Protocol != MediaProtocol.File)
             {

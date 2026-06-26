@@ -226,7 +226,7 @@ public partial class AudioNormalizationTask : IScheduledTask
 
     private async Task<float?> CalculateLUFSAsync(string inputArgs, bool waitForExit, CancellationToken cancellationToken)
     {
-        var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -";
+        var args = $"-hide_banner {inputArgs} -af ebur128=framelog=verbose -f null -"; // cspell:disable-line
 
         using (var process = new Process()
         {

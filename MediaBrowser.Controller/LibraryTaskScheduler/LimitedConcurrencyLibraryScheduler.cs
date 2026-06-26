@@ -68,7 +68,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
 
         async Task RunCleanupTask()
         {
-            _logger.LogDebug("Schedule cleanup task in {CleanupGracePerioid} sec.", CleanupGracePeriod);
+            _logger.LogDebug("Schedule cleanup task in {CleanupGracePeriod} sec.", CleanupGracePeriod);
             await Task.Delay(TimeSpan.FromSeconds(CleanupGracePeriod)).ConfigureAwait(false);
             if (_disposed)
             {
@@ -164,7 +164,7 @@ public sealed class LimitedConcurrencyLibraryScheduler : ILimitedConcurrencyLibr
         }
         catch (OperationCanceledException) when (stopToken.TaskStop.IsCancellationRequested)
         {
-            // thats how you do it, interupt the waiter thread. There is nothing to do here when it was on purpose.
+            // thats how you do it, interrupt the waiter thread. There is nothing to do here when it was on purpose.
         }
         finally
         {

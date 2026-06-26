@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// Gets the artist data path.
         /// </summary>
         /// <param name="appPaths">The application paths.</param>
-        /// <param name="musicBrainzArtistId">The music brainz artist identifier.</param>
+        /// <param name="musicBrainzArtistId">The MusicBrainz artist identifier.</param>
         /// <returns>System.String.</returns>
         private static string GetArtistDataPath(IApplicationPaths appPaths, string musicBrainzArtistId)
             => Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);

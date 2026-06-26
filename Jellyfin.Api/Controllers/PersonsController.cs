@@ -67,7 +67,7 @@ public class PersonsController : BaseJellyfinApiController
     /// <param name="userId">User id.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <response code="200">Persons returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the queryresult of persons.</returns>
+    /// <returns>An <see cref="OkResult"/> containing the query result of persons.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetPersons(

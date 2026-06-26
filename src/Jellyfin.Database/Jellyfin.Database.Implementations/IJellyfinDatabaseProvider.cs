@@ -13,12 +13,12 @@ namespace Jellyfin.Database.Implementations;
 public interface IJellyfinDatabaseProvider
 {
     /// <summary>
-    /// Gets or Sets the Database Factory when initialisaition is done.
+    /// Gets or Sets the Database Factory when initialisation is done.
     /// </summary>
     IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
     /// <summary>
-    /// Initialises jellyfins EFCore database access.
+    /// Initializes Jellyfin's EFCore database access.
     /// </summary>
     /// <param name="options">The EFCore database options.</param>
     /// <param name="databaseConfiguration">The Jellyfin database options.</param>
@@ -37,7 +37,7 @@ public interface IJellyfinDatabaseProvider
     void ConfigureConventions(ModelConfigurationBuilder configurationBuilder);
 
     /// <summary>
-    /// If supported this should run any periodic maintaince tasks.
+    /// If supported this should run any periodic maintenance tasks.
     /// </summary>
     /// <param name="cancellationToken">The token to abort the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
