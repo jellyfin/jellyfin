@@ -65,8 +65,13 @@ public class ItemPersistenceService : IItemPersistenceService
             descendantIds.Add(id);
         }
 
+        // Use WhereOneOrMany instead of a raw HashSet.Contains so large id sets are bound as a
+        // single parameter (json_each) rather than one SQL variable per id, which would otherwise
+        // overflow SQLite's variable limit when deleting many items at once (e.g. migrations).
+        var ownerIds = descendantIds.ToArray();
         var extraIds = context.BaseItems
-            .Where(e => e.OwnerId.HasValue && descendantIds.Contains(e.OwnerId.Value))
+            .Where(e => e.OwnerId.HasValue)
+            .WhereOneOrMany(ownerIds, e => e.OwnerId!.Value)
             .Select(e => e.Id)
             .ToArray();
 

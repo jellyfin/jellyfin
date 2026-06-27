@@ -75,6 +75,14 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        // People validation performs heavy database writes that contend with an active library scan.
+        // Defer it until the scan has finished; the task will run again on its next trigger.
+        if (_libraryManager.IsScanRunning)
+        {
+            _logger.LogInformation("Skipping people validation because a library scan is currently running.");
+            return;
+        }
+
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
