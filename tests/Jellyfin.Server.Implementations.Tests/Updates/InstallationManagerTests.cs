@@ -109,5 +109,29 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
             Assert.Null(ex);
         }
+
+        [Theory]
+        [InlineData("../evil")]
+        [InlineData("..\\evil")]
+        [InlineData("../../escape_attempt")]
+        [InlineData("..")]
+        [InlineData(".")]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("foo/bar")]
+        [InlineData("foo\\bar")]
+        [InlineData("/absolute")]
+        [InlineData("foo\0bar")]
+        public async Task InstallPackage_InvalidName_ThrowsInvalidDataException(string name)
+        {
+            var packageInfo = new InstallationInfo()
+            {
+                Name = name,
+                SourceUrl = "https://repo.jellyfin.org/releases/plugin/empty/empty.zip",
+                Checksum = "11b5b2f1a9ebc4f66d6ef19018543361"
+            };
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
+        }
     }
 }
