@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Server.Implementations.SystemBackupService;
@@ -82,6 +84,20 @@ public class BackupController : BaseJellyfinApiController
     public async Task<ActionResult<BackupManifestDto[]>> ListBackups()
     {
         return Ok(await _backupService.EnumerateBackups().ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Gets a list of all plugins that support backup inclusion.
+    /// </summary>
+    /// <response code="200">List of plugins with backup support.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
+    /// <returns>The list of plugins with ID and Name.</returns>
+    [HttpGet("SupportedPlugins")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<IDictionary<Guid, string>> ListSupportedPlugins()
+    {
+        return Ok(_backupService.SupportedPlugins());
     }
 
     /// <summary>

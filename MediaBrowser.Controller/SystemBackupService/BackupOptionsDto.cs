@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.SystemBackupService;
 
@@ -26,4 +26,9 @@ public class BackupOptionsDto
     /// Gets or sets a value indicating whether the archive contains the Database contents.
     /// </summary>
     public bool Database { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the list of Plugins that are stored.
+    /// </summary>
+    public IReadOnlyCollection<PluginBackupManifestDto> PluginManifest { get; set; } = [];
 }
