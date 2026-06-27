@@ -45,6 +45,13 @@ public class ServerStartupMessageMiddleware
         var message = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         httpContext.Response.ContentType = MediaTypeNames.Text.Html;
-        await httpContext.Response.WriteAsync(message, httpContext.RequestAborted).ConfigureAwait(false);
+        try
+        {
+            await httpContext.Response.WriteAsync(message, httpContext.RequestAborted).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected before the response could be written — normal during startup.
+        }
     }
 }

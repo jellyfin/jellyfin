@@ -500,6 +500,20 @@ namespace MediaBrowser.Controller.Library
         List<Person> GetPeopleItems(InternalPeopleQuery query);
 
         /// <summary>
+        /// Gets the total count of people matching the query, ignoring Limit and StartIndex.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Total count of matching people.</returns>
+        int GetPeopleCount(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Gets distinct crew member (Name, PersonType) pairs, excluding Actors.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Crew members and total count.</returns>
+        (List<MediaBrowser.Model.Dto.CrewMemberDto> Items, int TotalCount) GetCrewMembers(InternalPeopleQuery query);
+
+        /// <summary>
         /// Updates the people.
         /// </summary>
         /// <param name="item">The item.</param>

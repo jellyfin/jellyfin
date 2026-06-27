@@ -4516,11 +4516,34 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 commandText.Append(" where ").AppendJoin(" AND ", whereClauses);
             }
 
-            commandText.Append(" order by ListOrder");
+            if (string.Equals(query.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
+            {
+                commandText.Append(string.Equals(query.SortOrder, "Descending", StringComparison.OrdinalIgnoreCase)
+                    ? " order by p.Name DESC"
+                    : " order by p.Name ASC");
+            }
+            else if (string.Equals(query.SortBy, "Random", StringComparison.OrdinalIgnoreCase))
+            {
+                commandText.Append(" order by RANDOM()");
+            }
+            else if (query.ItemId.IsEmpty())
+            {
+                // Default alphabetical order when querying across the library (not within a specific item)
+                commandText.Append(" order by p.Name ASC");
+            }
+            else
+            {
+                commandText.Append(" order by ListOrder");
+            }
 
             if (query.Limit > 0)
             {
                 commandText.Append(" LIMIT ").Append(query.Limit);
+            }
+
+            if (query.StartIndex > 0)
+            {
+                commandText.Append(" OFFSET ").Append(query.StartIndex);
             }
 
             var list = new List<string>();
@@ -4537,6 +4560,28 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             return list;
+        }
+
+        /// <inheritdoc />
+        public int GetPeopleNamesCount(InternalPeopleQuery query)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+
+            CheckDisposed();
+
+            var commandText = new StringBuilder("select COUNT(DISTINCT p.Name) from People p");
+
+            var whereClauses = GetPeopleWhereClauses(query, null);
+
+            if (whereClauses.Count != 0)
+            {
+                commandText.Append(" where ").AppendJoin(" AND ", whereClauses);
+            }
+
+            using var connection = GetConnection(true);
+            using var statement = PrepareStatement(connection, commandText.ToString());
+            GetPeopleWhereClauses(query, statement);
+            return statement.ExecuteQuery().Select(row => row.GetInt32(0)).FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -4605,6 +4650,12 @@ AND Type = @InternalPersonType)");
                 statement?.TryBind("@AppearsInItemId", query.AppearsInItemId);
             }
 
+            if (!query.AncestorId.IsEmpty())
+            {
+                whereClauses.Add("p.Name in (Select Name from People where ItemId in (Select ItemId from AncestorIds where AncestorIdText=@AncestorId))");
+                statement?.TryBind("@AncestorId", query.AncestorId.ToString("N", System.Globalization.CultureInfo.InvariantCulture));
+            }
+
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
 
             if (queryPersonTypes.Count == 1)
@@ -4645,7 +4696,89 @@ AND Type = @InternalPersonType)");
                 statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
             }
 
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+            {
+                whereClauses.Add("p.Name like @NameStartsWith");
+                statement?.TryBind("@NameStartsWith", query.NameStartsWith + "%");
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+            {
+                whereClauses.Add("p.Name < @NameLessThan");
+                statement?.TryBind("@NameLessThan", query.NameLessThan);
+            }
+
             return whereClauses;
+        }
+
+        /// <inheritdoc />
+        public (List<CrewMemberDto> Items, int TotalCount) GetCrewMembers(InternalPeopleQuery query)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+
+            CheckDisposed();
+
+            // Reuse existing where clauses but exclude actor-only types
+            var baseWhere = GetPeopleWhereClauses(query, null);
+            baseWhere.Add("p.PersonType NOT IN ('Actor', 'GuestStar')");
+            baseWhere.Add("p.PersonType IS NOT NULL");
+            baseWhere.Add("p.PersonType != ''");
+
+            var whereText = baseWhere.Count > 0
+                ? " where " + string.Join(" AND ", baseWhere)
+                : string.Empty;
+
+            var countSql = $"select COUNT(*) from (select DISTINCT p.Name, p.PersonType from People p{whereText})";
+
+            var orderBy = string.Equals(query.SortBy, "Random", StringComparison.OrdinalIgnoreCase)
+                ? " order by RANDOM()"
+                : string.Equals(query.SortBy, "SortName", StringComparison.OrdinalIgnoreCase) && string.Equals(query.SortOrder, "Descending", StringComparison.OrdinalIgnoreCase)
+                    ? " order by p.Name DESC, p.PersonType ASC"
+                    : " order by p.Name ASC, p.PersonType ASC";
+
+            var itemsSql = new StringBuilder(
+                "select DISTINCT p.Name, p.PersonType, " +
+                "(select guid from TypedBaseItems where Name = p.Name and Type = 'MediaBrowser.Controller.Entities.Person' LIMIT 1) as PersonId " +
+                "from People p");
+            itemsSql.Append(whereText);
+            itemsSql.Append(orderBy);
+
+            if (query.Limit > 0)
+            {
+                itemsSql.Append(" LIMIT ").Append(query.Limit);
+            }
+
+            if (query.StartIndex > 0)
+            {
+                itemsSql.Append(" OFFSET ").Append(query.StartIndex);
+            }
+
+            using var connection = GetConnection(true);
+
+            int totalCount;
+            using (var countStatement = PrepareStatement(connection, countSql))
+            {
+                GetPeopleWhereClauses(query, countStatement);
+                totalCount = countStatement.ExecuteQuery().Select(row => row.GetInt32(0)).FirstOrDefault();
+            }
+
+            var items = new List<CrewMemberDto>();
+            using (var itemsStatement = PrepareStatement(connection, itemsSql.ToString()))
+            {
+                GetPeopleWhereClauses(query, itemsStatement);
+                foreach (var row in itemsStatement.ExecuteQuery())
+                {
+                    var personIdText = row.IsDBNull(2) ? null : row.GetString(2);
+                    items.Add(new CrewMemberDto
+                    {
+                        Name = row.GetString(0),
+                        PersonType = row.GetString(1),
+                        PersonId = personIdText is not null && Guid.TryParse(personIdText, out var pid) ? pid : Guid.Empty
+                    });
+                }
+            }
+
+            return (items, totalCount);
         }
 
         private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, ManagedConnection db, SqliteCommand deleteAncestorsStatement)

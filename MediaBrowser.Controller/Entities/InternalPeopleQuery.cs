@@ -36,7 +36,19 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid AppearsInItemId { get; set; }
 
+        public Guid AncestorId { get; set; }
+
         public string NameContains { get; set; }
+
+        public string NameStartsWith { get; set; }
+
+        public string NameLessThan { get; set; }
+
+        public string SortBy { get; set; }
+
+        public string SortOrder { get; set; }
+
+        public int StartIndex { get; set; }
 
         public User User { get; set; }
 

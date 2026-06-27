@@ -127,6 +127,20 @@ namespace MediaBrowser.Controller.Persistence
         List<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
+        /// Gets the total count of distinct people names matching the query (ignoring Limit and StartIndex).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Total count of matching people.</returns>
+        int GetPeopleNamesCount(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Gets distinct (Name, PersonType) crew member pairs, excluding Actors.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Crew members and total count.</returns>
+        (List<MediaBrowser.Model.Dto.CrewMemberDto> Items, int TotalCount) GetCrewMembers(InternalPeopleQuery query);
+
+        /// <summary>
         /// Gets the item list.
         /// </summary>
         /// <param name="query">The query.</param>

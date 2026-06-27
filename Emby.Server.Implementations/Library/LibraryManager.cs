@@ -2784,6 +2784,16 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetPeopleNames(query);
         }
 
+        public int GetPeopleCount(InternalPeopleQuery query)
+        {
+            return _itemRepository.GetPeopleNamesCount(query);
+        }
+
+        public (List<MediaBrowser.Model.Dto.CrewMemberDto> Items, int TotalCount) GetCrewMembers(InternalPeopleQuery query)
+        {
+            return _itemRepository.GetCrewMembers(query);
+        }
+
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
             UpdatePeopleAsync(item, people, CancellationToken.None).GetAwaiter().GetResult();

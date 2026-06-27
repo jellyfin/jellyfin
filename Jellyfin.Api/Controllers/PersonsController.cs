@@ -60,6 +60,12 @@ public class PersonsController : BaseJellyfinApiController
     /// <param name="appearsInItemId">Optional. If specified, person results will be filtered on items related to said persons.</param>
     /// <param name="userId">User id.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
+    /// <param name="parentId">Optional. Specify an item Id to search within a specific library (folder/collection).</param>
+    /// <param name="nameStartsWith">Optional. Filter persons whose name starts with this string.</param>
+    /// <param name="nameLessThan">Optional. Filter persons whose name is alphabetically less than this string.</param>
+    /// <param name="sortBy">Optional. Sort persons by this field (SortName, Random).</param>
+    /// <param name="sortOrder">Optional. Sort order (Ascending, Descending).</param>
+    /// <param name="startIndex">Optional. The record index to start at.</param>
     /// <response code="200">Persons returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the queryresult of persons.</returns>
     [HttpGet]
@@ -77,7 +83,13 @@ public class PersonsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] personTypes,
         [FromQuery] Guid? appearsInItemId,
         [FromQuery] Guid? userId,
-        [FromQuery] bool? enableImages = true)
+        [FromQuery] bool? enableImages = true,
+        [FromQuery] Guid? parentId = null,
+        [FromQuery] string? nameStartsWith = null,
+        [FromQuery] string? nameLessThan = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = null,
+        [FromQuery] int? startIndex = null)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -89,21 +101,66 @@ public class PersonsController : BaseJellyfinApiController
             : _userManager.GetUserById(userId.Value);
 
         var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
-        var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery(
-            personTypes,
-            excludePersonTypes)
+        var query = new InternalPeopleQuery(personTypes, excludePersonTypes)
         {
             NameContains = searchTerm,
             User = user,
             IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,
             AppearsInItemId = appearsInItemId ?? Guid.Empty,
-            Limit = limit ?? 0
-        });
+            AncestorId = parentId ?? Guid.Empty,
+            Limit = limit ?? 0,
+            NameStartsWith = nameStartsWith,
+            NameLessThan = nameLessThan,
+            SortBy = sortBy,
+            SortOrder = sortOrder,
+            StartIndex = startIndex ?? 0
+        };
 
-        return new QueryResult<BaseItemDto>(
-            peopleItems
+        var totalCount = _libraryManager.GetPeopleCount(query);
+        var peopleItems = _libraryManager.GetPeopleItems(query);
+        var dtos = peopleItems
             .Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user))
-            .ToArray());
+            .ToArray();
+
+        return new QueryResult<BaseItemDto>(startIndex, totalCount, dtos);
+    }
+
+    /// <summary>
+    /// Gets crew members (non-actors), one entry per person+role combination.
+    /// </summary>
+    /// <param name="limit">Optional. The maximum number of records to return.</param>
+    /// <param name="parentId">Optional. Specify a library Id to scope results to that library.</param>
+    /// <param name="nameStartsWith">Optional. Filter crew whose name starts with this string.</param>
+    /// <param name="nameLessThan">Optional. Filter crew whose name is alphabetically less than this string.</param>
+    /// <param name="sortBy">Optional. Sort by field (SortName, Random).</param>
+    /// <param name="sortOrder">Optional. Sort order (Ascending, Descending).</param>
+    /// <param name="startIndex">Optional. The record index to start at.</param>
+    /// <response code="200">Crew returned.</response>
+    /// <returns>An <see cref="OkResult"/> containing the queryresult of crew members.</returns>
+    [HttpGet("Crew")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<QueryResult<CrewMemberDto>> GetCrew(
+        [FromQuery] int? limit,
+        [FromQuery] Guid? parentId = null,
+        [FromQuery] string? nameStartsWith = null,
+        [FromQuery] string? nameLessThan = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = null,
+        [FromQuery] int? startIndex = null)
+    {
+        var query = new InternalPeopleQuery([], [])
+        {
+            AncestorId = parentId ?? Guid.Empty,
+            Limit = limit ?? 0,
+            NameStartsWith = nameStartsWith,
+            NameLessThan = nameLessThan,
+            SortBy = sortBy,
+            SortOrder = sortOrder,
+            StartIndex = startIndex ?? 0
+        };
+
+        var (items, totalCount) = _libraryManager.GetCrewMembers(query);
+        return new QueryResult<CrewMemberDto>(startIndex, totalCount, items);
     }
 
     /// <summary>
