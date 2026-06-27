@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
@@ -20,6 +21,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly IDbContextFactory<JellyfinDbContext> _dbContextFactory;
+    private readonly ILogger<PeopleValidationTask> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
@@ -27,11 +29,13 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
-    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory)
+    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+    public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<PeopleValidationTask> logger)
     {
         _libraryManager = libraryManager;
         _localization = localization;
         _dbContextFactory = dbContextFactory;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -71,6 +75,14 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
+        // People validation performs heavy database writes that contend with an active library scan.
+        // Defer it until the scan has finished; the task will run again on its next trigger.
+        if (_libraryManager.IsScanRunning)
+        {
+            _logger.LogInformation("Skipping people validation because a library scan is currently running.");
+            return;
+        }
+
         IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
         await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
 
