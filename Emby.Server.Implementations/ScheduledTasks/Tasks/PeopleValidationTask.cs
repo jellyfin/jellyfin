@@ -29,7 +29,7 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="dbContextFactory">Instance of the <see cref="IDbContextFactory{TContext}"/> interface.</param>
-    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{PeopleValidationTask}"/> interface.</param>
     public PeopleValidationTask(ILibraryManager libraryManager, ILocalizationManager localization, IDbContextFactory<JellyfinDbContext> dbContextFactory, ILogger<PeopleValidationTask> logger)
     {
         _libraryManager = libraryManager;
@@ -83,13 +83,10 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
             return;
         }
 
-        IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
-        await _libraryManager.ValidatePeopleAsync(subProgress, cancellationToken).ConfigureAwait(false);
-
-        subProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
         var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using (context.ConfigureAwait(false))
         {
+            IProgress<double> subProgress = new Progress<double>((val) => progress.Report(val / 2));
             var dupQuery = context.Peoples
                     .GroupBy(e => new { e.Name, e.PersonType })
                     .Where(e => e.Count() > 1)
@@ -135,7 +132,18 @@ public class PeopleValidationTask : IScheduledTask, IConfigurableScheduledTask
                 ArrayPool<Guid[]>.Shared.Return(buffer);
             }
 
+            var peopleToDelete = await context.Peoples
+                .Where(p => !context.PeopleBaseItemMap.Any(m => m.PeopleId.Equals(p.Id)))
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+            _logger.LogInformation("Removed {Count} orphaned people.", peopleToDelete);
+
             subProgress.Report(100);
         }
+
+        IProgress<double> validateProgress = new Progress<double>((val) => progress.Report((val / 2) + 50));
+        await _libraryManager.ValidatePeopleAsync(validateProgress, cancellationToken).ConfigureAwait(false);
+
+        progress.Report(100);
     }
 }
