@@ -229,8 +229,10 @@ public class PluginsController : BaseJellyfinApiController
         string? imagePath = plugin.Manifest.ImagePath;
         if (!string.IsNullOrWhiteSpace(imagePath))
         {
-            imagePath = Path.GetFullPath(imagePath, plugin.Path);
-            if (imagePath.StartsWith(plugin.Path, StringComparison.OrdinalIgnoreCase) is false || System.IO.File.Exists(imagePath) is false)
+            var pluginPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(plugin.Path));
+            imagePath = Path.GetFullPath(imagePath, pluginPath);
+            // Require a separator after the plugin path so a sibling like "<pluginPath>-evil" can't pass.
+            if (imagePath.StartsWith(pluginPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) is false || System.IO.File.Exists(imagePath) is false)
             {
                 return NotFound();
             }

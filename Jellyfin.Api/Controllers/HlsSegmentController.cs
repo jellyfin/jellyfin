@@ -164,10 +164,10 @@ public class HlsSegmentController : BaseJellyfinApiController
 
     private string? ValidateTranscodePath(string filename)
     {
-        var transcodePath = _serverConfigurationManager.GetTranscodePath();
+        var transcodePath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_serverConfigurationManager.GetTranscodePath()));
         var file = Path.GetFullPath(filename, transcodePath);
-        var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.OrdinalIgnoreCase))
+        // Require a separator after the transcode path so a sibling like "<transcodePath>-evil" can't pass.
+        if (!file.StartsWith(transcodePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
