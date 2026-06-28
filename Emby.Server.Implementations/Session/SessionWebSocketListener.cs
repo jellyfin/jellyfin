@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.Session
                         }
                         catch (Exception exception)
                         {
-                            _logger.LogWarning(exception, "Error disposing lost WebSocket {0}.", webSocket);
+                            _logger.LogWarning(exception, "Error disposing lost WebSocket from {RemoteEndPoint}.", webSocket.RemoteEndPoint);
                         }
                     }
                 }
