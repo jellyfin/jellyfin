@@ -76,25 +76,36 @@ public class CleanupOrphanedExtras : IAsyncMigrationRoutine
 
             _logger.LogInformation("Found {Count} orphaned extras to remove", orphanedItemIds.Count);
 
-            // Batch-resolve items for metadata path cleanup, then delete all at once
-            var itemsToDelete = new List<BaseItem>();
-            foreach (var itemId in orphanedItemIds)
+            // Resolve items for metadata path cleanup, then delete in batches so we never issue one
+            // massive delete transaction and progress stays visible on large libraries.
+            _logger.LogInformation("Deleting {Count} orphaned extras...", orphanedItemIds.Count);
+            const int deleteBatchSize = 500;
+            var deletedSoFar = 0;
+            for (var offset = 0; offset < orphanedItemIds.Count; offset += deleteBatchSize)
             {
-                itemsToDelete.Add(BaseItemMapper.DeserializeBaseItem(
-                    new Database.Implementations.Entities.BaseItemEntity()
-                    {
-                        Id = itemId.Id,
-                        Path = itemId.Path,
-                        Type = itemId.Type
-                    },
-                    _logger,
-                    null,
-                    true)!);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var batch = orphanedItemIds.GetRange(offset, Math.Min(deleteBatchSize, orphanedItemIds.Count - offset));
+                var itemsToDelete = batch
+                    .Select(itemId => BaseItemMapper.DeserializeBaseItem(
+                        new Database.Implementations.Entities.BaseItemEntity()
+                        {
+                            Id = itemId.Id,
+                            Path = itemId.Path,
+                            Type = itemId.Type
+                        },
+                        _logger,
+                        null,
+                        true)!)
+                    .ToList();
+
+                _libraryManager.DeleteItemsUnsafeFast(itemsToDelete);
+
+                deletedSoFar += batch.Count;
+                _logger.LogInformation("Deleting orphaned extras: {Deleted}/{Total}", deletedSoFar, orphanedItemIds.Count);
             }
 
-            _libraryManager.DeleteItemsUnsafeFast(itemsToDelete);
-
-            _logger.LogInformation("Successfully removed {Count} orphaned extras", itemsToDelete.Count);
+            _logger.LogInformation("Successfully removed {Count} orphaned extras", orphanedItemIds.Count);
         }
     }
 }

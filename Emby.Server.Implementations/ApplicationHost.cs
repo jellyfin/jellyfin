@@ -93,6 +93,9 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.Books;
+using MediaBrowser.Providers.Books.ComicBookInfo;
+using MediaBrowser.Providers.Books.ComicInfo;
 using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.ListenBrainz;
@@ -495,6 +498,14 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ListenBrainzLabsClient>();
             serviceCollection.AddSingleton<ListenBrainzSimilarArtistProvider>();
+
+            // register the generic local metadata provider for comic files
+            serviceCollection.AddSingleton<ComicProvider>();
+
+            // register the actual implementations of the local metadata provider for comic files
+            serviceCollection.AddSingleton<IComicProvider, ComicBookInfoProvider>();
+            serviceCollection.AddSingleton<IComicProvider, ExternalComicInfoProvider>();
+            serviceCollection.AddSingleton<IComicProvider, InternalComicInfoProvider>();
 
             serviceCollection.AddSingleton(NetManager);
 

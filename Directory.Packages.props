@@ -47,7 +47,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
     <PackageVersion Include="MimeTypes" Version="2.5.2" />
     <PackageVersion Include="Morestachio" Version="5.0.1.670" />
     <PackageVersion Include="Moq" Version="4.18.4" />
@@ -75,8 +75,8 @@
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="Svg.Skia" Version="3.7.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.2.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="10.2.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.9" />
     <PackageVersion Include="TagLibSharp" Version="2.3.0" />
     <PackageVersion Include="z440.atl.core" Version="7.15.3" />
