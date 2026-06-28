@@ -17,138 +17,124 @@ using MediaBrowser.Controller.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Jellyfin.Server.Integration.Tests
+namespace Jellyfin.Server.Integration.Tests;
+
+public sealed class SyncPlayLostWebSocketTests : IClassFixture<JellyfinApplicationFactory>
 {
-    /// <summary>
-    /// Reproduces the SyncPlay "zombie group" scenario: a client joins a group over
-    /// a WebSocket and then silently stops responding (mobile network drop, killed
-    /// WebView, NAT timeout) without ever sending a close frame. The keep-alive
-    /// watchdog detects the lost socket; the session it belongs to must then be
-    /// closed so that SyncPlay drops the dead participant and removes the empty
-    /// group. If that does not happen, the group keeps waiting on the dead
-    /// participant forever and every other member is stuck on an infinite load.
-    /// </summary>
-    public sealed class SyncPlayLostWebSocketTests : IClassFixture<JellyfinApplicationFactory>
+    private readonly JellyfinApplicationFactory _factory;
+
+    public SyncPlayLostWebSocketTests(JellyfinApplicationFactory factory)
     {
-        private readonly JellyfinApplicationFactory _factory;
+        _factory = factory;
+    }
 
-        public SyncPlayLostWebSocketTests(JellyfinApplicationFactory factory)
+    [Fact]
+    public async Task LostWebSocket_EndsSession_And_RemovesEmptySyncPlayGroup()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var client = _factory.CreateClient();
+        var accessToken = await AuthHelper.CompleteStartupAsync(client);
+        client.DefaultRequestHeaders.AddAuthHeader(accessToken);
+
+        var wsClient = _factory.Server.CreateWebSocketClient();
+        wsClient.ConfigureRequest = request =>
+            request.Headers.Authorization = AuthHelper.DummyAuthHeader + $", Token={accessToken}";
+
+        var webSocket = await wsClient.ConnectAsync(
+            new UriBuilder(_factory.Server.BaseAddress)
+            {
+                Scheme = "ws",
+                Path = "websocket"
+            }.Uri,
+            cancellationToken);
+
+        _ = DrainAsync(webSocket, cancellationToken);
+
+        var watched = await WaitForWatchedWebSocketsAsync(TimeSpan.FromSeconds(10), cancellationToken);
+        var connection = Assert.Single(watched);
+
+        using var createResponse = await client.PostAsync(
+            "SyncPlay/New",
+            JsonContent.Create(new NewGroupRequestDto { GroupName = "ZombieGroupRepro" }, options: JsonDefaults.Options),
+            cancellationToken);
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        Assert.Equal(1, await WaitForGroupCountAsync(client, 1, TimeSpan.FromSeconds(10), cancellationToken));
+
+        connection.LastKeepAliveDate = DateTime.UtcNow - TimeSpan.FromSeconds(180);
+
+        var groupCount = await WaitForGroupCountAsync(client, 0, TimeSpan.FromSeconds(45), cancellationToken);
+        Assert.True(
+            groupCount == 0,
+            $"SyncPlay group still listed {groupCount} group(s) after the WebSocket was lost: "
+            + "the keep-alive watchdog removed the socket from its watchlist without closing "
+            + "the session, leaving a zombie participant in the group (SessionWebSocketListener).");
+    }
+
+    private static async Task DrainAsync(WebSocket webSocket, CancellationToken cancellationToken)
+    {
+        var buffer = new byte[4096];
+        try
         {
-            _factory = factory;
+            while (webSocket.State == WebSocketState.Open)
+            {
+                await webSocket.ReceiveAsync(buffer, cancellationToken);
+            }
         }
-
-        [Fact]
-        public async Task LostWebSocket_EndsSession_And_RemovesEmptySyncPlayGroup()
+        catch
         {
-            var client = _factory.CreateClient();
-            var accessToken = await AuthHelper.CompleteStartupAsync(client);
-            client.DefaultRequestHeaders.AddAuthHeader(accessToken);
-
-            var wsClient = _factory.Server.CreateWebSocketClient();
-            wsClient.ConfigureRequest = request =>
-                request.Headers.Authorization = AuthHelper.DummyAuthHeader + $", Token={accessToken}";
-
-            var webSocket = await wsClient.ConnectAsync(
-                new UriBuilder(_factory.Server.BaseAddress)
-                {
-                    Scheme = "ws",
-                    Path = "websocket"
-                }.Uri,
-                TestContext.Current.CancellationToken);
-
-            // Drain server messages (ForceKeepAlive etc.) but never answer them,
-            // like a client whose connection went dark.
-            _ = DrainAsync(webSocket, TestContext.Current.CancellationToken);
-
-            var watched = await WaitForWatchedWebSocketsAsync(TimeSpan.FromSeconds(10));
-            var connection = Assert.Single(watched);
-
-            using var createResponse = await client.PostAsync(
-                "SyncPlay/New",
-                JsonContent.Create(new NewGroupRequestDto { GroupName = "ZombieGroupRepro" }, options: JsonDefaults.Options),
-                TestContext.Current.CancellationToken);
-            Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
-            Assert.Equal(1, await WaitForGroupCountAsync(client, 1, TimeSpan.FromSeconds(10)));
-
-            // Simulate the silent drop without waiting WebSocketLostTimeout (60s) in
-            // real time: backdating LastKeepAliveDate is equivalent to the client not
-            // having answered a keep-alive for that long. The next watchdog tick
-            // (every 12s) will classify the socket as lost.
-            connection.LastKeepAliveDate = DateTime.UtcNow - TimeSpan.FromSeconds(180);
-
-            var groupCount = await WaitForGroupCountAsync(client, 0, TimeSpan.FromSeconds(45));
-            Assert.True(
-                groupCount == 0,
-                $"SyncPlay group still listed {groupCount} group(s) after the WebSocket was lost: "
-                + "the keep-alive watchdog removed the socket from its watchlist without closing "
-                + "the session, leaving a zombie participant in the group (SessionWebSocketListener).");
+            // The server tears the connection down once the watchdog gives up on it.
         }
+    }
 
-        private static async Task DrainAsync(WebSocket webSocket, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<IWebSocketConnection>> WaitForWatchedWebSocketsAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var listener = _factory.Services.GetRequiredService<IEnumerable<IWebSocketListener>>()
+            .OfType<SessionWebSocketListener>()
+            .Single();
+        var watchlistField = typeof(SessionWebSocketListener)
+            .GetField("_webSockets", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(watchlistField);
+        var watchlist = (IEnumerable<IWebSocketConnection>)watchlistField.GetValue(listener)!;
+
+        var stopwatch = Stopwatch.StartNew();
+        while (true)
         {
-            var buffer = new byte[4096];
             try
             {
-                while (webSocket.State == WebSocketState.Open)
+                var snapshot = watchlist.ToArray();
+                if (snapshot.Length > 0 || stopwatch.Elapsed >= timeout)
                 {
-                    await webSocket.ReceiveAsync(buffer, cancellationToken);
+                    return snapshot;
                 }
             }
-            catch
+            catch (InvalidOperationException)
             {
-                // The server tears the connection down once the watchdog gives up on it.
+                // The watchdog mutated the set during enumeration; retry.
             }
-        }
 
-        private async Task<IReadOnlyList<IWebSocketConnection>> WaitForWatchedWebSocketsAsync(TimeSpan timeout)
+            await Task.Delay(100, cancellationToken);
+        }
+    }
+
+    private static async Task<int> WaitForGroupCountAsync(HttpClient client, int expected, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var count = -1;
+        while (stopwatch.Elapsed < timeout)
         {
-            var listener = _factory.Services.GetRequiredService<IEnumerable<IWebSocketListener>>()
-                .OfType<SessionWebSocketListener>()
-                .Single();
-            var watchlistField = typeof(SessionWebSocketListener)
-                .GetField("_webSockets", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.NotNull(watchlistField);
-            var watchlist = (IEnumerable<IWebSocketConnection>)watchlistField.GetValue(listener)!;
-
-            var stopwatch = Stopwatch.StartNew();
-            while (true)
+            using var response = await client.GetAsync("SyncPlay/List", cancellationToken);
+            response.EnsureSuccessStatusCode();
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            count = document.RootElement.GetArrayLength();
+            if (count == expected)
             {
-                try
-                {
-                    var snapshot = watchlist.ToArray();
-                    if (snapshot.Length > 0 || stopwatch.Elapsed >= timeout)
-                    {
-                        return snapshot;
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // The watchdog mutated the set during enumeration; retry.
-                }
-
-                await Task.Delay(100);
-            }
-        }
-
-        private static async Task<int> WaitForGroupCountAsync(HttpClient client, int expected, TimeSpan timeout)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var count = -1;
-            while (stopwatch.Elapsed < timeout)
-            {
-                using var response = await client.GetAsync("SyncPlay/List");
-                response.EnsureSuccessStatusCode();
-                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                count = document.RootElement.GetArrayLength();
-                if (count == expected)
-                {
-                    return count;
-                }
-
-                await Task.Delay(500);
+                return count;
             }
 
-            return count;
+            await Task.Delay(500, cancellationToken);
         }
+
+        return count;
     }
 }
