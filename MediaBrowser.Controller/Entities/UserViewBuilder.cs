@@ -61,6 +61,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.folders:
                     return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), query);
 
+                case CollectionType.books:
+                    return GetBooks(queryParent, user, query);
+
                 case CollectionType.tvshows:
                     return GetTvView(queryParent, user, query);
 
@@ -186,6 +189,17 @@ namespace MediaBrowser.Controller.Entities
             query.SetUser(user);
             query.IsFavorite = true;
             query.IncludeItemTypes = [BaseItemKind.Episode];
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetBooks(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.Recursive = true;
+            query.Parent = parent;
+            query.SetUser(user);
+
+            query.IncludeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
 
             return _libraryManager.GetItemsResult(query);
         }

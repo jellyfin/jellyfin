@@ -287,6 +287,8 @@ public class ItemsController : BaseJellyfinApiController
         QueryResult<BaseItem> result;
 
         Guid[] linkedChildAncestorIds = [];
+
+        includeItemTypes ??= [];
         if (includeItemTypes.Length == 1
             && (includeItemTypes[0] == BaseItemKind.BoxSet || includeItemTypes[0] == BaseItemKind.Playlist)
             && item is not BoxSet
@@ -314,6 +316,7 @@ public class ItemsController : BaseJellyfinApiController
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
+            includeItemTypes = [.. includeItemTypes.Union(DtoExtensions.GetBaseItemKindsForCollectionType(collectionType))];
         }
 
         if (collectionType == CollectionType.playlists)
