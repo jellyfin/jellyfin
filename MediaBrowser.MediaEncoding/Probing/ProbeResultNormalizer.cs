@@ -254,16 +254,38 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     if (mediaStream.Type == MediaStreamType.Audio && !mediaStream.BitRate.HasValue)
                     {
-                        mediaStream.BitRate = GetEstimatedAudioBitrate(mediaStream.Codec, mediaStream.Channels);
+                        mediaStream.BitRate = GetEstimatedAudioBitrate(mediaStream.Codec, mediaStream.Profile, mediaStream.Channels);
                     }
                 }
 
-                var videoStreamsBitrate = info.MediaStreams.Where(i => i.Type == MediaStreamType.Video).Select(i => i.BitRate ?? 0).Sum();
-                // If ffprobe reported the container bitrate as being the same as the video stream bitrate, then it's wrong
-                if (videoStreamsBitrate == (info.Bitrate ?? 0))
+                // ffprobe frequently omits the per-stream video bitrate (common in MP4/MKV containers).
+                // Estimate the missing video bitrate as the container bitrate minus the combined stream bitrates.
+                var videoStreams = info.MediaStreams.Where(i => i.Type == MediaStreamType.Video).ToList();
+                if (info.Bitrate.HasValue
+                    && videoStreams.Count == 1
+                    && !videoStreams[0].BitRate.HasValue)
                 {
-                    info.InferTotalBitrate(true);
+                    var otherStreams = info.MediaStreams
+                        .Where(i => i.Type != MediaStreamType.Video && !i.IsExternal)
+                        .ToList();
+
+                    // Only attribute the leftover bitrate to the video stream if every audio stream's bitrate is known.
+                    var audioBitratesKnown = otherStreams
+                        .Where(i => i.Type == MediaStreamType.Audio)
+                        .All(i => i.BitRate.HasValue);
+
+                    if (audioBitratesKnown)
+                    {
+                        var estimatedVideoBitrate = info.Bitrate.Value - otherStreams.Sum(i => i.BitRate ?? 0);
+                        if (estimatedVideoBitrate > 0)
+                        {
+                            videoStreams[0].BitRate = estimatedVideoBitrate;
+                        }
+                    }
                 }
+
+                // If the container bitrate is still unknown, infer it from the sum of the streams.
+                info.InferTotalBitrate();
             }
 
             return info;
@@ -316,53 +338,33 @@ namespace MediaBrowser.MediaEncoding.Probing
             return string.Join(',', splitFormat.Where(s => !string.IsNullOrEmpty(s)));
         }
 
-        private static int? GetEstimatedAudioBitrate(string codec, int? channels)
+        internal static int? GetEstimatedAudioBitrate(string codec, string profile, int? channels)
         {
-            if (!channels.HasValue)
+            if (!channels.HasValue || channels.Value < 1 || string.IsNullOrEmpty(codec))
             {
                 return null;
             }
 
-            var channelsValue = channels.Value;
+            // Rough typical bitrates used only as a fallback when ffprobe doesn't report a stream bitrate.
+            var channelCount = channels.Value;
+            var isMultichannel = channelCount > 2;
 
-            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
+            return codec.ToLowerInvariant() switch
             {
-                switch (channelsValue)
-                {
-                    case <= 2:
-                        return 192000;
-                    case >= 5:
-                        return 320000;
-                }
-            }
-
-            if (string.Equals(codec, "ac3", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
-            {
-                switch (channelsValue)
-                {
-                    case <= 2:
-                        return 192000;
-                    case >= 5:
-                        return 640000;
-                }
-            }
-
-            if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "alac", StringComparison.OrdinalIgnoreCase))
-            {
-                switch (channelsValue)
-                {
-                    case <= 2:
-                        return 960000;
-                    case >= 5:
-                        return 2880000;
-                }
-            }
-
-            return null;
+                "aac" or "mp3" or "mp2" => isMultichannel ? 320000 : 192000,
+                "ac3" or "eac3" => isMultichannel ? 640000 : 192000,
+                "dts" or "dca" => IsDtsLossless(profile) ? channelCount * 700000 : (isMultichannel ? 1509000 : 768000),
+                "opus" => isMultichannel ? 256000 : 128000,
+                "vorbis" => isMultichannel ? 320000 : 160000,
+                "wmav1" or "wmav2" or "wmapro" => isMultichannel ? 384000 : 192000,
+                "flac" or "alac" => channelCount * 480000,
+                "truehd" or "mlp" => channelCount * 700000,
+                _ => null
+            };
         }
+
+        private static bool IsDtsLossless(string profile)
+            => profile is not null && profile.Contains("HD MA", StringComparison.OrdinalIgnoreCase);
 
         private void FetchFromItunesInfo(string xml, MediaInfo info)
         {
@@ -972,10 +974,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 bitrate = value;
             }
 
-            // The bitrate info of FLAC musics and some videos is included in formatInfo.
+            // The bitrate info of FLAC audio is included in formatInfo.
+            // Don't do this for video streams: formatInfo.BitRate is the overall container
+            // bitrate (video + audio + subtitles + overhead), not the video bitrate.
             if (bitrate == 0
                 && formatInfo is not null
-                && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
+                && isAudio && stream.Type == MediaStreamType.Audio)
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
                 if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out value))
@@ -1260,9 +1264,16 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (TimeSpan.TryParse(duration, out var parsedDuration))
+            if (!string.IsNullOrEmpty(duration))
             {
-                return parsedDuration.TotalSeconds;
+                // Matroska DURATION tags use nanosecond precision (e.g. "00:00:05.023000000"), but
+                // TimeSpan only supports up to 7 fractional digits (ticks). Trim the surplus digits so
+                // these durations parse instead of being silently dropped.
+                duration = DurationOverPrecisionRegex().Replace(duration, "$1");
+                if (TimeSpan.TryParse(duration, CultureInfo.InvariantCulture, out var parsedDuration))
+                {
+                    return parsedDuration.TotalSeconds;
+                }
             }
 
             return null;
@@ -1764,5 +1775,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         [GeneratedRegex("(?<name>.*) \\((?<instrument>.*)\\)")]
         private static partial Regex PerformerRegex();
+
+        [GeneratedRegex(@"(\.\d{7})\d+")]
+        private static partial Regex DurationOverPrecisionRegex();
     }
 }
