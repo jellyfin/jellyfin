@@ -168,52 +168,58 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (audio is AudioBook audioBook)
             {
-                var libraryOptions = _libraryManager.GetLibraryOptions(audio);
+                await SaveAudioBookChaptersAsync(audioBook, mediaInfo, cancellationToken).ConfigureAwait(false);
+            }
+        }
 
-                if (libraryOptions.PreferCueSidecarForAudiobookChapters)
+        private async Task SaveAudioBookChaptersAsync(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(audioBook);
+
+            if (libraryOptions.PreferCueSidecarForAudiobookChapters)
+            {
+                var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audioBook.Path);
+                if (cueChapters.Count > 0)
                 {
-                    var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audio.Path);
-                    if (cueChapters.Count > 0)
-                    {
-                        _chapterManager.SaveChapters(audio, cueChapters);
-                    }
-                    else if (audioBook.AdditionalParts.Length > 0)
-                    {
-                        var (chapters, totalTicks, partTicks) = await BuildMultiPartChaptersAsync(
-                            audioBook, mediaInfo.RunTimeTicks ?? 0, cancellationToken).ConfigureAwait(false);
-                        audio.RunTimeTicks = totalTicks;
-                        audioBook.PartRunTimeTicks = partTicks;
-                        _chapterManager.SaveChapters(audio, chapters);
-                    }
-                    else if (mediaInfo.Chapters is { Length: > 0 })
-                    {
-                        _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
-                    }
+                    _chapterManager.SaveChapters(audioBook, cueChapters);
+                }
+                else if (audioBook.AdditionalParts.Length > 0)
+                {
+                    await SaveMultiPartChaptersAsync(audioBook, mediaInfo, cancellationToken).ConfigureAwait(false);
+                }
+                else if (mediaInfo.Chapters is { Length: > 0 })
+                {
+                    _chapterManager.SaveChapters(audioBook, mediaInfo.Chapters);
+                }
+            }
+            else
+            {
+                if (mediaInfo.Chapters is { Length: > 0 })
+                {
+                    _chapterManager.SaveChapters(audioBook, mediaInfo.Chapters);
+                }
+                else if (audioBook.AdditionalParts.Length > 0)
+                {
+                    await SaveMultiPartChaptersAsync(audioBook, mediaInfo, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    if (mediaInfo.Chapters is { Length: > 0 })
+                    var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audioBook.Path);
+                    if (cueChapters.Count > 0)
                     {
-                        _chapterManager.SaveChapters(audio, mediaInfo.Chapters);
-                    }
-                    else if (audioBook.AdditionalParts.Length > 0)
-                    {
-                        var (chapters, totalTicks, partTicks) = await BuildMultiPartChaptersAsync(
-                            audioBook, mediaInfo.RunTimeTicks ?? 0, cancellationToken).ConfigureAwait(false);
-                        audio.RunTimeTicks = totalTicks;
-                        audioBook.PartRunTimeTicks = partTicks;
-                        _chapterManager.SaveChapters(audio, chapters);
-                    }
-                    else
-                    {
-                        var cueChapters = AudioBookCueChapterParser.ParseCueSidecar(audio.Path);
-                        if (cueChapters.Count > 0)
-                        {
-                            _chapterManager.SaveChapters(audio, cueChapters);
-                        }
+                        _chapterManager.SaveChapters(audioBook, cueChapters);
                     }
                 }
             }
+        }
+
+        private async Task SaveMultiPartChaptersAsync(AudioBook audioBook, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        {
+            var (chapters, totalTicks, partTicks) = await BuildMultiPartChaptersAsync(
+                audioBook, mediaInfo.RunTimeTicks ?? 0, cancellationToken).ConfigureAwait(false);
+            audioBook.RunTimeTicks = totalTicks;
+            audioBook.PartRunTimeTicks = partTicks;
+            _chapterManager.SaveChapters(audioBook, chapters);
         }
 
         /// <summary>
@@ -745,7 +751,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var firstChapter = new ChapterInfo
             {
-                Name = Path.GetFileNameWithoutExtension(audioBook.Path),
+                Name = StripLeadingTrackNumber(Path.GetFileNameWithoutExtension(audioBook.Path)),
                 StartPositionTicks = 0
             };
             TrySetChapterImage(audioBook, firstChapter, audioBook.Path);
@@ -772,7 +778,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var chapter = new ChapterInfo
                 {
-                    Name = Path.GetFileNameWithoutExtension(partPath),
+                    Name = StripLeadingTrackNumber(Path.GetFileNameWithoutExtension(partPath)),
                     StartPositionTicks = cumulativeTicks
                 };
                 TrySetChapterImage(audioBook, chapter, partPath);
@@ -782,6 +788,34 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return (chapters, cumulativeTicks, partTicks.ToArray());
+        }
+
+        private static string StripLeadingTrackNumber(string name)
+        {
+            var digitsEnd = 0;
+            while (digitsEnd < name.Length && char.IsDigit(name[digitsEnd]))
+            {
+                digitsEnd++;
+            }
+
+            if (digitsEnd == 0)
+            {
+                return name;
+            }
+
+            var index = digitsEnd;
+            while (index < name.Length && (name[index] == ' ' || name[index] == '_' || name[index] == '-' || name[index] == '.' || name[index] == '#'))
+            {
+                index++;
+            }
+
+            if (index == digitsEnd)
+            {
+                return name;
+            }
+
+            var stripped = name[index..];
+            return stripped.Length > 0 ? stripped : name;
         }
 
         private void TrySetChapterImage(AudioBook audioBook, ChapterInfo chapter, string filePath)

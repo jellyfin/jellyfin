@@ -389,7 +389,8 @@ namespace Emby.Server.Implementations.Library
                 sources = sources
                     .Where(source => !Guid.TryParse(source.Id, out var sourceId)
                         || sourceId.Equals(item.Id)
-                        || _libraryManager.GetItemById<BaseItem>(sourceId, user) is not null)
+                        || _libraryManager.GetItemById<BaseItem>(sourceId, user) is not null
+                        || item is AudioBook)
                     .ToArray();
 
                 foreach (var source in sources)
